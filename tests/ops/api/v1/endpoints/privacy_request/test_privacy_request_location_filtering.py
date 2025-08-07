@@ -26,6 +26,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": "US",
+                "status": "pending",
             },
         )
         requests.append(pr_us)
@@ -36,6 +37,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": "US-CA",
+                "status": "pending",
             },
         )
         requests.append(pr_us_ca)
@@ -46,6 +48,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": "US-NY",
+                "status": "pending",
             },
         )
         requests.append(pr_us_ny)
@@ -56,6 +59,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": "GB",
+                "status": "pending",
             },
         )
         requests.append(pr_gb)
@@ -66,6 +70,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": "CA-ON",
+                "status": "pending",
             },
         )
         requests.append(pr_ca_on)
@@ -76,6 +81,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": "EEA",
+                "status": "pending",
             },
         )
         requests.append(pr_eea)
@@ -86,6 +92,7 @@ class TestPrivacyRequestLocationFiltering:
             data={
                 "policy_id": policy.id,
                 "location": None,
+                "status": "pending",
             },
         )
         requests.append(pr_no_location)
@@ -115,15 +122,6 @@ class TestPrivacyRequestLocationFiltering:
         locations = sorted([item["location"] for item in resp["items"]])
         assert locations == ["US", "US-CA", "US-NY"]
 
-        # Verify display names are included
-        for item in resp["items"]:
-            if item["location"] == "US":
-                assert item["location_display_name"] == "United States"
-            elif item["location"] == "US-CA":
-                assert item["location_display_name"] == "United States (California)"
-            elif item["location"] == "US-NY":
-                assert item["location_display_name"] == "United States (New York)"
-
     def test_get_privacy_requests_filter_by_subdivision_code(
         self,
         api_client: TestClient,
@@ -140,7 +138,6 @@ class TestPrivacyRequestLocationFiltering:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["location"] == "US-CA"
-        assert resp["items"][0]["location_display_name"] == "United States (California)"
 
     def test_get_privacy_requests_filter_by_special_codes(
         self,
@@ -158,7 +155,6 @@ class TestPrivacyRequestLocationFiltering:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["location"] == "EEA"
-        assert resp["items"][0]["location_display_name"] == "European Economic Area"
 
     def test_get_privacy_requests_filter_by_nonexistent_location(
         self,
@@ -193,7 +189,6 @@ class TestPrivacyRequestLocationFiltering:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["location"] == "CA-ON"
-        assert resp["items"][0]["location_display_name"] == "Canada (Ontario)"
 
     def test_privacy_request_search_no_location_filter(
         self,
@@ -212,34 +207,6 @@ class TestPrivacyRequestLocationFiltering:
         resp = response.json()
         # Should return all 7 requests (US, US-CA, US-NY, GB, CA-ON, EEA, None)
         assert len(resp["items"]) == 7
-
-    def test_location_display_name_in_responses(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        privacy_requests_with_locations,
-    ):
-        """Test that location_display_name is properly included in all responses."""
-        url = V1_URL_PREFIX + PRIVACY_REQUESTS
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 200
-        resp = response.json()
-
-        # Check that all requests have location_display_name field
-        for item in resp["items"]:
-            assert "location_display_name" in item
-
-            # Verify specific mappings
-            if item["location"] == "US":
-                assert item["location_display_name"] == "United States"
-            elif item["location"] == "GB":
-                assert item["location_display_name"] == "United Kingdom"
-            elif item["location"] == "EEA":
-                assert item["location_display_name"] == "European Economic Area"
-            elif item["location"] is None:
-                assert item["location_display_name"] is None
 
     def test_case_insensitive_location_filtering(
         self,

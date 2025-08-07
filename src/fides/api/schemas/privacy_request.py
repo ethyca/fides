@@ -19,7 +19,6 @@ from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.api.util.enums import ColumnSort
-from fides.api.util.location_util import convert_location_to_display_name
 from fides.config import CONFIG
 
 # Regex to validate a ISO 3166-2 code:
@@ -349,23 +348,11 @@ class PrivacyRequestResponse(FidesSchema):
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     source: Optional[PrivacyRequestSource] = None
     location: Optional[str] = None
-    location_display_name: Optional[str] = None
     deleted_at: Optional[datetime] = None
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
-
-    @field_serializer("location_display_name")
-    def serialize_location_display_name(self, value: Optional[str]) -> Optional[str]:
-        """Serialize location_display_name by converting from location if not already set."""
-        # If location_display_name is already set, use it; otherwise compute from location
-        if value is not None:
-            return value
-        # Handle None location
-        if self.location is None:
-            return None
-        return convert_location_to_display_name(self.location)
 
 
 class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
