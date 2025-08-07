@@ -229,7 +229,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
-        logger.info("privacy_request #  {}", privacy_request.id)
         # An endpoint can be defined with multiple 'read' requests if the data for a single
         # collection can be accessed in multiple ways for example:
         #

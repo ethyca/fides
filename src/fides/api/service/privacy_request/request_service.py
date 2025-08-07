@@ -683,13 +683,11 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
 
 
-# TODO: Check what Eli mentioned about the Celery tasks flag to not store cache of the results
 @celery_app.task(base=DatabaseTask, bind=True)
 def poll_async_tasks_status(self: DatabaseTask) -> None:
     """
     Poll the status of async tasks that are awaiting processing.
     """
-    # TODO: Should this job do something when merged on main? Check if dev?
 
     with self.get_new_session() as db:
         logger.debug("Polling for async tasks status")
