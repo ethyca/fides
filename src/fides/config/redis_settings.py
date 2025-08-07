@@ -213,7 +213,7 @@ class RedisSettings(FidesSettings):
         # Determine which set of settings to use based on field name
         is_read_only = info.field_name in (
             "read_only_connection_url",
-            "read_only_connection_url_encoded",
+            "read_only_connection_url_unencoded",
         )
         is_unencoded = info.field_name in (
             "connection_url_unencoded",
@@ -268,7 +268,7 @@ class RedisSettings(FidesSettings):
         auth_prefix = ""
         if password or user:
             encoded_password = (
-                quote(password, safe="") if is_unencoded else quote_plus(password)
+                password if is_unencoded else quote_plus(password)
             )
             auth_prefix = f"{quote_plus(user)}:{encoded_password}@"
 
