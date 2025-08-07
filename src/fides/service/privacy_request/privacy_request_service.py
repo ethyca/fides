@@ -39,7 +39,6 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.task.execute_request_tasks import queue_request_task
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
