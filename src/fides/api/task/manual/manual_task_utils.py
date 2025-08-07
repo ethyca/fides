@@ -111,12 +111,17 @@ def create_conditional_dependency_scalar_fields(
         # Use the full field address as the field name to preserve collection context
         # This allows the manual task to receive data from specific collections
         # e.g., "user.name" or "customer.profile.email" instead of just "name" or "email"
+        if isinstance(field_address, str):
+            field_address = FieldAddress.from_string(field_address)
+
+        if not isinstance(field_address, FieldAddress):
+            raise ValueError(f"Invalid field address: {field_address}")
 
         scalar_field = ScalarField(
-            name=field_address,
+            name=field_address.value,
             # Conditional dependency fields don't have predefined data categories
             data_categories=[],
-            references=[(FieldAddress(field_address), "from")],
+            references=[(field_address, "from")],
         )
         fields.append(scalar_field)
 
@@ -140,12 +145,7 @@ def create_collection_for_connection_key(
         and dependency.field_address is not None
     }
 
-    # Find collections that provide the fields referenced in conditional dependencies - determines execution order
-    dependency_collections: set[CollectionAddress] = (
-        _find_collections_for_conditional_dependencies(manual_task, dataset_graph)
-    )
-
-    # Create scalar fields for data category fields and conditional dependency field addresses
+        # Create scalar fields for data category fields and conditional dependency field addresses
     fields: list[ScalarField] = []
     fields.extend(create_data_category_scalar_fields(manual_task))
     fields.extend(
@@ -160,7 +160,6 @@ def create_collection_for_connection_key(
         name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
         fields=fields,
         # Manual task has dependencies on regular tasks that provide conditional dependency fields
-        after=dependency_collections,
     )
 
 
@@ -191,8 +190,6 @@ def create_manual_task_artificial_graphs(db: Session) -> list:
 
         if collection:  # Only create graph if there are collections
             # Create a synthetic GraphDataset with all manual task collections
-            # The graph should inherit dependencies from its collections
-            # Convert CollectionAddress objects to strings for GraphDataset.after
             graph_dataset = GraphDataset(
                 name=connection_key,
                 collections=[collection],
@@ -202,121 +199,3 @@ def create_manual_task_artificial_graphs(db: Session) -> list:
             manual_task_graphs.append(graph_dataset)
 
     return manual_task_graphs
-
-
-def _find_collections_for_conditional_dependencies(
-    manual_task: ManualTask, dataset_graph: Optional["DatasetGraph"] = None
-) -> set[CollectionAddress]:
-    """
-    Find collections that provide fields referenced in conditional dependencies.
-
-    This function analyzes the conditional dependencies of a manual task and
-    identifies which regular task collections need to be executed before the
-    manual task to provide the required field data.
-
-    Args:
-        manual_task: The manual task to analyze
-        dataset_graph: The actual graph being executed (optional for backward compatibility)
-
-    Returns:
-        Set of CollectionAddress objects for collections that provide conditional dependency fields
-    """
-    dependency_collections: set[CollectionAddress] = set()
-    if not dataset_graph:
-        return dependency_collections
-
-    conditional_dependencies = [
-        dep
-        for dep in manual_task.conditional_dependencies
-        if dep.condition_type == ManualTaskConditionalDependencyType.leaf
-        and dep.field_address is not None
-    ]
-
-    for dependency in conditional_dependencies:
-        # Parse the field address to determine which collection provides this field
-        if dependency.field_address is None:
-            continue
-        collection_address = _get_collection_for_field_address(
-            dependency.field_address, dataset_graph
-        )
-        if collection_address:
-            dependency_collections.add(collection_address)
-
-    return dependency_collections
-
-
-def _get_collection_for_field_address(
-    field_address: str,
-    dataset_graph: DatasetGraph,
-) -> Optional[CollectionAddress]:
-    """
-    Determine which collection provides a given field address.
-
-    This function parses the field address to determine which collection provides
-    the specified field. Field addresses can be in two formats:
-    1. Full format: "dataset:collection:field" (e.g., "postgres_example_test_dataset:customer:name")
-    2. Simplified format: "collection.field" (e.g., "customer.name", "user.profile.age")
-
-    Args:
-        field_address: The field address to analyze
-        dataset_graph: The actual graph being executed
-
-    Returns:
-        CollectionAddress for the collection that provides this field, or None if not found
-    """
-    if not field_address:
-        return None
-
-    # Try to parse as full field address format first (dataset:collection:field)
-    if ":" in field_address:
-        return _parse_full_address_format(field_address, dataset_graph)
-
-    # Fall back to simplified format parsing (collection.field)
-    if "." not in field_address:
-        return None
-
-    return _parse_simplified_address_format(field_address, dataset_graph)
-
-
-def _parse_simplified_address_format(
-    field_address: str, dataset_graph: DatasetGraph
-) -> Optional[CollectionAddress]:
-    """
-    Parse the field address to extract collection name
-    Field address format: "collection.field" or "collection.nested.field"
-    """
-    parts = field_address.split(".", 1)  # Split on first dot only
-    if len(parts) != 2:
-        return None
-
-    collection_name = parts[0]
-    field_path = parts[1]
-
-    # Search for the specific collection
-    for node_address, node in dataset_graph.nodes.items():
-        # Check if this collection matches the collection name from the field address
-        if node.collection.name == collection_name:
-            # Check if the field exists in this collection
-            # field_dict has FieldPath objects as keys, so we need to create a FieldPath for comparison
-            if FieldPath.parse(field_path) in node.collection.field_dict:
-                return node_address
-    return None
-
-
-def _parse_full_address_format(
-    field_address: str, dataset_graph: DatasetGraph
-) -> Optional[CollectionAddress]:
-    """
-    Parse the field address to extract collection name
-    Field address format: "dataset:collection:field"
-    """
-    field_addr = FieldAddress.from_string(field_address)
-    collection_address = field_addr.collection_address()
-
-    # Verify the collection exists in the graph
-    for node_address, node in dataset_graph.nodes.items():
-        if node_address == collection_address:
-            # Check if the field exists in this collection
-            if field_addr.field_path in node.collection.field_dict:
-                return node_address
-    return None
