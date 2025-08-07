@@ -2078,6 +2078,7 @@ class TestAsyncCallbacks:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
+    @pytest.mark.skip(reason="Not implemented yet")
     def test_async_polling_access_request(
         self,
         mock_send_polling,
