@@ -4,7 +4,6 @@ from fideslang.models import MaskingStrategies
 
 from fides.api.graph.graph import *
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 from .graph_test_util import *
 
