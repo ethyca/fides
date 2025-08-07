@@ -84,10 +84,6 @@ def requeue_polling_request(
         elif async_task.action_type == ActionType.erasure:
             execute_erasure_polling_requests(db, async_task, query_config)
 
-    # And then we requeue the task and move forward from that point
-    # TODO: Verify that we are not going to duplicate the access request
-    queue_request_task(async_task, privacy_request_proceed=True)
-
 
 def get_connection_config_from_task(
     db: Session, request_task: RequestTask
