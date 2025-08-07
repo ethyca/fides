@@ -34,7 +34,7 @@ loguru==0.6.0
 multidimensional_urlencode==0.0.4
 pg8000==1.31.2
 nh3==0.2.15
-numpy==1.24.4
+numpy>=2.1.0
 okta==2.7.0
 openpyxl==3.0.9
 networkx==3.1
@@ -43,7 +43,7 @@ pandas==1.4.3
 paramiko==3.4.1
 passlib[bcrypt]==1.7.4
 pyinstrument==4.5.1
-psycopg2-binary==2.9.6
+psycopg2-binary==2.9.10
 pydantic==2.7.1
 pydantic-settings==2.3.3
 pydash==6.0.2
@@ -62,7 +62,7 @@ slowapi==0.1.9
 snowflake-sqlalchemy==1.5.1
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-citext==1.8.0
-sqlalchemy-bigquery==1.7.0
+sqlalchemy-bigquery==1.15.0
 sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
