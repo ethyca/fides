@@ -456,13 +456,8 @@ def run_privacy_request(
                     if not dataset_config.connection_config.disabled
                 ]
 
-                # Create a temporary graph from regular datasets to use for manual task dependency resolution
-                temp_dataset_graph = DatasetGraph(*dataset_graphs)
-
                 # Add manual task artificial graphs to dataset graphs
-                manual_task_graphs = create_manual_task_artificial_graphs(
-                    session, temp_dataset_graph
-                )
+                manual_task_graphs = create_manual_task_artificial_graphs(session)
                 dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)

@@ -111,10 +111,12 @@ def create_conditional_dependency_scalar_fields(
         # Use the full field address as the field name to preserve collection context
         # This allows the manual task to receive data from specific collections
         # e.g., "user.name" or "customer.profile.email" instead of just "name" or "email"
+
         scalar_field = ScalarField(
             name=field_address,
             # Conditional dependency fields don't have predefined data categories
             data_categories=[],
+            references=[(FieldAddress(field_address), "from")],
         )
         fields.append(scalar_field)
 
@@ -162,9 +164,7 @@ def create_collection_for_connection_key(
     )
 
 
-def create_manual_task_artificial_graphs(
-    db: Session, dataset_graph: Optional["DatasetGraph"] = None
-) -> list:
+def create_manual_task_artificial_graphs(db: Session) -> list:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
     in the main dataset graph during the dataset configuration phase.
@@ -187,20 +187,16 @@ def create_manual_task_artificial_graphs(
         connection_key = address.dataset
 
         # Get the collection for this connection config using the reusable function
-        collection = create_collection_for_connection_key(
-            db, connection_key, dataset_graph
-        )
+        collection = create_collection_for_connection_key(db, connection_key)
 
         if collection:  # Only create graph if there are collections
             # Create a synthetic GraphDataset with all manual task collections
             # The graph should inherit dependencies from its collections
             # Convert CollectionAddress objects to strings for GraphDataset.after
-            after_dependencies = {str(addr) for addr in collection.after}
             graph_dataset = GraphDataset(
                 name=connection_key,
                 collections=[collection],
                 connection_key=connection_key,
-                after=after_dependencies,
             )
 
             manual_task_graphs.append(graph_dataset)
