@@ -31,6 +31,7 @@ import {
 
 import AddManualTaskModal from "./AddManualTaskModal";
 import CreateExternalUserModal from "./CreateExternalUserModal";
+import TaskCreationConditions from "./TaskCreationConditions";
 import { Task, useTaskColumns } from "./useTaskColumns";
 
 const { Paragraph } = Typography;
@@ -276,13 +277,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             </div>
           </div>
           <div className="mt-4">
-            <Typography.Text strong>Task creation conditions:</Typography.Text>
-            <Typography.Paragraph className="w-2/3">
-              Configure conditions that must be met before a task is created. If
-              no conditions are set, manual tasks will created for every
-              incoming privacy request of the correspding type (access or
-              erasure).
-            </Typography.Paragraph>
+            <TaskCreationConditions connectionKey={integration.key} />
           </div>
         </Box>
 
