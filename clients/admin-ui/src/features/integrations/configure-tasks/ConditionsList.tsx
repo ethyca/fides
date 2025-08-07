@@ -13,8 +13,8 @@ const { Text } = Typography;
 
 interface ConditionsListProps {
   conditions: ConditionLeaf[];
-  onEdit: (index: number) => void;
-  onDelete: (index: number) => void;
+  onEdit: (index: number, condition: ConditionLeaf) => void;
+  onDelete: (index: number, condition: ConditionLeaf) => void;
 }
 
 // Mapping for operator display labels
@@ -72,24 +72,18 @@ const ConditionsList = ({
       key: "actions",
       width: "15%",
       render: (_: any, record: ConditionLeaf, index: number) => (
-        <Flex gap={1}>
+        <Flex gap={2}>
           <Button
             size="small"
             icon={<Icons.Edit />}
-            onClick={() => onEdit(index)}
-            type="text"
-          >
-            Edit
-          </Button>
+            onClick={() => onEdit(index, record)}
+          />
           <Button
             size="small"
             danger
             icon={<Icons.TrashCan />}
-            onClick={() => onDelete(index)}
-            type="text"
-          >
-            Delete
-          </Button>
+            onClick={() => onDelete(index, record)}
+          />
         </Flex>
       ),
     },

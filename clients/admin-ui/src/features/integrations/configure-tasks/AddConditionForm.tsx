@@ -3,8 +3,6 @@ import {
   AntForm as Form,
   AntInput as Input,
   AntSelect as Select,
-  AntTypography as Typography,
-  Box,
   Flex,
 } from "fidesui";
 import { useCallback } from "react";
@@ -14,13 +12,15 @@ import { ConditionLeaf, Operator } from "~/types/api";
 interface AddConditionFormProps {
   onAdd: (condition: ConditionLeaf) => void;
   onCancel: () => void;
-  editingCondition?: ConditionLeaf;
+  editingCondition?: ConditionLeaf | null;
+  isSubmitting?: boolean;
 }
 
 const AddConditionForm = ({
   onAdd,
   onCancel,
   editingCondition,
+  isSubmitting = false,
 }: AddConditionFormProps) => {
   const [form] = Form.useForm();
   const isEditing = !!editingCondition;
@@ -97,93 +97,72 @@ const AddConditionForm = ({
     selectedOperator === Operator.NOT_EXISTS;
 
   return (
-    <Box className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <div className="mb-3">
-        <Typography.Text strong>
-          {isEditing ? "Edit condition" : "Add new condition"}
-        </Typography.Text>
-      </div>
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-        initialValues={initialValues}
-        size="small"
+    <Form
+      form={form}
+      onFinish={handleSubmit}
+      layout="vertical"
+      initialValues={initialValues}
+    >
+      <Form.Item
+        name="fieldAddress"
+        label="Field Path"
+        rules={[
+          { required: true, message: "Field path is required" },
+          {
+            pattern: /^[a-zA-Z_][a-zA-Z0-9_.]*$/,
+            message:
+              "Field path must start with a letter or underscore, and contain only letters, numbers, dots, and underscores",
+          },
+        ]}
+        tooltip="Use dot notation to access nested fields (e.g., user.age, custom_fields.country, identity.email)"
       >
-        <Flex gap={3}>
-          <Form.Item
-            name="fieldAddress"
-            label="Field Path"
-            rules={[
-              { required: true, message: "Field path is required" },
-              {
-                pattern: /^[a-zA-Z_][a-zA-Z0-9_.]*$/,
-                message:
-                  "Field path must start with a letter or underscore, and contain only letters, numbers, dots, and underscores",
-              },
-            ]}
-            className="flex-1"
-            tooltip="Use dot notation to access nested fields (e.g., user.age, custom_fields.country, identity.email)"
-          >
-            <Input
-              placeholder="e.g., user.age, custom_fields.country, identity.email"
-              size="small"
-            />
-          </Form.Item>
+        <Input placeholder="e.g., user.age, custom_fields.country, identity.email" />
+      </Form.Item>
 
-          <Form.Item
-            name="operator"
-            label="Operator"
-            rules={[{ required: true, message: "Operator is required" }]}
-            style={{ minWidth: 180 }}
-          >
-            <Select
-              placeholder="Select operator"
-              options={operatorOptions}
-              size="small"
-            />
-          </Form.Item>
+      <Form.Item
+        name="operator"
+        label="Operator"
+        rules={[{ required: true, message: "Operator is required" }]}
+      >
+        <Select placeholder="Select operator" options={operatorOptions} />
+      </Form.Item>
 
-          <Form.Item
-            name="value"
-            label="Value"
-            rules={[
-              {
-                required: !isValueDisabled,
-                message: "Value is required for this operator",
-              },
-            ]}
-            style={{ minWidth: 150 }}
-            tooltip={
-              isValueDisabled
-                ? "Value is not required for exists/not exists operators"
-                : "Enter the value to compare against. Can be text, number, or true/false"
-            }
-          >
-            <Input
-              placeholder={
-                isValueDisabled
-                  ? "Not required"
-                  : "Enter value (text, number, or true/false)"
-              }
-              disabled={isValueDisabled}
-              size="small"
-            />
-          </Form.Item>
+      <Form.Item
+        name="value"
+        label="Value"
+        rules={[
+          {
+            required: !isValueDisabled,
+            message: "Value is required for this operator",
+          },
+        ]}
+        tooltip={
+          isValueDisabled
+            ? "Value is not required for exists/not exists operators"
+            : "Enter the value to compare against. Can be text, number, or true/false"
+        }
+      >
+        <Input
+          placeholder={
+            isValueDisabled
+              ? "Not required"
+              : "Enter value (text, number, or true/false)"
+          }
+          disabled={isValueDisabled}
+        />
+      </Form.Item>
 
-          <Form.Item label=" " className="mb-0">
-            <Flex gap={2}>
-              <Button type="primary" htmlType="submit" size="small">
-                {isEditing ? "Update" : "Add"}
-              </Button>
-              <Button onClick={handleCancel} size="small">
-                Cancel
-              </Button>
-            </Flex>
-          </Form.Item>
+      <Form.Item>
+        <Flex gap={2} justify="flex-end">
+          <Button onClick={handleCancel} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+            {isEditing ? "Update" : "Add"}
+          </Button>
         </Flex>
-      </Form>
-    </Box>
+      </Form.Item>
+    </Form>
   );
 };
 

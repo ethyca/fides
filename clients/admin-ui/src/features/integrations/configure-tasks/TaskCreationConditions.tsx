@@ -4,20 +4,23 @@ import {
   AntTypography as Typography,
   Box,
   Flex,
-  Icons,
+  Text,
+  useDisclosure,
+  WarningIcon,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import {
   useGetManualTaskConfigQuery,
   useUpdateDependencyConditionsMutation,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { ConditionGroup, ConditionLeaf, GroupOperator } from "~/types/api";
 
-import AddConditionForm from "./AddConditionForm";
+import AddEditConditionModal from "./AddEditConditionModal";
 import ConditionsList from "./ConditionsList";
 
-const { Text, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 interface TaskCreationConditionsProps {
   connectionKey: string;
@@ -27,9 +30,20 @@ const TaskCreationConditions = ({
   connectionKey,
 }: TaskCreationConditionsProps) => {
   const [conditions, setConditions] = useState<ConditionLeaf[]>([]);
-  const [isAddingCondition, setIsAddingCondition] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCondition, setEditingCondition] =
+    useState<ConditionLeaf | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [conditionToDelete, setConditionToDelete] = useState<{
+    index: number;
+    condition: ConditionLeaf;
+  } | null>(null);
+
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const {
     data: manualTaskConfig,
@@ -63,82 +77,138 @@ const TaskCreationConditions = ({
     }
   }, [manualTaskConfig]);
 
-  const handleSaveConditions = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      const conditionGroup: ConditionGroup = {
-        logical_operator: GroupOperator.AND,
-        conditions,
-      };
-
-      await updateConditions({
-        connectionKey,
-        conditions: conditions.length > 0 ? [conditionGroup] : [],
-      }).unwrap();
-
-      message.success("Task creation conditions saved successfully!");
-      refetch();
-    } catch (err) {
-      message.error("Failed to save conditions. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [conditions, connectionKey, updateConditions, refetch]);
-
-  const handleAddCondition = useCallback((newCondition: ConditionLeaf) => {
-    setConditions((prev) => {
-      // Check if a condition with the same field_address and operator already exists
-      const isDuplicate = prev.some(
-        (condition) =>
-          condition.field_address === newCondition.field_address &&
-          condition.operator === newCondition.operator,
-      );
-
-      if (isDuplicate) {
-        message.warning(
-          `A condition for "${newCondition.field_address}" with operator "${newCondition.operator}" already exists.`,
-        );
-        return prev;
-      }
-
-      return [...prev, newCondition];
-    });
-    setIsAddingCondition(false);
+  const handleOpenAddModal = useCallback(() => {
+    setEditingCondition(null);
+    setEditingIndex(null);
+    setIsModalOpen(true);
   }, []);
 
-  const handleEditCondition = useCallback((index: number) => {
-    setEditingIndex(index);
-    setIsAddingCondition(true);
-  }, []);
-
-  const handleUpdateCondition = useCallback(
-    (updatedCondition: ConditionLeaf) => {
-      if (editingIndex !== null) {
-        setConditions((prev) =>
-          prev.map((condition, i) =>
-            i === editingIndex ? updatedCondition : condition,
-          ),
-        );
-      }
-      setEditingIndex(null);
-      setIsAddingCondition(false);
+  const handleOpenEditModal = useCallback(
+    (index: number, condition: ConditionLeaf) => {
+      setEditingCondition(condition);
+      setEditingIndex(index);
+      setIsModalOpen(true);
     },
-    [editingIndex],
+    [],
   );
 
-  const handleDeleteCondition = useCallback((index: number) => {
-    setConditions((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
-  const handleCancelAdd = useCallback(() => {
-    setIsAddingCondition(false);
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setEditingCondition(null);
     setEditingIndex(null);
   }, []);
+
+  const handleConditionSaved = useCallback(
+    async (newCondition: ConditionLeaf) => {
+      let updatedConditions: ConditionLeaf[] = [];
+
+      if (editingIndex !== null) {
+        // Update existing condition
+        updatedConditions = conditions.map((condition, i) =>
+          i === editingIndex ? newCondition : condition,
+        );
+      } else {
+        // Add new condition
+        // Check if a condition with the same field_address and operator already exists
+        const isDuplicate = conditions.some(
+          (condition) =>
+            condition.field_address === newCondition.field_address &&
+            condition.operator === newCondition.operator,
+        );
+
+        if (isDuplicate) {
+          message.warning(
+            `A condition for "${newCondition.field_address}" with operator "${newCondition.operator}" already exists.`,
+          );
+          return;
+        }
+
+        updatedConditions = [...conditions, newCondition];
+      }
+
+      // Update local state
+      setConditions(updatedConditions);
+
+      // Auto-save to backend
+      try {
+        const conditionGroup: ConditionGroup = {
+          logical_operator: GroupOperator.AND,
+          conditions: updatedConditions,
+        };
+
+        await updateConditions({
+          connectionKey,
+          conditions: [conditionGroup],
+        }).unwrap();
+
+        await refetch();
+        message.success(
+          editingIndex !== null
+            ? "Condition updated successfully!"
+            : "Condition added successfully!",
+        );
+      } catch (err) {
+        message.error("Failed to save condition. Please try again.");
+        // Revert local state on error
+        setConditions(conditions);
+      }
+    },
+    [editingIndex, conditions, connectionKey, updateConditions, refetch],
+  );
+
+  const handleDeleteCondition = useCallback(
+    (index: number, condition: ConditionLeaf) => {
+      setConditionToDelete({ index, condition });
+      onDeleteOpen();
+    },
+    [onDeleteOpen],
+  );
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (conditionToDelete) {
+      const updatedConditions = conditions.filter(
+        (_, i) => i !== conditionToDelete.index,
+      );
+
+      // Update local state
+      setConditions(updatedConditions);
+
+      // Auto-save to backend
+      try {
+        const conditionGroup: ConditionGroup = {
+          logical_operator: GroupOperator.AND,
+          conditions: updatedConditions,
+        };
+
+        await updateConditions({
+          connectionKey,
+          conditions: [conditionGroup],
+        }).unwrap();
+
+        await refetch();
+        message.success("Condition deleted successfully!");
+      } catch (err) {
+        message.error("Failed to delete condition. Please try again.");
+        // Revert local state on error
+        setConditions(conditions);
+      }
+
+      setConditionToDelete(null);
+    }
+    onDeleteClose();
+  }, [
+    conditionToDelete,
+    conditions,
+    connectionKey,
+    updateConditions,
+    refetch,
+    onDeleteClose,
+  ]);
 
   if (isLoading) {
     return (
       <Box className="py-4">
-        <Text type="secondary">Loading conditions...</Text>
+        <Text color="gray.500">Loading conditions...</Text>
       </Box>
     );
   }
@@ -146,7 +216,7 @@ const TaskCreationConditions = ({
   if (error) {
     return (
       <Box className="py-4">
-        <Text type="danger">
+        <Text color="red.500">
           Failed to load conditions. Please refresh the page and try again.
         </Text>
       </Box>
@@ -157,7 +227,7 @@ const TaskCreationConditions = ({
     <Box>
       <Flex direction="column" gap={4}>
         <Box>
-          <Text strong className="text-lg">
+          <Text fontWeight="bold" fontSize="lg">
             Task creation conditions
           </Text>
           <Paragraph className="mt-2 w-2/3 text-gray-600">
@@ -168,45 +238,46 @@ const TaskCreationConditions = ({
           </Paragraph>
         </Box>
 
+        <Flex justify="flex-end">
+          <Flex justify="flex-start" align="center" gap={2}>
+            <Button type="primary" onClick={handleOpenAddModal}>
+              Add condition
+            </Button>
+          </Flex>
+        </Flex>
+
         <ConditionsList
           conditions={conditions}
-          onEdit={handleEditCondition}
+          onEdit={handleOpenEditModal}
           onDelete={handleDeleteCondition}
         />
 
-        {isAddingCondition ? (
-          <AddConditionForm
-            onAdd={
-              editingIndex !== null ? handleUpdateCondition : handleAddCondition
-            }
-            onCancel={handleCancelAdd}
-            editingCondition={
-              editingIndex !== null ? conditions[editingIndex] : undefined
-            }
-          />
-        ) : (
-          <Flex justify="space-between" align="center" className="mt-2">
-            <Button
-              type="dashed"
-              onClick={() => setIsAddingCondition(true)}
-              className="min-w-32"
-              icon={<Icons.Add />}
-            >
-              Add Condition
-            </Button>
+        <AddEditConditionModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onConditionSaved={handleConditionSaved}
+          editingCondition={editingCondition}
+        />
 
-            {conditions.length > 0 && (
-              <Button
-                type="primary"
-                onClick={handleSaveConditions}
-                loading={isSaving}
-                className="min-w-32"
-              >
-                Save Conditions
-              </Button>
-            )}
-          </Flex>
-        )}
+        <ConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => {
+            setConditionToDelete(null);
+            onDeleteClose();
+          }}
+          onConfirm={handleConfirmDelete}
+          title="Delete condition"
+          message={
+            <Text color="gray.500">
+              Are you sure you want to delete the condition for &ldquo;
+              {conditionToDelete?.condition.field_address}&rdquo;? This action
+              cannot be undone.
+            </Text>
+          }
+          continueButtonText="Delete"
+          isCentered
+          icon={<WarningIcon />}
+        />
       </Flex>
     </Box>
   );
