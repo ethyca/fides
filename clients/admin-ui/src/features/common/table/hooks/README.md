@@ -1,17 +1,15 @@
 # Reusable Table Hooks with NuQS Integration
 
-This document describes the new table hook system that provides reusable state management, URL synchronization, and deep linking capabilities for tables in the Admin UI.
+This document describes the table hook system that provides reusable state management, URL synchronization, and deep linking capabilities for tables in the Admin UI.
 
 ## Architecture Overview
 
-The table hook system consists of three main hooks that work together:
+The table hook system consists of two main hooks that work together:
 
 ```
 useTableState (Core State + URL Sync)
     ↓
-useServerTable (Server Operations)
-    ↓
-useAntTable (Ant Design Integration)
+useAntTable (Ant Design Integration) + RTK Query
     ↓
 Table Component
 ```
@@ -50,37 +48,7 @@ const tableState = useTableState({
 });
 ```
 
-### 2. `useServerTable`
-
-**Purpose**: Server-side table operations and API integration.
-
-**Features**:
-- Integrates with `useTableState`
-- Provides query parameter construction
-- Handles loading states
-- Supports RTK Query integration
-
-**Usage**:
-```tsx
-// Option 1: With custom query function
-const serverTable = useServerTable({
-  queryKey: ['my-data', additionalParams],
-  queryFn: async (params) => {
-    const response = await api.getData(params);
-    return response.data;
-  },
-  additionalParams: { monitorId, systemId },
-});
-
-// Option 2: With RTK Query hook
-const serverTable = useServerTableWithRTK(
-  useGetMyDataQuery,
-  tableStateConfig,
-  queryOptions
-);
-```
-
-### 3. `useAntTable`
+### 2. `useAntTable`
 
 **Purpose**: Ant Design Table component integration.
 
@@ -99,12 +67,12 @@ const {
   hasSelectedRows,
   resetSelections,
   getBulkActionProps,
-} = useAntTable(serverTable, {
+} = useAntTable(tableState, {
   enableSelection: true,
   getRowKey: (record) => record.id,
   bulkActions: bulkActionsConfig,
-  dataSource: serverTable.data?.items,
-  totalRows: serverTable.totalRows,
+  dataSource: queryResult.data?.items,
+  totalRows: queryResult.data?.total,
 });
 
 return (
@@ -118,10 +86,10 @@ return (
 
 ## Complete Example
 
-Here's how to build a complete table with the new hook system:
+Here's how to build a complete table with the hook system:
 
 ```tsx
-import { useTableState, useServerTableWithRTK, useAntTable } from '~/features/common/table/hooks';
+import { useTableState, useAntTable } from '~/features/common/table/hooks';
 
 const MyTable = ({ additionalParams }) => {
   // 1. Set up table state with URL sync
@@ -131,12 +99,13 @@ const MyTable = ({ additionalParams }) => {
     sorting: { defaultSortField: 'name' },
   });
 
-  // 2. Connect to server data
-  const serverTable = useServerTableWithRTK(
-    useGetMyDataQuery,
-    {}, // table state config already set above
-    { skip: !additionalParams.id }
-  );
+  // 2. Connect to server data with RTK Query
+  const queryResult = useGetMyDataQuery({
+    ...tableState.queryParams,
+    ...additionalParams,
+  }, {
+    skip: !additionalParams.id
+  });
 
   // 3. Configure Ant Design integration
   const {
@@ -144,19 +113,20 @@ const MyTable = ({ additionalParams }) => {
     selectionProps,
     selectedRows,
     resetSelections,
-  } = useAntTable(serverTable, {
+  } = useAntTable(tableState, {
     enableSelection: true,
     getRowKey: (record) => record.id,
-    dataSource: serverTable.data?.items,
-    totalRows: serverTable.totalRows,
+    dataSource: queryResult.data?.items,
+    totalRows: queryResult.data?.total,
+    isLoading: queryResult.isLoading,
   });
 
   return (
     <div>
       {/* Search and filters */}
       <DebouncedSearchInput
-        value={serverTable.searchQuery || ""}
-        onChange={serverTable.updateSearch}
+        value={tableState.searchQuery || ""}
+        onChange={tableState.updateSearch}
         placeholder="Search..."
       />
 
@@ -186,10 +156,10 @@ This enables deep linking - users can bookmark or share URLs that restore the ex
 
 ## Migration Guide
 
-To migrate existing tables to the new hook system:
+To migrate existing tables to the hook system:
 
 1. **Replace manual state management** with `useTableState`
-2. **Replace API query logic** with `useServerTable` or `useServerTableWithRTK`
+2. **Integrate RTK Query directly** with table state query parameters
 3. **Replace Table props** with `useAntTable` output
 4. **Remove manual event handlers** (handled by hooks)
 5. **Update selection logic** to use hook-provided utilities
@@ -206,13 +176,16 @@ const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 // ... complex event handlers
 ```
 
-### After (With new hooks):
+### After (With hooks):
 ```tsx
 // Simple, declarative configuration
-const serverTable = useServerTableWithRTK(useGetDiscoveredAssetsQuery);
-const { tableProps, selectionProps, selectedRows } = useAntTable(serverTable, {
+const tableState = useTableState(/* config */);
+const queryResult = useGetDiscoveredAssetsQuery(tableState.queryParams);
+const { tableProps, selectionProps, selectedRows } = useAntTable(tableState, {
   enableSelection: true,
   getRowKey: (record) => record.urn,
+  dataSource: queryResult.data?.items,
+  isLoading: queryResult.isLoading,
 });
 ```
 
