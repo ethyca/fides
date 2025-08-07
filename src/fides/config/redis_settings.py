@@ -181,22 +181,22 @@ class RedisSettings(FidesSettings):
         description="A full connection URL to the read-only Redis cache. If not specified, this URL is automatically assembled from the read_only_host, read_only_port, read_only_password and read_only_db_index specified above.",
         exclude=True,
     )
-    connection_url_encoded: Optional[str] = Field(
+    connection_url_unencoded: Optional[str] = Field(
         default=None,
-        description="A full connection URL to the Redis cache with the password URL-encoded. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
+        description="A full connection URL to the Redis cache with the password unencoded. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
         exclude=True,
     )
-    read_only_connection_url_encoded: Optional[str] = Field(
+    read_only_connection_url_unencoded: Optional[str] = Field(
         default=None,
-        description="A full connection URL to the read-only Redis cache with the password URL-encoded. If not specified, this URL is automatically assembled from the read_only_host, read_only_port, read_only_password and read_only_db_index specified above.",
+        description="A full connection URL to the read-only Redis cache with the password unencoded. If not specified, this URL is automatically assembled from the read_only_host, read_only_port, read_only_password and read_only_db_index specified above.",
         exclude=True,
     )
 
     @field_validator(
         "connection_url",
         "read_only_connection_url",
-        "connection_url_encoded",
-        "read_only_connection_url_encoded",
+        "connection_url_unencoded",
+        "read_only_connection_url_unencoded",
         mode="before",
     )
     @classmethod
@@ -215,9 +215,9 @@ class RedisSettings(FidesSettings):
             "read_only_connection_url",
             "read_only_connection_url_encoded",
         )
-        is_encoded = info.field_name in (
-            "connection_url_encoded",
-            "read_only_connection_url_encoded",
+        is_unencoded = info.field_name in (
+            "connection_url_unencoded",
+            "read_only_connection_url_unencoded",
         )
 
         # Extract settings - fallbacks already resolved by field validators for read-only fields
@@ -268,7 +268,7 @@ class RedisSettings(FidesSettings):
         auth_prefix = ""
         if password or user:
             encoded_password = (
-                quote(password, safe="") if is_encoded else quote_plus(password)
+                quote(password, safe="") if is_unencoded else quote_plus(password)
             )
             auth_prefix = f"{quote_plus(user)}:{encoded_password}@"
 

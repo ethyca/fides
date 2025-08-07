@@ -71,7 +71,7 @@ def get_client_ip_from_header(request: Request) -> str:
 # Used for rate limiting with Slow API
 # Decorate individual routes to deviate from the default rate limits
 fides_limiter = Limiter(
-    storage_uri=CONFIG.redis.connection_url_encoded,
+    storage_uri=CONFIG.redis.connection_url_unencoded,
     default_limits=[CONFIG.security.request_rate_limit],
     headers_enabled=True,
     key_prefix=CONFIG.security.rate_limit_prefix,
