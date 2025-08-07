@@ -26,6 +26,32 @@ interface TaskCreationConditionsProps {
   connectionKey: string;
 }
 
+// Custom hook for shared save logic
+const useSaveConditions = (
+  connectionKey: string,
+  updateConditions: ReturnType<typeof useUpdateDependencyConditionsMutation>[0],
+  refetch: () => void,
+) => {
+  const saveConditions = useCallback(
+    async (updatedConditions: ConditionLeaf[]) => {
+      const conditionGroup: ConditionGroup = {
+        logical_operator: GroupOperator.AND,
+        conditions: updatedConditions,
+      };
+
+      await updateConditions({
+        connectionKey,
+        conditions: [conditionGroup],
+      }).unwrap();
+
+      await refetch();
+    },
+    [connectionKey, updateConditions, refetch],
+  );
+
+  return saveConditions;
+};
+
 const TaskCreationConditions = ({
   connectionKey,
 }: TaskCreationConditionsProps) => {
@@ -58,6 +84,11 @@ const TaskCreationConditions = ({
   );
 
   const [updateConditions] = useUpdateDependencyConditionsMutation();
+  const saveConditions = useSaveConditions(
+    connectionKey,
+    updateConditions,
+    refetch,
+  );
 
   // Extract conditions from dependency_conditions field in ManualTaskResponse
   useEffect(() => {
@@ -100,17 +131,18 @@ const TaskCreationConditions = ({
 
   const handleConditionSaved = useCallback(
     async (newCondition: ConditionLeaf) => {
+      const originalConditions = conditions; // Capture current state
       let updatedConditions: ConditionLeaf[] = [];
 
       if (editingIndex !== null) {
         // Update existing condition
-        updatedConditions = conditions.map((condition, i) =>
+        updatedConditions = originalConditions.map((condition, i) =>
           i === editingIndex ? newCondition : condition,
         );
       } else {
         // Add new condition
         // Check if a condition with the same field_address and operator already exists
-        const isDuplicate = conditions.some(
+        const isDuplicate = originalConditions.some(
           (condition) =>
             condition.field_address === newCondition.field_address &&
             condition.operator === newCondition.operator,
@@ -123,25 +155,15 @@ const TaskCreationConditions = ({
           return;
         }
 
-        updatedConditions = [...conditions, newCondition];
+        updatedConditions = [...originalConditions, newCondition];
       }
 
-      // Update local state
+      // Update local state optimistically
       setConditions(updatedConditions);
 
       // Auto-save to backend
       try {
-        const conditionGroup: ConditionGroup = {
-          logical_operator: GroupOperator.AND,
-          conditions: updatedConditions,
-        };
-
-        await updateConditions({
-          connectionKey,
-          conditions: [conditionGroup],
-        }).unwrap();
-
-        await refetch();
+        await saveConditions(updatedConditions);
         message.success(
           editingIndex !== null
             ? "Condition updated successfully!"
@@ -149,11 +171,11 @@ const TaskCreationConditions = ({
         );
       } catch (err) {
         message.error("Failed to save condition. Please try again.");
-        // Revert local state on error
-        setConditions(conditions);
+        // Revert to captured original state
+        setConditions(originalConditions);
       }
     },
-    [editingIndex, conditions, connectionKey, updateConditions, refetch],
+    [editingIndex, conditions, saveConditions],
   );
 
   const handleDeleteCondition = useCallback(
@@ -166,44 +188,28 @@ const TaskCreationConditions = ({
 
   const handleConfirmDelete = useCallback(async () => {
     if (conditionToDelete) {
-      const updatedConditions = conditions.filter(
+      const originalConditions = conditions; // Capture current state
+      const updatedConditions = originalConditions.filter(
         (_, i) => i !== conditionToDelete.index,
       );
 
-      // Update local state
+      // Update local state optimistically
       setConditions(updatedConditions);
 
       // Auto-save to backend
       try {
-        const conditionGroup: ConditionGroup = {
-          logical_operator: GroupOperator.AND,
-          conditions: updatedConditions,
-        };
-
-        await updateConditions({
-          connectionKey,
-          conditions: [conditionGroup],
-        }).unwrap();
-
-        await refetch();
+        await saveConditions(updatedConditions);
         message.success("Condition deleted successfully!");
       } catch (err) {
         message.error("Failed to delete condition. Please try again.");
-        // Revert local state on error
-        setConditions(conditions);
+        // Revert to captured original state
+        setConditions(originalConditions);
       }
 
       setConditionToDelete(null);
     }
     onDeleteClose();
-  }, [
-    conditionToDelete,
-    conditions,
-    connectionKey,
-    updateConditions,
-    refetch,
-    onDeleteClose,
-  ]);
+  }, [conditionToDelete, conditions, saveConditions, onDeleteClose]);
 
   if (isLoading) {
     return (

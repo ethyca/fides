@@ -9,6 +9,43 @@ import { useCallback } from "react";
 
 import { ConditionLeaf, Operator } from "~/types/api";
 
+interface FormValues {
+  fieldAddress: string;
+  operator: Operator;
+  value?: string;
+}
+
+// Utility function to parse condition value
+const parseConditionValue = (
+  operator: Operator,
+  rawValue?: string,
+): string | number | boolean | null => {
+  if (operator === Operator.EXISTS || operator === Operator.NOT_EXISTS) {
+    return null;
+  }
+
+  if (!rawValue?.trim()) {
+    return null;
+  }
+
+  // Try boolean first
+  if (rawValue.toLowerCase() === "true") {
+    return true;
+  }
+  if (rawValue.toLowerCase() === "false") {
+    return false;
+  }
+
+  // Try number
+  const numValue = Number(rawValue);
+  if (!Number.isNaN(numValue)) {
+    return numValue;
+  }
+
+  // Default to string
+  return rawValue;
+};
+
 interface AddConditionFormProps {
   onAdd: (condition: ConditionLeaf) => void;
   onCancel: () => void;
@@ -49,34 +86,11 @@ const AddConditionForm = ({
     : {};
 
   const handleSubmit = useCallback(
-    (values: any) => {
-      // Convert value to appropriate type
-      let conditionValue: string | number | boolean | null = values.value;
-
-      // For EXISTS and NOT_EXISTS operators, value should be null
-      if (
-        values.operator === Operator.EXISTS ||
-        values.operator === Operator.NOT_EXISTS
-      ) {
-        conditionValue = null;
-      } else if (values.value) {
-        // Try to parse as number if it looks like a number
-        const numValue = Number(values.value);
-        if (!Number.isNaN(numValue) && values.value.trim() !== "") {
-          conditionValue = numValue;
-        }
-        // Try to parse as boolean
-        else if (values.value.toLowerCase() === "true") {
-          conditionValue = true;
-        } else if (values.value.toLowerCase() === "false") {
-          conditionValue = false;
-        }
-      }
-
+    (values: FormValues) => {
       const condition: ConditionLeaf = {
         field_address: values.fieldAddress.trim(),
         operator: values.operator,
-        value: conditionValue,
+        value: parseConditionValue(values.operator, values.value),
       };
 
       onAdd(condition);
