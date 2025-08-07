@@ -2,9 +2,6 @@ import {
   AntButton as Button,
   AntMessage as message,
   AntTypography as Typography,
-  Box,
-  Flex,
-  Text,
   useDisclosure,
   WarningIcon,
 } from "fidesui";
@@ -213,80 +210,79 @@ const TaskCreationConditions = ({
 
   if (isLoading) {
     return (
-      <Box className="py-4">
-        <Text color="gray.500">Loading conditions...</Text>
-      </Box>
+      <div className="py-4">
+        <Typography.Text className="text-gray-500">
+          Loading conditions...
+        </Typography.Text>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Box className="py-4">
-        <Text color="red.500">
+      <div className="py-4">
+        <Typography.Text className="text-red-500">
           Failed to load conditions. Please refresh the page and try again.
-        </Text>
-      </Box>
+        </Typography.Text>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Flex direction="column" gap={4}>
-        <Box>
-          <Typography.Title level={5}>
-            Conditional task creation
-          </Typography.Title>
-          <Paragraph className="mt-2 w-2/3 text-gray-600">
-            Configure conditions that must be met before a task is created. If
-            no conditions are set, manual tasks will be created for every
-            incoming privacy request of the corresponding type (access or
-            erasure).
-          </Paragraph>
-          <Paragraph className="mt-2 text-gray-600" strong>
+    <div>
+      <div>
+        <Typography.Title level={5}>Conditional task creation</Typography.Title>
+        <Paragraph className="mt-2 w-2/3 text-gray-600">
+          Configure conditions that must be met before a task is created. If no
+          conditions are set, manual tasks will be created for every incoming
+          privacy request of the corresponding type (access or erasure).
+        </Paragraph>
+        <Paragraph className="mt-2 text-gray-600">
+          <Typography.Text strong>
             All conditions must be met for the task to be created.
-          </Paragraph>
-        </Box>
+          </Typography.Text>
+        </Paragraph>
+      </div>
 
-        <Flex justify="flex-end" align="center" gap={2}>
-          <Button type="primary" onClick={handleOpenAddModal}>
-            Add condition
-          </Button>
-        </Flex>
+      <div className="mb-4 flex items-center justify-end gap-2">
+        <Button type="primary" onClick={handleOpenAddModal}>
+          Add condition
+        </Button>
+      </div>
 
-        <ConditionsList
-          conditions={conditions}
-          onEdit={handleOpenEditModal}
-          onDelete={handleDeleteCondition}
-        />
+      <ConditionsList
+        conditions={conditions}
+        onEdit={handleOpenEditModal}
+        onDelete={handleDeleteCondition}
+      />
 
-        <AddEditConditionModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onConditionSaved={handleConditionSaved}
-          editingCondition={editingCondition}
-        />
+      <AddEditConditionModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConditionSaved={handleConditionSaved}
+        editingCondition={editingCondition}
+      />
 
-        <ConfirmationModal
-          isOpen={isDeleteOpen}
-          onClose={() => {
-            setConditionToDelete(null);
-            onDeleteClose();
-          }}
-          onConfirm={handleConfirmDelete}
-          title="Delete condition"
-          message={
-            <Text color="gray.500">
-              Are you sure you want to delete the condition for &ldquo;
-              {conditionToDelete?.condition.field_address}&rdquo;? This action
-              cannot be undone.
-            </Text>
-          }
-          continueButtonText="Delete"
-          isCentered
-          icon={<WarningIcon />}
-        />
-      </Flex>
-    </Box>
+      <ConfirmationModal
+        isOpen={isDeleteOpen}
+        onClose={() => {
+          setConditionToDelete(null);
+          onDeleteClose();
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete condition"
+        message={
+          <Typography.Text className="text-gray-500">
+            Are you sure you want to delete the condition for &ldquo;
+            {conditionToDelete?.condition.field_address}&rdquo;? This action
+            cannot be undone.
+          </Typography.Text>
+        }
+        continueButtonText="Delete"
+        isCentered
+        icon={<WarningIcon />}
+      />
+    </div>
   );
 };
 
