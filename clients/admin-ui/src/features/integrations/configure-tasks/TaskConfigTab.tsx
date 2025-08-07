@@ -4,9 +4,11 @@ import {
   AntDivider as Divider,
   AntMessage as message,
   AntSelect as Select,
+  AntTable as Table,
   AntTypography as Typography,
   Box,
   Flex,
+  Icons,
   Text,
   useDisclosure,
   WarningIcon,
@@ -44,6 +46,9 @@ interface TaskConfigTabProps {
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [userToAssign, setUserToAssign] = useState<string | undefined>(
+    undefined,
+  );
   const [isSavingUsers, setIsSavingUsers] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
@@ -89,11 +94,18 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
   const users = usersData?.items ?? [];
 
-  // Create options for the assigned to select (without create new user option)
-  const userOptions = users.map((user: any) => ({
-    label: `${user.first_name} ${user.last_name} (${user.email_address})`,
-    value: user.email_address,
-  }));
+  // Options for assignment: exclude users already assigned
+  const availableUserOptions = users
+    .filter((user: any) => {
+      const email = user.email_address;
+      return email && !selectedUsers.includes(email);
+    })
+    .map((user: any) => ({
+      label: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
+        ? `${user.first_name ?? ""} ${user.last_name ?? ""} (${user.email_address})`
+        : `${user.email_address}`,
+      value: user.email_address,
+    }));
 
   useEffect(() => {
     if (data) {
@@ -176,24 +188,52 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     onCreateUserClose();
   };
 
-  const handleUserAssignmentChange = useCallback((userIds: string[]) => {
-    setSelectedUsers(userIds);
-  }, []);
+  const handleAssignSingleUser = useCallback(
+    async (email?: string) => {
+      if (!email) {
+        message.warning("Please select a user to assign.");
+        return;
+      }
+      try {
+        setIsSavingUsers(true);
+        const updated = Array.from(new Set([...(selectedUsers ?? []), email]));
+        await assignUsersToManualTask({
+          connectionKey: integration.key,
+          userIds: updated,
+        }).unwrap();
+        setSelectedUsers(updated);
+        setUserToAssign(undefined);
+        message.success("User assigned successfully!");
+      } catch (error) {
+        message.error("Failed to assign user. Please try again.");
+      } finally {
+        setIsSavingUsers(false);
+      }
+    },
+    [assignUsersToManualTask, integration.key, selectedUsers],
+  );
 
-  const handleSaveUserAssignments = useCallback(async () => {
-    setIsSavingUsers(true);
-    try {
-      await assignUsersToManualTask({
-        connectionKey: integration.key,
-        userIds: selectedUsers,
-      }).unwrap();
-      message.success("User assignments saved successfully!");
-    } catch (error) {
-      message.error("Failed to assign users to task. Please try again.");
-    } finally {
-      setIsSavingUsers(false);
-    }
-  }, [assignUsersToManualTask, integration.key, selectedUsers]);
+  const handleRemoveAssignedUser = useCallback(
+    async (email: string) => {
+      try {
+        setIsSavingUsers(true);
+        const updated = (selectedUsers ?? []).filter((e) => e !== email);
+        await assignUsersToManualTask({
+          connectionKey: integration.key,
+          userIds: updated,
+        }).unwrap();
+        setSelectedUsers(updated);
+        message.success("User removed successfully!");
+      } catch (error) {
+        message.error("Failed to remove user. Please try again.");
+      } finally {
+        setIsSavingUsers(false);
+      }
+    },
+    [assignUsersToManualTask, integration.key, selectedUsers],
+  );
+
+  // Deprecated multi-assign flow replaced by single-assign UX
 
   // Use the custom hook for columns
   const { columns } = useTaskColumns({
@@ -240,18 +280,21 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         <Box>
           <Typography.Text strong>Assign tasks to users:</Typography.Text>
 
-          <div className="mt-4 flex items-center gap-2">
-            <div className="w-1/2">
+          {/* Top controls */}
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div>
+              <Button type="default" onClick={onCreateUserOpen}>
+                Manage secure access
+              </Button>
+            </div>
+            <div className="flex w-1/2 items-center justify-end gap-2">
               <Select
                 className="!mt-0"
-                placeholder="Select users to assign tasks to"
-                mode="multiple"
-                maxTagCount="responsive"
-                value={selectedUsers}
-                onChange={handleUserAssignmentChange}
-                options={userOptions}
-                style={{ width: "100%", marginTop: 8 }}
-                tokenSeparators={[","]}
+                placeholder="Select a user to assign"
+                value={userToAssign}
+                onChange={(val) => setUserToAssign(val)}
+                options={availableUserOptions}
+                style={{ width: "100%" }}
                 filterOption={(input, option) => {
                   return (
                     (typeof option?.label === "string" &&
@@ -262,24 +305,76 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
                   );
                 }}
               />
-            </div>
-
-            <Button
-              type="primary"
-              onClick={handleSaveUserAssignments}
-              loading={isSavingUsers}
-            >
-              Save
-            </Button>
-          </div>
-          <div className="mt-4">
-            <Typography.Text strong>Secure access:</Typography.Text>
-            <div className="mt-2">
-              <Button type="default" onClick={onCreateUserOpen}>
-                Manage secure access
+              <Button
+                type="primary"
+                onClick={() => handleAssignSingleUser(userToAssign)}
+                loading={isSavingUsers}
+              >
+                Assign
               </Button>
             </div>
           </div>
+
+          {/* Assigned users table */}
+          <div className="mt-4">
+            <Table
+              dataSource={(manualTaskConfig?.assigned_users || []).map(
+                (u, idx) => ({
+                  key: u.email_address ?? idx,
+                  name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
+                  email: u.email_address ?? "",
+                  role: "—",
+                  raw: u,
+                }),
+              )}
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: "Name",
+                  dataIndex: "name",
+                  key: "name",
+                },
+                {
+                  title: "Email",
+                  dataIndex: "email",
+                  key: "email",
+                },
+                {
+                  title: "Role",
+                  dataIndex: "role",
+                  key: "role",
+                  render: () => <span>—</span>,
+                },
+                {
+                  title: "Actions",
+                  key: "actions",
+                  width: 120,
+                  render: (_: any, record: any) => (
+                    <Flex gap={2}>
+                      <Button
+                        size="small"
+                        danger
+                        icon={<Icons.TrashCan />}
+                        onClick={() =>
+                          record.email && handleRemoveAssignedUser(record.email)
+                        }
+                      />
+                    </Flex>
+                  ),
+                },
+              ]}
+              locale={{
+                emptyText: (
+                  <div className="py-6 text-center">
+                    <Text color="gray.500">No users assigned.</Text>
+                  </div>
+                ),
+              }}
+              bordered
+            />
+          </div>
+
           {isManualTaskConditionsEnabled && (
             <div className="mt-4">
               <TaskCreationConditions connectionKey={integration.key} />
