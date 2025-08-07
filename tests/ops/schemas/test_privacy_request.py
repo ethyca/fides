@@ -52,3 +52,58 @@ class TestPrivacyRequestCreate:
                     "source": "Email",
                 }
             )
+
+    def test_valid_location_formats(self):
+        """Test that various valid ISO 3166 location formats are accepted"""
+        valid_locations = ["US", "US-CA", "GB", "CA-ON", "EEA", "us", "us-ca", "eea"]
+
+        for location in valid_locations:
+            PrivacyRequestCreate(
+                **{
+                    "identity": {"email": "user@example.com"},
+                    "policy_key": DEFAULT_ACCESS_POLICY,
+                    "location": location,
+                }
+            )
+
+    def test_invalid_location_formats(self):
+        """Test that invalid location formats raise ValidationError"""
+        invalid_locations = [
+            "USA",  # Too many characters for country code
+            "U",  # Too few characters for country code
+            "US-CALIFORNIA",  # Region code too long
+            "US-",  # Empty region code
+            "12",  # Numeric country code
+            "US CA",  # Space instead of hyphen
+            "US_CA",  # Underscore instead of hyphen
+            "",  # Empty string
+        ]
+
+        for location in invalid_locations:
+            with pytest.raises(ValidationError):
+                PrivacyRequestCreate(
+                    **{
+                        "identity": {"email": "user@example.com"},
+                        "policy_key": DEFAULT_ACCESS_POLICY,
+                        "location": location,
+                    }
+                )
+
+    def test_none_location(self):
+        """Test that None location is accepted (optional field)"""
+        PrivacyRequestCreate(
+            **{
+                "identity": {"email": "user@example.com"},
+                "policy_key": DEFAULT_ACCESS_POLICY,
+                "location": None,
+            }
+        )
+
+    def test_missing_location(self):
+        """Test that missing location field is accepted (optional field)"""
+        PrivacyRequestCreate(
+            **{
+                "identity": {"email": "user@example.com"},
+                "policy_key": DEFAULT_ACCESS_POLICY,
+            }
+        )
