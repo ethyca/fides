@@ -356,7 +356,6 @@ def initiate_interrupted_task_requeue_poll() -> None:
 
 def initiate_async_tasks_status_polling() -> None:
     """Initiates scheduler to check for and requeue pending polling async tasks"""
-    # TODO: maybe check that we are in dev mode when merged on main?
     if CONFIG.test_mode:
         return
 
