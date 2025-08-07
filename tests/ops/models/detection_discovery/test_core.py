@@ -1131,6 +1131,97 @@ class TestStagedResourceAncestorModel:
         assert links_second_call[0].ancestor_urn == staged_resource_1.urn
         assert links_second_call[0].descendant_urn == staged_resource_2.urn
 
+    def test_create_all_staged_resource_ancestor_links_with_batching(
+        self,
+        db: Session,
+    ):
+        """Test that batching works correctly with a small batch size."""
+        from unittest.mock import patch
+
+        # Create multiple staged resources for testing
+        resources = []
+        for i in range(6):  # Create 6 resources
+            resource = StagedResource.create(
+                db=db,
+                data={
+                    "urn": f"test_urn_batch_{i}",
+                    "name": f"Test Resource Batch {i}",
+                    "resource_type": "Table",
+                },
+            )
+            resources.append(resource)
+
+        # Create ancestor links that will generate 7 total links
+        # This will test multiple batches with our small batch size
+        ancestor_links = {
+            resources[1].urn: {resources[0].urn},
+            resources[2].urn: {resources[0].urn, resources[1].urn},
+            resources[3].urn: {resources[0].urn, resources[1].urn, resources[2].urn},
+            resources[4].urn: {resources[0].urn},
+        }
+
+        # Mock db.execute to count how many times it's called
+        with patch.object(db, "execute", wraps=db.execute) as mock_execute:
+            # Use batch_size=3 to force multiple batches
+            StagedResourceAncestor.create_all_staged_resource_ancestor_links(
+                db=db, ancestor_links=ancestor_links, batch_size=3
+            )
+
+            # With 7 links and batch_size=3, we should have 3 calls:
+            # Batch 1: 3 links, Batch 2: 3 links, Batch 3: 1 link
+            assert mock_execute.call_count == 3
+
+        # Verify all links were created correctly
+        all_links = db.query(StagedResourceAncestor).all()
+        assert len(all_links) == 7
+
+        # Verify specific relationships
+        # Resource 1 should have 1 ancestor (resource 0)
+        links_for_resource_1 = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=resources[1].urn)
+            .all()
+        )
+        assert len(links_for_resource_1) == 1
+        assert links_for_resource_1[0].ancestor_urn == resources[0].urn
+
+        # Resource 2 should have 2 ancestors (resources 0 and 1)
+        links_for_resource_2 = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=resources[2].urn)
+            .all()
+        )
+        assert len(links_for_resource_2) == 2
+        ancestor_urns_for_resource_2 = {
+            link.ancestor_urn for link in links_for_resource_2
+        }
+        assert ancestor_urns_for_resource_2 == {resources[0].urn, resources[1].urn}
+
+        # Resource 3 should have 3 ancestors (resources 0, 1, and 2)
+        links_for_resource_3 = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=resources[3].urn)
+            .all()
+        )
+        assert len(links_for_resource_3) == 3
+        ancestor_urns_for_resource_3 = {
+            link.ancestor_urn for link in links_for_resource_3
+        }
+        assert ancestor_urns_for_resource_3 == {
+            resources[0].urn,
+            resources[1].urn,
+            resources[2].urn,
+        }
+
+        # Resource 4 should have 1 ancestor (resource 0)
+        links_for_resource_4 = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=resources[4].urn)
+            .all()
+        )
+        assert len(links_for_resource_4) == 1
+        assert links_for_resource_4[0].ancestor_urn == resources[0].urn
+
     def test_cascade_delete_when_descendant_is_deleted(
         self,
         db: Session,
