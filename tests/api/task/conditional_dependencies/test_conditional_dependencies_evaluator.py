@@ -158,12 +158,20 @@ class TestOperatorEvaluation(TestConditionEvaluator):
     """Test individual operator evaluations"""
 
     @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
+        "data_value,operator,user_input_value,expected_result",
         [
-            param("some_value", Operator.exists, None, True, id="exists"),
-            param(None, Operator.exists, None, False, id="exists None"),
-            param(None, Operator.not_exists, None, True, id="not_exists None"),
-            param("some_value", Operator.not_exists, None, False, id="not_exists"),
+            param(
+                "some_value", Operator.exists, None, True, id="exists"
+            ),  # no value is passed for exists
+            param(
+                None, Operator.exists, None, False, id="exists None"
+            ),  # no value is passed for exists
+            param(
+                None, Operator.not_exists, None, True, id="not_exists None"
+            ),  # no value is passed for not_exists
+            param(
+                "some_value", Operator.not_exists, None, False, id="not_exists"
+            ),  # no value is passed for not_exists
             param("test", Operator.eq, "test", True, id="eq"),
             param("test", Operator.eq, "different", False, id="eq different"),
             param("test", Operator.neq, "different", True, id="neq"),
@@ -171,14 +179,14 @@ class TestOperatorEvaluation(TestConditionEvaluator):
         ],
     )
     def test_basic_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
+        self, evaluator, data_value, operator, user_input_value, expected_result
     ):
         """Test basic operators (exists, not_exists, eq, neq)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
+        result = evaluator._apply_operator(data_value, operator, user_input_value)
         assert result is expected_result
 
     @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
+        "data_value,operator,user_input_value,expected_result",
         [
             param(5, Operator.lt, 10, True, id="5_lt_10_success"),
             param(15, Operator.lt, 10, False, id="15_lt_10_failure"),
@@ -194,10 +202,10 @@ class TestOperatorEvaluation(TestConditionEvaluator):
         ],
     )
     def test_comparison_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
+        self, evaluator, data_value, operator, user_input_value, expected_result
     ):
         """Test comparison operators (lt, lte, gt, gte)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
+        result = evaluator._apply_operator(data_value, operator, user_input_value)
         assert result is expected_result
 
     def test_unknown_operator(self, evaluator):
@@ -236,7 +244,7 @@ class TestOperatorEvaluation(TestConditionEvaluator):
         assert evaluator._apply_operator(True, Operator.neq, False) is True
 
     @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
+        "data_value,operator,user_input_value,expected_result",
         [
             param(
                 ["apple", "banana", "cherry"],
@@ -278,36 +286,44 @@ class TestOperatorEvaluation(TestConditionEvaluator):
             ),
             param(None, Operator.list_contains, "test", False, id="list_contains_None"),
             param(
-                "orange",
-                Operator.not_in_list,
                 ["apple", "banana", "cherry"],
+                Operator.not_in_list,
+                "orange",
                 True,
                 id="not_in_list_orange",
             ),
             param(
-                "apple",
-                Operator.not_in_list,
                 ["apple", "banana", "cherry"],
+                Operator.not_in_list,
+                "apple",
                 False,
                 id="not_in_list_apple",
             ),
             param(
-                "anything", Operator.not_in_list, [], True, id="not_in_list_anything"
+                [],
+                Operator.not_in_list,
+                "anything",
+                True,
+                id="not_in_list_anything",
             ),
             param(
-                "test", Operator.not_in_list, "not_a_list", True, id="not_in_list_test"
+                "not_a_list",
+                Operator.not_in_list,
+                "test",
+                False,
+                id="not_in_list_test_no_list",
             ),
         ],
     )
     def test_list_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
+        self, evaluator, data_value, operator, user_input_value, expected_result
     ):
         """Test list operators (list_contains, not_in_list)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
+        result = evaluator._apply_operator(data_value, operator, user_input_value)
         assert result == expected_result
 
     @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
+        "data_value,operator,user_input_value,expected_result",
         [
             param(
                 "hello world",
@@ -396,10 +412,10 @@ class TestOperatorEvaluation(TestConditionEvaluator):
         ],
     )
     def test_string_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
+        self, evaluator, data_value, operator, user_input_value, expected_result
     ):
         """Test string operators (starts_with, ends_with, contains)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
+        result = evaluator._apply_operator(data_value, operator, user_input_value)
         assert result == expected_result
 
 
@@ -804,7 +820,7 @@ class TestEdgeCases(TestConditionEvaluator):
         assert result is True
 
     @pytest.mark.parametrize(
-        "field_value,expected_value,description",
+        "field_value,user_input_value,description",
         [
             ("", "", "empty string"),
             (0, 0, "zero value"),
@@ -812,12 +828,12 @@ class TestEdgeCases(TestConditionEvaluator):
         ],
     )
     def test_edge_case_comparisons(
-        self, evaluator, field_value, expected_value, description
+        self, evaluator, field_value, user_input_value, description
     ):
         """Test edge case comparisons (empty string, zero, false)"""
         data = {"field_address": field_value}
         condition = ConditionLeaf(
-            field_address="field_address", operator=Operator.eq, value=expected_value
+            field_address="field_address", operator=Operator.eq, value=user_input_value
         )
 
         result = evaluator.evaluate_rule(condition, data)
