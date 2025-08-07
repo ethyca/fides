@@ -62,7 +62,7 @@ def test_validate_snowflake_missing_namespace_and_secrets():
         "or the connection must have values for the following fields:"
     ) in str(exc.value)
     assert "Schema" in str(exc.value)
-    assert "Database Name" in str(exc.value)
+    assert "Database" in str(exc.value)
 
 
 def test_validate_snowflake_with_valid_namespace():
