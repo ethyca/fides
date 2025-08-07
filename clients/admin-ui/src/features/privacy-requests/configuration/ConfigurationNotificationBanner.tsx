@@ -1,13 +1,13 @@
 import { AntButton as Button, Box, Stack, Text } from "fidesui";
 import { useRouter } from "next/router";
 
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/routes";
+import { MESSAGING_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 
 const ConfigurationNotificationBanner = () => {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(PRIVACY_REQUESTS_CONFIGURATION_ROUTE);
+    router.push(MESSAGING_PROVIDERS_ROUTE);
   };
 
   return (

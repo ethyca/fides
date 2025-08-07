@@ -92,6 +92,7 @@ export function isErrorWithDetail(error: unknown): error is ResponseError {
     typeof error === "object" &&
     error != null &&
     "data" in error &&
+    (error as any).data != null &&
     typeof (error as any).data.detail === "string"
   );
 }
@@ -103,6 +104,7 @@ export function isErrorWithDetailArray(
     typeof error === "object" &&
     error != null &&
     "data" in error &&
+    (error as any).data != null &&
     Array.isArray((error as any).data.detail)
   );
 }

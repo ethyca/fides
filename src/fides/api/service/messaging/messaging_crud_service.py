@@ -25,7 +25,7 @@ from fides.api.schemas.messaging.messaging import (
 
 def update_messaging_config(
     db: Session, key: FidesKey, config: MessagingConfigRequest
-) -> MessagingConfigResponse:
+) -> MessagingConfig:
     existing_config_with_key: Optional[MessagingConfig] = MessagingConfig.get_by(
         db=db, field="key", value=key
     )
@@ -38,7 +38,7 @@ def update_messaging_config(
 
 def create_or_update_messaging_config(
     db: Session, config: MessagingConfigRequest
-) -> MessagingConfigResponse:
+) -> MessagingConfig:
     data = {
         "key": config.key,
         "name": config.name,
@@ -46,15 +46,9 @@ def create_or_update_messaging_config(
     }
     if config.details:
         data["details"] = config.details.__dict__  # type: ignore
-    messaging_config: MessagingConfig = MessagingConfig.create_or_update(
+    return MessagingConfig.create_or_update(
         db=db,
         data=data,
-    )
-    return MessagingConfigResponse(
-        name=messaging_config.name,
-        key=messaging_config.key,
-        service_type=messaging_config.service_type.value,  # type: ignore
-        details=messaging_config.details,
     )
 
 
