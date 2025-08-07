@@ -46,6 +46,9 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+from fides.api.task.manual.manual_task_utils import (
+    get_manual_task_for_connection_config,
+)
 from fides.api.task.task_resources import TaskResources
 
 # =============================================================================
@@ -381,10 +384,6 @@ def _build_request_task(
     collection_address = f"{connection_config.key}:manual_data"
 
     # Get the manual task for this connection config to determine input keys and edges
-    from fides.api.task.manual.manual_task_utils import (
-        _get_collection_for_field_address,
-        get_manual_task_for_connection_config,
-    )
 
     manual_task = get_manual_task_for_connection_config(db, connection_config.key)
 
@@ -412,40 +411,11 @@ def _build_request_task(
 
             # Use the existing field address parsing utilities to create mappings
             for field_address in field_addresses:
-                # Use the existing field address parsing utilities to determine collection
-                collection_address = _get_collection_for_field_address(
-                    field_address, dataset_graph
+                source_field_address = field_address
+                target_field_address = (
+                    f"{connection_config.key}:manual_data:{field_address}"
                 )
-
-                if collection_address:
-                    # Add the collection as an input key
-                    input_keys.append(str(collection_address))
-
-                    # Create incoming edge from source field to manual data field
-                    # Extract the field path from the field address
-                    if ":" in field_address:
-                        # Full format: "dataset:collection:field"
-                        from fides.api.graph.config import FieldAddress
-
-                        field_addr = FieldAddress.from_string(field_address)
-                        source_field_address = field_address
-                        target_field_address = f"{connection_config.key}:manual_data:{field_addr.field_path.string_path}"
-                    else:
-                        # Simplified format: "collection.field"
-                        parts = field_address.split(".", 1)
-                        if len(parts) == 2:
-                            collection_name, field_path = parts
-                            source_field_address = (
-                                f"postgres_example:{collection_name}:{field_path}"
-                            )
-                            target_field_address = (
-                                f"{connection_config.key}:manual_data:{field_path}"
-                            )
-                        else:
-                            # Skip invalid field addresses
-                            continue
-
-                    incoming_edges.append([source_field_address, target_field_address])
+                incoming_edges.append([source_field_address, target_field_address])
 
             # Remove duplicates and sort for consistency
             input_keys = sorted(list(set(input_keys)))
@@ -1014,7 +984,7 @@ def create_condition_gt_18(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "customer.profile.age",
+            "field_address": "postgres_example:customer:profile.age",
             "operator": "gte",
             "value": 18,
             "sort_order": sort_order,
@@ -1031,7 +1001,7 @@ def create_condition_age_lt_65(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "customer.profile.age",
+            "field_address": "postgres_example:customer:profile.age",
             "operator": "lt",
             "value": 65,
             "sort_order": sort_order,
@@ -1048,7 +1018,7 @@ def create_condition_eq_active(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "payment_card.subscription.status",
+            "field_address": "postgres_example:payment_card:subscription.status",
             "operator": "eq",
             "value": "active",
             "sort_order": sort_order,
@@ -1064,7 +1034,7 @@ def create_condition_eq_admin(
         data={
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
-            "field_address": "customer.role",
+            "field_address": "postgres_example:customer:role",
             "operator": "eq",
             "value": "admin",
             "sort_order": sort_order,

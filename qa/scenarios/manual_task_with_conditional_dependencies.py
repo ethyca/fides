@@ -9,6 +9,7 @@ print(f"🔧 DSR 3.0 enabled at startup: {CONFIG.execution.use_dsr_3_0}")
 
 import sys
 import argparse
+import yaml
 from datetime import datetime
 from pathlib import Path
 from sqlalchemy.orm import Session, sessionmaker
@@ -51,6 +52,7 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.datasetconfig import DatasetConfig
+from fideslang.models import Dataset as FideslangDataset
 from fides.api.task.manual.manual_task_utils import get_manual_task_addresses, get_connection_configs_with_manual_tasks
 
 # Set up the manual test with python qa/scenarios/manual_task_with_conditional_dependencies.py
@@ -118,23 +120,23 @@ DEPENDENCIES_DATA = [
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:name",
         "operator": "exists",
         "value": None,  # exists operator doesn't need a value
-        "sort_order": 0
+        "sort_order": 1
     },
     # Customer email contains specific value condition (leaf) - references postgres dataset field
     {
         "parent_id": None,  # Will be updated after root group is created
         "condition_type": ManualTaskConditionalDependencyType.leaf,
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
-        "operator": "list_contains",
+        "operator": "starts_with",
         "value": "customer-1",
-        "sort_order": 1
+        "sort_order": 2
     },
     # Nested group condition (OR)
     {
         "parent_id": None,  # Will be updated after root group is created
         "condition_type": ManualTaskConditionalDependencyType.group,
         "logical_operator": "or",
-        "sort_order": 2
+        "sort_order": 3
     },
     # Customer ID condition (leaf) - references postgres dataset field
     {
@@ -143,16 +145,16 @@ DEPENDENCIES_DATA = [
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
         "operator": ">",
         "value": 0,
-        "sort_order": 0
+        "sort_order": 4
     },
-    # Customer email not empty condition (leaf) - references postgres dataset field
+    # Customer address city starts with Example condition (leaf) - references postgres dataset field
     {
         "parent_id": None,  # Will be updated after nested group is created
         "condition_type": ManualTaskConditionalDependencyType.leaf,
-        "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
-        "operator": "!=",
-        "value": "",
-        "sort_order": 1
+        "field_address": f"{POSTGRES_DATASET_KEY}:address:city",
+        "operator": "starts_with",
+        "value": "Example",
+        "sort_order": 5
     }
 ]
 
@@ -236,50 +238,56 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
                 self.error(f"Failed to create/verify postgres connection {self.postgres_connection_key}")
                 return False
 
-            # Step 2: Create or verify ManualTask connection exists
-            self.step(2, "Creating/verifying ManualTask connection")
+            # Step 2: Create or verify dataset config exists
+            self.step(2, "Creating/verifying dataset config")
+            if not self._create_or_verify_dataset_config():
+                self.error(f"Failed to create/verify dataset config {POSTGRES_DATASET_KEY}")
+                return False
+
+            # Step 3: Create or verify ManualTask connection exists
+            self.step(3, "Creating/verifying ManualTask connection")
             if not self._create_or_verify_manual_task_connection():
                 self.error(f"Failed to create/verify connection {self.connection_key}")
                 return False
 
-            # Step 3: Create ManualTask
-            self.step(3, "Creating ManualTask")
+            # Step 4: Create ManualTask
+            self.step(4, "Creating ManualTask")
             if not self._create_manual_task():
                 self.error("Failed to create ManualTask")
                 return False
 
-            # Step 4: Create ManualTaskConfig
-            self.step(4, "Creating ManualTaskConfig")
+            # Step 5: Create ManualTaskConfig
+            self.step(5, "Creating ManualTaskConfig")
             if not self._create_manual_task_config():
                 self.error("Failed to create ManualTaskConfig")
                 return False
 
-            # Step 5: Create ManualTaskConfigFields
-            self.step(5, "Creating ManualTaskConfigFields")
+            # Step 6: Create ManualTaskConfigFields
+            self.step(6, "Creating ManualTaskConfigFields")
             if not self._create_manual_task_config_fields():
                 self.error("Failed to create ManualTaskConfigFields")
                 return False
 
-            # Step 6: Create ManualTaskConditionalDependencies
-            self.step(6, "Creating ManualTaskConditionalDependencies")
+            # Step 7: Create ManualTaskConditionalDependencies
+            self.step(7, "Creating ManualTaskConditionalDependencies")
             if not self._create_conditional_dependencies():
                 self.error("Failed to create ManualTaskConditionalDependencies")
                 return False
 
-            # Step 7: Create Policy
-            self.step(7, "Creating Policy")
+            # Step 8: Create Policy
+            self.step(8, "Creating Policy")
             if not self._create_policy():
                 self.error("Failed to create Policy")
                 return False
 
-            # Step 8: Create Privacy Request
-            self.step(8, "Creating Privacy Request")
+            # Step 9: Create Privacy Request
+            self.step(9, "Creating Privacy Request")
             if not self._create_privacy_request():
                 self.error("Failed to create Privacy Request")
                 return False
 
-            # Step 9: Debug - Check manual task integration
-            self.step(9, "Debug - Checking manual task integration")
+            # Step 10: Debug - Check manual task integration
+            self.step(10, "Debug - Checking manual task integration")
             self._debug_manual_task_integration()
 
             self.final_success("Setup completed successfully!")
@@ -290,11 +298,11 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             return False
 
     def teardown(self) -> bool:
-        """Clean up all resources created by this scenario."""
+        """Clean up resources created by this scenario."""
         self.cleanup_phase()
 
         print(f"Cleaning up ManualTask test resources...")
-        deleted_counts = {'manual_tasks': 0, 'conditional_dependencies': 0, 'connections': 0, 'storage_configs': 0, 'policies': 0, 'rules': 0}
+        deleted_counts = {'manual_tasks': 0, 'conditional_dependencies': 0, 'manual_task_connections': 0, 'storage_configs': 0, 'policies': 0, 'rules': 0, 'privacy_requests': 0}
 
         try:
             # Step 1: Delete ManualTask (this will cascade delete related records)
@@ -312,45 +320,43 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
                     deleted_counts["conditional_dependencies"] += 1
                     self.success(f"Deleted conditional dependency: {dep.id}")
 
-            # Step 3: Delete manual task connection config via API
+            # Step 3: Delete manual task connection config (only the manual task connection, not postgres)
             self.step(3, "Deleting manual task connection config")
             if self.connection_key and self._delete_connection_config(self.connection_key):
-                deleted_counts["connections"] += 1
+                deleted_counts["manual_task_connections"] += 1
                 self.success(f"Deleted manual task connection config: {self.connection_key}")
             else:
                 self.already_cleaned("ConnectionConfig", self.connection_key)
 
-            # Step 4: Delete postgres connection config via API
-            self.step(4, "Deleting postgres connection config")
-            if self.postgres_connection_key and self._delete_connection_config(self.postgres_connection_key):
-                deleted_counts["connections"] += 1
-                self.success(f"Deleted postgres connection config: {self.postgres_connection_key}")
-            else:
-                self.already_cleaned("ConnectionConfig", self.postgres_connection_key)
-
-            # Step 5: Delete storage config
-            self.step(5, "Deleting storage config")
+            # Step 4: Delete storage config (created for testing)
+            self.step(4, "Deleting storage config")
             if self._delete_storage_config():
                 deleted_counts["storage_configs"] += 1
                 self.success("Deleted storage config")
             else:
                 self.already_cleaned("StorageConfig", "storage config")
 
-            # Step 6: Delete rule
-            self.step(6, "Deleting rule")
+            # Step 5: Delete rule (created for testing)
+            self.step(5, "Deleting rule")
             if self._delete_rule():
                 deleted_counts["rules"] += 1
                 self.success("Deleted rule")
             else:
                 self.already_cleaned("Rule", "rule")
 
-            # Step 7: Delete policy
-            self.step(7, "Deleting policy")
+            # Step 6: Delete policy (created for testing)
+            self.step(6, "Deleting policy")
             if self._delete_policy():
                 deleted_counts["policies"] += 1
                 self.success("Deleted policy")
             else:
                 self.already_cleaned("Policy", "policy")
+
+            # Note: We intentionally do NOT delete:
+            # - postgres_example_connection (shared resource)
+            # - postgres_example_test_dataset config (shared resource)
+            # - CTL dataset (shared resource)
+            # These are used by other tests and should persist
 
             self.summary("Cleanup Summary", deleted_counts)
             self.final_success("Cleanup completed successfully!")
@@ -399,30 +405,73 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             connection = ConnectionConfig.create(db=db, data=connection_data)
             self.postgres_connection_config_id = connection.id
 
-            # Get the CTL dataset
-            ctl_dataset = db.query(CtlDataset).filter_by(
-                fides_key=POSTGRES_DATASET_KEY
-            ).first()
-
-            if not ctl_dataset:
-                self.error("CTL dataset not found")
-                return False
-
-            # Create dataset config linked to both
-            DatasetConfig.create(
-                db=db,
-                data={
-                    "fides_key": POSTGRES_DATASET_KEY,
-                    "connection_config_id": connection.id,
-                    "ctl_dataset_id": ctl_dataset.id,
-                },
-            )
-
             self.success(f"Created postgres connection config: {self.postgres_connection_key}")
             return True
 
         except Exception as e:
             self.error(f"Error creating/verifying postgres connection: {e}")
+            return False
+
+    def _create_or_verify_dataset_config(self) -> bool:
+        """Create or verify that the dataset configuration exists for the postgres connection."""
+        try:
+            db = self._get_db_session()
+
+            # First check if dataset config already exists
+            existing_config = db.query(DatasetConfig).filter_by(
+                connection_config_id=self.postgres_connection_config_id,
+                fides_key=POSTGRES_DATASET_KEY
+            ).first()
+
+            if existing_config:
+                self.success(f"Found existing dataset config: {POSTGRES_DATASET_KEY}")
+                return True
+
+            # Dataset config doesn't exist, create it
+            self.info(f"Dataset config {POSTGRES_DATASET_KEY} not found, creating it...")
+
+            # Load the dataset from the YAML file
+            import os
+
+            dataset_yaml_path = "data/dataset/postgres_example_test_dataset.yml"
+            if not os.path.exists(dataset_yaml_path):
+                self.error(f"Dataset YAML file not found: {dataset_yaml_path}")
+                return False
+
+            with open(dataset_yaml_path, "r") as file:
+                dataset_data = yaml.safe_load(file).get("dataset", [])[0]
+
+                        # Check if CTL dataset already exists
+            from fides.api.models.sql_models import Dataset as CtlDataset
+            existing_ctl_dataset = db.query(CtlDataset).filter_by(fides_key=POSTGRES_DATASET_KEY).first()
+
+            if existing_ctl_dataset:
+                self.info(f"Found existing CTL dataset: {POSTGRES_DATASET_KEY}")
+                # Update the existing CTL dataset with the complete dataset data
+                self.info(f"Updating existing CTL dataset with complete field definitions")
+                # Use the update method to update the existing CTL dataset
+                validated_dataset = FideslangDataset(**dataset_data)
+                data_dict = validated_dataset.model_dump(mode="json")
+                existing_ctl_dataset.update(db, data=data_dict)
+                ctl_dataset = existing_ctl_dataset
+            else:
+                # Create CTL dataset if it doesn't exist
+                self.info(f"Creating new CTL dataset: {POSTGRES_DATASET_KEY}")
+                ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_data)
+
+            # Create dataset config
+            dataset_config_data = {
+                "connection_config_id": self.postgres_connection_config_id,
+                "fides_key": POSTGRES_DATASET_KEY,
+                "ctl_dataset_id": ctl_dataset.id,
+            }
+
+            dataset_config = DatasetConfig.create(db=db, data=dataset_config_data)
+            self.success(f"Created dataset config: {POSTGRES_DATASET_KEY}")
+            return True
+
+        except Exception as e:
+            self.error(f"Error creating/verifying dataset config: {e}")
             return False
 
     def _create_or_verify_manual_task_connection(self) -> bool:
@@ -611,6 +660,43 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
 
         except Exception as e:
             self.error(f"Error deleting connection config: {e}")
+            return False
+
+    def _delete_dataset_config(self) -> bool:
+        """Delete the dataset config and associated CTL dataset."""
+        try:
+            if not self.postgres_connection_config_id:
+                return False
+
+            db = self._get_db_session()
+
+            # Delete dataset config
+            dataset_config = db.query(DatasetConfig).filter_by(
+                connection_config_id=self.postgres_connection_config_id,
+                fides_key=POSTGRES_DATASET_KEY
+            ).first()
+
+            if dataset_config:
+                db.delete(dataset_config)
+                self.success(f"Deleted dataset config: {POSTGRES_DATASET_KEY}")
+            else:
+                self.warning(f"Dataset config {POSTGRES_DATASET_KEY} was already deleted")
+
+            # Delete associated CTL dataset
+            from fides.api.models.sql_models import Dataset as CtlDataset
+            ctl_dataset = db.query(CtlDataset).filter_by(fides_key=POSTGRES_DATASET_KEY).first()
+
+            if ctl_dataset:
+                db.delete(ctl_dataset)
+                self.success(f"Deleted CTL dataset: {POSTGRES_DATASET_KEY}")
+            else:
+                self.warning(f"CTL dataset {POSTGRES_DATASET_KEY} was already deleted")
+
+            db.commit()
+            return True
+
+        except Exception as e:
+            self.error(f"Error deleting dataset config: {e}")
             return False
 
     def _delete_storage_config(self) -> bool:

@@ -37,7 +37,7 @@ from fides.api.task.manual.manual_task_utils import (
 
 def create_combined_graph(db, mock_dataset_graph):
     """Helper method to create a combined graph from mock dataset and manual task graphs"""
-    manual_task_graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+    manual_task_graphs = create_manual_task_artificial_graphs(db)
     # Extract the datasets from mock_dataset_graph and combine with manual task graphs
     # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
     regular_datasets = []
@@ -899,9 +899,7 @@ class TestManualTaskTraversalIntegration:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create artificial graphs
-        manual_task_graphs = create_manual_task_artificial_graphs(
-            db, mock_dataset_graph
-        )
+        manual_task_graphs = create_manual_task_artificial_graphs(db)
         # Extract GraphDataset objects from mock_dataset_graph
         # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []

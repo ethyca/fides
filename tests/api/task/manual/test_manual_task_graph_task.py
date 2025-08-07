@@ -1,14 +1,12 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
-from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
 )
-from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 
 
 class TestManualTaskDataAggregation:

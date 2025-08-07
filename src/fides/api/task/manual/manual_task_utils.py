@@ -1,12 +1,12 @@
 from typing import Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
     Collection,
     CollectionAddress,
     FieldAddress,
-    FieldPath,
     GraphDataset,
     ScalarField,
 )
@@ -106,22 +106,21 @@ def create_data_category_scalar_fields(manual_task: ManualTask) -> list[ScalarFi
 def create_conditional_dependency_scalar_fields(
     field_addresses: set[str],
 ) -> list[ScalarField]:
-    fields = []
+    fields: list[ScalarField] = []
     for field_address in field_addresses:
         # Use the full field address as the field name to preserve collection context
         # This allows the manual task to receive data from specific collections
         # e.g., "user.name" or "customer.profile.email" instead of just "name" or "email"
-        if isinstance(field_address, str):
-            field_address = FieldAddress.from_string(field_address)
-
-        if not isinstance(field_address, FieldAddress):
-            raise ValueError(f"Invalid field address: {field_address}")
+        logger.info(
+            f"Creating conditional dependency scalar field for field address: {field_address}"
+        )
+        field_address_obj = FieldAddress.from_string(field_address)
 
         scalar_field = ScalarField(
-            name=field_address.value,
+            name=field_address_obj.value,
             # Conditional dependency fields don't have predefined data categories
             data_categories=[],
-            references=[(field_address, "from")],
+            references=[(field_address_obj, "from")],
         )
         fields.append(scalar_field)
 
@@ -145,7 +144,7 @@ def create_collection_for_connection_key(
         and dependency.field_address is not None
     }
 
-        # Create scalar fields for data category fields and conditional dependency field addresses
+    # Create scalar fields for data category fields and conditional dependency field addresses
     fields: list[ScalarField] = []
     fields.extend(create_data_category_scalar_fields(manual_task))
     fields.extend(
@@ -156,11 +155,7 @@ def create_collection_for_connection_key(
     if not fields:
         return None
 
-    return Collection(
-        name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
-        fields=fields,
-        # Manual task has dependencies on regular tasks that provide conditional dependency fields
-    )
+    return Collection(name=ManualTaskAddress.MANUAL_DATA_COLLECTION, fields=fields)
 
 
 def create_manual_task_artificial_graphs(db: Session) -> list:

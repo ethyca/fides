@@ -5,7 +5,7 @@ from pytest import param
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.config import CollectionAddress, ScalarField
+from fides.api.graph.config import CollectionAddress, FieldAddress, ScalarField
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -18,10 +18,6 @@ from fides.api.models.manual_task.conditional_dependency import (
 )
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
-    _find_collections_for_conditional_dependencies,
-    _get_collection_for_field_address,
-    _parse_full_address_format,
-    _parse_simplified_address_format,
     create_collection_for_connection_key,
     create_conditional_dependency_scalar_fields,
     create_data_category_scalar_fields,
@@ -153,9 +149,9 @@ class TestManualTaskUtilsHelperFunctions:
     def test_create_conditional_dependency_scalar_fields(self):
         """Test creating scalar fields from conditional dependency field addresses"""
         field_addresses = {
-            "user.profile.age",
-            "billing.subscription.status",
-            "customer.email",
+            "postgres_example:customer:profile.age",
+            "postgres_example:payment_card:subscription.status",
+            "postgres_example:customer:email",
         }
 
         # Create scalar fields
@@ -184,376 +180,16 @@ class TestManualTaskUtilsHelperFunctions:
 class TestManualTaskUtilsAddressParsing:
     """Test address parsing helper functions"""
 
-    @pytest.mark.parametrize(
-        "field_address, expected_dataset, expected_collection",
-        [
-            param("customer.name", "postgres_example", "customer", id="simple_field"),
-            param(
-                "customer.profile.age",
-                "postgres_example",
-                "customer",
-                id="nested_field_1",
-            ),
-            param(
-                "payment_card.card_number",
-                "postgres_example",
-                "payment_card",
-                id="nested_field_2",
-            ),
-            param(
-                "payment_card.subscription.status",
-                "postgres_example",
-                "payment_card",
-                id="nested_field_3",
-            ),
-            param("user.username", "postgres_example", "user", id="simple_field"),
-            param(
-                "user.billing.subscription.status",
-                "postgres_example",
-                "user",
-                id="nested_field_4",
-            ),
-        ],
-    )
-    def test_parse_simplified_address_format(
-        self, mock_dataset_graph, field_address, expected_dataset, expected_collection
-    ):
-        """Test parsing simplified address format (collection.field)"""
-
-        # Test simple fields
-        result = _parse_simplified_address_format(field_address, mock_dataset_graph)
-        assert result is not None
-        assert result.dataset == expected_dataset
-        assert result.collection == expected_collection
-
-    @pytest.mark.parametrize(
-        "field_address",
-        [
-            param("invalid", id="invalid_format"),
-            param("nonexistent.field", id="nonexistent_collection"),
-            param("customer.nonexistent", id="nonexistent_field"),
-            param("payment_card.nonexistent", id="nonexistent_field_in_payment_card"),
-        ],
-    )
-    def test_parse_simplified_address_format_invalid(
-        self, mock_dataset_graph, field_address
-    ):
-        """Test parsing invalid simplified address format"""
-        # Test invalid format (no dot)
-        result = _parse_simplified_address_format(field_address, mock_dataset_graph)
-        assert result is None
-
-    @pytest.mark.parametrize(
-        "field_address, expected_dataset, expected_collection",
-        [
-            param(
-                "postgres_example:customer:name",
-                "postgres_example",
-                "customer",
-                id="simple_field",
-            ),
-            param(
-                "postgres_example:customer:profile.age",
-                "postgres_example",
-                "customer",
-                id="nested_field_1",
-            ),
-            param(
-                "postgres_example:payment_card:subscription.status",
-                "postgres_example",
-                "payment_card",
-                id="nested_field_2",
-            ),
-            param(
-                "postgres_example:user:username",
-                "postgres_example",
-                "user",
-                id="simple_field",
-            ),
-            param(
-                "postgres_example:user:billing.subscription.status",
-                "postgres_example",
-                "user",
-                id="nested_field_3",
-            ),
-        ],
-    )
-    def test_parse_full_address_format(
-        self, mock_dataset_graph, field_address, expected_dataset, expected_collection
-    ):
-        """Test parsing full address format (dataset:collection:field)"""
-        # Test simple fields
-        result = _parse_full_address_format(field_address, mock_dataset_graph)
-        assert result is not None
-        assert result.dataset == expected_dataset
-        assert result.collection == expected_collection
-
-    @pytest.mark.parametrize(
-        "field_address",
-        [
-            param("postgres_example:nonexistent:field", id="nonexistent_collection"),
-            param("postgres_example:customer:nonexistent", id="nonexistent_field"),
-            param(
-                "postgres_example:payment_card:nonexistent",
-                id="nonexistent_field_in_payment_card",
-            ),
-        ],
-    )
-    def test_parse_full_address_format_invalid(self, mock_dataset_graph, field_address):
-        """Test parsing invalid full address format"""
-        # Test invalid format (not enough colons)
-        result = _parse_full_address_format(field_address, mock_dataset_graph)
-        assert result is None
-
-    @pytest.mark.parametrize(
-        "field_address, expected_dataset, expected_collection",
-        [
-            param("customer.name", "postgres_example", "customer", id="simple_field"),
-            param(
-                "customer.profile.age",
-                "postgres_example",
-                "customer",
-                id="nested_field_1",
-            ),
-            param(
-                "payment_card.subscription.status",
-                "postgres_example",
-                "payment_card",
-                id="nested_field_2",
-            ),
-            param("user.username", "postgres_example", "user", id="simple_field"),
-            param(
-                "user.billing.subscription.status",
-                "postgres_example",
-                "user",
-                id="nested_field_3",
-            ),
-        ],
-    )
-    def test_get_collection_for_field_address_simplified(
-        self, mock_dataset_graph, field_address, expected_dataset, expected_collection
-    ):
-        """Test getting collection for simplified field address"""
-        result = _get_collection_for_field_address(field_address, mock_dataset_graph)
-        assert result is not None
-        assert result.dataset == expected_dataset
-        assert result.collection == expected_collection
-
-    @pytest.mark.parametrize(
-        "field_address, expected_dataset, expected_collection",
-        [
-            param(
-                "postgres_example:customer:name",
-                "postgres_example",
-                "customer",
-                id="simple_field",
-            ),
-            param(
-                "postgres_example:customer:profile.age",
-                "postgres_example",
-                "customer",
-                id="nested_field_1",
-            ),
-            param(
-                "postgres_example:payment_card:subscription.status",
-                "postgres_example",
-                "payment_card",
-                id="nested_field_2",
-            ),
-            param(
-                "postgres_example:user:username",
-                "postgres_example",
-                "user",
-                id="simple_field",
-            ),
-            param(
-                "postgres_example:user:billing.subscription.status",
-                "postgres_example",
-                "user",
-                id="nested_field_3",
-            ),
-        ],
-    )
-    def test_get_collection_for_field_address_full(
-        self, mock_dataset_graph, field_address, expected_dataset, expected_collection
-    ):
-        """Test getting collection for full field address"""
-        result = _get_collection_for_field_address(field_address, mock_dataset_graph)
-        assert result is not None
-        assert result.dataset == expected_dataset
-        assert result.collection == expected_collection
-
-    @pytest.mark.parametrize(
-        "field_address",
-        [
-            param("", id="empty_address"),
-            param(None, id="none_address"),
-            param("invalidformat", id="invalid_format"),
-        ],
-    )
-    def test_get_collection_for_field_address_invalid(
-        self, mock_dataset_graph, field_address
-    ):
-        """Test getting collection for invalid field address"""
-        result = _get_collection_for_field_address(field_address, mock_dataset_graph)
-        assert result is None
-
-    def test_find_collections_for_conditional_dependencies(
-        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
-    ):
-        """Test finding collections for conditional dependencies"""
-        _, manual_task, _, _ = connection_with_manual_access_task
-
-        # Add conditional dependencies that reference fields in our mock graph
-        ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "customer.name",
-                "operator": "eq",
-                "value": "test",
-                "sort_order": 1,
-            },
-        )
-
-        ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "payment_card.subscription.status",
-                "operator": "eq",
-                "value": "active",
-                "sort_order": 2,
-            },
-        )
-
-        try:
-            # Find collections for conditional dependencies
-            dependency_collections = _find_collections_for_conditional_dependencies(
-                manual_task, mock_dataset_graph
-            )
-
-            # Should find collections for both field addresses
-            assert len(dependency_collections) == 2
-
-            expected_collections = {
-                CollectionAddress("postgres_example", "customer"),
-                CollectionAddress("postgres_example", "payment_card"),
-            }
-            assert dependency_collections == expected_collections
-
-        finally:
-            # Clean up conditional dependencies
-            manual_task.conditional_dependencies = []
-            db.commit()
-
-    def test_find_collections_for_conditional_dependencies_no_graph(
-        self, db: Session, connection_with_manual_access_task
-    ):
-        """Test finding collections when no dataset graph is provided"""
-        _, manual_task, _, _ = connection_with_manual_access_task
-
-        # Find collections for conditional dependencies without graph
-        dependency_collections = _find_collections_for_conditional_dependencies(
-            manual_task, None
-        )
-
-        # Should return empty set when no graph is provided
-        assert dependency_collections == set()
-
-    def test_find_collections_for_conditional_dependencies_invalid_fields(
-        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
-    ):
-        """Test finding collections for conditional dependencies with invalid field addresses"""
-        _, manual_task, _, _ = connection_with_manual_access_task
-
-        # Add conditional dependency with invalid field address
-        ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "nonexistent.collection.field",
-                "operator": "eq",
-                "value": "test",
-                "sort_order": 1,
-            },
-        )
-
-        try:
-            # Find collections for conditional dependencies
-            dependency_collections = _find_collections_for_conditional_dependencies(
-                manual_task, mock_dataset_graph
-            )
-
-            # Should return empty set for invalid field addresses
-            assert dependency_collections == set()
-
-        finally:
-            # Clean up conditional dependencies
-            manual_task.conditional_dependencies = []
-            db.commit()
-
-    def test_create_collection_for_connection_key(
-        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
-    ):
-        """Test creating collection for a connection key"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Add conditional dependencies to test dependency resolution
-        ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "customer.name",
-                "operator": "eq",
-                "value": "test",
-                "sort_order": 1,
-            },
-        )
-
-        try:
-            # Create collection for the connection key
-            collection = create_collection_for_connection_key(
-                db, connection_config.key, mock_dataset_graph
-            )
-
-            # Should create a collection
-            assert collection is not None
-            assert collection.name == "manual_data"
-
-            # Should have fields from both data categories and conditional dependencies
-            field_names = [field.name for field in collection.fields]
-            assert "user_email" in field_names  # from data categories
-            assert "customer.name" in field_names  # from conditional dependencies
-
-            # Should have dependencies on collections that provide conditional dependency fields
-            assert len(collection.after) == 1
-            expected_dependency = CollectionAddress("postgres_example", "customer")
-            assert expected_dependency in collection.after
-
-        finally:
-            # Clean up conditional dependencies
-            manual_task.conditional_dependencies = []
-            db.commit()
-
-    def test_create_collection_for_connection_key_no_manual_task(
-        self, db: Session, mock_dataset_graph
-    ):
+    def test_create_collection_for_connection_key_no_manual_task(self, db: Session):
         """Test creating collection for connection key with no manual task"""
         # Try to create collection for non-existent connection key
-        collection = create_collection_for_connection_key(
-            db, "non_existent_key", mock_dataset_graph
-        )
+        collection = create_collection_for_connection_key(db, "non_existent_key")
 
         # Should return None when no manual task exists
         assert collection is None
 
     def test_create_collection_for_connection_key_no_fields(
-        self, db: Session, connection_config, mock_dataset_graph
+        self, db: Session, connection_config
     ):
         """Test creating collection for connection key with no fields"""
         # Create manual task without any configs or conditional dependencies
@@ -569,7 +205,8 @@ class TestManualTaskUtilsAddressParsing:
         try:
             # Create collection for the connection key
             collection = create_collection_for_connection_key(
-                db, connection_config.key, mock_dataset_graph
+                db,
+                connection_config.key,
             )
 
             # Should return None when no fields are available
@@ -585,13 +222,13 @@ class TestManualTaskUtilsConditionalDependencies:
 
     @pytest.mark.usefixtures("connection_with_manual_access_task", "condition_gt_18")
     def test_manual_task_dependencies_on_regular_tasks(
-        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
+        self, db: Session, connection_with_manual_access_task
     ):
         """Test that manual tasks establish dependencies on regular tasks when conditional dependencies reference their fields"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
 
         # Create artificial graphs with the mock dataset graph
-        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+        graphs = create_manual_task_artificial_graphs(db)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -603,14 +240,27 @@ class TestManualTaskUtilsConditionalDependencies:
 
         collection = graph.collections[0]
 
-        # Verify that the collection has dependencies on regular tasks
+        # Verify that the collection has scalar fields with references to regular tasks
         # The condition_gt_18 fixture references "customer.profile.age" which should
-        # create a dependency on the "customer" collection from "postgres_example"
-        assert len(collection.after) > 0
+        # create a scalar field with a reference to the "customer" collection from "postgres_example"
+        assert len(collection.fields) > 0
 
-        # Check that the dependency includes the expected collection
-        expected_dependency = CollectionAddress("postgres_example", "customer")
-        assert expected_dependency in collection.after
+        # Check that there's a scalar field with the expected reference
+        expected_field_name = "postgres_example:customer:profile.age"
+        expected_reference = FieldAddress("postgres_example", "customer", "profile.age")
+
+        field_with_reference = None
+        for field in collection.fields:
+            if field.name == expected_field_name:
+                field_with_reference = field
+                break
+
+        assert (
+            field_with_reference is not None
+        ), f"Expected field '{expected_field_name}' not found"
+        assert len(field_with_reference.references) == 1
+        assert field_with_reference.references[0][0] == expected_reference
+        assert field_with_reference.references[0][1] == "from"
 
         # Verify the collection name uses the standard manual data collection name
         expected_collection_name = "manual_data"
@@ -618,13 +268,13 @@ class TestManualTaskUtilsConditionalDependencies:
 
     @pytest.mark.usefixtures("connection_with_manual_access_task", "group_condition")
     def test_manual_task_dependencies_from_group_conditions(
-        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
+        self, db: Session, connection_with_manual_access_task
     ):
         """Test that manual tasks establish dependencies from group conditional dependencies"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
 
         # Create artificial graphs with the mock dataset graph
-        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+        graphs = create_manual_task_artificial_graphs(db)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -636,17 +286,23 @@ class TestManualTaskUtilsConditionalDependencies:
 
         collection = graph.collections[0]
 
-        # Verify that the collection has dependencies on regular tasks
+        # Verify that the collection has scalar fields with references to regular tasks
         # The group_condition fixture references both "customer.profile.age" and "payment_card.subscription.status"
-        # which should create dependencies on both "customer" and "payment_card" collections
-        assert len(collection.after) >= 2
+        # which should create scalar fields with references to both "customer" and "payment_card" collections
+        assert len(collection.fields) >= 2
 
-        # Check that the dependencies include the expected collections
-        expected_dependencies = {
-            CollectionAddress("postgres_example", "customer"),
-            CollectionAddress("postgres_example", "payment_card"),
+        # Check that the scalar fields include the expected references
+        expected_references = {
+            FieldAddress("postgres_example", "customer", "profile.age"),
+            FieldAddress("postgres_example", "payment_card", "subscription.status"),
         }
-        assert expected_dependencies.issubset(collection.after)
+
+        found_references = set()
+        for field in collection.fields:
+            for ref, direction in field.references:
+                found_references.add(ref)
+
+        assert expected_references.issubset(found_references)
 
         # Verify the collection name uses the standard manual data collection name
         expected_collection_name = "manual_data"
@@ -658,12 +314,11 @@ class TestManualTaskUtilsConditionalDependencies:
     def test_conditional_dependency_nested_group_fields_extraction(
         self,
         db: Session,
-        mock_dataset_graph,
     ):
         """Test that field addresses are extracted from nested group conditional dependencies"""
 
         # Create artificial graphs with the mock dataset graph
-        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+        graphs = create_manual_task_artificial_graphs(db)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -675,22 +330,24 @@ class TestManualTaskUtilsConditionalDependencies:
         field_names = [field.name for field in collection.fields]
 
         # Should include conditional dependency fields from nested group children
-        assert "customer.role" in field_names  # from "customer.role"
-        assert "customer.profile.age" in field_names  # from "customer.profile.age"
+        assert "postgres_example:customer:role" in field_names  # from "customer.role"
         assert (
-            "payment_card.subscription.status" in field_names
+            "postgres_example:customer:profile.age" in field_names
+        )  # from "customer.profile.age"
+        assert (
+            "postgres_example:payment_card:subscription.status" in field_names
         )  # from "payment_card.subscription.status"
 
     @pytest.mark.usefixtures(
         "connection_with_manual_access_task", "condition_gt_18", "condition_age_lt_65"
     )
     def test_no_duplicate_fields_from_conditional_dependencies(
-        self, db: Session, manual_task: ManualTask, mock_dataset_graph
+        self, db: Session, manual_task: ManualTask
     ):
         """Test that duplicate field addresses don't create duplicate fields"""
 
         # Create artificial graphs with the mock dataset graph
-        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+        graphs = create_manual_task_artificial_graphs(db)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -702,7 +359,9 @@ class TestManualTaskUtilsConditionalDependencies:
         # The conditional dependencies use "customer.profile.age" which should create a field named "customer.profile.age"
         field_names = [field.name for field in collection.fields]
         profile_age_fields = [
-            name for name in field_names if name == "customer.profile.age"
+            name
+            for name in field_names
+            if name == "postgres_example:customer:profile.age"
         ]
 
         assert (
@@ -711,7 +370,7 @@ class TestManualTaskUtilsConditionalDependencies:
 
     @pytest.mark.usefixtures("connection_with_manual_access_task")
     def test_multiple_manual_tasks_get_separate_collections(
-        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
+        self, db: Session, connection_with_manual_access_task
     ):
         """Test that multiple manual tasks get separate collections with their own dependencies"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
@@ -743,7 +402,7 @@ class TestManualTaskUtilsConditionalDependencies:
             data={
                 "manual_task_id": second_manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "payment_card.billing.subscription.status",
+                "field_address": "postgres_example:payment_card:billing.subscription.status",
                 "operator": "eq",
                 "value": "active",
                 "sort_order": 1,
@@ -752,7 +411,7 @@ class TestManualTaskUtilsConditionalDependencies:
 
         try:
             # Create artificial graphs with the mock dataset graph
-            graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+            graphs = create_manual_task_artificial_graphs(db)
 
             # Should have two graphs (one for each connection config)
             assert len(graphs) == 2
@@ -777,13 +436,22 @@ class TestManualTaskUtilsConditionalDependencies:
             assert first_collection.name == expected_collection_name
             assert second_collection.name == expected_collection_name
 
-            # First task has no conditional dependencies, so no dependencies
-            assert len(first_collection.after) == 0
+            # First task has no conditional dependencies, so only the dsr input field is present
+            assert len(first_collection.fields) == 1
 
-            # Second task has conditional dependency on billing.subscription.status, so depends on payment_card
-            assert len(second_collection.after) == 1
-            expected_dependency = CollectionAddress("postgres_example", "payment_card")
-            assert expected_dependency in second_collection.after
+            # Second task has conditional dependency on billing.subscription.status, so has scalar field with reference
+            assert len(second_collection.fields) == 1
+            field = second_collection.fields[0]
+            assert (
+                field.name
+                == "postgres_example:payment_card:billing.subscription.status"
+            )
+            assert len(field.references) == 1
+            expected_reference = FieldAddress(
+                "postgres_example", "payment_card", "billing.subscription.status"
+            )
+            assert field.references[0][0] == expected_reference
+            assert field.references[0][1] == "from"
 
         finally:
             # Clean up

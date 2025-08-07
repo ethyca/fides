@@ -645,11 +645,8 @@ def test_manual_tasks_are_integrated_into_dag(
         if not dataset_config.connection_config.disabled
     ]
 
-    # Create a temporary graph from regular datasets
-    temp_dataset_graph = DatasetGraph(*dataset_graphs)
-
     # Add manual task artificial graphs
-    manual_task_graphs = create_manual_task_artificial_graphs(db, temp_dataset_graph)
+    manual_task_graphs = create_manual_task_artificial_graphs(db)
 
     # Verify manual task graph was created
     assert len(manual_task_graphs) > 0, "Manual task graphs should be created"
@@ -665,16 +662,27 @@ def test_manual_tasks_are_integrated_into_dag(
     # ------------------------------------------------------------------
     # 4. PROOF 2: Verify manual tasks have proper dependencies
     # ------------------------------------------------------------------
-    # The manual task should depend on the source dataset collection
+    # The manual task should depend on the source dataset collection via scalar field references
     manual_collection = dag_test_graph.collections[0]
 
-    # Verify the manual task depends on the source dataset
-    # The after set contains CollectionAddress objects, so we need to check by string representation
-    source_collection_address_str = "postgres_example_test_dataset:customer"
-    after_addresses_str = {str(addr) for addr in manual_collection.after}
+    # Verify the manual task depends on the source dataset via scalar field references
+    # The conditional dependency references "postgres_example_test_dataset:customer:name"
+    # so there should be a scalar field with a reference to this field address
+    expected_field_address = "postgres_example_test_dataset:customer:name"
+
+    # Check that there's a scalar field with the expected reference
+    field_with_reference = None
+    for field in manual_collection.fields:
+        for ref, direction in field.references:
+            if str(ref) == expected_field_address:
+                field_with_reference = field
+                break
+        if field_with_reference:
+            break
+
     assert (
-        source_collection_address_str in after_addresses_str
-    ), f"Manual task should depend on {source_collection_address_str}. Found: {after_addresses_str}"
+        field_with_reference is not None
+    ), f"Manual task should have a scalar field with reference to {expected_field_address}. Found fields: {[f.name for f in manual_collection.fields]}"
 
     # ------------------------------------------------------------------
     # 5. PROOF 3: Verify manual tasks are included in the complete graph
@@ -695,12 +703,22 @@ def test_manual_tasks_are_integrated_into_dag(
     # Check that the manual task collection has the correct dependencies
     manual_collection = dag_test_graph.collections[0]
 
-    # Verify the manual task depends on the source dataset (proves DAG structure)
-    source_collection_address_str = "postgres_example_test_dataset:customer"
-    after_addresses_str = {str(addr) for addr in manual_collection.after}
+    # Verify the manual task depends on the source dataset via scalar field references (proves DAG structure)
+    expected_field_address = "postgres_example_test_dataset:customer:name"
+
+    # Check that there's a scalar field with the expected reference
+    field_with_reference = None
+    for field in manual_collection.fields:
+        for ref, direction in field.references:
+            if str(ref) == expected_field_address:
+                field_with_reference = field
+                break
+        if field_with_reference:
+            break
+
     assert (
-        source_collection_address_str in after_addresses_str
-    ), f"Manual task should depend on {source_collection_address_str}"
+        field_with_reference is not None
+    ), f"Manual task should have a scalar field with reference to {expected_field_address}"
 
     # Verify the manual task has the correct fields that depend on source data
     manual_fields = [field.name for field in manual_collection.fields]
