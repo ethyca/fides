@@ -104,9 +104,7 @@ class ManualTaskGraphTask(GraphTask):
             self.resources.request.save(db)
 
         # This should trigger log_awaiting_processing via the @retry decorator
-        raise AwaitingAsyncTask(
-            f"Manual task for {connection_key} requires user input"
-        )
+        raise AwaitingAsyncTask(f"Manual task for {connection_key} requires user input")
 
     def _ensure_manual_task_instances(
         self,

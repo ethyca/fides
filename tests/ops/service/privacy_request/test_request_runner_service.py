@@ -2071,7 +2071,6 @@ class TestAsyncCallbacks:
             assert pr.erasure_tasks[1].rows_masked == 2
             assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
-
     # TODO: Add Fixture class for async mockups
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
@@ -2139,7 +2138,6 @@ class TestAsyncCallbacks:
                 }
             }
             # TODO: Assert that the queue is empty
-
 
 
 class TestDatasetReferenceValidation:

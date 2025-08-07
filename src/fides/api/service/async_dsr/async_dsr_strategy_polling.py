@@ -1,14 +1,17 @@
 from requests import Response
+
 from fides.api.graph.traversal import TraversalNode
 from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.saas_util import map_param_values
 
+
 class PollingAsyncDSRStrategy(AsyncDSRStrategy):
     """
     Strategy for polling async DSR requests.
     """
+
     name = "polling"
     configuration_model = PollingAsyncDSRConfiguration
 
@@ -35,7 +38,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         input_data: Dict[str, List[Any]],
         secrets: Dict[str, Any],
     ) -> Optional[SaaSRequestParams]:
-        """ Executes the status requests, and move forward if its true"""
+        """Executes the status requests, and move forward if its true"""
         prepared_status_request = map_param_values(
             "status",
             f"{node.name} Polling",

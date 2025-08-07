@@ -275,7 +275,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 request_task,
                 input_data,
                 rows,
-                awaiting_async_callback
+                awaiting_async_callback,
             )
 
         self.unset_connector_state()
@@ -301,10 +301,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     ) -> Tuple[List[Row], bool]:
         self.set_saas_request_state(read_request)
 
-        if (
-            read_request.async_config
-            and request_task.id  # Only supported in DSR 3.0
-        ):
+        if read_request.async_config and request_task.id:  # Only supported in DSR 3.0
             # Asynchronous read request detected. We will exit below and put the
             # Request Task in an "awaiting_processing" status.
             awaiting_async_callback = True
@@ -358,9 +355,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         elif read_request.output:
             rows.extend(
                 self._apply_output_template(
-                    query_config.generate_param_value_maps(
-                        input_data, read_request
-                    ),
+                    query_config.generate_param_value_maps(input_data, read_request),
                     read_request.output,
                 )
             )

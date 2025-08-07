@@ -6,6 +6,7 @@ from fides.api.service.strategy import Strategy
 if TYPE_CHECKING:
     from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
 
+
 class AsyncDSRStrategy(Strategy):
     """Abstract base class for async DSR strategies"""
 
