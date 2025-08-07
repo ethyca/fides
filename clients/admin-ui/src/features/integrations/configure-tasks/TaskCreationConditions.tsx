@@ -233,23 +233,24 @@ const TaskCreationConditions = ({
     <Box>
       <Flex direction="column" gap={4}>
         <Box>
-          <Text fontWeight="bold" fontSize="lg">
-            Task creation conditions
-          </Text>
+          <Typography.Title level={5}>
+            Conditional task creation
+          </Typography.Title>
           <Paragraph className="mt-2 w-2/3 text-gray-600">
             Configure conditions that must be met before a task is created. If
             no conditions are set, manual tasks will be created for every
             incoming privacy request of the corresponding type (access or
-            erasure). All conditions must be met (AND logic).
+            erasure).
+          </Paragraph>
+          <Paragraph className="mt-2 text-gray-600" strong>
+            All conditions must be met for the task to be created.
           </Paragraph>
         </Box>
 
-        <Flex justify="flex-end">
-          <Flex justify="flex-start" align="center" gap={2}>
-            <Button type="primary" onClick={handleOpenAddModal}>
-              Add condition
-            </Button>
-          </Flex>
+        <Flex justify="flex-end" align="center" gap={2}>
+          <Button type="primary" onClick={handleOpenAddModal}>
+            Add condition
+          </Button>
         </Flex>
 
         <ConditionsList

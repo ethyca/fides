@@ -185,19 +185,23 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             </Box>
           }
         />
+
         <Divider className="my-2" />
-        <Box>
-          <Typography.Text strong>Assign tasks to users:</Typography.Text>
+
+        <div>
           <TaskAssignedUsersSection
             connectionKey={integration.key}
             onManageSecureAccess={onCreateUserOpen}
           />
-          {isManualTaskConditionsEnabled && (
-            <div className="mt-4">
-              <TaskCreationConditions connectionKey={integration.key} />
-            </div>
-          )}
-        </Box>
+        </div>
+
+        {isManualTaskConditionsEnabled && (
+          <>
+            <Divider className="my-2" />
+
+            <TaskCreationConditions connectionKey={integration.key} />
+          </>
+        )}
 
         <AddManualTaskModal
           isOpen={isOpen}

@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntSelect as Select,
   AntTable as Table,
+  AntTypography as Typography,
   Box,
   Flex,
   Icons,
@@ -98,6 +99,8 @@ const TaskAssignedUsersSection = ({
 
   return (
     <Box>
+      <Typography.Title level={5}>Assign tasks to users:</Typography.Title>
+
       <div className="mt-4 flex items-center justify-between gap-4">
         <div>
           <Button type="default" onClick={onManageSecureAccess}>
