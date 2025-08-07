@@ -3,12 +3,9 @@ import {
   AntButton as Button,
   AntDivider as Divider,
   AntMessage as message,
-  AntSelect as Select,
-  AntTable as Table,
   AntTypography as Typography,
   Box,
   Flex,
-  Icons,
   Text,
   useDisclosure,
   WarningIcon,
@@ -22,11 +19,7 @@ import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
 } from "~/features/datastore-connections/connection-manual-fields.slice";
-import {
-  useAssignUsersToManualTaskMutation,
-  useGetManualTaskConfigQuery,
-} from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
+// import { useGetManualTaskConfigQuery } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import {
   ConnectionConfigurationResponse,
   ManualFieldResponse,
@@ -34,6 +27,7 @@ import {
 
 import AddManualTaskModal from "./AddManualTaskModal";
 import CreateExternalUserModal from "./CreateExternalUserModal";
+import TaskAssignedUsersSection from "./TaskAssignedUsersSection";
 import TaskCreationConditions from "./TaskCreationConditions";
 import { Task, useTaskColumns } from "./useTaskColumns";
 
@@ -45,11 +39,7 @@ interface TaskConfigTabProps {
 
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [userToAssign, setUserToAssign] = useState<string | undefined>(
-    undefined,
-  );
-  const [isSavingUsers, setIsSavingUsers] = useState(false);
+  // State handled in TaskAssignedUsersSection
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -74,38 +64,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     },
   );
 
-  // Get manual task config to load currently assigned users
-  const { data: manualTaskConfig } = useGetManualTaskConfigQuery(
-    { connectionKey: integration ? integration.key : "" },
-    {
-      skip: !integration,
-    },
-  );
+  // Manual task config not needed directly here post-refactor
 
   const [deleteManualField] = useDeleteManualFieldMutation();
-  const [assignUsersToManualTask] = useAssignUsersToManualTaskMutation();
-
-  // Get users for the assigned to field
-  const { data: usersData, refetch: refetchUsers } = useGetAllUsersQuery({
-    page: 1,
-    size: 100, // Get enough users for the dropdown
-    username: "", // Empty string to get all users
-  });
-
-  const users = usersData?.items ?? [];
-
-  // Options for assignment: exclude users already assigned
-  const availableUserOptions = users
-    .filter((user: any) => {
-      const email = user.email_address;
-      return email && !selectedUsers.includes(email);
-    })
-    .map((user: any) => ({
-      label: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
-        ? `${user.first_name ?? ""} ${user.last_name ?? ""} (${user.email_address})`
-        : `${user.email_address}`,
-      value: user.email_address,
-    }));
+  // Users and assignment logic moved to TaskAssignedUsersSection
 
   useEffect(() => {
     if (data) {
@@ -122,15 +84,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     }
   }, [data]);
 
-  // Load currently assigned users when manual task config loads
-  useEffect(() => {
-    if (manualTaskConfig?.assigned_users) {
-      const assignedUserEmails = manualTaskConfig.assigned_users
-        .map((user) => user.email_address)
-        .filter((email) => email !== null && email !== undefined) as string[];
-      setSelectedUsers(assignedUserEmails);
-    }
-  }, [manualTaskConfig]);
+  // Assignment state moved to TaskAssignedUsersSection
 
   const deleteTask = useCallback(
     async (task: Task) => {
@@ -183,57 +137,12 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   }, [onClose]);
 
   const handleUserCreated = () => {
-    // Refetch users to update the dropdown
-    refetchUsers();
     onCreateUserClose();
   };
 
-  const handleAssignSingleUser = useCallback(
-    async (email?: string) => {
-      if (!email) {
-        message.warning("Please select a user to assign.");
-        return;
-      }
-      try {
-        setIsSavingUsers(true);
-        const updated = Array.from(new Set([...(selectedUsers ?? []), email]));
-        await assignUsersToManualTask({
-          connectionKey: integration.key,
-          userIds: updated,
-        }).unwrap();
-        setSelectedUsers(updated);
-        setUserToAssign(undefined);
-        message.success("User assigned successfully!");
-      } catch (error) {
-        message.error("Failed to assign user. Please try again.");
-      } finally {
-        setIsSavingUsers(false);
-      }
-    },
-    [assignUsersToManualTask, integration.key, selectedUsers],
-  );
+  // Assignment handlers moved to TaskAssignedUsersSection
 
-  const handleRemoveAssignedUser = useCallback(
-    async (email: string) => {
-      try {
-        setIsSavingUsers(true);
-        const updated = (selectedUsers ?? []).filter((e) => e !== email);
-        await assignUsersToManualTask({
-          connectionKey: integration.key,
-          userIds: updated,
-        }).unwrap();
-        setSelectedUsers(updated);
-        message.success("User removed successfully!");
-      } catch (error) {
-        message.error("Failed to remove user. Please try again.");
-      } finally {
-        setIsSavingUsers(false);
-      }
-    },
-    [assignUsersToManualTask, integration.key, selectedUsers],
-  );
-
-  // Deprecated multi-assign flow replaced by single-assign UX
+  // Deprecated multi-assign flow replaced by single-assign UX (handled in child)
 
   // Use the custom hook for columns
   const { columns } = useTaskColumns({
@@ -279,102 +188,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         <Divider className="my-2" />
         <Box>
           <Typography.Text strong>Assign tasks to users:</Typography.Text>
-
-          {/* Top controls */}
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <div>
-              <Button type="default" onClick={onCreateUserOpen}>
-                Manage secure access
-              </Button>
-            </div>
-            <div className="flex w-1/2 items-center justify-end gap-2">
-              <Select
-                className="!mt-0"
-                placeholder="Select a user to assign"
-                value={userToAssign}
-                onChange={(val) => setUserToAssign(val)}
-                options={availableUserOptions}
-                style={{ width: "100%" }}
-                filterOption={(input, option) => {
-                  return (
-                    (typeof option?.label === "string" &&
-                      option.label
-                        .toLowerCase()
-                        .includes(input.toLowerCase())) ||
-                    false
-                  );
-                }}
-              />
-              <Button
-                type="primary"
-                onClick={() => handleAssignSingleUser(userToAssign)}
-                loading={isSavingUsers}
-              >
-                Assign
-              </Button>
-            </div>
-          </div>
-
-          {/* Assigned users table */}
-          <div className="mt-4">
-            <Table
-              dataSource={(manualTaskConfig?.assigned_users || []).map(
-                (u, idx) => ({
-                  key: u.email_address ?? idx,
-                  name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
-                  email: u.email_address ?? "",
-                  role: "—",
-                  raw: u,
-                }),
-              )}
-              pagination={false}
-              size="small"
-              columns={[
-                {
-                  title: "Name",
-                  dataIndex: "name",
-                  key: "name",
-                },
-                {
-                  title: "Email",
-                  dataIndex: "email",
-                  key: "email",
-                },
-                {
-                  title: "Role",
-                  dataIndex: "role",
-                  key: "role",
-                  render: () => <span>—</span>,
-                },
-                {
-                  title: "Actions",
-                  key: "actions",
-                  width: 120,
-                  render: (_: any, record: any) => (
-                    <Flex gap={2}>
-                      <Button
-                        size="small"
-                        danger
-                        icon={<Icons.TrashCan />}
-                        onClick={() =>
-                          record.email && handleRemoveAssignedUser(record.email)
-                        }
-                      />
-                    </Flex>
-                  ),
-                },
-              ]}
-              locale={{
-                emptyText: (
-                  <div className="py-6 text-center">
-                    <Text color="gray.500">No users assigned.</Text>
-                  </div>
-                ),
-              }}
-              bordered
-            />
-          </div>
-
+          <TaskAssignedUsersSection
+            connectionKey={integration.key}
+            onManageSecureAccess={onCreateUserOpen}
+          />
           {isManualTaskConditionsEnabled && (
             <div className="mt-4">
               <TaskCreationConditions connectionKey={integration.key} />
