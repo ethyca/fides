@@ -1,4 +1,5 @@
-from typing import Dict, Optional, List, Any
+from typing import Any, Dict, List, Optional
+
 from requests import Response
 
 from fides.api.graph.traversal import TraversalNode
@@ -51,7 +52,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         )
         response: Response = client.send(prepared_status_request, privacy_request.id)
 
-        return response.ok
+        return None
         # TODO: Finish up status
 
         if response.ok:

@@ -310,18 +310,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if self._missing_dataset_reference_values(
             input_data, read_request.param_values
         ):
-            return []
+            return [], awaiting_async_callback
 
         # hook for user-provided request override functions
         if read_request.request_override:
-            return self._invoke_read_request_override(
-                read_request.request_override,
-                self.create_client(),
-                policy,
-                privacy_request,
-                node,
-                input_data,
-                self.secrets,
+            return (
+                self._invoke_read_request_override(
+                    read_request.request_override,
+                    self.create_client(),
+                    policy,
+                    privacy_request,
+                    node,
+                    input_data,
+                    self.secrets,
+                ),
+                awaiting_async_callback,
             )
 
         # if a path is provided, it means we want to generate HTTP requests from the config
