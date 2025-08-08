@@ -30,6 +30,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
 
+### Fixed
+- Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
+- Fixed link in Manage Secure Access modal [#6436](https://github.com/ethyca/fides/pull/6436)
+
 
 ## [2.67.1](https://github.com/ethyca/fides/compare/2.67.0...2.67.1)
 
