@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    # Polling async task: Determines if the task as a polling async strategy. Used to lookup the async tasks in the database.
+    # Polling async task: Determines if the task has a polling async strategy. Used to lookup the async tasks in the database.
     op.add_column(
         "requesttask", sa.Column("polling_async_task", sa.Boolean(), nullable=True)
     )

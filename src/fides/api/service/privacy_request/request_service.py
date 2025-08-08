@@ -632,7 +632,7 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         )
         if async_tasks:
             logger.debug(f"Found {len(async_tasks)} async tasks to poll")
-            from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import?
+            from fides.api.service.async_dsr.async_dsr_service import (
                 requeue_polling_request,
             )
 

@@ -342,7 +342,7 @@ async def poll_server_for_completion(
 
         await sleep(poll_interval_seconds)
         time_delta = datetime.now() - start_time
-        elapsed_time = time_delta.seconds
+        elapsed_time = time_delta.total_seconds()
     raise TimeoutError(
         f"Timeout of {timeout_seconds} seconds has been exceeded while waiting for privacy request {privacy_request_id}"
     )
