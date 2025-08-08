@@ -1,7 +1,6 @@
 """Tests for the request logging middleware."""
 
 import asyncio
-from unittest.mock import MagicMock
 
 import pytest
 from fastapi import Request, Response
@@ -39,7 +38,9 @@ class TestLogRequest:
 
         # Verify the log message and its contents
         assert "Request received" in loguru_caplog.text
-        log_record = loguru_caplog.records[0]
+        log_record = next(
+            record for record in loguru_caplog.records if "method" in record.extra
+        )
         assert log_record.extra["method"] == "GET"
         assert log_record.extra["status_code"] == 200
         assert log_record.extra["path"] == "/test"
@@ -82,7 +83,9 @@ class TestLogRequest:
 
         # Verify the log message and its contents
         assert "Request received" in loguru_caplog.text
-        log_record = loguru_caplog.records[0]
+        log_record = next(
+            record for record in loguru_caplog.records if "method" in record.extra
+        )
         assert log_record.extra["method"] == "GET"
         assert log_record.extra["status_code"] == 200
         assert log_record.extra["path"] == "/test"
@@ -121,7 +124,9 @@ class TestLogRequest:
 
         # Verify the log message and its contents
         assert "Request received" in loguru_caplog.text
-        log_record = loguru_caplog.records[0]
+        log_record = next(
+            record for record in loguru_caplog.records if "method" in record.extra
+        )
         assert log_record.extra["method"] == "GET"
         assert log_record.extra["status_code"] == 500
         assert log_record.extra["path"] == "/test"
