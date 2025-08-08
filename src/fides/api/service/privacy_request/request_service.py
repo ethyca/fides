@@ -695,7 +695,7 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         async_tasks = (
             db.query(RequestTask)
             .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
-            .filter(RequestTask.polling_async_task == True)
+            .filter(RequestTask.polling_async_task is True)
             .all()
         )
         if async_tasks:
