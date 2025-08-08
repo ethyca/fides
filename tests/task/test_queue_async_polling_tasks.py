@@ -96,7 +96,7 @@ def in_progress_polling_request_task(db, pending_privacy_request):
 class TestPollAsyncTasksStatus:
     @pytest.mark.usefixtures("polling_request_task")
     @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_polling_request"
+        "fides.api.service.async_dsr.async_dsr_service.requeue_polling_request"
     )
     def test_polling_task_is_requeued(self, mock_requeue_polling_request):
         """Test that a task awaiting processing and marked as a polling task is requeued."""
@@ -105,7 +105,7 @@ class TestPollAsyncTasksStatus:
 
     @pytest.mark.usefixtures("non_polling_request_task")
     @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_polling_request"
+        "fides.api.service.async_dsr.async_dsr_service.requeue_polling_request"
     )
     def test_non_polling_task_is_not_requeued(self, mock_requeue_polling_request):
         """Test that a task awaiting processing but not a polling task is not requeued."""
@@ -114,7 +114,7 @@ class TestPollAsyncTasksStatus:
 
     @pytest.mark.usefixtures("in_progress_polling_request_task")
     @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_polling_request"
+        "fides.api.service.async_dsr.async_dsr_service.requeue_polling_request"
     )
     def test_in_progress_polling_task_is_not_requeued(
         self, mock_requeue_polling_request
@@ -127,7 +127,7 @@ class TestPollAsyncTasksStatus:
         "non_polling_request_task", "in_progress_polling_request_task"
     )
     @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_polling_request"
+        "fides.api.service.async_dsr.async_dsr_service.requeue_polling_request"
     )
     def test_no_matching_tasks_are_not_requeued(self, mock_requeue_polling_request):
         """Test that no tasks are requeued when none meet the criteria."""
@@ -140,7 +140,7 @@ class TestPollAsyncTasksStatus:
         "in_progress_polling_request_task",
     )
     @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_polling_request"
+        "fides.api.service.async_dsr.async_dsr_service.requeue_polling_request"
     )
     def test_only_matching_task_is_requeued(self, mock_requeue_polling_request):
         """Test that only the task that meets all criteria is requeued."""

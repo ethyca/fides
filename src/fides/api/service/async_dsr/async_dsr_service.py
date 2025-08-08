@@ -7,7 +7,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.privacy_request_service import PrivacyRequestError
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 from fides.api.task.execute_request_tasks import (
     _build_upstream_access_data,
     create_graph_task,
