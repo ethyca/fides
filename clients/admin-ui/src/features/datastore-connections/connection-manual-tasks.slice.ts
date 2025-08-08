@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { ManualTaskResponse } from "~/types/api";
+import { ConditionGroup, ManualTaskResponse } from "~/types/api";
 
 import { PLUS_CONNECTION_API_ROUTE } from "../../constants";
 
@@ -26,10 +26,23 @@ export const connectionManualTasksApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Manual Tasks"],
     }),
+
+    updateDependencyConditions: build.mutation<
+      void,
+      { connectionKey: string; conditions: ConditionGroup[] }
+    >({
+      query: ({ connectionKey, conditions }) => ({
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-task/dependency-conditions`,
+        method: "PUT",
+        body: conditions,
+      }),
+      invalidatesTags: () => ["Manual Tasks"],
+    }),
   }),
 });
 
 export const {
   useGetManualTaskConfigQuery,
   useAssignUsersToManualTaskMutation,
+  useUpdateDependencyConditionsMutation,
 } = connectionManualTasksApi;
