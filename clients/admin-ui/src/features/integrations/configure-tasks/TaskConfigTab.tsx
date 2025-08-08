@@ -175,7 +175,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
         <FidesTableV2
           tableInstance={tableInstance}
-          onRowClick={() => {}}
           emptyTableNotice={
             <Box textAlign="center" p={8}>
               <Paragraph type="secondary">

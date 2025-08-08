@@ -303,7 +303,11 @@ const initializeGppCmpApi = () => {
   });
 };
 window.addEventListener("FidesInitializing", (event) => {
-  if (event.detail.extraDetails?.gppEnabled) {
+  if (
+    event.detail.extraDetails?.gppEnabled &&
+    typeof window !== "undefined" &&
+    !window.Fides?.initialized
+  ) {
     initializeGppCmpApi();
   }
 });
