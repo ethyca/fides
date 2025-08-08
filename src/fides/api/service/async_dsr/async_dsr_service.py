@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -8,13 +8,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.execute_request_tasks import (
-    _build_upstream_access_data,
-    create_graph_task,
-)
-from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.collection_util import Row
 
 
 def requeue_polling_request(
@@ -56,14 +50,15 @@ def requeue_polling_request(
         async_task,
         db,
     ) as resources:
-        graph_task: GraphTask = create_graph_task(db, async_task, resources)
+        # graph_task: GraphTask = create_graph_task(db, async_task, resources)
         # Currently, upstream tasks and "input keys" (which are built by data dependencies)
         # are the same, but they may not be the same in the future.
-        upstream_tasks = async_task.upstream_tasks_objects(db)
-        upstream_access_data: List[List[Row]] = _build_upstream_access_data(
-            graph_task.execution_node.input_keys, upstream_tasks
-        )
+        # upstream_tasks = async_task.upstream_tasks_objects(db)
+        # upstream_access_data: List[List[Row]] = _build_upstream_access_data(
+        #    graph_task.execution_node.input_keys, upstream_tasks
+        # )
         # TODO: Implement the polling strategy
+        logger.info(f"found resources: {resources}")
         return None
 
 
