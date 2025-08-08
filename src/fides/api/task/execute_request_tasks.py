@@ -112,19 +112,13 @@ def create_graph_task(
     """
     try:
         collection_address = request_task.request_task_address
-        logger.info(f"Creating graph task for collection address: {collection_address}")
+
         # Check if this is a manual task address
         graph_task: GraphTask
         if ManualTaskAddress.is_manual_task_address(collection_address):
             graph_task = ManualTaskGraphTask(resources)
-            logger.info(
-                f"Created manual task graph task for collection address: {collection_address}"
-            )
         else:
             graph_task = GraphTask(resources)
-            logger.info(
-                f"Created graph task for collection address: {collection_address}"
-            )
 
     except Exception as exc:
         logger.debug(

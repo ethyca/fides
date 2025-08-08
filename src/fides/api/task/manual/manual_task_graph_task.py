@@ -39,13 +39,6 @@ class ManualTaskGraphTask(GraphTask):
         """
         db = self.resources.session
         collection_address = self.execution_node.address
-        # This is for testing/debugging purposes
-        # TODO: Remove this once we have tests for evaluating manual task inputs
-        logger.info("🎯🎯🎯 MANUAL TASK INPUTS RECEIVED 🎯🎯🎯")
-        logger.info(f"📥 ManualTaskGraphTask inputs for {collection_address}:")
-        logger.info(f"🔍 Inputs: {inputs}")
-        logger.info(f"🔍 Execution node input keys: {self.execution_node.input_keys}")
-        logger.info("🎯🎯🎯 END MANUAL TASK INPUTS 🎯🎯🎯")
 
         # Verify this is a manual task address
         if not ManualTaskAddress.is_manual_task_address(collection_address):
