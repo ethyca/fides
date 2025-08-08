@@ -345,7 +345,7 @@ describe("shouldResurfaceBanner", () => {
       },
       savedConsent: mockSavedConsent,
       options: {},
-      expected: false,
+      expected: true,
     },
     {
       label: "returns false for modal component",
