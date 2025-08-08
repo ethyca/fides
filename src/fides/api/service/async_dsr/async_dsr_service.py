@@ -3,6 +3,7 @@ from typing import List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -14,10 +15,8 @@ from fides.api.task.execute_request_tasks import (
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
-from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 
 
-# TODO update tests to this reference
 def requeue_polling_request(
     db: Session,
     async_task: RequestTask,
