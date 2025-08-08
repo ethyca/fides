@@ -90,6 +90,12 @@ class AdminUISettingsProxy(ConfigProxyBase):
     url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
 
 
+class PrivacyCenterSettingsProxy(ConfigProxyBase):
+    prefix = "privacy_center"
+
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
+
+
 class NotificationSettingsProxy(ConfigProxyBase):
     prefix = "notifications"
 
@@ -177,6 +183,7 @@ class ConfigProxy:
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
         self.consent = ConsentSettingsProxy(db)
+        self.privacy_center = PrivacyCenterSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:
         """

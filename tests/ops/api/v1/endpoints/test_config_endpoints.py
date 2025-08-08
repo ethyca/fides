@@ -1324,6 +1324,7 @@ class TestGetConfig:
             "execution",
             "storage",
             "consent",
+            "privacy_center",
         }
 
         for key in config.keys():
@@ -1447,4 +1448,9 @@ class TestGetConfig:
                 )
             )
             == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        privacy_center_keys = set(config["privacy_center"].keys())
+        assert (
+            len(privacy_center_keys.difference(set(["url"]))) == 0
         ), "Unexpected config API change, please review with Ethyca security team"
