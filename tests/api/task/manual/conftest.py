@@ -405,7 +405,6 @@ def _build_request_task(
         # In a real scenario, these would be determined by the graph traversal
         if field_addresses:
             # Create a mock dataset graph for field address parsing
-            from tests.api.task.manual.conftest import mock_dataset_graph
 
             dataset_graph = mock_dataset_graph()
 
@@ -852,8 +851,9 @@ def mock_dataset_graph():
     customer_collection = Collection(
         name="customer",
         fields=[
+            ScalarField(name="id", primary_key=True),  # identity field
             ScalarField(name="name"),  # simple field for basic testing
-            ScalarField(name="email"),  # simple field for basic testing
+            ScalarField(name="email", identity="email"),  # identity field
             ScalarField(name="age"),  # simple field that also matches nested patterns
             ScalarField(name="role"),  # matches "user.role"
             # Add reference to user collection to make it reachable
@@ -888,7 +888,8 @@ def mock_dataset_graph():
     payment_card_collection = Collection(
         name="payment_card",
         fields=[
-            ScalarField(name="card_number"),  # simple field for basic testing
+            ScalarField(name="id", primary_key=True),  # identity field
+            ScalarField(name="card_number", identity="card_number"),  # identity field
             ScalarField(name="expiry_date"),  # simple field for basic testing
             ScalarField(
                 name="status"
@@ -896,9 +897,7 @@ def mock_dataset_graph():
             # Add reference to customer collection to make it reachable
             ScalarField(
                 name="customer_id",
-                references=[
-                    (FieldAddress("postgres_example", "customer", "name"), "to")
-                ],
+                references=[(FieldAddress("postgres_example", "customer", "id"), "to")],
             ),
             # Create nested structure for subscription
             ObjectField(
@@ -926,14 +925,15 @@ def mock_dataset_graph():
     user_collection = Collection(
         name="user",
         fields=[
-            ScalarField(name="id"),  # simple field
-            ScalarField(name="username"),  # simple field
+            ScalarField(name="id", primary_key=True),  # identity field
+            ScalarField(name="username", identity="username"),  # identity field
+            ScalarField(name="email", identity="email"),  # identity field
             # Add reference to payment_card collection to make it reachable
             ScalarField(
                 name="payment_card_id",
                 references=[
                     (
-                        FieldAddress("postgres_example", "payment_card", "card_number"),
+                        FieldAddress("postgres_example", "payment_card", "id"),
                         "to",
                     )
                 ],

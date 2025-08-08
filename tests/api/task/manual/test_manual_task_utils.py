@@ -241,7 +241,7 @@ class TestManualTaskUtilsConditionalDependencies:
         collection = graph.collections[0]
 
         # Verify that the collection has scalar fields with references to regular tasks
-        # The condition_gt_18 fixture references "customer.profile.age" which should
+        # The condition_gt_18 fixture references "customer:profile.age" which should
         # create a scalar field with a reference to the "customer" collection from "postgres_example"
         assert len(collection.fields) > 0
 
@@ -287,7 +287,7 @@ class TestManualTaskUtilsConditionalDependencies:
         collection = graph.collections[0]
 
         # Verify that the collection has scalar fields with references to regular tasks
-        # The group_condition fixture references both "customer.profile.age" and "payment_card.subscription.status"
+        # The group_condition fixture references both "customer:profile.age" and "payment_card.subscription.status"
         # which should create scalar fields with references to both "customer" and "payment_card" collections
         assert len(collection.fields) >= 2
 
@@ -330,10 +330,10 @@ class TestManualTaskUtilsConditionalDependencies:
         field_names = [field.name for field in collection.fields]
 
         # Should include conditional dependency fields from nested group children
-        assert "postgres_example:customer:role" in field_names  # from "customer.role"
+        assert "postgres_example:customer:role" in field_names  # from "customer:role"
         assert (
             "postgres_example:customer:profile.age" in field_names
-        )  # from "customer.profile.age"
+        )  # from "customer:profile.age"
         assert (
             "postgres_example:payment_card:subscription.status" in field_names
         )  # from "payment_card.subscription.status"
@@ -356,7 +356,7 @@ class TestManualTaskUtilsConditionalDependencies:
         collection = graph.collections[0]
 
         # Verify that only one field is created for the duplicate field_address
-        # The conditional dependencies use "customer.profile.age" which should create a field named "customer.profile.age"
+        # The conditional dependencies use "customer:profile.age" which should create a field named "customer:profile.age"
         field_names = [field.name for field in collection.fields]
         profile_age_fields = [
             name
@@ -366,7 +366,7 @@ class TestManualTaskUtilsConditionalDependencies:
 
         assert (
             len(profile_age_fields) == 1
-        )  # Should only have one "customer.profile.age" field
+        )  # Should only have one "customer:profile.age" field
 
     @pytest.mark.usefixtures("connection_with_manual_access_task")
     def test_multiple_manual_tasks_get_separate_collections(

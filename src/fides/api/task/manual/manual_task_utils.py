@@ -128,7 +128,7 @@ def create_conditional_dependency_scalar_fields(
 
 
 def create_collection_for_connection_key(
-    db: Session, connection_key: str, dataset_graph: Optional["DatasetGraph"] = None
+    db: Session, connection_key: str
 ) -> Optional[Collection]:
     # Get the manual task for this connection config
     manual_task = get_manual_task_for_connection_config(db, connection_key)
@@ -169,7 +169,6 @@ def create_manual_task_artificial_graphs(db: Session) -> list:
 
     Args:
         db: Database session
-        dataset_graph: The actual graph being executed (optional for backward compatibility)
 
     Returns:
         List of GraphDataset objects representing manual tasks as individual collections

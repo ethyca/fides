@@ -47,7 +47,16 @@ def create_combined_graph(db, mock_dataset_graph):
             regular_datasets.append(node.dataset)
             seen_dataset_names.add(node.dataset.name)
 
-    return DatasetGraph(*regular_datasets, *manual_task_graphs)
+    combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+    # Provide seed data that matches the identity fields to make nodes reachable
+    seed_data = {
+        "email": "test@example.com",
+        "username": "testuser",
+        "card_number": "1234567890",
+    }
+
+    return combined_graph, seed_data
 
 
 class TestManualTaskGraphTask:
@@ -608,30 +617,35 @@ class TestManualTaskTraversalExecution:
 
     @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
     def test_manual_task_traversal_with_conditional_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks execute in correct order when they have conditional dependencies"""
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Verify manual task node is present in traversal
         manual_address = ManualTaskAddress.create(connection_config.key)
         assert manual_address in traversal.traversal_node_dict
 
-        # Verify manual task has dependencies on regular tasks
+        # Verify manual task has scalar field references to regular tasks
         manual_node = traversal.traversal_node_dict[manual_address]
-        assert len(manual_node.node.collection.after) > 0
 
-        # Verify dependencies include expected collections
+        # Check that the manual task has scalar fields with references to the expected collections
+        field_references = set()
+        for field in manual_node.node.collection.fields:
+            for ref, direction in field.references:
+                field_references.add(ref.collection_address())
+
+        # Verify dependencies include expected collections through field references
         expected_dependencies = {
             CollectionAddress("postgres_example", "customer"),
             CollectionAddress("postgres_example", "payment_card"),
         }
-        assert expected_dependencies.issubset(manual_node.node.collection.after)
+        assert expected_dependencies.issubset(field_references)
 
         expected_root_edge = FieldAddress(
             ROOT_COLLECTION_ADDRESS.dataset, ROOT_COLLECTION_ADDRESS.collection, "id"
@@ -652,24 +666,29 @@ class TestManualTaskTraversalExecution:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Verify manual task node is present
         manual_address = ManualTaskAddress.create(connection_config.key)
         assert manual_address in traversal.traversal_node_dict
 
-        # Verify manual task has multiple dependencies from group conditions
+        # Verify manual task has scalar field references from group conditions
         manual_node = traversal.traversal_node_dict[manual_address]
-        assert len(manual_node.node.collection.after) >= 2
 
-        # Verify dependencies include both customer and payment_card collections
+        # Check that the manual task has scalar fields with references to the expected collections
+        field_references = set()
+        for field in manual_node.node.collection.fields:
+            for ref, direction in field.references:
+                field_references.add(ref.collection_address())
+
+        # Verify dependencies include both customer and payment_card collections through field references
         expected_dependencies = {
             CollectionAddress("postgres_example", "customer"),
             CollectionAddress("postgres_example", "payment_card"),
         }
-        assert expected_dependencies.issubset(manual_node.node.collection.after)
+        assert expected_dependencies.issubset(field_references)
 
     @pytest.mark.usefixtures("nested_group_condition", "privacy_request")
     def test_manual_task_traversal_with_nested_group_conditional_dependencies(
@@ -680,31 +699,38 @@ class TestManualTaskTraversalExecution:
 
         # Create artificial graphs
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Verify manual task node is present
         manual_address = ManualTaskAddress.create(connection_config.key)
         assert manual_address in traversal.traversal_node_dict
 
-        # Verify manual task has dependencies from nested group conditions
+        # Verify manual task has scalar field references from nested group conditions
         manual_node = traversal.traversal_node_dict[manual_address]
-        assert len(manual_node.node.collection.after) >= 2
 
-        # Verify dependencies include expected collections
+        # Check that the manual task has scalar fields with references to the expected collections
+        field_references = set()
+        for field in manual_node.node.collection.fields:
+            for ref, direction in field.references:
+                field_references.add(ref.collection_address())
+
+        # Verify dependencies include expected collections through field references
         expected_dependencies = {
             CollectionAddress("postgres_example", "customer"),
             CollectionAddress("postgres_example", "payment_card"),
         }
-        assert expected_dependencies.issubset(manual_node.node.collection.after)
+        assert expected_dependencies.issubset(field_references)
 
         # Verify collection has fields from nested group children
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "customer.role" in field_names  # from "customer.role"
-        assert "customer.profile.age" in field_names  # from "customer.profile.age"
+        assert "postgres_example:customer:role" in field_names  # from "customer:role"
         assert (
-            "payment_card.subscription.status" in field_names
+            "postgres_example:customer:profile.age" in field_names
+        )  # from "customer:profile.age"
+        assert (
+            "postgres_example:payment_card:subscription.status" in field_names
         )  # from "payment_card.subscription.status"
 
 
@@ -722,9 +748,9 @@ class TestManualTaskUpstreamDataFlow:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Get manual task node
         manual_address = ManualTaskAddress.create(connection_config.key)
@@ -732,7 +758,7 @@ class TestManualTaskUpstreamDataFlow:
 
         # Verify manual task has input keys from upstream dependencies
         # The manual task should have input keys for collections that provide conditional dependency fields
-        input_keys = manual_node.node.collection.after
+        input_keys = manual_node.input_keys()
         expected_input_keys = {
             CollectionAddress("postgres_example", "customer"),
             CollectionAddress("postgres_example", "payment_card"),
@@ -741,9 +767,11 @@ class TestManualTaskUpstreamDataFlow:
 
         # Verify manual task has fields that correspond to conditional dependency field addresses
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "customer.profile.age" in field_names  # from "customer.profile.age"
         assert (
-            "payment_card.subscription.status" in field_names
+            "postgres_example:customer:profile.age" in field_names
+        )  # from "customer:profile.age"
+        assert (
+            "postgres_example:payment_card:subscription.status" in field_names
         )  # from "payment_card.subscription.status"
 
     @pytest.mark.usefixtures("group_condition", "privacy_request")
@@ -754,16 +782,16 @@ class TestManualTaskUpstreamDataFlow:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Get manual task node
         manual_address = ManualTaskAddress.create(connection_config.key)
         manual_node = traversal.traversal_node_dict[manual_address]
 
         # Verify manual task has multiple input keys from group conditions
-        input_keys = manual_node.node.collection.after
+        input_keys = manual_node.input_keys()
         assert len(input_keys) >= 2
 
         # Verify input keys include both customer and payment_card collections
@@ -775,9 +803,11 @@ class TestManualTaskUpstreamDataFlow:
 
         # Verify collection has fields from group condition dependencies
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "customer.profile.age" in field_names  # from "customer.profile.age"
         assert (
-            "payment_card.subscription.status" in field_names
+            "postgres_example:customer:profile.age" in field_names
+        )  # from "customer:profile.age"
+        assert (
+            "postgres_example:payment_card:subscription.status" in field_names
         )  # from "payment_card.subscription.status"
 
 
@@ -795,21 +825,22 @@ class TestManualTaskExecutionOrder:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Get manual task node
         manual_address = ManualTaskAddress.create(connection_config.key)
         manual_node = traversal.traversal_node_dict[manual_address]
 
         # Verify manual task has dependencies that must execute first
-        dependencies = manual_node.node.collection.after
+        dependencies = manual_node.input_keys()
         assert len(dependencies) > 0
 
         # Verify that the dependencies are actual collections in the graph
         for dependency in dependencies:
-            assert dependency in traversal.traversal_node_dict
+            if dependency != ROOT_COLLECTION_ADDRESS:
+                assert dependency in traversal.traversal_node_dict
 
         # Verify that manual task has proper dependencies and can be reached
         # Note: ROOT is an artificial node and not in traversal_node_dict
@@ -823,21 +854,22 @@ class TestManualTaskExecutionOrder:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Get manual task node
         manual_address = ManualTaskAddress.create(connection_config.key)
         manual_node = traversal.traversal_node_dict[manual_address]
 
         # Verify manual task has multiple dependencies
-        dependencies = manual_node.node.collection.after
+        dependencies = manual_node.input_keys()
         assert len(dependencies) >= 2
 
         # Verify all dependencies exist in the traversal
         for dependency in dependencies:
-            assert dependency in traversal.traversal_node_dict
+            if dependency != ROOT_COLLECTION_ADDRESS:
+                assert dependency in traversal.traversal_node_dict
 
         # Verify dependencies are from different collections (customer and payment_card)
         dependency_collections = {dep.collection for dep in dependencies}
@@ -858,9 +890,9 @@ class TestManualTaskTraversalIntegration:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = create_combined_graph(db, mock_dataset_graph)
+        combined_graph, seed_data = create_combined_graph(db, mock_dataset_graph)
 
-        traversal = Traversal(combined_graph, data={})
+        traversal = Traversal(combined_graph, data=seed_data)
 
         # Verify all nodes are present
         assert len(traversal.traversal_node_dict) > 0
@@ -871,7 +903,14 @@ class TestManualTaskTraversalIntegration:
 
         # Verify manual task has proper dependencies
         manual_node = traversal.traversal_node_dict[manual_address]
-        assert len(manual_node.node.collection.after) > 0
+
+        # Check that the manual task has scalar fields with references to the expected collections
+        field_references = set()
+        for field in manual_node.node.collection.fields:
+            for ref, direction in field.references:
+                field_references.add(ref.collection_address())
+
+        assert len(field_references) > 0
 
         # Verify manual task has proper fields
         assert len(manual_node.node.collection.fields) > 0
@@ -918,13 +957,20 @@ class TestManualTaskTraversalIntegration:
 
         # Verify manual task has dependencies from nested group conditions
         manual_node = traversal.traversal_node_dict[manual_address]
-        assert len(manual_node.node.collection.after) >= 2
+
+        # Check that the manual task has scalar fields with references to the expected collections
+        field_references = set()
+        for field in manual_node.node.collection.fields:
+            for ref, direction in field.references:
+                field_references.add(ref.collection_address())
+
+        assert len(field_references) >= 2
 
         # Verify manual task has fields from nested group children
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "customer.role" in field_names
-        assert "customer.profile.age" in field_names
-        assert "payment_card.subscription.status" in field_names
+        assert "postgres_example:customer:role" in field_names
+        assert "postgres_example:customer:profile.age" in field_names
+        assert "postgres_example:payment_card:subscription.status" in field_names
 
         # Verify traversal is valid
         assert traversal is not None
