@@ -10,7 +10,6 @@ from fides.api.graph.config import (
     GraphDataset,
     ScalarField,
 )
-from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # Import application models
