@@ -53,14 +53,8 @@ $horizontal-padding: 20px;
   gap: 8px;
   align-items: center;
   justify-content: flex-start;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 
-  // In large enough screens, we want to show all components
-  // in a single line, without wrapping or shrinking.
-  // (except for the title and timestamp, which can shrink and will show ellipsis)
-  @media (min-width: 1280px) {
-    flex-wrap: nowrap;
-  }
   & > * {
     flex-shrink: 0;
   }
@@ -81,14 +75,7 @@ $horizontal-padding: 20px;
     color: var(--fidesui-minos);
   }
 
-  // In small screens, the entire entry will not fit in a single line.
-  // By making the title 100% width, we ensure it will wrap and display the entry as 3 separate lines.
-  width: 100%;
-
-  // In large enough screens, we want to show the whole entry in a single line.
-  @media (min-width: 1280px) {
-    width: auto;
-  }
+  width: auto;
 }
 
 .timestamp {
