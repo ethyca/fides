@@ -96,6 +96,7 @@ def create_fides_app(
         logger.warning(
             "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
         )
+    else:
         fastapi_app.add_middleware(SlowAPIMiddleware)
 
     fastapi_app.add_middleware(
