@@ -318,11 +318,9 @@ async def poll_server_for_completion(
     elapsed_time = 0.0
     while elapsed_time < timeout_seconds:
         if not client:
-            client = AsyncClient()
+            client = get_async_client()
 
-        response = await client.get(
-            url, headers={"Authorization": f"Bearer {token}"}
-        )
+        response = await client.get(url, headers={"Authorization": f"Bearer {token}"})
 
         response.raise_for_status()
 
@@ -348,3 +346,8 @@ async def poll_server_for_completion(
     raise TimeoutError(
         f"Timeout of {timeout_seconds} seconds has been exceeded while waiting for privacy request {privacy_request_id}"
     )
+
+
+def get_async_client() -> AsyncClient:
+    """Return an async client used to make API requests. preserved for testing purposes."""
+    return AsyncClient()

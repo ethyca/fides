@@ -4,13 +4,16 @@ from unittest import mock
 import pytest
 from httpx import AsyncClient, Client, HTTPStatusError
 
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors.fides.fides_client import FidesClient, poll_server_for_completion
-from fides.api.util.errors import FidesError
-from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.db.seed import create_or_update_parent_user
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.connectors.fides.fides_client import (
+    FidesClient,
+    poll_server_for_completion,
+)
+from fides.api.util.errors import FidesError
+from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
 
 SAMPLE_TOKEN = "SOME_TOKEN"
@@ -27,6 +30,7 @@ class MockResponse:
 
     def json(self):
         return self.json_data
+
 
 @pytest.fixture(scope="function")
 def test_fides_client_bad_credentials(
@@ -380,11 +384,9 @@ def parent_user_config():
     CONFIG.security.parent_server_password = original_password
 
 
-
-
 @pytest.mark.parametrize("status", ["complete", "denied", "canceled", "error"])
 @pytest.mark.usefixtures("parent_user_config")
-async def test_poll_server_for_completion( status, async_api_client, db, policy):
+async def test_poll_server_for_completion(status, async_api_client, db, policy):
     create_or_update_parent_user()
 
     pr = PrivacyRequest.create(
@@ -416,7 +418,7 @@ async def test_poll_server_for_completion( status, async_api_client, db, policy)
 
 
 @pytest.mark.usefixtures("parent_user_config")
-async def test_poll_server_for_completion_timeout( async_api_client, db, policy):
+async def test_poll_server_for_completion_timeout(async_api_client, db, policy):
     create_or_update_parent_user()
 
     pr = PrivacyRequest.create(
@@ -448,7 +450,7 @@ async def test_poll_server_for_completion_timeout( async_api_client, db, policy)
 
 
 @pytest.mark.usefixtures("parent_user_config")
-async def test_poll_server_for_completion_non_200(  async_api_client, db, policy):
+async def test_poll_server_for_completion_non_200(async_api_client, db, policy):
     create_or_update_parent_user()
 
     pr = PrivacyRequest.create(

@@ -20,8 +20,6 @@ from fides.api.util.cache import cache_task_tracking_key
 from fides.config import CONFIG
 
 
-
-
 class TestPollForExitedPrivacyRequests:
     def test_no_request_tasks(self, db, privacy_request):
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()

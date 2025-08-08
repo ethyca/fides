@@ -11,6 +11,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.connectors.fides import fides_client
 from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.connectors.fides_connector import (
     DEFAULT_POLLING_INTERVAL,
@@ -130,9 +131,7 @@ class TestFidesConnectorIntegration:
         # make requests to the running webserver which is connected to the application db,
         # but we need them to talk to the test db in pytest
         monkeypatch.setattr(Client, "send", api_client.send)
-        monkeypatch.setattr(
-            request_service, "get_async_client", lambda: async_api_client
-        )
+        monkeypatch.setattr(fides_client, "get_async_client", lambda: async_api_client)
 
         result = test_fides_connector.retrieve_data(
             node=node,
