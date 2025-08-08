@@ -380,38 +380,51 @@ class StagedResourceAncestor(Base):
     )
 
     @classmethod
-    def create_staged_resource_ancestor_links(
+    def create_all_staged_resource_ancestor_links(
         cls,
         db: Session,
-        resource_urn: str,
-        ancestor_urns: Set[str],
+        ancestor_links: Dict[str, Set[str]],
+        batch_size: int = 10000,  # Conservative batch size
     ) -> None:
         """
-        Bulk inserts entries in the StagedResourceAncestor table
-        based on the provided resource URN and the set of its ancestor URNs.
+        Bulk inserts all entries in the StagedResourceAncestor table
+        based on the provided mapping of descendant URNs to their ancestor URN sets.
 
         We execute the bulk INSERT with the provided (synchronous) db session,
         but the transaction is _not_ committed, so the caller must commit the transaction
         to persist the changes.
+
+        Uses batching to handle large datasets without hitting PostgreSQL parameter limits.
+
+        Args:
+            db: Database session
+            ancestor_links: Dict mapping descendant URNs to sets of ancestor URNs
         """
-        links_to_insert = []
+        stmt_text = text(
+            """
+            INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn)
+            VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn)
+            ON CONFLICT (ancestor_urn, descendant_urn) DO NOTHING;
+            """
+        )
 
-        for ancestor_urn in ancestor_urns:
-            links_to_insert.append(
-                {"ancestor_urn": ancestor_urn, "descendant_urn": resource_urn}
-            )
+        current_batch = []
 
-        if links_to_insert:
-            # Using raw SQL for ON CONFLICT with parameters for safety
-            stmt_text = text(
-                """
-                INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn)
-                VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn)
-                ON CONFLICT (ancestor_urn, descendant_urn) DO NOTHING;
-                """
-            )
+        for descendant_urn, ancestor_urns in ancestor_links.items():
+            if ancestor_urns:  # Only create links if there are ancestors
+                for ancestor_urn in ancestor_urns:
+                    current_batch.append(
+                        {"ancestor_urn": ancestor_urn, "descendant_urn": descendant_urn}
+                    )
 
-            db.execute(stmt_text, links_to_insert)
+                    # Execute batch when it reaches the desired size
+                    if len(current_batch) >= batch_size:
+                        db.execute(stmt_text, current_batch)
+                        current_batch = []
+
+        # Execute any remaining items in the final batch
+        if current_batch:
+            db.execute(stmt_text, current_batch)
 
 
 class StagedResource(Base):
