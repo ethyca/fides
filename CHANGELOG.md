@@ -23,8 +23,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
-
-### Added
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
 
 ### Changed
@@ -36,6 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
 - Fixed link in Manage Secure Access modal [#6436](https://github.com/ethyca/fides/pull/6436)
+- Fixed some CI testing gaps [#6419](https://github.com/ethyca/fides/pull/6419)
 
 
 ## [2.67.1](https://github.com/ethyca/fides/compare/2.67.0...2.67.1)

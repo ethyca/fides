@@ -914,6 +914,7 @@ def bigquery_enterprise_erasure_policy(
 def erasure_policy_aes(
     db: Session,
     oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
