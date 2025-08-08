@@ -121,7 +121,10 @@ class TestLogRequest:
 
         # Verify the log message and its contents
         unhandled_exception_log_record = loguru_caplog.records[0]
-        assert "Unhandled exception processing request" in unhandled_exception_log_record.message
+        assert (
+            "Unhandled exception processing request"
+            in unhandled_exception_log_record.message
+        )
         assert "Test error" in unhandled_exception_log_record.message
 
         request_received_log_record = loguru_caplog.records[1]
