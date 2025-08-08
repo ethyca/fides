@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-from asyncio import sleep
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
-from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import TextClause
 
-from fides.api.common_exceptions import PrivacyRequestNotFound
+from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
@@ -20,10 +18,7 @@ from fides.api.models.privacy_request import (
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import (
-    PrivacyRequestResponse,
-    PrivacyRequestStatus,
-)
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -37,12 +32,12 @@ from fides.api.util.cache import (
     reset_privacy_request_retry_count,
 )
 from fides.api.util.lock import redis_lock
-from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
 INTERRUPTED_TASK_REQUEUE_POLL = "interrupted_task_requeue_poll"
+ASYNC_TASKS_STATUS_POLLING = "async_tasks_status_polling"
 
 
 def build_required_privacy_request_kwargs(
@@ -84,67 +79,6 @@ def cache_data(
 
     if drp_request_body:
         privacy_request.cache_drp_request_body(drp_request_body)
-
-
-def get_async_client() -> AsyncClient:
-    """Return an async client used to make API requests"""
-    return AsyncClient()
-
-
-async def poll_server_for_completion(
-    privacy_request_id: str,
-    server_url: str,
-    token: str,
-    *,
-    poll_interval_seconds: int = 30,
-    timeout_seconds: int = 1800,  # 30 minutes
-    client: AsyncClient | None = None,
-) -> PrivacyRequestResponse:
-    """Poll a server for privacy request completion.
-
-    Requests will report complete with if they have a status of canceled, complete,
-    denied, or error. By default the polling will time out if not completed in 30
-    minutes, time can be overridden by setting the timeout_seconds.
-    """
-    url = (
-        f"{server_url}{V1_URL_PREFIX}{PRIVACY_REQUESTS}?request_id={privacy_request_id}"
-    )
-    start_time = datetime.now()
-    elapsed_time = 0.0
-    while elapsed_time < timeout_seconds:
-        if client:
-            response = await client.get(
-                url, headers={"Authorization": f"Bearer {token}"}
-            )
-        else:
-            async_client = get_async_client()
-            response = await async_client.get(
-                url, headers={"Authorization": f"Bearer {token}"}
-            )
-        response.raise_for_status()
-
-        # Privacy requests are returned paginated. Since this is searching for a specific
-        # privacy request there should only be one value present in items.
-        items = response.json()["items"]
-        if not items:
-            raise PrivacyRequestNotFound(
-                f"No privacy request found with id '{privacy_request_id}'"
-            )
-        status = PrivacyRequestResponse(**items[0])
-        if status.status and status.status in (
-            PrivacyRequestStatus.complete,
-            PrivacyRequestStatus.canceled,
-            PrivacyRequestStatus.error,
-            PrivacyRequestStatus.denied,
-        ):
-            return status
-
-        await sleep(poll_interval_seconds)
-        time_delta = datetime.now() - start_time
-        elapsed_time = time_delta.seconds
-    raise TimeoutError(
-        f"Timeout of {timeout_seconds} seconds has been exceeded while waiting for privacy request {privacy_request_id}"
-    )
 
 
 def initiate_poll_for_exited_privacy_request_tasks() -> None:
@@ -353,6 +287,28 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
+def initiate_async_tasks_status_polling() -> None:
+    """Initiates scheduler to check for and requeue pending polling async tasks"""
+    # TODO: maybe check that we are in dev mode when merged on main?
+    if CONFIG.test_mode:
+        return
+
+    assert (
+        scheduler.running
+    ), "Scheduler is not running! Cannot add async tasks status polling job."
+
+    logger.info("Initiating scheduler for async tasks status polling")
+    scheduler.add_job(
+        func=poll_async_tasks_status,
+        trigger="interval",
+        kwargs={},
+        id=ASYNC_TASKS_STATUS_POLLING,
+        coalesce=True,
+        replace_existing=True,
+        seconds=CONFIG.execution.async_tasks_status_polling_interval,
+    )
+
+
 def get_cached_task_id(entity_id: str) -> Optional[str]:
     """Gets the cached task ID for a privacy request or request task by ID.
 
@@ -461,7 +417,6 @@ def _handle_privacy_request_requeue(
             )
 
             from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
-                PrivacyRequestError,
                 _requeue_privacy_request,
             )
 
@@ -657,3 +612,29 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 # Requeue the privacy request if needed
                 if should_requeue:
                     _handle_privacy_request_requeue(db, privacy_request)
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def poll_async_tasks_status(self: DatabaseTask) -> None:
+    """
+    Poll the status of async tasks that are awaiting processing.
+    """
+
+    with self.get_new_session() as db:
+        logger.debug("Polling for async tasks status")
+
+        # Get all tasks that are awaiting processing and are from polling async tasks
+        async_tasks = (
+            db.query(RequestTask)
+            .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+            .filter(RequestTask.polling_async_task)
+            .all()
+        )
+        if async_tasks:
+            logger.debug(f"Found {len(async_tasks)} async tasks to poll")
+            from fides.api.service.async_dsr.async_dsr_service import (
+                requeue_polling_request,
+            )
+
+            for async_task in async_tasks:
+                requeue_polling_request(db, async_task)

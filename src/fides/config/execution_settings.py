@@ -61,6 +61,10 @@ class ExecutionSettings(FidesSettings):
         default=3,
         description="The number of times a privacy request will be requeued when its tasks are interrupted before being marked as error",
     )
+    async_tasks_status_polling_interval: int = Field(
+        default=3600,
+        description="Seconds between polling for async tasks to requeue",
+    )
     use_dsr_3_0: bool = Field(
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",

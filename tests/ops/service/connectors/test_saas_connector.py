@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import (
-    AwaitingAsyncTaskCallback,
+    AwaitingAsyncTask,
     FidesopsException,
     SkippingConsentPropagation,
 )
@@ -1037,7 +1037,7 @@ class TestAsyncConnectors:
     ):
         """
         If a read request is marked with needing an async callback response, the initial response is ignored and
-        we raise an AwaitingAsyncTaskCallback exception
+        we raise an AwaitingAsyncTask exception
         """
         # Build graph to get legitimate access Request Task
         connector: SaaSConnector = get_connector(saas_async_example_connection_config)
@@ -1049,7 +1049,7 @@ class TestAsyncConnectors:
         ).first()
         execution_node = ExecutionNode(request_task)
 
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        with pytest.raises(AwaitingAsyncTask):
             assert (
                 connector.retrieve_data(
                     execution_node,
@@ -1132,7 +1132,7 @@ class TestAsyncConnectors:
     ):
         """
         If an update/delete request is marked as expecting an async callback, we fire the initial requests
-        then raise an AwaitingAsyncCallback
+        then raise an AwaitingAsyncTask exception
         """
         # Build proper erasure tasks
         connector: SaaSConnector = get_connector(saas_async_example_connection_config)
@@ -1143,7 +1143,7 @@ class TestAsyncConnectors:
         ).first()
         execution_node = ExecutionNode(request_task)
 
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        with pytest.raises(AwaitingAsyncTask):
             connector.mask_data(
                 execution_node,
                 privacy_request.policy,
