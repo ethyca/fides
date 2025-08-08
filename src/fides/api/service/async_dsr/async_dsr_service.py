@@ -57,14 +57,8 @@ def requeue_polling_request(
         upstream_access_data: List[List[Row]] = _build_upstream_access_data(
             graph_task.execution_node.input_keys, upstream_tasks
         )
-        # Run the main access function
-        graph_task.access_request(*upstream_access_data)
-        #From the access request we can implement the polling strategy?
-        # And
-
-    # And then we requeue the task and move forward from that point
-    # TODO: Verify that we are not going to duplicate the access request
-    queue_request_task(async_task, privacy_request_proceed=True)
+        # TODO: Implement the polling strategy
+        return None
 
 
 
