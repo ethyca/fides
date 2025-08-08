@@ -44,21 +44,34 @@ class DatabaseSettings(FidesSettings):
         default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
+    api_engine_pool_pre_ping: bool = Field(
+        default=True,
+        description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
+    )
+
     # Async Engine Settings
+    api_async_engine_pool_size: int = Field(
+        default=50,
+        description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
+    )
+    api_async_engine_max_overflow: int = Field(
+        default=50,
+        description="Number of additional 'overflow' concurrent database connections Fides will use for API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
     api_async_engine_keepalives_idle: Optional[int] = Field(
-        default=None,
+        default=30,
         description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
     )
     api_async_engine_keepalives_interval: Optional[int] = Field(
-        default=None,
+        default=10,
         description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
     )
     api_async_engine_keepalives_count: Optional[int] = Field(
-        default=None,
+        default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     api_async_engine_pool_pre_ping: bool = Field(
-        default=False,
+        default=True,
         description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
     )
 
@@ -114,6 +127,10 @@ class DatabaseSettings(FidesSettings):
     task_engine_keepalives_count: int = Field(
         default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
+    )
+    task_engine_pool_pre_ping: bool = Field(
+        default=True,
+        description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
     )
     test_db: str = Field(
         default="default_test_db",
