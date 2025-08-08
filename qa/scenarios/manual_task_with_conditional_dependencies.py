@@ -25,7 +25,7 @@ if str(qa_dir) not in sys.path:
     sys.path.insert(0, str(qa_dir))
 
 
-from qa.utils import QATestScenario, Argument
+from utils import QATestScenario, Argument
 
 from fides.api.db.ctl_session import sync_engine
 from fides.api.db.base import *
@@ -55,8 +55,8 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fideslang.models import Dataset as FideslangDataset
 from fides.api.task.manual.manual_task_utils import get_manual_task_addresses, get_connection_configs_with_manual_tasks
 
-# Set up the manual test with python qa/scenarios/manual_task_with_conditional_dependencies.py
-# Teardown with python python qa/scenarios/manual_task_with_conditional_dependencies.py --teardown
+# Set up the manual test with python qa manual_task_with_conditional_dependencies setup
+# Teardown with python python qa manual_task_with_conditional_dependencies teardown
 
 POSTGRES_DATASET_KEY = "postgres_example_test_dataset"
 POSTGRES_HOST = "postgres_example"
@@ -198,11 +198,6 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             type=str,
             default="postgres_example_connection",
             description="Connection key for the postgres-example connection"
-        ),
-        'teardown': Argument(
-            type=bool,
-            default=False,
-            description="Whether to run teardown after setup"
         )
     }
 
