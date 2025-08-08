@@ -40,6 +40,7 @@ from fides.api.models.privacy_request import (
     TraversalDetails,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
@@ -148,7 +149,6 @@ class BaseTraversal:
             self.edges_by_node[start_field_address.collection_address()].append(edge)
 
         # Ensure manual_task collections execute right after ROOT
-        from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
         for addr in self.traversal_node_dict.keys():
             if ManualTaskAddress.is_manual_task_address(addr):
