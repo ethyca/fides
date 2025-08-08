@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fides.api.task.execute_request_tasks import queue_request_task
 from loguru import logger
 from sqlalchemy.orm import Session
 

@@ -25,7 +25,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
@@ -353,6 +352,7 @@ def initiate_interrupted_task_requeue_poll() -> None:
         replace_existing=True,
         seconds=CONFIG.execution.interrupted_task_requeue_interval,
     )
+
 
 def initiate_async_tasks_status_polling() -> None:
     """Initiates scheduler to check for and requeue pending polling async tasks"""
@@ -702,5 +702,6 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
             from fides.api.service.async_dsr.async_dsr_service import (
                 requeue_polling_request,
             )
+
             for async_task in async_tasks:
                 requeue_polling_request(db, async_task)

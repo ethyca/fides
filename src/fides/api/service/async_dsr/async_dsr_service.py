@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -7,17 +7,17 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 from fides.api.task.execute_request_tasks import (
     _build_upstream_access_data,
     create_graph_task,
-    queue_request_task,
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 
-#TODO update tests to this reference
+
+# TODO update tests to this reference
 def requeue_polling_request(
     db: Session,
     async_task: RequestTask,
@@ -42,6 +42,13 @@ def requeue_polling_request(
     )
 
     connection_config = get_connection_config_from_task(db, async_task)
+    if not connection_config:
+        logger.error(
+            "No connection config found for task {} {}",
+            async_task.collection_address,
+            async_task.id,
+        )
+        return None
 
     with TaskResources(
         privacy_request,
@@ -61,8 +68,9 @@ def requeue_polling_request(
         return None
 
 
-
-def get_connection_config_from_task(db: Session, request_task: RequestTask) -> ConnectionConfig:
+def get_connection_config_from_task(
+    db: Session, request_task: RequestTask
+) -> Optional[ConnectionConfig]:
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(DatasetConfig.fides_key == request_task.dataset_name),
