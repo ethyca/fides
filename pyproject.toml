@@ -77,7 +77,7 @@ ignore_missing_imports = true
 ## Black ##
 ###########
 [tool.black]
-target-version = ["py39"]
+target-version = ["py312"]
 line-length = 88
 include = '\.pyi?$'
 exclude = '''
