@@ -157,7 +157,7 @@ def create_collection_for_connection_key(
     return Collection(name=ManualTaskAddress.MANUAL_DATA_COLLECTION, fields=fields)
 
 
-def create_manual_task_artificial_graphs(db: Session) -> list:
+def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
     in the main dataset graph during the dataset configuration phase.
