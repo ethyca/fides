@@ -6,9 +6,11 @@ import {
   AntTypography as Typography,
   useToast,
 } from "fidesui";
+import Link from "next/link";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { useCreateExternalUserMutation } from "./external-user.slice";
@@ -100,7 +102,7 @@ const CreateExternalUserModal = ({
         <Paragraph type="secondary">
           If you need to create an internal user that can log in to the Fides
           admin interface, please use the{" "}
-          <Typography.Link>Users page</Typography.Link> instead.
+          <Link href={USER_MANAGEMENT_ROUTE}>Users page</Link> instead.
         </Paragraph>
       </div>
 

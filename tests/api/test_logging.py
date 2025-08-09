@@ -120,10 +120,17 @@ class TestLogRequest:
         assert response.status_code == 500
 
         # Verify the log message and its contents
-        assert "Request received" in loguru_caplog.text
-        log_record = loguru_caplog.records[0]
-        assert log_record.extra["method"] == "GET"
-        assert log_record.extra["status_code"] == 500
-        assert log_record.extra["path"] == "/test"
-        assert "handler_time" in log_record.extra
-        assert log_record.extra["handler_time"].endswith("ms")
+        unhandled_exception_log_record = loguru_caplog.records[0]
+        assert (
+            "Unhandled exception processing request"
+            in unhandled_exception_log_record.message
+        )
+        assert "Test error" in unhandled_exception_log_record.message
+
+        request_received_log_record = loguru_caplog.records[1]
+        assert "Request received" in request_received_log_record.message
+        assert request_received_log_record.extra["method"] == "GET"
+        assert request_received_log_record.extra["status_code"] == 500
+        assert request_received_log_record.extra["path"] == "/test"
+        assert "handler_time" in request_received_log_record.extra
+        assert request_received_log_record.extra["handler_time"].endswith("ms")
