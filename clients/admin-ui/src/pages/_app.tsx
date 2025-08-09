@@ -7,8 +7,15 @@ import "fidesui/src/ant-theme/global.scss";
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { defaultAntTheme, FidesUIProvider, Flex } from "fidesui";
+import {
+  Center,
+  defaultAntTheme,
+  FidesUIProvider,
+  Flex,
+  Spinner,
+} from "fidesui";
 import type { AppProps } from "next/app";
+import { usePathname } from "next/navigation";
 import React, { ReactNode } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -21,8 +28,6 @@ import MainSideNav from "~/features/common/nav/MainSideNav";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
-import Login from "./login";
-import LoginWithOIDC from "./login/[provider]";
 
 dayjs.extend(utc);
 
@@ -37,34 +42,43 @@ const SafeHydrate = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-const MyApp = ({ Component, pageProps }: AppProps) => (
-  <SafeHydrate>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
-          <DndProvider backend={HTML5Backend}>
-            {Component === Login || Component === LoginWithOIDC ? (
-              // Only the login page is accessible while logged out. If there is
-              // a use case for more unprotected routes, Next has a guide for
-              // per-page layouts:
-              // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-              <Component {...pageProps} />
-            ) : (
-              <ProtectedRoute>
-                <CommonSubscriptions />
-                <Flex width="100%" height="100%" flex={1}>
-                  <MainSideNav />
-                  <Flex direction="column" width="100%">
-                    <Component {...pageProps} />
-                  </Flex>
-                </Flex>
-              </ProtectedRoute>
-            )}
-          </DndProvider>
-        </FidesUIProvider>
-      </PersistGate>
-    </Provider>
-  </SafeHydrate>
-);
+const MyApp = ({ Component, pageProps }: AppProps) => {
+  const path = usePathname();
+
+  if (path) {
+    return (
+      <SafeHydrate>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
+              <DndProvider backend={HTML5Backend}>
+                {path.startsWith("/login") ? (
+                  // Only the login routes are accessible while logged out.
+                  <Component {...pageProps} />
+                ) : (
+                  <ProtectedRoute>
+                    <CommonSubscriptions />
+                    <Flex width="100%" height="100%" flex={1}>
+                      <MainSideNav />
+                      <Flex direction="column" width="100%">
+                        <Component {...pageProps} />
+                      </Flex>
+                    </Flex>
+                  </ProtectedRoute>
+                )}
+              </DndProvider>
+            </FidesUIProvider>
+          </PersistGate>
+        </Provider>
+      </SafeHydrate>
+    );
+  }
+
+  return (
+    <Center h="100%" w="100%">
+      <Spinner color="primary" size="xl" />
+    </Center>
+  );
+};
 
 export default MyApp;
