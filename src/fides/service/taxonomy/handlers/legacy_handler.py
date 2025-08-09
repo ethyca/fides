@@ -93,7 +93,7 @@ class LegacyTaxonomyHandler(TaxonomyHandler):
     ) -> Query:
         query = self.db.query(model_class)
         if active_only:
-            query = query.filter(model_class.active is True)
+            query = query.filter(model_class.active.is_(True))
         if parent_key and hasattr(model_class, "parent_key"):
             query = query.filter(model_class.parent_key == parent_key)
         return query

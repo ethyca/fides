@@ -27,12 +27,12 @@ class TestTaxonomyModels:
 
         # Duplicate update – should be idempotent
         taxonomy.update(db=db, data={"applies_to": [TargetType.SYSTEM.value]})
-        db.commit()
+        db.flush()
 
         assert TargetType.SYSTEM.value in taxonomy.applies_to
         assert len(taxonomy.applies_to) == 1
 
-    def test_taxonomy_can_apply_to_taxonomy_generic_returns_false(self, db: Session):
+    def test_taxonomy_can_apply_to_generic_target_types(self, db: Session):
         """Test that taxonomy can apply to generic types like SYSTEM."""
         taxonomy = Taxonomy.create(
             db=db,
@@ -76,7 +76,7 @@ class TestTaxonomyModels:
         # Attempt to delete parent should fail
         db.delete(parent)
         with pytest.raises(IntegrityError):
-            db.commit()
+            db.flush()
         db.rollback()
 
     # ------------------------------------------------------------------
@@ -98,7 +98,7 @@ class TestTaxonomyModels:
 
         # Allow tags to apply to categories
         source_taxonomy.update(db=db, data={"applies_to": ["categories"]})
-        db.commit()
+        db.flush()
 
         # Create elements
         source_element = TaxonomyElement.create(
@@ -127,13 +127,13 @@ class TestTaxonomyModels:
             target_taxonomy=target_taxonomy.fides_key,
         )
         db.add(usage)
-        db.commit()
+        db.flush()
 
         # Now attempt to remove "categories" from applies_to – should raise due to FK constraint
         with pytest.raises(IntegrityError):
             # Try to remove the allowed usage
             source_taxonomy.update(db=db, data={"applies_to": []})
-            db.commit()
+            db.flush()
         db.rollback()
 
     # ------------------------------------------------------------------
@@ -156,7 +156,7 @@ class TestTaxonomyModels:
 
         # Allow custom_tags to be applied to data_categories
         source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
-        db.commit()
+        db.flush()
 
         # Create source element (a custom tag)
         source_element = TaxonomyElement.create(
@@ -200,7 +200,7 @@ class TestTaxonomyModels:
             target_taxonomy=target_taxonomy.fides_key,
         )
         db.add_all([usage1, usage2])
-        db.commit()
+        db.flush()
 
         # Both usages should exist without conflict
         assert (
@@ -234,13 +234,13 @@ class TestTaxonomyModels:
             db=db,
             data={"applies_to": [TargetType.SYSTEM.value, TargetType.DATASET.value]},
         )
-        db.commit()
+        db.flush()
         db.refresh(taxonomy)
         assert TargetType.DATASET.value in taxonomy.applies_to
 
         # Remove SYSTEM and verify response
         taxonomy.update(db=db, data={"applies_to": [TargetType.DATASET.value]})
-        db.commit()
+        db.flush()
         db.refresh(taxonomy)
         assert TargetType.SYSTEM.value not in taxonomy.applies_to
 
@@ -254,7 +254,7 @@ class TestTaxonomyModels:
             db=db,
             data={"applies_to": [TargetType.DATASET.value, other_taxonomy.fides_key]},
         )
-        db.commit()
+        db.flush()
         db.refresh(taxonomy)
         assert other_taxonomy.fides_key in taxonomy.applies_to
 
@@ -319,7 +319,7 @@ class TestTaxonomyModels:
 
         # Allow tags to be applied to categories
         source_taxonomy.update(db=db, data={"applies_to": ["categories"]})
-        db.commit()
+        db.flush()
 
         # Create elements
         source_element = TaxonomyElement.create(
@@ -347,7 +347,7 @@ class TestTaxonomyModels:
             target_taxonomy=target_taxonomy.fides_key,
         )
         db.add(usage)
-        db.commit()
+        db.flush()
 
         # Attempt to create a duplicate usage (should fail on unique constraint)
         duplicate = TaxonomyUsage(
@@ -358,7 +358,7 @@ class TestTaxonomyModels:
         )
         db.add(duplicate)
         with pytest.raises(IntegrityError):
-            db.commit()
+            db.flush()
         db.rollback()
 
     def test_taxonomy_usage_element_to_element(self, db: Session):
@@ -377,7 +377,7 @@ class TestTaxonomyModels:
 
         # Allow custom_tags to be applied to data_categories taxonomy
         source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
-        db.commit()
+        db.flush()
 
         # Create source element (a custom tag)
         source_element = TaxonomyElement.create(
@@ -407,7 +407,7 @@ class TestTaxonomyModels:
             target_taxonomy=target_taxonomy.fides_key,
         )
         db.add(usage)
-        db.commit()
+        db.flush()
 
         # Verify the usage was created successfully
         retrieved_usage = (

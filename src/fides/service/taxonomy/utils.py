@@ -23,7 +23,7 @@ def activate_taxonomy_parents(
     parent = resource.parent
     if parent:
         parent.active = True
-        db.commit()
+        db.flush()
         activate_taxonomy_parents(parent, db)
 
 
@@ -35,13 +35,13 @@ def deactivate_taxonomy_node_and_descendants(
     Recursively de-activates all descendants of a given taxonomy node.
     """
     resource.active = False
-    db.commit()
+    db.flush()
     children = resource.children
 
     for child in children:
         # Deactivate current child
         child.active = False
-        db.commit()
+        db.flush()
         # Recursively deactivate all descendants of this child
         deactivate_taxonomy_node_and_descendants(child, db)
 
@@ -151,12 +151,9 @@ def handle_taxonomy_reactivation(
             taxonomy_type, updated_data["name"], updated_data.get("parent_key"), handler
         )
 
-    # Ensure it's marked as active
+    # Ensure it's marked as active and activate parents accordingly
     updated_data["active"] = True
-
-    # Apply activation logic if the new data sets active=True
-    if updated_data.get("active", True):
-        activate_taxonomy_parents(element, db)
+    activate_taxonomy_parents(element, db)
 
     # Update the element with new data
     element.update(db, data=updated_data)

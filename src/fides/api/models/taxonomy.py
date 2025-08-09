@@ -35,6 +35,10 @@ class TargetType(str, Enum):
 class Taxonomy(Base, FidesBase):
     """The SQL model for taxonomy resources."""
 
+    id = Column(
+        String(255), nullable=False, index=False, default=FidesBase.generate_uuid
+    )
+
     _allowed_usages: RelationshipProperty[List[TaxonomyAllowedUsage]] = relationship(
         "TaxonomyAllowedUsage",
         back_populates="source_taxonomy",
@@ -116,6 +120,10 @@ class TaxonomyAllowedUsage(Base):
     def __tablename__(self) -> str:
         return "taxonomy_allowed_usage"
 
+    id = Column(
+        String(255), nullable=False, index=False, default=FidesBase.generate_uuid
+    )
+
     source_taxonomy: RelationshipProperty[Taxonomy] = relationship(
         "Taxonomy",
         back_populates="_allowed_usages",
@@ -145,6 +153,10 @@ class TaxonomyElement(Base, FidesBase):
     @declared_attr
     def __tablename__(self) -> str:
         return "taxonomy_element"
+
+    id = Column(
+        String(255), nullable=False, index=False, default=FidesBase.generate_uuid
+    )
 
     # Which taxonomy this element belongs to
     taxonomy_type = Column(
@@ -178,8 +190,7 @@ class TaxonomyUsage(Base):
     The SQL model for taxonomy usage.
     Tracks the application of taxonomy elements to other taxonomy elements.
 
-    Example: Applying a "high" tag (from risk taxonomy) to
-             "user.contact.email" (from data_categories taxonomy).
+    Example: Applying a "high" tag (from sensitivity taxonomy) to "user.contact.email" (from data_categories taxonomy).
     """
 
     @declared_attr
