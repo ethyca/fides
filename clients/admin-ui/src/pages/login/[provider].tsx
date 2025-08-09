@@ -32,40 +32,45 @@ const LoginWithOIDC: NextPage = () => {
   const providerId =
     typeof router.query.provider === "string" ? router.query.provider : "";
   const pathHasProvider = providerId.length > 0;
+  const providerMatches = (openidProviders ?? []).filter(
+    (provider) => provider.identifier === providerId,
+  );
+  const providerMatch = providerMatches.length > 0 ? providerMatches[0] : null;
+  const hasProviderMatch = Boolean(providerMatch);
 
   useEffect(() => {
-    if (!authMethodsLoading && !authMethods?.sso) {
+    // Waiting for Provider information.
+    if (authMethodsLoading || providersLoading) {
+      return;
+    }
+
+    if (!authMethods?.sso) {
       router.push("/login/error/sso-not-enabled");
       return;
     }
 
-    if (!providersLoading && openidProviders && pathHasProvider) {
-      const hasProviderMatch = openidProviders.some(
-        (provider) => provider.identifier === providerId,
+    // Route did not match a configured Provider.
+    if (pathHasProvider && !hasProviderMatch) {
+      const searchParams = new URLSearchParams();
+      searchParams.set("providerIdentifier", providerId);
+      router.push(
+        `/login/error/sso-provider-not-found?${searchParams.toString()}`,
       );
-
-      if (!hasProviderMatch) {
-        const searchParams = new URLSearchParams();
-        searchParams.set("providerIdentifier", providerId);
-        router.push(
-          `/login/error/sso-provider-not-found?${searchParams.toString()}`,
-        );
-      }
-    }
-  }, [
-    authMethods?.sso,
-    authMethodsLoading,
-    openidProviders,
-    pathHasProvider,
-    providerId,
-    providersLoading,
-    router,
-  ]);
-
-  useEffect(() => {
-    if (!router.query || !router.query.provider || !router.query.code) {
       return;
     }
+
+    // Can't continue until we check if we have a query, it may be null initially.
+    if (!router.query) {
+      return;
+    }
+
+    // Now that we have the query, check for a provider and code, we cannot proceed without these.
+    if (!router.query.provider || !router.query.code) {
+      // Redirect to an error page for the provider type so that we can offer rich information.
+      router.push(`/login/error/provider/${providerMatch?.provider}`);
+      return;
+    }
+
     const data: LoginWithOIDCRequest = {
       provider: router.query.provider as string,
       code: router.query.code as string,
@@ -83,7 +88,21 @@ const LoginWithOIDC: NextPage = () => {
         });
         router.push("/login");
       });
-  }, [router, toast, dispatch, router.query, loginRequest]);
+  }, [
+    router,
+    toast,
+    dispatch,
+    router.query,
+    loginRequest,
+    providerId,
+    authMethodsLoading,
+    authMethods?.sso,
+    providersLoading,
+    openidProviders,
+    pathHasProvider,
+    hasProviderMatch,
+    providerMatch?.provider,
+  ]);
 
   return <Pending />;
 };
