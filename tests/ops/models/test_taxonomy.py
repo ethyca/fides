@@ -1,74 +1,109 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
+from fides.api.common_exceptions import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.models.taxonomy import (
-    TargetType,
     Taxonomy,
     TaxonomyElement,
     TaxonomyUsage,
 )
 
 
+@pytest.mark.usefixtures("default_taxonomy")
 class TestTaxonomyModels:
-    def test_taxonomy_add_applies_to_idempotent(self, db: Session):
-        """Setting the same target type twice should not create duplicates."""
-        taxonomy = Taxonomy.create(
+
+    def test_cannot_create_legacy_taxonomy(self, db: Session):
+        """Legacy taxonomy keys are system-managed and cannot be created via the new model."""
+        with pytest.raises(ValidationError):
+            Taxonomy.create(
+                db=db,
+                data={
+                    "fides_key": "data_categories",
+                    "name": "Data Categories",
+                },
+            )
+
+    def test_can_create_custom_taxonomy(self, db: Session):
+        """Custom taxonomies can be created."""
+        Taxonomy.create(
             db=db,
             data={
-                "fides_key": "idempotent_tax",
-                "name": "Idempotent Tax",
-                "applies_to": [TargetType.SYSTEM.value],
+                "fides_key": "sensitivity",
+                "name": "Sensitivity",
+                "applies_to": ["data_categories"],
             },
         )
 
-        assert TargetType.SYSTEM.value in taxonomy.applies_to
+    def test_can_update_applies_to_with_legacy_taxonomy(self, db: Session):
+        """Taxonomy applies_to can be updated."""
+        taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
+        )
+        updated_taxonomy = taxonomy.update(
+            db=db, data={"applies_to": ["data_categories"]}
+        )
+        db.flush()
+        assert updated_taxonomy.applies_to == ["data_categories"]
+
+    def test_can_update_applies_to_with_custom_taxonomy(self, db: Session):
+        """Taxonomy applies_to can be updated."""
+        sensitivity_taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
+        )
+        severity_taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "severity", "name": "Severity"},
+        )
+
+        updated_taxonomy = sensitivity_taxonomy.update(
+            db=db, data={"applies_to": [severity_taxonomy.fides_key]}
+        )
+        db.flush()
+        assert updated_taxonomy.applies_to == ["severity"]
+
+    def test_applies_to_is_idempotent(self, db: Session):
+        """Setting the same target taxonomy twice should not create duplicates."""
+        taxonomy = Taxonomy.create(
+            db=db,
+            data={
+                "fides_key": "sensitivity",
+                "name": "Sensitivity",
+                "applies_to": ["data_categories"],
+            },
+        )
+
+        assert "data_categories" in taxonomy.applies_to
         assert len(taxonomy.applies_to) == 1
 
         # Duplicate update – should be idempotent
-        taxonomy.update(db=db, data={"applies_to": [TargetType.SYSTEM.value]})
+        taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
         db.flush()
 
-        assert TargetType.SYSTEM.value in taxonomy.applies_to
+        assert "data_categories" in taxonomy.applies_to
         assert len(taxonomy.applies_to) == 1
 
-    def test_taxonomy_can_apply_to_generic_target_types(self, db: Session):
-        """Test that taxonomy can apply to generic types like SYSTEM."""
+    def test_prevent_deleting_parent_element_with_children(self, db: Session):
+        """Deleting a parent element with children raises an IntegrityError due to RESTRICT."""
         taxonomy = Taxonomy.create(
             db=db,
-            data={
-                "fides_key": "generic_check_tax",
-                "name": "Generic Check Tax",
-                "applies_to": [TargetType.SYSTEM.value],
-            },
-        )
-
-        # Verify the value was added
-        assert TargetType.SYSTEM.value in taxonomy.applies_to
-
-    # ------------------------------------------------------------------
-    # TaxonomyElement parent/child delete behavior
-    # ------------------------------------------------------------------
-
-    def test_parent_element_delete_restricted_if_children_exist(self, db: Session):
-        """Deleting a parent element with children should raise an IntegrityError due to RESTRICT."""
-        taxonomy = Taxonomy.create(
-            db=db,
-            data={"fides_key": "delete_restrict_tax", "name": "Delete Restrict Tax"},
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
         parent = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "restrict_parent",
-                "name": "Restrict Parent",
+                "fides_key": "medium",
+                "name": "Medium",
                 "taxonomy_type": taxonomy.fides_key,
             },
         )
         TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "restrict_child",
-                "name": "Restrict Child",
+                "fides_key": "medium.child",
+                "name": "Medium Child",
                 "taxonomy_type": taxonomy.fides_key,
                 "parent_key": parent.fides_key,
             },
@@ -79,127 +114,85 @@ class TestTaxonomyModels:
             db.flush()
         db.rollback()
 
-    # ------------------------------------------------------------------
-    # applies_to removal behavior
-    # ------------------------------------------------------------------
-
-    def test_remove_applies_to_with_existing_usage(self, db: Session):
-        """Attempting to remove an `applies_to` entry that is in use should raise an error."""
-        # Create source taxonomy that can apply to target taxonomy
+    def test_usage_prevents_removing_applies_to_when_in_use(self, db: Session):
+        """Removing an applies_to entry that is in use raises an error."""
+        # Create source taxonomy (sensitivity) that can apply to legacy data categories
         source_taxonomy = Taxonomy.create(
             db=db,
-            data={"fides_key": "tags", "name": "Tags"},
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        target_taxonomy = Taxonomy.create(
-            db=db,
-            data={"fides_key": "categories", "name": "Categories"},
-        )
-
-        # Allow tags to apply to categories
-        source_taxonomy.update(db=db, data={"applies_to": ["categories"]})
+        # Allow sensitivity to apply to data_categories
+        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
         db.flush()
 
         # Create elements
         source_element = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "tag1",
-                "name": "Tag 1",
+                "fides_key": "low",
+                "name": "Low",
                 "taxonomy_type": source_taxonomy.fides_key,
-            },
-        )
-
-        target_element = TaxonomyElement.create(
-            db=db,
-            data={
-                "fides_key": "cat1",
-                "name": "Category 1",
-                "taxonomy_type": target_taxonomy.fides_key,
             },
         )
 
         # Create usage linking the elements
         usage = TaxonomyUsage(
             source_element_key=source_element.fides_key,
-            target_element_key=target_element.fides_key,
+            target_element_key="user.contact.email",
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy=target_taxonomy.fides_key,
+            target_taxonomy="data_categories",
         )
         db.add(usage)
         db.flush()
 
-        # Now attempt to remove "categories" from applies_to – should raise due to FK constraint
+        # Now attempt to remove "data_categories" from applies_to, it should raise due to FK constraint
         with pytest.raises(IntegrityError):
             # Try to remove the allowed usage
             source_taxonomy.update(db=db, data={"applies_to": []})
             db.flush()
         db.rollback()
 
-    # ------------------------------------------------------------------
-    # TaxonomyUsage behavior
-    # ------------------------------------------------------------------
-
-    def test_taxonomy_usage_allows_multiple_targets(self, db: Session):
-        """The same taxonomy element can be applied to different target elements."""
-        # Create source taxonomy (e.g., custom tags)
+    def test_usage_allows_multiple_targets_for_source(self, db: Session):
+        """The same source taxonomy element can be applied to multiple target elements."""
+        # Create source taxonomy (sensitivity)
         source_taxonomy = Taxonomy.create(
             db=db,
-            data={"fides_key": "custom_tags", "name": "Custom Tags"},
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        # Create target taxonomy (e.g., data categories)
-        target_taxonomy = Taxonomy.create(
-            db=db,
-            data={"fides_key": "data_categories", "name": "Data Categories"},
-        )
-
-        # Allow custom_tags to be applied to data_categories
+        # Allow sensitivity to be applied to data_categories
         source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
         db.flush()
 
-        # Create source element (a custom tag)
+        # Create source element (sensitivity level)
         source_element = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "pii_tag",
-                "name": "PII Tag",
+                "fides_key": "high",
+                "name": "High",
                 "taxonomy_type": source_taxonomy.fides_key,
             },
         )
 
-        # Create target elements (data categories)
-        target1 = TaxonomyElement.create(
-            db=db,
-            data={
-                "fides_key": "user.email",
-                "name": "User Email",
-                "taxonomy_type": target_taxonomy.fides_key,
-            },
-        )
-        target2 = TaxonomyElement.create(
-            db=db,
-            data={
-                "fides_key": "user.name",
-                "name": "User Name",
-                "taxonomy_type": target_taxonomy.fides_key,
-            },
-        )
+        target_taxonomy_key = "data_categories"
+        email_target = "user.email"
+        name_target = "user.name"
 
         # Apply the tag to both data categories
-        usage1 = TaxonomyUsage(
+        first_usage = TaxonomyUsage(
             source_element_key=source_element.fides_key,
-            target_element_key=target1.fides_key,
+            target_element_key=email_target,
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy=target_taxonomy.fides_key,
+            target_taxonomy=target_taxonomy_key,
         )
-        usage2 = TaxonomyUsage(
+        second_usage = TaxonomyUsage(
             source_element_key=source_element.fides_key,
-            target_element_key=target2.fides_key,
+            target_element_key=name_target,
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy=target_taxonomy.fides_key,
+            target_taxonomy=target_taxonomy_key,
         )
-        db.add_all([usage1, usage2])
+        db.add_all([first_usage, second_usage])
         db.flush()
 
         # Both usages should exist without conflict
@@ -210,70 +203,41 @@ class TestTaxonomyModels:
             == 2
         )
 
-    # ------------------------------------------------------------------
-    # Combined helper behavior scenario
-    # ------------------------------------------------------------------
-
-    def test_taxonomy_create_and_apply_to_helpers(self, db: Session):
-        """Verify `Taxonomy.create` works and that `applies_to` property behaves as expected."""
+    def test_remove_applies_to_succeeds_when_unused(self, db: Session):
+        """Removing an applies_to entry with no usages should succeed and be reflected."""
         taxonomy = Taxonomy.create(
             db=db,
             data={
-                "fides_key": "test_taxonomy",
-                "name": "Test Taxonomy",
-                "applies_to": [TargetType.SYSTEM.value],
+                "fides_key": "sensitivity",
+                "name": "Sensitivity",
+                "applies_to": ["data_categories"],
             },
         )
 
-        # Should now apply to SYSTEM but not DATASET yet
-        assert TargetType.SYSTEM.value in taxonomy.applies_to
-        assert TargetType.DATASET.value not in taxonomy.applies_to
-
-        # Add applies_to for DATASET
-        taxonomy.update(
-            db=db,
-            data={"applies_to": [TargetType.SYSTEM.value, TargetType.DATASET.value]},
-        )
+        # No usages exist, so removal should succeed
+        taxonomy.update(db=db, data={"applies_to": []})
         db.flush()
         db.refresh(taxonomy)
-        assert TargetType.DATASET.value in taxonomy.applies_to
+        assert taxonomy.applies_to == []
 
-        # Remove SYSTEM and verify response
-        taxonomy.update(db=db, data={"applies_to": [TargetType.DATASET.value]})
+        # Re-add data_categories and verify
+        taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
         db.flush()
         db.refresh(taxonomy)
-        assert TargetType.SYSTEM.value not in taxonomy.applies_to
+        assert taxonomy.applies_to == ["data_categories"]
 
-        # Add a taxonomy-to-taxonomy relationship and check helper logic
-        other_taxonomy = Taxonomy.create(
-            db=db,
-            data={"fides_key": "other_tax", "name": "Other Taxonomy"},
-        )
-        # Add other_taxonomy to the list
-        taxonomy.update(
-            db=db,
-            data={"applies_to": [TargetType.DATASET.value, other_taxonomy.fides_key]},
-        )
-        db.flush()
-        db.refresh(taxonomy)
-        assert other_taxonomy.fides_key in taxonomy.applies_to
-
-    # ------------------------------------------------------------------
-    # TaxonomyElement hierarchy tests
-    # ------------------------------------------------------------------
-
-    def test_taxonomy_element_hierarchy(self, db: Session):
-        """Verify parent/child relationships on `TaxonomyElement` work as expected."""
+    def test_create_element_hierarchy_for_sensitivity(self, db: Session):
+        """Parent/child relationships on `TaxonomyElement` work for sensitivity elements."""
         taxonomy = Taxonomy.create(
             db=db,
-            data={"fides_key": "hierarchy_tax", "name": "Hierarchy Tax"},
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
         parent = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "parent_element",
-                "name": "Parent Element",
+                "fides_key": "high",
+                "name": "High",
                 "taxonomy_type": taxonomy.fides_key,
             },
         )
@@ -281,8 +245,8 @@ class TestTaxonomyModels:
         child = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "child_element",
-                "name": "Child Element",
+                "fides_key": "high.child",
+                "name": "High Child",
                 "taxonomy_type": taxonomy.fides_key,
                 "parent_key": parent.fides_key,
             },
@@ -301,50 +265,55 @@ class TestTaxonomyModels:
             == 0
         )
 
-    # ------------------------------------------------------------------
-    # TaxonomyUsage uniqueness constraint
-    # ------------------------------------------------------------------
+    def test_create_element_requires_existing_parent(self, db: Session):
+        """Creating an element with a non-existent parent fails due to FK constraint."""
+        taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
+        )
 
-    def test_taxonomy_usage_unique_constraint(self, db: Session):
-        """Ensure the unique constraint on `TaxonomyUsage` is enforced."""
+        with pytest.raises(IntegrityError):
+            TaxonomyElement.create(
+                db=db,
+                data={
+                    "fides_key": "medium.child",
+                    "name": "Medium Child",
+                    "taxonomy_type": taxonomy.fides_key,
+                    "parent_key": "does.not.exist",
+                },
+            )
+
+    def test_usage_enforces_uniqueness_per_source_target(self, db: Session):
+        """Unique constraint on `TaxonomyUsage` prevents duplicate source->target pairs."""
         # Create taxonomies
         source_taxonomy = Taxonomy.create(
             db=db,
-            data={"fides_key": "tags", "name": "Tags"},
-        )
-        target_taxonomy = Taxonomy.create(
-            db=db,
-            data={"fides_key": "categories", "name": "Categories"},
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        # Allow tags to be applied to categories
-        source_taxonomy.update(db=db, data={"applies_to": ["categories"]})
+        target_taxonomy_key = "data_categories"
+        target_taxonomy_element_key = "user.name"
+
+        # Allow sensitivity to be applied to data categories
+        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
         db.flush()
 
         # Create elements
         source_element = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "sensitive",
-                "name": "Sensitive",
+                "fides_key": "medium",
+                "name": "Medium",
                 "taxonomy_type": source_taxonomy.fides_key,
-            },
-        )
-        target_element = TaxonomyElement.create(
-            db=db,
-            data={
-                "fides_key": "personal",
-                "name": "Personal",
-                "taxonomy_type": target_taxonomy.fides_key,
             },
         )
 
         # Create first usage
         usage = TaxonomyUsage(
             source_element_key=source_element.fides_key,
-            target_element_key=target_element.fides_key,
+            target_element_key=target_taxonomy_element_key,
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy=target_taxonomy.fides_key,
+            target_taxonomy=target_taxonomy_key,
         )
         db.add(usage)
         db.flush()
@@ -352,54 +321,54 @@ class TestTaxonomyModels:
         # Attempt to create a duplicate usage (should fail on unique constraint)
         duplicate = TaxonomyUsage(
             source_element_key=source_element.fides_key,
-            target_element_key=target_element.fides_key,
+            target_element_key=target_taxonomy_element_key,
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy=target_taxonomy.fides_key,
+            target_taxonomy=target_taxonomy_key,
         )
         db.add(duplicate)
         with pytest.raises(IntegrityError):
             db.flush()
         db.rollback()
 
-    def test_taxonomy_usage_element_to_element(self, db: Session):
-        """Test that taxonomy elements can be applied to other taxonomy elements."""
-        # Create source taxonomy
+    def test_usage_supports_element_to_element_mapping(self, db: Session):
+        """Taxonomy elements can be applied to other new taxonomy elements (no legacy linkage)."""
+        # Create source taxonomy (sensitivity)
         source_taxonomy = Taxonomy.create(
             db=db,
-            data={"fides_key": "custom_tags", "name": "Custom Tags"},
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        # Create target taxonomy (e.g., data_categories that custom_tags can be applied to)
+        # Create target taxonomy (impact)
         target_taxonomy = Taxonomy.create(
             db=db,
-            data={"fides_key": "data_categories", "name": "Data Categories"},
+            data={"fides_key": "impact", "name": "Impact"},
         )
 
-        # Allow custom_tags to be applied to data_categories taxonomy
-        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        # Allow sensitivity to be applied to impact taxonomy
+        source_taxonomy.update(db=db, data={"applies_to": [target_taxonomy.fides_key]})
         db.flush()
 
-        # Create source element (a custom tag)
+        # Create source element (sensitivity level)
         source_element = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "custom_tag_1",
-                "name": "Custom Tag 1",
+                "fides_key": "low",
+                "name": "Low",
                 "taxonomy_type": source_taxonomy.fides_key,
             },
         )
 
-        # Create target element (a data category)
+        # Create target element within the new taxonomy
         target_element = TaxonomyElement.create(
             db=db,
             data={
-                "fides_key": "user.contact",
-                "name": "User Contact",
+                "fides_key": "impact.severe",
+                "name": "Severe",
                 "taxonomy_type": target_taxonomy.fides_key,
             },
         )
 
-        # Create a TaxonomyUsage linking the elements
+        # Create a TaxonomyUsage linking the new taxonomy elements
         usage = TaxonomyUsage(
             source_element_key=source_element.fides_key,
             target_element_key=target_element.fides_key,
@@ -420,9 +389,37 @@ class TestTaxonomyModels:
         )
 
         assert retrieved_usage is not None
-        assert retrieved_usage.source_taxonomy == source_taxonomy.fides_key
-        assert retrieved_usage.target_taxonomy == target_taxonomy.fides_key
 
-        # Verify relationships work
-        assert retrieved_usage.source_element.fides_key == source_element.fides_key
-        assert retrieved_usage.target_element.fides_key == target_element.fides_key
+        # Verify stored keys
+        assert retrieved_usage.source_element_key == source_element.fides_key
+        assert retrieved_usage.target_element_key == target_element.fides_key
+
+    def test_usage_requires_allowed_usage(self, db: Session):
+        """Creating a TaxonomyUsage fails if there is no corresponding TaxonomyAllowedUsage."""
+        # Create source taxonomy but DO NOT set applies_to
+        source_taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
+        )
+
+        # Create a source element under the source taxonomy
+        source_element = TaxonomyElement.create(
+            db=db,
+            data={
+                "fides_key": "low",
+                "name": "Low",
+                "taxonomy_type": source_taxonomy.fides_key,
+            },
+        )
+
+        # Attempt to create usage without allowed usage (applies_to) should fail
+        usage = TaxonomyUsage(
+            source_element_key=source_element.fides_key,
+            target_element_key="user.email",
+            source_taxonomy=source_taxonomy.fides_key,
+            target_taxonomy="data_categories",
+        )
+        db.add(usage)
+        with pytest.raises(IntegrityError):
+            db.flush()
+        db.rollback()

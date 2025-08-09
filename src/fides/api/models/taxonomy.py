@@ -15,11 +15,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship, foreign
 
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
+from fides.api.common_exceptions import ValidationError
 
+LEGACY_TAXONOMIES = {"data_categories", "data_uses", "data_subjects"}
 
 class TargetType(str, Enum):
     """Enumeration of target types that taxonomies can apply to."""
@@ -61,6 +63,12 @@ class Taxonomy(Base, FidesBase):
         check_name: bool = True,
     ) -> "Taxonomy":
         """Create a new Taxonomy with proper handling of applies_to."""
+        # Disallow creating taxonomies that represent legacy types
+        fides_key = data.get("fides_key")
+        if fides_key in LEGACY_TAXONOMIES:
+            raise ValidationError(
+                f"Cannot create taxonomy '{fides_key}'. This is a taxonomy managed by the system."
+            )
         applies_to = data.pop("applies_to", [])
 
         # Create the taxonomy
@@ -198,45 +206,14 @@ class TaxonomyUsage(Base):
         return "taxonomy_usage"
 
     # The taxonomy element being applied (e.g., risk)
-    source_element_key = Column(
-        String,
-        ForeignKey(
-            "taxonomy_element.fides_key",
-            ondelete="CASCADE",
-            name="fk_taxonomy_usage_source_element",
-        ),
-        nullable=False,
-        index=True,
-    )
+    source_element_key = Column(String, nullable=False, index=True)
 
     # The taxonomy element it's being applied to (e.g., a data category)
-    target_element_key = Column(
-        String,
-        ForeignKey(
-            "taxonomy_element.fides_key",
-            ondelete="CASCADE",
-            name="fk_taxonomy_usage_target_element",
-        ),
-        nullable=False,
-        index=True,
-    )
+    target_element_key = Column(String, nullable=False, index=True)
 
     # Denormalized taxonomy types for validation and performance
     source_taxonomy = Column(String, nullable=False, index=True)
     target_taxonomy = Column(String, nullable=False, index=True)
-
-    # Relationships for easier access
-    source_element: RelationshipProperty[TaxonomyElement] = relationship(
-        "TaxonomyElement",
-        foreign_keys=[source_element_key],
-        backref="usages_as_source",
-    )
-
-    target_element: RelationshipProperty[TaxonomyElement] = relationship(
-        "TaxonomyElement",
-        foreign_keys=[target_element_key],
-        backref="usages_as_target",
-    )
 
     __table_args__ = (
         # Validate that this type of usage is allowed

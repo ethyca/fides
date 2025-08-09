@@ -17,6 +17,8 @@ from .utils import (
     validate_parent_key_exists,
 )
 
+from fides.api.models.taxonomy import LEGACY_TAXONOMIES
+
 
 class TaxonomyService:
     """
@@ -27,9 +29,6 @@ class TaxonomyService:
     def __init__(self, db: Session):
         self.db = db
         self._legacy_handler = LegacyTaxonomyHandler(db)
-
-        # Protected taxonomies that are part of the core Fides taxonomy system
-        self._legacy_taxonomies = {"data_categories", "data_uses", "data_subjects"}
 
     def get_elements(
         self,
@@ -127,10 +126,10 @@ class TaxonomyService:
     def _get_handler(self, taxonomy_type: str) -> LegacyTaxonomyHandler:
         """Get the handler for taxonomy operations."""
         # Only legacy taxonomies are supported
-        if taxonomy_type not in self._legacy_taxonomies:
+        if taxonomy_type not in LEGACY_TAXONOMIES:
             raise ValueError(
                 f"Taxonomy type '{taxonomy_type}' not supported. "
-                f"Supported taxonomy types: {list(self._legacy_taxonomies)}"
+                f"Supported taxonomy types: {list(LEGACY_TAXONOMIES)}"
             )
         return self._legacy_handler
 

@@ -158,18 +158,6 @@ def upgrade():
         sa.Column("source_taxonomy", sa.String(), nullable=False),
         sa.Column("target_taxonomy", sa.String(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["source_element_key"],
-            ["taxonomy_element.fides_key"],
-            name="fk_taxonomy_usage_source_element",
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["target_element_key"],
-            ["taxonomy_element.fides_key"],
-            name="fk_taxonomy_usage_target_element",
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
             ["source_taxonomy", "target_taxonomy"],
             [
                 "taxonomy_allowed_usage.source_taxonomy_key",
@@ -217,6 +205,18 @@ def upgrade():
         "taxonomy_usage",
         ["source_taxonomy", "target_taxonomy"],
         unique=False,
+    )
+
+    # Seed legacy taxonomies that are managed by the system
+    op.execute(
+        """
+        INSERT INTO taxonomy (id, created_at, updated_at, fides_key, organization_fides_key, tags, name, description)
+        VALUES
+          ('data_categories', now(), now(), 'data_categories', NULL, NULL, 'Data categories', "Taxonomy for data categories"),
+          ('data_uses', now(), now(), 'data_uses', NULL, NULL, 'Data uses', "Taxonomy for data uses"),
+          ('data_subjects', now(), now(), 'data_subjects', NULL, NULL, 'Data subjects', "Taxonomy for data subjects"),
+          ('system_groups', now(), now(), 'system_groups', NULL, NULL, 'System groups', "Taxonomy for system groups")
+        """
     )
 
 
