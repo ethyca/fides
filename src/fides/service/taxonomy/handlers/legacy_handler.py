@@ -76,7 +76,6 @@ class LegacyTaxonomyHandler(TaxonomyHandler):
 
         if element:
             self.db.delete(element)
-            self.db.commit()
             return True
         return False
 
