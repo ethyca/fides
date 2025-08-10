@@ -1,8 +1,10 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import ErrorLayout from "~/features/login/error-layout";
+
 const Index = () => {
-  return <>Missing code or something</>;
+  return <ErrorLayout>Missing code or something</ErrorLayout>;
 };
 
 export default Index;

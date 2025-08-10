@@ -1,17 +1,16 @@
-import {
-  AntAlert as Alert,
-  AntButton as Button,
-  AntText as Text,
-  Center,
-} from "fidesui";
-import NextLink from "next/link";
+import { AntAlert as Alert, AntText as Text } from "fidesui";
 import { useSearchParams } from "next/navigation";
 
-const NotFoundMessage = () => {
+import ErrorLayout from "~/features/login/error-layout";
+
+const useProviderId = () => {
   const searchParams = useSearchParams();
   const providerId = searchParams?.get("providerIdentifier");
+  return (providerId ?? "").trim();
+};
 
-  if (providerId && providerId.length > 0) {
+const NotFoundMessage = ({ providerId }: { providerId: string }) => {
+  if (providerId.length > 0) {
     return (
       <Text>
         An SSO provider with the ID <Text code>{providerId}</Text> could not be
@@ -24,30 +23,25 @@ const NotFoundMessage = () => {
 };
 
 const SsoProviderNotFound = () => {
+  const providerId = useProviderId();
+
   return (
-    <Center
-      h="100%"
-      w="100%"
-      display="flex"
-      justifyContent="center"
-      flexDirection="column"
-      rowGap={10}
-    >
+    <ErrorLayout>
       <Alert
         showIcon
         type="error"
         message="SSO provider not found"
         description={
           <>
-            <NotFoundMessage />
-            <p>Please contact your administrator or login another way.</p>
+            <NotFoundMessage providerId={providerId} />
+            <p>
+              Please a share link to this page with your administrator or login
+              another way.
+            </p>
           </>
         }
       />
-      <NextLink href="/login" passHref legacyBehavior>
-        <Button type="primary">Back to Login</Button>
-      </NextLink>
-    </Center>
+    </ErrorLayout>
   );
 };
 
