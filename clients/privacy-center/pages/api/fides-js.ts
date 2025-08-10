@@ -346,6 +346,8 @@ export default async function handler(
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
       fidesInitializedEventMode:
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
+      fidesUnsupportedRepeatedScriptLoading:
+        environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -353,9 +355,12 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
+  const forcedHeadless = req.query.headless === "true";
+
   log.debug("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
-    experience?.experience_config?.component === ComponentType.HEADLESS;
+    experience?.experience_config?.component === ComponentType.HEADLESS ||
+    forcedHeadless;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
     log.debug("TCF extension enabled, bundling fides-tcf.js...");
@@ -393,7 +398,7 @@ export default async function handler(
   const skipInitialization = initializeQuery === "false";
 
   // keep fidesJS on the first line to avoid sourcemap issues!
-  const script = `(function () {${fidesJS}
+  const script = `(function(){${fidesJS}
   ${fidesGPP}
   ${
     customFidesCss
