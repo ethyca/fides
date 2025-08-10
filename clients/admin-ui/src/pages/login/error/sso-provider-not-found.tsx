@@ -1,4 +1,4 @@
-import { AntAlert as Alert, AntText as Text } from "fidesui";
+import { AntAlert as Alert, AntText as Text, AntTitle as Title } from "fidesui";
 import { useSearchParams } from "next/navigation";
 
 import ErrorLayout from "~/features/login/error-layout";
@@ -30,7 +30,7 @@ const SsoProviderNotFound = () => {
       <Alert
         showIcon
         type="error"
-        message="SSO provider not found"
+        message={<Title level={2}>SSO provider not found</Title>}
         description={
           <>
             <NotFoundMessage providerId={providerId} />

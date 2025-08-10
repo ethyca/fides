@@ -1,7 +1,7 @@
 import { Center, Spinner, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import {

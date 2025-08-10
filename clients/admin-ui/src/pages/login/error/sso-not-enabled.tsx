@@ -1,28 +1,25 @@
-import { AntAlert as Alert, AntButton as Button, Center } from "fidesui";
-import NextLink from "next/link";
+import { AntAlert as Alert, AntLink as Link, AntTitle as Title } from "fidesui";
+
+import ErrorLayout from "~/features/login/error-layout";
 
 const SsoNotEnabled = () => {
   return (
-    <Center
-      h="100%"
-      w="100%"
-      display="flex"
-      justifyContent="center"
-      flexDirection="column"
-      rowGap={10}
-    >
+    <ErrorLayout>
       <Alert
         showIcon
         type="error"
-        message="SSO is not enabled"
+        message={<Title level={2}>SSO is not enabled</Title>}
         description={
-          <>Please contact your administrator or login another way.</>
+          <>
+            Request that your administrator configure{" "}
+            <Link href="https://www.ethyca.com/docs/user-guides/security/sso-authentication">
+              SSO Authentication
+            </Link>{" "}
+            or login another way.
+          </>
         }
       />
-      <NextLink href="/login" passHref legacyBehavior>
-        <Button type="primary">Back to Login</Button>
-      </NextLink>
-    </Center>
+    </ErrorLayout>
   );
 };
 
