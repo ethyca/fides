@@ -187,6 +187,7 @@ const SelectIntegrationType = ({
             <div key={i.placeholder.key}>
               <SelectableIntegrationBox
                 integration={i.placeholder}
+                integrationTypeInfo={i}
                 selected={
                   selectedIntegration?.placeholder.key === i.placeholder.key
                 }
