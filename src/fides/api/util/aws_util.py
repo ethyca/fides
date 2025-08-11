@@ -7,7 +7,6 @@ from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
-
 from fides.config import CONFIG
 
 
@@ -96,9 +95,13 @@ def get_s3_client(
 
     If an `assume_role_arn` is provided, the secrets will be used to
     assume that role and return a Session instantiated with that role.
+
+    If no `assume_role_arn` is provided, and `aws_s3_assume_role_arn` is
+    configured in the storage config, then that config value will be used
+    to assume that role and return a Session instantiated with that role.
     """
 
-    configured_assume_role_arn = CONFIG.credentials.get(
+    configured_assume_role_arn = CONFIG.credentials.get(  # pylint: disable=no-member
         "storage", {}
     ).get(  # pylint: disable=no-member
         "aws_s3_assume_role_arn"
