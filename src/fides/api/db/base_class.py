@@ -109,6 +109,19 @@ class FidesBase:
         """
         return f"{self.__tablename__}.id"
 
+    @classmethod
+    def sanitize_key(cls: Type[T], proposed_key: str) -> str:
+        """
+        Sanitize the key by removing invalid characters.
+
+        Invalid characters are based on the allowed characters defined in this module.
+        Note that this differs slightly from the allowed characters in `sanitize_fides_key`
+        from `core/utils.py`; specifically, `.` are disallowed (converted to `_`) here, while
+        they are allowed in `sanitize_fides_key`. This is because `.` must be allowed in
+        `fides_key`s (), but they are not allowed in `key`s.
+        """
+        return ALLOWED_CHARS.sub("_", proposed_key)
+
     id = Column(String(255), primary_key=True, index=True, default=generate_uuid)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
@@ -323,6 +336,7 @@ class OrmWrappedFidesBase(FidesBase):
                 )
 
         return OrmWrappedFidesBase.persist_obj(db, self)
+
 
     @classmethod
     def persist_obj(cls: Type[T], db: Session, resource: T) -> T:

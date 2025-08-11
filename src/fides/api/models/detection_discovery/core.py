@@ -25,6 +25,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy.orm.query import Query
+from sqlalchemy.orm import validates
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -331,6 +332,12 @@ class MonitorConfig(Base):
                 cron_trigger_dict["day"] = execution_start_date.day
                 cron_trigger_dict["month"] = execution_start_date.month
             data["monitor_execution_trigger"] = cron_trigger_dict
+
+    @validates("key")
+    def validate_key_no_dots(self, _key: str, value: str) -> str:
+        if value and "." in value:
+            raise ValueError('MonitorConfig.key cannot contain "." characters')
+        return value
 
 
 class StagedResourceAncestor(Base):
