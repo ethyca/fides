@@ -19,7 +19,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.67.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.67.2...main)
+
+
+## [2.67.2](https://github.com/ethyca/fides/compare/2.67.1...2.67.2)
+
+### Changed
+- Configured AWS S3 role assumption in client creation code so that all uses support role assumption [#6443](https://github.com/ethyca/fides/pull/6443)
+
 
 
 ## [2.67.1](https://github.com/ethyca/fides/compare/2.67.0...2.67.1)
