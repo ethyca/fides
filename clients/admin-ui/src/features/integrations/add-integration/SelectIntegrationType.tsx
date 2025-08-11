@@ -9,23 +9,24 @@ import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
+import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionType } from "~/types/api";
 import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
 
 enum IntegrationCategoryFilter {
   ALL = "All",
-  DATA_CATALOG = "Data Catalog",
-  DATA_WAREHOUSE = "Data Warehouse",
-  DATABASE = "Database",
-  IDENTITY_PROVIDER = "Identity Provider",
-  WEBSITE = "Website",
+  DATA_CATALOG = "DATA_CATALOG",
+  DATA_WAREHOUSE = "DATA_WAREHOUSE",
+  DATABASE = "DATABASE",
+  IDENTITY_PROVIDER = "IDENTITY_PROVIDER",
+  WEBSITE = "WEBSITE",
   CRM = "CRM",
-  MANUAL = "Manual",
-  MARKETING = "Marketing",
-  ANALYTICS = "Analytics",
-  ECOMMERCE = "E-commerce",
-  COMMUNICATION = "Communication",
-  PAYMENTS = "Payments",
+  MANUAL = "MANUAL",
+  MARKETING = "MARKETING",
+  ANALYTICS = "ANALYTICS",
+  ECOMMERCE = "ECOMMERCE",
+  COMMUNICATION = "COMMUNICATION",
+  CUSTOM = "CUSTOM",
 }
 
 type Props = {
@@ -128,10 +129,17 @@ const SelectIntegrationType = ({
     setTimeout(() => setIsFiltering(false), 100);
   };
 
-  const categoryOptions = availableCategories.map((category) => ({
-    label: category,
-    value: category,
-  }));
+  const categoryOptions = availableCategories.map((category) => {
+    if (category === IntegrationCategoryFilter.ALL) {
+      return { label: category, value: category };
+    }
+    // Map filter enum values to ConnectionCategory enum values
+    const connectionCategory = category as unknown as ConnectionCategory;
+    return {
+      label: getCategoryLabel(connectionCategory),
+      value: category,
+    };
+  });
 
   return (
     <>

@@ -11,6 +11,7 @@ import { useConnectionLogo } from "~/features/common/hooks";
 import useClickOutside from "~/features/common/hooks/useClickOutside";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
+import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 const SelectableIntegrationBox = ({
@@ -68,7 +69,7 @@ const SelectableIntegrationBox = ({
               {integration?.name || "(No name)"}
             </Text>
             <Text color="gray.600" fontSize="xs" mt={1}>
-              {integrationTypeInfo.category}
+              {getCategoryLabel(integrationTypeInfo.category)}
             </Text>
           </Flex>
         </Flex>

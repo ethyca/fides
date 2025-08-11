@@ -104,7 +104,7 @@ const inferCategoryFromType = (identifier: string): ConnectionCategory => {
       "friendbuy",
     ].some((term) => id.includes(term))
   ) {
-    return ConnectionCategory.E_COMMERCE;
+    return ConnectionCategory.ECOMMERCE;
   }
 
   // Marketing/Email platforms
@@ -170,7 +170,7 @@ const inferCategoryFromType = (identifier: string): ConnectionCategory => {
     return ConnectionCategory.COMMUNICATION;
   }
 
-  // Payment platforms - map to E_COMMERCE since PAYMENTS doesn't exist in auto-generated enum
+  // Payment platforms - map to ECOMMERCE since PAYMENTS doesn't exist in auto-generated enum
   if (
     id.includes("stripe") ||
     id.includes("square") ||
@@ -179,7 +179,7 @@ const inferCategoryFromType = (identifier: string): ConnectionCategory => {
     id.includes("recurly") ||
     id.includes("boostr")
   ) {
-    return ConnectionCategory.E_COMMERCE;
+    return ConnectionCategory.ECOMMERCE;
   }
 
   // Data warehouse/storage
