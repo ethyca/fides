@@ -471,7 +471,10 @@ describe("useAntTable", () => {
       expect(tableState.updateFilters).toHaveBeenCalledWith({
         status: ["active"],
       });
-      expect(tableState.updateSorting).toHaveBeenCalledWith(undefined, undefined);
+      expect(tableState.updateSorting).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+      );
     });
 
     it("correctly detects actual pagination changes with undefined fallbacks", () => {
@@ -520,7 +523,10 @@ describe("useAntTable", () => {
 
     it("handles edge case where tableState values are also undefined", () => {
       // Edge case: tableState itself has undefined values
-      const tableState = createTableState({ pageIndex: undefined as any, pageSize: undefined as any });
+      const tableState = createTableState({
+        pageIndex: undefined as any,
+        pageSize: undefined as any,
+      });
       const { result } = renderHook(() =>
         useAntTable<Row, SortField>(tableState),
       );
@@ -537,7 +543,10 @@ describe("useAntTable", () => {
       // Should handle gracefully - both sides undefined means no change
       expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for filtering
       expect(tableState.updateFilters).toHaveBeenCalledWith({});
-      expect(tableState.updateSorting).toHaveBeenCalledWith(undefined, undefined);
+      expect(tableState.updateSorting).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+      );
     });
   });
 });

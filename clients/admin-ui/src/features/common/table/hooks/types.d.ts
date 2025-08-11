@@ -92,13 +92,40 @@ export interface BulkActionsConfig<TData = unknown> {
 }
 
 /**
+ * Configuration for Ant Design table integration
+ */
+export interface AntTableHookConfig<TData> {
+  // Row selection
+  enableSelection?: boolean;
+  getRowKey?: (record: TData) => string;
+
+  // Bulk actions
+  bulkActions?: BulkActionsConfig<TData>;
+
+  // Loading states
+  isLoading?: boolean;
+  isFetching?: boolean;
+
+  // Data
+  dataSource?: TData[];
+  totalRows?: number;
+
+  // Pagination overrides (optional - defaults to tableState values)
+  currentPage?: number;
+  pageSize?: number;
+
+  // Custom table props
+  customTableProps?: Partial<TableProps<TData>>;
+}
+
+/**
  * Type for URL query state updates based on enabled features
  */
-type QueryStateUpdates = {
+export interface QueryStateUpdates {
   page?: number | null;
   size?: number | null;
   sortField?: string | null;
   sortOrder?: string | null;
   filters?: Record<string, FilterValue | null> | null;
   search?: string | null;
-};
+}

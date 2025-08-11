@@ -420,6 +420,7 @@ describe("Action center Asset Results", () => {
 
         // Apply search and sorting to populate URL
         cy.findByPlaceholderText("Search by asset name...").clear().type("gtm");
+        // Debounce buffer
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(400);
         cy.findByRole("columnheader", { name: "Asset" }).click({ force: true });
@@ -447,6 +448,7 @@ describe("Action center Asset Results", () => {
         cy.findByPlaceholderText("Search by asset name...")
           .clear()
           .type("collect");
+        // Debounce buffer
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(400);
         cy.getByTestId("selected-count").should("contain", "1 selected");
@@ -454,6 +456,9 @@ describe("Action center Asset Results", () => {
 
         // Switch tab
         cy.getAntTab("Ignored").click({ force: true });
+        // wait for router
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
         cy.location("hash").should("eq", "#ignored");
 
         // State should be reset
