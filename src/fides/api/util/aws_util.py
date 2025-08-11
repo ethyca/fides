@@ -97,8 +97,9 @@ def get_s3_client(
     assume that role and return a Session instantiated with that role.
 
     If no `assume_role_arn` is provided, and `aws_s3_assume_role_arn` is
-    configured in the storage config, then that config value will be used
-    to assume that role and return a Session instantiated with that role.
+    configured in the global `credentials.storage` config, then the secrets
+    will be used to assume that role and return a Session instantiated with
+    that role.
     """
 
     configured_assume_role_arn = CONFIG.credentials.get(  # pylint: disable=no-member
