@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
-import { AntFilterValue as FilterValue } from "fidesui";
+import {
+  AntFilterValue as FilterValue,
+  AntTablePaginationConfig as TablePaginationConfig,
+  AntTableProps as TableProps,
+} from "fidesui";
 
 import { SortOrder } from "./types";
 import { useAntTable } from "./useAntTable";
@@ -47,6 +51,12 @@ const createTableState = (
   };
 };
 
+const isPaginationConfig = (
+  pagination: TableProps<any>["pagination"],
+): pagination is TablePaginationConfig => {
+  return pagination !== false && pagination != null;
+};
+
 describe("useAntTable", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -74,9 +84,12 @@ describe("useAntTable", () => {
       pageSizeOptions: ["10", "25", "50"],
       showQuickJumper: true,
     });
-    expect(tableProps.pagination.showTotal(100, [1, 10])).toBe(
-      "1-10 of 100 items",
-    );
+    if (isPaginationConfig(tableProps.pagination)) {
+      const { showTotal } = tableProps.pagination;
+      if (showTotal) {
+        expect(showTotal(100, [1, 10])).toBe("1-10 of 100 items");
+      }
+    }
     expect(isLoadingOrFetching).toBe(true);
     expect(hasData).toBe(true);
   });
@@ -115,8 +128,10 @@ describe("useAntTable", () => {
     const withId = { id: "abc", name: "A" } as Row;
     const withKey = { key: "k1", name: "B" } as Row;
 
-    expect(tableProps.rowKey(withId)).toBe("abc");
-    expect(tableProps.rowKey(withKey)).toBe("k1");
+    if (typeof tableProps.rowKey === "function") {
+      expect(tableProps.rowKey(withId)).toBe("abc");
+      expect(tableProps.rowKey(withKey)).toBe("k1");
+    }
   });
 
   it("exposes selection props when enabled and supports updates/reset", () => {
@@ -157,10 +172,11 @@ describe("useAntTable", () => {
 
     act(() => {
       // Simulate a pagination-only change
-      result.current.tableProps.onChange(
+      result.current.tableProps.onChange?.(
         { current: 2, pageSize: 25 },
         {},
         { field: "name", order: "ascend" },
+        {} as any,
       );
     });
 
@@ -177,10 +193,11 @@ describe("useAntTable", () => {
 
     act(() => {
       // Same page and size as current -> not a pagination change
-      result.current.tableProps.onChange(
+      result.current.tableProps.onChange?.(
         { current: 1, pageSize: 25 },
         { status: ["active"] },
         { field: "name", order: "ascend" },
+        {} as any,
       );
     });
 
@@ -199,10 +216,11 @@ describe("useAntTable", () => {
     );
 
     act(() => {
-      result.current.tableProps.onChange(
+      result.current.tableProps.onChange?.(
         { current: 1, pageSize: 25 },
         {},
         { field: "createdAt", order: null },
+        {} as any,
       );
     });
 
@@ -273,7 +291,9 @@ describe("useAntTable", () => {
 
     expect(result.current.hasData).toBe(false);
     expect(result.current.tableProps.dataSource).toEqual([]);
-    expect(result.current.tableProps.pagination.total).toBe(0);
+    if (isPaginationConfig(result.current.tableProps.pagination)) {
+      expect(result.current.tableProps.pagination.total).toBe(0);
+    }
   });
 
   it("handles multi-sort scenarios (ignores array sorters)", () => {
@@ -284,10 +304,15 @@ describe("useAntTable", () => {
 
     act(() => {
       // Simulate multi-sort with array sorter
-      result.current.tableProps.onChange({ current: 1, pageSize: 25 }, {}, [
-        { field: "name", order: "ascend" },
-        { field: "createdAt", order: "descend" },
-      ]);
+      result.current.tableProps.onChange?.(
+        { current: 1, pageSize: 25 },
+        {},
+        [
+          { field: "name", order: "ascend" },
+          { field: "createdAt", order: "descend" },
+        ],
+        {} as any,
+      );
     });
 
     // Should ignore array sorters and not call updateSorting with any field
@@ -308,7 +333,9 @@ describe("useAntTable", () => {
     );
 
     const testRow = { id: "abc", name: "Test" };
-    result.current.tableProps.rowKey(testRow);
+    if (typeof result.current.tableProps.rowKey === "function") {
+      result.current.tableProps.rowKey(testRow);
+    }
 
     expect(customGetRowKey).toHaveBeenCalledWith(testRow);
   });

@@ -1,5 +1,6 @@
 import {
   AntColumnsType as ColumnsType,
+  AntDefaultOptionType as DefaultOptionType,
   AntSpace as Space,
   AntText as Text,
   useToast,
@@ -95,6 +96,7 @@ export const useDiscoveredAssetsTable = ({
     columnFilters,
     pageIndex,
     pageSize,
+    resetState,
     sortField,
     sortOrder,
     searchQuery,
@@ -417,20 +419,6 @@ export const useDiscoveredAssetsTable = ({
     resetSelections,
   } = antTable;
 
-  const resetTableState = useCallback(() => {
-    resetSelections();
-    updateFilters({});
-    updateSearch("");
-    updateSorting(undefined, undefined);
-    updatePagination(1);
-  }, [
-    resetSelections,
-    updateFilters,
-    updateSearch,
-    updateSorting,
-    updatePagination,
-  ]);
-
   const handleBulkAdd = useCallback(async () => {
     const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
@@ -474,7 +462,7 @@ export const useDiscoveredAssetsTable = ({
   ]);
 
   const handleBulkAssignSystem = useCallback(
-    async (selectedSystem?: any) => {
+    async (selectedSystem?: DefaultOptionType) => {
       if (typeof selectedSystem?.value === "string") {
         const result = await updateAssetsSystemMutation({
           monitorId,
@@ -619,9 +607,9 @@ export const useDiscoveredAssetsTable = ({
   const handleTabChange = useCallback(
     async (tab: ActionCenterTabHash) => {
       await onTabChange(tab);
-      resetTableState();
+      resetState();
     },
-    [onTabChange, resetTableState],
+    [onTabChange, resetState],
   );
 
   return {
@@ -636,7 +624,7 @@ export const useDiscoveredAssetsTable = ({
     updateFilters,
     updateSorting,
     updatePagination,
-    resetTableState,
+    resetState,
 
     // Ant Design table integration
     tableProps: antTable.tableProps,

@@ -2,6 +2,7 @@ import {
   AntFilterValue as FilterValue,
   AntSorterResult as SorterResult,
   AntTablePaginationConfig as TablePaginationConfig,
+  AntTableProps as TableProps,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
@@ -10,7 +11,7 @@ import { BulkActionsConfig, SelectionState, SortOrder } from "./types";
 /**
  * Configuration for Ant Design table integration
  */
-export interface AntTableConfig<TData = any> {
+export interface AntTableConfig<TData> {
   // Row selection
   enableSelection?: boolean;
   getRowKey?: (record: TData) => string;
@@ -31,7 +32,7 @@ export interface AntTableConfig<TData = any> {
   pageSize?: number;
 
   // Custom table props
-  customTableProps?: any;
+  customTableProps?: Partial<TableProps<TData>>;
 }
 
 /**
@@ -62,7 +63,7 @@ export interface AntTableConfig<TData = any> {
  * return <Table {...tableProps} rowSelection={selectionProps} />;
  * ```
  */
-export const useAntTable = <TData = any, TSortField extends string = string>(
+export const useAntTable = <TData, TSortField extends string = string>(
   tableState: {
     pageIndex: number;
     pageSize: number;
@@ -71,7 +72,7 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
     columnFilters: Record<string, FilterValue | null>;
     updatePagination: (pageIndex: number, pageSize?: number) => void;
     updateSorting: (sortField?: TSortField, sortOrder?: SortOrder) => void;
-    updateFilters: (filters: Record<string, any>) => void;
+    updateFilters: (filters: Record<string, FilterValue | null>) => void;
     paginationConfig?: {
       pageSizeOptions: number[];
       showSizeChanger: boolean;
@@ -198,7 +199,7 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
   );
 
   // Main table props (memoized)
-  const tableProps = useMemo(
+  const tableProps: Partial<TableProps<TData>> = useMemo(
     () => ({
       dataSource,
       loading: isLoading || isFetching,

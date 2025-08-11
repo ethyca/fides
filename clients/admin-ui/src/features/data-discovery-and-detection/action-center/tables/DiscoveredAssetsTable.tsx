@@ -63,7 +63,7 @@ export const DiscoveredAssetsTable = ({
     columns,
     searchQuery,
     updateSearch,
-    resetTableState,
+    resetState,
 
     // Ant Design table integration
     tableProps,
@@ -136,7 +136,7 @@ export const DiscoveredAssetsTable = ({
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedUrns.length} />}
           <Space size="small">
-            <Button onClick={resetTableState} data-testid="clear-filters">
+            <Button onClick={resetState} data-testid="clear-filters">
               Clear filters
             </Button>
             <Dropdown
