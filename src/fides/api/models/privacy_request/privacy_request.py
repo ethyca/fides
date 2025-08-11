@@ -273,6 +273,17 @@ class PrivacyRequest(
     due_date = Column(DateTime(timezone=True), nullable=True)
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Encryption key used to encrypt the final access package
+    encryption_key = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=True,
+    )
+
     # Encrypted filtered access results saved for later retrieval
     _filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
         "filtered_final_upload",
@@ -554,6 +565,16 @@ class PrivacyRequest(
         encryption_key = cache.get(get_encryption_cache_key(self.id, "key"))
         return encryption_key
 
+    def get_encryption_key(self) -> Optional[str]:
+        """
+        Retrieves the encryption key for this privacy request from the database.
+        If not found in the database, it will be retrieved from the cache.
+        If not found in the cache, return None
+        """
+        if self.encryption_key:
+            return self.encryption_key
+        return self.get_cached_encryption_key()
+
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
         cache: FidesopsRedis = get_cache()
@@ -614,6 +635,15 @@ class PrivacyRequest(
                 },
             )
 
+    def persist_encryption_key(self, encryption_key: Optional[str]) -> None:
+        """Persists the encryption key to the database."""
+        if not encryption_key:
+            return
+
+        session = Session.object_session(self)
+        self.encryption_key = encryption_key
+        self.save(session)
+
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
         prefix = f"id-{self.id}-identity-*"
@@ -633,6 +663,28 @@ class PrivacyRequest(
                     # can still be correctly retrieved from the cache.
                     parsed_value = value
                 result[key.split("-")[-1]] = parsed_value
+        return result
+
+    def get_persisted_identity_data_dict(self) -> Dict[str, Any]:
+        """
+        Get a flat dictionary of identity values from persisted identity data.
+        Extracts plain values from persisted identity, handling LabeledIdentity objects.
+
+        Returns:
+            Dict[str, Any]: Flat dictionary with identity field names as keys and plain values
+        """
+        persisted_identity = self.get_persisted_identity()
+        result = {}
+
+        for key, value in persisted_identity.labeled_dict().items():
+            if value is not None:
+                if isinstance(value, dict) and "value" in value:
+                    # Handle LabeledIdentity format: {"label": "...", "value": "..."}
+                    result[key] = value["value"]
+                else:
+                    # Handle plain values
+                    result[key] = value
+
         return result
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
@@ -975,9 +1027,8 @@ class PrivacyRequest(
                 self.id,
                 webhook.key,
             )
-            # Don't persist derived identities because they aren't provided directly
-            # by the end user
-            self.cache_identity(response_body.derived_identity)
+            # Persist derived identities too
+            self.persist_identity(response_body.derived_identity)
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
@@ -1009,7 +1060,23 @@ class PrivacyRequest(
         """Put the privacy request in a state of awaiting_email_send"""
         if self.awaiting_email_send_at is None:
             self.awaiting_email_send_at = datetime.utcnow()
+            # Add execution log to inform user that processing is paused for email send
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "privacy_request_id": self.id,
+                    "connection_key": None,
+                    "dataset_name": "Pending batch email send",
+                    "collection_name": None,
+                    "status": ExecutionLogStatus.pending,
+                    "message": "Privacy request paused pending batch email send job",
+                    "action_type": (
+                        self.policy.get_action_type() if self.policy else None
+                    ),
+                },
+            )
         self.status = PrivacyRequestStatus.awaiting_email_send
+
         self.save(db=db)
 
     def get_request_task_celery_task_ids(self) -> List[str]:

@@ -191,6 +191,7 @@ class PrivacyRequestService:
                     privacy_preference.privacy_request_id = privacy_request.id
                     privacy_preference.save(db=self.db)
 
+            # TODO: Remove this after we rely solely on persisted values
             cache_data(
                 privacy_request,
                 privacy_request_data.identity,
@@ -198,6 +199,9 @@ class PrivacyRequestService:
                 None,
                 privacy_request_data.custom_privacy_request_fields,
             )
+
+            # Persist the encryption key to the database
+            privacy_request.persist_encryption_key(privacy_request_data.encryption_key)
 
             if masking_secrets := policy.generate_masking_secrets():
                 logger.info(
@@ -303,7 +307,7 @@ class PrivacyRequestService:
             identity=existing_privacy_request.get_persisted_identity(),
             custom_privacy_request_fields=existing_privacy_request.get_persisted_custom_privacy_request_fields(),
             policy_key=existing_privacy_request.policy.key,
-            encryption_key=existing_privacy_request.get_cached_encryption_key(),
+            encryption_key=existing_privacy_request.get_encryption_key(),
             property_id=existing_privacy_request.property_id,
             consent_preferences=existing_privacy_request.consent_preferences,
             source=existing_privacy_request.source,

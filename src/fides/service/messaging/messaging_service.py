@@ -51,7 +51,7 @@ class MessagingService:
             MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
             self.config_proxy.notifications.send_request_review_notification,
         ):
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = privacy_request.get_persisted_identity_data_dict()
             if not identity_data:
                 logger.error(
                     IdentityNotFoundException(
@@ -87,7 +87,7 @@ class MessagingService:
             MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
             self.config_proxy.notifications.send_request_review_notification,
         ):
-            identity_data = privacy_request.get_cached_identity_data()
+            identity_data = privacy_request.get_persisted_identity_data_dict()
             if not identity_data:
                 logger.error(
                     IdentityNotFoundException(

@@ -73,7 +73,9 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
         db = Session.object_session(self.configuration)
 
         for privacy_request in privacy_requests:
-            user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
+            user_identities: Dict[str, Any] = (
+                privacy_request.get_persisted_identity_data_dict()
+            )
             filtered_user_identities: Dict[str, Any] = (
                 filter_user_identities_for_connector(self.config, user_identities)
             )

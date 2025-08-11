@@ -943,6 +943,7 @@ class TestPrivacyRequestCustomFieldFunctions:
     the cache and persist functions on the PrivacyRequest model.
     """
 
+    # TODO: change these
     def test_cache_custom_privacy_request_fields(
         self,
         allow_custom_privacy_request_field_collection_enabled,
@@ -964,7 +965,7 @@ class TestPrivacyRequestCustomFieldFunctions:
                 "support_id": CustomPrivacyRequestField(label="Support ID", value=1),
             }
         )
-        assert privacy_request.get_cached_custom_privacy_request_fields() == {
+        assert privacy_request.get_persisted_custom_privacy_request_fields() == {
             "first_name": "John",
             "last_name": "Doe",
             "subscriber_ids": ["123", "456"],
@@ -1141,6 +1142,26 @@ class TestPrivacyRequestCustomIdentities:
             customer_id=LabeledIdentity(label="Custom ID", value=123),
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
+
+    def test_get_persisted_identity_data_dict(self, db, privacy_request):
+        """Test that get_persisted_identity_data_dict returns a flat dict with plain values"""
+        # Setup: persist identity with both plain and labeled fields
+        privacy_request.persist_identity(
+            db=db,
+            identity={
+                "customer_id": LabeledIdentity(label="Custom ID", value=123),
+                "account_id": LabeledIdentity(label="Account ID", value="456"),
+            },
+        )
+        result = privacy_request.get_persisted_identity_data_dict()
+
+        # Should return flat dict with plain values extracted from LabeledIdentity objects
+        assert result == {
+            "email": "test@example.com",
+            "phone_number": "+12345678910",
+            "customer_id": 123,  # Value extracted from LabeledIdentity
+            "account_id": "456",  # Value extracted from LabeledIdentity
+        }
 
 
 class TestPrivacyRequestAttachments:
