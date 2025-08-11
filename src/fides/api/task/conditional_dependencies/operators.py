@@ -4,59 +4,91 @@ import operator as py_operator
 from fides.api.task.conditional_dependencies.schemas import Operator
 
 # Define operator methods for validation
+#
+# None Value Handling:
+# - Basic operators (eq, neq, exists, not_exists) handle None naturally
+#   * Note: eq and neq use Python's built-in behavior, so True == 1 returns True
+# - Numeric operators return False for None values (can't compare None with numbers)
+#   * Note: Boolean values are excluded from numeric comparisons (True < 10 returns False)
+# - String operators return False for None values (can't perform string operations on None)
+# - List operators handle None naturally using Python's built-in behavior:
+#   * None in [None] returns True
+#   * None not in [None] returns False
+#   * None in [] returns False
+#   * None not in [] returns True
+#   * This allows None to be a valid list element for membership testing
 operator_methods = {
+    # Basic operators - handle None naturally using Python's built-in behavior
     Operator.exists: lambda a, _: a is not None,
     Operator.not_exists: lambda a, _: a is None,
     Operator.eq: py_operator.eq,
+    # None == None returns True, None == "anything" returns False
     Operator.neq: py_operator.ne,
+    # None != None returns False, None != "anything" returns True
+    Operator.neq: py_operator.ne,
+    # Numeric comparison operators - return False for None or non-numeric types
+    # Note: Boolean values are excluded as they are not considered numeric for comparisons
+    # This differs from basic comparison operators (eq, neq) which use Python's built-in behavior
     Operator.lt: lambda a, b: (
-        a < b if a is not None and isinstance(a, numbers.Number) else False
+        a < b
+        if a is not None and isinstance(a, numbers.Number) and not isinstance(a, bool)
+        else False
     ),
     Operator.lte: lambda a, b: (
-        a <= b if a is not None and isinstance(a, numbers.Number) else False
+        a <= b
+        if a is not None and isinstance(a, numbers.Number) and not isinstance(a, bool)
+        else False
     ),
     Operator.gt: lambda a, b: (
-        a > b if a is not None and isinstance(a, numbers.Number) else False
+        a > b
+        if a is not None and isinstance(a, numbers.Number) and not isinstance(a, bool)
+        else False
     ),
     Operator.gte: lambda a, b: (
-        a >= b if a is not None and isinstance(a, numbers.Number) else False
+        a >= b
+        if a is not None and isinstance(a, numbers.Number) and not isinstance(a, bool)
+        else False
     ),
     Operator.list_contains: lambda a, b: (
         # If user provides a list, check if column value is in it
+        # Note: Handles None values naturally using Python's built-in behavior
         a in b
-        if isinstance(b, list) and b
-        else
+        if isinstance(b, list)
         # If column value is a list, check if user value is in it
-        b in a if isinstance(a, list) else False
+        else b in a if isinstance(a, list) else False
     ),
     Operator.not_in_list: lambda a, b: (
         # If user provides a list, check if column value is NOT in it
+        # Note: Handles None values naturally using Python's built-in behavior
         a not in b
-        if isinstance(b, list) and b
-        else
+        if isinstance(b, list)
         # If column value is a list, check if user value is NOT in it
-        b not in a if isinstance(a, list) else False
+        else b not in a if isinstance(a, list) else False
     ),
     Operator.list_intersects: lambda a, b: (
         # Check if there are any common elements between the lists
+        # Note: Returns False for None values because both values must be lists
         bool(set(a) & set(b))
         if isinstance(a, list) and isinstance(b, list)
         else False
     ),
     Operator.list_subset: lambda a, b: (
         # Check if column list is a subset of user's list
+        # Note: Returns False for None values because both values must be lists
         set(a).issubset(set(b))
         if isinstance(a, list) and isinstance(b, list)
         else False
     ),
     Operator.list_superset: lambda a, b: (
         # Check if column list is a superset of user's list
+        # Note: Returns False for None values because both values must be lists
         set(a).issuperset(set(b))
         if isinstance(a, list) and isinstance(b, list)
         else False
     ),
     Operator.list_disjoint: lambda a, b: (
         # Check if lists have no common elements
+        # Note: Returns False for None values because both values must be lists
         set(a).isdisjoint(set(b))
         if isinstance(a, list) and isinstance(b, list)
         else False
