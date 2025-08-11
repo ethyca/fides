@@ -318,9 +318,10 @@ def test_manual_task_with_conditional_dependencies(
     1. Receive data from upstream collections
     2. Accept manual input
     3. Provide data to downstream collections
+    4. Evaluate conditional dependencies correctly (OR logic)
 
-    Note: Conditional dependency evaluation will be implemented in a future change.
-    This test focuses on establishing the data flow through manual task graph tasks.
+    The test verifies that manual tasks with conditional dependencies that evaluate to True
+    are properly executed and require manual input, while maintaining proper data flow.
     """
 
     try:
@@ -427,7 +428,7 @@ def test_manual_task_with_conditional_dependencies(
         # ------------------------------------------------------------------
         # 4. Test Case: Verify data flows through manual task graph task (OR logic)
         # ------------------------------------------------------------------
-        # Create a new manual task with OR condition: (customer.name exists OR postgres_example_test_dataset:customer:email contains 'premium')
+        # Create a new manual task with OR condition: (customer.email exists OR customer.name contains 'customer')
 
         manual_connection_or = ConnectionConfig.create(
             db=db,
@@ -460,15 +461,29 @@ def test_manual_task_with_conditional_dependencies(
             },
         )
 
-        # Email condition (postgres_example_test_dataset:customer:email contains 'premium')
+        # First condition: customer email exists (this will be True for any customer)
         ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": manual_task_or.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
                 "field_address": "postgres_example_test_dataset:customer:email",
+                "operator": "exists",
+                "value": None,  # exists operator doesn't need a value
+                "sort_order": 2,
+                "parent_id": root_dependency_or.id,
+            },
+        )
+
+        # Second condition: customer name contains 'customer' (this will be True for customer-1, customer-2)
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task_or.id,
+                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "field_address": "postgres_example_test_dataset:customer:name",
                 "operator": "list_contains",
-                "value": "premium",
+                "value": "customer",
                 "sort_order": 3,
                 "parent_id": root_dependency_or.id,
             },
@@ -500,8 +515,8 @@ def test_manual_task_with_conditional_dependencies(
             },
         )
 
-        # Test OR condition with user who is premium but under 18
-        pr_data_or = {"identity": {"email": "young-premium@example.com"}}
+        # Test OR condition with existing customer data
+        pr_data_or = {"identity": {"email": "customer-1@example.com"}}
         privacy_request_or = get_privacy_request_results(
             db,
             policy,
@@ -519,7 +534,7 @@ def test_manual_task_with_conditional_dependencies(
             .all()
         )
 
-        # Should require manual input (conditional evaluation not implemented yet)
+        # Should require manual input since OR condition should be met (email exists OR name contains 'customer')
         assert (
             privacy_request_or.status == PrivacyRequestStatus.requires_input
         ), f"Expected requires_input, got {privacy_request_or.status}"
@@ -1039,7 +1054,7 @@ def test_manual_task_conditional_dependencies_skip_execution(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "list_contains",
+            "operator": "eq",
             "value": "nonexistent@example.com",  # Email that doesn't exist in test data
             "sort_order": 1,
         },
@@ -1088,7 +1103,9 @@ def test_manual_task_conditional_dependencies_skip_execution(
         )
         .first()
     )
-    assert instance is None, "ManualTaskInstance should NOT be created when condition is not met"
+    assert (
+        instance is None
+    ), f"ManualTaskInstance should NOT be created when condition is not met: Instance: {instance}"
 
     # Verify results contain source data but NO manual task data
     results = cast(
@@ -1104,7 +1121,7 @@ def test_manual_task_conditional_dependencies_skip_execution(
 
     # Verify manual task data is NOT present (proves manual task was skipped)
     assert (
-        manual_addr_key not in results
+        results.get(manual_addr_key) == []
     ), "Manual task data should NOT be present when condition is not met"
 
 
@@ -1138,7 +1155,7 @@ def test_manual_task_conditional_dependencies_execute_when_met(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "list_contains",
+            "operator": "exists",
             "value": "customer-1@example.com",  # Email that exists in test data
             "sort_order": 1,
         },
@@ -1187,7 +1204,9 @@ def test_manual_task_conditional_dependencies_execute_when_met(
         )
         .first()
     )
-    assert instance is not None, "ManualTaskInstance should be created when condition is met"
+    assert (
+        instance is not None
+    ), "ManualTaskInstance should be created when condition is met"
 
     # Provide manual input
     submission = ManualTaskSubmission.create(

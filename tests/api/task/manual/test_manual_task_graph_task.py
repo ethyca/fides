@@ -567,3 +567,349 @@ class TestManualTaskConditionalDependencies:
             # Verify that NO instances were created
             updated_instances = access_privacy_request.manual_task_instances
             assert len(updated_instances) == 0
+
+
+class TestManualTaskDataExtraction:
+    """Test the _extract_conditional_dependency_data_from_inputs method in ManualTaskGraphTask"""
+
+    def setup_method(self):
+        """Import CollectionAddress for all test methods"""
+        from fides.api.graph.config import CollectionAddress
+
+        self.CollectionAddress = CollectionAddress
+
+    def test_extract_conditional_dependency_data_from_inputs_simple_field(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test extracting a simple field like 'postgres_example_test_dataset:customer:email'"""
+        # Mock the execution node to have specific input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create test input data
+            inputs = [
+                [
+                    {"id": 1, "email": "customer-1@example.com", "name": "Customer 1"},
+                    {"id": 2, "email": "customer-2@example.com", "name": "Customer 2"},
+                ]
+            ]
+
+            # Create a conditional dependency that references the email field
+            from fides.api.models.manual_task.conditional_dependency import (
+                ManualTaskConditionalDependency,
+            )
+
+            dependency = ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:customer:email",
+                    "operator": "exists",
+                    "value": None,
+                    "sort_order": 1,
+                },
+            )
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should extract the email field data
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {
+                        "email": "customer-1@example.com"  # First non-None value found
+                    }
+                }
+            }
+            assert result == expected
+
+    def test_extract_conditional_dependency_data_from_inputs_nested_field(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test extracting nested fields like 'dataset:collection:subcollection:field'"""
+        # Mock the execution node to have specific input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create test input data with nested structure
+            inputs = [
+                [{"id": 1, "profile": {"age": 25, "preferences": {"theme": "dark"}}}]
+            ]
+
+            # Create a conditional dependency that references a deeply nested field
+            from fides.api.models.manual_task.conditional_dependency import (
+                ManualTaskConditionalDependency,
+            )
+
+            dependency = ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
+                    "operator": "eq",
+                    "value": "dark",
+                    "sort_order": 1,
+                },
+            )
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should extract the nested field data
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {"profile": {"preferences": {"theme": "dark"}}}
+                }
+            }
+            assert result == expected
+
+    def test_extract_conditional_dependency_data_from_inputs_missing_field(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test behavior when the field doesn't exist in input data"""
+        # Mock the execution node to have specific input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create test input data without the expected field
+            inputs = [[{"id": 1, "name": "Customer 1"}]]  # No email field
+
+            # Create a conditional dependency that references a missing field
+            from fides.api.models.manual_task.conditional_dependency import (
+                ManualTaskConditionalDependency,
+            )
+
+            dependency = ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:customer:email",
+                    "operator": "exists",
+                    "value": None,
+                    "sort_order": 1,
+                },
+            )
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should include the field with None value
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {"email": None}  # Field not found, so None
+                }
+            }
+            assert result == expected
+
+    def test_extract_conditional_dependency_data_from_inputs_multiple_collections(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test extracting from multiple input collections"""
+        # Mock the execution node to have multiple input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                ),
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:address"
+                ),
+            ]
+
+            # Create test input data for multiple collections
+            inputs = [
+                [{"id": 1, "email": "customer-1@example.com"}],  # customer collection
+                [{"id": 1, "city": "New York"}],  # address collection
+            ]
+
+            # Create conditional dependencies that reference both collections
+            from fides.api.models.manual_task.conditional_dependency import (
+                ManualTaskConditionalDependency,
+            )
+
+            ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:customer:email",
+                    "operator": "exists",
+                    "value": None,
+                    "sort_order": 1,
+                },
+            )
+            ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:address:city",
+                    "operator": "eq",
+                    "value": "New York",
+                    "sort_order": 2,
+                },
+            )
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should extract data from both collections
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {"email": "customer-1@example.com"},
+                    "address": {"city": "New York"},
+                }
+            }
+            assert result == expected
+
+    def test_extract_conditional_dependency_data_from_inputs_field_address_parsing(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test that FieldAddress.from_string() works correctly"""
+        # Mock the execution node to have specific input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create test input data
+            inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
+
+            # Create a conditional dependency with a complex field address
+            from fides.api.models.manual_task.conditional_dependency import (
+                ManualTaskConditionalDependency,
+            )
+
+            dependency = ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:customer:email",
+                    "operator": "exists",
+                    "value": None,
+                    "sort_order": 1,
+                },
+            )
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should correctly parse the field address and extract the data
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {"email": "customer-1@example.com"}
+                }
+            }
+            assert result == expected
+
+    def test_extract_conditional_dependency_data_from_inputs_empty_inputs(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test behavior with empty input data"""
+        # Mock the execution node to have specific input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create empty input data
+            inputs = [[]]  # Empty list for the collection
+
+            # Create a conditional dependency
+            from fides.api.models.manual_task.conditional_dependency import (
+                ManualTaskConditionalDependency,
+            )
+
+            dependency = ManualTaskConditionalDependency.create(
+                db=db,
+                data={
+                    "manual_task_id": manual_task.id,
+                    "condition_type": "leaf",
+                    "field_address": "postgres_example_test_dataset:customer:email",
+                    "operator": "exists",
+                    "value": None,
+                    "sort_order": 1,
+                },
+            )
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should handle empty inputs gracefully
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {"email": None}  # No data to extract
+                }
+            }
+            assert result == expected
+
+    def test_extract_conditional_dependency_data_from_inputs_no_conditional_dependencies(
+        self, manual_task_graph_task, db, manual_task
+    ):
+        """Test behavior when there are no conditional dependencies"""
+        # Mock the execution node to have specific input keys
+        with patch.object(manual_task_graph_task, "execution_node") as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create test input data
+            inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
+
+            # No conditional dependencies created
+
+            # Extract the data
+            result = (
+                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
+                    *inputs, manual_task=manual_task
+                )
+            )
+
+            # Should return empty dict when no conditional dependencies exist
+            assert result == {}

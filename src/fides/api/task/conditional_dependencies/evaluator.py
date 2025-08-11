@@ -35,7 +35,16 @@ class ConditionEvaluator:
         self, condition: ConditionLeaf, data: Union[dict, Any]
     ) -> bool:
         """Evaluate a leaf condition against input data"""
-        data_value = self._get_nested_value(data, condition.field_address.split("."))
+        # Handle both colon-separated and dot-separated field addresses
+        if ":" in condition.field_address:
+            # Full field address like "dataset:collection:field" - split on colons
+            keys = condition.field_address.split(":")
+        else:
+            # Relative field path like "field.subfield" - split on dots
+            keys = condition.field_address.split(".")
+
+        actual_value = self._get_nested_value(data, keys)
+
         # Apply operator and return result
         return self._apply_operator(data_value, condition.operator, condition.value)
 
@@ -57,12 +66,14 @@ class ConditionEvaluator:
         return operator_func(results)
 
     def _get_nested_value(self, data: Union[dict, Any], keys: list[str]) -> Any:
-        """Get nested value from data using dot notation
+        """Get nested value from data using dot notation or colon notation
 
         Supports both simple dictionary access and Fides reference structures:
         - Simple dict: data["user"]["name"]
         - Fides FieldAddress: data.get_field_value(FieldAddress("dataset", "collection", "field_address"))
         - Fides Collection: data.get_field_value(FieldPath("field_address", "subfield"))
+
+        Also supports full field addresses with dataset:collection:field format
         """
         if not keys:
             return data
@@ -77,7 +88,7 @@ class ConditionEvaluator:
             except (AttributeError, ValueError):
                 pass
 
-        # Fall back to dictionary access
+        # Fall back to dictionary access for all path types
         for key in keys:
             if not isinstance(current, dict):
                 current = current.get(key, {}) if hasattr(current, "get") else None

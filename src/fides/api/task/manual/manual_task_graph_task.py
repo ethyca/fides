@@ -4,7 +4,7 @@ from loguru import logger
 from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
-from fides.api.graph.config import FieldAddress
+from fides.api.graph.config import CollectionAddress, FieldAddress
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -101,12 +101,28 @@ class ManualTaskGraphTask(GraphTask):
 
         # Extract data for each conditional dependency field address
         for field_address in field_addresses:
-            field_address_obj = FieldAddress.from_string(field_address)
-            source_collection = field_address_obj.collection_address()
+            # Handle field addresses with multiple colons (e.g., "dataset:collection:field:subfield")
+            # by parsing them manually since FieldAddress.from_string() only handles dots for nested fields
+            if field_address.count(":") > 2:
+                # Parse manually: dataset:collection:field:subfield -> dataset, collection, [field, subfield]
+                parts = field_address.split(":")
+                dataset = parts[0]
+                collection = parts[1]
+                field_path = parts[2:]
+                source_collection = CollectionAddress(dataset, collection)
+            else:
+                # Use standard FieldAddress parsing for simple cases
+                field_address_obj = FieldAddress.from_string(field_address)
+                source_collection = field_address_obj.collection_address()
+                field_path = (
+                    list(field_address_obj.field_path.levels)
+                    if field_address_obj.field_path.levels
+                    else ["id"]
+                )
 
             logger.info(
-                "Looking for field '{}' from collection '{}'",
-                field_address,
+                "Looking for field path '{}' from collection '{}'",
+                ".".join(field_path),
                 source_collection,
             )
 
@@ -116,27 +132,41 @@ class ManualTaskGraphTask(GraphTask):
                 if input_collection == source_collection and i < len(inputs):
                     input_data = inputs[i]
                     if input_data:
-                        # Extract the specific field from this collection's data
-                        field_name = field_address_obj.field_path.levels[-1] if field_address_obj.field_path.levels else "id"
-
                         logger.info(
-                            "Searching for field '{}' in collection '{}' data: {}",
-                            field_name,
+                            "Searching for field path '{}' in collection '{}' data: {}",
+                            ".".join(field_path),
                             source_collection,
                             input_data[:2] if input_data else "empty",
                         )
 
                         # Look for the field in the input data
                         for row in input_data:
-                            if isinstance(row, dict) and field_name in row:
-                                field_value = row[field_name]
+                            logger.info(
+                                "Checking row: {} (type: {}) for field path '{}'",
+                                row,
+                                type(row),
+                                ".".join(field_path),
+                            )
+
+                            # Traverse the nested field path to get the actual value
+                            field_value = self._extract_nested_field_value(
+                                row, field_path
+                            )
+
+                            if field_value is not None:
                                 logger.info(
-                                    "Found field '{}' = {} in row: {}",
-                                    field_name,
+                                    "Found field path '{}' = {} in row: {}",
+                                    ".".join(field_path),
                                     field_value,
                                     row,
                                 )
                                 break
+
+                            logger.info(
+                                "Field path '{}' not found in row: {}",
+                                ".".join(field_path),
+                                row,
+                            )
                         if field_value is not None:
                             break
 
@@ -158,18 +188,41 @@ class ManualTaskGraphTask(GraphTask):
 
         return conditional_data
 
+    def _extract_nested_field_value(self, data: Any, field_path: list[str]) -> Any:
+        """
+        Extract a nested field value by traversing the field path.
+
+        Args:
+            data: The data to extract from (usually a dict)
+            field_path: List of field names to traverse (e.g., ["profile", "preferences", "theme"])
+
+        Returns:
+            The value at the end of the field path, or None if not found
+        """
+        if not field_path:
+            return data
+
+        current = data
+        for field_name in field_path:
+            if isinstance(current, dict) and field_name in current:
+                current = current[field_name]
+            else:
+                return None
+
+        return current
+
     def _set_nested_value(self, field_address: str, value: Any) -> dict[str, Any]:
         """
         Clean and readable approach for building nested dictionaries.
 
         Args:
-            field_address: Dot-separated field address (e.g., "user.profile.age")
+            field_address: Colon-separated field address (e.g., "dataset:collection:field")
             value: The value to set
 
         Returns:
             Dictionary with the nested structure containing the value
         """
-        parts = field_address.split(".")
+        parts = field_address.split(":")
         result = value
 
         # Build nested structure from innermost to outermost
@@ -509,7 +562,9 @@ class ManualTaskGraphTask(GraphTask):
                 i,
                 type(input_data),
                 len(input_data) if input_data else 0,
-                input_data[:2] if input_data and len(input_data) > 0 else "empty",  # Show first 2 rows
+                (
+                    input_data[:2] if input_data and len(input_data) > 0 else "empty"
+                ),  # Show first 2 rows
             )
 
         # Log execution node details
@@ -521,6 +576,8 @@ class ManualTaskGraphTask(GraphTask):
 
         conditional_data = self._get_conditional_data_and_evaluate(manual_task, *inputs)
         if conditional_data is None:
+            # Clean up any existing ManualTaskInstances for this manual task since conditions are not met
+            self._cleanup_manual_task_instances(manual_task, self.resources.request)
             return None
 
         # Check if any eligible manual tasks have applicable configs
@@ -603,3 +660,38 @@ class ManualTaskGraphTask(GraphTask):
         # Mark successful completion
         self.log_end(ActionType.erasure)
         return 0
+
+    def _cleanup_manual_task_instances(
+        self, manual_task: ManualTask, privacy_request: PrivacyRequest
+    ) -> None:
+        """
+        Clean up ManualTaskInstances for a manual task when conditional dependencies are not met.
+
+        This method removes any existing instances that were created before the conditional
+        dependency evaluation determined the task should not execute.
+        """
+        # Find all instances for this manual task and privacy request
+        instances_to_remove = [
+            instance
+            for instance in privacy_request.manual_task_instances
+            if instance.task_id == manual_task.id
+        ]
+
+        if instances_to_remove:
+            logger.info(
+                "Cleaning up {} ManualTaskInstance(s) for manual task {} since conditional dependencies are not met",
+                len(instances_to_remove),
+                manual_task.id,
+            )
+
+            # Remove instances from the database
+            for instance in instances_to_remove:
+                self.resources.session.delete(instance)
+
+            # Commit the changes
+            self.resources.session.commit()
+
+            logger.info(
+                "Successfully cleaned up ManualTaskInstance(s) for manual task {}",
+                manual_task.id,
+            )
