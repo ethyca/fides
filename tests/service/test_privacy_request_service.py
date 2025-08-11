@@ -427,6 +427,7 @@ class TestPrivacyRequestService:
         )
         assert error_logs.count() == 0
 
+    @pytest.mark.integration
     def test_create_privacy_request_with_masking_secrets(
         self,
         privacy_request_service: PrivacyRequestService,
