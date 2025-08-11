@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union, Any
+from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -104,7 +104,9 @@ class ConditionGroup(BaseModel):
 class ConditionEvaluationResult(BaseModel):
     field_address: str
     operator: Operator
-    expected_value: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]]
+    expected_value: Optional[
+        Union[str, int, float, bool, List[Union[str, int, float, bool]]]
+    ]
     actual_value: Any
     result: bool
     message: str

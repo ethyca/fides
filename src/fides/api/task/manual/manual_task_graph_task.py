@@ -22,6 +22,10 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
+from fides.api.task.conditional_dependencies.logging_utils import (
+    format_evaluation_failure_message,
+    format_evaluation_success_message,
+)
 from fides.api.task.graph_task import GraphTask, retry
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
@@ -44,16 +48,17 @@ class ManualTaskGraphTask(GraphTask):
             self.execution_node.address
         )
 
+    def dry_run_task(self) -> int:
+        """Return estimated row count for dry run - manual tasks don't have predictable counts"""
+        return self.DRY_RUN_PLACEHOLDER_VALUE
+
     def _parse_field_address(self, field_address: str) -> tuple[str, list[str]]:
         """
         Parse a field address into dataset, collection, and field path.
         """
         if field_address.count(":") > 2:
             # Parse manually: dataset:collection:field:subfield -> dataset, collection, [field, subfield]
-            parts = field_address.split(":")
-            dataset = parts[0]
-            collection = parts[1]
-            field_path = parts[2:]
+            dataset, collection, *field_path = field_address.split(":")
             source_collection_key = f"{dataset}:{collection}"
         else:
             # Use standard FieldAddress parsing for simple cases
@@ -130,12 +135,6 @@ class ManualTaskGraphTask(GraphTask):
                         break
                 # Found the field value, break out of the inner loop (over rows)
                 # but continue with the outer loop to process this field
-            else:
-                logger.warning(
-                    "No input data found for collection '{}' in collection_data_map: {}",
-                    source_collection_key,
-                    list(collection_data_map.keys()),
-                )
 
             # Always include the field in conditional_data, even if value is None
             # This allows conditional dependencies to evaluate existence, non-existence, and falsy values
@@ -189,20 +188,17 @@ class ManualTaskGraphTask(GraphTask):
             if len(parts) == 3:
                 # Simple case: dataset:collection:field
                 field = parts[2]
-                result = {dataset: {collection: {field: value}}}
-            else:
-                # Nested case: dataset:collection:nested:field
-                # Build the nested structure from the remaining parts
-                nested_structure = value
-                for part in reversed(parts[2:]):
-                    nested_structure = {part: nested_structure}
+                return {dataset: {collection: {field: value}}}
 
-                result = {dataset: {collection: nested_structure}}
-            return result
+            # Nested case: dataset:collection:nested:field
+            # Build the nested structure from the remaining parts
+            nested_structure = value
+            for part in reversed(parts[2:]):
+                nested_structure = {part: nested_structure}
+            return {dataset: {collection: nested_structure}}
 
         # Fallback for unexpected formats
-        result = {field_address: value}
-        return result
+        return {field_address: value}
 
     def _evaluate_conditional_dependencies(
         self, manual_task: ManualTask, conditional_data: dict[str, Any]
@@ -232,22 +228,11 @@ class ManualTaskGraphTask(GraphTask):
 
         # Evaluate the condition using the data from regular tasks
         evaluator = ConditionEvaluator(self.resources.session)
-        result, evaluation_result = evaluator.evaluate_rule(root_condition, conditional_data)
+        result, evaluation_result = evaluator.evaluate_rule(
+            root_condition, conditional_data
+        )
 
         return result, evaluation_result
-
-    def _get_manual_task_or_none(self) -> Optional[ManualTask]:
-        # Verify this is a manual task address
-        if not ManualTaskAddress.is_manual_task_address(self.execution_node.address):
-            raise ValueError(
-                f"Invalid manual task address: {self.execution_node.address}"
-            )
-
-        # Get the manual task for this connection config (1:1 relationship)
-        manual_task = get_manual_task_for_connection_config(
-            self.resources.session, self.connection_key
-        )
-        return manual_task
 
     def _get_conditional_data_and_evaluate(
         self, manual_task: ManualTask, *inputs: list[Row]
@@ -263,83 +248,18 @@ class ManualTaskGraphTask(GraphTask):
         )
         if not should_execute:
             # Create detailed message about which conditions failed
-            detailed_message = self._format_evaluation_failure_message(evaluation_result)
+            detailed_message = format_evaluation_failure_message(evaluation_result)
             self.resources.request.add_skipped_execution_log(
                 db=self.resources.session,
                 connection_key=self.connection_key,
                 dataset_name=None,
                 collection_name=str(self.execution_node.address),
                 message=f"Manual task conditional dependencies not met. {detailed_message}",
-                action_type=self.resources.privacy_request_task.action_type,
+                action_type=ActionType(self.resources.privacy_request_task.action_type),
             )
             return None, evaluation_result
 
-        # Create detailed message about which conditions succeeded
-        detailed_message = self._format_evaluation_success_message(evaluation_result)
-
         return conditional_data, evaluation_result
-
-    def _format_evaluation_failure_message(self, evaluation_result: Any) -> str:
-        """Format a detailed message about which conditions failed"""
-        if not evaluation_result:
-            return "No conditional dependencies to evaluate."
-
-        return self._format_evaluation_message(evaluation_result, success=False)
-
-    def _format_evaluation_success_message(self, evaluation_result: Any) -> str:
-        """Format a detailed message about which conditions succeeded"""
-        if not evaluation_result:
-            return "No conditional dependencies to evaluate."
-
-        return self._format_evaluation_message(evaluation_result, success=True)
-
-    def _format_evaluation_message(self, evaluation_result: Any, success: bool) -> str:
-        """Format evaluation results into a readable message"""
-        if hasattr(evaluation_result, 'field_address'):
-            # This is a leaf condition
-            condition_desc = f"{evaluation_result.field_address} {evaluation_result.operator}"
-            if evaluation_result.expected_value is not None:
-                condition_desc += f" {evaluation_result.expected_value}"
-
-            if success:
-                return f"Condition '{condition_desc}' was met"
-            else:
-                return f"Condition '{condition_desc}' was not met"
-
-        elif hasattr(evaluation_result, 'logical_operator'):
-            # This is a group condition
-            operator = evaluation_result.logical_operator
-            results = evaluation_result.condition_results
-
-            if success:
-                condition_descriptions = []
-                for result in results:
-                    if hasattr(result, 'field_address'):
-                        desc = f"{result.field_address} {result.operator}"
-                        if result.expected_value is not None:
-                            desc += f" {result.expected_value}"
-                        condition_descriptions.append(f"'{desc}' (met)")
-                    else:
-                        condition_descriptions.append(self._format_evaluation_message(result, True))
-
-                return f"All conditions in {operator.upper()} group were met: {'; '.join(condition_descriptions)}"
-            else:
-                failed_conditions = []
-                for result in results:
-                    if hasattr(result, 'field_address') and not result.result:
-                        desc = f"{result.field_address} {result.operator}"
-                        if result.expected_value is not None:
-                            desc += f" {result.expected_value}"
-                        failed_conditions.append(f"'{desc}' (not met)")
-                    elif hasattr(result, 'logical_operator') and not result.result:
-                        failed_conditions.append(self._format_evaluation_message(result, False))
-
-                if failed_conditions:
-                    return f"Failed conditions in {operator.upper()} group: {'; '.join(failed_conditions)}"
-                else:
-                    return f"Group condition with {operator.upper()} operator failed"
-
-        return "Evaluation result details unavailable"
 
     def _check_manual_task_configs(
         self,
@@ -545,9 +465,18 @@ class ManualTaskGraphTask(GraphTask):
                 )
         return attachment_map or None
 
-    def dry_run_task(self) -> int:
-        """Return estimated row count for dry run - manual tasks don't have predictable counts"""
-        return self.DRY_RUN_PLACEHOLDER_VALUE
+    def _get_manual_task_or_none(self) -> Optional[ManualTask]:
+        # Verify this is a manual task address
+        if not ManualTaskAddress.is_manual_task_address(self.execution_node.address):
+            raise ValueError(
+                f"Invalid manual task address: {self.execution_node.address}"
+            )
+
+        # Get the manual task for this connection config (1:1 relationship)
+        manual_task = get_manual_task_for_connection_config(
+            self.resources.session, self.connection_key
+        )
+        return manual_task
 
     def _run_request(
         self,
@@ -581,7 +510,9 @@ class ManualTaskGraphTask(GraphTask):
         ):
             return None
 
-        conditional_data, evaluation_result = self._get_conditional_data_and_evaluate(manual_task, *inputs)
+        conditional_data, evaluation_result = self._get_conditional_data_and_evaluate(
+            manual_task, *inputs
+        )
         if conditional_data is None:
             # Clean up any existing ManualTaskInstances for this manual task since conditions are not met
             self._cleanup_manual_task_instances(manual_task, self.resources.request)
@@ -595,16 +526,17 @@ class ManualTaskGraphTask(GraphTask):
         )
 
         # Check if all manual task instances have submissions for applicable configs only
-        # Log the conditional dependency evaluation result
-        detailed_message = self._format_evaluation_success_message(evaluation_result)
-        self.resources.request.add_pending_execution_log(
-            db=self.resources.session,
-            connection_key=self.connection_key,
-            dataset_name=None,
-            collection_name=str(self.execution_node.address),
-            message=f"Manual task conditional dependencies met. {detailed_message}",
-            action_type=self.resources.privacy_request_task.action_type,
-        )
+        # Log the conditional dependency evaluation result if it exists
+        if evaluation_result:
+            detailed_message = format_evaluation_success_message(evaluation_result)
+            self.resources.request.add_pending_execution_log(
+                db=self.resources.session,
+                connection_key=self.connection_key,
+                dataset_name=None,
+                collection_name=str(self.execution_node.address),
+                message=f"Manual task conditional dependencies met. {detailed_message}",
+                action_type=ActionType(self.resources.privacy_request_task.action_type),
+            )
         result = self._set_submitted_data_or_raise_awaiting_async_task_callback(
             manual_task,
             config_type,

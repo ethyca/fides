@@ -7,13 +7,13 @@ from fides.api.graph.config import FieldPath
 from fides.api.task.conditional_dependencies.operators import operator_methods
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
+    ConditionEvaluationResult,
     ConditionGroup,
     ConditionLeaf,
+    EvaluationResult,
+    GroupEvaluationResult,
     GroupOperator,
     Operator,
-    ConditionEvaluationResult,
-    GroupEvaluationResult,
-    EvaluationResult,
 )
 
 
@@ -27,14 +27,16 @@ class ConditionEvaluator:
     def __init__(self, db: Session):
         self.db = db
 
-    def evaluate_rule(self, rule: Condition, data: Union[dict, Any]) -> tuple[bool, EvaluationResult]:
+    def evaluate_rule(
+        self, rule: Condition, data: Union[dict, Any]
+    ) -> tuple[bool, EvaluationResult]:
         """Evaluate a nested condition rule against input data and return detailed results"""
         if isinstance(rule, ConditionLeaf):
-            result = self._evaluate_leaf_condition(rule, data)
-            return result.result, result
+            leaf_result = self._evaluate_leaf_condition(rule, data)
+            return leaf_result.result, leaf_result
         # ConditionGroup
-        result = self._evaluate_group_condition(rule, data)
-        return result.result, result
+        group_result = self._evaluate_group_condition(rule, data)
+        return group_result.result, group_result
 
     def _evaluate_leaf_condition(
         self, condition: ConditionLeaf, data: Union[dict, Any]
@@ -52,7 +54,9 @@ class ConditionEvaluator:
 
         # Apply operator and get result
         try:
-            result = self._apply_operator(data_value, condition.operator, condition.value)
+            result = self._apply_operator(
+                data_value, condition.operator, condition.value
+            )
             message = f"Condition '{condition.field_address} {condition.operator} {condition.value}' evaluated to {result}"
         except Exception as e:
             result = False
@@ -64,7 +68,7 @@ class ConditionEvaluator:
             expected_value=condition.value,
             actual_value=data_value,
             result=result,
-            message=message
+            message=message,
         )
 
     def _evaluate_group_condition(
@@ -87,7 +91,7 @@ class ConditionEvaluator:
         return GroupEvaluationResult(
             logical_operator=group.logical_operator,
             condition_results=results,
-            result=result
+            result=result,
         )
 
     def _get_nested_value(self, data: Union[dict, Any], keys: list[str]) -> Any:
