@@ -1,13 +1,25 @@
 from __future__ import annotations
 
 from ipaddress import ip_address
-
+from enum import Enum
 from fastapi import Request
 from loguru import logger
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
 
 from fides.config import CONFIG
+
+
+class RateLimitBucket(str, Enum):
+    """
+    Enum representing the different rate limit buckets.
+    Each bucket corresponds to a different rate limit configuration that can be shared across endpoints.
+    The "public" bucket is used for endpoints that are expected to be hit at a higher rate,
+    thus is typically configured with a higher rate limit.
+    """
+
+    DEFAULT = "default"
+    PUBLIC = "public"
 
 
 def validate_client_ip(ip: str) -> bool:
@@ -67,17 +79,16 @@ def get_client_ip_from_header(request: Request) -> str:
     return ip
 
 
-# Used for rate limiting with Slow API
-# Decorate individual routes to deviate from the default rate limits
 is_rate_limit_enabled = (
     CONFIG.security.rate_limit_client_ip_header is not None
     and CONFIG.security.rate_limit_client_ip_header != ""
 )
+# Used for rate limiting with Slow API
 fides_limiter = Limiter(
     storage_uri=CONFIG.redis.connection_url_unencoded,
-    default_limits=[
-        CONFIG.security.request_rate_limit
-    ],  # Applied to ALL endpoints automatically
+    # Default_limits is a safety net. If the @fides_limit decorator does not exist on an endpoint, the endpoint
+    # will be rate limited within its own rate limit bucket instead of one of the existing shared buckets.
+    default_limits=[CONFIG.security.request_rate_limit],
     headers_enabled=True,
     key_prefix=CONFIG.security.rate_limit_prefix,
     key_func=get_client_ip_from_header,

@@ -36,8 +36,10 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
+from fides.config import CONFIG
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 
@@ -47,6 +49,9 @@ router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
     status_code=HTTP_200_OK,
     response_model=Page[schemas.PolicyResponse],
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.POLICY_READ])],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_policy_list(
     *,
@@ -80,6 +85,9 @@ def get_policy_or_error(db: Session, policy_key: FidesKey) -> Policy:
     response_model=schemas.PolicyResponse,
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.POLICY_READ])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_policy(
     *,
     policy_key: FidesKey,
@@ -95,6 +103,9 @@ def get_policy(
     urls.POLICY_LIST,
     status_code=HTTP_200_OK,
     response_model=schemas.BulkPutPolicyResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_or_update_policies(
     *,
@@ -180,6 +191,9 @@ def get_rule_or_error(db: Session, policy_key: FidesKey, rule_key: FidesKey) -> 
     response_model=Page[schemas.RuleResponseWithTargets],
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_rule_list(
     *,
     db: Session = Depends(deps.get_db),
@@ -209,6 +223,9 @@ def get_rule_list(
     response_model=schemas.RuleResponseWithTargets,
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_rule(
     *,
     policy_key: FidesKey,
@@ -225,6 +242,9 @@ def get_rule(
     urls.RULE_LIST,
     status_code=HTTP_200_OK,
     response_model=schemas.BulkPutRuleResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_or_update_rules(
     *,
@@ -346,6 +366,9 @@ def create_or_update_rules(
     status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_DELETE])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def delete_rule(
     *,
     policy_key: FidesKey,
@@ -405,6 +428,9 @@ def get_rule_target_or_error(
     response_model=Page[schemas.RuleTarget],
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_rule_target_list(
     *,
     db: Session = Depends(deps.get_db),
@@ -434,6 +460,9 @@ def get_rule_target_list(
     status_code=HTTP_200_OK,
     response_model=schemas.RuleTarget,
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_rule_target(
     *,
@@ -475,6 +504,9 @@ def _validate_data_categories(
     urls.RULE_TARGET_LIST,
     status_code=HTTP_200_OK,
     response_model=schemas.BulkPutRuleTargetResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_or_update_rule_targets(
     *,
@@ -578,6 +610,9 @@ def create_or_update_rule_targets(
     urls.RULE_TARGET_DETAIL,
     status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_DELETE])],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_rule_target(
     *,

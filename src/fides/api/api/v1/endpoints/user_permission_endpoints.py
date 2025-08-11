@@ -17,6 +17,7 @@ from fides.api.schemas.user_permission import (
     UserPermissionsResponse,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import (
     USER_PERMISSION_ASSIGN_OWNERS,
     USER_PERMISSION_CREATE,
@@ -61,6 +62,9 @@ async def owner_role_permission_check(
     status_code=HTTP_201_CREATED,
     response_model=UserPermissionsResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 async def create_user_permissions(
     *,
     db: Session = Depends(deps.get_db),
@@ -90,6 +94,9 @@ async def create_user_permissions(
     urls.USER_PERMISSIONS,
     dependencies=[Security(verify_oauth_client, scopes=[USER_PERMISSION_UPDATE])],
     response_model=UserPermissionsResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 async def update_user_permissions(
     *,
@@ -131,6 +138,9 @@ async def update_user_permissions(
 @router.get(
     urls.USER_PERMISSIONS,
     response_model=UserPermissionsResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 async def get_user_permissions(
     *,

@@ -13,9 +13,10 @@ from fides.api.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
-from fides.config import censor_config
+from fides.config import CONFIG, censor_config
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
 
@@ -26,6 +27,9 @@ router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
     urls.CONFIG,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_READ])],
     response_model=Dict[str, Any],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_config(
     *, db: Session = Depends(deps.get_db), api_set: bool = False
@@ -45,6 +49,9 @@ def get_config(
     dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
     response_model=ApplicationConfigSchema,
     response_model_exclude_unset=True,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def patch_settings(
     *,
@@ -77,6 +84,9 @@ def patch_settings(
     response_model=ApplicationConfigSchema,
     response_model_exclude_unset=True,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def put_settings(
     *,
     db: Session = Depends(deps.get_db),
@@ -105,6 +115,9 @@ def put_settings(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
     response_model=Dict,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def reset_settings(
     *,

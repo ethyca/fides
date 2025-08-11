@@ -122,6 +122,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.api.util.storage_util import StorageJSONEncoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -216,6 +217,9 @@ def get_privacy_request_or_error(
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def create_privacy_request(
     *,
     privacy_request_service: PrivacyRequestService = Depends(
@@ -237,6 +241,9 @@ def create_privacy_request(
     PRIVACY_REQUEST_AUTHENTICATED,
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_privacy_request_authenticated(
     *,
@@ -777,6 +784,9 @@ def _shared_privacy_request_search(
     ],
     deprecated=True,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_request_status(
     *,
     db: Session = Depends(deps.get_db),
@@ -857,6 +867,9 @@ def get_request_status(
         ]
     ],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def privacy_request_search(
     *,
     db: Session = Depends(deps.get_db),
@@ -906,6 +919,9 @@ def privacy_request_search(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     response_model=Page[ExecutionLogDetailResponse],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_request_status_logs(
     privacy_request_id: str,
     *,
@@ -941,6 +957,9 @@ def get_request_status_logs(
         )
     ],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_privacy_request_notification_info(
     *, db: Session = Depends(deps.get_db)
 ) -> PrivacyRequestNotificationInfo:
@@ -969,6 +988,9 @@ def get_privacy_request_notification_info(
             scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE],
         )
     ],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_or_update_privacy_request_notifications(
     *, db: Session = Depends(deps.get_db), request_body: PrivacyRequestNotificationInfo
@@ -1025,6 +1047,9 @@ def create_or_update_privacy_request_notifications(
     status_code=HTTP_200_OK,
     response_model=List[DryRunDatasetResponse],
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_request_preview_queries(
     *,
@@ -1104,6 +1129,9 @@ def get_request_preview_queries(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def resume_privacy_request(
     privacy_request_id: str,
     *,
@@ -1171,6 +1199,9 @@ def validate_manual_input(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def bulk_restart_privacy_request_from_failure(
     privacy_request_ids: List[str],
     *,
@@ -1232,6 +1263,9 @@ def bulk_restart_privacy_request_from_failure(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
@@ -1279,6 +1313,9 @@ def restart_privacy_request_from_failure(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def verify_identification_code(
     privacy_request_id: str,
     *,
@@ -1325,6 +1362,9 @@ def verify_identification_code(
     status_code=HTTP_200_OK,
     response_model=BulkReviewResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def approve_privacy_request(
     *,
     client: ClientDetail = Security(
@@ -1347,6 +1387,9 @@ def approve_privacy_request(
     PRIVACY_REQUEST_DENY,
     status_code=HTTP_200_OK,
     response_model=BulkReviewResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def deny_privacy_request(
     *,
@@ -1386,6 +1429,9 @@ def _validate_privacy_request_pending_or_error(
 @router.post(
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     status_code=HTTP_200_OK,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def mark_privacy_request_pre_approve_eligible(
     privacy_request_id: str,
@@ -1479,6 +1525,9 @@ def mark_privacy_request_pre_approve_eligible(
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     status_code=HTTP_200_OK,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def mark_privacy_request_pre_approve_not_eligible(
     privacy_request_id: str,
     *,
@@ -1556,6 +1605,9 @@ def _handle_manual_webhook_input(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_UPLOAD_DATA])],
     response_model=None,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def upload_manual_webhook_access_data(
     *,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -1585,6 +1637,9 @@ def upload_manual_webhook_access_data(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_UPLOAD_DATA])],
     response_model=None,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def upload_manual_webhook_erasure_data(
     *,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -1611,6 +1666,9 @@ def upload_manual_webhook_erasure_data(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_TRANSFER])],
     response_model=Dict[str, Optional[List[Row]]],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def privacy_request_data_transfer(
     *,
@@ -1684,6 +1742,9 @@ def privacy_request_data_transfer(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
     response_model=Optional[ManualWebhookData],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def view_uploaded_manual_webhook_data(
     *,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -1743,6 +1804,9 @@ def view_uploaded_manual_webhook_data(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
     response_model=Optional[ManualWebhookData],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def view_uploaded_erasure_manual_webhook_data(
     *,
@@ -1805,6 +1869,9 @@ def view_uploaded_erasure_manual_webhook_data(
     dependencies=[
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def resume_privacy_request_from_requires_input(
     privacy_request_id: str,
@@ -1869,6 +1936,9 @@ def resume_privacy_request_from_requires_input(
     response_model=PrivacyRequestResponse,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_REVIEW])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def finalize_privacy_request(
     privacy_request_id: str,
     *,
@@ -1910,6 +1980,9 @@ def finalize_privacy_request(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     response_model=List[PrivacyRequestTaskSchema],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_individual_privacy_request_tasks(
     privacy_request_id: str,
     *,
@@ -1934,6 +2007,9 @@ def get_individual_privacy_request_tasks(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
     response_model=PrivacyRequestResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def requeue_privacy_request(
     privacy_request_id: str,
@@ -1961,6 +2037,9 @@ def requeue_privacy_request(
 @router.post(
     REQUEST_TASK_CALLBACK,
     response_model=Dict,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def request_task_async_callback(
     *,
@@ -2027,6 +2106,9 @@ def request_task_async_callback(
     status_code=HTTP_200_OK,
     response_model=BulkSoftDeletePrivacyRequests,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def bulk_soft_delete_privacy_requests(
     *,
     db: Session = Depends(deps.get_db),
@@ -2081,6 +2163,9 @@ def bulk_soft_delete_privacy_requests(
     status_code=HTTP_200_OK,
     response_model=None,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def soft_delete_privacy_request(
     privacy_request_id: str,
     *,
@@ -2111,6 +2196,9 @@ def soft_delete_privacy_request(
     ],
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestAccessResults,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_access_results_urls(
     privacy_request_id: str,
@@ -2148,6 +2236,9 @@ def get_access_results_urls(
     ],
     status_code=HTTP_200_OK,
     response_model=FilteredPrivacyRequestResults,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_test_privacy_request_results(
     privacy_request_id: str,
@@ -2204,6 +2295,9 @@ def get_test_privacy_request_results(
     PRIVACY_REQUEST_RESUBMIT,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
     response_model=PrivacyRequestResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def resubmit_privacy_request(
     privacy_request_id: str,
@@ -2302,6 +2396,9 @@ def filter_access_results(
     status_code=HTTP_200_OK,
     response_model=List[LogEntry],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_test_privacy_request_logs(
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
@@ -2333,6 +2430,9 @@ def get_test_privacy_request_logs(
     ],
     status_code=HTTP_200_OK,
     response_model=ResponseWithMessage,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def send_batch_email_integrations(
     background_tasks: BackgroundTasks,

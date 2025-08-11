@@ -59,6 +59,7 @@ from fides.api.schemas.user import (
 )
 from fides.api.service.deps import get_user_service
 from fides.api.util.api_router import APIRouter
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     SYSTEM_MANAGER_DELETE,
@@ -148,6 +149,9 @@ def verify_user_read_scopes(
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 async def update_user(
     *,
     db: Session = Depends(deps.get_db),
@@ -185,6 +189,9 @@ async def update_user(
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def update_user_password(
     *,
     db: Session = Depends(deps.get_db),
@@ -216,6 +223,9 @@ def update_user_password(
     dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
     status_code=HTTP_200_OK,
     response_model=UserResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def force_update_password(
     *,
@@ -274,6 +284,9 @@ def logout_oauth_client(
     urls.LOGOUT,
     status_code=HTTP_204_NO_CONTENT,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def user_logout(
     *,
     client: Optional[ClientDetail] = Security(
@@ -292,6 +305,9 @@ def user_logout(
     urls.SYSTEM_MANAGER,
     dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_UPDATE])],
     response_model=List[SystemSchema],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def update_managed_systems(
     *,
@@ -349,6 +365,9 @@ def update_managed_systems(
     urls.SYSTEM_MANAGER,
     response_model=List[SystemSchema],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 async def get_managed_systems(
     *,
     db: Session = Depends(deps.get_db),
@@ -381,6 +400,9 @@ async def get_managed_systems(
 @router.get(
     urls.SYSTEM_MANAGER_DETAIL,
     response_model=SystemSchema,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 async def get_managed_system_details(
     *,
@@ -425,6 +447,9 @@ async def get_managed_system_details(
     dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_DELETE])],
     status_code=HTTP_204_NO_CONTENT,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def remove_user_as_system_manager(
     *, db: Session = Depends(deps.get_db), user_id: str, system_key: FidesKey
 ) -> None:
@@ -449,6 +474,9 @@ def remove_user_as_system_manager(
     dependencies=[Security(verify_oauth_client, scopes=[USER_CREATE])],
     status_code=HTTP_201_CREATED,
     response_model=UserCreateResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_user(
     *,
@@ -509,6 +537,9 @@ def create_user(
     status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[USER_DELETE])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def delete_user(
     *,
     client: ClientDetail = Security(
@@ -535,6 +566,9 @@ def delete_user(
     urls.USER_DETAIL,
     dependencies=[Security(verify_user_read_scopes)],
     response_model=UserResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_user(
     *,
@@ -575,6 +609,9 @@ def get_user(
     dependencies=[Security(verify_user_read_scopes)],
     response_model=Page[UserResponse],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_users(
     *,
     db: Session = Depends(get_db),
@@ -612,6 +649,9 @@ def get_users(
     urls.LOGIN,
     status_code=HTTP_200_OK,
     response_model=UserLoginResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def user_login(
     *,
@@ -736,6 +776,9 @@ def verify_invite_code(
 
 @router.post(
     urls.USER_ACCEPT_INVITE,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def accept_user_invite(
     *,

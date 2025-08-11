@@ -7,7 +7,9 @@ from fides.api.api import deps
 from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.identity_verification import IdentityVerificationConfigResponse
 from fides.api.util.api_router import APIRouter
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.v1 import urn_registry as urls
+from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
@@ -16,6 +18,9 @@ router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 @router.get(
     urls.ID_VERIFICATION_CONFIG,
     response_model=IdentityVerificationConfigResponse,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_id_verification_config(
     *,

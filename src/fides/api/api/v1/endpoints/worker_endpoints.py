@@ -8,8 +8,10 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.worker import QueueInfo, TaskDetails, WorkerInfo, WorkerStats
 from fides.api.tasks import celery_app
 from fides.api.util.cache import get_queue_counts
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import WORKER_STATS_READ
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.config import CONFIG
 
 router = APIRouter(tags=["Worker Stats"], prefix=V1_URL_PREFIX)
 
@@ -19,6 +21,9 @@ router = APIRouter(tags=["Worker Stats"], prefix=V1_URL_PREFIX)
     dependencies=[Security(verify_oauth_client, scopes=[WORKER_STATS_READ])],
     status_code=HTTP_200_OK,
     response_model=WorkerStats,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_worker_stats() -> WorkerStats:  # pragma: no cover
     """Get statistics about Celery queues and workers.

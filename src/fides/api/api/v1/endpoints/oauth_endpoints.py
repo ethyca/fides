@@ -37,6 +37,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import connection_status
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -64,6 +65,9 @@ router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 @router.post(
     TOKEN,
     response_model=AccessToken,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 async def acquire_access_token(
     request: Request,
@@ -123,6 +127,9 @@ async def acquire_access_token(
     dependencies=[Security(verify_oauth_client, scopes=[CLIENT_CREATE])],
     response_model=ClientCreatedResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def create_client(
     *,
     db: Session = Depends(get_db),
@@ -148,6 +155,9 @@ def create_client(
 @router.delete(
     CLIENT_BY_ID, dependencies=[Security(verify_oauth_client, scopes=[CLIENT_DELETE])]
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
@@ -162,6 +172,9 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     CLIENT_SCOPE,
     dependencies=[Security(verify_oauth_client, scopes=[CLIENT_READ])],
     response_model=List[str],
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str]:
     """Returns a list of the directly-assigned scopes associated with the client.
@@ -179,6 +192,9 @@ def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str
     CLIENT_SCOPE,
     dependencies=[Security(verify_oauth_client, scopes=[CLIENT_UPDATE])],
     response_model=None,
+)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def set_client_scopes(
     client_id: str,
@@ -207,6 +223,9 @@ def set_client_scopes(
     dependencies=[Security(verify_oauth_client, scopes=[SCOPE_READ])],
     response_model=List[ScopeRegistryEnum],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""
     logger.info("Getting all available scopes")
@@ -217,6 +236,9 @@ def read_scopes() -> List[str]:
     ROLE,
     dependencies=[Security(verify_oauth_client, scopes=[SCOPE_READ])],
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def read_roles_to_scopes_mapping() -> Dict[str, List]:
     """Returns a list of all roles and associated scopes available for assignment in the system"""
     logger.info("Getting all available roles")
@@ -224,6 +246,9 @@ def read_roles_to_scopes_mapping() -> Dict[str, List]:
 
 
 @router.get(OAUTH_CALLBACK)
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Response:
     """
     Uses the passed in code to generate the token access request
