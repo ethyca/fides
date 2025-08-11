@@ -23,7 +23,6 @@ operator_methods = {
     Operator.not_exists: lambda a, _: a is None,
     Operator.eq: py_operator.eq,
     # None == None returns True, None == "anything" returns False
-    Operator.neq: py_operator.ne,
     # None != None returns False, None != "anything" returns True
     Operator.neq: py_operator.ne,
     # Numeric comparison operators - return False for None or non-numeric types
