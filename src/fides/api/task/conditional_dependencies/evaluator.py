@@ -43,7 +43,7 @@ class ConditionEvaluator:
             # Relative field path like "field.subfield" - split on dots
             keys = condition.field_address.split(".")
 
-        actual_value = self._get_nested_value(data, keys)
+        data_value = self._get_nested_value(data, keys)
 
         # Apply operator and return result
         return self._apply_operator(data_value, condition.operator, condition.value)
