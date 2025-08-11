@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
 - Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
+- Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 
 ### Changed
 - Improved data extraction for object fields to return complete data structures instead of empty containers in data package when no nested fields where specified [#6424](https://github.com/ethyca/fides/pull/6424)
