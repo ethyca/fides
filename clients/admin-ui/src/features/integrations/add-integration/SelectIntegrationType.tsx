@@ -115,11 +115,18 @@ const SelectIntegrationType = ({
     }
 
     // Apply flag-based filtering
-    return filtered.filter((i) => {
+    filtered = filtered.filter((i) => {
       if (!oktaMonitor && i.placeholder.connection_type === "okta") {
         return false;
       }
       return true;
+    });
+
+    // Sort integrations alphabetically by display name
+    return filtered.sort((a, b) => {
+      const nameA = a.placeholder.name || "";
+      const nameB = b.placeholder.name || "";
+      return nameA.localeCompare(nameB);
     });
   }, [searchTerm, selectedCategory, oktaMonitor, allIntegrationTypes]);
 
@@ -129,17 +136,28 @@ const SelectIntegrationType = ({
     setTimeout(() => setIsFiltering(false), 100);
   };
 
-  const categoryOptions = availableCategories.map((category) => {
-    if (category === IntegrationCategoryFilter.ALL) {
-      return { label: category, value: category };
-    }
-    // Map filter enum values to ConnectionCategory enum values
-    const connectionCategory = category as unknown as ConnectionCategory;
-    return {
-      label: getCategoryLabel(connectionCategory),
-      value: category,
-    };
-  });
+  const categoryOptions = availableCategories
+    .map((category) => {
+      if (category === IntegrationCategoryFilter.ALL) {
+        return { label: category, value: category };
+      }
+      // Map filter enum values to ConnectionCategory enum values
+      const connectionCategory = category as unknown as ConnectionCategory;
+      return {
+        label: getCategoryLabel(connectionCategory),
+        value: category,
+      };
+    })
+    .sort((a, b) => {
+      // Keep "All" at the top, then sort alphabetically
+      if (a.label === "All") {
+        return -1;
+      }
+      if (b.label === "All") {
+        return 1;
+      }
+      return a.label.localeCompare(b.label);
+    });
 
   return (
     <>
