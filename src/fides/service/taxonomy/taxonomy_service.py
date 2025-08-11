@@ -79,14 +79,13 @@ class TaxonomyService:
             .filter(model_class.fides_key == fides_key)
             .first()
         )
-        if existing_element:
-            # Centralized validation before delegation
-            self._validate_element_data(
-                element_data,
-                taxonomy_type,
-                existing_element=existing_element,
-                action="update",
-            )
+
+        self._validate_element_data(
+            element_data,
+            taxonomy_type,
+            existing_element=existing_element,
+            action="update",
+        )
 
         # Update the element via handler
         updated_element = self._get_handler(taxonomy_type).update_element(
