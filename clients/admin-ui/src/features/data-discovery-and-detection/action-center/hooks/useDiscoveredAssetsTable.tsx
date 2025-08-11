@@ -75,7 +75,7 @@ export const useDiscoveredAssetsTable = ({
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const toast = useToast();
-  // Local state
+
   const [systemName, setSystemName] = useState(systemId);
   const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
     ConsentStatus | null | undefined
@@ -83,21 +83,13 @@ export const useDiscoveredAssetsTable = ({
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
 
-  // Features
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
 
-  // Tab management
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
-  // Table state
-  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
-    pagination: {
-      defaultPageSize: 5,
-      pageSizeOptions: [5, 10],
-    },
-  });
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>();
 
   const {
     columnFilters,
@@ -112,7 +104,6 @@ export const useDiscoveredAssetsTable = ({
     updatePagination,
   } = tableState;
 
-  // API query
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
@@ -126,7 +117,6 @@ export const useDiscoveredAssetsTable = ({
     ...columnFilters,
   });
 
-  // Mutations
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -152,7 +142,6 @@ export const useDiscoveredAssetsTable = ({
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
-  // Filter options query
   const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
     monitor_config_id: monitorId,
     resolved_system_id: systemId,
@@ -161,7 +150,6 @@ export const useDiscoveredAssetsTable = ({
     ...columnFilters,
   });
 
-  // Memoize the configuration object to prevent useAntTable from re-running unnecessarily
   const antTableConfig = useMemo(
     () => ({
       enableSelection: activeTab !== ActionCenterTabHash.RECENT_ACTIVITY,
@@ -183,7 +171,6 @@ export const useDiscoveredAssetsTable = ({
     [activeTab, isLoading, isFetching, data?.items, data?.total],
   );
 
-  // Integrate with useAntTable for standardized table management
   const antTable = useAntTable<
     StagedResourceAPIResponse,
     DiscoveredAssetsColumnKeys
@@ -424,7 +411,6 @@ export const useDiscoveredAssetsTable = ({
     }
   }, [data, firstItemConsentStatus]);
 
-  // Get selected data from antTable
   const {
     selectedKeys: selectedUrns,
     selectedRows,
@@ -433,10 +419,10 @@ export const useDiscoveredAssetsTable = ({
 
   const resetTableState = useCallback(() => {
     resetSelections();
-    updateFilters({}); // Clear filters using tableState
-    updateSearch(""); // Clear search using tableState
-    updateSorting(undefined, undefined); // Clear sorting using tableState
-    updatePagination(1); // Reset to page 1
+    updateFilters({});
+    updateSearch("");
+    updateSorting(undefined, undefined);
+    updatePagination(1);
   }, [
     resetSelections,
     updateFilters,

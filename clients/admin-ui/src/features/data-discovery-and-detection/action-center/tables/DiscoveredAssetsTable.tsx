@@ -58,7 +58,6 @@ export const DiscoveredAssetsTable = ({
     setConsentBreakdownModalData(null);
   };
 
-  // Use the refactored hook with useAntTable integration
   const {
     // Table state and data
     columns,

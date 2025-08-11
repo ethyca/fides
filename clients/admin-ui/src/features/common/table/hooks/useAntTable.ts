@@ -5,7 +5,7 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import { BulkActionsConfig, SelectionState } from "./types";
+import { BulkActionsConfig, SelectionState, SortOrder } from "./types";
 
 /**
  * Configuration for Ant Design table integration
@@ -67,13 +67,10 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
     pageIndex: number;
     pageSize: number;
     sortField?: TSortField;
-    sortOrder?: "ascend" | "descend";
+    sortOrder?: SortOrder;
     columnFilters: Record<string, FilterValue | null>;
     updatePagination: (pageIndex: number, pageSize?: number) => void;
-    updateSorting: (
-      sortField?: TSortField,
-      sortOrder?: "ascend" | "descend",
-    ) => void;
+    updateSorting: (sortField?: TSortField, sortOrder?: SortOrder) => void;
     updateFilters: (filters: Record<string, any>) => void;
     paginationConfig?: {
       pageSizeOptions: number[];

@@ -1,6 +1,11 @@
 import { AntFilterValue as FilterValue } from "fidesui";
 
 /**
+ * Sort order type for table sorting
+ */
+export type SortOrder = "ascend" | "descend";
+
+/**
  * Base interface for table state that can be synchronized with URL
  */
 export interface TableState<TSortField extends string = string> {
@@ -10,7 +15,7 @@ export interface TableState<TSortField extends string = string> {
 
   // Sorting
   sortField?: TSortField;
-  sortOrder?: "ascend" | "descend";
+  sortOrder?: SortOrder;
 
   // Filtering
   columnFilters: Record<string, FilterValue | null>;
@@ -44,7 +49,7 @@ export interface PaginationConfig {
  */
 export interface SortingConfig<TSortField extends string = string> {
   defaultSortField?: TSortField;
-  defaultSortOrder?: "ascend" | "descend";
+  defaultSortOrder?: SortOrder;
   allowMultiSort?: boolean;
 }
 
