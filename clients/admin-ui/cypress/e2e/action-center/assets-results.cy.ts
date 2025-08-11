@@ -339,6 +339,9 @@ describe("Action center Asset Results", () => {
         );
         cy.location("hash").should("eq", "#attention-required");
 
+        // wait for router
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
         cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
@@ -358,6 +361,9 @@ describe("Action center Asset Results", () => {
         );
         cy.findByRole("columnheader", { name: "Actions" }).should("not.exist");
 
+        // wait for router
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
         cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
