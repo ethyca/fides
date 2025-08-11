@@ -516,17 +516,39 @@ class StagedResource(Base):
         foreign_keys=[StagedResourceAncestor.ancestor_urn],
     )
 
-    def ancestors(self) -> List[StagedResource]:
+    def ancestors(self, db: Session) -> List[StagedResource]:
         """
         Returns the ancestors of the staged resource
         """
-        return [link.ancestor_staged_resource for link in self.ancestor_links]
+        # Single query to get all ancestors with their data
+        query = (
+            select(StagedResource)
+            .join(
+                StagedResourceAncestor,
+                StagedResource.urn == StagedResourceAncestor.ancestor_urn,
+            )
+            .where(StagedResourceAncestor.descendant_urn == self.urn)
+        )
 
-    def descendants(self) -> List[StagedResource]:
+        result = db.execute(query)
+        return list(result.scalars().all())
+
+    def descendants(self, db: Session) -> List[StagedResource]:
         """
         Returns the descendants of the staged resource
         """
-        return [link.descendant_staged_resource for link in self.descendant_links]
+        # Single query to get all descendants with their data
+        query = (
+            select(StagedResource)
+            .join(
+                StagedResourceAncestor,
+                StagedResource.urn == StagedResourceAncestor.descendant_urn,
+            )
+            .where(StagedResourceAncestor.ancestor_urn == self.urn)
+        )
+
+        result = db.execute(query)
+        return list(result.scalars().all())
 
     # placeholder for additional attributes
     meta = Column(
