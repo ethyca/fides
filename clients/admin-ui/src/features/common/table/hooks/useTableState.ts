@@ -1,4 +1,4 @@
-import { PAGE_SIZES } from "fidesui";
+import { AntFilterValue as FilterValue, PAGE_SIZES } from "fidesui";
 import {
   parseAsInteger,
   parseAsJson,
@@ -7,8 +7,8 @@ import {
 } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { FilterValue, QueryStateUpdates } from ".";
-import {
+import type {
+  QueryStateUpdates,
   SortOrder,
   TableState,
   TableStateConfig,

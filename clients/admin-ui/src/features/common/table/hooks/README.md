@@ -19,7 +19,7 @@ Table Component
 ### Basic Usage
 
 ```tsx
-import { useTableState, useAntTable } from '~/features/common/table/hooks';
+import { useTableState, useAntTable } from "~/features/common/table/hooks";
 
 const MyTable = ({ filters }) => {
   // 1. Table state with URL sync
@@ -43,7 +43,9 @@ const MyTable = ({ filters }) => {
     isLoading: queryResult.isLoading,
   });
 
-  return <Table {...tableProps} columns={columns} rowSelection={selectionProps} />;
+  return (
+    <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
+  );
 };
 ```
 
@@ -90,9 +92,7 @@ export const MyTable = ({ filters }: Props) => {
   return (
     <>
       <SearchInput value={searchQuery} onChange={updateSearch} />
-      {selectedRows.length > 0 && (
-        <BulkActions onAction={handleBulkAction} />
-      )}
+      {selectedRows.length > 0 && <BulkActions onAction={handleBulkAction} />}
       <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
     </>
   );
@@ -106,6 +106,7 @@ export const MyTable = ({ filters }: Props) => {
 Manages table state with optional URL synchronization.
 
 **Config:**
+
 ```tsx
 {
   urlSync?: { pagination?, sorting?, filtering?, search? };
@@ -121,6 +122,7 @@ Manages table state with optional URL synchronization.
 Integrates table state with Ant Design Table components.
 
 **Config:**
+
 ```tsx
 {
   enableSelection?: boolean;
@@ -145,6 +147,7 @@ Integrates table state with Ant Design Table components.
 ## Configuration Examples
 
 ### URL Sync
+
 ```tsx
 urlSync: {
   pagination: true,    // Sync page/size to URL
@@ -155,6 +158,7 @@ urlSync: {
 ```
 
 ### Bulk Actions
+
 ```tsx
 bulkActions: {
   getRowKey: (row) => row.id,
@@ -177,6 +181,7 @@ To update existing tables:
 4. **Move business logic** to dedicated hooks
 
 ### Before
+
 ```tsx
 const [pageIndex, setPageIndex] = useState(1);
 const [pageSize, setPageSize] = useState(25);
@@ -185,6 +190,7 @@ const [selectedRows, setSelectedRows] = useState([]);
 ```
 
 ### After
+
 ```tsx
 const tableState = useTableState(config);
 const queryResult = useGetDataQuery(tableState.queryParams);

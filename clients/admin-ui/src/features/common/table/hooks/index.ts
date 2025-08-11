@@ -2,11 +2,3 @@
 export * from "./types.d";
 export * from "./useAntTable";
 export * from "./useTableState";
-
-// Re-export commonly used types from fidesui for convenience
-export type {
-  AntColumnsType as ColumnsType,
-  AntFilterValue as FilterValue,
-  AntSorterResult as SorterResult,
-  AntTablePaginationConfig as TablePaginationConfig,
-} from "fidesui";
