@@ -68,9 +68,14 @@ jest.mock("nuqs", () => {
 // eslint-disable-next-line import/first
 import { useTableState } from "./useTableState";
 
-// Access test helpers from the mock
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { nuqsTestHelpers } = require("nuqs");
+// Access the test helpers from the mocked module
+const { nuqsTestHelpers } = jest.requireMock("nuqs") as {
+  nuqsTestHelpers: {
+    reset: (initial?: Record<string, any>) => void;
+    getSetCalls: () => Array<Record<string, any> | null>;
+    getState: () => Record<string, any>;
+  };
+};
 
 type SortField = "name" | "createdAt" | "title";
 
