@@ -11,6 +11,9 @@ from fides.api.task.conditional_dependencies.schemas import (
     ConditionLeaf,
     GroupOperator,
     Operator,
+    ConditionEvaluationResult,
+    GroupEvaluationResult,
+    EvaluationResult,
 )
 
 
@@ -24,16 +27,18 @@ class ConditionEvaluator:
     def __init__(self, db: Session):
         self.db = db
 
-    def evaluate_rule(self, rule: Condition, data: Union[dict, Any]) -> bool:
-        """Evaluate a nested condition rule against input data"""
+    def evaluate_rule(self, rule: Condition, data: Union[dict, Any]) -> tuple[bool, EvaluationResult]:
+        """Evaluate a nested condition rule against input data and return detailed results"""
         if isinstance(rule, ConditionLeaf):
-            return self._evaluate_leaf_condition(rule, data)
+            result = self._evaluate_leaf_condition(rule, data)
+            return result.result, result
         # ConditionGroup
-        return self._evaluate_group_condition(rule, data)
+        result = self._evaluate_group_condition(rule, data)
+        return result.result, result
 
     def _evaluate_leaf_condition(
         self, condition: ConditionLeaf, data: Union[dict, Any]
-    ) -> bool:
+    ) -> ConditionEvaluationResult:
         """Evaluate a leaf condition against input data"""
         # Handle both colon-separated and dot-separated field addresses
         if ":" in condition.field_address:
@@ -45,15 +50,29 @@ class ConditionEvaluator:
 
         data_value = self._get_nested_value(data, keys)
 
-        # Apply operator and return result
-        return self._apply_operator(data_value, condition.operator, condition.value)
+        # Apply operator and get result
+        try:
+            result = self._apply_operator(data_value, condition.operator, condition.value)
+            message = f"Condition '{condition.field_address} {condition.operator} {condition.value}' evaluated to {result}"
+        except Exception as e:
+            result = False
+            message = f"Error evaluating condition '{condition.field_address} {condition.operator} {condition.value}': {str(e)}"
+
+        return ConditionEvaluationResult(
+            field_address=condition.field_address,
+            operator=condition.operator,
+            expected_value=condition.value,
+            actual_value=data_value,
+            result=result,
+            message=message
+        )
 
     def _evaluate_group_condition(
         self, group: ConditionGroup, data: Union[dict, Any]
-    ) -> bool:
+    ) -> GroupEvaluationResult:
         """Evaluate a group condition against input data"""
         results = [
-            self.evaluate_rule(condition, data) for condition in group.conditions
+            self.evaluate_rule(condition, data)[1] for condition in group.conditions
         ]
 
         logical_operators = {GroupOperator.and_: all, GroupOperator.or_: any}
@@ -61,9 +80,15 @@ class ConditionEvaluator:
 
         if operator_func is None:
             logger.warning(f"Unknown logical operator: {group.logical_operator}")
-            return False
+            result = False
+        else:
+            result = operator_func([r.result for r in results])
 
-        return operator_func(results)
+        return GroupEvaluationResult(
+            logical_operator=group.logical_operator,
+            condition_results=results,
+            result=result
+        )
 
     def _get_nested_value(self, data: Union[dict, Any], keys: list[str]) -> Any:
         """Get nested value from data using dot notation or colon notation
