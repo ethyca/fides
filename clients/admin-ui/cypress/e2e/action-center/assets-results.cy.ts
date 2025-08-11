@@ -368,6 +368,95 @@ describe("Action center Asset Results", () => {
         cy.findByRole("menuitem", { name: "Ignore" }).should("not.exist");
       });
     });
+
+    describe("URL sync and table reset behavior", () => {
+      beforeEach(() => {
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.wait("@getSystemAssetResults");
+        cy.getByTestId("page-breadcrumb").should("contain", systemName);
+      });
+
+      it("syncs search query to URL and resets to page 1", () => {
+        // Go to page 2 first so we can verify reset
+        cy.getAntPagination().should("exist");
+        cy.antPaginateNext();
+        cy.location("search").should("contain", "page=2");
+
+        // Type into the search input and verify URL query param updates
+        cy.findByPlaceholderText("Search by asset name...")
+          .clear()
+          .type("collect");
+        // Debounce buffer
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(400);
+        cy.location("search").should("contain", "search=collect");
+        // Should reset to page 1 on search change
+        cy.location("search").should("not.contain", "page=");
+      });
+
+      it("syncs sorting to URL when sorting by the Asset column", () => {
+        cy.findByRole("columnheader", { name: "Asset" }).click({ force: true });
+        // First click should set ascending sort
+        cy.location("search").should("contain", "sortField=name");
+        cy.location("search").should("contain", "sortOrder=ascend");
+      });
+
+      it("clears filters, sorting, search, and selection with the clear filters button", () => {
+        // Select a couple rows so we can verify selection reset
+        cy.getAntTableRow(rowUrns[0])
+          .findByRole("checkbox")
+          .click({ force: true });
+        cy.getAntTableRow(rowUrns[2])
+          .findByRole("checkbox")
+          .click({ force: true });
+        cy.getByTestId("selected-count").should("contain", "2 selected");
+        cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+
+        // Apply search and sorting to populate URL
+        cy.findByPlaceholderText("Search by asset name...").clear().type("gtm");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(400);
+        cy.findByRole("columnheader", { name: "Asset" }).click({ force: true });
+        cy.location("search").should("contain", "search=gtm");
+        cy.location("search").should("contain", "sortField=name");
+
+        // Clear
+        cy.getByTestId("clear-filters").click({ force: true });
+        // URL params cleared/reset
+        cy.location("search").should("not.contain", "search=");
+        cy.location("search").should("not.contain", "sortField=");
+        cy.location("search").should("not.contain", "sortOrder=");
+        cy.location("search").should("not.contain", "page=");
+
+        // Selection reset and menu disabled
+        cy.findByTestId("selected-count").should("not.exist");
+        cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      });
+
+      it("resets table state and selection when switching tabs", () => {
+        // Select rows and apply a search so state is non-default
+        cy.getAntTableRow(rowUrns[0])
+          .findByRole("checkbox")
+          .click({ force: true });
+        cy.findByPlaceholderText("Search by asset name...")
+          .clear()
+          .type("collect");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(400);
+        cy.getByTestId("selected-count").should("contain", "1 selected");
+        cy.location("search").should("contain", "search=collect");
+
+        // Switch tab
+        cy.getAntTab("Ignored").click({ force: true });
+        cy.location("hash").should("eq", "#ignored");
+
+        // State should be reset
+        cy.findByTestId("selected-count").should("not.exist");
+        cy.getByTestId("bulk-actions-menu").should("be.disabled");
+        cy.location("search").should("not.contain", "search=");
+        cy.location("search").should("not.contain", "page=");
+      });
+    });
   });
 
   describe("Action center consent status functionality", () => {
