@@ -7,7 +7,12 @@ import {
 } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { TableState, TableStateConfig, TableUrlSyncConfig } from "./types";
+import {
+  SortOrder,
+  TableState,
+  TableStateConfig,
+  TableUrlSyncConfig,
+} from "./types";
 
 /**
  * Default configuration values
@@ -149,8 +154,7 @@ export const useTableState = <TSortField extends string = string>(
         ? (queryState.sortField as TSortField) || defaultSortField // Use || not ?? because NuQS defaults to empty string, not null/undefined
         : internalState.sortField,
       sortOrder: urlSync.sorting
-        ? (queryState.sortOrder as "ascend" | "descend" | undefined) ||
-          defaultSortOrder // Use || not ?? because NuQS defaults to empty string, not null/undefined
+        ? (queryState.sortOrder as SortOrder | undefined) || defaultSortOrder // Use || not ?? because NuQS defaults to empty string, not null/undefined
         : internalState.sortOrder,
       columnFilters: urlSync.filtering
         ? (queryState.filters ?? {})
@@ -202,7 +206,7 @@ export const useTableState = <TSortField extends string = string>(
   );
 
   const updateSorting = useCallback(
-    (sortField?: TSortField, sortOrder?: "ascend" | "descend") => {
+    (sortField?: TSortField, sortOrder?: SortOrder) => {
       if (urlSync.sorting) {
         setQueryState({
           sortField: sortField ? String(sortField) : null,
