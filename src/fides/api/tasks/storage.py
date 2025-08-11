@@ -122,9 +122,6 @@ def upload_to_s3(  # pylint: disable=R0913
         s3_client = get_s3_client(
             auth_method,
             storage_secrets,
-            assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
-                "storage", {}
-            ).get("aws_s3_assume_role_arn"),
         )
     except (ClientError, ParamValidationError) as e:
         logger.error(f"Error getting s3 client: {str(e)}")

@@ -23,12 +23,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
-
-### Added
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
+- Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
+- Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 
 ### Changed
+- Improved data extraction for object fields to return complete data structures instead of empty containers in data package when no nested fields where specified [#6424](https://github.com/ethyca/fides/pull/6424)
 - Replaced some duplicated data formatting functionality with a single utility function. Additional maintainability updates on Manual Tasks. [#6390](https://github.com/ethyca/fides/pull/6390)
+- Refactored ancestor links creation to support bulk creation for multiple staged resources in a single operation [#6426](https://github.com/ethyca/fides/pull/6426)
+- Configured AWS S3 role assumption in client creation code so that all uses support role assumption [#6443](https://github.com/ethyca/fides/pull/6443)
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
@@ -36,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
 - Fixed link in Manage Secure Access modal [#6436](https://github.com/ethyca/fides/pull/6436)
+- Fixed some CI testing gaps [#6419](https://github.com/ethyca/fides/pull/6419)
 
 
 ## [2.67.1](https://github.com/ethyca/fides/compare/2.67.0...2.67.1)
