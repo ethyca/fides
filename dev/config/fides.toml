@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "a65847b0366ab97583be024dabad2eb0" # string
+analytics_id = "36a8e1d0e247e166af032bd33f02e5e6" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -270,6 +270,12 @@ send_request_review_notification = false # boolean
 # otherwise fall back on the messaging template type env flags set
 # above.
 enable_property_specific_messaging = false # boolean
+
+#--------------------#
+#-- PRIVACY_CENTER --#
+#--------------------------------------------------------------------#
+[privacy_center] # Configuration settings for the Privacy Center.
+
 
 #-----------#
 #-- REDIS --#
