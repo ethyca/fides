@@ -42,6 +42,10 @@ class TestConditionLeaf:
             Operator.not_exists,
             Operator.list_contains,
             Operator.not_in_list,
+            Operator.list_intersects,
+            Operator.list_subset,
+            Operator.list_superset,
+            Operator.list_disjoint,
         ]
 
         for operator in operators:
@@ -96,6 +100,57 @@ class TestConditionLeaf:
         assert data["field_address"] == "user.roles"
         assert data["operator"] == "list_contains"
         assert data["value"] == "admin"
+
+    def test_advanced_list_operators(self):
+        """Test advanced list operators with list values"""
+        # Test list_intersects operator
+        condition = ConditionLeaf(
+            field_address="user.roles",
+            operator=Operator.list_intersects,
+            value=["admin", "moderator"],
+        )
+        assert condition.operator == Operator.list_intersects
+        assert condition.value == ["admin", "moderator"]
+
+        # Test list_subset operator
+        condition = ConditionLeaf(
+            field_address="user.permissions",
+            operator=Operator.list_subset,
+            value=["read", "write", "delete"],
+        )
+        assert condition.operator == Operator.list_subset
+        assert condition.value == ["read", "write", "delete"]
+
+        # Test list_superset operator
+        condition = ConditionLeaf(
+            field_address="user.tags",
+            operator=Operator.list_superset,
+            value=["premium", "verified"],
+        )
+        assert condition.operator == Operator.list_superset
+        assert condition.value == ["premium", "verified"]
+
+        # Test list_disjoint operator
+        condition = ConditionLeaf(
+            field_address="user.preferences",
+            operator=Operator.list_disjoint,
+            value=["restricted", "blocked"],
+        )
+        assert condition.operator == Operator.list_disjoint
+        assert condition.value == ["restricted", "blocked"]
+
+    def test_advanced_list_operators_serialization(self):
+        """Test serialization of advanced list operators"""
+        condition = ConditionLeaf(
+            field_address="user.roles",
+            operator=Operator.list_intersects,
+            value=["admin", "moderator"],
+        )
+
+        data = condition.model_dump()
+        assert data["field_address"] == "user.roles"
+        assert data["operator"] == "list_intersects"
+        assert data["value"] == ["admin", "moderator"]
 
     def test_list_operators_deserialization(self):
         """Test deserialization of list operators"""

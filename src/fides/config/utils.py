@@ -69,4 +69,5 @@ CONFIG_KEY_ALLOWLIST = {
     ],
     "consent": ["override_vendor_purposes"],
     "admin_ui": ["enabled", "url", "error_notification_mode"],
+    "privacy_center": ["url"],
 }
