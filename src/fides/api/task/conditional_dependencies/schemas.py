@@ -6,54 +6,66 @@ from pydantic import BaseModel, Field, model_validator
 
 class Operator(str, Enum):
     # Basic comparison operators
-    eq = "eq"  # Column value equals user input (e.g., user.role eq "admin")
-    neq = (
-        "neq"  # Column value not equal to user input (e.g., user.status neq "inactive")
-    )
+    # Column value equals user input (e.g., user.role eq "admin")
+    eq = "eq"
+    # Column value not equal to user input (e.g., user.status neq "inactive")
+    neq = "neq"
 
     # Numeric comparison operators
-    lt = "lt"  # Column value less than user input (e.g., user.age lt 18)
-    lte = "lte"  # Column value less than or equal to user input (e.g., user.score lte 100)
-    gt = "gt"  # Column value greater than user input (e.g., user.balance gt 1000)
-    gte = "gte"  # Column value greater than or equal to user input (e.g., user.rating gte 4.0)
+    # Column value less than user input (e.g., user.age lt 18)
+    lt = "lt"
+    # Column value less than or equal to user input (e.g., user.score lte 100)
+    lte = "lte"
+    # Column value greater than user input (e.g., user.balance gt 1000)
+    gt = "gt"
+    # Column value greater than or equal to user input (e.g., user.rating gte 4.0)
+    gte = "gte"
 
     # Existence operators
-    exists = "exists"  # Field exists and is not None (e.g., user.email exists)
-    not_exists = "not_exists"  # Field does not exist or is None (e.g., user.middle_name not_exists)
+    # Field exists and is not None (e.g., user.email exists)
+    exists = "exists"
+    # Field does not exist or is None (e.g., user.middle_name not_exists)
+    not_exists = "not_exists"
 
     # List membership operators (work with both single values and lists)
-    list_contains = "list_contains"  # Column value is in user's list OR user's value is in column's list
+    #
+    # Column value is in user's list OR user's value is in column's list
+    list_contains = "list_contains"
     # Examples: user.role list_contains ["admin", "moderator"] (role in list)
     #          user.permissions list_contains "write" (value in permissions)
 
-    not_in_list = "not_in_list"  # Column value is NOT in user's list OR user's value is NOT in column's list
+    # Column value is NOT in user's list OR user's value is NOT in column's list
+    not_in_list = "not_in_list"
     # Examples: user.role not_in_list ["banned", "suspended"] (role not blocked)
     #          user.permissions not_in_list "delete" (value not in permissions)
 
     # List-to-list comparison operators (both values must be lists)
-    list_intersects = "list_intersects"  # Lists have at least one common element
+    # Lists have at least one common element
+    list_intersects = "list_intersects"
     # Example: user.roles list_intersects ["admin", "moderator"] (any common role)
 
-    list_subset = (
-        "list_subset"  # Column list is completely contained within user's list
-    )
+    # Column list is completely contained within user's list
+    list_subset = "list_subset"
     # Example: user.permissions list_subset ["read", "write", "delete", "manage"]
     #         (all user permissions are allowed)
 
-    list_superset = "list_superset"  # Column list completely contains user's list
+    # Column list completely contains user's list
+    list_superset = "list_superset"
     # Example: user.tags list_superset ["premium", "verified"]
     #         (user has all required tags plus extras)
 
-    list_disjoint = "list_disjoint"  # Lists have no common elements
+    # Lists have no common elements
+    list_disjoint = "list_disjoint"
     # Example: user.roles list_disjoint ["banned", "suspended"]
     #         (user has no restricted roles)
 
     # String operators
-    starts_with = "starts_with"  # String starts with user input (e.g., user.email starts_with "admin@")
-    ends_with = (
-        "ends_with"  # String ends with user input (e.g., user.domain ends_with ".com")
-    )
-    contains = "contains"  # String contains user input (e.g., user.description contains "verified")
+    # String starts with user input (e.g., user.email starts_with "admin@")
+    starts_with = "starts_with"
+    # String ends with user input (e.g., user.domain ends_with ".com")
+    ends_with = "ends_with"
+    # String contains user input (e.g., user.description contains "verified")
+    contains = "contains"
 
 
 class GroupOperator(str, Enum):
