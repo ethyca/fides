@@ -139,7 +139,8 @@ export const useDiscoveredAssetsTable = ({
     isIgnoringResults ||
     isAddingAllResults ||
     isBulkUpdatingSystem ||
-    isRestoringResults;
+    isRestoringResults ||
+    isBulkAddingDataUses;
 
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;

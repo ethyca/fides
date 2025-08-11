@@ -69,42 +69,6 @@ export interface TableStateConfig<TSortField extends string = string> {
 }
 
 /**
- * Generic server table configuration
- */
-export interface ServerTableConfig<
-  TData = unknown,
-  TSortField extends string = string,
-> {
-  queryKey: string | string[];
-  queryFn: (
-    params: TableState<TSortField> & Record<string, unknown>,
-  ) => Promise<{
-    items: TData[];
-    total: number;
-    page: number;
-    pages: number;
-  }>;
-  additionalParams?: Record<string, unknown>;
-  enabled?: boolean;
-}
-
-/**
- * Result from server table hook
- */
-export interface ServerTableResult<TData = unknown> {
-  data?: {
-    items: TData[];
-    total: number;
-    page: number;
-    pages: number;
-  };
-  isLoading: boolean;
-  isFetching: boolean;
-  error?: unknown;
-  refetch: () => void;
-}
-
-/**
  * Selection state management
  */
 export interface SelectionState<TData = unknown> {
@@ -126,3 +90,15 @@ export interface BulkActionsConfig<TData = unknown> {
   }>;
   getRowKey: (row: TData) => string;
 }
+
+/**
+ * Type for URL query state updates based on enabled features
+ */
+type QueryStateUpdates = {
+  page?: number | null;
+  size?: number | null;
+  sortField?: string | null;
+  sortOrder?: string | null;
+  filters?: Record<string, FilterValue | null> | null;
+  search?: string | null;
+};

@@ -217,7 +217,6 @@ describe("useTableState", () => {
       result.current.updateFilters({
         role: ["user"],
         empty: null,
-        alsoEmpty: undefined,
       }),
     );
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({

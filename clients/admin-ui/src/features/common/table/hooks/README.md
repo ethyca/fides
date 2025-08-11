@@ -78,7 +78,7 @@ export const useMyTable = ({ filters }: Config) => {
 // MyTable.tsx
 export const MyTable = ({ filters }: Props) => {
   const {
-    columns
+    columns,
     tableProps,
     selectionProps,
     selectedRows,
