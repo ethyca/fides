@@ -54,25 +54,7 @@ For complex tables, use a dedicated business logic hook:
 ```tsx
 // hooks/useMyTable.tsx
 export const useMyTable = ({ filters }: Config) => {
-  // Table state
-  const tableState = useTableState<ColumnKeys>({
-    urlSync: { pagination: true, sorting: true },
-  });
-
-  // API integration
-  const { data, isLoading } = useGetDataQuery({
-    ...tableState.queryParams,
-    ...filters,
-  });
-
-  // Ant table integration
-  const antTable = useAntTable(tableState, {
-    enableSelection: true,
-    getRowKey: (record) => record.id,
-    dataSource: data?.items || [],
-    totalRows: data?.total || 0,
-    isLoading,
-  });
+  // ...
 
   // Business actions
   const handleBulkAction = useCallback(async () => {
@@ -94,6 +76,7 @@ export const useMyTable = ({ filters }: Config) => {
 // MyTable.tsx
 export const MyTable = ({ filters }: Props) => {
   const {
+    columns
     tableProps,
     selectionProps,
     selectedRows,
@@ -190,7 +173,6 @@ To update existing tables:
 2. **Use RTK Query** with `tableState.queryParams`
 3. **Replace Table props** with `useAntTable` results
 4. **Move business logic** to dedicated hooks
-5. **Use proper memoization** with `useCallback`
 
 ### Before
 ```tsx
