@@ -65,6 +65,21 @@ declare global {
        * @example cy.getAntTableRow("some-row-key").should("be.visible");
        */
       getAntTableRow: (rowKey: string) => Chainable;
+
+      /**
+       * Get the pagination component from an Ant Design Table component
+       */
+      getAntPagination: () => Chainable;
+
+      /**
+       * Click the previous page button in the pagination component
+       */
+      antPaginatePrevious: () => void;
+
+      /**
+       * Click the next page button in the pagination component
+       */
+      antPaginateNext: () => void;
     }
   }
 }
@@ -200,9 +215,17 @@ Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   // Wait for the dropdown to disappear
   cy.get(".ant-table-filter-dropdown:visible").should("not.exist");
 });
-
 Cypress.Commands.add("getAntTableRow", (rowKey: string) =>
   cy.get(`[data-row-key='${rowKey}']`),
+);
+Cypress.Commands.add("getAntPagination", () =>
+  cy.get(".ant-pagination").first(),
+);
+Cypress.Commands.add("antPaginatePrevious", () =>
+  cy.getAntPagination().find("li.ant-pagination-prev button").click(),
+);
+Cypress.Commands.add("antPaginateNext", () =>
+  cy.getAntPagination().find("li.ant-pagination-next button").click(),
 );
 
 export {};
