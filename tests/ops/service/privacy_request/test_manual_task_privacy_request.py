@@ -148,7 +148,25 @@ def conditional_name_exists(
         data={
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer:name",
+            "field_address": "postgres_example_test_dataset:customer:email",
+            "operator": "list_contains",
+            "value": "customer-1@example.com",  # Use an email that actually exists in test data
+            "sort_order": 1,
+        },
+    )
+
+
+@pytest.fixture
+def conditional_email_exists(
+    db: Session, manual_task: ManualTask, manual_config: ManualTaskConfig
+) -> ManualTaskConditionalDependency:
+    """Alternative conditional dependency that checks for email existence"""
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "field_address": "postgres_example_test_dataset:customer:email",
             "operator": "exists",
             "value": None,  # exists operator doesn't need a value
             "sort_order": 1,
@@ -280,7 +298,7 @@ def test_privacy_request_runs_after_manual_input_simple(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures(
-    "use_dsr_3_0", "automatically_approved", "conditional_name_exists"
+    "use_dsr_3_0", "automatically_approved", "conditional_email_exists"
 )
 def test_manual_task_with_conditional_dependencies(
     db: Session,
@@ -585,7 +603,7 @@ def test_manual_task_with_conditional_dependencies(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures(
-    "use_dsr_3_0", "automatically_approved", "conditional_name_exists"
+    "use_dsr_3_0", "automatically_approved", "conditional_email_exists"
 )
 def test_manual_tasks_are_integrated_into_dag(
     db: Session,
@@ -666,9 +684,9 @@ def test_manual_tasks_are_integrated_into_dag(
     manual_collection = dag_test_graph.collections[0]
 
     # Verify the manual task depends on the source dataset via scalar field references
-    # The conditional dependency references "postgres_example_test_dataset:customer:name"
+    # The conditional dependency references "postgres_example_test_dataset:customer:email"
     # so there should be a scalar field with a reference to this field address
-    expected_field_address = "postgres_example_test_dataset:customer:name"
+    expected_field_address = "postgres_example_test_dataset:customer:email"
 
     # Check that there's a scalar field with the expected reference
     field_with_reference = None
@@ -704,7 +722,7 @@ def test_manual_tasks_are_integrated_into_dag(
     manual_collection = dag_test_graph.collections[0]
 
     # Verify the manual task depends on the source dataset via scalar field references (proves DAG structure)
-    expected_field_address = "postgres_example_test_dataset:customer:name"
+    expected_field_address = "postgres_example_test_dataset:customer:email"
 
     # Check that there's a scalar field with the expected reference
     field_with_reference = None
@@ -728,7 +746,7 @@ def test_manual_tasks_are_integrated_into_dag(
         "verification_required" in manual_fields
     ), "Manual task should have its own field"
     assert (
-        "postgres_example_test_dataset:customer:name" in manual_fields
+        "postgres_example_test_dataset:customer:email" in manual_fields
     ), "Manual task should have conditional dependency field from source"
 
     # ------------------------------------------------------------------
@@ -804,7 +822,7 @@ def test_manual_tasks_are_integrated_into_dag(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures(
-    "use_dsr_3_0", "automatically_approved", "conditional_name_exists"
+    "use_dsr_3_0", "automatically_approved", "conditional_email_exists"
 )
 def test_manual_task_output_data_available_for_downstream(
     db: Session,
@@ -989,3 +1007,224 @@ def test_manual_task_output_data_available_for_downstream(
     except Exception as e:
         print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
+def test_manual_task_conditional_dependencies_skip_execution(
+    db: Session,
+    example_datasets: list[Dict],
+    connection_config: ConnectionConfig,
+    policy,
+    run_privacy_request_task,
+    postgres_integration_db,
+    manual_task: ManualTask,
+    manual_config: ManualTaskConfig,
+    manual_field: ManualTaskConfigField,
+):
+    """
+    Test that manual tasks are properly skipped when conditional dependencies are not met.
+
+    This test verifies the new conditional behavior:
+    1. Manual tasks with conditional dependencies that evaluate to False are skipped
+    2. Privacy requests complete immediately when manual tasks are skipped
+    3. No ManualTaskInstances are created for skipped manual tasks
+    """
+
+    # Create a conditional dependency that will NOT be met
+    ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "field_address": "postgres_example_test_dataset:customer:email",
+            "operator": "list_contains",
+            "value": "nonexistent@example.com",  # Email that doesn't exist in test data
+            "sort_order": 1,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # 1. Use the first example dataset (Postgres)
+    # ------------------------------------------------------------------
+    source_ds = example_datasets[0]
+    source_ctl_ds = CtlDataset.create_from_dataset_dict(db, source_ds)
+    DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": source_ds["fides_key"],
+            "ctl_dataset_id": source_ctl_ds.id,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # 2. Test that privacy request completes immediately (no manual input needed)
+    # ------------------------------------------------------------------
+    pr_data = {"identity": {"email": "customer-1@example.com"}}
+
+    privacy_request = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        pr_data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
+    )
+
+    db.refresh(privacy_request)
+
+    # Should complete immediately since manual task condition is not met
+    assert (
+        privacy_request.status == PrivacyRequestStatus.complete
+    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+
+    # Verify NO manual task instance was created (proves manual task was skipped)
+    instance = (
+        db.query(ManualTaskInstance)
+        .filter(
+            ManualTaskInstance.task_id == manual_task.id,
+            ManualTaskInstance.entity_id == privacy_request.id,
+        )
+        .first()
+    )
+    assert instance is None, "ManualTaskInstance should NOT be created when condition is not met"
+
+    # Verify results contain source data but NO manual task data
+    results = cast(
+        Dict[str, list[Dict[str, Any]]],
+        privacy_request.get_raw_access_results() or {},
+    )
+
+    source_addr_key = "postgres_example_test_dataset:customer"
+    manual_addr_key = ManualTaskAddress.create("manual_connection").value
+
+    # Verify source data is present (proves upstream execution)
+    assert source_addr_key in results, "Source data should be present in results"
+
+    # Verify manual task data is NOT present (proves manual task was skipped)
+    assert (
+        manual_addr_key not in results
+    ), "Manual task data should NOT be present when condition is not met"
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
+def test_manual_task_conditional_dependencies_execute_when_met(
+    db: Session,
+    example_datasets: list[Dict],
+    connection_config: ConnectionConfig,
+    policy,
+    run_privacy_request_task,
+    postgres_integration_db,
+    manual_task: ManualTask,
+    manual_config: ManualTaskConfig,
+    manual_field: ManualTaskConfigField,
+):
+    """
+    Test that manual tasks execute when conditional dependencies are met.
+
+    This test verifies the conditional behavior:
+    1. Manual tasks with conditional dependencies that evaluate to True are executed
+    2. Privacy requests pause for manual input when conditions are met
+    3. ManualTaskInstances are created for executed manual tasks
+    """
+
+    # Create a conditional dependency that WILL be met
+    ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "field_address": "postgres_example_test_dataset:customer:email",
+            "operator": "list_contains",
+            "value": "customer-1@example.com",  # Email that exists in test data
+            "sort_order": 1,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # 1. Use the first example dataset (Postgres)
+    # ------------------------------------------------------------------
+    source_ds = example_datasets[0]
+    source_ctl_ds = CtlDataset.create_from_dataset_dict(db, source_ds)
+    DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": source_ds["fides_key"],
+            "ctl_dataset_id": source_ctl_ds.id,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # 2. Test that privacy request pauses for manual input (condition is met)
+    # ------------------------------------------------------------------
+    pr_data = {"identity": {"email": "customer-1@example.com"}}
+
+    privacy_request = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        pr_data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
+    )
+
+    db.refresh(privacy_request)
+
+    # Should require manual input since manual task condition is met
+    assert (
+        privacy_request.status == PrivacyRequestStatus.requires_input
+    ), f"Expected requires_input, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+
+    # Verify manual task instance was created (proves manual task was executed)
+    instance = (
+        db.query(ManualTaskInstance)
+        .filter(
+            ManualTaskInstance.task_id == manual_task.id,
+            ManualTaskInstance.entity_id == privacy_request.id,
+        )
+        .first()
+    )
+    assert instance is not None, "ManualTaskInstance should be created when condition is met"
+
+    # Provide manual input
+    submission = ManualTaskSubmission.create(
+        db=db,
+        data={
+            "task_id": manual_task.id,
+            "config_id": manual_config.id,
+            "field_id": manual_field.id,
+            "instance_id": instance.id,
+            "data": {"value": "conditional_test_value"},
+        },
+    )
+
+    # Re-run the privacy request
+    run_privacy_request_task.delay(privacy_request.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
+    db.refresh(privacy_request)
+
+    assert (
+        privacy_request.status == PrivacyRequestStatus.complete
+    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+
+    # Verify results contain both source data and manual task data
+    results = cast(
+        Dict[str, list[Dict[str, Any]]],
+        privacy_request.get_raw_access_results() or {},
+    )
+
+    source_addr_key = "postgres_example_test_dataset:customer"
+    manual_addr_key = ManualTaskAddress.create("manual_connection").value
+
+    # Verify source data is present (proves upstream execution)
+    assert source_addr_key in results, "Source data should be present in results"
+
+    # Verify manual task data is present (proves manual task execution)
+    assert manual_addr_key in results, "Manual task data should be present in results"
+    assert (
+        results[manual_addr_key][0]["verification_required"] == "conditional_test_value"
+    ), "Manual task should contain submitted value"

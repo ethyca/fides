@@ -4,6 +4,7 @@ from loguru import logger
 from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.graph.config import FieldAddress
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -73,30 +74,87 @@ class ManualTaskGraphTask(GraphTask):
         if not field_addresses:
             return conditional_data
 
-        # Use the standard GraphTask method to process input data
-        # This consolidates inputs into a dictionary with scalar field names as keys
-        processed_input = self.pre_process_input_data(*inputs)
+        # Add detailed logging for debugging
+        logger.info(
+            "Extracting conditional dependency data for manual task {} with field addresses: {}",
+            manual_task.id,
+            field_addresses,
+        )
+        logger.info(
+            "Input data details: {} inputs, types: {}",
+            len(inputs),
+            [type(input_data) for input_data in inputs],
+        )
 
-        # Extract data for all conditional dependency field addresses
-        # Include all fields with their values (or None if not found)
+        # For manual tasks, we need to preserve the original field names from conditional dependencies
+        # Instead of using pre_process_input_data which consolidates fields, we'll extract directly
+        # from the raw input data based on the execution node's input_keys
+
+        # Map each input to its corresponding collection address
+        input_collections = self.execution_node.input_keys
+
+        logger.info(
+            "Input collections: {}, field addresses to extract: {}",
+            [str(addr) for addr in input_collections],
+            field_addresses,
+        )
+
+        # Extract data for each conditional dependency field address
         for field_address in field_addresses:
-            # Access the value using the scalar field name (which is the field address)
-            values = processed_input.get(field_address, [])
+            field_address_obj = FieldAddress.from_string(field_address)
+            source_collection = field_address_obj.collection_address()
 
-            # For conditional dependencies, we typically want the first value if available
-            # This matches the previous behavior of _extract_value_from_inputs
-            value = values[0] if values else None
+            logger.info(
+                "Looking for field '{}' from collection '{}'",
+                field_address,
+                source_collection,
+            )
+
+            # Find the input data for this collection
+            field_value = None
+            for i, input_collection in enumerate(input_collections):
+                if input_collection == source_collection and i < len(inputs):
+                    input_data = inputs[i]
+                    if input_data:
+                        # Extract the specific field from this collection's data
+                        field_name = field_address_obj.field_path.levels[-1] if field_address_obj.field_path.levels else "id"
+
+                        logger.info(
+                            "Searching for field '{}' in collection '{}' data: {}",
+                            field_name,
+                            source_collection,
+                            input_data[:2] if input_data else "empty",
+                        )
+
+                        # Look for the field in the input data
+                        for row in input_data:
+                            if isinstance(row, dict) and field_name in row:
+                                field_value = row[field_name]
+                                logger.info(
+                                    "Found field '{}' = {} in row: {}",
+                                    field_name,
+                                    field_value,
+                                    row,
+                                )
+                                break
+                        if field_value is not None:
+                            break
 
             # Always include the field in conditional_data, even if value is None
             # This allows conditional dependencies to evaluate existence, non-existence, and falsy values
-            nested_data = self._set_nested_value(field_address, value)
+            nested_data = self._set_nested_value(field_address, field_value)
             conditional_data = deep_update(conditional_data, nested_data)
 
             logger.info(
                 "Extracted conditional dependency data: {} = {}",
                 field_address,
-                value,
+                field_value,
             )
+
+        logger.info(
+            "Final conditional data extracted: {}",
+            conditional_data,
+        )
 
         return conditional_data
 
@@ -436,6 +494,30 @@ class ManualTaskGraphTask(GraphTask):
         manual_task = self._get_manual_task_or_none()
         if manual_task is None:
             return None
+
+        # Add detailed logging to debug input data flow
+        logger.info(
+            "ManualTaskGraphTask._run_request called for manual task {} with {} inputs",
+            manual_task.id,
+            len(inputs),
+        )
+
+        # Log details about each input
+        for i, input_data in enumerate(inputs):
+            logger.info(
+                "Input {}: type={}, length={}, content={}",
+                i,
+                type(input_data),
+                len(input_data) if input_data else 0,
+                input_data[:2] if input_data and len(input_data) > 0 else "empty",  # Show first 2 rows
+            )
+
+        # Log execution node details
+        logger.info(
+            "Execution node input_keys: {}, incoming_edges: {}",
+            [str(key) for key in self.execution_node.input_keys],
+            [str(edge) for edge in self.execution_node.incoming_edges],
+        )
 
         conditional_data = self._get_conditional_data_and_evaluate(manual_task, *inputs)
         if conditional_data is None:
