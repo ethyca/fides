@@ -15,13 +15,14 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import RelationshipProperty, Session, relationship, foreign
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
+from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
-from fides.api.common_exceptions import ValidationError
 
 LEGACY_TAXONOMIES = {"data_categories", "data_uses", "data_subjects"}
+
 
 class TargetType(str, Enum):
     """Enumeration of target types that taxonomies can apply to."""

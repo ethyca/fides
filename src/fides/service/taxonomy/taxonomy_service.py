@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
+from fides.api.models.taxonomy import LEGACY_TAXONOMIES
+
 from .handlers import LegacyTaxonomyHandler
 from .utils import (
     activate_taxonomy_parents,
@@ -16,8 +18,6 @@ from .utils import (
     validate_default_taxonomy_restrictions,
     validate_parent_key_exists,
 )
-
-from fides.api.models.taxonomy import LEGACY_TAXONOMIES
 
 
 class TaxonomyService:

@@ -1,13 +1,9 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
-from fides.api.common_exceptions import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.taxonomy import (
-    Taxonomy,
-    TaxonomyElement,
-    TaxonomyUsage,
-)
+from fides.api.common_exceptions import ValidationError
+from fides.api.models.taxonomy import Taxonomy, TaxonomyElement, TaxonomyUsage
 
 
 @pytest.mark.usefixtures("default_taxonomy")
