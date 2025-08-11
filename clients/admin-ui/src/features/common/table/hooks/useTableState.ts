@@ -7,6 +7,7 @@ import {
 } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { FilterValue, QueryStateUpdates } from ".";
 import {
   SortOrder,
   TableState,
@@ -44,7 +45,9 @@ const createTableParsers = (
     sortOrder: parseAsString.withDefault(""),
   }),
   ...(urlSync.filtering && {
-    filters: parseAsJson((value: any) => value).withDefault({}),
+    filters: parseAsJson(
+      (value: unknown) => value as Record<string, FilterValue | null>,
+    ).withDefault({}),
   }),
   ...(urlSync.search && {
     search: parseAsString.withDefault(""),
@@ -184,7 +187,7 @@ export const useTableState = <TSortField extends string = string>(
           : pageIndex;
 
       if (urlSync.pagination) {
-        const updates: any = { page: newPageIndex };
+        const updates: QueryStateUpdates = { page: newPageIndex };
         if (pageSize !== undefined) {
           updates.size = pageSize;
         }
@@ -226,7 +229,7 @@ export const useTableState = <TSortField extends string = string>(
   );
 
   const updateFilters = useCallback(
-    (filters: Record<string, any>) => {
+    (filters: Record<string, FilterValue | null>) => {
       if (urlSync.filtering) {
         // Clean up filters by removing null/undefined values before syncing to URL
         const cleanFilters = Object.fromEntries(
@@ -267,7 +270,7 @@ export const useTableState = <TSortField extends string = string>(
 
   const resetState = useCallback(() => {
     // Reset URL state for synced features
-    const urlUpdates: any = {};
+    const urlUpdates: QueryStateUpdates = {};
     if (urlSync.pagination) {
       urlUpdates.page = DEFAULT_PAGE_INDEX;
       urlUpdates.size = defaultPageSize;

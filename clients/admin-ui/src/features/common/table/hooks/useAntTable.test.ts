@@ -402,4 +402,142 @@ describe("useAntTable", () => {
     const btnProps = result.current.getBulkActionProps("save");
     expect(btnProps.loading).toBe(true);
   });
+
+  describe("pagination change detection edge cases", () => {
+    it("handles undefined pagination.current without triggering false pagination change", () => {
+      const tableState = createTableState({ pageIndex: 1, pageSize: 25 });
+      const { result } = renderHook(() =>
+        useAntTable<Row, SortField>(tableState),
+      );
+
+      act(() => {
+        // Simulate pagination object with undefined current but defined pageSize
+        result.current.tableProps.onChange?.(
+          { current: undefined, pageSize: 25 } as any,
+          {},
+          { field: "name", order: "ascend" },
+          {} as any,
+        );
+      });
+
+      // Should NOT trigger pagination update since effective values haven't changed
+      // (undefined current defaults to tableState.pageIndex, pageSize is same)
+      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for sorting
+      expect(tableState.updateSorting).toHaveBeenCalledWith("name", "ascend");
+      expect(tableState.updateFilters).toHaveBeenCalledWith({});
+    });
+
+    it("handles undefined pagination.pageSize without triggering false pagination change", () => {
+      const tableState = createTableState({ pageIndex: 1, pageSize: 25 });
+      const { result } = renderHook(() =>
+        useAntTable<Row, SortField>(tableState),
+      );
+
+      act(() => {
+        // Simulate pagination object with defined current but undefined pageSize
+        result.current.tableProps.onChange?.(
+          { current: 1, pageSize: undefined } as any,
+          {},
+          { field: "name", order: "ascend" },
+          {} as any,
+        );
+      });
+
+      // Should NOT trigger pagination update since effective values haven't changed
+      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for sorting
+      expect(tableState.updateSorting).toHaveBeenCalledWith("name", "ascend");
+      expect(tableState.updateFilters).toHaveBeenCalledWith({});
+    });
+
+    it("handles both pagination.current and pagination.pageSize undefined", () => {
+      const tableState = createTableState({ pageIndex: 2, pageSize: 50 });
+      const { result } = renderHook(() =>
+        useAntTable<Row, SortField>(tableState),
+      );
+
+      act(() => {
+        // Simulate pagination object with both values undefined
+        result.current.tableProps.onChange?.(
+          { current: undefined, pageSize: undefined } as any,
+          { status: ["active"] },
+          {},
+          {} as any,
+        );
+      });
+
+      // Should NOT be treated as pagination change since undefined values
+      // default to current tableState values
+      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for filtering
+      expect(tableState.updateFilters).toHaveBeenCalledWith({
+        status: ["active"],
+      });
+      expect(tableState.updateSorting).toHaveBeenCalledWith(undefined, undefined);
+    });
+
+    it("correctly detects actual pagination changes with undefined fallbacks", () => {
+      const tableState = createTableState({ pageIndex: 1, pageSize: 25 });
+      const { result } = renderHook(() =>
+        useAntTable<Row, SortField>(tableState),
+      );
+
+      act(() => {
+        // Real pagination change: undefined current (defaults to 1) but different pageSize
+        result.current.tableProps.onChange?.(
+          { current: undefined, pageSize: 50 } as any,
+          {},
+          {},
+          {} as any,
+        );
+      });
+
+      // Should trigger pagination update because effective pageSize changed (25 → 50)
+      expect(tableState.updatePagination).toHaveBeenCalledWith(1, 50);
+      expect(tableState.updateFilters).not.toHaveBeenCalled();
+      expect(tableState.updateSorting).not.toHaveBeenCalled();
+    });
+
+    it("correctly detects actual pagination changes when current is undefined but effective page differs", () => {
+      const tableState = createTableState({ pageIndex: 3, pageSize: 25 });
+      const { result } = renderHook(() =>
+        useAntTable<Row, SortField>(tableState),
+      );
+
+      act(() => {
+        // undefined current defaults to tableState.pageIndex (3), but we're comparing against 3
+        // This should NOT be a pagination change
+        result.current.tableProps.onChange?.(
+          { current: undefined, pageSize: 25 } as any,
+          {},
+          { field: "name", order: "ascend" },
+          {} as any,
+        );
+      });
+
+      // Should NOT trigger pagination update - it's sorting, not pagination change
+      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for sorting
+      expect(tableState.updateSorting).toHaveBeenCalledWith("name", "ascend");
+    });
+
+    it("handles edge case where tableState values are also undefined", () => {
+      // Edge case: tableState itself has undefined values
+      const tableState = createTableState({ pageIndex: undefined as any, pageSize: undefined as any });
+      const { result } = renderHook(() =>
+        useAntTable<Row, SortField>(tableState),
+      );
+
+      act(() => {
+        result.current.tableProps.onChange?.(
+          { current: undefined, pageSize: undefined } as any,
+          {},
+          {},
+          {} as any,
+        );
+      });
+
+      // Should handle gracefully - both sides undefined means no change
+      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for filtering
+      expect(tableState.updateFilters).toHaveBeenCalledWith({});
+      expect(tableState.updateSorting).toHaveBeenCalledWith(undefined, undefined);
+    });
+  });
 });

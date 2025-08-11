@@ -140,9 +140,13 @@ export const useAntTable = <TData, TSortField extends string = string>(
       sorter: SorterResult<TData> | SorterResult<TData>[],
     ) => {
       // Check if this is just a pagination change (page or pageSize changed)
+      // Handle undefined values defensively to avoid false positives
+      const currentPageFromPagination =
+        pagination.current ?? tableState.pageIndex;
+      const pageSizeFromPagination = pagination.pageSize ?? tableState.pageSize;
       const isPaginationChange =
-        pagination.current !== tableState.pageIndex ||
-        pagination.pageSize !== tableState.pageSize;
+        currentPageFromPagination !== tableState.pageIndex ||
+        pageSizeFromPagination !== tableState.pageSize;
 
       // Handle pagination with tableState
       if (isPaginationChange) {
