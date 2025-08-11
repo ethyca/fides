@@ -4,9 +4,11 @@ Service layer for taxonomy management (data_categories, data_uses, data_subjects
 
 from typing import Any, Dict, List, Optional, Union
 
+from sqlalchemy import or_
+
 from sqlalchemy.orm import Session
 
-from fides.api.models.taxonomy import LEGACY_TAXONOMIES
+from fides.api.models.taxonomy import LEGACY_TAXONOMIES, TaxonomyUsage
 
 from .handlers import LegacyTaxonomyHandler
 from .utils import (
@@ -102,6 +104,17 @@ class TaxonomyService:
 
     def delete_element(self, taxonomy_type: str, fides_key: str) -> bool:
         """Delete a taxonomy element."""
+        # First, remove any TaxonomyUsage rows that reference this element
+        # as either the source or the target element. There is no DB cascade
+        # for these relationships by design, so this cleanup is handled here.
+        self.db.query(TaxonomyUsage).filter(
+            or_(
+                TaxonomyUsage.source_element_key == fides_key,
+                TaxonomyUsage.target_element_key == fides_key,
+            )
+        ).delete(synchronize_session=False)
+
+        # Then delete the element itself via the appropriate handler
         return self._get_handler(taxonomy_type).delete_element(taxonomy_type, fides_key)
 
     def create_or_update_element(self, taxonomy_type: str, element_data: Dict) -> Any:

@@ -212,10 +212,10 @@ def upgrade():
         """
         INSERT INTO taxonomy (id, created_at, updated_at, fides_key, organization_fides_key, tags, name, description)
         VALUES
-          ('data_categories', now(), now(), 'data_categories', NULL, NULL, 'Data categories', "Taxonomy for data categories"),
-          ('data_uses', now(), now(), 'data_uses', NULL, NULL, 'Data uses', "Taxonomy for data uses"),
-          ('data_subjects', now(), now(), 'data_subjects', NULL, NULL, 'Data subjects', "Taxonomy for data subjects"),
-          ('system_groups', now(), now(), 'system_groups', NULL, NULL, 'System groups', "Taxonomy for system groups")
+          ('data_categories', now(), now(), 'data_categories', NULL, NULL, 'Data categories', 'Taxonomy for data categories'),
+          ('data_uses', now(), now(), 'data_uses', NULL, NULL, 'Data uses', 'Taxonomy for data uses'),
+          ('data_subjects', now(), now(), 'data_subjects', NULL, NULL, 'Data subjects', 'Taxonomy for data subjects'),
+          ('system_groups', now(), now(), 'system_groups', NULL, NULL, 'System groups', 'Taxonomy for system groups')
         """
     )
 
