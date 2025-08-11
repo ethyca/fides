@@ -143,7 +143,7 @@ DEPENDENCIES_DATA = [
         "parent_id": None,  # Will be updated after nested group is created
         "condition_type": ManualTaskConditionalDependencyType.leaf,
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
-        "operator": ">",
+        "operator": "gt",
         "value": 0,
         "sort_order": 4
     },
@@ -214,10 +214,11 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
         self.storage_config = None
         self.policy = None
         self.access_rule = None
+        self.privacy_requests = [] # Added to store privacy requests for cleanup
 
     @property
     def description(self) -> str:
-        return "Creates a ManualTask with ManualTaskConditionalDependencies using a ManualTask connection."
+        return "Creates a ManualTask with ManualTaskConditionalDependencies and tests both scenarios: one privacy request where conditions are met (manual task created) and one where conditions are not met (no manual task created)."
 
     def setup(self) -> bool:
         """Setup ManualTask with conditional dependencies."""
@@ -233,56 +234,62 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
                 self.error(f"Failed to create/verify postgres connection {self.postgres_connection_key}")
                 return False
 
-            # Step 2: Create or verify dataset config exists
-            self.step(2, "Creating/verifying dataset config")
+            # Step 2: Create or verify postgres database exists and seed it
+            self.step(2, "Creating/verifying postgres database and seeding data")
+            if not self._create_or_verify_postgres_database():
+                self.error(f"Failed to create/verify postgres database {POSTGRES_DBNAME}")
+                return False
+
+            # Step 3: Create or verify dataset config exists
+            self.step(3, "Creating/verifying dataset config")
             if not self._create_or_verify_dataset_config():
                 self.error(f"Failed to create/verify dataset config {POSTGRES_DATASET_KEY}")
                 return False
 
-            # Step 3: Create or verify ManualTask connection exists
-            self.step(3, "Creating/verifying ManualTask connection")
+            # Step 4: Create or verify ManualTask connection exists
+            self.step(4, "Creating/verifying ManualTask connection")
             if not self._create_or_verify_manual_task_connection():
                 self.error(f"Failed to create/verify connection {self.connection_key}")
                 return False
 
-            # Step 4: Create ManualTask
-            self.step(4, "Creating ManualTask")
+            # Step 5: Create ManualTask
+            self.step(5, "Creating ManualTask")
             if not self._create_manual_task():
                 self.error("Failed to create ManualTask")
                 return False
 
-            # Step 5: Create ManualTaskConfig
-            self.step(5, "Creating ManualTaskConfig")
+            # Step 6: Create ManualTaskConfig
+            self.step(6, "Creating ManualTaskConfig")
             if not self._create_manual_task_config():
                 self.error("Failed to create ManualTaskConfig")
                 return False
 
-            # Step 6: Create ManualTaskConfigFields
-            self.step(6, "Creating ManualTaskConfigFields")
+            # Step 7: Create ManualTaskConfigFields
+            self.step(7, "Creating ManualTaskConfigFields")
             if not self._create_manual_task_config_fields():
                 self.error("Failed to create ManualTaskConfigFields")
                 return False
 
-            # Step 7: Create ManualTaskConditionalDependencies
-            self.step(7, "Creating ManualTaskConditionalDependencies")
+            # Step 8: Create ManualTaskConditionalDependencies
+            self.step(8, "Creating ManualTaskConditionalDependencies")
             if not self._create_conditional_dependencies():
                 self.error("Failed to create ManualTaskConditionalDependencies")
                 return False
 
-            # Step 8: Create Policy
-            self.step(8, "Creating Policy")
+            # Step 9: Create Policy
+            self.step(9, "Creating Policy")
             if not self._create_policy():
                 self.error("Failed to create Policy")
                 return False
 
-            # Step 9: Create Privacy Request
-            self.step(9, "Creating Privacy Request")
+            # Step 10: Create Privacy Requests
+            self.step(10, "Creating Privacy Requests")
             if not self._create_privacy_request():
-                self.error("Failed to create Privacy Request")
+                self.error("Failed to create Privacy Requests")
                 return False
 
-            # Step 10: Debug - Check manual task integration
-            self.step(10, "Debug - Checking manual task integration")
+            # Step 11: Debug - Check manual task integration
+            self.step(11, "Debug - Checking manual task integration")
             self._debug_manual_task_integration()
 
             self.final_success("Setup completed successfully!")
@@ -347,10 +354,21 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             else:
                 self.already_cleaned("Policy", "policy")
 
+            # Step 7: Delete privacy requests (created for testing)
+            self.step(7, "Deleting privacy requests")
+            if hasattr(self, 'privacy_requests') and self.privacy_requests:
+                for privacy_request in self.privacy_requests:
+                    if self._delete_privacy_request(privacy_request):
+                        deleted_counts["privacy_requests"] += 1
+                        self.success(f"Deleted privacy request: {privacy_request.id}")
+            else:
+                self.already_cleaned("PrivacyRequest", "privacy requests")
+
             # Note: We intentionally do NOT delete:
             # - postgres_example_connection (shared resource)
             # - postgres_example_test_dataset config (shared resource)
             # - CTL dataset (shared resource)
+            # - postgres_example database (keeping test data for other runs)
             # These are used by other tests and should persist
 
             self.summary("Cleanup Summary", deleted_counts)
@@ -405,6 +423,42 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
 
         except Exception as e:
             self.error(f"Error creating/verifying postgres connection: {e}")
+            return False
+
+    def _create_or_verify_postgres_database(self) -> bool:
+        """Create and seed the postgres_example database using the existing setup script."""
+        try:
+            import subprocess
+            import os
+
+            # Path to the postgres setup script
+            setup_script_path = "tests/ops/integration_tests/setup_scripts/postgres_setup.py"
+
+            if not os.path.exists(setup_script_path):
+                self.error(f"Postgres setup script not found at: {setup_script_path}")
+                return False
+
+            self.info("Running postgres setup script...")
+
+            # Run the setup script
+            result = subprocess.run(
+                [sys.executable, setup_script_path],
+                capture_output=True,
+                text=True,
+                cwd=project_root
+            )
+
+            if result.returncode == 0:
+                self.success("Postgres setup script completed successfully")
+                return True
+            else:
+                self.error(f"Postgres setup script failed with return code {result.returncode}")
+                self.error(f"stdout: {result.stdout}")
+                self.error(f"stderr: {result.stderr}")
+                return False
+
+        except Exception as e:
+            self.error(f"Error running postgres setup script: {e}")
             return False
 
     def _create_or_verify_dataset_config(self) -> bool:
@@ -754,6 +808,20 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             self.error(f"Error deleting rule: {e}")
             return False
 
+    def _delete_privacy_request(self, privacy_request) -> bool:
+        """Delete a privacy request."""
+        try:
+            db = self._get_db_session()
+            if privacy_request:
+                db.delete(privacy_request)
+                db.commit()
+                self.success(f"Deleted privacy request: {privacy_request.id}")
+                return True
+            return False
+        except Exception as e:
+            self.error(f"Error deleting privacy request {privacy_request.id if privacy_request else 'unknown'}: {e}")
+            return False
+
     def _create_policy(self) -> bool:
         """Create a policy for the privacy request."""
         try:
@@ -813,14 +881,16 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             return False
 
     def _create_privacy_request(self) -> bool:
-        """Create a privacy request."""
+        """Create two privacy requests - one where conditions are met and one where they aren't."""
         try:
             db = self._get_db_session()
-            # Create privacy request
-            privacy_request = PrivacyRequest.create(
+
+            # Create first privacy request - conditions WILL be met
+            # This email exists in the postgres example data and matches our conditional dependencies
+            privacy_request_1 = PrivacyRequest.create(
                 db=db,
                 data={
-                    "external_id": f"ext-{str(uuid4())}",
+                    "external_id": f"ext-conditions-met-{str(uuid4())}",
                     "started_processing_at": datetime.utcnow(),
                     "requested_at": datetime.utcnow(),
                     "status": "pending",
@@ -830,25 +900,65 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
                 },
             )
 
-            # Cache identity - this email exists in the postgres example data and matches our conditional dependencies
-            identity_kwargs = {"email": "customer-1@example.com"}
-            privacy_request.cache_identity(identity_kwargs)
-            privacy_request.persist_identity(
+            # Cache identity for first request - this should trigger manual task creation
+            identity_kwargs_1 = {"email": "customer-1@example.com"}
+            privacy_request_1.cache_identity(identity_kwargs_1)
+            privacy_request_1.persist_identity(
                 db=db,
                 identity={"email": "customer-1@example.com"},
             )
 
-            self.success(f"Created privacy request: {privacy_request.id}")
+            self.success(f"Created privacy request (conditions met): {privacy_request_1.id}")
+
+            # Create second privacy request - conditions will NOT be met
+            # This email doesn't exist in the postgres example data, so manual task won't be created
+            privacy_request_2 = PrivacyRequest.create(
+                db=db,
+                data={
+                    "external_id": f"ext-conditions-not-met-{str(uuid4())}",
+                    "started_processing_at": datetime.utcnow(),
+                    "requested_at": datetime.utcnow(),
+                    "status": "pending",
+                    "origin": "https://example.com/",
+                    "policy_id": self.policy.id,
+                    "client_id": self.policy.client_id,
+                },
+            )
+
+            # Cache identity for second request - this should NOT trigger manual task creation
+            identity_kwargs_2 = {"email": "nonexistent@example.com"}
+            privacy_request_2.cache_identity(identity_kwargs_2)
+            privacy_request_2.persist_identity(
+                db=db,
+                identity={"email": "nonexistent@example.com"},
+            )
+
+            self.success(f"Created privacy request (conditions not met): {privacy_request_2.id}")
+
+            # Store both privacy requests for cleanup
+            self.privacy_requests = [privacy_request_1, privacy_request_2]
+
             return True
 
         except Exception as e:
-            self.error(f"Error creating privacy request: {e}")
+            self.error(f"Error creating privacy requests: {e}")
             return False
 
     def _debug_manual_task_integration(self) -> None:
         """Debug method to check manual task integration."""
         try:
             db = self._get_db_session()
+
+            # Show information about the two privacy requests
+            if hasattr(self, 'privacy_requests') and self.privacy_requests:
+                self.info(f"📋 Created {len(self.privacy_requests)} privacy requests:")
+                for i, pr in enumerate(self.privacy_requests, 1):
+                    self.info(f"   Request {i}: {pr.id} (external_id: {pr.external_id})")
+                    if "conditions-met" in pr.external_id:
+                        self.info(f"     → Expected: Manual task SHOULD be created (email: customer-1@example.com)")
+                    else:
+                        self.info(f"     → Expected: Manual task should NOT be created (email: nonexistent@example.com)")
+
             # Check if manual task addresses are being generated
             manual_addresses = get_manual_task_addresses(db)
             self.info(f"🎯 Manual task addresses found: {len(manual_addresses)}")
@@ -878,6 +988,10 @@ if __name__ == "__main__":
     scenario = ManualTaskWithConditionalDependencies()
 
     print("ManualTask with Conditional Dependencies QA Scenario")
+    print("=" * 60)
+    print("This scenario tests ManualTask conditional dependencies by creating:")
+    print("1. A privacy request with email 'customer-1@example.com' (conditions SHOULD be met)")
+    print("2. A privacy request with email 'nonexistent@example.com' (conditions should NOT be met)")
     print("=" * 60)
 
     if args.teardown:

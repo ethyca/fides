@@ -4,7 +4,7 @@ from loguru import logger
 from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
-from fides.api.graph.config import CollectionAddress, FieldAddress
+from fides.api.graph.config import FieldAddress
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -44,6 +44,28 @@ class ManualTaskGraphTask(GraphTask):
             self.execution_node.address
         )
 
+    def _parse_field_address(self, field_address: str) -> tuple[str, list[str]]:
+        """
+        Parse a field address into dataset, collection, and field path.
+        """
+        if field_address.count(":") > 2:
+            # Parse manually: dataset:collection:field:subfield -> dataset, collection, [field, subfield]
+            parts = field_address.split(":")
+            dataset = parts[0]
+            collection = parts[1]
+            field_path = parts[2:]
+            source_collection_key = f"{dataset}:{collection}"
+        else:
+            # Use standard FieldAddress parsing for simple cases
+            field_address_obj = FieldAddress.from_string(field_address)
+            source_collection_key = str(field_address_obj.collection_address())
+            field_path = (
+                list(field_address_obj.field_path.levels)
+                if field_address_obj.field_path.levels
+                else ["id"]
+            )
+        return source_collection_key, field_path
+
     def _extract_conditional_dependency_data_from_inputs(
         self, *inputs: list[Row], manual_task: ManualTask
     ) -> dict[str, Any]:
@@ -71,120 +93,54 @@ class ManualTaskGraphTask(GraphTask):
             if dependency.field_address
         ]
 
+        # if no field addresses, return empty conditional data
+        # This will allow the manual task to be executed if there are no conditional dependencies
         if not field_addresses:
             return conditional_data
-
-        # Add detailed logging for debugging
-        logger.info(
-            "Extracting conditional dependency data for manual task {} with field addresses: {}",
-            manual_task.id,
-            field_addresses,
-        )
-        logger.info(
-            "Input data details: {} inputs, types: {}",
-            len(inputs),
-            [type(input_data) for input_data in inputs],
-        )
 
         # For manual tasks, we need to preserve the original field names from conditional dependencies
         # Instead of using pre_process_input_data which consolidates fields, we'll extract directly
         # from the raw input data based on the execution node's input_keys
 
-        # Map each input to its corresponding collection address
-        input_collections = self.execution_node.input_keys
-
-        logger.info(
-            "Input collections: {}, field addresses to extract: {}",
-            [str(addr) for addr in input_collections],
-            field_addresses,
-        )
+        # Create a mapping between collections and their input data
+        # Convert CollectionAddress objects to strings for consistent key types
+        collection_data_map = {
+            str(collection_key): input_data
+            for collection_key, input_data in zip(
+                self.execution_node.input_keys, inputs
+            )
+        }
 
         # Extract data for each conditional dependency field address
         for field_address in field_addresses:
-            # Handle field addresses with multiple colons (e.g., "dataset:collection:field:subfield")
-            # by parsing them manually since FieldAddress.from_string() only handles dots for nested fields
-            if field_address.count(":") > 2:
-                # Parse manually: dataset:collection:field:subfield -> dataset, collection, [field, subfield]
-                parts = field_address.split(":")
-                dataset = parts[0]
-                collection = parts[1]
-                field_path = parts[2:]
-                source_collection = CollectionAddress(dataset, collection)
-            else:
-                # Use standard FieldAddress parsing for simple cases
-                field_address_obj = FieldAddress.from_string(field_address)
-                source_collection = field_address_obj.collection_address()
-                field_path = (
-                    list(field_address_obj.field_path.levels)
-                    if field_address_obj.field_path.levels
-                    else ["id"]
-                )
-
-            logger.info(
-                "Looking for field path '{}' from collection '{}'",
-                ".".join(field_path),
-                source_collection,
-            )
+            source_collection_key, field_path = self._parse_field_address(field_address)
 
             # Find the input data for this collection
             field_value = None
-            for i, input_collection in enumerate(input_collections):
-                if input_collection == source_collection and i < len(inputs):
-                    input_data = inputs[i]
-                    if input_data:
-                        logger.info(
-                            "Searching for field path '{}' in collection '{}' data: {}",
-                            ".".join(field_path),
-                            source_collection,
-                            input_data[:2] if input_data else "empty",
-                        )
+            input_data = collection_data_map.get(source_collection_key)
+            if input_data:
 
-                        # Look for the field in the input data
-                        for row in input_data:
-                            logger.info(
-                                "Checking row: {} (type: {}) for field path '{}'",
-                                row,
-                                type(row),
-                                ".".join(field_path),
-                            )
+                # Look for the field in the input data
+                for row in input_data:
 
-                            # Traverse the nested field path to get the actual value
-                            field_value = self._extract_nested_field_value(
-                                row, field_path
-                            )
+                    # Traverse the nested field path to get the actual value
+                    field_value = self._extract_nested_field_value(row, field_path)
 
-                            if field_value is not None:
-                                logger.info(
-                                    "Found field path '{}' = {} in row: {}",
-                                    ".".join(field_path),
-                                    field_value,
-                                    row,
-                                )
-                                break
-
-                            logger.info(
-                                "Field path '{}' not found in row: {}",
-                                ".".join(field_path),
-                                row,
-                            )
-                        if field_value is not None:
-                            break
+                    if field_value is not None:
+                        break
+                # Found the field value, break out of the inner loop (over rows)
+                # but continue with the outer loop to process this field
+            else:
+                logger.warning(
+                    "No input data found for collection '{}' in collection_data_map: {}",
+                    source_collection_key,
+                    list(collection_data_map.keys()),
+                )
 
             # Always include the field in conditional_data, even if value is None
             # This allows conditional dependencies to evaluate existence, non-existence, and falsy values
             nested_data = self._set_nested_value(field_address, field_value)
             conditional_data = deep_update(conditional_data, nested_data)
-
-            logger.info(
-                "Extracted conditional dependency data: {} = {}",
-                field_address,
-                field_value,
-            )
-
-        logger.info(
-            "Final conditional data extracted: {}",
-            conditional_data,
-        )
 
         return conditional_data
 
@@ -213,22 +169,27 @@ class ManualTaskGraphTask(GraphTask):
 
     def _set_nested_value(self, field_address: str, value: Any) -> dict[str, Any]:
         """
-        Clean and readable approach for building nested dictionaries.
+        Set a field value in the conditional data structure.
 
         Args:
             field_address: Colon-separated field address (e.g., "dataset:collection:field")
             value: The value to set
 
         Returns:
-            Dictionary with the nested structure containing the value
+            Dictionary with the field value set at the specified path
         """
+        # For conditional dependencies, we want to set the field value directly
+        # The field_address format is "dataset:collection:field"
+        # We want to create: {dataset: {collection: {field: value}}}
         parts = field_address.split(":")
-        result = value
 
-        # Build nested structure from innermost to outermost
-        for part in reversed(parts):
-            result = {part: result}
+        if len(parts) >= 3:
+            dataset, collection, field = parts[0], parts[1], parts[2]
+            result = {dataset: {collection: {field: value}}}
+            return result
 
+        # Fallback for unexpected formats
+        result = {field_address: value}
         return result
 
     def _evaluate_conditional_dependencies(
@@ -541,7 +502,7 @@ class ManualTaskGraphTask(GraphTask):
         """
         Execute manual task logic following the standard GraphTask pattern:
         1. Create ManualTaskInstances if they don't exist
-        2. Check for submissions
+        2. Check if all required submissions are present
         3. Return data if submitted, raise AwaitingAsyncTaskCallback if not
         """
         manual_task = self._get_manual_task_or_none()
@@ -554,18 +515,6 @@ class ManualTaskGraphTask(GraphTask):
             manual_task.id,
             len(inputs),
         )
-
-        # Log details about each input
-        for i, input_data in enumerate(inputs):
-            logger.info(
-                "Input {}: type={}, length={}, content={}",
-                i,
-                type(input_data),
-                len(input_data) if input_data else 0,
-                (
-                    input_data[:2] if input_data and len(input_data) > 0 else "empty"
-                ),  # Show first 2 rows
-            )
 
         # Log execution node details
         logger.info(
