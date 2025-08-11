@@ -267,9 +267,7 @@ class RedisSettings(FidesSettings):
         # redis://<user>:<password>@<host>
         auth_prefix = ""
         if password or user:
-            encoded_password = (
-                password if is_unencoded else quote_plus(password)
-            )
+            encoded_password = password if is_unencoded else quote_plus(password)
             auth_prefix = f"{quote_plus(user)}:{encoded_password}@"
 
         # For host, we don't have a fallback - read replica should be a different host

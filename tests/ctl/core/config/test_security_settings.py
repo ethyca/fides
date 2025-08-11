@@ -83,6 +83,10 @@ class TestSecuritySettings:
         with pytest.raises(ValueError):
             SecuritySettings(request_rate_limit="invalid")
 
+    def test_validate_rate_limit_client_ip_header_invalid(self):
+        with pytest.raises(ValueError):
+            SecuritySettings(request_rate_limit="X-Forwarded-For")
+
     def test_security_settings_env_default_to_prod(self):
         settings = SecuritySettings()
         assert settings.env == "prod"

@@ -217,6 +217,21 @@ class SecuritySettings(FidesSettings):
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
 
+    @field_validator("rate_limit_client_ip_header")
+    @classmethod
+    def validate_rate_limit_client_ip_header(
+        cls,
+        v: str,
+    ) -> str:
+        """Validate supported `rate_limit_client_ip_header`"""
+        insecure_headers = ["X-Forwarded-For"]
+
+        if v in insecure_headers:
+            raise ValueError(
+                "The rate_limit_client_ip_header cannot be set to a header that is not secure."
+            )
+        return v
+
     @field_validator("request_rate_limit")
     @classmethod
     def validate_request_rate_limit(

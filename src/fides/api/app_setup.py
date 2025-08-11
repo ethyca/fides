@@ -50,7 +50,7 @@ from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
-from fides.api.util.rate_limit import fides_limiter
+from fides.api.util.rate_limit import fides_limiter, is_rate_limit_enabled
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
@@ -89,15 +89,13 @@ def create_fides_app(
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
 
-    if (
-        CONFIG.security.rate_limit_client_ip_header is None
-        or CONFIG.security.rate_limit_client_ip_header == ""
-    ):
+    if is_rate_limit_enabled:
+        # Required for default rate limiting to work
+        fastapi_app.add_middleware(SlowAPIMiddleware)
+    else:
         logger.warning(
             "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
         )
-    else:
-        fastapi_app.add_middleware(SlowAPIMiddleware)
 
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5

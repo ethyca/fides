@@ -7,7 +7,6 @@ from loguru import logger
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
 
-from fides.api.util.cache import get_cache
 from fides.config import CONFIG
 
 
@@ -70,12 +69,19 @@ def get_client_ip_from_header(request: Request) -> str:
 
 # Used for rate limiting with Slow API
 # Decorate individual routes to deviate from the default rate limits
+is_rate_limit_enabled = (
+    CONFIG.security.rate_limit_client_ip_header is not None
+    and CONFIG.security.rate_limit_client_ip_header != ""
+)
 fides_limiter = Limiter(
     storage_uri=CONFIG.redis.connection_url_unencoded,
-    default_limits=[CONFIG.security.request_rate_limit],
+    default_limits=[
+        CONFIG.security.request_rate_limit
+    ],  # Applied to ALL endpoints automatically
     headers_enabled=True,
     key_prefix=CONFIG.security.rate_limit_prefix,
     key_func=get_client_ip_from_header,
     retry_after="http-date",
     in_memory_fallback_enabled=False,  # Fall back to no rate limiting if Redis unavailable
+    enabled=is_rate_limit_enabled,
 )

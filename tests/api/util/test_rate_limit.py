@@ -34,10 +34,10 @@ class TestValidateClientIp:
 class TestGetClientIpFromHeader:
     def test_get_client_ip_from_header_configured_and_present(self, config):
         original_header = config.security.rate_limit_client_ip_header
-        config.security.rate_limit_client_ip_header = "X-Forwarded-For"
+        config.security.rate_limit_client_ip_header = "X-Real-IP"
         try:
             mock_request = mock.Mock(spec=Request)
-            mock_request.headers = {"X-Forwarded-For": "150.51.100.10"}
+            mock_request.headers = {"X-Real-IP": "150.51.100.10"}
             mock_request.client.host = "127.0.0.1"
             assert get_client_ip_from_header(mock_request) == "150.51.100.10"
         finally:
@@ -56,7 +56,7 @@ class TestGetClientIpFromHeader:
 
     def test_get_client_ip_from_header_missing(self, config):
         original_header = config.security.rate_limit_client_ip_header
-        config.security.rate_limit_client_ip_header = "X-Forwarded-For"
+        config.security.rate_limit_client_ip_header = "CloudFront-Viewer-Address"
         try:
             mock_request = mock.Mock(spec=Request)
             mock_request.headers = {}
@@ -70,7 +70,7 @@ class TestGetClientIpFromHeader:
         config.security.rate_limit_client_ip_header = "CloudFront-Viewer-Address"
         try:
             mock_request = mock.Mock(spec=Request)
-            mock_request.headers = {"X-Forwarded-For": "150.51.100.10:46532"}
+            mock_request.headers = {"X-Real-IP": "150.51.100.10:46532"}
             mock_request.client.host = "192.0.2.1"
             assert get_client_ip_from_header(mock_request) == "192.0.2.1"
         finally:
@@ -81,7 +81,7 @@ class TestGetClientIpFromHeader:
         config.security.rate_limit_client_ip_header = None
         try:
             mock_request = mock.Mock(spec=Request)
-            mock_request.headers = {"X-Forwarded-For": "150.51.100.10"}
+            mock_request.headers = {"CloudFront-Viewer-Address": "150.51.100.10"}
             mock_request.client.host = "192.0.2.1"
             assert get_client_ip_from_header(mock_request) == "192.0.2.1"
         finally:
@@ -89,10 +89,10 @@ class TestGetClientIpFromHeader:
 
     def test_get_client_ip_from_header_invalid_ip(self, config):
         original_header = config.security.rate_limit_client_ip_header
-        config.security.rate_limit_client_ip_header = "X-Forwarded-For"
+        config.security.rate_limit_client_ip_header = "CloudFront-Viewer-Address"
         try:
             mock_request = mock.Mock(spec=Request)
-            mock_request.headers = {"X-Forwarded-For": "127.0.0.1"}
+            mock_request.headers = {"CloudFront-Viewer-Address": "127.0.0.1"}
             mock_request.client.host = "192.0.2.1"
             assert get_client_ip_from_header(mock_request) == "192.0.2.1"
         finally:
@@ -100,10 +100,12 @@ class TestGetClientIpFromHeader:
 
     def test_get_client_ip_from_header_leftmost_ip_fallback(self, config):
         original_header = config.security.rate_limit_client_ip_header
-        config.security.rate_limit_client_ip_header = "X-Forwarded-For"
+        config.security.rate_limit_client_ip_header = "CloudFront-Viewer-Address"
         try:
             mock_request = mock.Mock(spec=Request)
-            mock_request.headers = {"X-Forwarded-For": "203.0.113.195, 70.41.3.18"}
+            mock_request.headers = {
+                "CloudFront-Viewer-Address": "203.0.113.195, 70.41.3.18"
+            }
             mock_request.client.host = "192.0.2.1"
             assert get_client_ip_from_header(mock_request) == "192.0.2.1"
         finally:
