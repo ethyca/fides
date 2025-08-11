@@ -9,6 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from fides.api.models.taxonomy import LEGACY_TAXONOMIES, TaxonomyUsage
+from fides.service.taxonomy.handlers.base import TaxonomyHandler
 
 from .handlers import LegacyTaxonomyHandler
 from .utils import (
@@ -136,7 +137,7 @@ class TaxonomyService:
 
         return self.create_element(taxonomy_type, element_data)
 
-    def _get_handler(self, taxonomy_type: str) -> LegacyTaxonomyHandler:
+    def _get_handler(self, taxonomy_type: str) -> TaxonomyHandler:
         """Get the handler for taxonomy operations."""
         # Only legacy taxonomies are supported
         if taxonomy_type not in LEGACY_TAXONOMIES:

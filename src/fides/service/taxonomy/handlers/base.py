@@ -3,7 +3,7 @@ Base taxonomy handler and core validation functions.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 from sqlalchemy.orm import Session
 
@@ -13,6 +13,10 @@ class TaxonomyHandler(ABC):
 
     def __init__(self, db: Session):
         self.db = db
+
+    @abstractmethod
+    def get_model(self, taxonomy_type: str) -> Type:
+        pass
 
     @abstractmethod
     def get_elements(
