@@ -2,6 +2,8 @@
 
 A reusable table system with URL synchronization and Ant Design integration for the Admin UI.
 
+Note: URL sync currently only works for one table per page.
+
 ## Architecture
 
 ```
