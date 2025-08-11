@@ -393,6 +393,66 @@ class TestFilterResults:
             "K": [{"L": "l"}, {"L": "n"}],
         }
 
+        # Test complete object extraction
+        fresh_results = {}
+        assert select_and_save_field(fresh_results, flat, FieldPath("E")) == {
+            "E": {
+                "F": "g",
+                "H": "i",
+                "J": {"K": {"L": {"M": ["m", "n", "o"], "P": "p"}}, "N": {"O": "o"}},
+            }
+        }
+
+        # Test complete nested object extraction
+        fresh_results = {}
+        assert select_and_save_field(fresh_results, flat, FieldPath("E", "J")) == {
+            "E": {"J": {"K": {"L": {"M": ["m", "n", "o"], "P": "p"}}, "N": {"O": "o"}}}
+        }
+
+        # Test that multiple field paths merge correctly with existing data
+        merge_test_results = {}
+        # Add first path - extract specific nested field
+        select_and_save_field(merge_test_results, flat, FieldPath("I", "X", "J"))
+        assert merge_test_results == {"I": {"X": [{"J": "j"}, {"J": "m"}]}}
+
+        # Add second path - should merge and add more data to same structure
+        select_and_save_field(merge_test_results, flat, FieldPath("I", "Y", "J"))
+        assert merge_test_results == {
+            "I": {"X": [{"J": "j"}, {"J": "m"}], "Y": [{"J": "l"}, {"J": "m"}]}
+        }
+
+        # Test extraction from deeply nested arrays preserves path structure
+        deep_array_results = {}
+        select_and_save_field(deep_array_results, flat, FieldPath("H", "M"))
+        # Should extract all M arrays from the nested structure while preserving the array hierarchy
+        assert deep_array_results == {
+            "H": [
+                [{"M": [1, 2, 3]}, {"M": [3, 2, 1]}, {"M": [1, 1, 1]}],
+                [{"M": [4, 5, 6]}, {"M": [2, 2, 2]}, {"M": []}],
+                [{"M": [7, 8, 9]}, {"M": [6, 6, 6]}, {"M": [2]}],
+            ]
+        }
+
+        # Test the critical fix directly: empty FieldPath returns entire object
+        empty_path_result = select_and_save_field({}, flat, FieldPath())
+        assert empty_path_result == flat
+
+        # Test the specific scenario: mixing simple field + nested object field extraction
+        mixed_extraction_results = {}
+
+        # First: Extract simple scalar field from E
+        select_and_save_field(mixed_extraction_results, flat, FieldPath("E", "F"))
+        assert mixed_extraction_results == {"E": {"F": "g"}}
+
+        # Second: Extract nested field from same container E, but deeper in J.K.L
+        select_and_save_field(
+            mixed_extraction_results, flat, FieldPath("E", "J", "K", "L")
+        )
+        # Should merge: simple scalar F + nested path J.K.L
+        assert mixed_extraction_results == {
+            "E": {"F": "g", "J": {"K": {"L": {"M": ["m", "n", "o"], "P": "p"}}}}
+        }
+
     @pytest.mark.parametrize(
         "orig, expected",
         [
@@ -1293,4 +1353,223 @@ class TestFilterResults:
                 copy.deepcopy(access_request_results), {"user.content"}, dataset_graph
             )
             == access_request_results
+        )
+
+    def test_filter_by_object_field_parent_data_category_with_children(self):
+        """
+        Verify that when an object field has a parent data category, all of its child fields are returned,
+        even if the child fields themselves are not annotated with any data categories.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "Jane",
+                        "last_name": "Customer",
+                        # include an extra child not explicitly listed in the dataset to ensure the entire object is returned
+                        "age": 31,
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # Parent object field has the data category
+                            "data_categories": ["user"],
+                            # Children are present but unannotated
+                            "fields": [
+                                {"name": "first_name"},
+                                {"name": "last_name"},
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == access_request_results
+        )
+
+    def test_filter_by_object_field_parent_data_category_no_children_defined(self):
+        """
+        Verify that when only the parent object field is defined in the dataset with a data category and
+        no child fields are defined, filtering still returns the entire object from the results.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "John",
+                        "last_name": "Example",
+                        "age": 40,
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # Mark the parent field with the category; no children are defined in the dataset
+                            "data_categories": ["user"],
+                            "fields": [],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == access_request_results
+        )
+
+    def test_object_field_without_parent_category_children_unannotated(self):
+        """
+        If an object field (profile) has no data category and its children are unannotated,
+        filtering for a user category should not return any values from that object.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "Jane",
+                        "last_name": "Customer",
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # No data_categories on the parent
+                            "fields": [
+                                {"name": "first_name"},
+                                {"name": "last_name"},
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        # No matching field paths; collection should be omitted entirely
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == {}
+        )
+
+    def test_object_field_without_parent_category_children_non_matching_category(self):
+        """
+        If an object field (profile) has no data category and its children have a non-matching category,
+        filtering for a different category should not return any values.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "Jane",
+                        "last_name": "Customer",
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # No parent category
+                            "fields": [
+                                {
+                                    "name": "first_name",
+                                    "data_categories": ["system.operations"],
+                                },
+                                {
+                                    "name": "last_name",
+                                    "data_categories": ["system.operations"],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        # Filtering for user categories should not return system.operations fields
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == {}
         )
