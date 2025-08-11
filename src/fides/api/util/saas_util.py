@@ -382,15 +382,20 @@ def map_param_values(
 
 def get_identities(privacy_request: Optional[PrivacyRequest]) -> Set[str]:
     """
-    Returns a set of cached identity names for the provided privacy request.
+    Returns a set of identity names for the provided privacy request.
     """
 
     if not privacy_request:
         return set()
 
+    persisted_identity_data: Dict[str, Any] = (
+        privacy_request.get_persisted_identity_data_dict()
+    )
+    persisted_identities = {k for k, v in persisted_identity_data.items() if v}
     cached_identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
-    identities = {k for k, v in cached_identity_data.items() if v}
-    return identities
+    cached_identities = {k for k, v in cached_identity_data.items() if v}
+
+    return persisted_identities.union(cached_identities)
 
 
 def encode_file_contents(file_path: str) -> str:

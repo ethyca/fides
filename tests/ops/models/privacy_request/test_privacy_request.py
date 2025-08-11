@@ -943,7 +943,7 @@ class TestPrivacyRequestCustomFieldFunctions:
     the cache and persist functions on the PrivacyRequest model.
     """
 
-    # TODO: change these
+    # TODO: remove these after we remove the get_cached_custom_privacy_request_fields method
     def test_cache_custom_privacy_request_fields(
         self,
         allow_custom_privacy_request_field_collection_enabled,
@@ -965,7 +965,7 @@ class TestPrivacyRequestCustomFieldFunctions:
                 "support_id": CustomPrivacyRequestField(label="Support ID", value=1),
             }
         )
-        assert privacy_request.get_persisted_custom_privacy_request_fields() == {
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {
             "first_name": "John",
             "last_name": "Doe",
             "subscriber_ids": ["123", "456"],
