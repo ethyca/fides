@@ -1354,3 +1354,222 @@ class TestFilterResults:
             )
             == access_request_results
         )
+
+    def test_filter_by_object_field_parent_data_category_with_children(self):
+        """
+        Verify that when an object field has a parent data category, all of its child fields are returned,
+        even if the child fields themselves are not annotated with any data categories.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "Jane",
+                        "last_name": "Customer",
+                        # include an extra child not explicitly listed in the dataset to ensure the entire object is returned
+                        "age": 31,
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # Parent object field has the data category
+                            "data_categories": ["user"],
+                            # Children are present but unannotated
+                            "fields": [
+                                {"name": "first_name"},
+                                {"name": "last_name"},
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == access_request_results
+        )
+
+    def test_filter_by_object_field_parent_data_category_no_children_defined(self):
+        """
+        Verify that when only the parent object field is defined in the dataset with a data category and
+        no child fields are defined, filtering still returns the entire object from the results.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "John",
+                        "last_name": "Example",
+                        "age": 40,
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # Mark the parent field with the category; no children are defined in the dataset
+                            "data_categories": ["user"],
+                            "fields": [],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == access_request_results
+        )
+
+    def test_object_field_without_parent_category_children_unannotated(self):
+        """
+        If an object field (profile) has no data category and its children are unannotated,
+        filtering for a user category should not return any values from that object.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "Jane",
+                        "last_name": "Customer",
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # No data_categories on the parent
+                            "fields": [
+                                {"name": "first_name"},
+                                {"name": "last_name"},
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        # No matching field paths; collection should be omitted entirely
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == {}
+        )
+
+    def test_object_field_without_parent_category_children_non_matching_category(self):
+        """
+        If an object field (profile) has no data category and its children have a non-matching category,
+        filtering for a different category should not return any values.
+        """
+
+        access_request_results = {
+            "postgres_example:users": [
+                {
+                    "profile": {
+                        "first_name": "Jane",
+                        "last_name": "Customer",
+                    }
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            # No parent category
+                            "fields": [
+                                {
+                                    "name": "first_name",
+                                    "data_categories": ["system.operations"],
+                                },
+                                {
+                                    "name": "last_name",
+                                    "data_categories": ["system.operations"],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        # Filtering for user categories should not return system.operations fields
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == {}
+        )
