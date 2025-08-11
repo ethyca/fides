@@ -24,10 +24,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
+- Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
 - Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 
 ### Changed
 - Replaced some duplicated data formatting functionality with a single utility function. Additional maintainability updates on Manual Tasks. [#6390](https://github.com/ethyca/fides/pull/6390)
+- Refactored ancestor links creation to support bulk creation for multiple staged resources in a single operation [#6426](https://github.com/ethyca/fides/pull/6426)
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
