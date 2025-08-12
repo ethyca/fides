@@ -89,9 +89,9 @@ class ConditionEvaluator:
             raise ConditionEvaluationError(
                 f"Unknown logical operator: {group.logical_operator}"
             )
-        else:
-            result = operator_func([r.result for r in results])
-            logical_operator = group.logical_operator
+
+        result = operator_func([r.result for r in results])
+        logical_operator = group.logical_operator
 
         return GroupEvaluationResult(
             logical_operator=logical_operator,
