@@ -1455,7 +1455,7 @@ class TestErrorHandling(TestConditionEvaluator):
 
     def test_error_in_group_condition_evaluate_rule_calls(self, evaluator, sample_data):
         """Test that errors in evaluate_rule calls within _evaluate_group_condition properly propagate"""
-        from unittest.mock import patch, Mock
+        from unittest.mock import Mock, patch
 
         # Create a mock result object
         mock_result = Mock(autospec=True)
