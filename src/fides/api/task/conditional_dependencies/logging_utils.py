@@ -1,6 +1,9 @@
 from typing import Any
 
 
+MAX_DEPTH = 100
+
+
 def format_evaluation_success_message(evaluation_result: Any) -> str:
     """Format a detailed message about which conditions succeeded"""
     if not evaluation_result:
@@ -44,7 +47,7 @@ def _format_evaluation_message(
 ) -> str:
     """Format evaluation results into a readable message"""
     # Prevent infinite recursion
-    if depth > 100:
+    if depth > MAX_DEPTH:
         return "Condition evaluation too deeply nested"
 
     # Try to format as group condition first
