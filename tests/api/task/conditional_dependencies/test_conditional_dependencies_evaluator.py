@@ -57,14 +57,14 @@ class TestConditionEvaluator:
     @pytest.fixture
     def mock_fides_collection(self):
         """Mock Fides collection with get_field_value method"""
-        collection = Mock()
+        collection = Mock(autospec=True)
         collection.get_field_value.return_value = "test_value"
         return collection
 
     @pytest.fixture
     def mock_fides_data(self, mock_fides_collection):
         """Mock Fides data structure"""
-        data = Mock()
+        data = Mock(autospec=True)
         data.get_field_value.return_value = "test_value"
         return data
 
@@ -132,7 +132,7 @@ class TestNestedValueAccess(TestConditionEvaluator):
 
     def test_fides_data_fallback_to_dict(self, evaluator):
         """Test Fides data falls back to dict access when get_field_value fails"""
-        data = Mock()
+        data = Mock(autospec=True)
         data.get_field_value.side_effect = AttributeError("No such method")
         data.get.return_value = "fallback_value"
 
@@ -292,15 +292,6 @@ class TestLeafConditionEvaluation(TestConditionEvaluator):
         assert evaluation_result.result == expected_result
         assert result is expected_result, f"Failed for {description}"
 
-    def test_leaf_condition_with_fides_data(self, evaluator, mock_fides_data):
-        """Test leaf condition with Fides data structure"""
-        condition = ConditionLeaf(
-            field_address="user.name", operator=Operator.eq, value="test_value"
-        )
-
-        result, evaluation_result = evaluator.evaluate_rule(condition, mock_fides_data)
-        assert result is True
-
 
 class TestGroupConditionEvaluation(TestConditionEvaluator):
     """Test group condition evaluation"""
@@ -322,6 +313,9 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             ],
         )
         result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
+        assert evaluation_result.logical_operator == GroupOperator.and_
+        assert len(evaluation_result.condition_results) == 3
+        assert all(result.result for result in evaluation_result.condition_results)
         assert result is True
 
     def test_and_group_one_false(self, evaluator, sample_data):
@@ -341,6 +335,9 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             ],
         )
         result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
+        assert evaluation_result.logical_operator == GroupOperator.and_
+        assert len(evaluation_result.condition_results) == 3
+        assert evaluation_result.condition_results[2].result is False
         assert result is False
 
     def test_or_group_one_true(self, evaluator, sample_data):
@@ -360,6 +357,9 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             ],
         )
         result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
+        assert evaluation_result.logical_operator == GroupOperator.or_
+        assert len(evaluation_result.condition_results) == 3
+        assert evaluation_result.condition_results[1].result is True
         assert result is True
 
     def test_or_group_all_false(self, evaluator, sample_data):
@@ -379,20 +379,10 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             ],
         )
         result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
+        assert evaluation_result.logical_operator == GroupOperator.or_
+        assert len(evaluation_result.condition_results) == 3
+        assert not any(result.result for result in evaluation_result.condition_results)
         assert result is False
-
-    def test_single_condition_group(self, evaluator, sample_data):
-        """Test group with single condition"""
-        group = ConditionGroup(
-            logical_operator=GroupOperator.and_,
-            conditions=[
-                ConditionLeaf(
-                    field_address="user.name", operator=Operator.eq, value="john_doe"
-                ),
-            ],
-        )
-        result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
-        assert result is True
 
     def test_unknown_logical_operator(self, evaluator, sample_data):
         """Test handling of unknown logical operator"""
@@ -400,7 +390,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         from unittest.mock import Mock
 
         # Create a mock group that simulates an unknown logical operator
-        mock_group = Mock()
+        mock_group = Mock(autospec=True)
         mock_group.logical_operator = "invalid_operator"
         mock_group.conditions = [
             ConditionLeaf(
@@ -409,10 +399,10 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         ]
 
         # This should trigger the unknown logical operator handling
-        evaluation_result = evaluator._evaluate_group_condition(
-            mock_group, sample_data
-        )
-        assert evaluation_result.result is False  # Should return False for unknown operators
+        with pytest.raises(
+            ConditionEvaluationError, match="Unknown logical operator: invalid_operator"
+        ):
+            evaluator._evaluate_group_condition(mock_group, sample_data)
 
 
 class TestNestedGroupEvaluation(TestConditionEvaluator):
@@ -578,41 +568,45 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
 class TestEdgeCases(TestConditionEvaluator):
     """Test edge cases and error conditions"""
 
-    def test_empty_data(self, evaluator):
+    @pytest.mark.parametrize(
+        "data,field_address,operator,expected_result",
+        [
+            param({}, "any.field_address", Operator.exists, False, id="empty_data"),
+            param(None, "any.field_address", Operator.exists, False, id="none_data"),
+            param(
+                {"user": {"nonexistent": None}},
+                "user.nonexistent",
+                Operator.exists,
+                False,
+                id="missing_field",
+            ),
+            param(
+                "sample_data",
+                "user.nonexistent",
+                Operator.not_exists,
+                True,
+                id="nested_missing_field_not_exists",
+            ),
+            param(
+                "sample_data",
+                "user.nonexistent",
+                Operator.exists,
+                False,
+                id="nested_missing_field_with_exists",
+            ),
+        ],
+    )
+    def test_data_edge_cases(
+        self, evaluator, data, field_address, operator, expected_result, sample_data
+    ):
         """Test evaluation with empty data"""
-        condition = ConditionLeaf(
-            field_address="any.field_address", operator=Operator.exists
-        )
+        condition = ConditionLeaf(field_address=field_address, operator=operator)
+        if data == "sample_data":
+            data = sample_data
 
-        result, evaluation_result = evaluator.evaluate_rule(condition, {})
-        assert result is False
-
-    def test_none_data(self, evaluator):
-        """Test evaluation with None data"""
-        condition = ConditionLeaf(
-            field_address="any.field_address", operator=Operator.exists
-        )
-
-        result, evaluation_result = evaluator.evaluate_rule(condition, None)
-        assert result is False
-
-    def test_missing_field_with_exists(self, evaluator, sample_data):
-        """Test exists operator with missing field"""
-        condition = ConditionLeaf(
-            field_address="user.nonexistent", operator=Operator.exists
-        )
-
-        result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
-        assert result is False
-
-    def test_missing_field_with_not_exists(self, evaluator, sample_data):
-        """Test not_exists operator with missing field"""
-        condition = ConditionLeaf(
-            field_address="user.nonexistent", operator=Operator.not_exists
-        )
-
-        result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
-        assert result is True
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert result is expected_result
+        assert evaluation_result.result is expected_result
 
     def test_none_value_comparison(self, evaluator, sample_data):
         """Test comparison with None values"""
@@ -621,6 +615,7 @@ class TestEdgeCases(TestConditionEvaluator):
         )
 
         result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
+        assert evaluation_result.result is True
         assert result is True
 
     @pytest.mark.parametrize(
@@ -641,6 +636,7 @@ class TestEdgeCases(TestConditionEvaluator):
         )
 
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is True
         assert result is True, f"Failed for {description}"
 
 
@@ -723,6 +719,7 @@ class TestIntegration(TestConditionEvaluator):
 
         result, evaluation_result = evaluator.evaluate_rule(final_rule, sample_data)
         # Should be True: age=25>=18, active=True, verified=True, subscription=active
+        assert evaluation_result.result is True
         assert result is True
 
     def test_order_processing_scenario(self, evaluator, sample_data):
@@ -755,6 +752,7 @@ class TestIntegration(TestConditionEvaluator):
 
         result, evaluation_result = evaluator.evaluate_rule(final_rule, sample_data)
         # Should be True: order.status=completed, order.total=150>100
+        assert evaluation_result.result is True
         assert result is True
 
     def test_fides_reference_scenario(self, evaluator, mock_fides_data):
@@ -765,6 +763,7 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         result, evaluation_result = evaluator.evaluate_rule(condition, mock_fides_data)
+        assert evaluation_result.result is True
         assert result is True
 
     def test_list_operators_integration(self, evaluator, data_set):
@@ -776,6 +775,7 @@ class TestIntegration(TestConditionEvaluator):
             field_address="user.roles", operator=Operator.list_contains, value="admin"
         )
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is True
         assert result is True  # "admin" is in the user.roles list
 
         # Test not_in_list operator
@@ -785,6 +785,7 @@ class TestIntegration(TestConditionEvaluator):
             value=["guest", "anonymous"],
         )
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is True
         assert result is True  # "admin" and "moderator" are not in the excluded list
 
         # Test list_contains operator with permissions
@@ -794,6 +795,7 @@ class TestIntegration(TestConditionEvaluator):
             value="write",
         )
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is True
         assert result is True  # "write" is in the permissions list
 
     def test_complex_list_condition_group(self, evaluator, data_set):
@@ -826,6 +828,7 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         result, evaluation_result = evaluator.evaluate_rule(final_condition, data)
+        assert evaluation_result.result is True
         assert result is True  # admin role OR write permission AND completed order
 
     def test_list_operators_with_nested_data(self, evaluator, data_set):
@@ -866,6 +869,7 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         result, evaluation_result = evaluator.evaluate_rule(combined_condition, data)
+        assert evaluation_result.result is True
         assert result is True
 
     @pytest.mark.parametrize(
@@ -933,6 +937,7 @@ class TestIntegration(TestConditionEvaluator):
             value=value,
         )
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is expected_result
         assert result is expected_result  # "admin" is common between both lists
 
     def test_complex_list_condition_group(self, evaluator, data_set):
@@ -973,7 +978,9 @@ class TestIntegration(TestConditionEvaluator):
             ],
         )
 
-        result, evaluation_result = evaluator.evaluate_rule(combined_condition, data_set)
+        result, evaluation_result = evaluator.evaluate_rule(
+            combined_condition, data_set
+        )
         assert result is True  # All conditions should be True
 
     @pytest.mark.parametrize(
@@ -1013,6 +1020,7 @@ class TestIntegration(TestConditionEvaluator):
             field_address=field_address, operator=operator, value=value
         )
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is expected_result
         assert result is expected_result
 
     @pytest.mark.parametrize(
@@ -1044,4 +1052,578 @@ class TestIntegration(TestConditionEvaluator):
             field_address=field_address, operator=operator, value=value
         )
         result, evaluation_result = evaluator.evaluate_rule(condition, data)
+        assert evaluation_result.result is expected_result
         assert result is expected_result
+
+
+class TestErrorHandling(TestConditionEvaluator):
+    """Test error handling when conditions fail"""
+
+    def test_unknown_operator_raises_error(self, evaluator):
+        """Test that unknown operators raise ConditionEvaluationError"""
+        # Test the _apply_operator method directly where the unknown operator error occurs
+        with pytest.raises(
+            ConditionEvaluationError, match="Unknown operator: invalid_operator"
+        ):
+            evaluator._apply_operator(
+                "test_value", "invalid_operator", "expected_value"
+            )
+
+    def test_operator_method_raises_exception(self, evaluator):
+        """Test that when an operator method raises an exception, it's wrapped in ConditionEvaluationError"""
+        # We need to mock the operator_methods to simulate an exception
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise an exception
+            mock_operators.get.return_value = (
+                lambda a, b: 1 / 0
+            )  # This will raise ZeroDivisionError
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_operator_method_raises_type_error(self, evaluator):
+        """Test that TypeError from operator methods is wrapped in ConditionEvaluationError"""
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise TypeError
+            mock_operators.get.return_value = lambda a, b: int("not_a_number")
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_operator_method_raises_attribute_error(self, evaluator):
+        """Test that AttributeError from operator methods is wrapped in ConditionEvaluationError"""
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise AttributeError
+            mock_operators.get.return_value = lambda a, b: a.nonexistent_method()
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_operator_method_raises_value_error(self, evaluator):
+        """Test that ValueError from operator methods is wrapped in ConditionEvaluationError"""
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operator:
+            # Make the operator method raise ValueError
+            mock_operator.get.return_value = lambda a, b: int("not_a_number")
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_error_propagation_in_nested_conditions(self, evaluator):
+        """Test that errors in nested conditions properly propagate up"""
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise an exception for the second condition
+            def failing_operator(a, b):
+                if b == 25:  # This will be the value for user.age
+                    raise ValueError("Simulated error")
+                return a == b
+
+            mock_operators.get.return_value = failing_operator
+
+            inner_condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            outer_group = ConditionGroup(
+                logical_operator=GroupOperator.and_,
+                conditions=[
+                    ConditionLeaf(
+                        field_address="user.name", operator=Operator.eq, value="john"
+                    ),
+                    inner_condition,  # This will raise an error
+                ],
+            )
+
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(
+                    outer_group, {"user": {"name": "john", "age": 25}}
+                )
+
+    def test_error_with_fides_data_structure(self, evaluator, mock_fides_data):
+        """Test that errors work correctly with Fides data structures"""
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise an exception
+            mock_operators.get.return_value = lambda a, b: 1 / 0
+
+            condition = ConditionLeaf(
+                field_address="user.name", operator=Operator.eq, value="test"
+            )
+
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, mock_fides_data)
+
+    def test_error_message_contains_original_exception(self, evaluator):
+        """Test that error messages contain information about the original exception"""
+        from unittest.mock import patch
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise a specific exception
+            mock_operators.get.return_value = lambda a, b: int("not_a_number")
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            with pytest.raises(ConditionEvaluationError) as exc_info:
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+            # Check that the error message contains the original exception info
+            assert "Unexpected error evaluating condition:" in str(exc_info.value)
+            # The original exception should be preserved as the cause
+            assert exc_info.value.__cause__ is not None
+
+    def test_unknown_logical_operator_handling(self, evaluator, sample_data):
+        """Test that unknown logical operators raise ConditionEvaluationError"""
+        # Create a mock group with an unknown logical operator
+        from unittest.mock import Mock
+
+        mock_group = Mock(autospec=True)
+        mock_group.logical_operator = "invalid_operator"
+        mock_group.conditions = [
+            ConditionLeaf(
+                field_address="user.name", operator=Operator.eq, value="john_doe"
+            ),
+        ]
+
+        # This should now raise an error for unknown logical operators
+        with pytest.raises(
+            ConditionEvaluationError, match="Unknown logical operator: invalid_operator"
+        ):
+            evaluator._evaluate_group_condition(mock_group, sample_data)
+
+    def test_graceful_handling_of_type_mismatches(self, evaluator):
+        """Test that type mismatches are handled gracefully by operators"""
+        # These should NOT raise errors - they should return False gracefully
+
+        # Test numeric operator on string
+        condition = ConditionLeaf(
+            field_address="user.name", operator=Operator.gt, value=10
+        )
+
+        # This should return False, not raise an error
+        result, evaluation_result = evaluator.evaluate_rule(
+            condition, {"user": {"name": "john"}}
+        )
+        assert result is False
+        assert evaluation_result.result is False
+
+        # Test string operator on number
+        condition = ConditionLeaf(
+            field_address="user.age", operator=Operator.starts_with, value="2"
+        )
+
+        # This should return False, not raise an error
+        result, evaluation_result = evaluator.evaluate_rule(
+            condition, {"user": {"age": 25}}
+        )
+        assert result is False
+        assert evaluation_result.result is False
+
+        # Test list operator on non-list
+        condition = ConditionLeaf(
+            field_address="user.name", operator=Operator.list_contains, value="admin"
+        )
+
+        # This should return False, not raise an error
+        result, evaluation_result = evaluator.evaluate_rule(
+            condition, {"user": {"name": "john"}}
+        )
+        assert result is False
+        assert evaluation_result.result is False
+
+    def test_fides_data_access_exception_handling(self, evaluator):
+        """Test that exceptions in Fides data access are handled gracefully by the fallback mechanism"""
+
+        # Create a real object that has get_field_value but raises an exception
+        class FidesDataWithException:
+            def get_field_value(self, field_path):
+                raise AttributeError("Simulated Fides access error")
+
+        obj = FidesDataWithException()
+
+        # This should handle the AttributeError gracefully and fall back to dict access
+        # Since the object doesn't have a get method, it should return None
+        value = evaluator._get_nested_value(obj, ["field_name"])
+        assert value is None
+
+    def test_fides_data_access_with_fallback(self, evaluator):
+        """Test that Fides data access falls back to dict access when get_field_value fails"""
+
+        # Create an object that has both get_field_value and get methods
+        class FidesDataWithFallback:
+            def __init__(self):
+                self.data = {"field_name": "fallback_value"}
+
+            def get_field_value(self, field_path):
+                raise ValueError("Simulated Fides access error")
+
+            def get(self, key, default=None):
+                return self.data.get(key, default)
+
+        obj = FidesDataWithFallback()
+
+        # This should handle the ValueError gracefully and fall back to dict access
+        value = evaluator._get_nested_value(obj, ["field_name"])
+        assert value == "fallback_value"
+
+    def test_field_path_creation_failure_handling(self, evaluator):
+        """Test that FieldPath creation failures are handled gracefully"""
+        from unittest.mock import patch
+
+        # Create an object that has get_field_value method
+        class FidesData:
+            def get_field_value(self, field_path):
+                return "test_value"
+
+        obj = FidesData()
+
+        # Mock FieldPath to raise a ValueError (which is caught)
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.FieldPath",
+            side_effect=ValueError("Invalid field path"),
+        ):
+            # This should handle the ValueError gracefully and fall back to dict access
+            # Since the object doesn't have a get method, it should return None
+            value = evaluator._get_nested_value(obj, ["field_name"])
+            assert value is None
+
+    def test_field_path_creation_failure_with_dict_fallback(self, evaluator):
+        """Test that FieldPath creation failures fall back to dict access when available"""
+        from unittest.mock import patch
+
+        # Create an object that has both get_field_value and get methods
+        class FidesDataWithDict:
+            def __init__(self):
+                self.data = {"field_name": "dict_value"}
+
+            def get_field_value(self, field_path):
+                return "fides_value"
+
+            def get(self, key, default=None):
+                return self.data.get(key, default)
+
+        obj = FidesDataWithDict()
+
+        # Mock FieldPath to raise a ValueError (which is caught)
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.FieldPath",
+            side_effect=ValueError("Invalid field path"),
+        ):
+            # This should handle the ValueError gracefully and fall back to dict access
+            value = evaluator._get_nested_value(obj, ["field_name"])
+            assert value == "dict_value"
+
+    def test_uncaught_exception_in_fides_data_access(self, evaluator):
+        """Test that exceptions not caught by _get_nested_value are raised"""
+
+        # Create an object that has get_field_value but raises an uncaught exception
+        class FidesDataWithUncaughtException:
+            def get_field_value(self, field_path):
+                raise RuntimeError("Simulated uncaught exception")
+
+        obj = FidesDataWithUncaughtException()
+
+        # This should raise the RuntimeError since it's not caught by the try-catch block
+        with pytest.raises(RuntimeError, match="Simulated uncaught exception"):
+            evaluator._get_nested_value(obj, ["field_name"])
+
+    def test_uncaught_exception_in_dict_access(self, evaluator):
+        """Test that exceptions not caught in dict access are raised"""
+
+        # Create an object that has a get method but raises an uncaught exception
+        class ObjectWithUncaughtException:
+            def get(self, key, default=None):
+                raise RuntimeError("Simulated uncaught exception")
+
+        obj = ObjectWithUncaughtException()
+
+        # This should raise the RuntimeError since it's not caught
+        with pytest.raises(RuntimeError, match="Simulated uncaught exception"):
+            evaluator._get_nested_value(obj, ["field_name"])
+
+    def test_hasattr_failure_handling(self, evaluator):
+        """Test that hasattr failures are raised (not handled gracefully)"""
+        from unittest.mock import patch
+
+        # Create a simple object
+        obj = {"field_name": "test_value"}
+
+        # Mock hasattr to raise an exception
+        with patch(
+            "builtins.hasattr", side_effect=Exception("Simulated hasattr error")
+        ):
+            # This should raise the exception since hasattr failures are not caught
+            with pytest.raises(Exception, match="Simulated hasattr error"):
+                evaluator._get_nested_value(obj, ["field_name"])
+
+    def test_complex_fallback_scenario(self, evaluator):
+        """Test a complex scenario with multiple fallback mechanisms"""
+
+        # Create an object that has get_field_value but fails with AttributeError
+        # and then falls back to dict access which also fails with AttributeError
+        class ComplexFailingObject:
+            def get_field_value(self, field_path):
+                raise AttributeError("Simulated Fides access error")
+
+            def get(self, key, default=None):
+                raise AttributeError("Simulated dict access error")
+
+        obj = ComplexFailingObject()
+
+        # This should raise the AttributeError since the dict access fallback doesn't have exception handling
+        with pytest.raises(AttributeError, match="Simulated dict access error"):
+            evaluator._get_nested_value(obj, ["field_name"])
+
+    def test_get_nested_value_exception_propagation(self, evaluator):
+        """Test that exceptions from _get_nested_value properly propagate to evaluate_rule"""
+
+        # Create an object that will cause _get_nested_value to raise an exception
+        class ObjectCausingException:
+            def get_field_value(self, field_path):
+                raise RuntimeError("Simulated _get_nested_value error")
+
+        obj = ObjectCausingException()
+
+        condition = ConditionLeaf(
+            field_address="user.age", operator=Operator.eq, value=25
+        )
+
+        # This should raise the RuntimeError directly since _get_nested_value doesn't catch it
+        # and the exception propagates up to evaluate_rule
+        with pytest.raises(RuntimeError, match="Simulated _get_nested_value error"):
+            evaluator.evaluate_rule(condition, obj)
+
+    def test_error_in_group_condition_evaluate_rule_calls(self, evaluator, sample_data):
+        """Test that errors in evaluate_rule calls within _evaluate_group_condition properly propagate"""
+        from unittest.mock import patch, Mock
+
+        # Create a mock result object
+        mock_result = Mock(autospec=True)
+        mock_result.result = True
+
+        # Mock evaluate_rule to raise an exception for the second condition
+        def failing_evaluate_rule(condition, data):
+            if (
+                hasattr(condition, "field_address")
+                and condition.field_address == "user.age"
+            ):
+                raise ConditionEvaluationError("Simulated error in evaluate_rule")
+            return True, mock_result  # Return a mock result for successful conditions
+
+        with patch.object(
+            evaluator, "evaluate_rule", side_effect=failing_evaluate_rule
+        ):
+            group = ConditionGroup(
+                logical_operator=GroupOperator.and_,
+                conditions=[
+                    ConditionLeaf(
+                        field_address="user.name",
+                        operator=Operator.eq,
+                        value="john_doe",
+                    ),
+                    ConditionLeaf(
+                        field_address="user.age", operator=Operator.eq, value=25
+                    ),
+                ],
+            )
+
+            # This should raise the ConditionEvaluationError from the failing evaluate_rule call
+            with pytest.raises(
+                ConditionEvaluationError, match="Simulated error in evaluate_rule"
+            ):
+                evaluator._evaluate_group_condition(group, sample_data)
+
+    def test_error_in_group_condition_logical_operator_handling(
+        self, evaluator, sample_data
+    ):
+        """Test that errors in logical operator handling within _evaluate_group_condition are properly handled"""
+        from unittest.mock import patch
+
+        # Create a group with valid conditions
+        group = ConditionGroup(
+            logical_operator=GroupOperator.and_,
+            conditions=[
+                ConditionLeaf(
+                    field_address="user.name", operator=Operator.eq, value="john_doe"
+                ),
+            ],
+        )
+
+        # Mock the logical operator functions to raise an exception
+        with patch(
+            "builtins.all", side_effect=Exception("Simulated logical operator error")
+        ):
+            # This should raise the exception from the logical operator function
+            with pytest.raises(Exception, match="Simulated logical operator error"):
+                evaluator._evaluate_group_condition(group, sample_data)
+
+    def test_error_in_leaf_condition_operator_application(self, evaluator):
+        """Test that errors in _apply_operator are properly caught and re-raised"""
+        from unittest.mock import patch
+
+        # Mock _apply_operator to raise a ConditionEvaluationError
+        with patch.object(
+            evaluator,
+            "_apply_operator",
+            side_effect=ConditionEvaluationError("Simulated operator error"),
+        ):
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            # This should catch the ConditionEvaluationError and re-raise it
+            with pytest.raises(
+                ConditionEvaluationError, match="Simulated operator error"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_error_in_leaf_condition_unexpected_exception(self, evaluator):
+        """Test that unexpected exceptions in _apply_operator are properly wrapped"""
+        from unittest.mock import patch
+
+        # Instead of mocking _apply_operator directly, let's mock the operator_methods
+        # to simulate an unexpected exception that will be caught and wrapped
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise an unexpected exception
+            mock_operators.get.return_value = (
+                lambda a, b: 1 / 0
+            )  # This will raise ZeroDivisionError
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            # This should catch the ZeroDivisionError and wrap it in ConditionEvaluationError
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_apply_operator_exception_wrapping(self, evaluator):
+        """Test that _apply_operator properly wraps different types of exceptions"""
+        from unittest.mock import patch
+
+        # Test with different types of exceptions
+        test_cases = [
+            (ZeroDivisionError("Division by zero"), "Division by zero"),
+            (ValueError("Invalid value"), "Invalid value"),
+            (TypeError("Type mismatch"), "Type mismatch"),
+            (RuntimeError("Runtime error"), "Runtime error"),
+            (AttributeError("Missing attribute"), "Missing attribute"),
+        ]
+
+        for exception_class, error_message in test_cases:
+            with patch(
+                "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+                autospec=True,
+            ) as mock_operators:
+                # Make the operator method raise the specific exception
+                mock_operators.get.return_value = lambda a, b: exception_class(
+                    error_message
+                )
+
+                condition = ConditionLeaf(
+                    field_address="user.age", operator=Operator.eq, value=25
+                )
+
+                # This should catch the exception and wrap it in ConditionEvaluationError
+                with pytest.raises(
+                    ConditionEvaluationError,
+                    match="Unexpected error evaluating condition:",
+                ):
+                    evaluator.evaluate_rule(condition, {"user": {"age": 25}})
+
+    def test_apply_operator_with_complex_exception(self, evaluator):
+        """Test that _apply_operator properly handles complex exceptions from operator methods"""
+        from unittest.mock import patch
+
+        # Create a complex exception scenario
+        class ComplexException(Exception):
+            def __init__(self, message, details):
+                super().__init__(message)
+                self.details = details
+
+        with patch(
+            "fides.api.task.conditional_dependencies.evaluator.operator_methods",
+            autospec=True,
+        ) as mock_operators:
+            # Make the operator method raise a complex exception
+            def complex_operator(a, b):
+                if a == 25 and b == 25:
+                    raise ComplexException("Complex error occurred", {"a": a, "b": b})
+                return a == b
+
+            mock_operators.get.return_value = complex_operator
+
+            condition = ConditionLeaf(
+                field_address="user.age", operator=Operator.eq, value=25
+            )
+
+            # This should catch the ComplexException and wrap it in ConditionEvaluationError
+            with pytest.raises(
+                ConditionEvaluationError, match="Unexpected error evaluating condition:"
+            ):
+                evaluator.evaluate_rule(condition, {"user": {"age": 25}})

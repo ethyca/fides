@@ -58,9 +58,11 @@ class ConditionEvaluator:
                 data_value, condition.operator, condition.value
             )
             message = f"Condition '{condition.field_address} {condition.operator} {condition.value}' evaluated to {result}"
-        except Exception as e:
-            result = False
-            message = f"Error evaluating condition '{condition.field_address} {condition.operator} {condition.value}': {str(e)}"
+        except ConditionEvaluationError as e:
+            logger.error(
+                f"Unexpected error evaluating condition '{condition.field_address} {condition.operator} {condition.value}': {str(e)}"
+            )
+            raise
 
         return ConditionEvaluationResult(
             field_address=condition.field_address,
@@ -84,9 +86,9 @@ class ConditionEvaluator:
 
         if operator_func is None:
             logger.warning(f"Unknown logical operator: {group.logical_operator}")
-            result = False
-            # Use a default operator for the result since the original is invalid
-            logical_operator = GroupOperator.and_
+            raise ConditionEvaluationError(
+                f"Unknown logical operator: {group.logical_operator}"
+            )
         else:
             result = operator_func([r.result for r in results])
             logical_operator = group.logical_operator
@@ -141,5 +143,9 @@ class ConditionEvaluator:
             raise ConditionEvaluationError(f"Unknown operator: {operator}")
         try:
             return operator_method(data_value, user_input_value)
-        except (TypeError, ValueError) as e:
-            raise ConditionEvaluationError(f"Error evaluating condition: {e}") from e
+        except Exception as e:
+            # Log unexpected errors but still raise them
+            logger.error(f"Unexpected error in operator {operator}: {e}")
+            raise ConditionEvaluationError(
+                f"Unexpected error evaluating condition: {e}"
+            ) from e
