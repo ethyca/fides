@@ -1,6 +1,5 @@
 from typing import Any
 
-
 MAX_DEPTH = 100
 
 

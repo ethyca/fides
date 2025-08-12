@@ -285,7 +285,11 @@ class TestLeafConditionEvaluation(TestConditionEvaluator):
     ):
         """Test various leaf condition scenarios with sample data"""
         condition = ConditionLeaf(field_address=field, operator=operator, value=value)
-        result = evaluator.evaluate_rule(condition, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
+        assert evaluation_result.field_address == field
+        assert evaluation_result.operator == operator
+        assert evaluation_result.expected_value == value
+        assert evaluation_result.result == expected_result
         assert result is expected_result, f"Failed for {description}"
 
     def test_leaf_condition_with_fides_data(self, evaluator, mock_fides_data):
@@ -294,7 +298,7 @@ class TestLeafConditionEvaluation(TestConditionEvaluator):
             field_address="user.name", operator=Operator.eq, value="test_value"
         )
 
-        result = evaluator.evaluate_rule(condition, mock_fides_data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, mock_fides_data)
         assert result is True
 
 
@@ -317,7 +321,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                 ),
             ],
         )
-        result = evaluator.evaluate_rule(group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
         assert result is True
 
     def test_and_group_one_false(self, evaluator, sample_data):
@@ -336,7 +340,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                 ),  # False
             ],
         )
-        result = evaluator.evaluate_rule(group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
         assert result is False
 
     def test_or_group_one_true(self, evaluator, sample_data):
@@ -355,7 +359,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                 ),  # False
             ],
         )
-        result = evaluator.evaluate_rule(group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
         assert result is True
 
     def test_or_group_all_false(self, evaluator, sample_data):
@@ -374,7 +378,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                 ),  # False
             ],
         )
-        result = evaluator.evaluate_rule(group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
         assert result is False
 
     def test_single_condition_group(self, evaluator, sample_data):
@@ -387,7 +391,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                 ),
             ],
         )
-        result = evaluator.evaluate_rule(group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(group, sample_data)
         assert result is True
 
     def test_unknown_logical_operator(self, evaluator, sample_data):
@@ -405,8 +409,10 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         ]
 
         # This should trigger the unknown logical operator handling
-        result = evaluator._evaluate_group_condition(mock_group, sample_data)
-        assert result is False  # Should return False for unknown operators
+        evaluation_result = evaluator._evaluate_group_condition(
+            mock_group, sample_data
+        )
+        assert evaluation_result.result is False  # Should return False for unknown operators
 
 
 class TestNestedGroupEvaluation(TestConditionEvaluator):
@@ -437,7 +443,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             ],
         )
 
-        result = evaluator.evaluate_rule(outer_group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(outer_group, sample_data)
         # user.age >= 18 is True, user.verified = True is True, so result should be True
         assert result is True
 
@@ -485,7 +491,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             ],
         )
 
-        result = evaluator.evaluate_rule(outer_group, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(outer_group, sample_data)
         assert result is True
 
     def test_deep_nesting(self, evaluator, sample_data):
@@ -533,7 +539,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             ],
         )
 
-        result = evaluator.evaluate_rule(outermost, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(outermost, sample_data)
         assert result is True
 
     def test_mixed_conditions_in_group(self, evaluator, sample_data):
@@ -578,7 +584,7 @@ class TestEdgeCases(TestConditionEvaluator):
             field_address="any.field_address", operator=Operator.exists
         )
 
-        result = evaluator.evaluate_rule(condition, {})
+        result, evaluation_result = evaluator.evaluate_rule(condition, {})
         assert result is False
 
     def test_none_data(self, evaluator):
@@ -587,7 +593,7 @@ class TestEdgeCases(TestConditionEvaluator):
             field_address="any.field_address", operator=Operator.exists
         )
 
-        result = evaluator.evaluate_rule(condition, None)
+        result, evaluation_result = evaluator.evaluate_rule(condition, None)
         assert result is False
 
     def test_missing_field_with_exists(self, evaluator, sample_data):
@@ -596,7 +602,7 @@ class TestEdgeCases(TestConditionEvaluator):
             field_address="user.nonexistent", operator=Operator.exists
         )
 
-        result = evaluator.evaluate_rule(condition, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
         assert result is False
 
     def test_missing_field_with_not_exists(self, evaluator, sample_data):
@@ -605,7 +611,7 @@ class TestEdgeCases(TestConditionEvaluator):
             field_address="user.nonexistent", operator=Operator.not_exists
         )
 
-        result = evaluator.evaluate_rule(condition, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
         assert result is True
 
     def test_none_value_comparison(self, evaluator, sample_data):
@@ -614,7 +620,7 @@ class TestEdgeCases(TestConditionEvaluator):
             field_address="missing_field", operator=Operator.eq, value=None
         )
 
-        result = evaluator.evaluate_rule(condition, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, sample_data)
         assert result is True
 
     @pytest.mark.parametrize(
@@ -634,7 +640,7 @@ class TestEdgeCases(TestConditionEvaluator):
             field_address="field_address", operator=Operator.eq, value=user_input_value
         )
 
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is True, f"Failed for {description}"
 
 
@@ -715,7 +721,7 @@ class TestIntegration(TestConditionEvaluator):
             conditions=[user_requirements, subscription_requirement],
         )
 
-        result = evaluator.evaluate_rule(final_rule, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(final_rule, sample_data)
         # Should be True: age=25>=18, active=True, verified=True, subscription=active
         assert result is True
 
@@ -747,7 +753,7 @@ class TestIntegration(TestConditionEvaluator):
             conditions=[order_condition, user_premium],
         )
 
-        result = evaluator.evaluate_rule(final_rule, sample_data)
+        result, evaluation_result = evaluator.evaluate_rule(final_rule, sample_data)
         # Should be True: order.status=completed, order.total=150>100
         assert result is True
 
@@ -758,7 +764,7 @@ class TestIntegration(TestConditionEvaluator):
             field_address="customer.email", operator=Operator.eq, value="test_value"
         )
 
-        result = evaluator.evaluate_rule(condition, mock_fides_data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, mock_fides_data)
         assert result is True
 
     def test_list_operators_integration(self, evaluator, data_set):
@@ -769,7 +775,7 @@ class TestIntegration(TestConditionEvaluator):
         condition = ConditionLeaf(
             field_address="user.roles", operator=Operator.list_contains, value="admin"
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is True  # "admin" is in the user.roles list
 
         # Test not_in_list operator
@@ -778,7 +784,7 @@ class TestIntegration(TestConditionEvaluator):
             operator=Operator.not_in_list,
             value=["guest", "anonymous"],
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is True  # "admin" and "moderator" are not in the excluded list
 
         # Test list_contains operator with permissions
@@ -787,7 +793,7 @@ class TestIntegration(TestConditionEvaluator):
             operator=Operator.list_contains,
             value="write",
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is True  # "write" is in the permissions list
 
     def test_complex_list_condition_group(self, evaluator, data_set):
@@ -819,7 +825,7 @@ class TestIntegration(TestConditionEvaluator):
             conditions=[role_or_permission, order_condition],
         )
 
-        result = evaluator.evaluate_rule(final_condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(final_condition, data)
         assert result is True  # admin role OR write permission AND completed order
 
     def test_list_operators_with_nested_data(self, evaluator, data_set):
@@ -832,7 +838,7 @@ class TestIntegration(TestConditionEvaluator):
             operator=Operator.list_contains,
             value="programming",
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is True
 
         # Test multiple list conditions
@@ -859,7 +865,7 @@ class TestIntegration(TestConditionEvaluator):
             conditions=[interests_condition, skills_condition, subscription_condition],
         )
 
-        result = evaluator.evaluate_rule(combined_condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(combined_condition, data)
         assert result is True
 
     @pytest.mark.parametrize(
@@ -926,7 +932,7 @@ class TestIntegration(TestConditionEvaluator):
             operator=operator,
             value=value,
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is expected_result  # "admin" is common between both lists
 
     def test_complex_list_condition_group(self, evaluator, data_set):
@@ -967,7 +973,7 @@ class TestIntegration(TestConditionEvaluator):
             ],
         )
 
-        result = evaluator.evaluate_rule(combined_condition, data_set)
+        result, evaluation_result = evaluator.evaluate_rule(combined_condition, data_set)
         assert result is True  # All conditions should be True
 
     @pytest.mark.parametrize(
@@ -1006,7 +1012,7 @@ class TestIntegration(TestConditionEvaluator):
         condition = ConditionLeaf(
             field_address=field_address, operator=operator, value=value
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is expected_result
 
     @pytest.mark.parametrize(
@@ -1037,5 +1043,5 @@ class TestIntegration(TestConditionEvaluator):
         condition = ConditionLeaf(
             field_address=field_address, operator=operator, value=value
         )
-        result = evaluator.evaluate_rule(condition, data)
+        result, evaluation_result = evaluator.evaluate_rule(condition, data)
         assert result is expected_result

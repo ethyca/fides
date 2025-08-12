@@ -85,11 +85,14 @@ class ConditionEvaluator:
         if operator_func is None:
             logger.warning(f"Unknown logical operator: {group.logical_operator}")
             result = False
+            # Use a default operator for the result since the original is invalid
+            logical_operator = GroupOperator.and_
         else:
             result = operator_func([r.result for r in results])
+            logical_operator = group.logical_operator
 
         return GroupEvaluationResult(
-            logical_operator=group.logical_operator,
+            logical_operator=logical_operator,
             condition_results=results,
             result=result,
         )
