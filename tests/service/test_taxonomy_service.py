@@ -8,12 +8,12 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataSubject,
     DataUse,
 )
+from fides.api.models.taxonomy import Taxonomy, TaxonomyUsage
 from fides.api.service.deps import get_taxonomy_service
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
 from fides.service.taxonomy.handlers.legacy_handler import LegacyTaxonomyHandler
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.taxonomy.utils import generate_taxonomy_fides_key
-from fides.api.models.taxonomy import Taxonomy, TaxonomyUsage
 
 LEGACY_TAXONOMY_TYPES = [
     "data_categories",

@@ -5,7 +5,6 @@ Service layer for taxonomy management (data_categories, data_uses, data_subjects
 from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy import or_
-
 from sqlalchemy.orm import Session
 
 from fides.api.models.taxonomy import LEGACY_TAXONOMIES, TaxonomyUsage
@@ -99,6 +98,14 @@ class TaxonomyService:
             else:
                 # Cascade down - deactivate current node and children
                 deactivate_taxonomy_node_and_descendants(updated_element, self.db)
+
+            # Ensure hierarchical updates are visible across sessions
+            # The model's own update() commits, but parent/child mutations above
+            # only flush by design. Commit here so other sessions (e.g., API tests)
+            # can observe the propagated changes immediately.
+            self.db.commit()
+            # Refresh the updated element to return the latest state
+            self.db.refresh(updated_element)
 
         return updated_element
 
