@@ -1054,13 +1054,13 @@ class TestStagedResourceAncestorModel:
 
         # Verify relationships
         sr2 = StagedResource.get_urn(db, staged_resource_2.urn)
-        assert len(sr2.ancestors()) == 1
-        assert sr2.ancestors()[0].urn == staged_resource_1.urn
+        assert len(sr2.ancestors(db)) == 1
+        assert sr2.ancestors(db)[0].urn == staged_resource_1.urn
 
         sr3 = StagedResource.get_urn(db, staged_resource_3.urn)
-        assert len(sr3.ancestors()) == 2
+        assert len(sr3.ancestors(db)) == 2
         ancestor_resources_from_descendant = {
-            ancestor.urn for ancestor in sr3.ancestors()
+            ancestor.urn for ancestor in sr3.ancestors(db)
         }
         assert ancestor_resources_from_descendant == {
             staged_resource_1.urn,
@@ -1068,8 +1068,8 @@ class TestStagedResourceAncestorModel:
         }
 
         sr1 = StagedResource.get_urn(db, staged_resource_1.urn)
-        assert len(sr1.descendants()) == 2  # Both resource_2 and resource_3
-        descendant_urns_from_ancestor = {desc.urn for desc in sr1.descendants()}
+        assert len(sr1.descendants(db)) == 2  # Both resource_2 and resource_3
+        descendant_urns_from_ancestor = {desc.urn for desc in sr1.descendants(db)}
         assert descendant_urns_from_ancestor == {
             staged_resource_2.urn,
             staged_resource_3.urn,
@@ -1264,12 +1264,12 @@ class TestStagedResourceAncestorModel:
             .first()
             is not None
         )
-        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+        assert {desc.urn for desc in staged_resource_1.descendants(db)} == {
             descendant_to_delete_urn,
             other_descendant_urn,
         }
-        assert {anc.urn for anc in staged_resource_2.ancestors()} == {ancestor_urn}
-        assert {anc.urn for anc in staged_resource_3.ancestors()} == {ancestor_urn}
+        assert {anc.urn for anc in staged_resource_2.ancestors(db)} == {ancestor_urn}
+        assert {anc.urn for anc in staged_resource_3.ancestors(db)} == {ancestor_urn}
 
         # Delete one descendant resource
         db.delete(staged_resource_2)
@@ -1297,10 +1297,10 @@ class TestStagedResourceAncestorModel:
         db.refresh(staged_resource_3)
 
         # Verify relationships are updated
-        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+        assert {desc.urn for desc in staged_resource_1.descendants(db)} == {
             other_descendant_urn
         }
-        assert {anc.urn for anc in staged_resource_3.ancestors()} == {ancestor_urn}
+        assert {anc.urn for anc in staged_resource_3.ancestors(db)} == {ancestor_urn}
 
     def test_cascade_delete_when_ancestor_is_deleted(
         self,
@@ -1343,14 +1343,14 @@ class TestStagedResourceAncestorModel:
             .first()
             is not None
         )
-        assert {anc.urn for anc in staged_resource_3.ancestors()} == {
+        assert {anc.urn for anc in staged_resource_3.ancestors(db)} == {
             ancestor_to_delete_urn,
             other_ancestor_urn,
         }
-        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+        assert {desc.urn for desc in staged_resource_1.descendants(db)} == {
             descendant_urn
         }
-        assert {desc.urn for desc in staged_resource_2.descendants()} == {
+        assert {desc.urn for desc in staged_resource_2.descendants(db)} == {
             descendant_urn
         }
 
@@ -1380,9 +1380,9 @@ class TestStagedResourceAncestorModel:
         db.refresh(staged_resource_3)
 
         # Verify relationships are updated
-        assert {anc.urn for anc in staged_resource_3.ancestors()} == {
+        assert {anc.urn for anc in staged_resource_3.ancestors(db)} == {
             other_ancestor_urn
         }
-        assert {desc.urn for desc in staged_resource_2.descendants()} == {
+        assert {desc.urn for desc in staged_resource_2.descendants(db)} == {
             descendant_urn
         }
