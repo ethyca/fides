@@ -330,101 +330,108 @@ class TestManualTaskDataAggregation:
 class TestManualTaskConditionalDependencies:
     """Test that Manual Tasks only create instances when conditional dependencies are met"""
 
+    @pytest.fixture
+    def mock_conditional_evaluation(self, build_graph_task):
+        """Create a mock for _get_conditional_data_and_evaluate with autospec"""
+        manual_task, graph_task = build_graph_task
+        with patch.object(
+            graph_task, "_get_conditional_data_and_evaluate", autospec=True
+        ) as mock_evaluate:
+            yield mock_evaluate, manual_task, graph_task
+
     def test_manual_task_creates_instance_when_condition_met(
         self,
         db,
-        build_graph_task,
+        mock_conditional_evaluation,
         access_privacy_request,
         condition_gt_18,
     ):
         """Test that manual task instances are created when conditional dependencies are satisfied"""
-        manual_task, graph_task = build_graph_task
+        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
 
-        # Mock the _get_conditional_data_and_evaluate to return satisfying data
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate"
-        ) as mock_evaluate:
-            mock_evaluate.return_value = {
+        # Configure mock to return satisfying data
+        mock_evaluate.return_value = (
+            {
                 "postgres_example": {
                     "customer": {
                         "profile": {"age": 25}  # This satisfies the condition (>= 18)
                     }
                 }
-            }
+            },
+            {"evaluation": "success"},  # Mock evaluation result
+        )
 
-            # Verify no instances exist initially
-            initial_instances = access_privacy_request.manual_task_instances
-            assert len(initial_instances) == 0
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
 
-            # Call _run_request which should create instances when conditions are met
-            # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-            with pytest.raises(AwaitingAsyncTaskCallback):
-                graph_task._run_request(
-                    ManualTaskConfigurationType.access_privacy_request,
-                    ActionType.access,
-                    [],  # Empty input data since we're mocking the extraction
-                )
-
-            # Refresh the privacy request to get updated instances
-            db.refresh(access_privacy_request)
-
-            # Verify that instances were created
-            updated_instances = access_privacy_request.manual_task_instances
-            assert len(updated_instances) == 1
-            assert updated_instances[0].task_id == manual_task.id
-
-    def test_manual_task_does_not_create_instance_when_condition_not_met(
-        self,
-        db,
-        build_graph_task,
-        access_privacy_request,
-        condition_gt_18,
-    ):
-        """Test that manual task instances are NOT created when conditional dependencies are not satisfied"""
-        manual_task, graph_task = build_graph_task
-
-        # Mock the _get_conditional_data_and_evaluate to return None (conditions not met)
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate"
-        ) as mock_evaluate:
-            mock_evaluate.return_value = None  # Conditions not satisfied
-
-            # Verify no instances exist initially
-            initial_instances = access_privacy_request.manual_task_instances
-            assert len(initial_instances) == 0
-
-            # Call _run_request which should NOT create instances when conditions are not met
-            result = graph_task._run_request(
+        # Call _run_request which should create instances when conditions are met
+        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
 
-            # Should return None when conditions are not met
-            assert result is None
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
 
-            # Refresh the privacy request to get updated instances
-            db.refresh(access_privacy_request)
+        # Verify that instances were created
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 1
+        assert updated_instances[0].task_id == manual_task.id
 
-            # Verify that NO instances were created
-            updated_instances = access_privacy_request.manual_task_instances
-            assert len(updated_instances) == 0
+    def test_manual_task_does_not_create_instance_when_condition_not_met(
+        self,
+        db,
+        mock_conditional_evaluation,
+        access_privacy_request,
+        condition_gt_18,
+    ):
+        """Test that manual task instances are NOT created when conditional dependencies are not satisfied"""
+        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
+
+        # Configure mock to return None (conditions not met)
+        mock_evaluate.return_value = (
+            None,
+            {"evaluation": "failed"},
+        )  # Conditions not satisfied
+
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
+
+        # Call _run_request which should NOT create instances when conditions are not met
+        result = graph_task._run_request(
+            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
+            [],  # Empty input data since we're mocking the extraction
+        )
+
+        # Should return None when conditions are not met
+        assert result is None
+
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
+
+        # Verify that NO instances were created
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 0
 
     def test_manual_task_with_multiple_conditions_all_met(
         self,
         db,
-        build_graph_task,
+        mock_conditional_evaluation,
         access_privacy_request,
         group_condition,  # This creates an AND condition with age >= 18 AND status == 'active'
     ):
         """Test that manual task instances are created when ALL conditional dependencies are satisfied"""
-        manual_task, graph_task = build_graph_task
+        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
 
-        # Mock the _get_conditional_data_and_evaluate to return data satisfying ALL conditions
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate"
-        ) as mock_evaluate:
-            mock_evaluate.return_value = {
+        # Configure mock to return data satisfying ALL conditions
+        mock_evaluate.return_value = (
+            {
                 "postgres_example": {
                     "customer": {"profile": {"age": 25}},  # Satisfies age >= 18
                     "payment_card": {
@@ -433,140 +440,139 @@ class TestManualTaskConditionalDependencies:
                         }
                     },
                 }
-            }
+            },
+            {"evaluation": "success"},  # Mock evaluation result
+        )
 
-            # Verify no instances exist initially
-            initial_instances = access_privacy_request.manual_task_instances
-            assert len(initial_instances) == 0
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
 
-            # Call _run_request which should create instances when all conditions are met
-            # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-            with pytest.raises(AwaitingAsyncTaskCallback):
-                graph_task._run_request(
-                    ManualTaskConfigurationType.access_privacy_request,
-                    ActionType.access,
-                    [],  # Empty input data since we're mocking the extraction
-                )
+        # Call _run_request which should create instances when all conditions are met
+        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            graph_task._run_request(
+                ManualTaskConfigurationType.access_privacy_request,
+                ActionType.access,
+                [],  # Empty input data since we're mocking the extraction
+            )
 
-            # Refresh the privacy request to get updated instances
-            db.refresh(access_privacy_request)
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
 
-            # Verify that instances were created
-            updated_instances = access_privacy_request.manual_task_instances
-            assert len(updated_instances) == 1
-            assert updated_instances[0].task_id == manual_task.id
+        # Verify that instances were created
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 1
+        assert updated_instances[0].task_id == manual_task.id
 
     def test_manual_task_with_multiple_conditions_partially_met(
         self,
         db,
-        build_graph_task,
+        mock_conditional_evaluation,
         access_privacy_request,
         group_condition,  # This creates an AND condition with age >= 18 AND status == 'active'
     ):
         """Test that manual task instances are NOT created when only SOME conditional dependencies are satisfied"""
-        manual_task, graph_task = build_graph_task
+        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
 
-        # Mock the _get_conditional_data_and_evaluate to return None (not all conditions met)
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate"
-        ) as mock_evaluate:
-            mock_evaluate.return_value = None  # Not all conditions satisfied
+        # Configure mock to return None (not all conditions met)
+        mock_evaluate.return_value = (
+            None,
+            {"evaluation": "failed"},
+        )  # Not all conditions satisfied
 
-            # Verify no instances exist initially
-            initial_instances = access_privacy_request.manual_task_instances
-            assert len(initial_instances) == 0
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
 
-            # Call _run_request which should NOT create instances when not all conditions are met
-            result = graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
-                ActionType.access,
-                [],  # Empty input data since we're mocking the extraction
-            )
+        # Call _run_request which should NOT create instances when not all conditions are met
+        result = graph_task._run_request(
+            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
+            [],  # Empty input data since we're mocking the extraction
+        )
 
-            # Should return None when conditions are not met
-            assert result is None
+        # Should return None when conditions are not met
+        assert result is None
 
-            # Refresh the privacy request to get updated instances
-            db.refresh(access_privacy_request)
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
 
-            # Verify that NO instances were created
-            updated_instances = access_privacy_request.manual_task_instances
-            assert len(updated_instances) == 0
+        # Verify that NO instances were created
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 0
 
     def test_manual_task_with_no_conditional_dependencies(
         self,
         db,
-        build_graph_task,
+        mock_conditional_evaluation,
         access_privacy_request,
     ):
         """Test that manual task instances are always created when there are no conditional dependencies"""
-        manual_task, graph_task = build_graph_task
+        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
 
-        # Mock the _get_conditional_data_and_evaluate to return empty data (no conditions)
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate"
-        ) as mock_evaluate:
-            mock_evaluate.return_value = {}  # No conditional dependencies
+        # Configure mock to return empty data (no conditions)
+        mock_evaluate.return_value = ({}, None)  # No conditional dependencies
 
-            # Verify no instances exist initially
-            initial_instances = access_privacy_request.manual_task_instances
-            assert len(initial_instances) == 0
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
 
-            # Call _run_request which should create instances when there are no conditions
-            # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-            with pytest.raises(AwaitingAsyncTaskCallback):
-                graph_task._run_request(
-                    ManualTaskConfigurationType.access_privacy_request,
-                    ActionType.access,
-                    [],  # Empty input data since we're mocking the extraction
-                )
-
-            # Refresh the privacy request to get updated instances
-            db.refresh(access_privacy_request)
-
-            # Verify that instances were created (no conditions means always execute)
-            updated_instances = access_privacy_request.manual_task_instances
-            assert len(updated_instances) == 1
-            assert updated_instances[0].task_id == manual_task.id
-
-    def test_manual_task_with_missing_input_data(
-        self,
-        db,
-        build_graph_task,
-        access_privacy_request,
-        condition_gt_18,
-    ):
-        """Test that manual task instances are NOT created when required input data is missing"""
-        manual_task, graph_task = build_graph_task
-
-        # Mock the _get_conditional_data_and_evaluate to return None (required data missing)
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate"
-        ) as mock_evaluate:
-            mock_evaluate.return_value = (
-                None  # Required data missing, conditions can't be evaluated
-            )
-
-            # Verify no instances exist initially
-            initial_instances = access_privacy_request.manual_task_instances
-            assert len(initial_instances) == 0
-
-            # Call _run_request which should NOT create instances when required data is missing
-            result = graph_task._run_request(
+        # Call _run_request which should create instances when there are no conditions
+        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
 
-            # Should return None when required data is missing
-            assert result is None
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
 
-            # Refresh the privacy request to get updated instances
-            db.refresh(access_privacy_request)
+        # Verify that instances were created (no conditions means always execute)
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 1
+        assert updated_instances[0].task_id == manual_task.id
 
-            # Verify that NO instances were created
-            updated_instances = access_privacy_request.manual_task_instances
-            assert len(updated_instances) == 0
+    def test_manual_task_with_missing_input_data(
+        self,
+        db,
+        mock_conditional_evaluation,
+        access_privacy_request,
+        condition_gt_18,
+    ):
+        """Test that manual task instances are NOT created when required input data is missing"""
+        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
+
+        # Configure mock to return None (required data missing)
+        mock_evaluate.return_value = (
+            None,
+            {
+                "evaluation": "failed"
+            },  # Required data missing, conditions can't be evaluated
+        )
+
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
+
+        # Call _run_request which should NOT create instances when required data is missing
+        result = graph_task._run_request(
+            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
+            [],  # Empty input data since we're mocking the extraction
+        )
+
+        # Should return None when required data is missing
+        assert result is None
+
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
+
+        # Verify that NO instances were created
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 0
 
 
 class TestManualTaskDataExtraction:
