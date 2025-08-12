@@ -628,8 +628,6 @@ class ManualTaskGraphTask(GraphTask):
             for instance in instances_to_remove:
                 self.resources.session.delete(instance)
 
-            # Commit the changes
-            self.resources.session.commit()
 
             logger.info(
                 "Successfully cleaned up ManualTaskInstance(s) for manual task {}",
