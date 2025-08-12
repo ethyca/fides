@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
+import { useLiveRegion } from "../providers/live-region-context";
+
 const BUTTON_COMPLETE_DELAY = 3000;
 
 interface UseAutoResetFlagReturn {
@@ -20,6 +22,7 @@ const useAutoResetFlag = (
 ): UseAutoResetFlagReturn => {
   const [isActive, setIsActive] = useState<boolean>(initial);
   const timeoutRef = useRef<number | null>(null);
+  const { clear: clearLiveRegion } = useLiveRegion();
 
   const clearTimer = useCallback(() => {
     if (timeoutRef.current !== null) {
@@ -31,7 +34,8 @@ const useAutoResetFlag = (
   const deactivate = useCallback(() => {
     clearTimer();
     setIsActive(false);
-  }, [clearTimer]);
+    clearLiveRegion();
+  }, [clearTimer, clearLiveRegion]);
 
   const activate = useCallback(
     (durationMs?: number) => {
@@ -40,10 +44,11 @@ const useAutoResetFlag = (
       const delay = durationMs ?? defaultDurationMs;
       timeoutRef.current = window.setTimeout(() => {
         setIsActive(false);
+        clearLiveRegion();
         timeoutRef.current = null;
       }, delay) as unknown as number;
     },
-    [clearTimer, defaultDurationMs],
+    [clearTimer, defaultDurationMs, clearLiveRegion],
   );
 
   useEffect(() => () => clearTimer(), [clearTimer]);

@@ -1121,6 +1121,16 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 
+/* Screen reader only */
+.fides-sr-only {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 @media (min-width: 1280px) {
   div#fides-banner {
     width: 60%;
