@@ -342,7 +342,6 @@ button.fides-banner-button.fides-acknowledge-button {
   width: 1em;
   height: 1em;
   animation: spin 1s linear infinite;
-  margin-left: 8px;
 }
 
 .fides-banner-button-primary .fides-spinner {
