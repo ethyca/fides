@@ -1,6 +1,8 @@
 import { FunctionComponent } from "preact";
+import { useEffect } from "preact/hooks";
 
 import { ButtonType } from "../lib/consent-types";
+import { useAutoResetFlag } from "../lib/hooks";
 import { CheckmarkFilledIcon } from "./CheckmarkFilledIcon";
 import { Spinner } from "./Spinner";
 
@@ -25,6 +27,15 @@ const Button: FunctionComponent<ButtonProps> = ({
   loading,
   complete,
 }) => {
+  const { isActive: showComplete, activate, deactivate } = useAutoResetFlag();
+
+  useEffect(() => {
+    if (complete) {
+      activate();
+    } else {
+      deactivate();
+    }
+  }, [activate, complete, deactivate]);
 
   return (
     <button
