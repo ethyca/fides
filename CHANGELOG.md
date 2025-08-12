@@ -35,6 +35,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
+- Add `nox -s dev -- workers-all` and rename `worker-other` [#6445](https://github.com/ethyca/fides/pull/6445)
 
 ### Fixed
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
