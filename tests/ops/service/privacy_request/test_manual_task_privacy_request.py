@@ -1120,8 +1120,8 @@ def test_manual_task_conditional_dependencies_skip_execution(
     assert source_addr_key in results, "Source data should be present in results"
 
     # Verify manual task data is NOT present (proves manual task was skipped)
-    assert (
-        results.get(manual_addr_key) == []
+    assert not results.get(
+        manual_addr_key
     ), "Manual task data should NOT be present when condition is not met"
 
 

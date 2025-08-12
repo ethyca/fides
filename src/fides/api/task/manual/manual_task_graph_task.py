@@ -618,17 +618,8 @@ class ManualTaskGraphTask(GraphTask):
         ]
 
         if instances_to_remove:
-            logger.info(
-                "Cleaning up {} ManualTaskInstance(s) for manual task {} since conditional dependencies are not met",
-                len(instances_to_remove),
-                manual_task.id,
-            )
 
             # Remove instances from the database
             for instance in instances_to_remove:
-                self.resources.session.delete(instance)
-
-            logger.info(
-                "Successfully cleaned up ManualTaskInstance(s) for manual task {}",
-                manual_task.id,
-            )
+                instance.delete(self.resources.session)
+                self.resources.session.commit()
