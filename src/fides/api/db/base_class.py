@@ -21,7 +21,12 @@ from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decode
 from fides.api.util.text import to_snake_case
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
-ALLOWED_CHARS = re.compile(r"[A-Za-z0-9\-_]")
+ALLOWED_CHARS_PATTERN = r"[A-Za-z0-9\-_]"
+DISALLOWED_CHARS_PATTERN = (
+    r"[^A-Za-z0-9\-_]"  # anything that's _not_ matched by ALLOWED_CHARS_PATTERN above
+)
+ALLOWED_CHARS = re.compile(ALLOWED_CHARS_PATTERN)
+DISALLOWED_CHARS = re.compile(DISALLOWED_CHARS_PATTERN)
 
 
 class JSONTypeOverride(JSONType):  # pylint: disable=W0223
@@ -120,7 +125,7 @@ class FidesBase:
         they are allowed in `sanitize_fides_key`. This is because `.` must be allowed in
         `fides_key`s (), but they are not allowed in `key`s.
         """
-        return ALLOWED_CHARS.sub("_", proposed_key)
+        return DISALLOWED_CHARS.sub("_", proposed_key)
 
     id = Column(String(255), primary_key=True, index=True, default=generate_uuid)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -336,7 +341,6 @@ class OrmWrappedFidesBase(FidesBase):
                 )
 
         return OrmWrappedFidesBase.persist_obj(db, self)
-
 
     @classmethod
     def persist_obj(cls: Type[T], db: Session, resource: T) -> T:
