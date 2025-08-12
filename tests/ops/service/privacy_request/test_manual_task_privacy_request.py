@@ -1156,7 +1156,7 @@ def test_manual_task_conditional_dependencies_execute_when_met(
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "field_address": "postgres_example_test_dataset:customer:email",
             "operator": "exists",
-            "value": "customer-1@example.com",  # Email that exists in test data
+            "value": None,  # exists operator doesn't need a value
             "sort_order": 1,
         },
     )
