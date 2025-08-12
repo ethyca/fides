@@ -10,7 +10,6 @@ import { PAGE_SIZES } from "./CustomPagination";
  * Default customizations:
  * - Uses "small" size for more compact rows
  * - Enables bordered styling for better visual separation
- * - Uses Carbon SettingsAdjust icon for table column filters
  * - Automatically hides pagination when there's only one page
  * - Uses CustomPagination defaults (showSizeChanger=true, consistent PAGE_SIZES)
  *
