@@ -44,36 +44,24 @@ const ManualTaskConfigTable = ({
     }
   }, [shouldOpenAddModal, onAddModalOpenComplete]);
 
-  const handleEditManualTask = useCallback((task: Task) => {
-    setEditingManualTask(task);
-    setIsAddEditModalOpen(true);
-  }, []);
-
-  const handleDeleteManualTask = useCallback((task: Task) => {
-    setManualTaskToDelete(task);
-    setIsDeleteModalOpen(true);
-  }, []);
-
-  const handleCloseAddEditModal = useCallback(() => {
-    setEditingManualTask(null);
-    setIsAddEditModalOpen(false);
-  }, []);
-
-  const handleCloseDeleteModal = useCallback(() => {
-    setManualTaskToDelete(null);
-    setIsDeleteModalOpen(false);
-  }, []);
-
   const handleConfirmDelete = useCallback(async () => {
     if (manualTaskToDelete) {
       await deleteManualTask(manualTaskToDelete);
     }
-    handleCloseDeleteModal();
-  }, [manualTaskToDelete, deleteManualTask, handleCloseDeleteModal]);
+    // Close delete modal
+    setManualTaskToDelete(null);
+    setIsDeleteModalOpen(false);
+  }, [manualTaskToDelete, deleteManualTask]);
 
   const { columns } = useManualTaskColumns({
-    onEdit: handleEditManualTask,
-    onDelete: handleDeleteManualTask,
+    onEdit: (task: Task) => {
+      setEditingManualTask(task);
+      setIsAddEditModalOpen(true);
+    },
+    onDelete: (task: Task) => {
+      setManualTaskToDelete(task);
+      setIsDeleteModalOpen(true);
+    },
   });
 
   return (
@@ -97,7 +85,10 @@ const ManualTaskConfigTable = ({
 
       <AddManualTaskModal
         isOpen={isAddEditModalOpen}
-        onClose={handleCloseAddEditModal}
+        onClose={() => {
+          setEditingManualTask(null);
+          setIsAddEditModalOpen(false);
+        }}
         integration={integration}
         onTaskAdded={refreshManualTasks}
         editingTask={editingManualTask}
@@ -105,7 +96,10 @@ const ManualTaskConfigTable = ({
 
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
+        onClose={() => {
+          setManualTaskToDelete(null);
+          setIsDeleteModalOpen(false);
+        }}
         onConfirm={handleConfirmDelete}
         title="Delete manual task"
         message={
