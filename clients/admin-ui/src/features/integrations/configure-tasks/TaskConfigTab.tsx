@@ -83,10 +83,18 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const users = usersData?.items ?? [];
 
   // Create options for the assigned to select (without create new user option)
-  const userOptions = users.map((user: any) => ({
-    label: `${user.first_name} ${user.last_name} (${user.email_address})`,
-    value: user.email_address,
-  }));
+  const userOptions = users.map((user: any) => {
+    const displayName =
+      user.first_name && user.last_name
+        ? `${user.first_name} ${user.last_name}`
+        : user.email_address;
+
+    return {
+      label: `${user.first_name} ${user.last_name} (${user.email_address})`,
+      value: user.email_address,
+      displayName, // This will be used for the tag display
+    };
+  });
 
   useEffect(() => {
     if (data) {
@@ -246,6 +254,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
                 value={selectedUsers}
                 onChange={handleUserAssignmentChange}
                 options={userOptions}
+                optionLabelProp="displayName"
                 style={{ width: "100%", marginTop: 8 }}
                 tokenSeparators={[","]}
                 filterOption={(input, option) => {
