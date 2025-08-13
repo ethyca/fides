@@ -2,211 +2,46 @@ import {
   AntButton as Button,
   AntDivider as Divider,
   AntFlex as Flex,
-  AntMessage as message,
-  AntSelect as Select,
-  AntTable as Table,
   AntTypography as Typography,
-  useDisclosure,
-  WarningIcon,
 } from "fidesui";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import {
-  useDeleteManualFieldMutation,
-  useGetManualFieldsQuery,
-} from "~/features/datastore-connections/connection-manual-fields.slice";
-import {
-  useAssignUsersToManualTaskMutation,
-  useGetManualTaskConfigQuery,
-} from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
-import {
-  ConnectionConfigurationResponse,
-  ManualFieldResponse,
-} from "~/types/api";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
-import AddManualTaskModal from "./AddManualTaskModal";
+import ManualTaskAssignmentSection from "./components/ManualTaskAssignmentSection";
+import ManualTaskConfigTable from "./components/ManualTaskConfigTable";
 import CreateExternalUserModal from "./CreateExternalUserModal";
-import { Task } from "./types";
-import { useManualTaskColumns } from "./useManualTaskColumns";
+import { useUserAssignment } from "./hooks/useUserAssignment";
 
 interface TaskConfigTabProps {
   integration: ConnectionConfigurationResponse;
 }
 
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [, setIsSavingUsers] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [shouldOpenAddModal, setShouldOpenAddModal] = useState(false);
+
   const {
-    isOpen: isCreateUserOpen,
-    onOpen: onCreateUserOpen,
-    onClose: onCreateUserClose,
-  } = useDisclosure();
-  const {
-    isOpen: isDeleteOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+    selectedUsers,
+    userOptions,
+    handleUserAssignmentChange,
+    handleUserCreated,
+    isCreateUserOpen,
+    onCreateUserOpen,
+    onCreateUserClose,
+  } = useUserAssignment({ integration });
 
-  const { data, refetch } = useGetManualFieldsQuery(
-    { connectionKey: integration ? integration.key : "" },
-    {
-      skip: !integration,
-    },
-  );
-
-  // Get manual task config to load currently assigned users
-  const { data: manualTaskConfig } = useGetManualTaskConfigQuery(
-    { connectionKey: integration ? integration.key : "" },
-    {
-      skip: !integration,
-    },
-  );
-
-  const [deleteManualField] = useDeleteManualFieldMutation();
-  const [assignUsersToManualTask] = useAssignUsersToManualTaskMutation();
-
-  // Get users for the assigned to field
-  const { data: usersData, refetch: refetchUsers } = useGetAllUsersQuery({
-    page: 1,
-    size: 100, // Get enough users for the dropdown
-    username: "", // Empty string to get all users
-  });
-
-  const users = usersData?.items ?? [];
-
-  // Create options for the assigned to select (without create new user option)
-  const userOptions = users.map((user: any) => {
-    const displayName =
-      user.first_name && user.last_name
-        ? `${user.first_name} ${user.last_name}`
-        : user.email_address;
-
-    return {
-      label: `${user.first_name} ${user.last_name} (${user.email_address})`,
-      value: user.email_address,
-      displayName, // This will be used for the tag display
-    };
-  });
-
-  useEffect(() => {
-    if (data) {
-      // Transform the manual fields into task format for the table
-      const transformedTasks = data.map((field: ManualFieldResponse) => ({
-        id: field.id,
-        name: field.label,
-        description: field.help_text,
-        fieldType: field.field_type,
-        requestType: field.request_type,
-        originalField: field, // Store original field for editing
-      }));
-      setTasks(transformedTasks);
-    }
-  }, [data]);
-
-  // Load currently assigned users when manual task config loads
-  useEffect(() => {
-    if (manualTaskConfig?.assigned_users) {
-      const assignedUserEmails = manualTaskConfig.assigned_users
-        .map((user) => user.email_address)
-        .filter((email) => email !== null && email !== undefined) as string[];
-      setSelectedUsers(assignedUserEmails);
-    }
-  }, [manualTaskConfig]);
-
-  const deleteTask = useCallback(
-    async (task: Task) => {
-      try {
-        await deleteManualField({
-          connectionKey: integration.key as string,
-          manualFieldId: task.id,
-        }).unwrap();
-
-        refetch();
-      } catch (error) {
-        message.error("Failed to delete task. Please try again.");
-      }
-    },
-    [deleteManualField, integration.key, refetch],
-  );
-
-  const handleEdit = useCallback(
-    (task: Task) => {
-      setEditingTask(task);
-      onOpen();
-    },
-    [onOpen],
-  );
-
-  const handleDelete = useCallback(
-    (task: Task) => {
-      setTaskToDelete(task);
-      onDeleteOpen();
-    },
-    [onDeleteOpen],
-  );
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (taskToDelete) {
-      await deleteTask(taskToDelete);
-      setTaskToDelete(null);
-    }
-    onDeleteClose();
-  }, [taskToDelete, deleteTask, onDeleteClose]);
-
-  const handleAddTask = useCallback(() => {
-    setEditingTask(null);
-    onOpen();
-  }, [onOpen]);
-
-  const handleModalClose = useCallback(() => {
-    setEditingTask(null);
-    onClose();
-  }, [onClose]);
-
-  const handleUserCreated = () => {
-    // Refetch users to update the dropdown
-    refetchUsers();
-    onCreateUserClose();
+  const handleAddManualTask = () => {
+    setShouldOpenAddModal(true);
   };
 
-  const handleSaveUserAssignments = useCallback(
-    async (userIds?: string[]) => {
-      const usersToSave = userIds ?? selectedUsers;
-      setIsSavingUsers(true);
-      try {
-        await assignUsersToManualTask({
-          connectionKey: integration.key,
-          userIds: usersToSave,
-        }).unwrap();
-        message.success("Assigned users have been updated");
-      } catch (error) {
-        message.error("Failed to assign users to task. Please try again.");
-      } finally {
-        setIsSavingUsers(false);
-      }
-    },
-    [assignUsersToManualTask, integration.key, selectedUsers],
-  );
+  const handleAddModalOpenComplete = () => {
+    setShouldOpenAddModal(false);
+  };
 
-  const handleUserAssignmentChange = useCallback(
-    (userIds: string[]) => {
-      setSelectedUsers(userIds);
-      handleSaveUserAssignments(userIds);
-    },
-    [handleSaveUserAssignments],
-  );
-
-  // Use the manual task columns hook
-  const { columns } = useManualTaskColumns({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-  });
+  const handleUserCreatedWithRefresh = () => {
+    handleUserCreated();
+    onCreateUserClose();
+  };
 
   return (
     <div>
@@ -221,85 +56,27 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           <Button type="default" onClick={onCreateUserOpen}>
             Manage secure access
           </Button>
-          <Button type="primary" onClick={handleAddTask}>
+          <Button type="primary" onClick={handleAddManualTask}>
             Add manual task
           </Button>
         </Flex>
 
-        <Table
-          columns={columns}
-          dataSource={tasks}
-          rowKey="id"
-          pagination={false}
-          locale={{
-            emptyText: (
-              <div className="p-8 text-center">
-                <Typography.Paragraph type="secondary">
-                  No manual tasks configured yet. Click &apos;Add manual
-                  task&apos; to get started.
-                </Typography.Paragraph>
-              </div>
-            ),
-          }}
+        <ManualTaskConfigTable
+          integration={integration}
+          shouldOpenAddModal={shouldOpenAddModal}
+          onAddModalOpenComplete={handleAddModalOpenComplete}
         />
         <Divider className="my-2" />
-        <div>
-          <Flex align="center" gap={16}>
-            <Typography.Text strong>Assign tasks to users:</Typography.Text>
-            <Select
-              className="flex-1"
-              placeholder="Select users to assign tasks to"
-              mode="multiple"
-              maxTagCount="responsive"
-              value={selectedUsers}
-              onChange={handleUserAssignmentChange}
-              options={userOptions}
-              optionLabelProp="displayName"
-              tokenSeparators={[","]}
-              filterOption={(input, option) => {
-                return (
-                  (typeof option?.label === "string" &&
-                    option.label.toLowerCase().includes(input.toLowerCase())) ||
-                  false
-                );
-              }}
-            />
-          </Flex>
-        </div>
-
-        <AddManualTaskModal
-          isOpen={isOpen}
-          onClose={handleModalClose}
-          integration={integration}
-          onTaskAdded={() => {
-            refetch();
-          }}
-          editingTask={editingTask}
+        <ManualTaskAssignmentSection
+          selectedUsers={selectedUsers}
+          userOptions={userOptions}
+          onUserAssignmentChange={handleUserAssignmentChange}
         />
 
         <CreateExternalUserModal
           isOpen={isCreateUserOpen}
           onClose={onCreateUserClose}
-          onUserCreated={handleUserCreated}
-        />
-
-        <ConfirmationModal
-          isOpen={isDeleteOpen}
-          onClose={() => {
-            setTaskToDelete(null);
-            onDeleteClose();
-          }}
-          onConfirm={handleConfirmDelete}
-          title="Delete manual task"
-          message={
-            <span className="text-gray-500">
-              Are you sure you want to delete the task &ldquo;
-              {taskToDelete?.name}&rdquo;? This action cannot be undone.
-            </span>
-          }
-          continueButtonText="Delete"
-          isCentered
-          icon={<WarningIcon />}
+          onUserCreated={handleUserCreatedWithRefresh}
         />
       </Flex>
     </div>
