@@ -19,6 +19,7 @@ from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
@@ -26,6 +27,7 @@ from fides.api.task.conditional_dependencies.logging_utils import (
     format_evaluation_failure_message,
     format_evaluation_success_message,
 )
+from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.graph_task import GraphTask, retry
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
@@ -33,7 +35,6 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
-from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.util.storage_util import format_size
 
 
@@ -203,7 +204,7 @@ class ManualTaskGraphTask(GraphTask):
 
     def _evaluate_conditional_dependencies(
         self, manual_task: ManualTask, conditional_data: dict[str, Any]
-    ) -> tuple[bool, Optional[Any]]:
+    ) -> Optional[EvaluationResult]:
         """
         Evaluate conditional dependencies for a manual task using data from regular tasks.
 
@@ -229,11 +230,9 @@ class ManualTaskGraphTask(GraphTask):
 
         # Evaluate the condition using the data from regular tasks
         evaluator = ConditionEvaluator(self.resources.session)
-        result, evaluation_result = evaluator.evaluate_rule(
-            root_condition, conditional_data
-        )
+        evaluation_result = evaluator.evaluate_rule(root_condition, conditional_data)
 
-        return result, evaluation_result
+        return evaluation_result
 
     def _get_conditional_data_and_evaluate(
         self, manual_task: ManualTask, *inputs: list[Row]
@@ -244,10 +243,13 @@ class ManualTaskGraphTask(GraphTask):
         )
 
         # Filter manual tasks based on conditional dependencies
-        should_execute, evaluation_result = self._evaluate_conditional_dependencies(
+        evaluation_result = self._evaluate_conditional_dependencies(
             manual_task, conditional_data
         )
-        if not should_execute:
+        if not evaluation_result:
+            return conditional_data, None
+
+        if not evaluation_result.result:
             # Create detailed message and mark this node as skipped (updates RequestTask status and logs once)
             detailed_message = format_evaluation_failure_message(evaluation_result)
             self.update_status(
