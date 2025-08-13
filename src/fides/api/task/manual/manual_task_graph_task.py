@@ -33,6 +33,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.util.storage_util import format_size
 
 
@@ -247,15 +248,13 @@ class ManualTaskGraphTask(GraphTask):
             manual_task, conditional_data
         )
         if not should_execute:
-            # Create detailed message about which conditions failed
+            # Create detailed message and mark this node as skipped (updates RequestTask status and logs once)
             detailed_message = format_evaluation_failure_message(evaluation_result)
-            self.resources.request.add_skipped_execution_log(
-                db=self.resources.session,
-                connection_key=self.connection_key,
-                dataset_name=None,
-                collection_name=str(self.execution_node.address),
-                message=f"Manual task conditional dependencies not met. {detailed_message}",
-                action_type=ActionType(self.resources.privacy_request_task.action_type),
+            self.update_status(
+                f"Manual task conditional dependencies not met. {detailed_message}",
+                [],
+                ActionType(self.resources.privacy_request_task.action_type),
+                ExecutionLogStatus.skipped,
             )
             return None, evaluation_result
 
@@ -286,6 +285,7 @@ class ManualTaskGraphTask(GraphTask):
         config_type: ManualTaskConfigurationType,
         action_type: ActionType,
         conditional_data: Optional[dict[str, Any]] = None,
+        awaiting_detail_message: Optional[str] = None,
     ) -> Optional[list[Row]]:
         """
         Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed
@@ -309,10 +309,11 @@ class ManualTaskGraphTask(GraphTask):
             self.resources.request.status = PrivacyRequestStatus.requires_input
             self.resources.request.save(self.resources.session)
 
-        # This should trigger log_awaiting_processing via the @retry decorator
-        raise AwaitingAsyncTaskCallback(
-            f"Manual task for {self.connection_key} requires user input"
-        )
+        # This will trigger log_awaiting_processing via the @retry decorator; include conditional details
+        base_msg = f"Manual task for {self.connection_key} requires user input"
+        if awaiting_detail_message:
+            base_msg = f"{base_msg}. {awaiting_detail_message}"
+        raise AwaitingAsyncTaskCallback(base_msg)
 
     def _ensure_manual_task_instances(
         self,
@@ -526,22 +527,16 @@ class ManualTaskGraphTask(GraphTask):
         )
 
         # Check if all manual task instances have submissions for applicable configs only
-        # Log the conditional dependency evaluation result if it exists
+        # No separate pending log; include details in the awaiting-processing log
+        detailed_message: Optional[str] = None
         if evaluation_result:
             detailed_message = format_evaluation_success_message(evaluation_result)
-            self.resources.request.add_pending_execution_log(
-                db=self.resources.session,
-                connection_key=self.connection_key,
-                dataset_name=None,
-                collection_name=str(self.execution_node.address),
-                message=f"Manual task conditional dependencies met. {detailed_message}",
-                action_type=ActionType(self.resources.privacy_request_task.action_type),
-            )
         result = self._set_submitted_data_or_raise_awaiting_async_task_callback(
             manual_task,
             config_type,
             action_type,
             conditional_data=conditional_data,
+            awaiting_detail_message=detailed_message,
         )
         return result
 
@@ -558,10 +553,11 @@ class ManualTaskGraphTask(GraphTask):
             *inputs,
         )
         if result is None:
-            self.log_end(ActionType.access)
+            # Conditional skip or not applicable already logged upstream; do not mark complete here
             return []
 
-        self.log_end(ActionType.access)
+        # We are picking up after awaiting input and have provided data – mark complete with record count
+        self.log_end(ActionType.access, record_count=len(result))
         return result
 
     # Provide erasure support for manual tasks
@@ -589,7 +585,7 @@ class ManualTaskGraphTask(GraphTask):
             *inputs,
         )
         if result is None:
-            self.log_end(ActionType.erasure)
+            # Conditional skip or not applicable already logged upstream; do not mark complete here
             return 0
 
         # Mark rows_masked = 0 (manual tasks do not mask data directly)
@@ -597,8 +593,8 @@ class ManualTaskGraphTask(GraphTask):
             # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
             self.request_task.rows_masked = 0  # type: ignore[assignment]
 
-        # Mark successful completion
-        self.log_end(ActionType.erasure)
+        # Picking up after awaiting input, mark erasure node complete with rows masked count (always 0)
+        self.log_end(ActionType.erasure, record_count=0)
         return 0
 
     def _cleanup_manual_task_instances(
