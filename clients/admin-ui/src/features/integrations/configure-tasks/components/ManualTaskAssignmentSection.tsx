@@ -3,6 +3,7 @@ import {
   AntSelect as Select,
   AntTypography as Typography,
 } from "fidesui";
+import { useMemo } from "react";
 
 interface UserOption {
   label: string;
@@ -21,6 +22,17 @@ const ManualTaskAssignmentSection = ({
   userOptions,
   onUserAssignmentChange,
 }: ManualTaskAssignmentSectionProps) => {
+  // Sort options to show selected users first
+  const sortedOptions = useMemo(() => {
+    const selected = userOptions.filter((option) =>
+      selectedUsers.includes(option.value),
+    );
+    const unselected = userOptions.filter(
+      (option) => !selectedUsers.includes(option.value),
+    );
+    return [...selected, ...unselected];
+  }, [userOptions, selectedUsers]);
+
   return (
     <div>
       <Flex align="center" gap={16}>
@@ -32,7 +44,7 @@ const ManualTaskAssignmentSection = ({
           maxTagCount="responsive"
           value={selectedUsers}
           onChange={onUserAssignmentChange}
-          options={userOptions}
+          options={sortedOptions}
           optionLabelProp="displayName"
           tokenSeparators={[","]}
           filterOption={(input, option) => {
