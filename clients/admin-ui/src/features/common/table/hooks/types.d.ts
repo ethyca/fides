@@ -26,16 +26,6 @@ export interface TableState<TSortField extends string = string> {
 }
 
 /**
- * Configuration for which table state should be synced to URL
- */
-export interface TableUrlSyncConfig {
-  pagination?: boolean;
-  sorting?: boolean;
-  filtering?: boolean;
-  search?: boolean;
-}
-
-/**
  * Configuration for table pagination
  */
 export interface PaginationConfig {
@@ -55,11 +45,9 @@ export interface SortingConfig<TSortField extends string = string> {
 
 /**
  * Base configuration for table state management
+ * URL synchronization is now always enabled for all features
  */
 export interface TableStateConfig<TSortField extends string = string> {
-  // URL synchronization
-  urlSync?: TableUrlSyncConfig;
-
   // Default values
   pagination?: PaginationConfig;
   sorting?: SortingConfig<TSortField>;

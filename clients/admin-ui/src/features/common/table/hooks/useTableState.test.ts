@@ -84,16 +84,10 @@ describe("useTableState", () => {
     nuqsTestHelpers.reset();
   });
 
-  it("manages internal state when urlSync is disabled", () => {
+  it("manages state with custom configuration", () => {
     const onStateChange = jest.fn();
     const { result } = renderHook(() =>
       useTableState<SortField>({
-        urlSync: {
-          pagination: false,
-          sorting: false,
-          filtering: false,
-          search: false,
-        },
         pagination: {
           defaultPageSize: 30,
           pageSizeOptions: [10, 20, 30],
