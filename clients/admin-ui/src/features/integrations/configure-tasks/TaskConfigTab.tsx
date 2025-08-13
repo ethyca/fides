@@ -175,25 +175,29 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     onCreateUserClose();
   };
 
-  const handleSaveUserAssignments = useCallback(async () => {
-    setIsSavingUsers(true);
-    try {
-      await assignUsersToManualTask({
-        connectionKey: integration.key,
-        userIds: selectedUsers,
-      }).unwrap();
-      message.success("Assigned users have been updated");
-    } catch (error) {
-      message.error("Failed to assign users to task. Please try again.");
-    } finally {
-      setIsSavingUsers(false);
-    }
-  }, [assignUsersToManualTask, integration.key, selectedUsers]);
+  const handleSaveUserAssignments = useCallback(
+    async (userIds?: string[]) => {
+      const usersToSave = userIds ?? selectedUsers;
+      setIsSavingUsers(true);
+      try {
+        await assignUsersToManualTask({
+          connectionKey: integration.key,
+          userIds: usersToSave,
+        }).unwrap();
+        message.success("Assigned users have been updated");
+      } catch (error) {
+        message.error("Failed to assign users to task. Please try again.");
+      } finally {
+        setIsSavingUsers(false);
+      }
+    },
+    [assignUsersToManualTask, integration.key, selectedUsers],
+  );
 
   const handleUserAssignmentChange = useCallback(
     (userIds: string[]) => {
       setSelectedUsers(userIds);
-      handleSaveUserAssignments();
+      handleSaveUserAssignments(userIds);
     },
     [handleSaveUserAssignments],
   );
