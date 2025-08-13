@@ -8,6 +8,7 @@ Create Date: 2025-08-11 00:00:00.000000
 
 from __future__ import annotations
 
+import json
 from typing import Dict
 
 import sqlalchemy as sa
@@ -249,6 +250,26 @@ def upgrade() -> None:
     mapping = _fetch_monitor_key_mapping(conn)
     if mapping:
         logger.info("Beginning monitorconfig key 'dot' migration...")
+
+        # Persist mapping into dbcache for API retrieval/debugging
+        logger.info("Persisting monitor key mapping to dbcache...")
+        mapping_json = json.dumps(mapping)
+        conn.execute(
+            sa.text(
+                """
+                INSERT INTO dbcache (id, namespace, cache_key, cache_value, created_at, updated_at)
+                VALUES ('dbc_' || gen_random_uuid(), :namespace, :cache_key, convert_to(:value, 'UTF8')::bytea, now(), now())
+                ON CONFLICT (namespace, cache_key)
+                DO UPDATE SET cache_value = EXCLUDED.cache_value, updated_at = now()
+                """
+            ),
+            {
+                "namespace": "monitor-config-key-mapping",
+                "cache_key": "monitor-config-key-mapping",
+                "value": mapping_json,
+            },
+        )
+        logger.info("Finished persisting monitor key mapping to dbcache.")
 
         logger.info(
             "Dropping FKs to avoid immediate constraint violations while updating URNs..."
