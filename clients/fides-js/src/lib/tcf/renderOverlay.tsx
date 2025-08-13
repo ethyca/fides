@@ -5,6 +5,7 @@ import { RenderOverlayType } from "../../components/types";
 import { I18nProvider } from "../i18n/i18n-context";
 import { EventProvider } from "../providers/event-context";
 import { FidesGlobalProvider } from "../providers/fides-global-context";
+import { LiveRegionProvider } from "../providers/live-region-context";
 import { GVLProvider } from "./gvl-context";
 import { loadTcfMessagesFromFiles } from "./i18n/tcf-i18n-utils";
 import { VendorButtonProvider } from "./vendor-button-context";
@@ -26,7 +27,9 @@ export const renderOverlay: RenderOverlayType = (props, parent) => {
         <GVLProvider>
           <VendorButtonProvider>
             <EventProvider>
-              <TcfOverlay />
+              <LiveRegionProvider>
+                <TcfOverlay />
+              </LiveRegionProvider>
             </EventProvider>
           </VendorButtonProvider>
         </GVLProvider>

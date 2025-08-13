@@ -459,16 +459,16 @@ describe("Action center Asset Results", () => {
       });
 
       it("should show warning icon in compliance column header when there are assets without consent", () => {
-        cy.findByRole("columnheader", { name: "Compliance" }).within(() => {
+        cy.findByRole("columnheader", { name: /Compliance/ }).within(() => {
           cy.getByTestId("discovery-status-icon-alert")
             .should("exist")
             .scrollIntoView()
             .should("be.visible");
+          cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.getByTestId("discovery-status-icon-alert").realHover();
-        cy.contains("One or more assets were detected without consent").should(
-          "be.visible",
-        );
+        cy.findByRole("tooltip", {
+          name: "One or more assets were detected without consent",
+        }).should("be.visible");
       });
 
       it("should open consent breakdown modal when clicking 'Without consent' badge", () => {
