@@ -12,7 +12,7 @@ import React, { useEffect } from "react";
 
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
 
-import { Task } from "./useTaskColumns";
+import { Task } from "./types";
 
 type Props = {
   isSubmitting: boolean;

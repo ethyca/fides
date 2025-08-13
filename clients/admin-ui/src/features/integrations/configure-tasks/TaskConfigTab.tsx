@@ -1,10 +1,10 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
   AntButton as Button,
   AntDivider as Divider,
   AntFlex as Flex,
   AntMessage as message,
   AntSelect as Select,
+  AntTable as Table,
   AntTypography as Typography,
   useDisclosure,
   WarningIcon,
@@ -12,7 +12,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { FidesTableV2 } from "~/features/common/table/v2";
 import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
@@ -29,9 +28,8 @@ import {
 
 import AddManualTaskModal from "./AddManualTaskModal";
 import CreateExternalUserModal from "./CreateExternalUserModal";
-import { Task, useTaskColumns } from "./useTaskColumns";
-
-const { Paragraph } = Typography;
+import { Task } from "./types";
+import { useManualTaskColumns } from "./useManualTaskColumns";
 
 interface TaskConfigTabProps {
   integration: ConnectionConfigurationResponse;
@@ -200,16 +198,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     [handleSaveUserAssignments],
   );
 
-  // Use the custom hook for columns
-  const { columns } = useTaskColumns({
+  // Use the manual task columns hook
+  const { columns } = useManualTaskColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
-  });
-
-  const tableInstance = useReactTable<Task>({
-    data: tasks,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
   });
 
   return (
@@ -230,16 +222,21 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           </Button>
         </Flex>
 
-        <FidesTableV2
-          tableInstance={tableInstance}
-          emptyTableNotice={
-            <div className="p-8 text-center">
-              <Paragraph type="secondary">
-                No manual tasks configured yet. Click &apos;Add manual
-                task&apos; to get started.
-              </Paragraph>
-            </div>
-          }
+        <Table
+          columns={columns}
+          dataSource={tasks}
+          rowKey="id"
+          pagination={false}
+          locale={{
+            emptyText: (
+              <div className="p-8 text-center">
+                <Typography.Paragraph type="secondary">
+                  No manual tasks configured yet. Click &apos;Add manual
+                  task&apos; to get started.
+                </Typography.Paragraph>
+              </div>
+            ),
+          }}
         />
         <Divider className="my-2" />
         <div>

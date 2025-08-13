@@ -22,7 +22,7 @@ import {
 } from "~/types/api";
 
 import AddManualTaskForm from "./AddManualTaskForm";
-import { Task } from "./useTaskColumns";
+import { Task } from "./types";
 
 type Props = {
   isOpen: boolean;
