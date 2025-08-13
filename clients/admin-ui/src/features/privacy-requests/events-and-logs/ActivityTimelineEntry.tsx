@@ -72,7 +72,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         </div>
         <div className="xl:hidden">
           <Tooltip title={formattedDate}>
-            <Icons.Time />
+            <Icons.Time data-testid="activity-timeline-timestamp-icon" />
           </Tooltip>
         </div>
         <Tag
