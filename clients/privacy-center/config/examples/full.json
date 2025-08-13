@@ -4,10 +4,6 @@
   "server_url_development": "http://localhost:8080/api/v1",
   "server_url_production": "http://localhost:8080/api/v1",
   "logo_path": "/logo.svg",
-  "location": {
-    "collection": "required",
-    "ip_geolocation_hint": true
-  },
   "actions": [
     {
       "policy_key": "default_access_policy",
@@ -17,7 +13,12 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "optional"
+        "phone": "optional",
+        "location": {
+          "label": "Location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       }
     },
     {
@@ -28,7 +29,12 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "optional"
+        "phone": "optional",
+        "location": {
+          "label": "Location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       }
     }
   ],

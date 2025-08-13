@@ -4,10 +4,19 @@ type DefaultIdentities = {
   name?: string | null; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
   email?: string | null;
   phone?: string | null;
+  location?: LocationIdentityField | null;
 };
 
 export type CustomIdentity = {
   label: string;
+};
+
+export type LocationIdentityField = {
+  label: string;
+  required?: boolean;
+  default_value?: string;
+  query_param_key?: string;
+  ip_geolocation_hint?: boolean;
 };
 
 export type IdentityInputs = DefaultIdentities &
@@ -39,11 +48,6 @@ export type LegacyConfig = {
   consent?: LegacyConsentConfig | ConsentConfig;
 };
 
-export type LocationCollectionConfig = {
-  collection: "required" | "optional";
-  ip_geolocation_hint: boolean;
-};
-
 export type Config = {
   title: string;
   description: string;
@@ -59,7 +63,6 @@ export type Config = {
   consent?: ConsentConfig;
   privacy_policy_url?: string;
   privacy_policy_url_text?: string;
-  location?: LocationCollectionConfig;
 };
 
 export type LegacyConsentConfig = {
