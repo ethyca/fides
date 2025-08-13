@@ -4,10 +4,8 @@ from loguru import logger
 
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.property import CONFIG
-from fides.api.schemas.messaging.messaging import (
-    MessagingServiceDetailsAWS_SES,
-    MessagingServiceSecretsAWS_SES,
-)
+from fides.api.schemas.messaging.messaging import MessagingServiceDetailsAWS_SES
+from fides.api.schemas.messaging.shared_schemas import MessagingServiceSecretsAWS_SES
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.util.aws_util import get_aws_session
 

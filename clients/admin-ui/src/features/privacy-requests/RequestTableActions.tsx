@@ -17,7 +17,7 @@ import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
 
-import { useGetActiveMessagingProviderQuery } from "./privacy-requests.slice";
+import { useGetActiveMessagingProviderQuery } from "../messaging/messaging.slice";
 
 interface RequestTableActionsProps extends StackProps {
   subjectRequest: PrivacyRequestEntity;
