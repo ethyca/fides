@@ -43,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
 - Fixed link in Manage Secure Access modal [#6436](https://github.com/ethyca/fides/pull/6436)
 - Fixed some CI testing gaps [#6419](https://github.com/ethyca/fides/pull/6419)
+- Fixed a bug where providing an invalid `fides_string` as an override caused GPP to fail to initialize [#6452](https://github.com/ethyca/fides/pull/6452)
 
 
 ## [2.67.2](https://github.com/ethyca/fides/compare/2.67.1...2.67.2)
