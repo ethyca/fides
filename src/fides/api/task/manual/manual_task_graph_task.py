@@ -57,6 +57,9 @@ class ManualTaskGraphTask(GraphTask):
     def _parse_field_address(self, field_address: str) -> tuple[str, list[str]]:
         """
         Parse a field address into dataset, collection, and field path.
+
+        For complex addresses with > 2 colons, uses manual string parsing.
+        For simple addresses with ≤ 2 colons, uses FieldAddress.from_string().
         """
         if field_address.count(":") > 2:
             # Parse manually: dataset:collection:field:subfield -> dataset, collection, [field, subfield]
@@ -66,11 +69,7 @@ class ManualTaskGraphTask(GraphTask):
             # Use standard FieldAddress parsing for simple cases
             field_address_obj = FieldAddress.from_string(field_address)
             source_collection_key = str(field_address_obj.collection_address())
-            field_path = (
-                list(field_address_obj.field_path.levels)
-                if field_address_obj.field_path.levels
-                else ["id"]
-            )
+            field_path = list(field_address_obj.field_path.levels)
         return source_collection_key, field_path
 
     def _extract_conditional_dependency_data_from_inputs(
@@ -216,8 +215,8 @@ class ManualTaskGraphTask(GraphTask):
             conditional_data: Data from regular tasks for conditional dependency fields
 
         Returns:
-            Tuple of (should_execute, evaluation_result) where evaluation_result contains
-            detailed information about which conditions were met or not met
+            EvaluationResult object containing detailed information about which conditions
+            were met or not met, or None if no conditional dependencies exist
         """
         # Get the root condition for this manual task
         root_condition = ManualTaskConditionalDependency.get_root_condition(
@@ -226,7 +225,7 @@ class ManualTaskGraphTask(GraphTask):
 
         if not root_condition:
             # No conditional dependencies - always execute
-            return True, None
+            return None
 
         # Evaluate the condition using the data from regular tasks
         evaluator = ConditionEvaluator(self.resources.session)
@@ -246,9 +245,12 @@ class ManualTaskGraphTask(GraphTask):
         evaluation_result = self._evaluate_conditional_dependencies(
             manual_task, conditional_data
         )
-        if not evaluation_result:
+
+        # If no conditional dependencies exist, always execute
+        if evaluation_result is None:
             return conditional_data, None
 
+        # Check if conditional dependencies are met
         if not evaluation_result.result:
             # Create detailed message and mark this node as skipped (updates RequestTask status and logs once)
             detailed_message = format_evaluation_failure_message(evaluation_result)
@@ -516,8 +518,9 @@ class ManualTaskGraphTask(GraphTask):
         conditional_data, evaluation_result = self._get_conditional_data_and_evaluate(
             manual_task, *inputs
         )
-        if conditional_data is None:
-            # Clean up any existing ManualTaskInstances for this manual task since conditions are not met
+        # if there were conditional dependencies and they were not met,
+        # clean up any existing ManualTaskInstances and return None
+        if evaluation_result is not None and not evaluation_result.result:
             self._cleanup_manual_task_instances(manual_task, self.resources.request)
             return None
 
