@@ -163,6 +163,21 @@ interface FidesStringToConsentArgs {
 }
 
 /**
+ * Basic validation of GPP string format without creating CMP API instances
+ * This prevents side effects when validating invalid strings
+ */
+const isValidGppStringFormat = (gppString: string): boolean => {
+  if (!gppString || typeof gppString !== "string") {
+    return false;
+  }
+
+  // GPP strings should contain valid characters and follow the expected format
+  // Basic pattern: starts with "DB" followed by alphanumeric characters, tildes, and dots
+  const gppPattern = /^DB[A-Za-z0-9~.]+$/;
+  return gppPattern.test(gppString);
+};
+
+/**
  * Converts a Fides string to consent preferences and updates the CMP API
  *
  * This function handles both TCF and non-TCF consent scenarios:
@@ -183,6 +198,14 @@ export const fidesStringToConsent = ({
   cmpApi,
 }: FidesStringToConsentArgs) => {
   const { gpp: gppString }: DecodedFidesString = decodeFidesString(fidesString);
+
+  if (!isValidGppStringFormat(gppString)) {
+    fidesDebugger(
+      "GPP: Invalid GPP string format, skipping consent processing",
+    );
+    return;
+  }
+
   if (!fidesString || !gppString || !cmpApi) {
     return;
   }
