@@ -2,12 +2,10 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
   AntButton as Button,
   AntDivider as Divider,
+  AntFlex as Flex,
   AntMessage as message,
   AntSelect as Select,
   AntTypography as Typography,
-  Box,
-  Flex,
-  Text,
   useDisclosure,
   WarningIcon,
 } from "fidesui";
@@ -42,7 +40,7 @@ interface TaskConfigTabProps {
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [isSavingUsers, setIsSavingUsers] = useState(false);
+  const [, setIsSavingUsers] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -171,10 +169,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     onCreateUserClose();
   };
 
-  const handleUserAssignmentChange = useCallback((userIds: string[]) => {
-    setSelectedUsers(userIds);
-  }, []);
-
   const handleSaveUserAssignments = useCallback(async () => {
     setIsSavingUsers(true);
     try {
@@ -190,6 +184,14 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     }
   }, [assignUsersToManualTask, integration.key, selectedUsers]);
 
+  const handleUserAssignmentChange = useCallback(
+    (userIds: string[]) => {
+      setSelectedUsers(userIds);
+      handleSaveUserAssignments();
+    },
+    [handleSaveUserAssignments],
+  );
+
   // Use the custom hook for columns
   const { columns } = useTaskColumns({
     onEdit: handleEdit,
@@ -203,16 +205,16 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   });
 
   return (
-    <Box>
-      <Flex direction="column" gap={4}>
+    <div>
+      <Flex vertical gap={16}>
         <Typography.Paragraph className="mt-2">
           Configure manual tasks for this integration. Manual tasks allow you to
           define custom data collection or processing steps that require human
           intervention.
         </Typography.Paragraph>
 
-        <Flex justify="flex-end">
-          <Flex justify="flex-start" align="center" gap={2}>
+        <Flex justify="end">
+          <Flex align="center" justify="start" gap={8}>
             <Button type="primary" onClick={handleAddTask}>
               Add manual task
             </Button>
@@ -222,19 +224,19 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         <FidesTableV2
           tableInstance={tableInstance}
           emptyTableNotice={
-            <Box textAlign="center" p={8}>
+            <div className="p-8 text-center">
               <Paragraph type="secondary">
                 No manual tasks configured yet. Click &apos;Add manual
                 task&apos; to get started.
               </Paragraph>
-            </Box>
+            </div>
           }
         />
         <Divider className="my-2" />
-        <Box>
+        <div>
           <Typography.Text strong>Assign tasks to users:</Typography.Text>
 
-          <div className="mt-4 flex items-center gap-2">
+          <Flex className="mt-4" align="center" gap={8}>
             <div className="w-1/2">
               <Select
                 className="!mt-0"
@@ -257,15 +259,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
                 }}
               />
             </div>
-
-            <Button
-              type="primary"
-              onClick={handleSaveUserAssignments}
-              loading={isSavingUsers}
-            >
-              Save
-            </Button>
-          </div>
+          </Flex>
           <div className="mt-4">
             <Typography.Text strong>Secure access:</Typography.Text>
             <div className="mt-2">
@@ -274,7 +268,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
               </Button>
             </div>
           </div>
-        </Box>
+        </div>
 
         <AddManualTaskModal
           isOpen={isOpen}
@@ -301,17 +295,17 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           onConfirm={handleConfirmDelete}
           title="Delete manual task"
           message={
-            <Text color="gray.500">
+            <span className="text-gray-500">
               Are you sure you want to delete the task &ldquo;
               {taskToDelete?.name}&rdquo;? This action cannot be undone.
-            </Text>
+            </span>
           }
           continueButtonText="Delete"
           isCentered
           icon={<WarningIcon />}
         />
       </Flex>
-    </Box>
+    </div>
   );
 };
 
