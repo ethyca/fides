@@ -152,7 +152,6 @@ class ConditionEvaluator:
         if hasattr(data, "get_field_value"):
             try:
                 field_path = FieldPath(*keys) if len(keys) > 1 else FieldPath(keys[0])
-                logger.info(f"field_path: {field_path}")
                 return data.get_field_value(field_path)
             except (AttributeError, ValueError):
                 logger.debug(
@@ -207,7 +206,6 @@ class ConditionEvaluator:
         Raises:
             KeyError: If the keys are not valid for the dictionary
         """
-        logger.info(f"Getting nested value from data: {data} with keys: {keys}")
         if not keys:
             return data
 

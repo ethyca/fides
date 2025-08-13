@@ -110,9 +110,6 @@ def create_conditional_dependency_scalar_fields(
         # Use the full field address as the field name to preserve collection context
         # This allows the manual task to receive data from specific collections
         # e.g., "user.name" or "customer.profile.email" instead of just "name" or "email"
-        logger.info(
-            f"Creating conditional dependency scalar field for field address: {field_address}"
-        )
         field_address_obj = FieldAddress.from_string(field_address)
 
         scalar_field = ScalarField(

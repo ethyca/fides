@@ -499,13 +499,6 @@ class ManualTaskGraphTask(GraphTask):
         if manual_task is None:
             return None
 
-        # Add detailed logging to debug input data flow
-        logger.info(
-            "ManualTaskGraphTask._run_request called for manual task {} with {} inputs",
-            manual_task.id,
-            len(inputs),
-        )
-
         # Check if any eligible manual tasks have applicable configs
         if not self._check_manual_task_configs(manual_task, config_type, action_type):
             return None
