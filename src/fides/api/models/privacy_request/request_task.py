@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import Enum as EnumType
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from loguru import logger
@@ -66,6 +67,11 @@ class TraversalDetails(FidesSchema):
             skipped_nodes=[],
         )
 
+class AsyncTaskType(EnumType):
+    """Enum for async task types"""
+    manual = "manual"
+    polling = "polling"
+    callback = "callback"
 
 # TODO: At some point we will refactor this model to store all task types in a common table that links to tables with specific task attributes.
 class RequestTask(WorkerTask, Base):
@@ -146,7 +152,10 @@ class RequestTask(WorkerTask, Base):
     # For async tasks awaiting callback
     callback_succeeded = Column(Boolean)
     # to recognize Polling async task
-    polling_async_task = Column(Boolean, nullable=True)
+    async_type = Column(
+        EnumType(AsyncTaskType),
+        nullable=True,
+    )
 
     # Stores a serialized collection that can be transformed back into a Collection to help
     # execute the current task
