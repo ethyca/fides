@@ -1,5 +1,10 @@
 import classNames from "classnames";
-import { AntTag as Tag, AntTypography as Typography } from "fidesui";
+import {
+  AntTag as Tag,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
+  Icons,
+} from "fidesui";
 import React from "react";
 
 import { formatDate } from "~/features/common/utils";
@@ -57,12 +62,19 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             {isError && " failed"}
           </Typography.Text>
         )}
-        <Typography.Text
-          className={styles.timestamp}
-          data-testid="activity-timeline-timestamp"
-        >
-          {formattedDate}
-        </Typography.Text>
+        <div className="hidden xl:block">
+          <Typography.Text
+            className={styles.timestamp}
+            data-testid="activity-timeline-timestamp"
+          >
+            {formattedDate}
+          </Typography.Text>
+        </div>
+        <div className="xl:hidden">
+          <Tooltip title={formattedDate}>
+            <Icons.Time data-testid="activity-timeline-timestamp-icon" />
+          </Tooltip>
+        </div>
         <Tag
           className={styles.type}
           color={TimelineItemColorMap[type]}
