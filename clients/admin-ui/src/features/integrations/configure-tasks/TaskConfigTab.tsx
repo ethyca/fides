@@ -184,7 +184,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         connectionKey: integration.key,
         userIds: selectedUsers,
       }).unwrap();
-      message.success("User assignments saved successfully!");
+      message.success("Assigned users have been updated");
     } catch (error) {
       message.error("Failed to assign users to task. Please try again.");
     } finally {
@@ -221,12 +221,13 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           intervention.
         </Typography.Paragraph>
 
-        <Flex justify="end">
-          <Flex align="center" justify="start" gap={8}>
-            <Button type="primary" onClick={handleAddTask}>
-              Add manual task
-            </Button>
-          </Flex>
+        <Flex align="center" justify="space-between" gap={8}>
+          <Button type="default" onClick={onCreateUserOpen}>
+            Manage secure access
+          </Button>
+          <Button type="primary" onClick={handleAddTask}>
+            Add manual task
+          </Button>
         </Flex>
 
         <FidesTableV2
@@ -262,12 +263,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
                 );
               }}
             />
-          </Flex>
-          <Flex className="mt-4" align="center" gap={16}>
-            <Typography.Text strong>Secure access:</Typography.Text>
-            <Button type="default" onClick={onCreateUserOpen}>
-              Manage secure access
-            </Button>
           </Flex>
         </div>
 
