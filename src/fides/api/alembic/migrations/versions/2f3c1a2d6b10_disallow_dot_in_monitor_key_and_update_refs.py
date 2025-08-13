@@ -169,6 +169,25 @@ def _update_stagedresource_children_array(
 def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) -> None:
     logger.info("Updating stagedresource meta json...")
 
+    # Temporarily relax NOT NULL on meta to avoid transient nulls during jsonb updates
+    op.alter_column(
+        "stagedresource",
+        "meta",
+        existing_type=sa.dialects.postgresql.JSONB(),
+        nullable=True,
+    )
+
+    # Global normalization: ensure no NULL/JSONB null metas before any updates
+    conn.execute(
+        sa.text(
+            """
+            UPDATE stagedresource
+            SET meta = '{}'::jsonb
+            WHERE meta IS NULL OR meta = 'null'::jsonb
+            """
+        )
+    )
+
     for old, new in mapping.items():
         params = {"old": old, "new": new, "old_prefix": f"{old}.%"}
         # Update direct_child_urns array in meta
@@ -214,6 +233,24 @@ def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) 
             ),
             params,
         )
+
+    # Final normalization and restore NOT NULL on meta
+    conn.execute(
+        sa.text(
+            """
+            UPDATE stagedresource
+            SET meta = '{}'::jsonb
+            WHERE meta IS NULL OR meta = 'null'::jsonb
+            """
+        )
+    )
+    op.alter_column(
+        "stagedresource",
+        "meta",
+        existing_type=sa.dialects.postgresql.JSONB(),
+        nullable=False,
+        server_default=sa.text("'{}'::jsonb"),
+    )
 
     logger.info("Finished updating stagedresource meta json.")
 
