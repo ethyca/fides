@@ -47,6 +47,7 @@ from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
+from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
@@ -582,7 +583,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # TODO Remove when we stop support for DSR 2.0
         # Save data to build masking requests for DSR 2.0 in Redis.
         # Results saved with matching array elements preserved
-        if not CONFIG.execution.use_dsr_3_0:
+        if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
             self.resources.cache_results_with_placeholders(
                 f"access_request__{self.key}", placeholder_output
             )
@@ -612,7 +613,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         # TODO Remove when we stop support for DSR 2.0
         # Saves intermediate access results for DSR 2.0 in Redis
-        if not CONFIG.execution.use_dsr_3_0:
+        # Only cache for existing DSR 2.0 requests
+        if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
             self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.

@@ -2,10 +2,6 @@
 """
 QA scenario for testing ManualTask and ManualTaskConditionalDependencies with postgres-example database.
 """
-# Enable DSR 3.0 execution BEFORE any other imports
-from fides.config import CONFIG
-CONFIG.execution.use_dsr_3_0 = True
-print(f"🔧 DSR 3.0 enabled at startup: {CONFIG.execution.use_dsr_3_0}")
 
 import sys
 import argparse
@@ -860,9 +856,6 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             self.info(f"🔗 Connections with manual tasks: {len(connections_with_manual_tasks)}")
             for conn in connections_with_manual_tasks:
                 self.info(f"   - {conn.key} (type: {conn.connection_type})")
-
-            # Check DSR 3.0 configuration
-            self.info(f"🔧 DSR 3.0 configuration: {CONFIG.execution.use_dsr_3_0}")
 
         except Exception as e:
             self.error(f"Error in debug method: {e}")

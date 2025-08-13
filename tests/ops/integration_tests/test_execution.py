@@ -1101,12 +1101,12 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     )
 
     # Test switching the version from when the Privacy Request was first run
+    # DSR 3.0 is now the default for all new requests
+    # This test remains to ensure backward compatibility
     if dsr_version == "use_dsr_3_0":
         original_version = 3.0
-        CONFIG.execution.use_dsr_3_0 = False
     else:
         original_version = 2.0
-        CONFIG.execution.use_dsr_3_0 = True
 
     # Reset secrets
     integration_mongodb_config.secrets = saved_secrets
