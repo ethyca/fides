@@ -263,14 +263,12 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
               }}
             />
           </Flex>
-          <div className="mt-4">
+          <Flex className="mt-4" align="center" gap={16}>
             <Typography.Text strong>Secure access:</Typography.Text>
-            <div className="mt-2">
-              <Button type="default" onClick={onCreateUserOpen}>
-                Manage secure access
-              </Button>
-            </div>
-          </div>
+            <Button type="default" onClick={onCreateUserOpen}>
+              Manage secure access
+            </Button>
+          </Flex>
         </div>
 
         <AddManualTaskModal
