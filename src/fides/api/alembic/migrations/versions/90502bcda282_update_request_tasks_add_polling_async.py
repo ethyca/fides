@@ -15,13 +15,21 @@ down_revision = "a7065df4dcf1"
 branch_labels = None
 depends_on = None
 
+async_task_type = sa.Enum("manual", "polling", "callback", name="asynctasktype")
+
 
 def upgrade():
-    # Polling async task: Determines if the task has a polling async strategy. Used to lookup the async tasks in the database.
+    async_task_type.create(op.get_bind(), checkfirst=True)
     op.add_column(
-        "requesttask", sa.Column("polling_async_task", sa.Boolean(), nullable=True)
+        "requesttask",
+        sa.Column(
+            "async_type",
+            async_task_type,
+            nullable=True,
+        ),
     )
 
 
 def downgrade():
-    op.drop_column("requesttask", "polling_async_task")
+    op.drop_column("requesttask", "async_type")
+    async_task_type.drop(op.get_bind(), checkfirst=True)
