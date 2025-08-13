@@ -1,6 +1,4 @@
-from typing import Optional
-
-from pydantic import ValidationError
+from typing import Optional, cast
 
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
@@ -62,7 +60,7 @@ def _format_leaf_condition(evaluation_result: ConditionEvaluationResult) -> str:
 
 
 def _format_condition_list(
-    results: list[ConditionEvaluationResult], success: bool, depth: int
+    results: list[EvaluationResult], success: bool, depth: int
 ) -> list[str]:
     """Format a list of conditions (either leaf or group) into readable strings
 
@@ -77,11 +75,14 @@ def _format_condition_list(
     condition_descriptions = []
     for sub_result in results:
         if _is_leaf_condition(sub_result):
-            condition_descriptions.append(_format_leaf_condition(sub_result))
+            # Cast to the specific type after verification
+            leaf_result = cast(ConditionEvaluationResult, sub_result)
+            condition_descriptions.append(_format_leaf_condition(leaf_result))
         elif _is_group_condition(sub_result):
-            # Recursively format nested groups with depth tracking
+            # Cast to the specific type after verification
+            group_result = cast(GroupEvaluationResult, sub_result)
             condition_descriptions.append(
-                _format_evaluation_message(sub_result, success, depth + 1)
+                _format_evaluation_message(group_result, success, depth + 1)
             )
     return condition_descriptions
 
@@ -105,18 +106,22 @@ def _format_evaluation_message(
 
     # Try to format as group condition first
     if _is_group_condition(evaluation_result):
-        return _format_group_condition(evaluation_result, success, depth)
+        # Cast to the specific type after verification
+        group_result = cast(GroupEvaluationResult, evaluation_result)
+        return _format_group_condition(group_result, success, depth)
 
     # Try to format as leaf condition
     if _is_leaf_condition(evaluation_result):
-        return _format_leaf_condition_message(evaluation_result, success)
+        # Cast to the specific type after verification
+        leaf_result = cast(ConditionEvaluationResult, evaluation_result)
+        return _format_leaf_condition_message(leaf_result, success)
 
     # Unknown condition type
     return "Evaluation result details unavailable"
 
 
 def _is_group_condition(evaluation_result: EvaluationResult) -> bool:
-    """Check if evaluation_result is a group condition using schema validation
+    """Check if evaluation_result is a group condition by checking for group-specific attributes
 
     Args:
         evaluation_result: The evaluation result to check
@@ -124,17 +129,14 @@ def _is_group_condition(evaluation_result: EvaluationResult) -> bool:
     Returns:
         True if the evaluation result is a group condition, False otherwise
     """
-    try:
-        # Try to validate as GroupEvaluationResult
-        GroupEvaluationResult.model_validate(evaluation_result)
-        return True
-    except ValidationError:
-        # Pydantic raises ValidationError for validation failures
-        return False
+    # Check for attributes that are unique to GroupEvaluationResult
+    return hasattr(evaluation_result, "logical_operator") and hasattr(
+        evaluation_result, "condition_results"
+    )
 
 
 def _is_leaf_condition(evaluation_result: EvaluationResult) -> bool:
-    """Check if evaluation_result is a leaf condition using schema validation
+    """Check if evaluation_result is a leaf condition by checking for leaf-specific attributes
 
     Args:
         evaluation_result: The evaluation result to check
@@ -142,13 +144,10 @@ def _is_leaf_condition(evaluation_result: EvaluationResult) -> bool:
     Returns:
         True if the evaluation result is a leaf condition, False otherwise
     """
-    try:
-        # Try to validate as ConditionEvaluationResult
-        ConditionEvaluationResult.model_validate(evaluation_result)
-        return True
-    except ValidationError:
-        # Pydantic raises ValidationError for validation failures
-        return False
+    # Check for attributes that are unique to ConditionEvaluationResult
+    return hasattr(evaluation_result, "field_address") and hasattr(
+        evaluation_result, "operator"
+    )
 
 
 def _format_group_condition(

@@ -178,7 +178,7 @@ class ConditionEvaluator:
         Raises:
             KeyError: If the keys are not valid for the dictionary
         """
-        current = data
+        current: Any = data
         for key in keys:
             if not isinstance(current, dict):
                 return None
