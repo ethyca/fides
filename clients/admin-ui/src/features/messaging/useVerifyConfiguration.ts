@@ -14,7 +14,9 @@ export const useVerifyConfiguration = () => {
   const [createTestMessage] = useCreateTestConnectionMessageMutation();
   const [isVerifying, setIsVerifying] = useState(false);
   type VerificationMeta = { timestamp: string; success: boolean };
-  const [verifiedConfigs, setVerifiedConfigs] = useState<Record<string, VerificationMeta>>({});
+  const [verifiedConfigs, setVerifiedConfigs] = useState<
+    Record<string, VerificationMeta>
+  >({});
 
   // Helper function to extract error message using the same logic as useAPIHelper
   const getErrorMessage = (error: any) => {
@@ -50,15 +52,15 @@ export const useVerifyConfiguration = () => {
           [serviceType]: { timestamp, success: false },
         }));
         return false;
-      } else {
-        message.success("Configuration verified successfully!");
-        const timestamp = new Date().toISOString();
-        setVerifiedConfigs((prev) => ({
-          ...prev,
-          [serviceType]: { timestamp, success: true },
-        }));
-        return true;
       }
+
+      message.success("Configuration verified successfully!");
+      const timestamp = new Date().toISOString();
+      setVerifiedConfigs((prev) => ({
+        ...prev,
+        [serviceType]: { timestamp, success: true },
+      }));
+      return true;
     } catch (error) {
       message.error(getErrorMessage(error));
       return false;
@@ -71,7 +73,8 @@ export const useVerifyConfiguration = () => {
     return Boolean(verifiedConfigs[serviceType]?.success);
   };
 
-  const getVerificationData = (serviceType: string) => verifiedConfigs[serviceType];
+  const getVerificationData = (serviceType: string) =>
+    verifiedConfigs[serviceType];
 
   return {
     verifyConfiguration,

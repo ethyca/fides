@@ -40,10 +40,8 @@ import {
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
 } from "./messaging.slice";
-import MessagingTestStatusCell from "./MessagingTestStatusCell";
-
-import TwilioIcon from "./TwilioIcon";
 import MessagingVerificationStatusCell from "./MessagingTestStatusCell";
+import TwilioIcon from "./TwilioIcon";
 
 const EmptyTableNotice = () => {
   return (
@@ -84,7 +82,6 @@ export const MessagingConfigurations = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
   ]);
-
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [configToDelete, setConfigToDelete] = useState<{

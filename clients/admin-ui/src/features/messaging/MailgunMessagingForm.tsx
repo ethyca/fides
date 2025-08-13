@@ -1,3 +1,4 @@
+import { formatDistance } from "date-fns";
 import {
   AntButton as Button,
   AntForm as Form,
@@ -8,10 +9,9 @@ import {
   Heading,
   HStack,
 } from "fidesui";
-import { formatDistance } from "date-fns";
-import { isEmpty, isUndefined, mapValues, omitBy, isEqual } from "lodash";
+import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
@@ -20,15 +20,16 @@ import {
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
 import MailgunIcon from "~/features/messaging/MailgunIcon";
+
 import { messagingProviders } from "./constants";
-import { SendTestMessageModal } from "./SendTestMessageModal";
-import { useVerifyConfiguration } from "./useVerifyConfiguration";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
   useUpdateMessagingConfigurationByKeyMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
 } from "./messaging.slice";
+import { SendTestMessageModal } from "./SendTestMessageModal";
+import { useVerifyConfiguration } from "./useVerifyConfiguration";
 
 interface MailgunMessagingFormProps {
   configKey?: string; // If provided, we're in edit mode
@@ -37,7 +38,8 @@ interface MailgunMessagingFormProps {
 const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
-  const { verifyConfiguration, isVerifying, getVerificationData } = useVerifyConfiguration();
+  const { verifyConfiguration, isVerifying, getVerificationData } =
+    useVerifyConfiguration();
   const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [form] = Form.useForm();
@@ -52,10 +54,11 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
   const isEditMode = !!configKey;
 
   // Fetch existing config data in edit mode
-  const { data: existingConfig, refetch: refetchConfig } = useGetMessagingConfigurationByKeyQuery(
-    { key: configKey! },
-    { skip: !configKey },
-  );
+  const { data: existingConfig, refetch: refetchConfig } =
+    useGetMessagingConfigurationByKeyQuery(
+      { key: configKey! },
+      { skip: !configKey },
+    );
 
   // Memoized initial values to prevent unnecessary re-renders
   const initialValues = {
@@ -95,34 +98,44 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
 
     // Next, use backend data
     if (existingConfig) {
-      const { last_test_succeeded, last_test_timestamp } = existingConfig;
-      if (last_test_timestamp) {
-        const testTime = new Date(last_test_timestamp);
+      const {
+        last_test_succeeded: lastTestSucceeded,
+        last_test_timestamp: lastTestTimestamp,
+      } = existingConfig;
+      if (lastTestTimestamp) {
+        const testTime = new Date(lastTestTimestamp);
         const formattedDistance = formatDistance(testTime, new Date(), {
           addSuffix: true,
         });
         return {
-          isVerified: last_test_succeeded,
-          status: last_test_succeeded
+          isVerified: lastTestSucceeded,
+          status: lastTestSucceeded
             ? `Verified ${formattedDistance}`
             : "Verify configuration",
-          timestamp: last_test_timestamp,
+          timestamp: lastTestTimestamp,
         } as const;
       }
     }
 
     // Fallback to router query values (from table navigation)
-    const querySucceededRaw = router.query.last_test_succeeded as string | undefined;
-    const queryTimestamp = router.query.last_test_timestamp as string | undefined;
+    const querySucceededRaw = router.query.last_test_succeeded as
+      | string
+      | undefined;
+    const queryTimestamp = router.query.last_test_timestamp as
+      | string
+      | undefined;
     if (queryTimestamp) {
-      const succeeded = querySucceededRaw === "true" || querySucceededRaw === "1";
+      const succeeded =
+        querySucceededRaw === "true" || querySucceededRaw === "1";
       const testTime = new Date(queryTimestamp);
       const formattedDistance = formatDistance(testTime, new Date(), {
         addSuffix: true,
       });
       return {
         isVerified: succeeded,
-        status: succeeded ? `Verified ${formattedDistance}` : "Verify configuration",
+        status: succeeded
+          ? `Verified ${formattedDistance}`
+          : "Verify configuration",
         timestamp: queryTimestamp,
       } as const;
     }
@@ -249,7 +262,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
-          console.log('Refetching config after verification...');
+          console.log("Refetching config after verification...");
           refetchConfig();
         }, 500);
       }
@@ -355,13 +368,21 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
                     className="mr-2"
                     data-testid="test-btn"
                     loading={isVerifying}
-                    icon={verificationStatus.isVerified && !isVerifying ? <GreenCheckCircleIcon /> : undefined}
+                    icon={
+                      verificationStatus.isVerified && !isVerifying ? (
+                        <GreenCheckCircleIcon />
+                      ) : undefined
+                    }
                   >
-                    {isVerifying
-                      ? "Verifying configuration"
-                      : verificationStatus.isVerified
-                      ? "Verified"
-                      : verificationStatus.status}
+                    {(() => {
+                      if (isVerifying) {
+                        return "Verifying configuration";
+                      }
+                      if (verificationStatus.isVerified) {
+                        return "Verified";
+                      }
+                      return verificationStatus.status;
+                    })()}
                   </Button>
                 ) : (
                   <Button

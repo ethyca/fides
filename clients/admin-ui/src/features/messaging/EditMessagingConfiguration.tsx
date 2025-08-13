@@ -67,8 +67,6 @@ export const EditMessagingConfiguration = ({
       ) : (
         <Text color="red.500">Unsupported service type: {serviceType}</Text>
       )}
-
-
     </Box>
   );
 };

@@ -5,7 +5,6 @@ import {
   AntMessage as message,
   AntModal as Modal,
   AntSpin as Spin,
-  Text,
   VStack,
 } from "fidesui";
 import { useState } from "react";
@@ -101,7 +100,10 @@ export const SendTestMessageModal = ({
               label="Phone number"
               rules={[
                 { required: true, message: "Phone number is required" },
-                { pattern: /^\+?[1-9]\d{1,14}$/, message: "Please enter a valid phone number" },
+                {
+                  pattern: /^\+?[1-9]\d{1,14}$/,
+                  message: "Please enter a valid phone number",
+                },
               ]}
             >
               <Input placeholder="+1234567890" />
@@ -112,7 +114,10 @@ export const SendTestMessageModal = ({
               label="Email address"
               rules={[
                 { required: true, message: "Email address is required" },
-                { type: "email", message: "Please enter a valid email address" },
+                {
+                  type: "email",
+                  message: "Please enter a valid email address",
+                },
               ]}
             >
               <Input placeholder="test@example.com" />
@@ -120,7 +125,13 @@ export const SendTestMessageModal = ({
           )}
 
           <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "8px",
+              }}
+            >
               <Button onClick={handleClose} disabled={isLoading}>
                 Cancel
               </Button>
