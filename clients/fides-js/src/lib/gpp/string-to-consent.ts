@@ -199,14 +199,14 @@ export const fidesStringToConsent = ({
 }: FidesStringToConsentArgs) => {
   const { gpp: gppString }: DecodedFidesString = decodeFidesString(fidesString);
 
+  if (!fidesString || !gppString || !cmpApi) {
+    return;
+  }
+
   if (!isValidGppStringFormat(gppString)) {
     fidesDebugger(
       "GPP: Invalid GPP string format, skipping consent processing",
     );
-    return;
-  }
-
-  if (!fidesString || !gppString || !cmpApi) {
     return;
   }
 
