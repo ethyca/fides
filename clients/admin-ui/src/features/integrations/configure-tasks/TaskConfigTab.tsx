@@ -1,10 +1,8 @@
 import {
-  AntButton as Button,
   AntDivider as Divider,
   AntFlex as Flex,
   AntTypography as Typography,
 } from "fidesui";
-import { useState } from "react";
 
 import { ConnectionConfigurationResponse } from "~/types/api";
 
@@ -18,8 +16,6 @@ interface TaskConfigTabProps {
 }
 
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
-  const [shouldOpenAddModal, setShouldOpenAddModal] = useState(false);
-
   const {
     selectedUsers,
     userOptions,
@@ -29,14 +25,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     onCreateUserOpen,
     onCreateUserClose,
   } = useUserAssignment({ integration });
-
-  const handleAddManualTask = () => {
-    setShouldOpenAddModal(true);
-  };
-
-  const handleAddModalOpenComplete = () => {
-    setShouldOpenAddModal(false);
-  };
 
   const handleUserCreatedWithRefresh = () => {
     handleUserCreated();
@@ -52,19 +40,9 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           intervention.
         </Typography.Paragraph>
 
-        <Flex align="center" justify="space-between" gap={8}>
-          <Button type="default" onClick={onCreateUserOpen}>
-            Manage secure access
-          </Button>
-          <Button type="primary" onClick={handleAddManualTask}>
-            Add manual task
-          </Button>
-        </Flex>
-
         <ManualTaskConfigTable
           integration={integration}
-          shouldOpenAddModal={shouldOpenAddModal}
-          onAddModalOpenComplete={handleAddModalOpenComplete}
+          onManageSecureAccessClick={onCreateUserOpen}
         />
         <Divider className="my-2" />
         <ManualTaskAssignmentSection

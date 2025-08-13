@@ -1,9 +1,11 @@
 import {
+  AntButton as Button,
+  AntFlex as Flex,
   AntTable as Table,
   AntTypography as Typography,
   WarningIcon,
 } from "fidesui";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -15,14 +17,12 @@ import { useManualTaskColumns } from "../useManualTaskColumns";
 
 interface ManualTaskConfigTableProps {
   integration: ConnectionConfigurationResponse;
-  shouldOpenAddModal?: boolean;
-  onAddModalOpenComplete?: () => void;
+  onManageSecureAccessClick: () => void;
 }
 
 const ManualTaskConfigTable = ({
   integration,
-  shouldOpenAddModal,
-  onAddModalOpenComplete,
+  onManageSecureAccessClick,
 }: ManualTaskConfigTableProps) => {
   const { manualTasks, deleteManualTask, refreshManualTasks } =
     useManualTaskManagement({ integration });
@@ -35,14 +35,10 @@ const ManualTaskConfigTable = ({
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // Handle external request to open add modal
-  useEffect(() => {
-    if (shouldOpenAddModal) {
-      setEditingManualTask(null);
-      setIsAddEditModalOpen(true);
-      onAddModalOpenComplete?.();
-    }
-  }, [shouldOpenAddModal, onAddModalOpenComplete]);
+  const handleAddManualTask = () => {
+    setEditingManualTask(null);
+    setIsAddEditModalOpen(true);
+  };
 
   const handleConfirmDelete = useCallback(async () => {
     if (manualTaskToDelete) {
@@ -66,6 +62,15 @@ const ManualTaskConfigTable = ({
 
   return (
     <>
+      <Flex align="center" justify="space-between" gap={8} className="mb-4">
+        <Button type="default" onClick={onManageSecureAccessClick}>
+          Manage secure access
+        </Button>
+        <Button type="primary" onClick={handleAddManualTask}>
+          Add manual task
+        </Button>
+      </Flex>
+
       <Table
         columns={columns}
         dataSource={manualTasks}
