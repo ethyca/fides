@@ -9,7 +9,14 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { COLLAPSE_BUTTON_TEXT } from "./constants";
 import { ColumnState } from "./types";
 
-type TagExpandableCellValues = { label: string | ReactNode; key: string }[];
+type TagExpandableCellValues = {
+  label: string | ReactNode;
+  key: string;
+  /**
+   * Per-value props to pass to the Tag component.
+   */
+  tagProps?: TagProps;
+}[];
 
 interface TagExpandableCellProps extends TagProps {
   values: TagExpandableCellValues | undefined;
@@ -21,7 +28,7 @@ interface TagExpandableCellProps extends TagProps {
  * Click the cell to collapse the list.
  * @param values - The values to display in the cell.
  * @param columnState - The state of the column.
- * @param tagProps - The props to pass to the Tag component.
+ * @param tagProps - The props to pass to the Tag component.  If a value has a `props` property, it will override the tagProps.
  */
 export const TagExpandableCell = ({
   values,
@@ -90,6 +97,7 @@ export const TagExpandableCell = ({
             key={value.key}
             data-testid={value.key}
             {...tagProps}
+            {...value.tagProps}
           >
             {value.label}
           </Tag>

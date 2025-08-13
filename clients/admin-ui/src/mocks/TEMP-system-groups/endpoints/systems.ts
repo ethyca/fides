@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+
 import { DEFAULT_SYSTEMS_WITH_GROUPS } from "~/mocks/TEMP-system-groups/endpoints/systems-with-groups-response";
-import { PaginatedResponse, PaginationQueryParams } from "~/types/query-params";
+import { PaginationQueryParams } from "~/types/query-params";
+
 import {
   CustomTaxonomyColor,
-  PaginatedSystemsWithGroups,
+  SystemBulkAddToGroupPayload,
   SystemGroup,
-  SystemResponseWithGroups,
+  SystemUpsertWithGroups,
 } from "../types";
 
 export const DEFAULT_SYSTEM_GROUPS: SystemGroup[] = [
@@ -43,17 +45,22 @@ export const DEFAULT_SYSTEM_GROUPS: SystemGroup[] = [
 
 export const DEFAULT_SYSTEM_GROUPS_MAP: Record<string, SystemGroup> =
   DEFAULT_SYSTEM_GROUPS.reduce(
-    (acc, group) => {
-      acc[group.fides_key] = group;
-      return acc;
-    },
+    (acc, group) => ({
+      ...acc,
+      [group.fides_key]: group,
+    }),
     {} as Record<string, SystemGroup>,
   );
 
-const usMockGetSystemsWithGroupsQuery = ({
+export const useMockGetSystemsWithGroupsQuery = ({
   page,
   size,
-}: PaginationQueryParams) => {
+  search,
+  groupFilters,
+}: PaginationQueryParams & {
+  search?: string;
+  groupFilters?: string[];
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     setIsLoading(true);
@@ -69,7 +76,39 @@ const usMockGetSystemsWithGroupsQuery = ({
     };
   }
   return {
-    data: DEFAULT_SYSTEMS_WITH_GROUPS,
+    data: DEFAULT_SYSTEMS_WITH_GROUPS.items.filter((s) => {
+      if (search) {
+        return s.name?.toLowerCase().includes(search.toLowerCase());
+      }
+      if (groupFilters?.length) {
+        return s.groups.some((g) => groupFilters.includes(g));
+      }
+      return true;
+    }),
     isLoading,
   };
+};
+
+export const useMockUpdateSystemWithGroupsMutation = () => {
+  const update = async (system: SystemUpsertWithGroups) => {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return {
+      data: system,
+    };
+  };
+
+  return [update];
+};
+
+export const useMockBulkUpdateSystemWithGroupsMutation = () => {
+  const bulkUpdate = async (payload: SystemBulkAddToGroupPayload) => {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return {
+      data: payload,
+    };
+  };
+
+  return [bulkUpdate];
 };

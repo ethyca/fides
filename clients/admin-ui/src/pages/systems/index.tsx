@@ -32,6 +32,7 @@ import {
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
+import SearchInput from "~/features/common/SearchInput";
 import { ListExpandableCell } from "~/features/common/table/cells";
 import {
   DefaultCell,
@@ -43,14 +44,15 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { ListCellExpandable } from "~/features/common/table/v2/cells";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   setActiveSystem,
   useDeleteSystemMutation,
   useGetSystemsQuery,
 } from "~/features/system";
+import { usMockGetSystemsWithGroupsQuery } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import { DEFAULT_SYSTEMS_WITH_GROUPS } from "~/mocks/TEMP-system-groups/endpoints/systems-with-groups-response";
+import NewTable from "~/pages/systems/new-table";
 import { BasicSystemResponse, ScopeRegistryEnum } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -113,6 +115,13 @@ const Systems: NextPage = () => {
     search: globalFilter,
   });
 
+  // const { data: systemsResponse, isLoading } = usMockGetSystemsWithGroupsQuery({
+  //   page: pageIndex,
+  //   size: pageSize,
+  //   search: globalFilter,
+  //   groupFilters: [],
+  // });
+
   const {
     items: data,
     total: totalRows,
@@ -150,91 +159,6 @@ const Systems: NextPage = () => {
     onDeleteClose();
   };
 
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: (props) => (
-          <DefaultCell value={getSystemName(props.row.original)} />
-        ),
-        header: (props) => <DefaultHeaderCell value="System Name" {...props} />,
-        size: 200,
-      }),
-      columnHelper.accessor((row) => row.description, {
-        id: "description",
-        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
-        cell: (props) => (
-          <DefaultCell value={props.getValue()} cellProps={props} />
-        ),
-        size: 300,
-        meta: {
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.administrating_department, {
-        id: "department",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Department" {...props} />,
-        size: 200,
-      }),
-      columnHelper.accessor((row) => row.processes_personal_data, {
-        id: "processes_personal_data",
-        cell: (props) => (
-          <DefaultCell value={props.getValue() ? "Yes" : "No"} />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Processes Personal Data" {...props} />
-        ),
-        size: 100,
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-          const system = row.original;
-          return (
-            <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-              <Button
-                aria-label="Edit property"
-                data-testid="edit-btn"
-                size="small"
-                className="mr-2"
-                icon={<EditIcon />}
-                onClick={() => handleEdit(system)}
-              />
-              <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
-                <Button
-                  aria-label="Delete system"
-                  data-testid="delete-btn"
-                  size="small"
-                  className="mr-2"
-                  icon={<TrashCanOutlineIcon />}
-                  onClick={() => {
-                    setSelectedSystemForDelete(system);
-                    onDeleteOpen();
-                  }}
-                />
-              </Restrict>
-            </HStack>
-          );
-        },
-        meta: {
-          disableRowClick: true,
-        },
-      }),
-    ],
-    [handleEdit, onDeleteOpen],
-  );
-
-  const tableInstance = useReactTable<BasicSystemResponse>({
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    columnResizeMode: "onChange",
-    columns,
-    data,
-  });
-
   return (
     <Layout title="System inventory">
       <Box data-testid="system-management">
@@ -245,34 +169,8 @@ const Systems: NextPage = () => {
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
         ) : (
-          <>
-            <TableActionBar>
-              <GlobalFilterV2
-                globalFilter={globalFilter}
-                setGlobalFilter={updateGlobalFilter}
-                placeholder="Search"
-                testid="system-search"
-              />
-            </TableActionBar>
-            <FidesTableV2
-              tableInstance={tableInstance}
-              emptyTableNotice={<EmptyTableNotice />}
-              onRowClick={handleEdit}
-            />
-          </>
+          <NewTable data={data} loading={isLoading} />
         )}
-        <PaginationBar
-          totalRows={totalRows || 0}
-          pageSizes={PAGE_SIZES}
-          setPageSize={setPageSize}
-          onPreviousPageClick={onPreviousPageClick}
-          isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-          onNextPageClick={onNextPageClick}
-          isNextPageDisabled={isNextPageDisabled || isFetching}
-          startRange={startRange}
-          endRange={endRange}
-        />
-
         <ConfirmationModal
           isOpen={deleteIsOpen}
           onClose={onDeleteClose}

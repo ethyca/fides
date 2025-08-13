@@ -1,5 +1,13 @@
 @use "sass:string";
 
+// Functional color variables //
+$bg-error: #f7c2c2;
+$bg-warning: #fbddb5;
+$bg-caution: #f6e3a4;
+$bg-success: #c3e6b2;
+$bg-info: #a5d6f3;
+$bg-alert: #d9b0d7;
+
 $colors: (
   "full-black": #000000,
   "full-white": #ffffff,
@@ -38,16 +46,24 @@ $colors: (
 
   // Functional //
   "error": #d9534f,
-  "bg-error": #f7c2c2,
+  "bg-error": $bg-error,
   "warning": #e59d47,
-  "bg-warning": #fbddb5,
-  "bg-caution": #f6e3a4,
+  "bg-warning": $bg-warning,
+  "bg-caution": $bg-caution,
   "success": #5a9a68,
-  "bg-success": #c3e6b2,
+  "bg-success": $bg-success,
   "info": #4a90e2,
-  "bg-info": #a5d6f3,
+  "bg-info": $bg-info,
   "alert": #7b4ea9,
-  "bg-alert": #d9b0d7,
+  "bg-alert": $bg-alert,
+
+  // Taxonomy colors //
+  "bg-taxonomy-red": $bg-error,
+  "bg-taxonomy-orange": $bg-warning,
+  "bg-taxonomy-yellow": $bg-caution,
+  "bg-taxonomy-green": $bg-success,
+  "bg-taxonomy-blue": $bg-info,
+  "bg-taxonomy-purple": $bg-alert,
 
   // Type //
   "error-text": #d32f2f,
