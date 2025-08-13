@@ -115,7 +115,7 @@ class FidesBase:
         return f"{self.__tablename__}.id"
 
     @classmethod
-    def sanitize_key(cls: Type[T], proposed_key: str) -> str:
+    def sanitize_key(cls, proposed_key: str) -> str:
         """
         Sanitize the key by removing invalid characters.
 
