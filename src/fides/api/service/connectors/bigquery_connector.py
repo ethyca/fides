@@ -70,6 +70,11 @@ class BigQueryConnector(SQLConnector):
             node, SQLConnector.get_namespace_meta(db, node.address.dataset)
         )
 
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """Get fully qualified BigQuery table name using existing query config logic"""
+        query_config = self.query_config(node)
+        return query_config.generate_table_name()
+
     def partitioned_retrieval(
         self,
         query_config: SQLQueryConfig,

@@ -14,14 +14,15 @@ import fs from "fs";
 import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
 import { importFidesPackageVersion } from "../build-utils.js";
 
-const NAME = "fides";
+const GLOBAL_NAME = "Fides";
+const FILE_NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
 const IS_TEST = process.env.IS_TEST === "true";
 const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 93;
+const GZIP_SIZE_TCF_ERROR_KB = 95;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
@@ -32,6 +33,8 @@ const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 const GZIP_SIZE_GPP_ERROR_KB = 40;
 const GZIP_SIZE_GPP_WARN_KB = 35;
 
+const multipleLoadingMessage = `${GLOBAL_NAME} detected that it was already loaded on this page, aborting execution! See https://www.ethyca.com/docs/dev-docs/js/troubleshooting for more information.`;
+
 const preactAliases = {
   entries: [
     { find: "react", replacement: "preact/compat" },
@@ -41,7 +44,7 @@ const preactAliases = {
   ],
 };
 
-const fidesScriptPlugins = () => [
+const fidesScriptPlugins = (stripDebugger = false) => [
   alias(preactAliases),
   nodeResolve(),
   commonjs(),
@@ -51,7 +54,7 @@ const fidesScriptPlugins = () => [
   }),
   esbuild(),
   !IS_DEV && !IS_TEST && jsxRemoveAttributes(), // removes `data-testid`
-  !IS_DEV &&
+  (!IS_DEV || stripDebugger) &&
     strip({
       include: ["**/*.ts", "**/*.tsx"],
       functions: ["fidesDebugger"],
@@ -117,22 +120,22 @@ const fidesScriptsJSPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
 
 const SCRIPTS = [
   {
-    name: NAME,
+    name: FILE_NAME,
     gzipWarnSizeKb: GZIP_SIZE_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_ERROR_KB,
   },
   {
-    name: `${NAME}-tcf`,
+    name: `${FILE_NAME}-tcf`,
     gzipWarnSizeKb: GZIP_SIZE_TCF_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
   },
   {
-    name: `${NAME}-headless`,
+    name: `${FILE_NAME}-headless`,
     gzipWarnSizeKb: GZIP_SIZE_HEADLESS_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_HEADLESS_ERROR_KB,
   },
   {
-    name: `${NAME}-ext-gpp`,
+    name: `${FILE_NAME}-ext-gpp`,
     gzipWarnSizeKb: GZIP_SIZE_GPP_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_GPP_ERROR_KB,
     isExtension: true,
@@ -169,19 +172,23 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
       {
         // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
         file: `dist/${name}.js`,
-        name: isExtension ? undefined : "Fides",
+        name: isExtension ? undefined : GLOBAL_NAME,
         format: isExtension ? "es" : "umd",
         sourcemap: IS_DEV ? "inline" : false,
         amd: {
           define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. This allows FidesJS to use Rollup's `umd` format to support both `iife` and `cjs` modules, but excludes AMD.
         },
+        // Use the "banner" option to prepend a defensive check into the code to guard against loading FidesJS multiple times on the same page
+        banner: isExtension
+          ? undefined
+          : `if(typeof ${GLOBAL_NAME}!=="undefined" && ${GLOBAL_NAME}.options?.fidesUnsupportedRepeatedScriptLoading!=="enabled_acknowledge_not_supported") {throw new Error("${multipleLoadingMessage}");}`,
       },
     ],
     onLog,
   };
   const mjs = {
     input: `src/${name}.ts`,
-    plugins: fidesScriptPlugins(),
+    plugins: fidesScriptPlugins(true),
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.

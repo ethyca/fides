@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,10 +19,10 @@
         const geolocation = params.get("geolocation");
         const gpp = params.get("gpp");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
-        document.write('<script src="' + src + '"><\/script>');
         if (gpp === "debug") {
           document.write('<script src="/fides-ext-gpp.js"><\/script>');
         }
+        document.write('<script src="' + src + '"><\/script>');
         document.write(
           "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
         );
@@ -98,9 +98,11 @@
            */
           setTimeout(() => {
             const app = document.getElementById("render-embed-here");
-            const container = document.createElement("div");
-            container.id = "fides-embed-container";
-            app.appendChild(container);
+            if (app) {
+              const container = document.createElement("div");
+              container.id = "fides-embed-container";
+              app.appendChild(container);
+            }
           }, window.render_delay);
         }
       </script>
@@ -130,11 +132,13 @@
            * a dynamic or slow page.
            */
           const app = document.getElementById("render-link-here");
-          const button = document.createElement("button");
-          // Display the fides configured modal link label (if any).
-          button.innerText = Fides.getModalLinkLabel();
-          button.id = "fides-modal-link";
-          app.appendChild(button);
+          if (app) {
+            const button = document.createElement("button");
+            // Display the fides configured modal link label (if any).
+            button.innerText = Fides.getModalLinkLabel();
+            button.id = "fides-modal-link";
+            app.appendChild(button);
+          }
         }, window.render_delay);
       </script>
 

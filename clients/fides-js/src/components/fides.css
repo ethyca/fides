@@ -14,9 +14,11 @@
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
   --fides-overlay-brand-link-logo-color: #2b2e35;
-
   --fides-overlay-background-dark-color: #e2e8f0;
-  --fides-overlay-width: 680px;
+  --fides-overlay-background-error-color: #f7c2c2;
+  --fides-overlay-skeleton-gradient-from-color: rgba(0, 0, 0, 0.06);
+  --fides-overlay-skeleton-gradient-to-color: rgba(0, 0, 0, 0.15);
+  --fides-overlay-inactive-font-color: #a0aec0;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -30,18 +32,20 @@
   --fides-overlay-secondary-button-background-hover-color: var(
     --fides-overlay-hover-color
   );
+  --fides-overlay-neutral-background-color: #edf2f7;
   --fides-overlay-secondary-button-text-color: #2d3748;
   --fides-overlay-secondary-button-border-color: var(
     --fides-overlay-primary-color
   );
+  --fides-overlay-secondary-button-border-color-disabled: #a0aec0;
   /* Text */
   --fides-overlay-title-font-color: var(--fides-overlay-font-color);
   --fides-overlay-body-font-color: var(--fides-overlay-font-color);
   --fides-overlay-link-font-color: var(--fides-overlay-font-color-dark);
+  --fides-overlay-line-height: 1.4em;
   /* Switches */
   --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
   --fides-overlay-inactive-color: #e2e8f0;
-  --fides-overlay-inactive-font-color: #a0aec0;
   --fides-overlay-disabled-color: #e1e7ee;
   /* Dividers */
   --fides-overlay-row-divider-color: #e2e8f0;
@@ -55,6 +59,7 @@
   --fides-overlay-language-button-border-radius: 4px;
 
   /* Everything else */
+  --fides-overlay-width: 680px;
   --fides-overlay-font-family: Inter, sans-serif;
   --fides-base-font-size: 16px;
   --8px: calc(var(--fides-base-font-size) * 0.5);
@@ -115,7 +120,7 @@ div#fides-overlay-wrapper * {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   white-space: pre-line;
-  line-height: 1.4em;
+  line-height: var(--fides-overlay-line-height);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -213,6 +218,7 @@ div#fides-banner-heading {
   display: flex;
   margin-right: 13px;
   align-items: center;
+  justify-content: space-between; /* for GPC notice */
 }
 
 .fides-banner-title {
@@ -302,6 +308,14 @@ button.fides-banner-button.fides-banner-button-secondary[disabled] {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 
+button.fides-banner-button[disabled] {
+  color: var(--fides-overlay-inactive-font-color);
+}
+
+button.fides-banner-button.fides-banner-button-secondary[disabled] {
+  border-color: var(--fides-overlay-secondary-button-border-color-disabled);
+}
+
 button.fides-banner-button.fides-banner-button-tertiary {
   background: none;
   border: none;
@@ -322,8 +336,8 @@ button.fides-banner-button.fides-acknowledge-button {
   border: 2px solid transparent;
   border-top: 2px solid;
   border-right: 2px solid;
-  border-top-color: var(--fides-overlay-primary-color);
-  border-right-color: var(--fides-overlay-primary-color);
+  border-top-color: var(--fides-overlay-skeleton-gradient-from-color);
+  border-right-color: var(--fides-overlay-skeleton-gradient-from-color);
   border-radius: 50%;
   width: 1em;
   height: 1em;
@@ -337,8 +351,8 @@ button.fides-banner-button.fides-acknowledge-button {
 }
 
 .fides-banner-button-secondary .fides-spinner {
-  border-top-color: var(--fides-overlay-secondary-button-border-color);
-  border-right-color: var(--fides-overlay-secondary-button-border-color);
+  border-top-color: var(--fides-overlay-inactive-font-color);
+  border-right-color: var(--fides-overlay-inactive-font-color);
 }
 
 /** Modal */
@@ -959,7 +973,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 
 /* Info box */
 .fides-info-box {
-  background-color: var(--fides-overlay-hover-color);
+  background-color: var(--fides-overlay-neutral-background-color);
   border-radius: var(--fides-overlay-component-border-radius);
   padding: 16px;
   margin: 10px 0;
@@ -1206,5 +1220,55 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
     position: absolute;
     left: var(--fides-overlay-padding);
     bottom: var(--fides-overlay-padding);
+  }
+}
+
+.fides-data-toggle-skeleton__container {
+  min-height: 40px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
+.fides-notice-toggle .fides-skeleton__container:hover {
+  cursor: default;
+  background-color: unset;
+}
+
+.fides-skeleton__component {
+  background: linear-gradient(
+    90deg,
+    var(--fides-overlay-skeleton-gradient-from-color) 25%,
+    var(--fides-overlay-skeleton-gradient-to-color) 37%,
+    var(--fides-overlay-skeleton-gradient-from-color) 63%
+  );
+  background-size: 400% 100%;
+  animation-name: fides-skeleton-loading;
+  animation-duration: 1.4s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+}
+
+.fides-skeleton__text {
+  width: 60%;
+  height: var(--fides-overlay-line-height);
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-skeleton__switch {
+  width: 50px;
+  height: 24px;
+  border-radius: 100vw;
+}
+
+@keyframes fides-skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
   }
 }

@@ -334,6 +334,62 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
         )
 
 
+def get_privacy_request_retry_cache_key(privacy_request_id: str) -> str:
+    """Get cache key for tracking privacy request requeue retry attempts."""
+    return f"id-{privacy_request_id}-privacy-request-retry-count"
+
+
+def get_privacy_request_retry_count(privacy_request_id: str) -> int:
+    """Get the current retry count for a privacy request requeue attempts.
+
+    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    """
+    cache: FidesopsRedis = get_cache()
+    try:
+        retry_count = cache.get(get_privacy_request_retry_cache_key(privacy_request_id))
+        return int(retry_count) if retry_count else 0
+    except Exception as exc:
+        logger.error(
+            f"Failed to get retry count for privacy request {privacy_request_id}: {exc}"
+        )
+        raise
+
+
+def increment_privacy_request_retry_count(privacy_request_id: str) -> int:
+    """Increment and return the retry count for a privacy request requeue attempts.
+
+    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    """
+    cache: FidesopsRedis = get_cache()
+    cache_key = get_privacy_request_retry_cache_key(privacy_request_id)
+
+    try:
+        # Increment the counter, will be 1 if key doesn't exist
+        new_count = cache.incr(cache_key)
+        # Set expiry to prevent cache buildup (24 hours)
+        cache.expire(cache_key, 86400)
+        return new_count
+    except Exception as exc:
+        logger.error(
+            f"Failed to increment retry count for privacy request {privacy_request_id}: {exc}"
+        )
+        raise
+
+
+def reset_privacy_request_retry_count(privacy_request_id: str) -> None:
+    """Reset the retry count for a privacy request requeue attempts.
+
+    Silently fails if cache operations fail since this is cleanup.
+    """
+    cache: FidesopsRedis = get_cache()
+    try:
+        cache.delete(get_privacy_request_retry_cache_key(privacy_request_id))
+    except Exception as exc:
+        logger.warning(
+            f"Failed to reset retry count for privacy request {privacy_request_id}: {exc}"
+        )
+
+
 def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
     """Returns True if supplied Celery Tasks appear to be in-flight"""
     if not celery_task_ids:

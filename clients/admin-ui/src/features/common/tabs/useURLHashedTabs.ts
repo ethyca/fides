@@ -16,7 +16,9 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
 
   const initialKey = router.asPath.split("#")[1];
 
-  const [activeTab, setActiveTab] = useState<string>(initialKey);
+  // Default to the first tab if no hash is present
+  const defaultTab = initialKey || tabKeys[0];
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
   // needed to prevent a race condition on some pages where activeTab is set
   // before the router is ready
@@ -29,16 +31,15 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
   const onTabChange = useCallback(
     async (tab: string) => {
       if (!tabKeys.includes(tab)) {
-        setActiveTab(tabKeys[0]);
         await router.replace({
           pathname: router.pathname,
           query: router.query,
           hash: undefined,
         });
+        setActiveTab(tabKeys[0]);
         return;
       }
 
-      setActiveTab(tab);
       if (router.isReady) {
         await router.replace(
           {
@@ -49,6 +50,7 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
           undefined,
           { shallow: true },
         );
+        setActiveTab(tab);
       }
     },
     [router, tabKeys],

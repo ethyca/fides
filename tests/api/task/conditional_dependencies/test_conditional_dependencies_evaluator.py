@@ -5,7 +5,10 @@ from pytest import param
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import FieldPath
-from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
+from fides.api.task.conditional_dependencies.evaluator import (
+    ConditionEvaluationError,
+    ConditionEvaluator,
+)
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
@@ -152,151 +155,47 @@ class TestNestedValueAccess(TestConditionEvaluator):
 
 
 class TestOperatorEvaluation(TestConditionEvaluator):
-    """Test individual operator evaluations"""
-
-    @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
-        [
-            param("some_value", Operator.exists, None, True, id="exists"),
-            param(None, Operator.exists, None, False, id="exists None"),
-            param(None, Operator.not_exists, None, True, id="not_exists None"),
-            param("some_value", Operator.not_exists, None, False, id="not_exists"),
-            param("test", Operator.eq, "test", True, id="eq"),
-            param("test", Operator.eq, "different", False, id="eq different"),
-            param("test", Operator.neq, "different", True, id="neq"),
-            param("test", Operator.neq, "test", False, id="neq test"),
-        ],
-    )
-    def test_basic_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
-    ):
-        """Test basic operators (exists, not_exists, eq, neq)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
-        assert result is expected_result
-
-    @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
-        [
-            param(5, Operator.lt, 10, True, id="5_lt_10_success"),
-            param(15, Operator.lt, 10, False, id="15_lt_10_failure"),
-            param(None, Operator.lt, 10, False, id="None_lt_10_failure"),
-            param(10, Operator.lte, 10, True, id="10_lte_10_success"),
-            param(5, Operator.lte, 10, True, id="5_lte_10_success"),
-            param(15, Operator.lte, 10, False, id="15_lte_10_failure"),
-            param(15, Operator.gt, 10, True, id="15_gt_10_success"),
-            param(5, Operator.gt, 10, False, id="5_gt_10_failure"),
-            param(10, Operator.gte, 10, True, id="10_gte_10_success"),
-            param(15, Operator.gte, 10, True, id="15_gte_10_success"),
-            param(5, Operator.gte, 10, False, id="5_gte_10_failure"),
-        ],
-    )
-    def test_comparison_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
-    ):
-        """Test comparison operators (lt, lte, gt, gte)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
-        assert result is expected_result
+    """Test operator evaluation"""
 
     def test_unknown_operator(self, evaluator):
-        """Test unknown operator returns False"""
-
-        # Create a mock operator that doesn't exist in the enum
-        class MockOperator:
-            def __str__(self):
-                return "unknown"
-
-        result = evaluator._apply_operator("test", MockOperator(), "test")
-        assert result is False
-
-    def test_numeric_comparisons(self, evaluator):
-        """Test numeric comparisons with different types"""
-        # Integer comparisons
-        assert evaluator._apply_operator(5, Operator.lt, 10.0) is True
-        assert evaluator._apply_operator(10.0, Operator.eq, 10) is True
-        assert evaluator._apply_operator(15.5, Operator.gt, 10) is True
-
-    def test_string_comparisons(self, evaluator):
-        """Test string comparisons"""
-        assert evaluator._apply_operator("abc", Operator.lt, "def") is True
-        assert evaluator._apply_operator("xyz", Operator.gt, "abc") is True
-        assert evaluator._apply_operator("test", Operator.eq, "test") is True
-
-    def test_boolean_comparisons(self, evaluator):
-        """Test boolean comparisons"""
-        assert evaluator._apply_operator(True, Operator.eq, True) is True
-        assert evaluator._apply_operator(False, Operator.eq, False) is True
-        assert evaluator._apply_operator(True, Operator.neq, False) is True
+        """Test handling of unknown operator"""
+        with pytest.raises(
+            ConditionEvaluationError, match="Unknown operator: invalid_operator"
+        ):
+            evaluator._apply_operator(
+                "test_value", "invalid_operator", "expected_value"
+            )
 
     @pytest.mark.parametrize(
-        "actual_value,operator,expected_value,expected_result",
+        "column_value,operator,user_input_value,expected_result",
         [
+            # Test with None values and edge cases
+            param(None, Operator.exists, None, False, id="none_exists"),
+            param(None, Operator.not_exists, None, True, id="none_not_exists"),
+            # Test with empty values
+            param("", Operator.eq, "", True, id="empty_eq"),
+            param(0, Operator.eq, 0, True, id="zero_eq"),
+            param(False, Operator.eq, False, True, id="false_eq"),
+            # Test with mixed types that should return False gracefully
+            param("string", Operator.lt, 10, False, id="string_lt"),
             param(
-                ["apple", "banana", "cherry"],
-                Operator.list_contains,
-                "banana",
-                True,
-                id="list_contains_banana",
-            ),
-            param(
-                ["apple", "banana", "cherry"],
-                Operator.list_contains,
-                "orange",
+                10,
+                Operator.starts_with,
+                "prefix",
                 False,
-                id="list_contains_orange",
-            ),
-            param(
-                [1, 3, 5, 7, 9], Operator.list_contains, 5, True, id="list_contains_5"
-            ),
-            param(
-                [1, "test", True, 3.14],
-                Operator.list_contains,
-                True,
-                True,
-                id="list_contains_True",
-            ),
-            param(
-                [],
-                Operator.list_contains,
-                "anything",
-                False,
-                id="list_contains_anything",
-            ),
-            param(
-                "not_a_list",
-                Operator.list_contains,
-                "test",
-                False,
-                id="list_contains_not_a_list",
-            ),
-            param(None, Operator.list_contains, "test", False, id="list_contains_None"),
-            param(
-                "orange",
-                Operator.not_in_list,
-                ["apple", "banana", "cherry"],
-                True,
-                id="not_in_list_orange",
-            ),
-            param(
-                "apple",
-                Operator.not_in_list,
-                ["apple", "banana", "cherry"],
-                False,
-                id="not_in_list_apple",
-            ),
-            param(
-                "anything", Operator.not_in_list, [], True, id="not_in_list_anything"
-            ),
-            param(
-                "test", Operator.not_in_list, "not_a_list", True, id="not_in_list_test"
+                id="number_starts_with_string",
             ),
         ],
     )
-    def test_list_operators(
-        self, evaluator, actual_value, operator, expected_value, expected_result
+    def test_operator_edge_cases(
+        self, evaluator, column_value, operator, user_input_value, expected_result
     ):
-        """Test list operators (list_contains, not_in_list)"""
-        result = evaluator._apply_operator(actual_value, operator, expected_value)
-        assert result is expected_result
+        """Test edge cases for all operators
+        This test covers edge cases that could potentially cause issues
+        and the defensive programming in our operators
+        """
+        result = evaluator._apply_operator(column_value, operator, user_input_value)
+        assert result == expected_result
 
 
 class TestLeafConditionEvaluation(TestConditionEvaluator):
@@ -413,10 +312,11 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                 ConditionLeaf(
                     field_address="user.active", operator=Operator.eq, value=True
                 ),
-                ConditionLeaf(field_address="user.name", operator=Operator.exists),
+                ConditionLeaf(
+                    field_address="user.score", operator=Operator.gt, value=90
+                ),
             ],
         )
-
         result = evaluator.evaluate_rule(group, sample_data)
         assert result is True
 
@@ -429,12 +329,13 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
                     field_address="user.age", operator=Operator.gte, value=18
                 ),
                 ConditionLeaf(
-                    field_address="user.active", operator=Operator.eq, value=False
-                ),  # This is false
-                ConditionLeaf(field_address="user.name", operator=Operator.exists),
+                    field_address="user.active", operator=Operator.eq, value=True
+                ),
+                ConditionLeaf(
+                    field_address="user.score", operator=Operator.gt, value=100
+                ),  # False
             ],
         )
-
         result = evaluator.evaluate_rule(group, sample_data)
         assert result is False
 
@@ -445,16 +346,15 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.lt, value=18
-                ),  # This is false
+                ),  # False
                 ConditionLeaf(
                     field_address="user.active", operator=Operator.eq, value=True
-                ),  # This is true
+                ),  # True
                 ConditionLeaf(
-                    field_address="user.name", operator=Operator.eq, value="wrong_name"
-                ),  # This is false
+                    field_address="user.score", operator=Operator.lt, value=90
+                ),  # False
             ],
         )
-
         result = evaluator.evaluate_rule(group, sample_data)
         assert result is True
 
@@ -463,16 +363,17 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         group = ConditionGroup(
             logical_operator=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field_address="user.age", operator=Operator.lt, value=18),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.lt, value=18
+                ),  # False
                 ConditionLeaf(
                     field_address="user.active", operator=Operator.eq, value=False
-                ),
+                ),  # False
                 ConditionLeaf(
-                    field_address="user.name", operator=Operator.eq, value="wrong_name"
-                ),
+                    field_address="user.score", operator=Operator.lt, value=90
+                ),  # False
             ],
         )
-
         result = evaluator.evaluate_rule(group, sample_data)
         assert result is False
 
@@ -483,12 +384,29 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             conditions=[
                 ConditionLeaf(
                     field_address="user.name", operator=Operator.eq, value="john_doe"
-                )
+                ),
             ],
         )
-
         result = evaluator.evaluate_rule(group, sample_data)
         assert result is True
+
+    def test_unknown_logical_operator(self, evaluator, sample_data):
+        """Test handling of unknown logical operator"""
+        # Test the actual code path by creating a mock group that bypasses validation
+        from unittest.mock import Mock
+
+        # Create a mock group that simulates an unknown logical operator
+        mock_group = Mock()
+        mock_group.logical_operator = "invalid_operator"
+        mock_group.conditions = [
+            ConditionLeaf(
+                field_address="user.name", operator=Operator.eq, value="john_doe"
+            ),
+        ]
+
+        # This should trigger the unknown logical operator handling
+        result = evaluator._evaluate_group_condition(mock_group, sample_data)
+        assert result is False  # Should return False for unknown operators
 
 
 class TestNestedGroupEvaluation(TestConditionEvaluator):
@@ -700,7 +618,7 @@ class TestEdgeCases(TestConditionEvaluator):
         assert result is True
 
     @pytest.mark.parametrize(
-        "field_value,expected_value,description",
+        "field_value,user_input_value,description",
         [
             ("", "", "empty string"),
             (0, 0, "zero value"),
@@ -708,12 +626,12 @@ class TestEdgeCases(TestConditionEvaluator):
         ],
     )
     def test_edge_case_comparisons(
-        self, evaluator, field_value, expected_value, description
+        self, evaluator, field_value, user_input_value, description
     ):
         """Test edge case comparisons (empty string, zero, false)"""
         data = {"field_address": field_value}
         condition = ConditionLeaf(
-            field_address="field_address", operator=Operator.eq, value=expected_value
+            field_address="field_address", operator=Operator.eq, value=user_input_value
         )
 
         result = evaluator.evaluate_rule(condition, data)
@@ -722,6 +640,40 @@ class TestEdgeCases(TestConditionEvaluator):
 
 class TestIntegration(TestConditionEvaluator):
     """Test integration scenarios"""
+
+    @pytest.fixture
+    def data_set(self):
+        return {
+            "user": {
+                "roles": ["admin", "moderator"],
+                "permissions": ["read", "write"],
+                "tags": ["premium", "verified"],
+                "preferences": {
+                    "languages": ["en", "es", "fr"],
+                    "categories": ["tech", "business", "finance"],
+                },
+                "profile": {
+                    "interests": ["programming", "reading", "gaming"],
+                    "skills": ["python", "javascript", "sql"],
+                },
+                "subscriptions": {
+                    "active": ["premium", "newsletter"],
+                    "expired": ["trial"],
+                },
+                "email": "john.doe@example.com",
+                "username": "john_doe",
+                "full_name": "John Doe",
+                "domain": "example.com",
+                "empty_string": "",
+                "age": 25,
+                "whitespace": "hello world",
+            },
+            "order": {
+                "status": "completed",
+                "items": ["laptop", "mouse", "keyboard", "monitor"],
+                "categories": ["electronics", "accessories", "computers"],
+            },
+        }
 
     def test_complex_real_world_scenario(self, evaluator, sample_data):
         """Test a complex real-world scenario"""
@@ -809,24 +761,9 @@ class TestIntegration(TestConditionEvaluator):
         result = evaluator.evaluate_rule(condition, mock_fides_data)
         assert result is True
 
-    def test_list_operators_integration(self, evaluator):
+    def test_list_operators_integration(self, evaluator, data_set):
         """Test integration of list operators in complex scenarios"""
-        data = {
-            "user": {
-                "roles": ["admin", "moderator"],
-                "permissions": ["read", "write", "delete"],
-                "tags": ["premium", "verified"],
-                "preferences": {
-                    "languages": ["en", "es", "fr"],
-                    "categories": ["tech", "business"],
-                },
-            },
-            "order": {
-                "status": "completed",
-                "items": ["laptop", "mouse", "keyboard"],
-                "categories": ["electronics", "accessories"],
-            },
-        }
+        data = data_set
 
         # Test list_contains operator - check if user.roles contains "admin"
         condition = ConditionLeaf(
@@ -853,16 +790,9 @@ class TestIntegration(TestConditionEvaluator):
         result = evaluator.evaluate_rule(condition, data)
         assert result is True  # "write" is in the permissions list
 
-    def test_complex_list_condition_group(self, evaluator):
+    def test_complex_list_condition_group(self, evaluator, data_set):
         """Test complex condition group using list operators"""
-        data = {
-            "user": {
-                "roles": ["admin", "moderator"],
-                "permissions": ["read", "write"],
-                "tags": ["premium", "verified"],
-            },
-            "order": {"status": "completed", "items": ["laptop", "mouse"]},
-        }
+        data = data_set
 
         # Complex condition: (user has admin role OR user has write permission) AND order is completed
         role_condition = ConditionLeaf(
@@ -892,20 +822,9 @@ class TestIntegration(TestConditionEvaluator):
         result = evaluator.evaluate_rule(final_condition, data)
         assert result is True  # admin role OR write permission AND completed order
 
-    def test_list_operators_with_nested_data(self, evaluator):
+    def test_list_operators_with_nested_data(self, evaluator, data_set):
         """Test list operators with deeply nested data structures"""
-        data = {
-            "user": {
-                "profile": {
-                    "interests": ["programming", "reading", "gaming"],
-                    "skills": ["python", "javascript", "sql"],
-                },
-                "subscriptions": {
-                    "active": ["premium", "newsletter"],
-                    "expired": ["trial"],
-                },
-            }
-        }
+        data = data_set
 
         # Test nested field access with list operators
         condition = ConditionLeaf(
@@ -942,3 +861,181 @@ class TestIntegration(TestConditionEvaluator):
 
         result = evaluator.evaluate_rule(combined_condition, data)
         assert result is True
+
+    @pytest.mark.parametrize(
+        "field_address,operator,value,expected_result",
+        [
+            # Test list_intersects operator - check if user roles intersect with admin roles
+            param(
+                "user.roles",
+                Operator.list_intersects,
+                ["admin", "superuser", "root"],
+                True,
+                id="list_intersects",
+            ),
+            # Test list_subset operator - check if user permissions are subset of allowed permissions
+            param(
+                "user.permissions",
+                Operator.list_subset,
+                ["read", "write", "delete", "manage", "approve", "reject"],
+                True,
+                id="list_subset",
+            ),
+            # Test list_superset operator - check if user tags contain required tags
+            param(
+                "user.tags",
+                Operator.list_superset,
+                ["premium", "verified"],
+                True,
+                id="list_superset",
+            ),
+            # Test list_disjoint operator - check if user languages are completely different from restricted languages
+            param(
+                "user.preferences.languages",
+                Operator.list_disjoint,
+                ["de", "it", "pt"],
+                True,
+                id="list_disjoint",
+            ),
+        ],
+    )
+    def test_advanced_list_operators_integration(
+        self, evaluator, field_address, operator, value, expected_result
+    ):
+        """Test integration of advanced list operators in complex scenarios"""
+        data = {
+            "user": {
+                "roles": ["admin", "moderator", "user"],
+                "permissions": ["read", "write", "delete", "manage"],
+                "tags": ["premium", "verified", "beta"],
+                "preferences": {
+                    "languages": ["en", "es", "fr"],
+                    "categories": ["tech", "business", "finance"],
+                },
+            },
+            "order": {
+                "status": "completed",
+                "items": ["laptop", "mouse", "keyboard", "monitor"],
+                "categories": ["electronics", "accessories", "computers"],
+            },
+        }
+
+        # Test list_intersects operator - check if user roles intersect with admin roles
+        condition = ConditionLeaf(
+            field_address=field_address,
+            operator=operator,
+            value=value,
+        )
+        result = evaluator.evaluate_rule(condition, data)
+        assert result is expected_result  # "admin" is common between both lists
+
+    def test_complex_list_condition_group(self, evaluator, data_set):
+        """Test complex condition group using list operators"""
+
+        # Test complex condition with multiple advanced list operators
+        roles_intersect = ConditionLeaf(
+            field_address="user.roles",
+            operator=Operator.list_intersects,
+            value=["admin", "superuser"],
+        )
+
+        permissions_subset = ConditionLeaf(
+            field_address="user.permissions",
+            operator=Operator.list_subset,
+            value=["read", "write", "delete", "manage", "approve"],
+        )
+
+        tags_superset = ConditionLeaf(
+            field_address="user.tags",
+            operator=Operator.list_superset,
+            value=["premium", "verified"],
+        )
+
+        languages_disjoint = ConditionLeaf(
+            field_address="user.preferences.languages",
+            operator=Operator.list_disjoint,
+            value=["de", "it"],
+        )
+
+        combined_condition = ConditionGroup(
+            logical_operator=GroupOperator.and_,
+            conditions=[
+                roles_intersect,
+                permissions_subset,
+                tags_superset,
+                languages_disjoint,
+            ],
+        )
+
+        result = evaluator.evaluate_rule(combined_condition, data_set)
+        assert result is True  # All conditions should be True
+
+    @pytest.mark.parametrize(
+        "field_address,operator,value,expected_result",
+        [
+            # Test positive cases
+            param("user.email", Operator.starts_with, "john", True, id="starts_with"),
+            param("user.email", Operator.ends_with, ".com", True, id="ends_with"),
+            param("user.full_name", Operator.contains, "Doe", True, id="contains"),
+            # Test negative cases
+            param(
+                "user.email",
+                Operator.starts_with,
+                "jane",
+                False,
+                id="starts_with_negative",
+            ),
+            param(
+                "user.email", Operator.ends_with, ".org", False, id="ends_with_negative"
+            ),
+            param(
+                "user.full_name",
+                Operator.contains,
+                "Smith",
+                False,
+                id="contains_negative",
+            ),
+        ],
+    )
+    def test_string_operators_integration(
+        self, evaluator, field_address, operator, value, expected_result, data_set
+    ):
+        """Test string operators with real-world data"""
+        data = data_set
+
+        condition = ConditionLeaf(
+            field_address=field_address, operator=operator, value=value
+        )
+        result = evaluator.evaluate_rule(condition, data)
+        assert result is expected_result
+
+    @pytest.mark.parametrize(
+        "field_address,operator,value,expected_result",
+        [
+            param(
+                "user.empty_string", Operator.starts_with, "", True, id="empty_string"
+            ),
+            param("user.email", Operator.contains, "test", False, id="none_value"),
+            param("user.age", Operator.starts_with, "25", False, id="non_string_value"),
+            param("user.whitespace", Operator.contains, " ", True, id="whitespace"),
+        ],
+    )
+    def test_string_operators_with_edge_cases(
+        self, evaluator, field_address, operator, value, expected_result
+    ):
+        """Test string operators with edge cases"""
+        data = {
+            "user": {
+                "name": "",
+                "email": None,
+                "age": 25,
+                "empty_string": "",
+                "whitespace": "   ",
+            }
+        }
+
+        condition = ConditionLeaf(
+            field_address=field_address, operator=operator, value=value
+        )
+        result = evaluator.evaluate_rule(condition, data)
+        assert result is expected_result

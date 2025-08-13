@@ -39,7 +39,7 @@ def filter_data_categories(
             continue
 
         # Skip manual task data - it doesn't need filtering since it's controlled by field definitions
-        if f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}" in node_address:
+        if ManualTaskAddress.is_manual_task_address(node_address):
             filtered_access_results[node_address].extend(results)
             continue
 
@@ -121,6 +121,10 @@ def select_and_save_field(saved: Any, row: Row, target_path: FieldPath) -> Dict:
     def _defaultdict_or_array(resource: Any) -> Any:
         """Helper for building new nested resource - can return an empty dict, empty array or resource itself"""
         return type(resource)() if isinstance(resource, (list, dict)) else resource
+
+    # If we've reached the end of the field path, return the entire current object/array
+    if not target_path.levels:
+        return row
 
     if isinstance(row, list):
         for i, elem in enumerate(row):

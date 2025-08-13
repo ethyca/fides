@@ -1,40 +1,43 @@
+from typing import Optional
+
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
     Collection,
     CollectionAddress,
-    Field,
+    FieldAddress,
     GraphDataset,
     ScalarField,
 )
-from fides.api.graph.graph import Node
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # Import application models
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskConfig,
+    ManualTaskConditionalDependencyType,
     ManualTaskConfigurationType,
-    ManualTaskEntityType,
-    ManualTaskInstance,
 )
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
+
+PRIVACY_REQUEST_CONFIG_TYPES = {
+    ManualTaskConfigurationType.access_privacy_request,
+    ManualTaskConfigurationType.erasure_privacy_request,
+}
 
 
 def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConfig]:
     """
     Get all connection configs that have manual tasks.
     """
-    return (
+    connection_configs = (
         db.query(ConnectionConfig)
         .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
         .filter(ManualTask.parent_entity_type == "connection_config")
         .filter(ConnectionConfig.disabled.is_(False))
         .all()
     )
+    return connection_configs
 
 
 def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
@@ -48,12 +51,11 @@ def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
     # Get all connection configs that have manual tasks (excluding disabled ones)
     connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
 
-    # Create addresses for all connections that have manual tasks
-    manual_task_addresses = []
-    for config in connection_configs_with_manual_tasks:
-        manual_task_addresses.append(ManualTaskAddress.create(config.key))
-
-    return manual_task_addresses
+    # Return addresses for all connections that have manual tasks
+    return [
+        ManualTaskAddress.create(config.key)
+        for config in connection_configs_with_manual_tasks
+    ]
 
 
 def get_manual_task_for_connection_config(
@@ -73,20 +75,18 @@ def get_manual_task_for_connection_config(
     )
 
 
-def create_manual_data_traversal_node(
-    db: Session, address: CollectionAddress
-) -> "TraversalNode":
+def create_data_category_scalar_fields(manual_task: ManualTask) -> list[ScalarField]:
     """
-    Create a TraversalNode for a manual_data collection
+    Create scalar fields for each field in the given manual task configs.
     """
-    connection_key = address.dataset
-
-    # Get manual tasks for this connection to determine fields
-    manual_task = get_manual_task_for_connection_config(db, connection_key)
-
-    # Create fields based on ManualTaskConfigFields
-    fields: list[Field] = []
-    for config in manual_task.configs:
+    fields = []
+    # Get current privacy request configs for this manual task
+    current_configs = [
+        config
+        for config in manual_task.configs
+        if config.is_current and config.config_type in PRIVACY_REQUEST_CONFIG_TYPES
+    ]
+    for config in current_configs:
         for field in config.field_definitions:
             # Create a scalar field for each manual task field
             # Extract data categories from field metadata if available
@@ -99,211 +99,94 @@ def create_manual_data_traversal_node(
                 # Manual task fields don't have complex relationships
             )
             fields.append(scalar_field)
-
-    # Create a synthetic Collection
-    collection = Collection(
-        name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
-        fields=fields,
-        # Manual tasks don't have complex dependencies
-        after=set(),
-    )
-
-    # Create a synthetic GraphDataset
-    dataset = GraphDataset(
-        name=connection_key,
-        collections=[collection],
-        connection_key=connection_key,
-        after=set(),
-    )
-
-    node = Node(dataset, collection)
-    traversal_node = TraversalNode(node)
-
-    return traversal_node
+    return fields
 
 
-def create_manual_task_instances_for_privacy_request(
-    db: Session, privacy_request: PrivacyRequest
-) -> list[ManualTaskInstance]:
-    """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
-    instances = []
-
-    # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
-
-    # Determine the privacy request type based on policy rules
-    has_access_rules = bool(
-        privacy_request.policy.get_rules_for_action(action_type=ActionType.access)
-    )
-    has_erasure_rules = bool(
-        privacy_request.policy.get_rules_for_action(action_type=ActionType.erasure)
-    )
-
-    for connection_config in connection_configs_with_manual_tasks:
-        manual_tasks = (
-            db.query(ManualTask)
-            .filter(
-                ManualTask.parent_entity_id == connection_config.id,
-                ManualTask.parent_entity_type == "connection_config",
-            )
-            .all()
+def create_conditional_dependency_scalar_fields(
+    field_addresses: set[str],
+) -> list[ScalarField]:
+    fields: list[ScalarField] = []
+    for field_address in field_addresses:
+        # Use the full field address as the field name to preserve collection context
+        # This allows the manual task to receive data from specific collections
+        # e.g., "user.name" or "customer.profile.email" instead of just "name" or "email"
+        logger.info(
+            f"Creating conditional dependency scalar field for field address: {field_address}"
         )
+        field_address_obj = FieldAddress.from_string(field_address)
 
-        for manual_task in manual_tasks:
-            # Get the active config for this manual task, filtered by request type
-            active_config_query = db.query(ManualTaskConfig).filter(
-                ManualTaskConfig.task_id == manual_task.id,
-                ManualTaskConfig.is_current.is_(True),
-            )
-
-            # Filter by configuration type based on privacy request type
-            if has_access_rules and has_erasure_rules:
-                # If both access and erasure rules exist, include both types
-                active_config_query = active_config_query.filter(
-                    ManualTaskConfig.config_type.in_(
-                        [
-                            ManualTaskConfigurationType.access_privacy_request,
-                            ManualTaskConfigurationType.erasure_privacy_request,
-                        ]
-                    )
-                )
-            elif has_access_rules:
-                # Only access rules - only include access configurations
-                active_config_query = active_config_query.filter(
-                    ManualTaskConfig.config_type
-                    == ManualTaskConfigurationType.access_privacy_request
-                )
-            elif has_erasure_rules:
-                # Only erasure rules - only include erasure configurations
-                active_config_query = active_config_query.filter(
-                    ManualTaskConfig.config_type
-                    == ManualTaskConfigurationType.erasure_privacy_request
-                )
-            else:
-                # No relevant rules - skip this manual task
-                continue
-
-            active_configs = active_config_query.all()
-
-            if not active_configs:
-                continue  # Skip if no active configs
-
-            # Create instances for each active config
-            for active_config in active_configs:
-                # Check if instance already exists for this config
-                existing_instance = (
-                    db.query(ManualTaskInstance)
-                    .filter(
-                        ManualTaskInstance.entity_id == privacy_request.id,
-                        ManualTaskInstance.entity_type == "privacy_request",
-                        ManualTaskInstance.task_id == manual_task.id,
-                        ManualTaskInstance.config_id == active_config.id,
-                    )
-                    .first()
-                )
-
-                if not existing_instance:
-                    instance = ManualTaskInstance(
-                        entity_id=privacy_request.id,
-                        entity_type=ManualTaskEntityType.privacy_request,
-                        task_id=manual_task.id,
-                        config_id=active_config.id,
-                    )
-                    db.add(instance)
-                    instances.append(instance)
-
-    if instances:
-        db.commit()
-
-    return instances
-
-
-def get_manual_task_instances_for_privacy_request(
-    db: Session, privacy_request: PrivacyRequest
-) -> list[ManualTaskInstance]:
-    """Get all manual task instances for a privacy request."""
-    return (
-        db.query(ManualTaskInstance)
-        .filter(
-            ManualTaskInstance.entity_id == privacy_request.id,
-            ManualTaskInstance.entity_type == "privacy_request",
+        scalar_field = ScalarField(
+            name=field_address_obj.value,
+            # Conditional dependency fields don't have predefined data categories
+            data_categories=[],
+            references=[(field_address_obj, "from")],
         )
-        .all()
+        fields.append(scalar_field)
+
+    return fields
+
+
+def create_collection_for_connection_key(
+    db: Session, connection_key: str
+) -> Optional[Collection]:
+    # Get the manual task for this connection config
+    manual_task = get_manual_task_for_connection_config(db, connection_key)
+
+    if not manual_task:
+        return None
+
+    # Get conditional dependency field addresses - raw field data
+    conditional_field_addresses: set[str] = {
+        dependency.field_address
+        for dependency in manual_task.conditional_dependencies
+        if dependency.condition_type == ManualTaskConditionalDependencyType.leaf
+        and dependency.field_address is not None
+    }
+
+    # Create scalar fields for data category fields and conditional dependency field addresses
+    fields: list[ScalarField] = []
+    fields.extend(create_data_category_scalar_fields(manual_task))
+    fields.extend(
+        create_conditional_dependency_scalar_fields(conditional_field_addresses)
     )
 
+    # Only create collection if there are fields
+    if not fields:
+        return None
 
-def create_manual_task_artificial_graphs(
-    db: Session,
-) -> list:
+    return Collection(name=ManualTaskAddress.MANUAL_DATA_COLLECTION, fields=fields)
+
+
+def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
     in the main dataset graph during the dataset configuration phase.
 
-    Manual tasks should be treated as data sources/datasets rather than being
-    appended to the traversal graph later.
-
-    Manual task collections are designed as root nodes that execute immediately when
-    the privacy request starts, in parallel with identity processing. They don't depend
-    on identity data since they provide manually-entered data rather than consuming it.
+    Each manual task gets its own collection with its own dependencies based on
+    its specific conditional dependencies. This allows individual manual tasks
+    to receive only the data they need from regular tasks.
 
     Args:
         db: Database session
-        policy: The policy being executed (optional, for filtering manual task configs)
 
     Returns:
-        List of GraphDataset objects representing manual tasks as root nodes
+        List of GraphDataset objects representing manual tasks as individual collections
     """
-
     manual_task_graphs = []
     manual_addresses = get_manual_task_addresses(db)
 
     for address in manual_addresses:
         connection_key = address.dataset
 
-        # Get manual tasks for this connection to determine fields
-        manual_task = get_manual_task_for_connection_config(db, connection_key)
+        # Get the collection for this connection config using the reusable function
+        collection = create_collection_for_connection_key(db, connection_key)
 
-        # Create fields based only on ManualTaskConfigFields
-        fields: list = []
-
-        # Manual task collections act as root nodes - they don't need identity dependencies
-        # since they provide manually-entered data rather than consuming identity data.
-        current_configs = [
-            config for config in manual_task.configs if config.is_current
-        ]
-        for config in current_configs:
-            if config.config_type not in [
-                ManualTaskConfigurationType.access_privacy_request,
-                ManualTaskConfigurationType.erasure_privacy_request,
-            ]:
-                continue
-
-            for field in config.field_definitions:
-                # Create a scalar field for each manual task field
-                field_metadata = field.field_metadata or {}
-                data_categories = field_metadata.get("data_categories", [])
-
-                scalar_field = ScalarField(
-                    name=field.field_key,
-                    data_categories=data_categories,
-                )
-                fields.append(scalar_field)
-
-        if fields:  # Only create graph if there are fields
-            # Create a synthetic Collection
-            collection = Collection(
-                name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
-                fields=fields,
-                # Manual tasks have no dependencies - they're root nodes
-                after=set(),
-            )
-
-            # Create a synthetic GraphDataset
+        if collection:  # Only create graph if there are collections
+            # Create a synthetic GraphDataset with all manual task collections
             graph_dataset = GraphDataset(
                 name=connection_key,
                 collections=[collection],
                 connection_key=connection_key,
-                after=set(),
             )
 
             manual_task_graphs.append(graph_dataset)

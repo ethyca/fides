@@ -189,6 +189,12 @@ const Overlay: FunctionComponent<Props> = ({
   }, [experience, handleOpenModal, options.fidesEmbed]);
 
   useEffect(() => {
+    if (options.fidesModalDisplay === "immediate") {
+      handleOpenModal();
+    }
+  }, [options.fidesModalDisplay, handleOpenModal]);
+
+  useEffect(() => {
     document.body.classList.add("fides-overlay-modal-link-shown");
     // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
     // developers using `Fides.showModal();` can use this to prevent polling for the modal link. Developers should always be able to rely on the .fides-overlay-modal-link-shown classname to show their custom modal link.

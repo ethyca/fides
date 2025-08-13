@@ -13,18 +13,26 @@ import {
   MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
   ConsentStatus,
+  DiffStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
 
+import { useGetWebsiteMonitorResourceFiltersQuery } from "../action-center.slice";
+import {
+  DiscoveredAssetsColumnKeys,
+  DiscoveryStatusDisplayNames,
+} from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
+import isConsentCategory from "../utils/isConsentCategory";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 export const useDiscoveredAssetsColumns = ({
@@ -32,6 +40,13 @@ export const useDiscoveredAssetsColumns = ({
   aggregatedConsent,
   onTabChange,
   onShowBreakdown,
+  monitorConfigId,
+  resolvedSystemId,
+  diffStatus,
+  columnFilters,
+  sortField,
+  sortOrder,
+  searchQuery,
 }: {
   readonly: boolean;
   aggregatedConsent: ConsentStatus | null | undefined;
@@ -40,6 +55,13 @@ export const useDiscoveredAssetsColumns = ({
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
+  monitorConfigId: string;
+  resolvedSystemId: string;
+  diffStatus?: DiffStatus[];
+  columnFilters?: Record<string, any>;
+  sortField?: string;
+  sortOrder?: "ascend" | "descend";
+  searchQuery?: string;
 }) => {
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
@@ -47,12 +69,24 @@ export const useDiscoveredAssetsColumns = ({
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
 
+  // if there's an error here it won't matter because the filters just won't show up
+  const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
+    monitor_config_id: monitorConfigId,
+    resolved_system_id: resolvedSystemId,
+    diff_status: diffStatus,
+    search: searchQuery,
+    ...columnFilters,
+  });
+
   const columns: ColumnsType<StagedResourceAPIResponse> = useMemo(() => {
     const baseColumns: ColumnsType<StagedResourceAPIResponse> = [
       {
         title: "Asset",
-        dataIndex: "name",
-        key: "name",
+        dataIndex: DiscoveredAssetsColumnKeys.NAME,
+        key: DiscoveredAssetsColumnKeys.NAME,
+        sorter: true,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.NAME ? sortOrder : null,
         render: (name) => (
           <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 300 }}>
             {name}
@@ -62,13 +96,20 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Type",
-        dataIndex: "resource_type",
-        key: "resource_type",
+        dataIndex: DiscoveredAssetsColumnKeys.RESOURCE_TYPE,
+        key: DiscoveredAssetsColumnKeys.RESOURCE_TYPE,
+        sorter: true,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.RESOURCE_TYPE
+            ? sortOrder
+            : null,
+        filters: convertToAntFilters(filterOptions?.resource_type),
+        filteredValue: columnFilters?.resource_type || null,
       },
       {
         title: "System",
-        dataIndex: "system",
-        key: "system",
+        dataIndex: DiscoveredAssetsColumnKeys.SYSTEM,
+        key: DiscoveredAssetsColumnKeys.SYSTEM,
         width: 200,
         render: (_, record) =>
           !!record.monitor_config_id && (
@@ -81,8 +122,12 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Categories of consent",
-        key: "data_use",
+        key: DiscoveredAssetsColumnKeys.DATA_USES,
         width: 400,
+        filters: convertToAntFilters(
+          filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
+        ),
+        filteredValue: columnFilters?.data_uses || null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -94,6 +139,7 @@ export const useDiscoveredAssetsColumns = ({
             menu={{
               items: expandCollapseAllMenuItems,
               onClick: (e) => {
+                e.domEvent.stopPropagation();
                 if (e.key === "expand-all") {
                   setIsLocationsExpanded(true);
                 } else if (e.key === "collapse-all") {
@@ -103,9 +149,16 @@ export const useDiscoveredAssetsColumns = ({
             }}
           />
         ),
-        dataIndex: "locations",
-        key: "locations",
+        dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
+        key: DiscoveredAssetsColumnKeys.LOCATIONS,
         width: 250,
+        filters: convertToAntFilters(
+          filterOptions?.locations,
+          (location) =>
+            PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+            location,
+        ),
+        filteredValue: columnFilters?.locations || null,
         render: (locations: PrivacyNoticeRegion[]) => (
           <TagExpandableCell
             values={
@@ -123,8 +176,9 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Domain",
-        dataIndex: "domain",
-        key: "domain",
+        dataIndex: DiscoveredAssetsColumnKeys.DOMAIN,
+        key: DiscoveredAssetsColumnKeys.DOMAIN,
+        // Domain filtering will be handled via search instead of column filters
       },
       {
         title: () => (
@@ -133,6 +187,7 @@ export const useDiscoveredAssetsColumns = ({
             menu={{
               items: expandCollapseAllMenuItems,
               onClick: (e) => {
+                e.domEvent.stopPropagation();
                 if (e.key === "expand-all") {
                   setIsPagesExpanded(true);
                 } else if (e.key === "collapse-all") {
@@ -142,8 +197,8 @@ export const useDiscoveredAssetsColumns = ({
             }}
           />
         ),
-        dataIndex: "page",
-        key: "page",
+        dataIndex: DiscoveredAssetsColumnKeys.PAGE,
+        key: DiscoveredAssetsColumnKeys.PAGE,
         render: (pages: string[]) => (
           <ListExpandableCell
             values={pages}
@@ -156,12 +211,12 @@ export const useDiscoveredAssetsColumns = ({
       },
     ];
 
-    // Add discovery column if flag is enabled
+    // Add compliance column if flag is enabled
     if (assetConsentStatusLabels) {
       baseColumns.push({
         title: () => (
           <Space>
-            <div>Discovery</div>
+            <div>Compliance</div>
             {aggregatedConsent === ConsentStatus.WITHOUT_CONSENT && (
               <DiscoveryStatusIcon
                 consentStatus={{
@@ -172,8 +227,28 @@ export const useDiscoveredAssetsColumns = ({
             )}
           </Space>
         ),
-        dataIndex: "consent_aggregated",
-        key: "consent_aggregated",
+        dataIndex: DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED,
+        key: DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED,
+        sorter: true,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED
+            ? sortOrder
+            : null,
+        filters: convertToAntFilters(
+          filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
+          (status) => {
+            const statusMap: Record<string, string> = {
+              with_consent: DiscoveryStatusDisplayNames.WITH_CONSENT,
+              without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
+              exempt: DiscoveryStatusDisplayNames.EXEMPT,
+              unknown: DiscoveryStatusDisplayNames.UNKNOWN,
+            };
+            return statusMap[status] ?? status;
+          },
+        ),
+        filteredValue:
+          columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
+          null,
         render: (consentAggregated: ConsentStatus, record) => (
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
@@ -188,7 +263,7 @@ export const useDiscoveredAssetsColumns = ({
     if (!readonly) {
       baseColumns.push({
         title: "Actions",
-        key: "actions",
+        key: DiscoveredAssetsColumnKeys.ACTIONS,
         fixed: "right",
         render: (_, record) => (
           <DiscoveredAssetActionsCell
@@ -201,13 +276,17 @@ export const useDiscoveredAssetsColumns = ({
 
     return baseColumns;
   }, [
-    readonly,
+    filterOptions,
+    columnFilters,
+    sortField,
+    sortOrder,
     assetConsentStatusLabels,
-    aggregatedConsent,
-    onTabChange,
-    onShowBreakdown,
+    readonly,
     isLocationsExpanded,
     isPagesExpanded,
+    aggregatedConsent,
+    onShowBreakdown,
+    onTabChange,
   ]);
 
   return { columns };

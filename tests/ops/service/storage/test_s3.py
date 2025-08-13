@@ -1,12 +1,19 @@
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
 
+import boto3
 import pytest
+import requests
 from botocore.exceptions import ClientError, ParamValidationError
+from loguru import logger
 from pytest import param
 
 from fides.api.models.storage import StorageConfig
-from fides.api.schemas.storage.storage import StorageDetails
+from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
+    StorageDetails,
+    StorageSecrets,
+)
 from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_delete_from_s3,
@@ -16,6 +23,7 @@ from fides.api.service.storage.s3 import (
     maybe_get_s3_client,
 )
 from fides.api.service.storage.util import LARGE_FILE_THRESHOLD, AllowedFileType
+from fides.api.util.aws_util import get_s3_client
 
 TEST_DOCUMENT = b"This is a test document."
 TEST_SPOOLED_DOC = SpooledTemporaryFile()
@@ -777,3 +785,159 @@ class TestS3PresignedUrlAndFileSize:
         with pytest.raises(Exception) as e:
             get_file_size(s3_client, bucket_name, file_key)
             assert "NoSuchKey" in str(e.value)
+
+
+@pytest.mark.integration_external
+def test_s3_signature_version_4(
+    aws_credentials, kms_encrypted_s3_bucket, test_object_key
+):
+    """
+    Test that signature version 4 is required for KMS-encrypted S3 objects.
+
+    Validates that:
+    1. Presigned URLs fail without signature version 4
+    2. Presigned URLs work with signature version 4 (our s3_client)
+    """
+    test_content = b"Test content for KMS signature version validation"
+
+    # Upload test object
+    standard_client = boto3.client(
+        "s3",
+        aws_access_key_id=aws_credentials["aws_access_key_id"],
+        aws_secret_access_key=aws_credentials["aws_secret_access_key"],
+        region_name=aws_credentials["region"],
+    )
+
+    standard_client.put_object(
+        Bucket=kms_encrypted_s3_bucket,
+        Key=test_object_key,
+        Body=test_content,
+        ServerSideEncryption="aws:kms",
+    )
+
+    # Test 1: Generate presigned URL without signature version 4 (should fail)
+    client_without_v4 = boto3.client(
+        "s3",
+        aws_access_key_id=aws_credentials["aws_access_key_id"],
+        aws_secret_access_key=aws_credentials["aws_secret_access_key"],
+        region_name=aws_credentials["region"],
+    )
+
+    old_presigned_url = client_without_v4.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": kms_encrypted_s3_bucket, "Key": test_object_key},
+        ExpiresIn=3600,
+    )
+
+    # Verify old URL fails
+    response = requests.get(old_presigned_url, timeout=10)
+    assert (
+        response.status_code != 200
+    ), "URL without signature v4 should fail for KMS objects"
+    assert (
+        "require AWS Signature Version 4" in response.text
+        or response.status_code == 400
+    )
+
+    # Test 2: Use our S3 client with signature version 4
+    storage_secrets = {
+        StorageSecrets.AWS_ACCESS_KEY_ID.value: aws_credentials["aws_access_key_id"],
+        StorageSecrets.AWS_SECRET_ACCESS_KEY.value: aws_credentials[
+            "aws_secret_access_key"
+        ],
+        "region_name": aws_credentials["region"],
+    }
+
+    s3_client = get_s3_client(
+        auth_method=AWSAuthMethod.SECRET_KEYS.value, storage_secrets=storage_secrets
+    )
+
+    # Verify client uses signature version 4
+    assert s3_client.meta.config.signature_version == "s3v4"
+
+    # Generate presigned URL with v4 (should work)
+    fixed_presigned_url = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": kms_encrypted_s3_bucket, "Key": test_object_key},
+        ExpiresIn=3600,
+    )
+
+    # Verify v4 URL works
+    response = requests.get(fixed_presigned_url, timeout=10)
+    assert (
+        response.status_code == 200
+    ), "URL with signature v4 must work for KMS objects"
+    assert response.content == test_content
+
+
+@pytest.mark.integration_external
+def test_s3_signature_version_4_non_kms(
+    aws_credentials, regular_s3_bucket, test_object_key
+):
+    """
+    Test that signature version 4 works correctly with non-KMS S3 buckets.
+
+    Validates that:
+    1. Presigned URLs work with signature version 4 on regular buckets
+    2. Our s3_client maintains backward compatibility with non-KMS buckets
+    """
+    test_content = b"Test content for non-KMS signature version validation"
+
+    # Upload test object without KMS encryption
+    standard_client = boto3.client(
+        "s3",
+        aws_access_key_id=aws_credentials["aws_access_key_id"],
+        aws_secret_access_key=aws_credentials["aws_secret_access_key"],
+        region_name=aws_credentials["region"],
+    )
+
+    standard_client.put_object(
+        Bucket=regular_s3_bucket,
+        Key=test_object_key,
+        Body=test_content,
+    )
+
+    # Test using our S3 client with signature version 4
+    storage_secrets = {
+        StorageSecrets.AWS_ACCESS_KEY_ID.value: aws_credentials["aws_access_key_id"],
+        StorageSecrets.AWS_SECRET_ACCESS_KEY.value: aws_credentials[
+            "aws_secret_access_key"
+        ],
+        "region_name": aws_credentials["region"],
+    }
+
+    s3_client = get_s3_client(
+        auth_method=AWSAuthMethod.SECRET_KEYS.value, storage_secrets=storage_secrets
+    )
+
+    # Verify client uses signature version 4
+    assert s3_client.meta.config.signature_version == "s3v4"
+
+    # Generate presigned URL with v4 for non-KMS bucket (should work)
+    presigned_url = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": regular_s3_bucket, "Key": test_object_key},
+        ExpiresIn=3600,
+    )
+
+    # Verify URL works for non-KMS bucket
+    response = requests.get(presigned_url, timeout=10)
+    assert (
+        response.status_code == 200
+    ), "URL with signature v4 must work for non-KMS objects"
+    assert response.content == test_content
+
+    # Test that signature v4 maintains compatibility by also testing
+    # with standard client (which defaults to different signature version)
+    standard_presigned_url = standard_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": regular_s3_bucket, "Key": test_object_key},
+        ExpiresIn=3600,
+    )
+
+    # Verify both URLs work for non-KMS bucket
+    response_standard = requests.get(standard_presigned_url, timeout=10)
+    assert (
+        response_standard.status_code == 200
+    ), "Standard client URL should work for non-KMS objects"
+    assert response_standard.content == test_content

@@ -35,7 +35,7 @@ from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
-    create_manual_task_instances_for_privacy_request,
+    get_connection_configs_with_manual_tasks,
 )
 from fides.api.util.logger_context_utils import log_context
 
@@ -92,7 +92,7 @@ def build_access_networkx_digraph(
     manual_nodes = [
         addr
         for addr in traversal_nodes.keys()
-        if addr.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
+        if ManualTaskAddress.is_manual_task_address(addr)
     ]
     for manual_node in manual_nodes:
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, manual_node)
@@ -472,7 +472,9 @@ def run_access_request(
             )
 
             # Snapshot manual task field instances for this privacy request
-            create_manual_task_instances_for_privacy_request(session, privacy_request)
+            privacy_request.create_manual_task_instances(
+                session, get_connection_configs_with_manual_tasks(session)
+            )
 
             # Save Access Request Tasks to the database
             ready_tasks = persist_new_access_request_tasks(

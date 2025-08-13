@@ -19,6 +19,8 @@ env:
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
+  SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
+  SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
 
 jobs:
   ###############
@@ -221,6 +223,8 @@ jobs:
           - "ops-integration"
           - "api"
           - "lib"
+          - "misc-unit"
+          - "misc-integration"
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -418,6 +422,11 @@ jobs:
           SNOWFLAKE_TEST_SCHEMA_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_SCHEMA_NAME
           SNOWFLAKE_TEST_USER_LOGIN_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_USER_LOGIN_NAME
           SNOWFLAKE_TEST_WAREHOUSE_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_WAREHOUSE_NAME
+          S3_AWS_ACCESS_KEY_ID: op://github-actions/s3/S3_AWS_ACCESS_KEY_ID
+          S3_AWS_SECRET_ACCESS_KEY: op://github-actions/s3/S3_AWS_SECRET_ACCESS_KEY
+
+      - name: Integration Tests (Misc)
+        run: nox -s "pytest(misc-integration-external)"
 
       - name: Integration Tests (External)
         run: nox -s "pytest(ops-external-datastores)"
@@ -457,14 +466,6 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Get Vault Token
-        uses: hashicorp/vault-action@v2.5.0
-        with:
-          url: ${{ secrets.VAULT_ADDR }}
-          namespace: ${{ secrets.VAULT_NAMESPACE }}
-          method: jwt
-          role: ${{ secrets.VAULT_ROLE }}
-          exportToken: True
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -474,6 +475,6 @@ jobs:
 
       - name: SaaS Connector Tests
         env:
-          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-          VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+          SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
+          SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
         run: nox -s "pytest(ops-saas)"

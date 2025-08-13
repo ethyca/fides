@@ -12,7 +12,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
-} from "fides-js"; // NOTE: these import from the mjs file so a prod FidesJS build is needed to test changes
+} from "fides-js"; // NOTE: these import from the mjs file
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import pRetry from "p-retry";
@@ -229,8 +229,9 @@ export default async function handler(
       try {
         /*
          * Since we don't know what the experience will be when the initial call is made,
-         * we supply the minimal request to the api endpoint with the understanding that if
-         * TCF is being returned, we want the minimal version. It will be ignored otherwise.
+         * we supply the minimal request (requestMinimalTCF) to the api endpoint with the
+         * understanding that if TCF is being returned, we want the minimal version. It will
+         * be ignored otherwise.
          */
         experience = await pRetry(
           () =>
@@ -345,6 +346,8 @@ export default async function handler(
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
       fidesInitializedEventMode:
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
+      fidesUnsupportedRepeatedScriptLoading:
+        environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -352,9 +355,12 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
+  const forcedHeadless = req.query.headless === "true";
+
   log.debug("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
-    experience?.experience_config?.component === ComponentType.HEADLESS;
+    experience?.experience_config?.component === ComponentType.HEADLESS ||
+    forcedHeadless;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
     log.debug("TCF extension enabled, bundling fides-tcf.js...");
@@ -392,7 +398,7 @@ export default async function handler(
   const skipInitialization = initializeQuery === "false";
 
   // keep fidesJS on the first line to avoid sourcemap issues!
-  const script = `(function () {${fidesJS}
+  const script = `(function(){${fidesJS}
   ${fidesGPP}
   ${
     customFidesCss

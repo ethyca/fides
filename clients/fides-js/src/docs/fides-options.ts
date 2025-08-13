@@ -297,4 +297,30 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_modal_default_view?: string;
+
+  /**
+   * Whether to show the modal immediately on page load.
+   *
+   * - "immediate" = skips banner and shows the modal immediately on page load
+   * - "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+   *
+   */
+  fides_modal_display?: "immediate" | "default";
+
+  /**
+   * Controls handling of unsupported repeated script loading scenarios. When
+   * FidesJS is loaded multiple times on the same page, this setting determines
+   * the behavior.
+   *
+   * - "enabled_acknowledge_not_supported" = allows repeated loading but acknowledges
+   *   this is not a supported configuration
+   * - "disabled" = prevents repeated script loading entirely
+   *
+   * See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
+   *
+   * Defaults to `"disabled"`.
+   */
+  fides_unsupported_repeated_script_loading?:
+    | "enabled_acknowledge_not_supported"
+    | "disabled";
 }
