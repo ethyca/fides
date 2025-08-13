@@ -233,10 +233,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         />
         <Divider className="my-2" />
         <Box>
-          <Typography.Text strong>Assign tasks to users:</Typography.Text>
-
           <div className="mt-4 flex items-center gap-2">
-            <div className="w-1/2">
+            <Typography.Text strong>Assign tasks to users:</Typography.Text>
+
+            <div className="w-3/4">
               <Select
                 className="!mt-0"
                 placeholder="Select users to assign tasks to"
@@ -258,14 +258,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
                 }}
               />
             </div>
-
-            <Button
-              type="primary"
-              onClick={handleSaveUserAssignments}
-              loading={isSavingUsers}
-            >
-              Save
-            </Button>
           </div>
           <div className="mt-4">
             <Typography.Text strong>Secure access:</Typography.Text>
