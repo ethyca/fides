@@ -2,7 +2,7 @@
 Contains api endpoints for fides web pages
 """
 
-from fastapi import Depends, Security
+from fastapi import Depends, Request, Security
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,7 +30,9 @@ router = APIRouter(
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLResponse:
+async def evaluation_view(
+    request: Request, db: AsyncSession = Depends(get_async_db)
+) -> HTMLResponse:
     "Returns an html document with a list of evaluations"
 
     html = '<html lang="en">'

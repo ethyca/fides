@@ -32,7 +32,10 @@ router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_config(
-    *, db: Session = Depends(deps.get_db), api_set: bool = False
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    api_set: bool = False,
 ) -> Dict[str, Any]:
     """Returns the current API exposable Fides configuration."""
     logger.info("Getting the exposable Fides configuration")
@@ -55,8 +58,8 @@ def get_config(
 )
 def patch_settings(
     *,
-    db: Session = Depends(deps.get_db),
     request: Request,
+    db: Session = Depends(deps.get_db),
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
@@ -89,8 +92,8 @@ def patch_settings(
 )
 def put_settings(
     *,
-    db: Session = Depends(deps.get_db),
     request: Request,
+    db: Session = Depends(deps.get_db),
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
@@ -121,8 +124,8 @@ def put_settings(
 )
 def reset_settings(
     *,
-    db: Session = Depends(deps.get_db),
     request: Request,
+    db: Session = Depends(deps.get_db),
 ) -> dict:
     """
     Resets the global application settings record.

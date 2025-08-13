@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.dataset_config_endpoints import patch_dataset_configs
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
-    instantiate_connection_from_template,
+    instantiate_connection,
 )
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
@@ -375,7 +375,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                     saas_template_data.pop(
                         "system_key", None
                     )  # not supported by this API!
-                    instantiate_connection_from_template(
+                    instantiate_connection(
                         db=db_session,
                         saas_connector_type=connection.saas_connector_type,
                         template_values=SaasConnectionTemplateValues.model_validate(

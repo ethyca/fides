@@ -138,6 +138,7 @@ def verify_oauth_connection_config(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def validate_saas_config(
+    request: Request,
     saas_config: SaaSConfig,
 ) -> ValidateSaaSConfigResponse:
     """
@@ -168,6 +169,7 @@ def validate_saas_config(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def patch_saas_config(
+    request: Request,
     saas_config: SaaSConfig,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
@@ -194,6 +196,7 @@ def patch_saas_config(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_saas_config(
+    request: Request,
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> SaaSConfig:
     """Returns the SaaS config for the given connection config."""
@@ -217,6 +220,7 @@ def get_saas_config(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_saas_config(
+    request: Request,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> None:
@@ -307,6 +311,7 @@ def authorize_connection(
 )
 def instantiate_connection_from_template(
     saas_connector_type: str,
+    request: Request,
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
 ) -> SaasConnectionTemplateResponse:
@@ -391,6 +396,7 @@ def instantiate_connection(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def register_custom_connector_template(
+    request: Request,
     file: bytes = Body(..., media_type="application/zip"),
     db: Session = Depends(deps.get_db),
 ) -> JSONResponse:

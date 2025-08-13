@@ -1,6 +1,6 @@
 from typing import Annotated, Dict, List, Optional
 
-from fastapi import Body, Depends, Security
+from fastapi import Body, Depends, Request, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -90,6 +90,7 @@ router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 def upload_data(
     request_id: str,
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     data: Dict = Body(...),
     storage_key: FidesKey = Body(...),
@@ -130,6 +131,7 @@ def upload_data(
 )
 def patch_config(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     storage_configs: Annotated[List[StorageDestination], Field(max_length=50)],  # type: ignore
 ) -> BulkPutStorageConfigResponse:
@@ -190,6 +192,7 @@ def patch_config(
 def put_config_secrets(
     config_key: FidesKey,
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     unvalidated_storage_secrets: possible_storage_secrets,
     verify: Optional[bool] = True,
@@ -262,7 +265,10 @@ def put_config_secrets(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_configs(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
 ) -> AbstractPage[StorageConfig]:
     """
     Retrieves configs for storage.
@@ -282,7 +288,10 @@ def get_configs(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_config_by_key(
-    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey,
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
 ) -> Optional[StorageConfig]:
     """
     Retrieves configs for storage by key.
@@ -307,7 +316,10 @@ def get_config_by_key(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_config_by_key(
-    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey,
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
 ) -> None:
     """
     Deletes configs by key.
@@ -343,7 +355,9 @@ def delete_config_by_key(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_active_default_config(
-    *, db: Session = Depends(deps.get_db)
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
 ) -> Optional[StorageConfig]:
     """
     Retrieves the active default storage config.
@@ -381,7 +395,9 @@ def get_active_default_config(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_storage_status(
-    *, db: Session = Depends(deps.get_db)
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
 ) -> StorageConfigStatusMessage:
     """
     Determines the status of the active default storage config.
@@ -462,6 +478,7 @@ def _storage_config_requires_secrets(storage_config: StorageConfig) -> bool:
 )
 def put_default_config(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     incoming_storage_config: StorageDestinationBase,
 ) -> StorageConfig:
@@ -522,6 +539,7 @@ def put_default_config(
 def put_default_config_secrets(
     storage_type: StorageType,
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     unvalidated_storage_secrets: possible_storage_secrets,
     verify: Optional[bool] = True,
@@ -599,7 +617,10 @@ def put_default_config_secrets(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_default_configs(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
 ) -> AbstractPage[StorageConfig]:
     """
     Retrieves default configs for each storage types.
@@ -624,7 +645,10 @@ def get_default_configs(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_default_config_by_type(
-    storage_type: StorageType, *, db: Session = Depends(deps.get_db)
+    storage_type: StorageType,
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
 ) -> Optional[StorageConfig]:
     """
     Retrieves default config for given storage type.

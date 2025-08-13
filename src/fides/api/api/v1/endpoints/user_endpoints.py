@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import jose.exceptions
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -154,6 +154,7 @@ def verify_user_read_scopes(
 )
 async def update_user(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
@@ -194,6 +195,7 @@ async def update_user(
 )
 def update_user_password(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
@@ -229,6 +231,7 @@ def update_user_password(
 )
 def force_update_password(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     user_id: str,
     data: UserForcePasswordReset,
@@ -289,6 +292,7 @@ def logout_oauth_client(
 )
 def user_logout(
     *,
+    request: Request,
     client: Optional[ClientDetail] = Security(
         logout_oauth_client,
     ),
@@ -311,6 +315,7 @@ def user_logout(
 )
 def update_managed_systems(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     user_id: str,
     systems: List[FidesKey],
@@ -370,6 +375,7 @@ def update_managed_systems(
 )
 async def get_managed_systems(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
@@ -406,6 +412,7 @@ async def get_managed_systems(
 )
 async def get_managed_system_details(
     *,
+    request: Request,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(deps.get_db),
     user_id: str,
@@ -451,7 +458,11 @@ async def get_managed_system_details(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def remove_user_as_system_manager(
-    *, db: Session = Depends(deps.get_db), user_id: str, system_key: FidesKey
+    *,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    system_key: FidesKey,
 ) -> None:
     """
     Endpoint to remove user as system manager from the given system
@@ -480,6 +491,7 @@ def remove_user_as_system_manager(
 )
 def create_user(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     user_data: UserCreate,
     config_proxy: ConfigProxy = Depends(get_config_proxy),
@@ -542,6 +554,7 @@ def create_user(
 )
 def delete_user(
     *,
+    request: Request,
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[USER_DELETE],
@@ -572,6 +585,7 @@ def delete_user(
 )
 def get_user(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     user_id: str,
     client: ClientDetail = Security(verify_user_read_scopes),
@@ -614,6 +628,7 @@ def get_user(
 )
 def get_users(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     params: Params = Depends(),
     username: Optional[str] = None,
@@ -655,6 +670,7 @@ def get_users(
 )
 def user_login(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     user_data: UserLogin,
@@ -782,6 +798,7 @@ def verify_invite_code(
 )
 def accept_user_invite(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     user_data: UserForcePasswordReset,
     verified_invite: FidesUserInvite = Depends(verify_invite_code),

@@ -1,7 +1,7 @@
 from typing import Dict
 
 from celery.app.control import Inspect
-from fastapi import APIRouter, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Request, Security
 from starlette.status import HTTP_200_OK
 
 from fides.api.oauth.utils import verify_oauth_client
@@ -25,7 +25,7 @@ router = APIRouter(tags=["Worker Stats"], prefix=V1_URL_PREFIX)
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-def get_worker_stats() -> WorkerStats:  # pragma: no cover
+def get_worker_stats(request: Request) -> WorkerStats:  # pragma: no cover
     """Get statistics about Celery queues and workers.
 
     Returns information about task queues and worker states in the Celery system:

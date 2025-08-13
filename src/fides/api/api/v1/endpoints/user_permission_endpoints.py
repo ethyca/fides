@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -67,6 +67,7 @@ async def owner_role_permission_check(
 )
 async def create_user_permissions(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     user_id: str,
     authorization: str = Security(oauth2_scheme),
@@ -100,6 +101,7 @@ async def create_user_permissions(
 )
 async def update_user_permissions(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     user_id: str,
     authorization: str = Security(oauth2_scheme),
@@ -144,6 +146,7 @@ async def update_user_permissions(
 )
 async def get_user_permissions(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),

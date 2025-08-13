@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 import jwt
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Security
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -42,6 +42,7 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
+from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
@@ -62,8 +63,12 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestDRPStatusResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 async def create_drp_privacy_request(
     *,
+    request: Request,
     cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
@@ -161,8 +166,11 @@ async def create_drp_privacy_request(
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
     response_model=PrivacyRequestDRPStatusResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def get_request_status_drp(
-    *, db: Session = Depends(deps.get_db), request_id: str
+    *, request: Request, db: Session = Depends(deps.get_db), request_id: str
 ) -> PrivacyRequestDRPStatusResponse:
     """
     Returns PrivacyRequest information where the respective privacy request is associated with
@@ -170,11 +178,15 @@ def get_request_status_drp(
     """
 
     logger.info("Finding request for DRP with ID: {}", request_id)
-    request = PrivacyRequest.get(
+    privacy_request = PrivacyRequest.get(
         db=db,
         object_id=request_id,
     )
-    if not request or not request.policy or not request.policy.drp_action:
+    if (
+        not privacy_request
+        or not privacy_request.policy
+        or not privacy_request.policy.drp_action
+    ):
         # If no request is found with this ID, or that request has no policy,
         # or that request's policy has no associated drp_action.
         raise HTTPException(
@@ -184,9 +196,9 @@ def get_request_status_drp(
 
     logger.info("Privacy request with ID: {} found for DRP status.", request_id)
     return PrivacyRequestDRPStatusResponse(
-        request_id=request.id,
-        received_at=request.requested_at,
-        status=DrpFidesopsMapper.map_status(request.status),
+        request_id=privacy_request.id,
+        received_at=privacy_request.requested_at,
+        status=DrpFidesopsMapper.map_status(privacy_request.status),
     )
 
 
@@ -195,7 +207,12 @@ def get_request_status_drp(
     dependencies=[Security(verify_oauth_client, scopes=[scopes.POLICY_READ])],
     response_model=DrpDataRightsResponse,
 )
-def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsResponse:
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
+def get_drp_data_rights(
+    *, request: Request, db: Session = Depends(deps.get_db)
+) -> DrpDataRightsResponse:
     """
     Query all policies and determine the list of DRP actions that are attached to existing policies.
     """
@@ -218,8 +235,11 @@ def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsR
     ],
     response_model=PrivacyRequestDRPStatusResponse,
 )
+@fides_limiter.shared_limit(
+    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
+)
 def revoke_request(
-    *, db: Session = Depends(deps.get_db), data: DrpRevokeRequest
+    *, request: Request, db: Session = Depends(deps.get_db), data: DrpRevokeRequest
 ) -> PrivacyRequestDRPStatusResponse:
     """
     Revoke a pending privacy request.

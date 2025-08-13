@@ -1,6 +1,6 @@
 from typing import Annotated, Any, Dict, List, Optional
 
-from fastapi import Depends, Security
+from fastapi import Depends, Request, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -55,6 +55,7 @@ router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 )
 def get_policy_list(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
 ) -> AbstractPage[Policy]:
@@ -90,6 +91,7 @@ def get_policy_or_error(db: Session, policy_key: FidesKey) -> Policy:
 )
 def get_policy(
     *,
+    request: Request,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
 ) -> schemas.Policy:
@@ -109,6 +111,7 @@ def get_policy(
 )
 def create_or_update_policies(
     *,
+    request: Request,
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
@@ -196,6 +199,7 @@ def get_rule_or_error(db: Session, policy_key: FidesKey, rule_key: FidesKey) -> 
 )
 def get_rule_list(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     policy_key: FidesKey,
     params: Params = Depends(),
@@ -228,6 +232,7 @@ def get_rule_list(
 )
 def get_rule(
     *,
+    request: Request,
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
@@ -248,6 +253,7 @@ def get_rule(
 )
 def create_or_update_rules(
     *,
+    request: Request,
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[scope_registry.RULE_CREATE_OR_UPDATE],
@@ -371,6 +377,7 @@ def create_or_update_rules(
 )
 def delete_rule(
     *,
+    request: Request,
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
@@ -433,6 +440,7 @@ def get_rule_target_or_error(
 )
 def get_rule_target_list(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     policy_key: FidesKey,
     rule_key: FidesKey,
@@ -466,6 +474,7 @@ def get_rule_target_list(
 )
 def get_rule_target(
     *,
+    request: Request,
     policy_key: FidesKey,
     rule_key: FidesKey,
     rule_target_key: FidesKey,
@@ -510,6 +519,7 @@ def _validate_data_categories(
 )
 def create_or_update_rule_targets(
     *,
+    request: Request,
     client: ClientDetail = Security(
         verify_oauth_client, scopes=[scope_registry.RULE_CREATE_OR_UPDATE]
     ),
@@ -616,6 +626,7 @@ def create_or_update_rule_targets(
 )
 def delete_rule_target(
     *,
+    request: Request,
     policy_key: FidesKey,
     rule_key: FidesKey,
     rule_target_key: FidesKey,
