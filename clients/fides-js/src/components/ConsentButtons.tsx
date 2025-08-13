@@ -94,14 +94,12 @@ export const ConsentButtons = ({
                     label: i18n.t("exp.reject_button_label"),
                   });
                   onRejectAll();
-                  if (isInModal) {
-                    markRejectComplete();
-                  }
+                  markRejectComplete();
                 }}
                 className="fides-reject-all-button"
                 id="fides-reject-all-button"
                 loading={isGVLLoading}
-                complete={!!isInModal && rejectComplete}
+                complete={rejectComplete}
               />
             )}
             <Button
@@ -113,14 +111,12 @@ export const ConsentButtons = ({
                   label: i18n.t("exp.accept_button_label"),
                 });
                 onAcceptAll();
-                if (isInModal) {
-                  markAcceptComplete();
-                }
+                markAcceptComplete();
               }}
               className="fides-accept-all-button"
               id="fides-accept-all-button"
               loading={isGVLLoading}
-              complete={!!isInModal && acceptComplete}
+              complete={acceptComplete}
             />
           </Fragment>
         )}
@@ -190,7 +186,6 @@ export const NoticeConsentButtons = ({
   hideOptInOut = false,
   options,
 }: NoticeConsentButtonProps) => {
-  console.log("NoticeConsentButtons");
   const { isActive: acknowledgeComplete, activate: markAcknowledgeComplete } =
     useAutoResetFlag(false);
   const { isActive: saveComplete, activate: markSaveComplete } =
@@ -225,12 +220,10 @@ export const NoticeConsentButtons = ({
               label: i18n.t("exp.acknowledge_button_label"),
             });
             handleAcknowledgeNotices();
-            if (isInModal) {
-              markAcknowledgeComplete();
-            }
+            markAcknowledgeComplete();
           }}
           className="fides-acknowledge-button"
-          complete={!!isInModal && acknowledgeComplete}
+          complete={acknowledgeComplete}
         />
       );
     }
@@ -245,13 +238,11 @@ export const NoticeConsentButtons = ({
               label: i18n.t("exp.save_button_label"),
             });
             handleSave();
-            if (isInModal) {
-              markSaveComplete();
-            }
+            markSaveComplete();
           }}
           className="fides-save-button"
           id="fides-save-button"
-          complete={!!isInModal && saveComplete}
+          complete={saveComplete}
         />
       );
     }
