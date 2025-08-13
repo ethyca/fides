@@ -242,32 +242,26 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         />
         <Divider className="my-2" />
         <div>
-          <Typography.Text strong>Assign tasks to users:</Typography.Text>
-
-          <Flex className="mt-4" align="center" gap={8}>
-            <div className="w-1/2">
-              <Select
-                className="!mt-0"
-                placeholder="Select users to assign tasks to"
-                mode="multiple"
-                maxTagCount="responsive"
-                value={selectedUsers}
-                onChange={handleUserAssignmentChange}
-                options={userOptions}
-                optionLabelProp="displayName"
-                style={{ width: "100%", marginTop: 8 }}
-                tokenSeparators={[","]}
-                filterOption={(input, option) => {
-                  return (
-                    (typeof option?.label === "string" &&
-                      option.label
-                        .toLowerCase()
-                        .includes(input.toLowerCase())) ||
-                    false
-                  );
-                }}
-              />
-            </div>
+          <Flex align="center" gap={16}>
+            <Typography.Text strong>Assign tasks to users:</Typography.Text>
+            <Select
+              className="flex-1"
+              placeholder="Select users to assign tasks to"
+              mode="multiple"
+              maxTagCount="responsive"
+              value={selectedUsers}
+              onChange={handleUserAssignmentChange}
+              options={userOptions}
+              optionLabelProp="displayName"
+              tokenSeparators={[","]}
+              filterOption={(input, option) => {
+                return (
+                  (typeof option?.label === "string" &&
+                    option.label.toLowerCase().includes(input.toLowerCase())) ||
+                  false
+                );
+              }}
+            />
           </Flex>
           <div className="mt-4">
             <Typography.Text strong>Secure access:</Typography.Text>
