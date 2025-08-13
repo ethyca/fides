@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Replaced some duplicated data formatting functionality with a single utility function. Additional maintainability updates on Manual Tasks. [#6390](https://github.com/ethyca/fides/pull/6390)
 - Refactored ancestor links creation to support bulk creation for multiple staged resources in a single operation [#6426](https://github.com/ethyca/fides/pull/6426)
 - Optimized StagedResource ancestors() and descendants() methods [#6444](https://github.com/ethyca/fides/pull/6444)
+- Data migration to update `.` in `MonitorConfig.key`s to `_` and update all references to these values [#6441](https://github.com/ethyca/fides/pull/6441) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
