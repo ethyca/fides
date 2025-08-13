@@ -26,10 +26,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
 - Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
 - Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
+- Added visual checkmark feedback and screen reader announcements for consent button interactions [#6451](https://github.com/ethyca/fides/pull/6451)
 
 ### Changed
 - Improved data extraction for object fields to return complete data structures instead of empty containers in data package when no nested fields where specified [#6424](https://github.com/ethyca/fides/pull/6424)
 - Replaced some duplicated data formatting functionality with a single utility function. Additional maintainability updates on Manual Tasks. [#6390](https://github.com/ethyca/fides/pull/6390)
+- Improved privacy request detail UI in smaller screens [#6437](https://github.com/ethyca/fides/pull/6437)
 - Refactored ancestor links creation to support bulk creation for multiple staged resources in a single operation [#6426](https://github.com/ethyca/fides/pull/6426)
 - Optimized StagedResource ancestors() and descendants() methods [#6444](https://github.com/ethyca/fides/pull/6444)
 

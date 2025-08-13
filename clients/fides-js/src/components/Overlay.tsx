@@ -20,6 +20,7 @@ import { useEvent } from "../lib/providers/event-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
+import { LiveRegion } from "./LiveRegion";
 
 interface RenderBannerProps {
   attributes: A11yDialogAttributes;
@@ -290,6 +291,7 @@ const Overlay: FunctionComponent<Props> = ({
           },
           onManagePreferencesClick: handleManagePreferencesClick,
         })}
+      <LiveRegion />
     </div>
   );
 };
