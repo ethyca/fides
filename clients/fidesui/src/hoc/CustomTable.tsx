@@ -2,8 +2,6 @@ import { TableProps } from "antd/es/table";
 import { Table } from "antd/lib";
 import React from "react";
 
-import { PAGE_SIZES } from "./CustomPagination";
-
 /**
  * Higher-order component that adds consistent styling and enhanced functionality to Ant Design's Table component.
  *
@@ -11,7 +9,6 @@ import { PAGE_SIZES } from "./CustomPagination";
  * - Uses "small" size for more compact rows
  * - Enables bordered styling for better visual separation
  * - Automatically hides pagination when there's only one page
- * - Uses CustomPagination defaults (showSizeChanger=true, consistent PAGE_SIZES)
  *
  */
 export const CustomTable = <RecordType = any,>({
@@ -28,9 +25,7 @@ export const CustomTable = <RecordType = any,>({
     }
 
     return {
-      // Apply CustomPagination defaults first
       showSizeChanger: true,
-      pageSizeOptions: PAGE_SIZES.map(String),
       hideOnSinglePage: true,
       // Then apply any user-provided config (allows overriding defaults)
       ...pagination,

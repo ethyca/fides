@@ -128,8 +128,8 @@ export const useAntTable = <TData, TSortField extends string = string>(
           pagination.pageSize,
         );
       } else {
-        tableState.updatePagination(1); // Reset to page 1 for sorting/filtering changes
         // Only update filters when it's not a pagination change
+        // The pagination reset is handled by updateFilters and updateSorting
         tableState.updateFilters(filters || {});
       }
 
@@ -144,6 +144,7 @@ export const useAntTable = <TData, TSortField extends string = string>(
           : undefined;
 
       // Only update sorting if this is not just a pagination change
+      // The pagination reset is handled by updateSorting
       if (!isPaginationChange) {
         tableState.updateSorting(newSortField, newSortOrder);
       }

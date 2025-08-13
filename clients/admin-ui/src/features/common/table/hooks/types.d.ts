@@ -1,4 +1,4 @@
-import { AntFilterValue as FilterValue } from "fidesui";
+import type { AntFilterValue as FilterValue } from "fidesui";
 
 /**
  * Sort order type for table sorting
@@ -6,32 +6,40 @@ import { AntFilterValue as FilterValue } from "fidesui";
 export type SortOrder = "ascend" | "descend";
 
 /**
- * Base interface for table state that can be synchronized with URL
- */
-export interface TableState<TSortField extends string = string> {
-  // Pagination
-  pageIndex: number;
-  pageSize: number;
-
-  // Sorting
-  sortField?: TSortField;
-  sortOrder?: SortOrder;
-
-  // Filtering
-  columnFilters: Record<string, FilterValue | null>;
-  searchQuery?: string;
-
-  // Selection (optional, not synced to URL by default)
-  selectedRowKeys?: React.Key[];
-}
-
-/**
- * Configuration for table pagination
+ * Configuration for pagination (standalone or table)
  */
 export interface PaginationConfig {
   defaultPageSize?: number;
   pageSizeOptions?: number[];
   showSizeChanger?: boolean;
+  onPaginationChange?: (state: PaginationState) => void;
+}
+
+/**
+ * Pagination state interface
+ */
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+}
+
+/**
+ * Updates for pagination URL state
+ */
+export interface PaginationUpdates {
+  page?: number | null;
+  size?: number | null;
+}
+
+/**
+ * Base interface for table state that can be synchronized with URL
+ */
+export interface TableState<TSortField extends string = string>
+  extends PaginationState {
+  sortField?: TSortField;
+  sortOrder?: SortOrder;
+  columnFilters: Record<string, FilterValue | null>;
+  searchQuery?: string;
 }
 
 /**
@@ -108,12 +116,11 @@ export interface AntTableHookConfig<TData> {
 
 /**
  * Type for URL query state updates based on enabled features
+ * Pagination updates are handled separately by PaginationUpdates
  */
 export interface QueryStateUpdates {
-  page?: number | null;
-  size?: number | null;
   sortField?: string | null;
-  sortOrder?: string | null;
+  sortOrder?: SortOrder | null;
   filters?: Record<string, FilterValue | null> | null;
   search?: string | null;
 }

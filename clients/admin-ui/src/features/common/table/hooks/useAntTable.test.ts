@@ -201,8 +201,7 @@ describe("useAntTable", () => {
       );
     });
 
-    // When it's not a pagination change, reset to page 1 for sorting/filtering
-    expect(tableState.updatePagination).toHaveBeenCalledWith(1);
+    // When it's not a pagination change, call updateFilters and updateSorting
     expect(tableState.updateFilters).toHaveBeenCalledWith({
       status: ["active"],
     });
@@ -420,9 +419,7 @@ describe("useAntTable", () => {
         );
       });
 
-      // Should NOT trigger pagination update since effective values haven't changed
-      // (undefined current defaults to tableState.pageIndex, pageSize is same)
-      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for sorting
+      // Should trigger sorting and filtering updates (not a pagination change)
       expect(tableState.updateSorting).toHaveBeenCalledWith("name", "ascend");
       expect(tableState.updateFilters).toHaveBeenCalledWith({});
     });
@@ -443,8 +440,7 @@ describe("useAntTable", () => {
         );
       });
 
-      // Should NOT trigger pagination update since effective values haven't changed
-      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for sorting
+      // Should trigger sorting and filtering updates (not a pagination change)
       expect(tableState.updateSorting).toHaveBeenCalledWith("name", "ascend");
       expect(tableState.updateFilters).toHaveBeenCalledWith({});
     });
@@ -465,9 +461,7 @@ describe("useAntTable", () => {
         );
       });
 
-      // Should NOT be treated as pagination change since undefined values
-      // default to current tableState values
-      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for filtering
+      // Should trigger filtering and sorting updates (not a pagination change)
       expect(tableState.updateFilters).toHaveBeenCalledWith({
         status: ["active"],
       });
@@ -516,8 +510,7 @@ describe("useAntTable", () => {
         );
       });
 
-      // Should NOT trigger pagination update - it's sorting, not pagination change
-      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for sorting
+      // Should trigger sorting update (not a pagination change)
       expect(tableState.updateSorting).toHaveBeenCalledWith("name", "ascend");
     });
 
@@ -540,8 +533,7 @@ describe("useAntTable", () => {
         );
       });
 
-      // Should handle gracefully - both sides undefined means no change
-      expect(tableState.updatePagination).toHaveBeenCalledWith(1); // Reset to page 1 for filtering
+      // Should handle gracefully and trigger appropriate updates
       expect(tableState.updateFilters).toHaveBeenCalledWith({});
       expect(tableState.updateSorting).toHaveBeenCalledWith(
         undefined,
