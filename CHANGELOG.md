@@ -26,6 +26,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Replaced some duplicated data formatting functionality with a single utility function. Additional maintainability updates on Manual Tasks. [#6390](https://github.com/ethyca/fides/pull/6390)
+- Improved privacy request detail UI in smaller screens [#6437](https://github.com/ethyca/fides/pull/6437)
+
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
