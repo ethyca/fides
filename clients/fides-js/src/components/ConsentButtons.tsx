@@ -8,6 +8,7 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import { FidesEventTargetType } from "../lib/events";
+import { useAutoResetFlag } from "../lib/hooks";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
@@ -46,6 +47,10 @@ export const ConsentButtons = ({
   const { i18n } = useI18n();
   const { setTrigger } = useEvent();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { isActive: acceptComplete, activate: markAcceptComplete } =
+    useAutoResetFlag(false);
+  const { isActive: rejectComplete, activate: markRejectComplete } =
+    useAutoResetFlag(false);
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
@@ -89,10 +94,12 @@ export const ConsentButtons = ({
                     label: i18n.t("exp.reject_button_label"),
                   });
                   onRejectAll();
+                  markRejectComplete();
                 }}
                 className="fides-reject-all-button"
                 id="fides-reject-all-button"
                 loading={isGVLLoading}
+                complete={rejectComplete}
               />
             )}
             <Button
@@ -104,10 +111,12 @@ export const ConsentButtons = ({
                   label: i18n.t("exp.accept_button_label"),
                 });
                 onAcceptAll();
+                markAcceptComplete();
               }}
               className="fides-accept-all-button"
               id="fides-accept-all-button"
               loading={isGVLLoading}
+              complete={acceptComplete}
             />
           </Fragment>
         )}
@@ -177,6 +186,10 @@ export const NoticeConsentButtons = ({
   hideOptInOut = false,
   options,
 }: NoticeConsentButtonProps) => {
+  const { isActive: acknowledgeComplete, activate: markAcknowledgeComplete } =
+    useAutoResetFlag(false);
+  const { isActive: saveComplete, activate: markSaveComplete } =
+    useAutoResetFlag(false);
   const { i18n } = useI18n();
   const { setTrigger } = useEvent();
   if (!experience.experience_config || !experience.privacy_notices) {
@@ -207,8 +220,10 @@ export const NoticeConsentButtons = ({
               label: i18n.t("exp.acknowledge_button_label"),
             });
             handleAcknowledgeNotices();
+            markAcknowledgeComplete();
           }}
           className="fides-acknowledge-button"
+          complete={acknowledgeComplete}
         />
       );
     }
@@ -223,9 +238,11 @@ export const NoticeConsentButtons = ({
               label: i18n.t("exp.save_button_label"),
             });
             handleSave();
+            markSaveComplete();
           }}
           className="fides-save-button"
           id="fides-save-button"
+          complete={saveComplete}
         />
       );
     }
