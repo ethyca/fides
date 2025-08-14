@@ -79,6 +79,7 @@ export const DiscoveredAssetsTable = ({
     // Selection
     selectedUrns,
     hasSelectedRows,
+    resetSelections,
 
     // Business actions
     handleBulkAdd,
@@ -100,6 +101,11 @@ export const DiscoveredAssetsTable = ({
     onSystemName,
     onShowBreakdown: handleShowBreakdown,
   });
+
+  const handleClearFilters = () => {
+    resetState();
+    resetSelections();
+  };
 
   const handleBulkAssignSystemWithModal = async (
     selectedSystem?: DefaultOptionType,
@@ -136,7 +142,7 @@ export const DiscoveredAssetsTable = ({
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedUrns.length} />}
           <Space size="small">
-            <Button onClick={resetState} data-testid="clear-filters">
+            <Button onClick={handleClearFilters} data-testid="clear-filters">
               Clear filters
             </Button>
             <Dropdown
