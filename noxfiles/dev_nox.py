@@ -54,6 +54,7 @@ def dev(session: Session) -> None:
         - worker = Run a Fides worker
         - flower = Run Flower monitoring dashboard for Celery
         - child = Run a Fides child node
+        - nginx = Run two Fides webservers with nginx load balancer proxy
         - <datastore(s)> = Run a test datastore (e.g. 'mssql', 'mongodb')
 
     Parameters:
@@ -103,17 +104,33 @@ def dev(session: Session) -> None:
 
     open_shell = "shell" in session.posargs
     remote_debug = "remote_debug" in session.posargs
-    if not datastores:
+    use_nginx = "nginx" in session.posargs
+
+    if use_nginx:
+        # Run two Fides webservers with nginx load balancer proxy
         if open_shell:
-            session.run(*START_APP, external=True)
+            session.run("docker", "compose", "up", "--wait", "fides-1", "fides-2", "fides-cluster", external=True)
+            session.log("~~Remember to login with `fides user login`!~~")
+            session.run(*EXEC_IT, "/bin/bash", external=True)
+        else:
+            session.run("docker", "compose", "up", "fides-1", "fides-2", "fides-cluster", external=True)
+    elif not datastores:
+        if open_shell:
+            # Run only a single fides webserver for shell access
+            session.run("docker", "compose", "up", "--wait", "fides", external=True)
             session.log("~~Remember to login with `fides user login`!~~")
             session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
-                session.run(*START_APP_REMOTE_DEBUG, external=True)
-            else:
+                # Run only a single fides webserver with remote debug
                 session.run(
-                    "docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True
+                    "docker", "compose", "-f", "docker-compose.yml", "-f", "docker-compose.remote-debug.yml",
+                    "up", "fides", external=True
+                )
+            else:
+                # Run only a single fides webserver, not the nginx proxy
+                session.run(
+                    "docker", "compose", "up", "fides", external=True
                 )
     else:
         # Run the webserver with additional datastores
