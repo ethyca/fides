@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.67.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
+
+## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
 ### Added
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
@@ -44,6 +46,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
 - Fixed link in Manage Secure Access modal [#6436](https://github.com/ethyca/fides/pull/6436)
 - Fixed some CI testing gaps [#6419](https://github.com/ethyca/fides/pull/6419)
+- Fixed a bug where providing an invalid `fides_string` as an override caused GPP to fail to initialize [#6452](https://github.com/ethyca/fides/pull/6452)
+- Fixed encoding of privacy request filters and CSV export parameters. [#6449](https://github.com/ethyca/fides/pull/6449)
 
 
 ## [2.67.2](https://github.com/ethyca/fides/compare/2.67.1...2.67.2)
