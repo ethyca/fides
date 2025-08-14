@@ -1009,6 +1009,21 @@ class PrivacyRequest(
         """Put the privacy request in a state of awaiting_email_send"""
         if self.awaiting_email_send_at is None:
             self.awaiting_email_send_at = datetime.utcnow()
+            # Add execution log to inform user that processing is paused for email send
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "privacy_request_id": self.id,
+                    "connection_key": None,
+                    "dataset_name": "Pending batch email send",
+                    "collection_name": None,
+                    "status": ExecutionLogStatus.pending,
+                    "message": "Privacy request paused pending batch email send job",
+                    "action_type": (
+                        self.policy.get_action_type() if self.policy else None
+                    ),
+                },
+            )
         self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
