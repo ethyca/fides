@@ -1,5 +1,10 @@
 import { AntFilterValue as FilterValue } from "fidesui";
-import { parseAsJson, parseAsString, useQueryStates } from "nuqs";
+import {
+  parseAsJson,
+  parseAsString,
+  parseAsStringLiteral,
+  useQueryStates,
+} from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
 import type {
@@ -14,14 +19,16 @@ import { usePagination } from "./usePagination";
  * NuQS parsers for table state - filtering, sorting, and search features synced to URL
  * Pagination is handled by the usePagination hook
  */
-const createTableParsers = () => ({
-  sortField: parseAsString.withDefault(""),
-  sortOrder: parseAsString.withDefault(""),
-  filters: parseAsJson(
-    (value: unknown) => value as Record<string, FilterValue | null>,
-  ).withDefault({}),
-  search: parseAsString.withDefault(""),
-});
+const createTableParsers = () => {
+  return {
+    sortField: parseAsString.withDefault(""),
+    sortOrder: parseAsStringLiteral(["ascend", "descend"]),
+    filters: parseAsJson(
+      (value: unknown) => value as Record<string, FilterValue | null>,
+    ).withDefault({}),
+    search: parseAsString.withDefault(""),
+  };
+};
 
 /**
  * Custom hook for managing table state with URL synchronization
@@ -86,8 +93,7 @@ export const useTableState = <TSortField extends string = string>(
       pageIndex,
       pageSize,
       sortField: (queryState.sortField as TSortField) || defaultSortField, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
-      sortOrder:
-        (queryState.sortOrder as SortOrder | undefined) || defaultSortOrder, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
+      sortOrder: (queryState.sortOrder as SortOrder | null) ?? defaultSortOrder, // Use `??` because parseAsStringLiteral returns null when not set
       columnFilters: queryState.filters ?? {},
       searchQuery: queryState.search || undefined, // Convert empty string to undefined
     };
