@@ -8,6 +8,7 @@ export enum CoreTaxonomiesEnum {
   DATA_CATEGORIES = "Data categories",
   DATA_USES = "Data uses",
   DATA_SUBJECTS = "Data subjects",
+  SYSTEM_GROUPS = "System groups", // Plus-only, but still protected
 }
 
 export const taxonomyTypeToScopeRegistryEnum = (
@@ -34,6 +35,13 @@ export const taxonomyTypeToScopeRegistryEnum = (
         CREATE: ScopeRegistryEnum.DATA_SUBJECT_CREATE,
         DELETE: ScopeRegistryEnum.DATA_SUBJECT_DELETE,
         READ: ScopeRegistryEnum.DATA_SUBJECT_READ,
+      };
+    case CoreTaxonomiesEnum.SYSTEM_GROUPS:
+      return {
+        UPDATE: ScopeRegistryEnum.SYSTEM_GROUP_UPDATE,
+        CREATE: ScopeRegistryEnum.SYSTEM_GROUP_CREATE,
+        DELETE: ScopeRegistryEnum.SYSTEM_GROUP_DELETE,
+        READ: ScopeRegistryEnum.SYSTEM_GROUP_READ,
       };
     default: {
       throw new Error(`Unknown taxonomy type: ${taxonomyType}`);

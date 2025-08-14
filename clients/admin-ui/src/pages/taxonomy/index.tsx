@@ -11,6 +11,7 @@ import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+// import { useFeatures } from "~/features/common/features";
 import {
   enumToOptions,
   getErrorMessage,
@@ -28,12 +29,19 @@ import {
   taxonomyTypeToScopeRegistryEnum,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
+import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 
 const TaxonomyPage: NextPage = () => {
   const [taxonomyType, setTaxonomyType] = useState<CoreTaxonomiesEnum>(
     CoreTaxonomiesEnum.DATA_CATEGORIES,
   );
+  // const features = useFeatures();
+  // const isPlusEnabled = features.plus;
+  const isPlusEnabled = true;
+  const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(undefined, {
+    skip: !isPlusEnabled,
+  });
   const {
     createTrigger,
     getAllTrigger,
@@ -125,10 +133,25 @@ const TaxonomyPage: NextPage = () => {
             <FloatingMenu
               selectedKeys={[taxonomyType]}
               onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
-              items={enumToOptions(CoreTaxonomiesEnum).map((e) => ({
-                label: e.label,
-                key: e.value,
-              }))}
+              items={(() => {
+                // Core taxonomies, excluding system groups if plus is not enabled
+                const items = enumToOptions(CoreTaxonomiesEnum)
+                  .filter(
+                    (opt) =>
+                      isPlusEnabled ||
+                      opt.value !== CoreTaxonomiesEnum.SYSTEM_GROUPS,
+                  )
+                  .map((e) => ({ label: e.label, key: e.value }));
+
+                // Custom taxonomies, if available
+                if (customTaxonomies?.length) {
+                  customTaxonomies.forEach((t) => {
+                    items.push({ label: t.name, key: t.fides_key as any });
+                  });
+                }
+
+                return items;
+              })()}
               data-testid="taxonomy-type-selector"
             />
           </div>

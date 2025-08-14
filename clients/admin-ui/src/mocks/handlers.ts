@@ -1,5 +1,8 @@
 import { rest } from "msw";
 
+import { taxonomyHandlers } from "~/features/taxonomy/taxonomy.mocks";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
+
 interface SubjectRequestBody {
   username: string;
 }
@@ -54,8 +57,43 @@ const mockSubjectRequestPreviewResponse = {
   ],
 };
 
+// Mock user permissions to enable taxonomy editing
+const mockUserPermissions = {
+  id: "root_user_id",
+  user_id: "root_user_id",
+  total_scopes: [
+    ScopeRegistryEnum.DATA_CATEGORY_CREATE,
+    ScopeRegistryEnum.DATA_CATEGORY_READ,
+    ScopeRegistryEnum.DATA_CATEGORY_UPDATE,
+    ScopeRegistryEnum.DATA_CATEGORY_DELETE,
+    ScopeRegistryEnum.DATA_USE_CREATE,
+    ScopeRegistryEnum.DATA_USE_READ,
+    ScopeRegistryEnum.DATA_USE_UPDATE,
+    ScopeRegistryEnum.DATA_USE_DELETE,
+    ScopeRegistryEnum.DATA_SUBJECT_CREATE,
+    ScopeRegistryEnum.DATA_SUBJECT_READ,
+    ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
+    ScopeRegistryEnum.DATA_SUBJECT_DELETE,
+    ScopeRegistryEnum.SYSTEM_GROUP_CREATE,
+    ScopeRegistryEnum.SYSTEM_GROUP_READ,
+    ScopeRegistryEnum.SYSTEM_GROUP_UPDATE,
+    ScopeRegistryEnum.SYSTEM_GROUP_DELETE,
+    ScopeRegistryEnum.TAXONOMY_CREATE,
+    ScopeRegistryEnum.TAXONOMY_UPDATE,
+    ScopeRegistryEnum.TAXONOMY_DELETE,
+  ],
+  roles: [RoleRegistryEnum.OWNER],
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export const handlers = [
+  ...taxonomyHandlers(),
+
+  // Mock user permissions endpoint
+  rest.get("/api/v1/user/:userId/permission", (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(mockUserPermissions)),
+  ),
+
   rest.get<SubjectRequestBody>(
     "http://localhost:8080/api/v1/privacy-request",
     async (req, res, ctx) => {
