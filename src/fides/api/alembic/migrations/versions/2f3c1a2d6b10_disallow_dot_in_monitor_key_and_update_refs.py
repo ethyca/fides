@@ -252,6 +252,9 @@ def upgrade() -> None:
         logger.info("Beginning monitorconfig key 'dot' migration...")
 
         # Persist mapping into dbcache for API retrieval/debugging
+        # NOTE: this mapping is persisted only as a temporary measure (i.e. for a few releases)
+        # just in case we want to revert this data migration for any reason.
+        # TODO: remove the cache entry in a future migration!
         logger.info("Persisting monitor key mapping to dbcache...")
         mapping_json = json.dumps(mapping)
         conn.execute(
@@ -332,6 +335,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     # Remove the CHECK constraint
     op.drop_constraint("ck_monitorconfig_key_no_dots", "monitorconfig", type_="check")
-    # Data downgrades are not supported because the original keys are not retained.
-    # This is intentional to keep references consistent.
+    # Data downgrade left blank intentionally - if needed, we have the old key mapping in
+    # the dbcache entry and a data migration reversal can be written on an adhoc basis.
     pass
