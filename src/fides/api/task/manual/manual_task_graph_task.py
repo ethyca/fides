@@ -4,7 +4,6 @@ from loguru import logger
 from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
-from fides.api.graph.config import FieldAddress
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -15,21 +14,20 @@ from fides.api.models.manual_task import (
     ManualTaskSubmission,
     StatusType,
 )
-from fides.api.models.manual_task.conditional_dependency import (
-    ManualTaskConditionalDependency,
-)
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.task.conditional_dependencies.logging_utils import (
     format_evaluation_failure_message,
     format_evaluation_success_message,
 )
-from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.graph_task import GraphTask, retry
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
+from fides.api.task.manual.manual_task_conditional_evaluation import (
+    evaluate_conditional_dependencies,
+    extract_conditional_dependency_data_from_inputs,
+)
 from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
 )
@@ -50,209 +48,117 @@ class ManualTaskGraphTask(GraphTask):
             self.execution_node.address
         )
 
+    # ------------------------------------------------------------------------------------------------
+    # Public methods
+    # ------------------------------------------------------------------------------------------------
+
     def dry_run_task(self) -> int:
         """Return estimated row count for dry run - manual tasks don't have predictable counts"""
         return self.DRY_RUN_PLACEHOLDER_VALUE
 
-    def _parse_field_address(self, field_address: str) -> tuple[str, list[str]]:
+    @retry(action_type=ActionType.access, default_return=[])
+    def access_request(self, *inputs: list[Row]) -> list[Row]:
         """
-        Parse a field address into dataset, collection, and field path.
-
-        For complex addresses with > 2 colons, uses manual string parsing.
-        For simple addresses with ≤ 2 colons, uses FieldAddress.from_string().
+        Execute manual task logic following the standard GraphTask pattern.
+        Calls _run_request with ACCESS configs.
+        Returns data if submitted, raise AwaitingAsyncTaskCallback if not
         """
-        if field_address.count(":") > 2:
-            # Parse manually: dataset:collection:field:subfield -> dataset, collection, [field, subfield]
-            dataset, collection, *field_path = field_address.split(":")
-            source_collection_key = f"{dataset}:{collection}"
-        else:
-            # Use standard FieldAddress parsing for simple cases
-            field_address_obj = FieldAddress.from_string(field_address)
-            source_collection_key = str(field_address_obj.collection_address())
-            field_path = list(field_address_obj.field_path.levels)
-        return source_collection_key, field_path
-
-    def _extract_conditional_dependency_data_from_inputs(
-        self, *inputs: list[Row], manual_task: ManualTask
-    ) -> dict[str, Any]:
-        """
-        Extract data for conditional dependency field addresses from input data.
-
-        This method processes data from upstream regular tasks that provide fields
-        referenced in manual task conditional dependencies. It extracts the relevant
-        field values and makes them available for conditional dependency evaluation.
-
-        Args:
-            *inputs: Input data from upstream nodes (regular tasks)
-            manual_task: Manual task to extract conditional dependencies from
-
-        Returns:
-            Dictionary mapping field addresses to their values from input data
-        """
-
-        conditional_data: dict[str, Any] = {}
-
-        # Get all conditional dependencies field addresses
-        field_addresses = [
-            dependency.field_address
-            for dependency in manual_task.conditional_dependencies
-            if dependency.field_address
-        ]
-
-        # if no field addresses, return empty conditional data
-        # This will allow the manual task to be executed if there are no conditional dependencies
-        if not field_addresses:
-            return conditional_data
-
-        # For manual tasks, we need to preserve the original field names from conditional dependencies
-        # Instead of using pre_process_input_data which consolidates fields, we'll extract directly
-        # from the raw input data based on the execution node's input_keys
-
-        # Create a mapping between collections and their input data
-        # Convert CollectionAddress objects to strings for consistent key types
-        collection_data_map = {
-            str(collection_key): input_data
-            for collection_key, input_data in zip(
-                self.execution_node.input_keys, inputs
-            )
-        }
-
-        # Extract data for each conditional dependency field address
-        for field_address in field_addresses:
-            source_collection_key, field_path = self._parse_field_address(field_address)
-
-            # Find the input data for this collection
-            field_value = None
-            input_data = collection_data_map.get(source_collection_key)
-            if input_data:
-
-                # Look for the field in the input data
-                for row in input_data:
-
-                    # Traverse the nested field path to get the actual value
-                    field_value = self._extract_nested_field_value(row, field_path)
-
-                    if field_value is not None:
-                        break
-                # Found the field value, break out of the inner loop (over rows)
-                # but continue with the outer loop to process this field
-
-            # Always include the field in conditional_data, even if value is None
-            # This allows conditional dependencies to evaluate existence, non-existence, and falsy values
-            nested_data = self._set_nested_value(field_address, field_value)
-            conditional_data = deep_update(conditional_data, nested_data)
-
-        return conditional_data
-
-    def _extract_nested_field_value(self, data: Any, field_path: list[str]) -> Any:
-        """
-        Extract a nested field value by traversing the field path.
-
-        Args:
-            data: The data to extract from (usually a dict)
-            field_path: List of field names to traverse (e.g., ["profile", "preferences", "theme"])
-
-        Returns:
-            The value at the end of the field path, or None if not found
-        """
-        if not field_path:
-            return data
-
-        current = data
-        for field_name in field_path:
-            if isinstance(current, dict) and field_name in current:
-                current = current[field_name]
-            else:
-                return None
-
-        return current
-
-    def _set_nested_value(self, field_address: str, value: Any) -> dict[str, Any]:
-        """
-        Set a field value in the conditional data structure.
-
-        Args:
-            field_address: Colon-separated field address (e.g., "dataset:collection:field" or "dataset:collection:nested:field")
-            value: The value to set
-
-        Returns:
-            Dictionary with the field value set at the specified path
-        """
-        # For conditional dependencies, we want to set the field value directly
-        # The field_address format is "dataset:collection:field" or "dataset:collection:nested:field"
-        # We want to create: {dataset: {collection: {field: value}}} or {dataset: {collection: {nested: {field: value}}}}
-        parts = field_address.split(":")
-
-        if len(parts) >= 3:
-            dataset, collection = parts[0], parts[1]
-            # Handle nested field paths beyond the first 3 parts
-            if len(parts) == 3:
-                # Simple case: dataset:collection:field
-                field = parts[2]
-                return {dataset: {collection: {field: value}}}
-
-            # Nested case: dataset:collection:nested:field
-            # Build the nested structure from the remaining parts
-            nested_structure = value
-            for part in reversed(parts[2:]):
-                nested_structure = {part: nested_structure}
-            return {dataset: {collection: nested_structure}}
-
-        # Fallback for unexpected formats
-        return {field_address: value}
-
-    def _evaluate_conditional_dependencies(
-        self, manual_task: ManualTask, conditional_data: dict[str, Any]
-    ) -> Optional[EvaluationResult]:
-        """
-        Evaluate conditional dependencies for a manual task using data from regular tasks.
-
-        This method evaluates whether a manual task should be executed based on its
-        conditional dependencies and the data received from upstream regular tasks.
-
-        Args:
-            manual_task: The manual task to evaluate
-            conditional_data: Data from regular tasks for conditional dependency fields
-
-        Returns:
-            EvaluationResult object containing detailed information about which conditions
-            were met or not met, or None if no conditional dependencies exist
-        """
-        # Get the root condition for this manual task
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
-            self.resources.session, manual_task.id
+        result = self._run_request(
+            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
+            *inputs,
         )
+        if result is None:
+            # Conditional skip or not applicable already logged upstream; do not mark complete here
+            return []
 
-        if not root_condition:
-            # No conditional dependencies - always execute
+        # We are picking up after awaiting input and have provided data – mark complete with record count
+        self.log_end(ActionType.access, record_count=len(result))
+        return result
+
+    # Provide erasure support for manual tasks
+    @retry(action_type=ActionType.erasure, default_return=0)
+    def erasure_request(
+        self,
+        retrieved_data: list[Row],  # This is not used for manual tasks.
+        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument # TODO Remove when we stop support for DSR 2.0
+        inputs: Optional[list[list[Row]]] = None,
+    ) -> int:
+        """Execute manual-task-driven erasure logic.
+        Calls _run_request with ERASURE configs.
+
+        Mirrors access_request behaviour but returns the number of rows masked (always 0)
+        once all required manual task submissions are present. If submissions are
+        incomplete the privacy request is paused awaiting user input.
+        Returns the number of rows masked (always 0)
+        Raises AwaitingAsyncTaskCallback if data is not submitted
+        """
+        if not inputs:
+            inputs = []
+        result = self._run_request(
+            ManualTaskConfigurationType.erasure_privacy_request,
+            ActionType.erasure,
+            *inputs,
+        )
+        if result is None:
+            # Conditional skip or not applicable already logged upstream; do not mark complete here
+            return 0
+
+        # Mark rows_masked = 0 (manual tasks do not mask data directly)
+        if self.request_task.id:
+            # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
+            self.request_task.rows_masked = 0  # type: ignore[assignment]
+
+        # Picking up after awaiting input, mark erasure node complete with rows masked count (always 0)
+        self.log_end(ActionType.erasure, record_count=0)
+        return 0
+
+    # ------------------------------------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------------------------------------
+
+    def _run_request(
+        self,
+        config_type: ManualTaskConfigurationType,
+        action_type: ActionType,
+        *inputs: list[Row],
+    ) -> Optional[list[Row]]:
+        """
+        Execute manual task logic following the standard GraphTask pattern:
+        1. Create ManualTaskInstances if they don't exist
+        2. Check if all required submissions are present
+        3. Return data if submitted, raise AwaitingAsyncTaskCallback if not
+        """
+        manual_task = self._get_manual_task_or_none()
+        if manual_task is None:
             return None
 
-        # Evaluate the condition using the data from regular tasks
-        evaluator = ConditionEvaluator(self.resources.session)
-        evaluation_result = evaluator.evaluate_rule(root_condition, conditional_data)
+        # Complete a series of checks to determine if the manual task should be executed
+        # If any of these checks fail, complete immediately or mark as skipped
 
-        return evaluation_result
+        # Check if any eligible manual tasks have applicable configs
+        if not self._check_manual_task_configs(manual_task, config_type, action_type):
+            return None
 
-    def _get_conditional_data_and_evaluate(
-        self, manual_task: ManualTask, *inputs: list[Row]
-    ) -> tuple[Optional[dict[str, Any]], Optional[Any]]:
+        # Check if there are any rules for this action type
+        if not self.resources.request.policy.get_rules_for_action(
+            action_type=action_type
+        ):
+            return None
+
         # Extract conditional dependency data from inputs
-        conditional_data = self._extract_conditional_dependency_data_from_inputs(
-            *inputs, manual_task=manual_task
+        conditional_data = extract_conditional_dependency_data_from_inputs(
+            *inputs, manual_task=manual_task, input_keys=self.execution_node.input_keys
         )
-
-        # Filter manual tasks based on conditional dependencies
-        evaluation_result = self._evaluate_conditional_dependencies(
-            manual_task, conditional_data
+        # Evaluate conditional dependencies
+        evaluation_result = evaluate_conditional_dependencies(
+            self.resources.session, manual_task, conditional_data=conditional_data
         )
-
-        # If no conditional dependencies exist, always execute
-        if evaluation_result is None:
-            return conditional_data, None
-
-        # Check if conditional dependencies are met
-        if not evaluation_result.result:
-            # Create detailed message and mark this node as skipped (updates RequestTask status and logs once)
+        detailed_message: Optional[str] = None
+        # if there were conditional dependencies and they were not met,
+        # clean up any existing ManualTaskInstances and return None to cause a skip
+        if evaluation_result is not None and not evaluation_result.result:
+            self._cleanup_manual_task_instances(manual_task, self.resources.request)
             detailed_message = format_evaluation_failure_message(evaluation_result)
             self.update_status(
                 f"Manual task conditional dependencies not met. {detailed_message}",
@@ -260,9 +166,27 @@ class ManualTaskGraphTask(GraphTask):
                 ActionType(self.resources.privacy_request_task.action_type),
                 ExecutionLogStatus.skipped,
             )
-            return None, evaluation_result
+            return None
 
-        return conditional_data, evaluation_result
+        # Check/Create manual task instances for applicable configs only
+        self._ensure_manual_task_instances(
+            manual_task,
+            self.resources.request,
+            config_type,
+        )
+
+        # Check if all manual task instances have submissions for applicable configs only
+        # No separate pending log; include details in the awaiting-processing log
+        if evaluation_result:
+            detailed_message = format_evaluation_success_message(evaluation_result)
+        result = self._set_submitted_data_or_raise_awaiting_async_task_callback(
+            manual_task,
+            config_type,
+            action_type,
+            conditional_data=conditional_data,
+            awaiting_detail_message=detailed_message,
+        )
+        return result
 
     def _check_manual_task_configs(
         self,
@@ -282,6 +206,19 @@ class ManualTaskGraphTask(GraphTask):
             return False
 
         return True
+
+    def _get_manual_task_or_none(self) -> Optional[ManualTask]:
+        # Verify this is a manual task address
+        if not ManualTaskAddress.is_manual_task_address(self.execution_node.address):
+            raise ValueError(
+                f"Invalid manual task address: {self.execution_node.address}"
+            )
+
+        # Get the manual task for this connection config (1:1 relationship)
+        manual_task = get_manual_task_for_connection_config(
+            self.resources.session, self.connection_key
+        )
+        return manual_task
 
     def _set_submitted_data_or_raise_awaiting_async_task_callback(
         self,
@@ -469,131 +406,6 @@ class ManualTaskGraphTask(GraphTask):
                     f"Error retrieving attachment {attachment.file_name}: {str(exc)}"
                 )
         return attachment_map or None
-
-    def _get_manual_task_or_none(self) -> Optional[ManualTask]:
-        # Verify this is a manual task address
-        if not ManualTaskAddress.is_manual_task_address(self.execution_node.address):
-            raise ValueError(
-                f"Invalid manual task address: {self.execution_node.address}"
-            )
-
-        # Get the manual task for this connection config (1:1 relationship)
-        manual_task = get_manual_task_for_connection_config(
-            self.resources.session, self.connection_key
-        )
-        return manual_task
-
-    def _run_request(
-        self,
-        config_type: ManualTaskConfigurationType,
-        action_type: ActionType,
-        *inputs: list[Row],
-    ) -> Optional[list[Row]]:
-        """
-        Execute manual task logic following the standard GraphTask pattern:
-        1. Create ManualTaskInstances if they don't exist
-        2. Check if all required submissions are present
-        3. Return data if submitted, raise AwaitingAsyncTaskCallback if not
-        """
-        manual_task = self._get_manual_task_or_none()
-        if manual_task is None:
-            return None
-
-        # Check if any eligible manual tasks have applicable configs
-        if not self._check_manual_task_configs(manual_task, config_type, action_type):
-            return None
-
-        if not self.resources.request.policy.get_rules_for_action(
-            action_type=action_type
-        ):
-            return None
-
-        conditional_data, evaluation_result = self._get_conditional_data_and_evaluate(
-            manual_task, *inputs
-        )
-        # if there were conditional dependencies and they were not met,
-        # clean up any existing ManualTaskInstances and return None
-        if evaluation_result is not None and not evaluation_result.result:
-            self._cleanup_manual_task_instances(manual_task, self.resources.request)
-            return None
-
-        # Check/Create manual task instances for applicable configs only
-        self._ensure_manual_task_instances(
-            manual_task,
-            self.resources.request,
-            config_type,
-        )
-
-        # Check if all manual task instances have submissions for applicable configs only
-        # No separate pending log; include details in the awaiting-processing log
-        detailed_message: Optional[str] = None
-        if evaluation_result:
-            detailed_message = format_evaluation_success_message(evaluation_result)
-        result = self._set_submitted_data_or_raise_awaiting_async_task_callback(
-            manual_task,
-            config_type,
-            action_type,
-            conditional_data=conditional_data,
-            awaiting_detail_message=detailed_message,
-        )
-        return result
-
-    @retry(action_type=ActionType.access, default_return=[])
-    def access_request(self, *inputs: list[Row]) -> list[Row]:
-        """
-        Execute manual task logic following the standard GraphTask pattern.
-        Calls _run_request with ACCESS configs.
-        Returns data if submitted, raise AwaitingAsyncTaskCallback if not
-        """
-        result = self._run_request(
-            ManualTaskConfigurationType.access_privacy_request,
-            ActionType.access,
-            *inputs,
-        )
-        if result is None:
-            # Conditional skip or not applicable already logged upstream; do not mark complete here
-            return []
-
-        # We are picking up after awaiting input and have provided data – mark complete with record count
-        self.log_end(ActionType.access, record_count=len(result))
-        return result
-
-    # Provide erasure support for manual tasks
-    @retry(action_type=ActionType.erasure, default_return=0)
-    def erasure_request(
-        self,
-        retrieved_data: list[Row],  # This is not used for manual tasks.
-        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument # TODO Remove when we stop support for DSR 2.0
-        inputs: Optional[list[list[Row]]] = None,
-    ) -> int:
-        """Execute manual-task-driven erasure logic.
-        Calls _run_request with ERASURE configs.
-
-        Mirrors access_request behaviour but returns the number of rows masked (always 0)
-        once all required manual task submissions are present. If submissions are
-        incomplete the privacy request is paused awaiting user input.
-        Returns the number of rows masked (always 0)
-        Raises AwaitingAsyncTaskCallback if data is not submitted
-        """
-        if not inputs:
-            inputs = []
-        result = self._run_request(
-            ManualTaskConfigurationType.erasure_privacy_request,
-            ActionType.erasure,
-            *inputs,
-        )
-        if result is None:
-            # Conditional skip or not applicable already logged upstream; do not mark complete here
-            return 0
-
-        # Mark rows_masked = 0 (manual tasks do not mask data directly)
-        if self.request_task.id:
-            # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
-            self.request_task.rows_masked = 0  # type: ignore[assignment]
-
-        # Picking up after awaiting input, mark erasure node complete with rows masked count (always 0)
-        self.log_end(ActionType.erasure, record_count=0)
-        return 0
 
     def _cleanup_manual_task_instances(
         self, manual_task: ManualTask, privacy_request: PrivacyRequest

@@ -10,14 +10,176 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
-from fides.api.models.manual_task.conditional_dependency import (
-    ManualTaskConditionalDependency,
-)
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
     GroupEvaluationResult,
 )
+
+
+# Reusable patching fixtures to reduce duplication
+@pytest.fixture
+def mock_conditional_functions():
+    """Reusable fixture for mocking conditional dependency functions"""
+    with (
+        patch(
+            "fides.api.task.manual.manual_task_graph_task.extract_conditional_dependency_data_from_inputs",
+            autospec=True,
+        ) as mock_extract,
+        patch(
+            "fides.api.task.manual.manual_task_graph_task.evaluate_conditional_dependencies",
+            autospec=True,
+        ) as mock_evaluate,
+    ):
+        yield mock_extract, mock_evaluate
+
+
+@pytest.fixture
+def mock_run_request_dependencies():
+    """Reusable fixture for mocking _run_request dependencies"""
+
+    def _create_mocks(
+        manual_task_graph_task, manual_task, access_privacy_request, **kwargs
+    ):
+        """Create mocks with configurable return values"""
+        return (
+            patch.object(
+                manual_task_graph_task,
+                "_get_manual_task_or_none",
+                autospec=True,
+                return_value=kwargs.get("manual_task", manual_task),
+            ),
+            patch.object(
+                manual_task_graph_task.resources.request.policy,
+                "get_rules_for_action",
+                autospec=True,
+                return_value=kwargs.get("policy_rules", ["rule"]),
+            ),
+            patch.object(
+                manual_task_graph_task,
+                "_check_manual_task_configs",
+                autospec=True,
+                return_value=kwargs.get("has_configs", True),
+            ),
+            patch.object(
+                manual_task_graph_task,
+                "_ensure_manual_task_instances",
+                autospec=True,
+            ),
+            patch.object(
+                manual_task_graph_task,
+                "_set_submitted_data_or_raise_awaiting_async_task_callback",
+                autospec=True,
+            ),
+        )
+
+    return _create_mocks
+
+
+@pytest.fixture
+def mock_common_dependencies():
+    """Reusable fixture for mocking common dependencies in _run_request tests"""
+
+    def _create_mocks(
+        manual_task_graph_task, manual_task, access_privacy_request, **kwargs
+    ):
+        """Create mocks for common _run_request dependencies"""
+        mocks = [
+            patch.object(
+                manual_task_graph_task,
+                "_get_manual_task_or_none",
+                autospec=True,
+                return_value=kwargs.get("manual_task", manual_task),
+            ),
+            patch.object(
+                manual_task_graph_task.resources.request.policy,
+                "get_rules_for_action",
+                autospec=True,
+                return_value=kwargs.get("policy_rules", ["rule"]),
+            ),
+            patch.object(
+                manual_task_graph_task,
+                "_check_manual_task_configs",
+                autospec=True,
+                return_value=kwargs.get("has_configs", True),
+            ),
+        ]
+
+        # Add optional mocks based on kwargs
+        if kwargs.get("mock_ensure_instances", False):
+            mocks.append(
+                patch.object(
+                    manual_task_graph_task,
+                    "_ensure_manual_task_instances",
+                    autospec=True,
+                )
+            )
+
+        if kwargs.get("mock_set_data", False):
+            mocks.append(
+                patch.object(
+                    manual_task_graph_task,
+                    "_set_submitted_data_or_raise_awaiting_async_task_callback",
+                    autospec=True,
+                )
+            )
+
+        if kwargs.get("mock_cleanup", False):
+            mocks.append(
+                patch.object(
+                    manual_task_graph_task,
+                    "_cleanup_manual_task_instances",
+                    autospec=True,
+                )
+            )
+
+        if kwargs.get("mock_request_resource", False):
+            mocks.append(
+                patch.object(
+                    manual_task_graph_task.resources, "request", access_privacy_request
+                )
+            )
+
+        return tuple(mocks)
+
+    return _create_mocks
+
+
+@pytest.fixture
+def mock_log_end():
+    """Reusable fixture for mocking log_end"""
+
+    def _create_mock(obj):
+        """Create a mock for log_end on the given object"""
+        with patch.object(obj, "log_end", autospec=True) as mock_log_end:
+            return mock_log_end
+
+    return _create_mock
+
+
+def mock_run_request(manual_task_graph_task, return_value=None):
+    """Helper function to mock _run_request with common patterns"""
+    return patch.object(
+        manual_task_graph_task, "_run_request", autospec=True, return_value=return_value
+    )
+
+
+def create_log_end_mock(manual_task_graph_task):
+    """Helper function to mock log_end with common patterns"""
+    return patch.object(manual_task_graph_task, "log_end", autospec=True)
+
+
+def create_submitted_data_mocks(manual_task_graph_task, access_privacy_request):
+    """Helper function to mock _get_submitted_data and save with common patterns"""
+    return (
+        patch.object(
+            manual_task_graph_task,
+            "_get_submitted_data",
+            autospec=True,
+            return_value=None,
+        ),
+        patch.object(manual_task_graph_task.resources.request, "save", autospec=True),
+    )
 
 
 class TestManualTaskDataAggregation:
@@ -28,7 +190,7 @@ class TestManualTaskDataAggregation:
         self, db, access_privacy_request, connection_with_manual_access_task
     ):
         """Create a manual task instance with proper field setup"""
-        _, manual_task, config, field = connection_with_manual_access_task
+        _, manual_task, config, _ = connection_with_manual_access_task
         return ManualTaskInstance.create(
             db=db,
             data={
@@ -105,7 +267,7 @@ class TestManualTaskDataAggregation:
     ):
         """Test aggregation with invalid submission data"""
         # Get the field from the connection setup
-        _, _, config, field = connection_with_manual_access_task
+        _, _, _, field = connection_with_manual_access_task
 
         # Create a submission with invalid data structure
         submission = ManualTaskSubmission(
@@ -131,7 +293,7 @@ class TestManualTaskDataAggregation:
     ):
         """Test aggregation with submission missing field_key"""
         # Get the field from the connection setup
-        _, _, config, field = connection_with_manual_access_task
+        _, _, _, field = connection_with_manual_access_task
 
         # Create a submission with field but no field_key
         submission = ManualTaskSubmission(
@@ -156,7 +318,7 @@ class TestManualTaskDataAggregation:
         # Restore the original field_key
         field.field_key = original_field_key
 
-    @patch("fides.api.task.manual.manual_task_graph_task.format_size")
+    @patch("fides.api.task.manual.manual_task_graph_task.format_size", autospec=True)
     def test_process_attachment_field_success(
         self,
         mock_format_size,
@@ -209,7 +371,7 @@ class TestManualTaskDataAggregation:
         )
         assert result is None
 
-    @patch("fides.api.task.manual.manual_task_graph_task.logger")
+    @patch("fides.api.task.manual.manual_task_graph_task.logger", autospec=True)
     def test_process_attachment_field_retrieval_error(
         self,
         mock_logger,
@@ -220,7 +382,7 @@ class TestManualTaskDataAggregation:
         """Test attachment field processing with retrieval error"""
         # Mock the attachment retrieval to raise an exception
         with patch.object(
-            attachment_for_access_package, "retrieve_attachment"
+            attachment_for_access_package, "retrieve_attachment", autospec=True
         ) as mock_retrieve:
             mock_retrieve.side_effect = Exception("Storage error")
 
@@ -232,7 +394,7 @@ class TestManualTaskDataAggregation:
             mock_logger.warning.assert_called_once()
             assert result is None
 
-    @patch("fides.api.task.manual.manual_task_graph_task.format_size")
+    @patch("fides.api.task.manual.manual_task_graph_task.format_size", autospec=True)
     def test_process_attachment_field_multiple_attachments(
         self,
         mock_format_size,
@@ -246,10 +408,10 @@ class TestManualTaskDataAggregation:
         # Mock the attachment retrieval for multiple attachments
         with (
             patch.object(
-                multiple_attachments_for_access[0], "retrieve_attachment"
+                multiple_attachments_for_access[0], "retrieve_attachment", autospec=True
             ) as mock_retrieve1,
             patch.object(
-                multiple_attachments_for_access[1], "retrieve_attachment"
+                multiple_attachments_for_access[1], "retrieve_attachment", autospec=True
             ) as mock_retrieve2,
         ):
 
@@ -280,7 +442,7 @@ class TestManualTaskDataAggregation:
 
         # Mock the attachment retrieval
         with patch.object(
-            attachment_for_access_package, "retrieve_attachment"
+            attachment_for_access_package, "retrieve_attachment", autospec=True
         ) as mock_retrieve:
             mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
 
@@ -304,7 +466,7 @@ class TestManualTaskDataAggregation:
 
         # Mock the attachment retrieval
         with patch.object(
-            attachment_for_access_package, "retrieve_attachment"
+            attachment_for_access_package, "retrieve_attachment", autospec=True
         ) as mock_retrieve:
             mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
 
@@ -341,7 +503,7 @@ class TestManualTaskDataAggregation:
         connection_with_manual_access_task,
     ):
         """Test aggregation with submission data that is not a dict"""
-        _, _, config, field = connection_with_manual_access_task
+        _, _, _, field = connection_with_manual_access_task
 
         # Create submission with non-dict data
         submission = ManualTaskSubmission(
@@ -366,7 +528,7 @@ class TestManualTaskDataAggregation:
         connection_with_manual_access_task,
     ):
         """Test aggregation with submission missing field_type"""
-        _, _, config, field = connection_with_manual_access_task
+        _, _, _, field = connection_with_manual_access_task
 
         # Create submission without field_type
         submission = ManualTaskSubmission(
@@ -389,13 +551,11 @@ class TestManualTaskConditionalDependencies:
     """Test that Manual Tasks only create instances when conditional dependencies are met"""
 
     @pytest.fixture
-    def mock_conditional_evaluation(self, build_graph_task):
-        """Create a mock for _get_conditional_data_and_evaluate with autospec"""
+    def mock_conditional_evaluation(self, build_graph_task, mock_conditional_functions):
+        """Create a mock for conditional evaluation functions with autospec"""
         manual_task, graph_task = build_graph_task
-        with patch.object(
-            graph_task, "_get_conditional_data_and_evaluate", autospec=True
-        ) as mock_evaluate:
-            yield mock_evaluate, manual_task, graph_task
+        mock_extract, mock_evaluate = mock_conditional_functions
+        yield mock_extract, mock_evaluate, manual_task, graph_task
 
     @pytest.fixture
     def evaluation_result(self):
@@ -424,10 +584,13 @@ class TestManualTaskConditionalDependencies:
         evaluation_result,
     ):
         """Test that manual task instances are created when conditional dependencies are satisfied"""
-        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
+        mock_extract, mock_evaluate, manual_task, graph_task = (
+            mock_conditional_evaluation
+        )
 
-        # Configure mock to return satisfying data in the expected tuple format
-        mock_evaluate.return_value = ({"test": "data"}, evaluation_result)
+        # Configure mocks
+        mock_extract.return_value = {"test": "data"}
+        mock_evaluate.return_value = evaluation_result
 
         # Verify no instances exist initially
         initial_instances = access_privacy_request.manual_task_instances
@@ -458,11 +621,12 @@ class TestManualTaskConditionalDependencies:
         evaluation_result,
     ):
         """Test that manual task instances are NOT created when conditional dependencies are not satisfied"""
-        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
+        mock_extract, mock_evaluate, _, graph_task = mock_conditional_evaluation
 
-        # Configure mock to return None (conditions not met) in the expected tuple format
+        # Configure mocks
+        mock_extract.return_value = {"test": "data"}
         evaluation_result.result = False
-        mock_evaluate.return_value = (None, evaluation_result)
+        mock_evaluate.return_value = evaluation_result
 
         # Verify no instances exist initially
         initial_instances = access_privacy_request.manual_task_instances
@@ -493,10 +657,13 @@ class TestManualTaskConditionalDependencies:
         group_evaluation_result,
     ):
         """Test that manual task instances are created when ALL conditional dependencies are satisfied"""
-        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
+        mock_extract, mock_evaluate, manual_task, graph_task = (
+            mock_conditional_evaluation
+        )
 
-        # Configure mock to return data satisfying ALL conditions in the expected tuple format
-        mock_evaluate.return_value = ({"test": "data"}, group_evaluation_result)
+        # Configure mocks
+        mock_extract.return_value = {"test": "data"}
+        mock_evaluate.return_value = group_evaluation_result
 
         # Verify no instances exist initially
         initial_instances = access_privacy_request.manual_task_instances
@@ -526,10 +693,13 @@ class TestManualTaskConditionalDependencies:
         access_privacy_request,
     ):
         """Test that manual task instances are always created when there are no conditional dependencies"""
-        mock_evaluate, manual_task, graph_task = mock_conditional_evaluation
+        mock_extract, mock_evaluate, manual_task, graph_task = (
+            mock_conditional_evaluation
+        )
 
-        # Configure mock to return empty data (no conditions)
-        mock_evaluate.return_value = ({}, None)  # No conditional dependencies
+        # Configure mocks - no conditional dependencies
+        mock_extract.return_value = {}
+        mock_evaluate.return_value = None
 
         # Verify no instances exist initially
         initial_instances = access_privacy_request.manual_task_instances
@@ -553,539 +723,8 @@ class TestManualTaskConditionalDependencies:
         assert updated_instances[0].task_id == manual_task.id
 
 
-class TestManualTaskDataExtraction:
-    """Test the _extract_conditional_dependency_data_from_inputs method in ManualTaskGraphTask"""
-
-    def setup_method(self):
-        """Import CollectionAddress for all test methods"""
-        from fides.api.graph.config import CollectionAddress
-
-        self.CollectionAddress = CollectionAddress
-
-    def test_extract_conditional_dependency_data_from_inputs_simple_field(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test extracting a simple field like 'postgres_example_test_dataset:customer:email'"""
-        # Mock the execution node to have specific input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
-            ]
-
-            # Create test input data
-            inputs = [
-                [
-                    {"id": 1, "email": "customer-1@example.com", "name": "Customer 1"},
-                    {"id": 2, "email": "customer-2@example.com", "name": "Customer 2"},
-                ]
-            ]
-
-            # Create a conditional dependency that references the email field
-            from fides.api.models.manual_task.conditional_dependency import (
-                ManualTaskConditionalDependency,
-            )
-
-            dependency = ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:email",
-                    "operator": "exists",
-                    "value": None,
-                    "sort_order": 1,
-                },
-            )
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should extract the email field data
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {
-                        "email": "customer-1@example.com"  # First non-None value found
-                    }
-                }
-            }
-            assert result == expected
-
-    def test_extract_conditional_dependency_data_from_inputs_nested_field(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test extracting nested fields like 'dataset:collection:subcollection:field'"""
-        # Mock the execution node to have specific input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
-            ]
-
-            # Create test input data with nested structure
-            inputs = [
-                [{"id": 1, "profile": {"age": 25, "preferences": {"theme": "dark"}}}]
-            ]
-
-            # Create a conditional dependency that references a deeply nested field
-            from fides.api.models.manual_task.conditional_dependency import (
-                ManualTaskConditionalDependency,
-            )
-
-            dependency = ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
-                    "operator": "eq",
-                    "value": "dark",
-                    "sort_order": 1,
-                },
-            )
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should extract the nested field data
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"profile": {"preferences": {"theme": "dark"}}}
-                }
-            }
-            assert result == expected
-
-    def test_extract_conditional_dependency_data_from_inputs_missing_field(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test behavior when the field doesn't exist in input data"""
-        # Mock the execution node to have specific input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
-            ]
-
-            # Create test input data without the expected field
-            inputs = [[{"id": 1, "name": "Customer 1"}]]  # No email field
-
-            # Create a conditional dependency that references a missing field
-            from fides.api.models.manual_task.conditional_dependency import (
-                ManualTaskConditionalDependency,
-            )
-
-            dependency = ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:email",
-                    "operator": "exists",
-                    "value": None,
-                    "sort_order": 1,
-                },
-            )
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should include the field with None value
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": None}  # Field not found, so None
-                }
-            }
-            assert result == expected
-
-    def test_extract_conditional_dependency_data_from_inputs_multiple_collections(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test extracting from multiple input collections"""
-        # Mock the execution node to have multiple input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                ),
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:address"
-                ),
-            ]
-
-            # Create test input data for multiple collections
-            inputs = [
-                [{"id": 1, "email": "customer-1@example.com"}],  # customer collection
-                [{"id": 1, "city": "New York"}],  # address collection
-            ]
-
-            # Create conditional dependencies that reference both collections
-            from fides.api.models.manual_task.conditional_dependency import (
-                ManualTaskConditionalDependency,
-            )
-
-            ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:email",
-                    "operator": "exists",
-                    "value": None,
-                    "sort_order": 1,
-                },
-            )
-            ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:address:city",
-                    "operator": "eq",
-                    "value": "New York",
-                    "sort_order": 2,
-                },
-            )
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should extract data from both collections
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": "customer-1@example.com"},
-                    "address": {"city": "New York"},
-                }
-            }
-            assert result == expected
-
-    def test_extract_conditional_dependency_data_from_inputs_field_address_parsing(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test that FieldAddress.from_string() works correctly"""
-        # Mock the execution node to have specific input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
-            ]
-
-            # Create test input data
-            inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
-
-            # Create a conditional dependency with a complex field address
-            from fides.api.models.manual_task.conditional_dependency import (
-                ManualTaskConditionalDependency,
-            )
-
-            dependency = ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:email",
-                    "operator": "exists",
-                    "value": None,
-                    "sort_order": 1,
-                },
-            )
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should correctly parse the field address and extract the data
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": "customer-1@example.com"}
-                }
-            }
-            assert result == expected
-
-    def test_extract_conditional_dependency_data_from_inputs_empty_inputs(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test behavior with empty input data"""
-        # Mock the execution node to have specific input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
-            ]
-
-            # Create empty input data
-            inputs = [[]]  # Empty list for the collection
-
-            # Create a conditional dependency
-            from fides.api.models.manual_task.conditional_dependency import (
-                ManualTaskConditionalDependency,
-            )
-
-            dependency = ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:email",
-                    "operator": "exists",
-                    "value": None,
-                    "sort_order": 1,
-                },
-            )
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should handle empty inputs gracefully
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": None}  # No data to extract
-                }
-            }
-            assert result == expected
-
-    def test_extract_conditional_dependency_data_from_inputs_no_conditional_dependencies(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test behavior when there are no conditional dependencies"""
-        # Mock the execution node to have specific input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
-            ]
-
-            # Create test input data
-            inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
-
-            # No conditional dependencies created
-
-            # Extract the data
-            result = (
-                manual_task_graph_task._extract_conditional_dependency_data_from_inputs(
-                    *inputs, manual_task=manual_task
-                )
-            )
-
-            # Should return empty dict when no conditional dependencies exist
-            assert result == {}
-
-    @pytest.mark.parametrize(
-        "field_address,expected_source_collection_key,expected_field_path",
-        [
-            param(
-                "postgres_example:customer:profile:preferences:theme",
-                "postgres_example:customer",
-                ["profile", "preferences", "theme"],
-                id="complex_nested",
-            ),
-            param(
-                "postgres_example:customer:email",
-                "postgres_example:customer",
-                ["email"],
-                id="simple",
-            ),
-        ],
-    )
-    def test_parse_field_address(
-        self,
-        manual_task_graph_task,
-        field_address,
-        expected_source_collection_key,
-        expected_field_path,
-    ):
-        """Test parsing field addresses with various formats and edge cases"""
-        source_collection_key, field_path = manual_task_graph_task._parse_field_address(
-            field_address
-        )
-
-        assert source_collection_key == expected_source_collection_key
-        assert field_path == expected_field_path
-
-    @pytest.mark.parametrize(
-        "data,field_path,expected_result",
-        [
-            param({"test": "value"}, [], {"test": "value"}, id="empty_path"),
-            param({"test": "value"}, ["missing"], None, id="missing_field"),
-            param(
-                {"test": {"nested": "value"}},
-                ["test", "nested"],
-                "value",
-                id="nested_dict",
-            ),
-            param(
-                {"test": "value"},
-                ["test", "nested"],
-                None,
-                id="nested_dict_missing_field",
-            ),
-        ],
-    )
-    def test_extract_nested_field_value(
-        self, manual_task_graph_task, data, field_path, expected_result
-    ):
-        """Test extracting nested field value with empty field path"""
-        result = manual_task_graph_task._extract_nested_field_value(data, field_path)
-        assert result == expected_result
-
-    @pytest.mark.parametrize(
-        "field_address,expected_result",
-        [
-            param(
-                "dataset:collection:field",
-                {"dataset": {"collection": {"field": "test_value"}}},
-                id="simple",
-            ),
-            param(
-                "dataset:collection:nested:subnested:field",
-                {
-                    "dataset": {
-                        "collection": {"nested": {"subnested": {"field": "test_value"}}}
-                    }
-                },
-                id="complex",
-            ),
-            param("invalid_format", {"invalid_format": "test_value"}, id="fallback"),
-        ],
-    )
-    def test_set_nested_value(
-        self, manual_task_graph_task, field_address, expected_result
-    ):
-        """Test setting nested value for simple 3-part field address"""
-        value = "test_value"
-        result = manual_task_graph_task._set_nested_value(field_address, value)
-        assert result == expected_result
-
-    def test_evaluate_conditional_dependencies_no_root_condition(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test evaluating conditional dependencies when no root condition exists"""
-        with patch.object(
-            ManualTaskConditionalDependency, "get_root_condition", return_value=None
-        ):
-            result = manual_task_graph_task._evaluate_conditional_dependencies(
-                manual_task, {"test": "data"}
-            )
-            assert result is None
-
-    def test_evaluate_conditional_dependencies_with_root_condition(
-        self, manual_task_graph_task, db, manual_task
-    ):
-        """Test evaluating conditional dependencies with existing root condition"""
-        mock_root_condition = "mock_condition"
-        mock_evaluation_result = "mock_result"
-
-        with (
-            patch.object(
-                ManualTaskConditionalDependency,
-                "get_root_condition",
-                return_value=mock_root_condition,
-            ),
-            patch(
-                "fides.api.task.manual.manual_task_graph_task.ConditionEvaluator"
-            ) as mock_evaluator_class,
-        ):
-            mock_evaluator = mock_evaluator_class.return_value
-            mock_evaluator.evaluate_rule.return_value = mock_evaluation_result
-
-            result = manual_task_graph_task._evaluate_conditional_dependencies(
-                manual_task, {"test": "data"}
-            )
-            assert result == mock_evaluation_result
-
-    def test_get_conditional_data_and_evaluate_no_evaluation_result(
-        self, manual_task_graph_task, manual_task
-    ):
-        """Test getting conditional data when evaluation result is None"""
-        with (
-            patch.object(
-                manual_task_graph_task,
-                "_extract_conditional_dependency_data_from_inputs",
-                return_value={"test": "data"},
-            ),
-            patch.object(
-                manual_task_graph_task,
-                "_evaluate_conditional_dependencies",
-                return_value=None,
-            ),
-        ):
-            conditional_data, evaluation_result = (
-                manual_task_graph_task._get_conditional_data_and_evaluate(
-                    manual_task, []
-                )
-            )
-            assert conditional_data == {"test": "data"}
-            assert evaluation_result is None
-
-    def test_get_conditional_data_and_evaluate_conditions_not_met(
-        self, manual_task_graph_task, manual_task
-    ):
-        """Test getting conditional data when conditions are not met"""
-        mock_evaluation_result = type("MockResult", (), {"result": False})()
-
-        with (
-            patch.object(
-                manual_task_graph_task,
-                "_extract_conditional_dependency_data_from_inputs",
-                return_value={"test": "data"},
-            ),
-            patch.object(
-                manual_task_graph_task,
-                "_evaluate_conditional_dependencies",
-                return_value=mock_evaluation_result,
-            ),
-            patch.object(manual_task_graph_task, "update_status") as mock_update_status,
-        ):
-            conditional_data, evaluation_result = (
-                manual_task_graph_task._get_conditional_data_and_evaluate(
-                    manual_task, []
-                )
-            )
-            assert conditional_data is None
-            assert evaluation_result == mock_evaluation_result
-            mock_update_status.assert_called_once()
+class TestManualTaskGraphTaskHelperMethods:
+    """Test the helper methods in ManualTaskGraphTask"""
 
     def test_check_manual_task_configs_no_configs(
         self, manual_task_graph_task, manual_task
@@ -1167,7 +806,7 @@ class TestManualTaskDataExtraction:
         _, manual_task, config, _ = connection_with_manual_access_task
 
         # Create instances to clean up
-        instance1 = ManualTaskInstance.create(
+        ManualTaskInstance.create(
             db=db,
             data={
                 "task_id": manual_task.id,
@@ -1177,7 +816,7 @@ class TestManualTaskDataExtraction:
                 "status": "pending",
             },
         )
-        instance2 = ManualTaskInstance.create(
+        ManualTaskInstance.create(
             db=db,
             data={
                 "task_id": manual_task.id,
@@ -1240,7 +879,7 @@ class TestManualTaskDataExtraction:
         _, manual_task, config, _ = connection_with_manual_access_task
 
         # Create instance with incomplete fields
-        instance = ManualTaskInstance.create(
+        ManualTaskInstance.create(
             db=db,
             data={
                 "task_id": manual_task.id,
@@ -1387,10 +1026,20 @@ class TestManualTaskDataExtraction:
             assert result is None
 
     def test_run_request_conditions_not_met(
-        self, manual_task_graph_task, manual_task, access_privacy_request
+        self,
+        manual_task_graph_task,
+        manual_task,
+        access_privacy_request,
+        mock_conditional_functions,
+        mock_common_dependencies,
     ):
         """Test running request when conditional dependencies are not met"""
         mock_evaluation_result = type("MockResult", (), {"result": False})()
+        mock_extract, mock_evaluate = mock_conditional_functions
+
+        # Configure mocks
+        mock_extract.return_value = {"test": "data"}
+        mock_evaluate.return_value = mock_evaluation_result
 
         with (
             patch.object(
@@ -1415,12 +1064,6 @@ class TestManualTaskDataExtraction:
                 return_value=True,
             ),
             patch.object(
-                manual_task_graph_task,
-                "_get_conditional_data_and_evaluate",
-                autospec=True,
-                return_value=({}, mock_evaluation_result),
-            ),
-            patch.object(
                 manual_task_graph_task, "_cleanup_manual_task_instances", autospec=True
             ) as mock_cleanup,
         ):
@@ -1435,9 +1078,7 @@ class TestManualTaskDataExtraction:
 
     def test_access_request_returns_empty_when_none(self, manual_task_graph_task):
         """Test access request returns empty list when _run_request returns None"""
-        with patch.object(
-            manual_task_graph_task, "_run_request", autospec=True, return_value=None
-        ):
+        with mock_run_request(manual_task_graph_task, return_value=None):
             result = manual_task_graph_task.access_request([])
             assert result == []
 
@@ -1446,15 +1087,8 @@ class TestManualTaskDataExtraction:
         test_data = [{"test": "data"}]
 
         with (
-            patch.object(
-                manual_task_graph_task,
-                "_run_request",
-                autospec=True,
-                return_value=test_data,
-            ),
-            patch.object(
-                manual_task_graph_task, "log_end", autospec=True
-            ) as mock_log_end,
+            mock_run_request(manual_task_graph_task, return_value=test_data),
+            create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
             result = manual_task_graph_task.access_request([])
             assert result == test_data
@@ -1462,30 +1096,22 @@ class TestManualTaskDataExtraction:
 
     def test_erasure_request_no_inputs(self, manual_task_graph_task):
         """Test erasure request with no inputs"""
-        with patch.object(
-            manual_task_graph_task, "_run_request", autospec=True, return_value=None
-        ):
+        with mock_run_request(manual_task_graph_task, return_value=None):
             result = manual_task_graph_task.erasure_request([], inputs=[])
             assert result == 0
 
     def test_erasure_request_logs_end_when_successful(self, manual_task_graph_task):
         """Test erasure request logs end when successful"""
         with (
-            patch.object(
-                manual_task_graph_task,
-                "_run_request",
-                autospec=True,
-                return_value=[{"test": "data"}],
-            ),
-            patch.object(
-                manual_task_graph_task, "log_end", autospec=True
-            ) as mock_log_end,
+            mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
+            create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
             result = manual_task_graph_task.erasure_request(
                 [], inputs=[[{"test": "data"}]]
             )
             assert result == 0
             mock_log_end.assert_called_once_with(ActionType.erasure, record_count=0)
+            assert mock_log_end.call_count == 1
 
     def test_cleanup_manual_task_instances_no_instances(
         self, manual_task_graph_task, manual_task, access_privacy_request
@@ -1635,10 +1261,20 @@ class TestManualTaskDataExtraction:
         assert instance.status == "completed"
 
     def test_run_request_with_evaluation_result(
-        self, manual_task_graph_task, manual_task, access_privacy_request
+        self,
+        manual_task_graph_task,
+        manual_task,
+        access_privacy_request,
+        mock_conditional_functions,
+        mock_common_dependencies,
     ):
         """Test _run_request when evaluation_result exists"""
         mock_evaluation_result = type("MockResult", (), {"result": True})()
+        mock_extract, mock_evaluate = mock_conditional_functions
+
+        # Configure mocks
+        mock_extract.return_value = {"test": "data"}
+        mock_evaluate.return_value = mock_evaluation_result
 
         with (
             patch.object(
@@ -1658,12 +1294,6 @@ class TestManualTaskDataExtraction:
                 "_check_manual_task_configs",
                 autospec=True,
                 return_value=True,
-            ),
-            patch.object(
-                manual_task_graph_task,
-                "_get_conditional_data_and_evaluate",
-                autospec=True,
-                return_value=({"test": "data"}, mock_evaluation_result),
             ),
             patch.object(
                 manual_task_graph_task, "_ensure_manual_task_instances", autospec=True
@@ -1707,7 +1337,7 @@ class TestManualTaskDataExtraction:
         _, manual_task, config, _ = connection_with_manual_access_task
 
         # Create instances to clean up
-        instance1 = ManualTaskInstance.create(
+        ManualTaskInstance.create(
             db=db,
             data={
                 "task_id": manual_task.id,
@@ -1717,7 +1347,7 @@ class TestManualTaskDataExtraction:
                 "status": "pending",
             },
         )
-        instance2 = ManualTaskInstance.create(
+        ManualTaskInstance.create(
             db=db,
             data={
                 "task_id": manual_task.id,
@@ -1740,24 +1370,13 @@ class TestManualTaskDataExtraction:
         db.refresh(access_privacy_request)
         assert len(access_privacy_request.manual_task_instances) == 0
 
-    def test_no_double_event_log_entries_after_submission(
-        self, manual_task_graph_task, complete_manual_task_setup
-    ):
+    @pytest.mark.usefixtures("complete_manual_task_setup")
+    def test_no_double_event_log_entries_after_submission(self, manual_task_graph_task):
         """Test that log_end is called exactly once for both access and erasure requests using real fixtures"""
-        setup = complete_manual_task_setup
-        manual_task = setup["manual_task"]
-
         # Mock _run_request to return data (simulating completed task)
         with (
-            patch.object(
-                manual_task_graph_task,
-                "_run_request",
-                autospec=True,
-                return_value=[{"test": "data"}],
-            ),
-            patch.object(
-                manual_task_graph_task, "log_end", autospec=True
-            ) as mock_log_end,
+            mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
+            create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
 
             # Test access request with mocked completion
@@ -1777,15 +1396,8 @@ class TestManualTaskDataExtraction:
 
         # Mock _run_request to return data (simulating completed task)
         with (
-            patch.object(
-                manual_task_graph_task,
-                "_run_request",
-                autospec=True,
-                return_value=[{"test": "data"}],
-            ),
-            patch.object(
-                manual_task_graph_task, "log_end", autospec=True
-            ) as mock_log_end,
+            mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
+            create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
 
             # Test erasure request with mocked completion
@@ -1805,9 +1417,7 @@ class TestManualTaskDataExtraction:
         """Test that log_end is not called when awaiting user input using real fixtures"""
         # Mock _run_request to return None (simulating awaiting input)
         with (
-            patch.object(
-                manual_task_graph_task, "_run_request", autospec=True, return_value=None
-            ),
+            mock_run_request(manual_task_graph_task, return_value=None),
             patch.object(
                 manual_task_graph_task, "log_end", autospec=True
             ) as mock_log_end,
@@ -1820,9 +1430,7 @@ class TestManualTaskDataExtraction:
 
         # Test erasure request - should not call log_end when awaiting input
         with (
-            patch.object(
-                manual_task_graph_task, "_run_request", autospec=True, return_value=None
-            ),
+            mock_run_request(manual_task_graph_task, return_value=None),
             patch.object(
                 manual_task_graph_task, "log_end", autospec=True
             ) as mock_log_end,
@@ -1833,30 +1441,21 @@ class TestManualTaskDataExtraction:
             mock_log_end.assert_not_called()
 
     def test_no_double_event_log_entries_with_conditional_dependencies(
-        self, manual_task_graph_task
+        self, manual_task_graph_task, mock_conditional_functions
     ):
         """Test that log_end is called exactly once even with conditional dependencies"""
         # Mock the conditional dependency evaluation to return success
-        with (
-            patch.object(
-                manual_task_graph_task,
-                "_get_conditional_data_and_evaluate",
-                autospec=True,
-            ) as mock_evaluate,
-            patch.object(
-                manual_task_graph_task,
-                "_run_request",
-                autospec=True,
-                return_value=[{"test": "data"}],
-            ),
-            patch.object(
-                manual_task_graph_task, "log_end", autospec=True
-            ) as mock_log_end,
-        ):
+        mock_extract, mock_evaluate = mock_conditional_functions
 
-            # Mock evaluation result
-            mock_evaluation_result = type("MockResult", (), {"result": True})()
-            mock_evaluate.return_value = ({"test": "data"}, mock_evaluation_result)
+        # Configure mocks
+        mock_extract.return_value = {"test": "data"}
+        mock_evaluation_result = type("MockResult", (), {"result": True})()
+        mock_evaluate.return_value = mock_evaluation_result
+
+        with (
+            mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
+            create_log_end_mock(manual_task_graph_task) as mock_log_end,
+        ):
 
             # Test access request with conditional dependencies
             result = manual_task_graph_task.access_request([])
@@ -1871,9 +1470,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task
     ):
         """Test that log_end is not called when manual task is actually awaiting input (real scenario)"""
-        with patch.object(
-            manual_task_graph_task, "log_end", autospec=True
-        ) as mock_log_end:
+        with create_log_end_mock(manual_task_graph_task) as mock_log_end:
             # The retry decorator will catch AwaitingAsyncTaskCallback and return None
             # This simulates the real scenario where the task is paused awaiting input
             result = manual_task_graph_task.access_request([])

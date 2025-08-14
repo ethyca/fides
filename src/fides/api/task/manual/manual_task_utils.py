@@ -1,6 +1,5 @@
 from typing import Optional
 
-from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
