@@ -1,4 +1,15 @@
-"""disallow_dot_in_monitor_key_and_update_refs
+"""
+Disallow dots in monitor keys and update references to monitor keys.
+
+This is a data migration.
+
+This migration does the following:
+- Fetches a mapping of old monitor keys containing '.' to new, safe keys (replace '.' with '_').
+- Persists the mapping into the dbcache table.
+- Drops the FK constraints on the stagedresourceancestor table.
+- Updates the monitorconfig.key, monitorexecution.monitor_config_key, stagedresource.monitor_config_id, stagedresource.urn, stagedresource.parent, stagedresource.children, stagedresource.meta, stagedresourceancestor.ancestor_urn, and stagedresourceancestor.descendant_urn to reference new keys.
+- Recreates the FK constraints on the stagedresourceancestor table.
+- Adds a CHECK constraint to forbid dots in monitorconfig.key going forward.
 
 Revision ID: 2f3c1a2d6b10
 Revises: a7065df4dcf1
