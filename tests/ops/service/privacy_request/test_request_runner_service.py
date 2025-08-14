@@ -1764,13 +1764,9 @@ class TestConsentEmailStep:
             == PrivacyRequestStatus.awaiting_email_send
         )
         assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
-        last_log = (
-            privacy_request_with_consent_policy.execution_logs.order_by(
-                ExecutionLog.created_at
-            )
-            .desc()
-            .first()
-        )
+        last_log = privacy_request_with_consent_policy.execution_logs.order_by(
+            ExecutionLog.created_at.desc()
+        ).first()
         assert last_log.status == ExecutionLogStatus.pending
         assert last_log.message == "Privacy request paused pending batch email send job"
         assert last_log.dataset_name == "Pending batch email send"
