@@ -111,21 +111,15 @@ def dev(session: Session) -> None:
         session.run("docker", "compose", "up", "fides-1", "fides-2", "fides-proxy", external=True)
     elif not datastores:
         if open_shell:
-            # Run only a single fides webserver for shell access
-            session.run("docker", "compose", "up", "--wait", "fides", external=True)
+            session.run(*START_APP, external=True)
             session.log("~~Remember to login with `fides user login`!~~")
             session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
-                # Run only a single fides webserver with remote debug
-                session.run(
-                    "docker", "compose", "-f", "docker-compose.yml", "-f", "docker-compose.remote-debug.yml",
-                    "up", "fides", external=True
-                )
+                session.run(*START_APP_REMOTE_DEBUG, external=True)
             else:
-                # Run only a single fides webserver, not the nginx proxy
                 session.run(
-                    "docker", "compose", "up", "fides", external=True
+                    "docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True
                 )
     else:
         # Run the webserver with additional datastores
