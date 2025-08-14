@@ -78,7 +78,7 @@ export const useManualTaskColumns = ({
       {
         title: "Actions",
         key: "actions",
-        render: (_: any, record: Task) => (
+        render: (_: unknown, record: Task) => (
           <Flex gap={8}>
             <Button
               size="small"
