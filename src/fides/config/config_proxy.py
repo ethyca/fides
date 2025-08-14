@@ -68,18 +68,24 @@ class ConfigProxyBase:
     def __init__(self, db: Session) -> None:
         self._db = db
 
-    def __getattribute__(self, __name: str) -> Any:
+    def __getattr__(self, name: str) -> Any:
+        """Dynamically resolve configuration attributes.
+
+        Using `__getattr__` instead of `__getattribute__` means we **only** intercept
+        attribute access **when the normal look-up fails**.  This prevents accidental
+        interception of Python's dunder attributes (e.g. `__class__`, `__dict__`)
+        and any real methods/attributes defined on the proxy classes themselves.
+
+        Without this safeguard, introspection utilities or type checks could receive
+        unexpected `None` values - a subtle source of "wrong value" bugs that was
+        observed in production when libraries accessed attributes like
+        `obj.__class__` or `obj.__repr__`.
         """
-        This allows us to retrieve resolved config properties when
-        using the config proxy as a "normal" config object, i.e. with dot notation,
-        e.g. `config_proxy.notifications.notification_service_type
-        """
-        if __name in ("_db", "merge_properties", "prefix"):
-            return object.__getattribute__(self, __name)
+
         return ApplicationConfig.get_resolved_config_property(
             self._db,
-            f"{self.prefix}.{__name}",
-            merge_values=__name in self.merge_properties,
+            f"{self.prefix}.{name}",
+            merge_values=name in self.merge_properties,
         )
 
 
@@ -113,23 +119,24 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     disable_consent_identity_verification: bool
     require_manual_request_approval: bool
 
-    def __getattribute__(self, name: str) -> Any:
+    def __getattr__(self, name: str) -> Any:  # noqa: D401 – provides dynamic attribute access
+        """Provide dynamic fallback for *disable_consent_identity_verification*.
+
+        The attribute should default to the **opposite** of
+        ``subject_identity_verification_required`` when it is **explicitly unset** in
+        either the API-set or config-set values (i.e. resolves to ``None``).
         """
-        Overrides base __getattribute__ to provide a dynamic fallback for
-        'disable_consent_identity_verification'. The fallback is based on
-        'subject_identity_verification_required' only when no explicit value is provided,
-        preserving None for unset cases.
-        """
+
         if name == "disable_consent_identity_verification":
-            value = super().__getattribute__("disable_consent_identity_verification")
+            value = super().__getattr__("disable_consent_identity_verification")  # type: ignore[attr-defined]
             if value is None:
-                subject_verification_required = super().__getattribute__(
+                subject_verification_required = super().__getattr__(
                     "subject_identity_verification_required"
                 )
                 return not subject_verification_required
             return value
 
-        return super().__getattribute__(name)
+        return super().__getattr__(name)  # type: ignore[attr-defined]
 
 
 class StorageSettingsProxy(ConfigProxyBase):
