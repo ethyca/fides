@@ -10,7 +10,7 @@ print(f"🔧 DSR 3.0 enabled at startup: {CONFIG.execution.use_dsr_3_0}")
 import sys
 import argparse
 import yaml
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from sqlalchemy.orm import Session, sessionmaker
 from uuid import uuid4
@@ -667,6 +667,128 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             self.error(f"Error creating ManualTaskConditionalDependencies: {e}")
             return False
 
+    def _create_policy(self) -> bool:
+        """Create a policy for the privacy request."""
+        try:
+            db = self._get_db_session()
+            # Create storage config for access rule
+            storage_config = StorageConfig.create(
+                db=db,
+                data={
+                    "name": f"Test Storage Config {str(uuid4())[:8]}",
+                    "type": "local",
+                    "details": {
+                        "naming": "request_id",
+                    },
+                    "key": f"test_storage_config_{str(uuid4())[:8]}",
+                    "format": "json",
+                },
+            )
+            self.storage_config = storage_config
+
+            # Create policy
+            policy = Policy.create(
+                db=db,
+                data={
+                    "name": f"Test Policy {str(uuid4())[:8]}",
+                    "key": f"test_policy_{str(uuid4())[:8]}",
+                },
+            )
+            self.policy = policy
+
+            # Create access rule
+            self.access_rule = Rule.create(
+                db=db,
+                data={
+                    "action_type": ActionType.access.value,
+                    "name": f"Access Rule {str(uuid4())[:8]}",
+                    "key": f"access_rule_{str(uuid4())[:8]}",
+                    "policy_id": policy.id,
+                    "storage_destination_id": storage_config.id,
+                },
+            )
+
+            # Create rule targets for all relevant data categories
+            for category in DATA_CATEGORIES:
+                RuleTarget.create(
+                    db=db,
+                    data={
+                        "data_category": category,
+                        "rule_id": self.access_rule.id,
+                    },
+                )
+
+            self.success(f"Created policy: {policy.id}")
+            return True
+
+        except Exception as e:
+            self.error(f"Error creating policy: {e}")
+            return False
+
+    def _create_privacy_request(self) -> bool:
+        """Create two privacy requests - one where conditions are met and one where they aren't."""
+        try:
+            db = self._get_db_session()
+
+            # Create first privacy request - conditions WILL be met
+            # This email exists in the postgres example data and matches our conditional dependencies
+            privacy_request_1 = PrivacyRequest.create(
+                db=db,
+                data={
+                    "external_id": f"ext-conditions-met-{str(uuid4())}",
+                    "started_processing_at": datetime.now(timezone.utc),
+                    "requested_at": datetime.now(timezone.utc),
+                    "status": "pending",
+                    "origin": "https://example.com/",
+                    "policy_id": self.policy.id,
+                    "client_id": self.policy.client_id,
+                },
+            )
+
+            # Cache identity for first request - this should trigger manual task creation
+            identity_kwargs_1 = {"email": "customer-1@example.com"}
+            privacy_request_1.cache_identity(identity_kwargs_1)
+            privacy_request_1.persist_identity(
+                db=db,
+                identity={"email": "customer-1@example.com"},
+            )
+
+            self.success(f"Created privacy request (conditions met): {privacy_request_1.id}")
+
+            # Create second privacy request - conditions will NOT be met
+            # This email doesn't exist in the postgres example data, so manual task won't be created
+            privacy_request_2 = PrivacyRequest.create(
+                db=db,
+                data={
+                    "external_id": f"ext-conditions-not-met-{str(uuid4())}",
+                    "started_processing_at": datetime.now(timezone.utc),
+                    "requested_at": datetime.now(timezone.utc),
+                    "status": "pending",
+                    "origin": "https://example.com/",
+                    "policy_id": self.policy.id,
+                    "client_id": self.policy.client_id,
+                },
+            )
+
+            # Cache identity for second request - this should NOT trigger manual task creation
+            identity_kwargs_2 = {"email": "nonexistent@example.com"}
+            privacy_request_2.cache_identity(identity_kwargs_2)
+            privacy_request_2.persist_identity(
+                db=db,
+                identity={"email": "nonexistent@example.com"},
+            )
+
+            self.success(f"Created privacy request (conditions not met): {privacy_request_2.id}")
+
+            # Store both privacy requests for cleanup
+            self.privacy_requests = [privacy_request_1, privacy_request_2]
+
+            return True
+
+        except Exception as e:
+            self.error(f"Error creating privacy requests: {e}")
+            return False
+
     def _delete_manual_task(self) -> bool:
         """Delete the ManualTask."""
         try:
@@ -820,128 +942,6 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             return False
         except Exception as e:
             self.error(f"Error deleting privacy request {privacy_request.id if privacy_request else 'unknown'}: {e}")
-            return False
-
-    def _create_policy(self) -> bool:
-        """Create a policy for the privacy request."""
-        try:
-            db = self._get_db_session()
-            # Create storage config for access rule
-            storage_config = StorageConfig.create(
-                db=db,
-                data={
-                    "name": f"Test Storage Config {str(uuid4())[:8]}",
-                    "type": "local",
-                    "details": {
-                        "naming": "request_id",
-                    },
-                    "key": f"test_storage_config_{str(uuid4())[:8]}",
-                    "format": "json",
-                },
-            )
-            self.storage_config = storage_config
-
-            # Create policy
-            policy = Policy.create(
-                db=db,
-                data={
-                    "name": f"Test Policy {str(uuid4())[:8]}",
-                    "key": f"test_policy_{str(uuid4())[:8]}",
-                },
-            )
-            self.policy = policy
-
-            # Create access rule
-            self.access_rule = Rule.create(
-                db=db,
-                data={
-                    "action_type": ActionType.access.value,
-                    "name": f"Access Rule {str(uuid4())[:8]}",
-                    "key": f"access_rule_{str(uuid4())[:8]}",
-                    "policy_id": policy.id,
-                    "storage_destination_id": storage_config.id,
-                },
-            )
-
-            # Create rule targets for all relevant data categories
-            for category in DATA_CATEGORIES:
-                RuleTarget.create(
-                    db=db,
-                    data={
-                        "data_category": category,
-                        "rule_id": self.access_rule.id,
-                    },
-                )
-
-            self.success(f"Created policy: {policy.id}")
-            return True
-
-        except Exception as e:
-            self.error(f"Error creating policy: {e}")
-            return False
-
-    def _create_privacy_request(self) -> bool:
-        """Create two privacy requests - one where conditions are met and one where they aren't."""
-        try:
-            db = self._get_db_session()
-
-            # Create first privacy request - conditions WILL be met
-            # This email exists in the postgres example data and matches our conditional dependencies
-            privacy_request_1 = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"ext-conditions-met-{str(uuid4())}",
-                    "started_processing_at": datetime.utcnow(),
-                    "requested_at": datetime.utcnow(),
-                    "status": "pending",
-                    "origin": "https://example.com/",
-                    "policy_id": self.policy.id,
-                    "client_id": self.policy.client_id,
-                },
-            )
-
-            # Cache identity for first request - this should trigger manual task creation
-            identity_kwargs_1 = {"email": "customer-1@example.com"}
-            privacy_request_1.cache_identity(identity_kwargs_1)
-            privacy_request_1.persist_identity(
-                db=db,
-                identity={"email": "customer-1@example.com"},
-            )
-
-            self.success(f"Created privacy request (conditions met): {privacy_request_1.id}")
-
-            # Create second privacy request - conditions will NOT be met
-            # This email doesn't exist in the postgres example data, so manual task won't be created
-            privacy_request_2 = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"ext-conditions-not-met-{str(uuid4())}",
-                    "started_processing_at": datetime.utcnow(),
-                    "requested_at": datetime.utcnow(),
-                    "status": "pending",
-                    "origin": "https://example.com/",
-                    "policy_id": self.policy.id,
-                    "client_id": self.policy.client_id,
-                },
-            )
-
-            # Cache identity for second request - this should NOT trigger manual task creation
-            identity_kwargs_2 = {"email": "nonexistent@example.com"}
-            privacy_request_2.cache_identity(identity_kwargs_2)
-            privacy_request_2.persist_identity(
-                db=db,
-                identity={"email": "nonexistent@example.com"},
-            )
-
-            self.success(f"Created privacy request (conditions not met): {privacy_request_2.id}")
-
-            # Store both privacy requests for cleanup
-            self.privacy_requests = [privacy_request_1, privacy_request_2]
-
-            return True
-
-        except Exception as e:
-            self.error(f"Error creating privacy requests: {e}")
             return False
 
     def _debug_manual_task_integration(self) -> None:
