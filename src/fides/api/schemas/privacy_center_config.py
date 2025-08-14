@@ -12,10 +12,22 @@ class CustomIdentity(FidesSchema):
     label: str
 
 
+class LocationIdentityField(FidesSchema):
+    """Location field configuration that extends the useful parts of CustomPrivacyRequestField"""
+
+    label: str
+    required: Optional[bool] = True
+    default_value: Optional[str] = None
+    query_param_key: Optional[str] = None
+    ip_geolocation_hint: Optional[bool] = False
+    # Note: We intentionally omit 'hidden' field as it doesn't make sense for location identity input
+
+
 class IdentityInputs(FidesSchema):
     name: Optional[RequiredType] = None
     email: Optional[RequiredType] = None
     phone: Optional[RequiredType] = None
+    location: Optional[Union[RequiredType, LocationIdentityField]] = None
     model_config = ConfigDict(extra="allow")
 
     def __init__(self, **data: Any):
@@ -30,6 +42,9 @@ class IdentityInputs(FidesSchema):
                         f'Custom identity "{field}" must be an instance of CustomIdentity '
                         '(e.g. {"label": "Field label"})'
                     )
+            elif field == "location" and isinstance(value, dict):
+                # Handle location field as LocationIdentityField
+                data[field] = LocationIdentityField(**value)
         super().__init__(**data)
 
 

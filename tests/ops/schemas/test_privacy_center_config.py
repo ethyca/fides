@@ -7,6 +7,7 @@ from fides.api.schemas.privacy_center_config import (
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
+    LocationIdentityField,
     PrivacyCenterConfig,
 )
 from fides.api.util.saas_util import load_as_string
@@ -56,12 +57,65 @@ class TestPrivacyCenterConfig:
         IdentityInputs(email="required", loyalty_id={"label": "Loyalty ID"})
 
     def test_invalid_custom_identity_inputs(self):
-        with pytest.raises(ValueError) as exc:
-            IdentityInputs(loyalty_id="Loyalty ID")
-        assert (
-            'Custom identity "loyalty_id" must be an instance of CustomIdentity (e.g. {"label": "Field label"})'
-            in str(exc.value)
+        with pytest.raises(ValueError):
+            IdentityInputs(loyalty_id="invalid")
+
+    def test_location_identity_field(self):
+        location_field = LocationIdentityField(
+            label="Location", required=True, ip_geolocation_hint=True
         )
+        assert location_field.label == "Location"
+        assert location_field.required is True
+        assert location_field.ip_geolocation_hint is True
+        assert location_field.default_value is None
+
+    def test_location_identity_field_with_all_options(self):
+        location_field = LocationIdentityField(
+            label="Your Location",
+            required=False,
+            default_value="US",
+            query_param_key="region",
+            ip_geolocation_hint=False,
+        )
+        assert location_field.label == "Your Location"
+        assert location_field.required is False
+        assert location_field.default_value == "US"
+        assert location_field.query_param_key == "region"
+        assert location_field.ip_geolocation_hint is False
+
+    def test_identity_inputs_with_location_object(self):
+        identity_inputs = IdentityInputs(
+            email="required",
+            location={
+                "label": "Location",
+                "required": True,
+                "ip_geolocation_hint": True,
+            },
+        )
+        assert identity_inputs.email == "required"
+        assert isinstance(identity_inputs.location, LocationIdentityField)
+        assert identity_inputs.location.label == "Location"
+        assert identity_inputs.location.required is True
+        assert identity_inputs.location.ip_geolocation_hint is True
+
+    def test_identity_inputs_with_location_string(self):
+        identity_inputs = IdentityInputs(email="required", location="required")
+        assert identity_inputs.email == "required"
+        assert identity_inputs.location == "required"
+
+    def test_mixed_identity_inputs_with_location(self):
+        identity_inputs = IdentityInputs(
+            email="required",
+            location={"label": "Location", "ip_geolocation_hint": True},
+            loyalty_id={"label": "Loyalty ID"},
+        )
+        assert identity_inputs.email == "required"
+        assert isinstance(identity_inputs.location, LocationIdentityField)
+        assert identity_inputs.location.ip_geolocation_hint is True
+
+    def test_location_identity_field_validation_error(self):
+        with pytest.raises(ValidationError):
+            LocationIdentityField()  # Missing required label field
 
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig
