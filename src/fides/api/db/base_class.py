@@ -123,7 +123,7 @@ class FidesBase:
         Note that this differs slightly from the allowed characters in `sanitize_fides_key`
         from `core/utils.py`; specifically, `.` are disallowed (converted to `_`) here, while
         they are allowed in `sanitize_fides_key`. This is because `.` must be allowed in
-        `fides_key`s (), but they are not allowed in `key`s.
+        `fides_key`s, but they are not allowed in `key`s.
         """
         return DISALLOWED_CHARS.sub("_", proposed_key)
 

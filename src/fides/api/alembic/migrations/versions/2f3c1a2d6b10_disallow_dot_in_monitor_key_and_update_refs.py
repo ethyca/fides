@@ -111,7 +111,7 @@ def _update_stagedresource_monitor_config_id(
     logger.info("Finished updating stagedresource monitor_config_id.")
 
 
-def _replace_prefix_sql(prefix_col: str, table: str, column: str) -> str:
+def _replace_prefix_sql(table: str, column: str) -> str:
     """
     Returns SQL snippet to replace leading '<old>.' prefix in a text column with '<new>.' while preserving the rest of the string.
     Assumes parameters :old and :new are bound.
@@ -131,13 +131,9 @@ def _update_stagedresource_urns_and_parent(
     for old, new in mapping.items():
         params = {"old": old, "new": new, "old_prefix": f"{old}.%"}
         # urn
-        conn.execute(
-            sa.text(_replace_prefix_sql("urn", "stagedresource", "urn")), params
-        )
+        conn.execute(sa.text(_replace_prefix_sql("stagedresource", "urn")), params)
         # parent
-        conn.execute(
-            sa.text(_replace_prefix_sql("parent", "stagedresource", "parent")), params
-        )
+        conn.execute(sa.text(_replace_prefix_sql("stagedresource", "parent")), params)
     logger.info("Finished updating stagedresource urns and parent.")
 
 
@@ -207,7 +203,7 @@ def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) 
                         CASE WHEN (meta->>'top_level_field_urn') LIKE :old_prefix
                              THEN :new || SUBSTRING((meta->>'top_level_field_urn') FROM CHAR_LENGTH(:old) + 1)
                              ELSE (meta->>'top_level_field_urn') END
-                    ), '{}'::jsonb),
+                    ), 'null'::jsonb),
                     true
                 )
                 WHERE meta ? 'top_level_field_urn'
@@ -225,20 +221,12 @@ def _update_stagedresourceancestor(conn: Connection, mapping: Dict[str, str]) ->
         params = {"old": old, "new": new, "old_prefix": f"{old}.%"}
         # ancestor_urn
         conn.execute(
-            sa.text(
-                _replace_prefix_sql(
-                    "ancestor_urn", "stagedresourceancestor", "ancestor_urn"
-                )
-            ),
+            sa.text(_replace_prefix_sql("stagedresourceancestor", "ancestor_urn")),
             params,
         )
         # descendant_urn
         conn.execute(
-            sa.text(
-                _replace_prefix_sql(
-                    "descendant_urn", "stagedresourceancestor", "descendant_urn"
-                )
-            ),
+            sa.text(_replace_prefix_sql("stagedresourceancestor", "descendant_urn")),
             params,
         )
     logger.info("Finished updating stagedresourceancestor.")
