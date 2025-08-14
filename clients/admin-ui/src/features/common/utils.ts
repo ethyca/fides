@@ -139,17 +139,39 @@ export const stripHashFromUrl = (url: string) => {
 };
 
 /**
- * Formats a user object for display by combining first name, last name, and email
- * @param user - A partial user object with optional first_name, last_name, and email_address
+ * Formats a user object for display by combining first name, last name, email, and optionally username
+ * @param user - A partial user object with optional first_name, last_name, email_address, username, and id
+ * @param options - Optional configuration object
+ * @param options.fallbackToId - If true, will fallback to user.id if no other display value is found
  * @returns A formatted display name string
  */
-export const formatUser = (user: {
-  first_name?: string | null;
-  last_name?: string | null;
-  email_address?: string | null;
-}): string => {
+export const formatUser = (
+  user: {
+    first_name?: string | null;
+    last_name?: string | null;
+    email_address?: string | null;
+    username?: string | null;
+    id?: string;
+  },
+  options: { fallbackToId?: boolean } = {},
+): string => {
+  const { fallbackToId = false } = options;
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
-  return fullName || user.email_address || "Unknown User";
+
+  if (fullName) {
+    return fullName;
+  }
+  if (user.username) {
+    return user.username;
+  }
+  if (user.email_address) {
+    return user.email_address;
+  }
+  if (fallbackToId && user.id) {
+    return user.id;
+  }
+
+  return "Unknown User";
 };
 
 /**
