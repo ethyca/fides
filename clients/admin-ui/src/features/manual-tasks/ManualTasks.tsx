@@ -214,7 +214,7 @@ export const ManualTasks = () => {
           <Typography.Paragraph>
             You have no tasks assigned.{" "}
             {hasAccessToAllTasks &&
-              "You can modify the &quot;Assigned to&quot; column filter to view tasks assigned to other users."}
+              "You can modify the Assigned to column filter to view tasks assigned to other users."}
           </Typography.Paragraph>
         </div>
       );
