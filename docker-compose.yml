@@ -116,7 +116,7 @@ services:
       FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
       FIDES__SECURITY__DRP_JWT_SECRET: secret
 
-  worker:
+  worker-other:
     image: ethyca/fides:local
     command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
     depends_on:
@@ -215,7 +215,6 @@ services:
       - "5555:5555"
     depends_on:
       - redis
-      - worker
     environment:
       - CELERY_BROKER_URL=redis://:redispassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:redispassword@redis:6379/0

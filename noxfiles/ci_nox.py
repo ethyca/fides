@@ -436,10 +436,10 @@ def python_build(session: nox.Session, dist: str) -> None:
 @nox_session()
 def check_worker_startup(session: Session) -> None:
     """
-    Check that the main 'worker' service can start up successfully using docker compose --wait.
+    Check that the main 'worker-dsr' service can start up successfully using docker compose --wait.
     Relies on the healthcheck defined in docker-compose.yml.
     """
-    worker_service = "worker"
+    worker_service = "worker-dsr"
     session.log(f"Attempting to start and wait for service: {worker_service}")
 
     start_command = (
