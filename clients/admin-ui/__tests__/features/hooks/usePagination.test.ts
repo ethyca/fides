@@ -1,80 +1,19 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
 
-// Mock nuqs to control URL state without relying on Next router
-// NOTE: our code is not modern enough to use the nuqs testing adapter
-// (specifically the ESM module compatibility)
-// so we're using a custom mock for now. Once ESM is more widely supported,
-// we can switch to the nuqs testing adapter.
-jest.mock("nuqs", () => {
-  const setCalls: Array<Record<string, any> | null> = [];
-  let currentState: Record<string, any> = {};
-
-  const parseFactory = (defaultValue: unknown) => ({
-    withDefault: (value: unknown) => ({ default: value ?? defaultValue }),
-  });
-
-  const helpers = {
-    reset: (initial: Record<string, any> = {}) => {
-      currentState = { ...initial };
-      setCalls.length = 0;
-    },
-    getSetCalls: () => setCalls,
-    getState: () => currentState,
-  };
-
-  return {
-    esModule: true,
-    parseAsInteger: parseFactory(1),
-
-    useQueryStates: (parsers: Record<string, any>) => {
-      const setQueryState = (updates: Record<string, any> | null) => {
-        setCalls.push(updates);
-        if (updates && typeof updates === "object") {
-          // Filter out null values (they represent deletions in nuqs)
-          const filteredUpdates = Object.fromEntries(
-            Object.entries(updates).filter(([, value]) => value !== null),
-          );
-          currentState = { ...currentState, ...filteredUpdates };
-        }
-      };
-
-      // Return current state values, but fall back to parser defaults when undefined
-      const stateWithDefaults = Object.keys(parsers).reduce(
-        (acc, key) => {
-          const parser = parsers[key];
-          const currentValue = currentState[key];
-          // If value is undefined, use the parser's default
-          if (currentValue === undefined && parser?.default !== undefined) {
-            // eslint-disable-next-line no-param-reassign
-            acc[key] = parser.default;
-          } else {
-            // eslint-disable-next-line no-param-reassign
-            acc[key] = currentValue;
-          }
-          return acc;
-        },
-        {} as Record<string, any>,
-      );
-
-      return [stateWithDefaults, setQueryState] as const;
-    },
-
-    nuqsTestHelpers: helpers,
-  };
-});
+// Mock nuqs using shared mock implementation
+// eslint-disable-next-line global-require
+jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);
 
 // Import after mocks so the mocked nuqs is used by the hook
 // eslint-disable-next-line import/first
-import { usePagination } from "../../../src/features/common/table/hooks/usePagination";
+import { usePagination } from "../../../src/features/common/hooks";
+// Import the test helpers type and access from the mocked module
+// eslint-disable-next-line import/first
+import type { NuqsTestHelpers } from "../../utils/nuqs-mock";
 
-// Access the test helpers from the mocked module
 const { nuqsTestHelpers } = jest.requireMock("nuqs") as {
-  nuqsTestHelpers: {
-    reset: (initial?: Record<string, any>) => void;
-    getSetCalls: () => Array<Record<string, any> | null>;
-    getState: () => Record<string, any>;
-  };
+  nuqsTestHelpers: NuqsTestHelpers;
 };
 
 describe("usePagination", () => {
