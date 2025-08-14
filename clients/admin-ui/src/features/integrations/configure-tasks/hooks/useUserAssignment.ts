@@ -51,7 +51,7 @@ export const useUserAssignment = ({ integration }: UseUserAssignmentProps) => {
 
     return {
       label: `${user.first_name} ${user.last_name} (${user.email_address})`,
-      value: user.email_address,
+      value: user.id, // Use user ID instead of email
       displayName, // This will be used for the tag display
     };
   });
@@ -59,10 +59,10 @@ export const useUserAssignment = ({ integration }: UseUserAssignmentProps) => {
   // Load currently assigned users when manual task config loads
   useEffect(() => {
     if (manualTaskConfig?.assigned_users) {
-      const assignedUserEmails = manualTaskConfig.assigned_users
-        .map((user) => user.email_address)
-        .filter((email) => email !== null && email !== undefined) as string[];
-      setSelectedUsers(assignedUserEmails);
+      const assignedUserIds = manualTaskConfig.assigned_users
+        .map((user) => user.id)
+        .filter((id) => id !== null && id !== undefined) as string[];
+      setSelectedUsers(assignedUserIds);
     }
   }, [manualTaskConfig]);
 
