@@ -84,12 +84,14 @@ export const useManualTaskColumns = ({
               size="small"
               icon={<Icons.Edit />}
               onClick={() => onEdit(record)}
+              data-testid="edit-btn"
             />
             <Button
               size="small"
               danger
               icon={<Icons.TrashCan />}
               onClick={() => onDelete(record)}
+              data-testid="delete-btn"
             />
           </Flex>
         ),

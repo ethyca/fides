@@ -142,7 +142,7 @@ const AddManualTaskForm = ({
           { max: 100, message: "Task name must be less than 100 characters" },
         ]}
       >
-        <Input placeholder="Enter task name" />
+        <Input placeholder="Enter task name" data-testid="input-name" />
       </Form.Item>
 
       <Form.Item
@@ -158,7 +158,10 @@ const AddManualTaskForm = ({
           { max: 200, message: "Description must be less than 200 characters" },
         ]}
       >
-        <Input placeholder="Enter task description" />
+        <Input
+          placeholder="Enter task description"
+          data-testid="input-description"
+        />
       </Form.Item>
 
       {!isEditing && (
@@ -179,7 +182,10 @@ const AddManualTaskForm = ({
             },
           ]}
         >
-          <Input placeholder="Recommended to specify (auto-generated if empty)" />
+          <Input
+            placeholder="Recommended to specify (auto-generated if empty)"
+            data-testid="input-key"
+          />
         </Form.Item>
       )}
 
@@ -193,7 +199,7 @@ const AddManualTaskForm = ({
           }
           name="key"
         >
-          <Input disabled />
+          <Input disabled data-testid="input-key-disabled" />
         </Form.Item>
       )}
 
@@ -210,6 +216,7 @@ const AddManualTaskForm = ({
         <Select
           placeholder="Select request type"
           options={requestTypeOptions}
+          data-testid="select-request-type"
         />
       </Form.Item>
 
@@ -227,14 +234,24 @@ const AddManualTaskForm = ({
           placeholder="Select field type"
           options={fieldTypeOptions}
           disabled={isFieldTypeDisabled}
+          data-testid="select-field-type"
         />
       </Form.Item>
 
       <Flex justify="flex-end" gap={2}>
-        <Button onClick={onCancel} disabled={isSubmitting}>
+        <Button
+          onClick={onCancel}
+          disabled={isSubmitting}
+          data-testid="cancel-btn"
+        >
           Cancel
         </Button>
-        <Button type="primary" htmlType="submit" loading={isSubmitting}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isSubmitting}
+          data-testid="save-btn"
+        >
           {isEditing ? "Update task" : "Add task"}
         </Button>
       </Flex>

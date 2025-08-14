@@ -63,10 +63,18 @@ const ManualTaskConfigTable = ({
   return (
     <>
       <Flex align="center" justify="space-between" gap={8} className="mb-4">
-        <Button type="default" onClick={onManageSecureAccessClick}>
+        <Button
+          type="default"
+          onClick={onManageSecureAccessClick}
+          data-testid="manage-secure-access-btn"
+        >
           Manage secure access
         </Button>
-        <Button type="primary" onClick={handleAddManualTask}>
+        <Button
+          type="primary"
+          onClick={handleAddManualTask}
+          data-testid="add-manual-task-btn"
+        >
           Add manual task
         </Button>
       </Flex>

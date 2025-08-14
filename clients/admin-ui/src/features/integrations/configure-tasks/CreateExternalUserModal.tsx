@@ -120,7 +120,10 @@ const CreateExternalUserModal = ({
             { type: "email", message: "Please enter a valid email address" },
           ]}
         >
-          <Input placeholder="user@example.com" />
+          <Input
+            placeholder="user@example.com"
+            data-testid="input-email_address"
+          />
         </Form.Item>
 
         <Form.Item
@@ -128,7 +131,7 @@ const CreateExternalUserModal = ({
           label="First Name"
           rules={[{ required: true, message: "First name is required" }]}
         >
-          <Input />
+          <Input data-testid="input-first_name" />
         </Form.Item>
 
         <Form.Item
@@ -136,15 +139,24 @@ const CreateExternalUserModal = ({
           label="Last Name"
           rules={[{ required: true, message: "Last name is required" }]}
         >
-          <Input />
+          <Input data-testid="input-last_name" />
         </Form.Item>
 
         <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <Button onClick={handleCancel} disabled={isLoading}>
+            <Button
+              onClick={handleCancel}
+              disabled={isLoading}
+              data-testid="cancel-btn"
+            >
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" loading={isLoading}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isLoading}
+              data-testid="save-btn"
+            >
               Create User
             </Button>
           </div>
