@@ -14,6 +14,14 @@ class DBCacheNamespace(Enum):
 
     LIST_PRIVACY_EXPERIENCE = "list-privacy-experience"
 
+    # NOTE: monitor config key mapping entry is populated by migration
+    # 2f3c1a2d6b10_disallow_dot_in_monitor_key_and_update_refs as a temporary means of
+    # storing the mapping of 'old' monitor config keys with dots in them
+    # to their new keys without dots.
+    # This is a safety measure, in case we need to revert that data migration for whatever reason.
+    # TODO: remove this cache entry in a future migration.
+    MONITOR_CONFIG_KEY_MAPPING = "monitor-config-key-mapping"
+
 
 class DBCache(Base):
     """
