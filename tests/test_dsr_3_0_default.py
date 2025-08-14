@@ -37,7 +37,9 @@ class TestDSR3DefaultScheduler:
         )
 
         # Simulate having previous DSR 2.0 results by storing data in cache
-        cache_key = f"{privacy_request.id}__access_request__test_collection"
+        cache_key = (
+            f"{privacy_request.id}__access_request__test_dataset:test_collection"
+        )
         cache.set_encoded_object(cache_key, {"test": "data"})
 
         # The scheduler should allow existing DSR 2.0 requests to continue
