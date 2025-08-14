@@ -262,6 +262,9 @@ export const ManualTasks = () => {
           emptyText: getEmptyText(),
         }}
         loading={showSpinner}
+        scroll={{ scrollToFirstRowOnChange: true }}
+        tableLayout="fixed"
+        className="[&_th]:!break-normal"
       />
     </div>
   );
