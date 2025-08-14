@@ -9,6 +9,7 @@ from loguru import logger
 from sqlalchemy import (
     ARRAY,
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     ForeignKey,
@@ -171,6 +172,10 @@ class MonitorConfig(Base):
     )
 
     shared_config = relationship(SharedMonitorConfig)
+
+    CheckConstraint(  # type: ignore
+        "key NOT LIKE '%.%'", name="ck_monitorconfig_key_no_dots"
+    )
 
     @property
     def classify_params(self) -> dict:
