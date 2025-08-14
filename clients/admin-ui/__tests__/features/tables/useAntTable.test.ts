@@ -6,8 +6,11 @@ import {
   AntTableProps as TableProps,
 } from "fidesui";
 
-import { SortOrder, TableStateWithHelpers } from "./types";
-import { useAntTable } from "./useAntTable";
+import {
+  SortOrder,
+  TableStateWithHelpers,
+} from "../../../src/features/common/table/hooks/types";
+import { useAntTable } from "../../../src/features/common/table/hooks/useAntTable";
 
 type Row = { id?: string; key?: string; name: string };
 type SortField = "name" | "createdAt";
