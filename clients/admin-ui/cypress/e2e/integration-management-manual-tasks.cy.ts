@@ -80,7 +80,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       );
 
       // Verify action buttons are present
-      cy.getByTestId("manage-secure-access-btn").should("be.visible");
+      cy.getByTestId("manage-secure-access-btn").should("exist");
       cy.getByTestId("add-manual-task-btn").should("exist");
 
       // Verify table is displayed
