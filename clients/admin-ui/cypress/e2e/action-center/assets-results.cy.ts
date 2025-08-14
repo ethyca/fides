@@ -356,10 +356,10 @@ describe("Action center Asset Results", () => {
         cy.getAntTableRow(rowUrns[0]).within(() => {
           cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
-        cy.findByRole("columnheader", { name: "Select all" }).should(
+        cy.findByRole("columnheader", { name: /Select all/ }).should(
           "not.exist",
         );
-        cy.findByRole("columnheader", { name: "Actions" }).should("not.exist");
+        cy.findByRole("columnheader", { name: /Actions/ }).should("not.exist");
 
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -401,7 +401,7 @@ describe("Action center Asset Results", () => {
       });
 
       it("syncs sorting to URL when sorting by the Asset column", () => {
-        cy.findByRole("columnheader", { name: "Asset" }).click({ force: true });
+        cy.findByRole("columnheader", { name: /Asset/ }).click({ force: true });
         // First click should set ascending sort
         cy.location("search").should("contain", "sortField=name");
         cy.location("search").should("contain", "sortOrder=ascend");
@@ -423,7 +423,7 @@ describe("Action center Asset Results", () => {
         // Debounce buffer
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(400);
-        cy.findByRole("columnheader", { name: "Asset" }).click({ force: true });
+        cy.findByRole("columnheader", { name: /Asset/ }).click({ force: true });
         cy.location("search").should("contain", "search=gtm");
         cy.location("search").should("contain", "sortField=name");
 
@@ -434,6 +434,12 @@ describe("Action center Asset Results", () => {
         cy.location("search").should("not.contain", "sortField=");
         cy.location("search").should("not.contain", "sortOrder=");
         cy.location("search").should("not.contain", "page=");
+
+        // Search input field should be cleared
+        cy.findByPlaceholderText("Search by asset name...").should(
+          "have.value",
+          "",
+        );
 
         // Selection reset and menu disabled
         cy.findByTestId("selected-count").should("not.exist");
@@ -466,6 +472,12 @@ describe("Action center Asset Results", () => {
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
         cy.location("search").should("not.contain", "search=");
         cy.location("search").should("not.contain", "page=");
+
+        // Search input field should be cleared
+        cy.findByPlaceholderText("Search by asset name...").should(
+          "have.value",
+          "",
+        );
       });
     });
   });
@@ -596,8 +608,8 @@ describe("Action center Asset Results", () => {
           cy.contains("Domain:").should("exist");
 
           // Check table headers
-          cy.findByRole("columnheader", { name: "Location" }).should("exist");
-          cy.findByRole("columnheader", { name: "Page" }).should("exist");
+          cy.findByRole("columnheader", { name: /Location/ }).should("exist");
+          cy.findByRole("columnheader", { name: /Page/ }).should("exist");
 
           // Check table data
           cy.getByTestId("consent-breakdown-modal-table")
@@ -653,7 +665,7 @@ describe("Action center Asset Results", () => {
       });
 
       it("should show consent warning icon in system column header", () => {
-        cy.findByRole("columnheader", { name: "System" }).within(() => {
+        cy.findByRole("columnheader", { name: /System/ }).within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });

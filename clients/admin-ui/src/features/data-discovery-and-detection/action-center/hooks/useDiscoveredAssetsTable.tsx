@@ -614,8 +614,9 @@ export const useDiscoveredAssetsTable = ({
     async (tab: ActionCenterTabHash) => {
       await onTabChange(tab);
       resetState();
+      resetSelections();
     },
-    [onTabChange, resetState],
+    [onTabChange, resetState, resetSelections],
   );
 
   return {

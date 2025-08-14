@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import SearchInput, { SearchInputProps } from "~/features/common/SearchInput";
 
@@ -11,6 +11,11 @@ export const DebouncedSearchInput = ({
 }: SearchInputProps) => {
   const INPUT_CHANGE_DELAY = 500;
   const [currentInput, setCurrentInput] = useState(value);
+
+  // Keep internal state in sync with external value prop
+  useEffect(() => {
+    setCurrentInput(value || "");
+  }, [value]);
 
   // Add some delay to prevent fetching on each key pressed while typing
   const debouncedOnChange = debounce(onChange, INPUT_CHANGE_DELAY);
