@@ -15,6 +15,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
 )
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
@@ -627,7 +628,7 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         async_tasks = (
             db.query(RequestTask)
             .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
-            .filter(RequestTask.polling_async_task)
+            .filter(RequestTask.async_type == AsyncTaskType.polling)
             .all()
         )
         if async_tasks:

@@ -5,6 +5,7 @@ from unittest import mock
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
@@ -44,7 +45,7 @@ def polling_request_task(db, pending_privacy_request):
             "collection_name": "customer",
             "upstream_tasks": [],
             "downstream_tasks": [],
-            "polling_async_task": True,
+            "async_type": AsyncTaskType.polling,
         },
     )
     yield request_task
@@ -65,7 +66,6 @@ def non_polling_request_task(db, pending_privacy_request):
             "collection_name": "customer",
             "upstream_tasks": [],
             "downstream_tasks": [],
-            "polling_async_task": False,
         },
     )
     yield request_task
@@ -86,7 +86,7 @@ def in_progress_polling_request_task(db, pending_privacy_request):
             "collection_name": "customer",
             "upstream_tasks": [],
             "downstream_tasks": [],
-            "polling_async_task": True,
+            "async_type": AsyncTaskType.polling,
         },
     )
     yield request_task

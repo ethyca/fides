@@ -16,6 +16,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
+from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -67,11 +68,14 @@ class TraversalDetails(FidesSchema):
             skipped_nodes=[],
         )
 
+
 class AsyncTaskType(EnumType):
     """Enum for async task types"""
+
     manual = "manual"
     polling = "polling"
     callback = "callback"
+
 
 # TODO: At some point we will refactor this model to store all task types in a common table that links to tables with specific task attributes.
 class RequestTask(WorkerTask, Base):
@@ -153,7 +157,7 @@ class RequestTask(WorkerTask, Base):
     callback_succeeded = Column(Boolean)
     # to recognize Polling async task
     async_type = Column(
-        EnumType(AsyncTaskType),
+        EnumColumn(AsyncTaskType, native_enum=True),
         nullable=True,
     )
 
