@@ -25,6 +25,10 @@ jest.mock("nuqs", () => {
     // Note: parseAsString defaults to empty string, which is falsy and affects || logic
     parseAsInteger: parseFactory(1),
     parseAsString: parseFactory(""),
+    parseAsStringLiteral: () => ({
+      withDefault: (value: unknown) => ({ __default: value }),
+      __default: null, // parseAsStringLiteral defaults to null when no default is provided
+    }),
     parseAsJson: () => ({
       withDefault: (value: unknown) => ({ __default: value }),
     }),
@@ -194,12 +198,12 @@ describe("useTableState", () => {
   });
 
   it("handles empty/default URL values correctly", () => {
-    // Seed URL state with empty string values (which are the defaults from parsers)
+    // Seed URL state with empty string values and null values from parsers
     nuqsTestHelpers.reset({
       page: 1,
       size: 25,
       sortField: "", // Empty string from parser default
-      sortOrder: "", // Empty string from parser default
+      sortOrder: null, // null from parseAsStringLiteral when not set
       filters: {},
       search: "", // Empty string from parser default
     });
@@ -214,11 +218,11 @@ describe("useTableState", () => {
       }),
     );
 
-    // Should fall back to configured defaults when URL has empty strings
+    // Should fall back to configured defaults when URL has empty strings/null values
     expect(result.current.pageIndex).toBe(1);
     expect(result.current.pageSize).toBe(25);
     expect(result.current.sortField).toBe("createdAt"); // Falls back to default because "" is falsy
-    expect(result.current.sortOrder).toBe("descend"); // Falls back to default because "" is falsy
+    expect(result.current.sortOrder).toBe("descend"); // Falls back to default because null with ?? operator
     expect(result.current.columnFilters).toEqual({});
     expect(result.current.searchQuery).toBeUndefined(); // Empty string from URL is converted to undefined
   });
