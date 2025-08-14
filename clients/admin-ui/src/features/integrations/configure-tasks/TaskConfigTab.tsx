@@ -1,4 +1,5 @@
 import {
+  AntButton as Button,
   AntDivider as Divider,
   AntFlex as Flex,
   AntTypography as Typography,
@@ -34,22 +35,29 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   return (
     <div>
       <Flex vertical gap={16}>
-        <Typography.Paragraph className="mt-2">
+        <Typography.Paragraph className="mt-2 w-2/3">
           Configure manual tasks for this integration. Manual tasks allow you to
           define custom data collection or processing steps that require human
           intervention.
         </Typography.Paragraph>
 
-        <ManualTaskConfigTable
-          integration={integration}
-          onManageSecureAccessClick={onCreateUserOpen}
-        />
+        <ManualTaskConfigTable integration={integration} />
         <Divider className="my-2" />
+
         <ManualTaskAssignmentSection
           selectedUsers={selectedUsers}
           userOptions={userOptions}
           onUserAssignmentChange={handleUserAssignmentChange}
         />
+        <Flex justify="start">
+          <Button
+            type="default"
+            onClick={onCreateUserOpen}
+            data-testid="manage-secure-access-btn"
+          >
+            Create external user
+          </Button>
+        </Flex>
 
         <CreateExternalUserModal
           isOpen={isCreateUserOpen}

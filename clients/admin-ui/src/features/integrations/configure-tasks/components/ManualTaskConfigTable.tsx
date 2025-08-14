@@ -17,13 +17,9 @@ import { useManualTaskColumns } from "../useManualTaskColumns";
 
 interface ManualTaskConfigTableProps {
   integration: ConnectionConfigurationResponse;
-  onManageSecureAccessClick: () => void;
 }
 
-const ManualTaskConfigTable = ({
-  integration,
-  onManageSecureAccessClick,
-}: ManualTaskConfigTableProps) => {
+const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
   const { manualTasks, deleteManualTask, refreshManualTasks } =
     useManualTaskManagement({ integration });
 
@@ -62,14 +58,7 @@ const ManualTaskConfigTable = ({
 
   return (
     <>
-      <Flex align="center" justify="space-between" gap={8} className="mb-4">
-        <Button
-          type="default"
-          onClick={onManageSecureAccessClick}
-          data-testid="manage-secure-access-btn"
-        >
-          Manage secure access
-        </Button>
+      <Flex align="center" justify="end" gap={8} className="mb-1 mt-[-25px]">
         <Button
           type="primary"
           onClick={handleAddManualTask}
