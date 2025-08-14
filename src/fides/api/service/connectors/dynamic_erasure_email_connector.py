@@ -99,7 +99,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                     continue
 
                 user_identities: Dict[str, Any] = (
-                    privacy_request.get_cached_identity_data()
+                    privacy_request.get_persisted_identity_data_dict()
                 )
                 filtered_user_identities: Dict[str, Any] = (
                     filter_user_identities_for_connector(self.config, user_identities)

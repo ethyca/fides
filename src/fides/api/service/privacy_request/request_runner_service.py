@@ -386,7 +386,9 @@ def run_privacy_request(
             logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
     with self.get_new_session() as session:
-        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+        privacy_request: PrivacyRequest = PrivacyRequest.get(
+            db=session, object_id=privacy_request_id
+        )
         if not privacy_request:
             raise common_exceptions.PrivacyRequestNotFound(
                 f"Privacy request with id {privacy_request_id} not found"
@@ -472,10 +474,7 @@ def run_privacy_request(
                     action_type=privacy_request.policy.get_action_type(),  # type: ignore
                 )
 
-                identity_data = {
-                    key: value["value"] if isinstance(value, dict) else value
-                    for key, value in privacy_request.get_cached_identity_data().items()
-                }
+                identity_data = privacy_request.get_persisted_identity_data_dict()
                 connection_configs = ConnectionConfig.all(db=session)
                 fides_connector_datasets: set[str] = filter_fides_connector_datasets(
                     connection_configs

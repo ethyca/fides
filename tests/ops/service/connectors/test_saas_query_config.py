@@ -712,7 +712,7 @@ class TestSaaSQueryConfig:
         assert len(prepared_requests) == 0
 
     @mock.patch(
-        "fides.api.models.privacy_request.PrivacyRequest.get_cached_custom_privacy_request_fields"
+        "fides.api.models.privacy_request.PrivacyRequest.get_persisted_custom_privacy_request_fields"
     )
     @mock.patch(
         "fides.api.models.privacy_request.PrivacyRequest.get_cached_identity_data"

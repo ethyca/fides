@@ -162,6 +162,9 @@ class TestPrivacyRequestService:
             == custom_privacy_request_fields
         )
         assert privacy_request.policy.key == policy_key
+        # Encryption key is cached in the cache and persisted in the DB
+        assert privacy_request.encryption_key == encryption_key
+        assert privacy_request.get_encryption_key() == encryption_key
         assert privacy_request.get_cached_encryption_key() == encryption_key
         assert privacy_request.property_id == property_id
         assert privacy_request.source == source
@@ -412,6 +415,9 @@ class TestPrivacyRequestService:
             == custom_privacy_request_fields
         )
         assert privacy_request.policy.key == policy_key
+        # Encryption key is cached in the cache and persisted in the DB
+        assert privacy_request.encryption_key == encryption_key
+        assert privacy_request.get_encryption_key() == encryption_key
         assert privacy_request.get_cached_encryption_key() == encryption_key
         assert privacy_request.property_id == property_id
         assert privacy_request.source == source
