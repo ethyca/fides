@@ -44,13 +44,15 @@ export const useUserAssignment = ({ integration }: UseUserAssignmentProps) => {
 
   // Create options for the assigned to select
   const userOptions = users.map((user: UserResponse) => {
-    const displayName =
+    const fullName =
       user.first_name && user.last_name
-        ? `${user.first_name} ${user.last_name}`
-        : user.email_address;
+        ? `${user.first_name || ""} ${user.last_name || ""}`
+        : null;
+    const displayName =
+      fullName || user.email_address || user.username || "Unknown User";
 
     return {
-      label: `${user.first_name} ${user.last_name} (${user.email_address})`,
+      label: `${fullName} (${user.email_address || user.username})`.trim(),
       value: user.id, // Use user ID instead of email
       displayName, // This will be used for the tag display
     };
