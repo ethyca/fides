@@ -109,13 +109,13 @@ export const usePagination = (config: PaginationConfig = {}) => {
     [setQueryState, currentState.pageSize],
   );
 
-  const resetPagination = useCallback(() => {
+  const resetPagination = () => {
     // Reset pagination URL state
     setQueryState({
       page: DEFAULT_PAGE_INDEX,
       size: defaultPageSize,
     });
-  }, [setQueryState, defaultPageSize]);
+  };
 
   // Call onPaginationChange when state changes
   useEffect(() => {

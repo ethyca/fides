@@ -7,7 +7,7 @@ jest.mock("nuqs", () => {
   let currentState: Record<string, any> = {};
 
   const parseFactory = (defaultValue: unknown) => ({
-    withDefault: (value: unknown) => ({ __default: value ?? defaultValue }),
+    withDefault: (value: unknown) => ({ default: value ?? defaultValue }),
   });
 
   const helpers = {
@@ -20,8 +20,7 @@ jest.mock("nuqs", () => {
   };
 
   return {
-    __esModule: true,
-    // Minimal parser mocks; only shape is required
+    esModule: true,
     parseAsInteger: parseFactory(1),
 
     useQueryStates: (parsers: Record<string, any>) => {
@@ -42,10 +41,9 @@ jest.mock("nuqs", () => {
           const parser = parsers[key];
           const currentValue = currentState[key];
           // If value is undefined, use the parser's default
-          // eslint-disable-next-line no-underscore-dangle
-          if (currentValue === undefined && parser?.__default !== undefined) {
-            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
-            acc[key] = parser.__default;
+          if (currentValue === undefined && parser?.default !== undefined) {
+            // eslint-disable-next-line no-param-reassign
+            acc[key] = parser.default;
           } else {
             // eslint-disable-next-line no-param-reassign
             acc[key] = currentValue;
@@ -58,17 +56,9 @@ jest.mock("nuqs", () => {
       return [stateWithDefaults, setQueryState] as const;
     },
 
-    // Test-only helpers (also returned to module consumers if needed)
     nuqsTestHelpers: helpers,
   };
 });
-
-// Mock the constants file
-jest.mock("../constants", () => ({
-  DEFAULT_PAGE_INDEX: 1,
-  DEFAULT_PAGE_SIZE: 25,
-  DEFAULT_PAGE_SIZES: [25, 50, 100],
-}));
 
 // Import after mocks so the mocked nuqs is used by the hook
 // eslint-disable-next-line import/first
