@@ -62,6 +62,10 @@ def _fetch_monitor_key_mapping(conn: Connection) -> Dict[str, str]:
 
 
 def _update_monitorconfig_keys(conn: Connection, mapping: Dict[str, str]) -> None:
+    """
+    Updates `MonitorConfig.key`s based on the mapping of 'old' keys to 'new' keys.
+    """
+
     logger.info("Updating monitorconfig keys...")
     for old, new in mapping.items():
         conn.execute(
@@ -78,6 +82,10 @@ def _update_monitorconfig_keys(conn: Connection, mapping: Dict[str, str]) -> Non
 
 
 def _update_monitorexecution(conn: Connection, mapping: Dict[str, str]) -> None:
+    """
+    Updates `monitorexecution.monitor_config_key` to reference new `MonitorConfig.key`s.
+    """
+
     logger.info("Updating monitorexecution monitor_config_key...")
     for old, new in mapping.items():
         conn.execute(
@@ -96,6 +104,9 @@ def _update_monitorexecution(conn: Connection, mapping: Dict[str, str]) -> None:
 def _update_stagedresource_monitor_config_id(
     conn: Connection, mapping: Dict[str, str]
 ) -> None:
+    """
+    Updates `stagedresource.monitor_config_id` to reference new `MonitorConfig.key`s.
+    """
     logger.info("Updating stagedresource monitor_config_id...")
     for old, new in mapping.items():
         conn.execute(
@@ -111,37 +122,51 @@ def _update_stagedresource_monitor_config_id(
     logger.info("Finished updating stagedresource monitor_config_id.")
 
 
-def _replace_prefix_sql(table: str, column: str) -> str:
-    """
-    Returns SQL snippet to replace leading '<old>.' prefix in a text column with '<new>.' while preserving the rest of the string.
-    Assumes parameters :old and :new are bound.
-    """
-    # substring from old prefix length + 1 (since we want to keep the starting '.')
-    return f"""
-        UPDATE {table}
-        SET {column} = :new || SUBSTRING({column} FROM CHAR_LENGTH(:old) + 1)
-        WHERE {column} LIKE :old_prefix
-    """
-
-
 def _update_stagedresource_urns_and_parent(
     conn: Connection, mapping: Dict[str, str]
 ) -> None:
+    """
+    Updates `stagedresource.urn`s and `stagedresource.parent`s to reference new `MonitorConfig.key`s.
+    """
     logger.info("Updating stagedresource urns and parent...")
     for old, new in mapping.items():
         params = {"old": old, "new": new, "old_prefix": f"{old}.%"}
-        # urn
-        conn.execute(sa.text(_replace_prefix_sql("stagedresource", "urn")), params)
-        # parent
-        conn.execute(sa.text(_replace_prefix_sql("stagedresource", "parent")), params)
+
+        conn.execute(
+            sa.text(
+                f"""
+                UPDATE stagedresource
+                SET urn = :new || SUBSTRING(urn FROM CHAR_LENGTH(:old) + 1)
+                WHERE urn LIKE :old_prefix AND monitor_config_id = :new
+                """
+            ),
+            params,
+        )
+
+        conn.execute(
+            sa.text(
+                f"""
+                UPDATE stagedresource
+                SET parent = :new || SUBSTRING(parent FROM CHAR_LENGTH(:old) + 1)
+                WHERE parent LIKE :old_prefix AND monitor_config_id = :new
+                """
+            ),
+            params,
+        )
     logger.info("Finished updating stagedresource urns and parent.")
 
 
 def _update_stagedresource_children_array(
     conn: Connection, mapping: Dict[str, str]
 ) -> None:
+    """
+    Updates `stagedresource.children` to reference new `MonitorConfig.key`s.
+
+    Elements from `stagedresource.children` are unnested, updated, and re-aggregated in a single query.
+    """
     logger.info("Updating stagedresource children array...")
     for old, new in mapping.items():
+
         conn.execute(
             sa.text(
                 """
@@ -154,8 +179,8 @@ def _update_stagedresource_children_array(
                     ), '{}')
                     FROM unnest(children) AS val
                 )
-                WHERE children IS NOT NULL
-                AND EXISTS (SELECT 1 FROM unnest(children) AS v WHERE v LIKE :old_prefix)
+                WHERE monitor_config_id = :new
+                AND children IS NOT NULL
                 """
             ),
             {"old": old, "new": new, "old_prefix": f"{old}.%"},
@@ -164,11 +189,17 @@ def _update_stagedresource_children_array(
 
 
 def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) -> None:
+    """
+    Updates necessary keys in `stagedresource.meta` (`direct_child_urns` and `top_level_field_urn`)
+    to reference new `MonitorConfig.key`s.
+    """
     logger.info("Updating stagedresource meta json...")
 
     for old, new in mapping.items():
         params = {"old": old, "new": new, "old_prefix": f"{old}.%"}
-        # Update direct_child_urns array in meta
+
+        # updates `stagedresource.meta.direct_child_urns` to reference new `MonitorConfig.key`
+        # elements from `stagedresource.meta.direct_child_urns` are unnested, updated, and re-aggregated in a single query.
         conn.execute(
             sa.text(
                 """
@@ -186,12 +217,14 @@ def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) 
                     ),
                     true
                 )
-                WHERE meta ? 'direct_child_urns'
+                WHERE monitor_config_id = :new AND meta ? 'direct_child_urns'
                 """
             ),
             params,
         )
-        # Update top_level_field_urn string in meta
+
+        # updates `stagedresource.meta.top_level_field_urn` to reference new `MonitorConfig.key`
+        # we coalesce the value to 'null'::jsonb to ensure a 'JSON null' value is set, not a column-level NULL
         conn.execute(
             sa.text(
                 """
@@ -206,7 +239,7 @@ def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) 
                     ), 'null'::jsonb),
                     true
                 )
-                WHERE meta ? 'top_level_field_urn'
+                WHERE monitor_config_id = :new AND meta ? 'top_level_field_urn'
                 """
             ),
             params,
@@ -216,20 +249,143 @@ def _update_stagedresource_meta_json(conn: Connection, mapping: Dict[str, str]) 
 
 
 def _update_stagedresourceancestor(conn: Connection, mapping: Dict[str, str]) -> None:
+    """
+    Updates `stagedresourceancestor.ancestor_urn` and `stagedresourceancestor.descendant_urn`
+    to reference new `MonitorConfig.key`s.
+
+    NOTE: StagedResourceAncestor queries cannot be easily scoped by monitor_config_id
+    since the table doesn't have a direct reference to it. However, we optimize by
+    doing a single table scan to update both columns for all mappings at once.
+
+    The generated query will look like:
+    ```
+    UPDATE stagedresourceancestor
+    SET
+        ancestor_urn = CASE
+            WHEN ancestor_urn LIKE 'monitor.config.1.%' THEN 'monitor_config_1' || SUBSTRING(ancestor_urn FROM 17)
+            WHEN ancestor_urn LIKE 'monitor.config.2.%' THEN 'monitor_config_2' || SUBSTRING(ancestor_urn FROM 17)
+            ELSE ancestor_urn
+        END,
+        descendant_urn = CASE
+            WHEN descendant_urn LIKE 'monitor.config.1.%' THEN 'monitor_config_1' || SUBSTRING(descendant_urn FROM 17)
+            WHEN descendant_urn LIKE 'monitor.config.2.%' THEN 'monitor_config_2' || SUBSTRING(descendant_urn FROM 17)
+            ELSE descendant_urn
+        END
+    WHERE ancestor_urn LIKE 'monitor.config.1.%' OR descendant_urn LIKE 'monitor.config.1.%'
+       OR ancestor_urn LIKE 'monitor.config.2.%' OR descendant_urn LIKE 'monitor.config.2.%'
+    ```
+    """
     logger.info("Updating stagedresourceancestor...")
+
+    if not mapping:
+        return
+
+    ancestor_case_conditions = []
+    descendant_case_conditions = []
+    where_conditions = []
+
     for old, new in mapping.items():
-        params = {"old": old, "new": new, "old_prefix": f"{old}.%"}
-        # ancestor_urn
-        conn.execute(
-            sa.text(_replace_prefix_sql("stagedresourceancestor", "ancestor_urn")),
-            params,
+        ancestor_case_conditions.append(
+            f"WHEN ancestor_urn LIKE '{old}.%' THEN '{new}' || SUBSTRING(ancestor_urn FROM {len(old) + 1})"
         )
-        # descendant_urn
-        conn.execute(
-            sa.text(_replace_prefix_sql("stagedresourceancestor", "descendant_urn")),
-            params,
+        descendant_case_conditions.append(
+            f"WHEN descendant_urn LIKE '{old}.%' THEN '{new}' || SUBSTRING(descendant_urn FROM {len(old) + 1})"
         )
+        where_conditions.extend(
+            [f"ancestor_urn LIKE '{old}.%'", f"descendant_urn LIKE '{old}.%'"]
+        )
+
+    sql = f"""
+        UPDATE stagedresourceancestor
+        SET
+            ancestor_urn = CASE
+                {' '.join(ancestor_case_conditions)}
+                ELSE ancestor_urn
+            END,
+            descendant_urn = CASE
+                {' '.join(descendant_case_conditions)}
+                ELSE descendant_urn
+            END
+        WHERE {' OR '.join(where_conditions)}
+    """
+
+    conn.execute(sa.text(sql))
     logger.info("Finished updating stagedresourceancestor.")
+
+
+def _persist_monitor_key_mapping(conn: Connection, mapping: Dict[str, str]) -> None:
+    """
+    Persists the mapping of 'old' monitor keys with dots in them to 'new' keys without dots
+    into the dbcache table.
+
+    NOTE: this mapping is persisted only as a temporary measure (i.e. for a few releases)
+    just in case we want to revert this data migration for any reason.
+
+
+    TODO: remove the cache entry in a future migration!
+    """
+    logger.info("Persisting monitor key mapping to dbcache...")
+    mapping_json = json.dumps(mapping)
+    conn.execute(
+        sa.text(
+            """
+            INSERT INTO dbcache (id, namespace, cache_key, cache_value, created_at, updated_at)
+            VALUES ('dbc_' || gen_random_uuid(), :namespace, :cache_key, convert_to(:value, 'UTF8')::bytea, now(), now())
+            ON CONFLICT (namespace, cache_key)
+            DO UPDATE SET cache_value = EXCLUDED.cache_value, updated_at = now()
+            """
+        ),
+        {
+            "namespace": "monitor-config-key-mapping",
+            "cache_key": "monitor-config-key-mapping",
+            "value": mapping_json,
+        },
+    )
+    logger.info("Finished persisting monitor key mapping to dbcache.")
+
+
+def _drop_fk_constraints(conn: Connection) -> None:
+    """
+    Drops the FK constraints on the stagedresourceancestor table.
+
+    This is done to avoid immediate constraint violations while updating URNs.
+    """
+    logger.info("Dropping FK constraints...")
+    op.drop_constraint(
+        "fk_staged_resource_ancestor_ancestor",
+        "stagedresourceancestor",
+        type_="foreignkey",
+    )
+    op.drop_constraint(
+        "fk_staged_resource_ancestor_descendant",
+        "stagedresourceancestor",
+        type_="foreignkey",
+    )
+    logger.info("Finished dropping FK constraints.")
+
+
+def _recreate_fk_constraints(conn: Connection) -> None:
+    """
+    Recreates the FK constraints on the stagedresourceancestor table.
+    """
+    logger.info("Recreating FK constraints...")
+    op.create_foreign_key(
+        "fk_staged_resource_ancestor_ancestor",
+        "stagedresourceancestor",
+        "stagedresource",
+        ["ancestor_urn"],
+        ["urn"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        "fk_staged_resource_ancestor_descendant",
+        "stagedresourceancestor",
+        "stagedresource",
+        ["descendant_urn"],
+        ["urn"],
+        ondelete="CASCADE",
+    )
+    logger.info("Finished recreating FK constraints.")
 
 
 def upgrade() -> None:
@@ -238,45 +394,13 @@ def upgrade() -> None:
     mapping = _fetch_monitor_key_mapping(conn)
     if mapping:
         logger.info("Beginning monitorconfig key 'dot' migration...")
-
-        # Persist mapping into dbcache for API retrieval/debugging
-        # NOTE: this mapping is persisted only as a temporary measure (i.e. for a few releases)
-        # just in case we want to revert this data migration for any reason.
-        # TODO: remove the cache entry in a future migration!
-        logger.info("Persisting monitor key mapping to dbcache...")
-        mapping_json = json.dumps(mapping)
-        conn.execute(
-            sa.text(
-                """
-                INSERT INTO dbcache (id, namespace, cache_key, cache_value, created_at, updated_at)
-                VALUES ('dbc_' || gen_random_uuid(), :namespace, :cache_key, convert_to(:value, 'UTF8')::bytea, now(), now())
-                ON CONFLICT (namespace, cache_key)
-                DO UPDATE SET cache_value = EXCLUDED.cache_value, updated_at = now()
-                """
-            ),
-            {
-                "namespace": "monitor-config-key-mapping",
-                "cache_key": "monitor-config-key-mapping",
-                "value": mapping_json,
-            },
-        )
-        logger.info("Finished persisting monitor key mapping to dbcache.")
-
         logger.info(
-            "Dropping FKs to avoid immediate constraint violations while updating URNs..."
+            f"Found {len(mapping)} monitor configs with dots to migrate: {list(mapping.keys())}"
         )
-        # Drop FKs to avoid immediate constraint violations while updating URNs
-        op.drop_constraint(
-            "fk_staged_resource_ancestor_ancestor",
-            "stagedresourceancestor",
-            type_="foreignkey",
-        )
-        op.drop_constraint(
-            "fk_staged_resource_ancestor_descendant",
-            "stagedresourceancestor",
-            type_="foreignkey",
-        )
-        logger.info("Finished dropping FKs.")
+
+        _persist_monitor_key_mapping(conn, mapping)
+
+        _drop_fk_constraints(conn)
 
         _update_monitorconfig_keys(conn, mapping)
         _update_monitorexecution(conn, mapping)
@@ -286,31 +410,7 @@ def upgrade() -> None:
         _update_stagedresource_meta_json(conn, mapping)
         _update_stagedresourceancestor(conn, mapping)
 
-        logger.info("Recreating FKs...")
-        # Recreate FKs (mark DEFERRABLE to allow future migrations to defer checks during complex updates)
-        op.create_foreign_key(
-            "fk_staged_resource_ancestor_ancestor",
-            "stagedresourceancestor",
-            "stagedresource",
-            ["ancestor_urn"],
-            ["urn"],
-            ondelete="CASCADE",
-            deferrable=True,
-            initially="DEFERRED",
-        )
-        op.create_foreign_key(
-            "fk_staged_resource_ancestor_descendant",
-            "stagedresourceancestor",
-            "stagedresource",
-            ["descendant_urn"],
-            ["urn"],
-            ondelete="CASCADE",
-            deferrable=True,
-            initially="DEFERRED",
-        )
-        logger.info("Finished recreating FKs.")
-
-        logger.info("Finished monitorconfig key 'dot' migration.")
+        _recreate_fk_constraints(conn)
 
     # Add CHECK constraint to forbid dots in monitorconfig.key going forward
     op.create_check_constraint(
