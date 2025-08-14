@@ -1,7 +1,7 @@
 """add location to privacy request
 
 Revision ID: b1a2c3d4e5f6
-Revises: a7065df4dcf1
+Revises: 2f3c1a2d6b10
 Create Date: 2025-08-06 18:15:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b1a2c3d4e5f6"
-down_revision = "a7065df4dcf1"
+down_revision = "2f3c1a2d6b10"
 branch_labels = None
 depends_on = None
 
