@@ -70,7 +70,7 @@ jest.mock("nuqs", () => {
 
 // Import after mocks so the mocked nuqs is used by the hook
 // eslint-disable-next-line import/first
-import { useTableState } from "./useTableState";
+import { useTableState } from "../../../src/features/common/table/hooks/useTableState";
 
 // Access the test helpers from the mocked module
 const { nuqsTestHelpers } = jest.requireMock("nuqs") as {
