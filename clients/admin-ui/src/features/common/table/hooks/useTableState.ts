@@ -12,6 +12,7 @@ import type {
   SortOrder,
   TableState,
   TableStateConfig,
+  TableStateWithHelpers,
 } from "./types";
 import { usePagination } from "./usePagination";
 
@@ -188,5 +189,5 @@ export const useTableState = <TSortField extends string = string>(
       pageSizeOptions,
       showSizeChanger,
     },
-  };
+  } as TableStateWithHelpers<TSortField>;
 };

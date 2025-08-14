@@ -6,7 +6,7 @@ import {
   AntTableProps as TableProps,
 } from "fidesui";
 
-import { SortOrder } from "./types";
+import { SortOrder, TableStateWithHelpers } from "./types";
 import { useAntTable } from "./useAntTable";
 
 type Row = { id?: string; key?: string; name: string };
@@ -33,7 +33,7 @@ interface MockTableState {
 
 const createTableState = (
   overrides: Partial<MockTableState> = {},
-): MockTableState => {
+): TableStateWithHelpers<SortField> => {
   return {
     pageIndex: 1,
     pageSize: 25,
@@ -43,6 +43,8 @@ const createTableState = (
     updatePagination: jest.fn(),
     updateSorting: jest.fn(),
     updateFilters: jest.fn(),
+    updateSearch: jest.fn(),
+    resetState: jest.fn(),
     paginationConfig: {
       pageSizeOptions: [10, 25, 50],
       showSizeChanger: true,

@@ -6,7 +6,11 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import type { AntTableHookConfig, SelectionState, SortOrder } from "./types";
+import type {
+  AntTableHookConfig,
+  SelectionState,
+  TableStateWithHelpers,
+} from "./types";
 
 /**
  * Hook for Ant Design table integration with table state management
@@ -37,25 +41,12 @@ import type { AntTableHookConfig, SelectionState, SortOrder } from "./types";
  * ```
  */
 export const useAntTable = <TData, TSortField extends string = string>(
-  tableState: {
-    pageIndex: number;
-    pageSize: number;
-    sortField?: TSortField;
-    sortOrder?: SortOrder;
-    columnFilters: Record<string, FilterValue | null>;
-    updatePagination: (pageIndex: number, pageSize?: number) => void;
-    updateSorting: (sortField?: TSortField, sortOrder?: SortOrder) => void;
-    updateFilters: (filters: Record<string, FilterValue | null>) => void;
-    paginationConfig?: {
-      pageSizeOptions: number[];
-      showSizeChanger: boolean;
-    };
-  },
+  tableState: TableStateWithHelpers<TSortField>,
   config: AntTableHookConfig<TData> = {},
 ) => {
   const {
     enableSelection = false,
-    getRowKey: providedGetRowKey,
+    getRowKey,
     bulkActions,
     isLoading = false,
     isFetching = false,
@@ -65,12 +56,6 @@ export const useAntTable = <TData, TSortField extends string = string>(
     pageSize: configPageSize,
     customTableProps = {},
   } = config;
-
-  // Memoize the getRowKey function to prevent recreation
-  const getRowKey = useMemo(
-    () => providedGetRowKey || ((record: any) => record.id || record.key),
-    [providedGetRowKey],
-  );
 
   // Selection state management (simplified to match original working pattern)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
