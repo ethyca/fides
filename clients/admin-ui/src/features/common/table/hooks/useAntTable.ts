@@ -201,14 +201,8 @@ export const useAntTable = <TData, TSortField extends string = string>(
   );
 
   // Selected data helpers (simplified to match original working pattern)
-  const selectedKeys = useMemo(
-    () => selectedRowKeys.map(String),
-    [selectedRowKeys],
-  );
-  const hasSelectedRows = useMemo(
-    () => selectedRows.length > 0,
-    [selectedRows],
-  );
+  const selectedKeys = selectedRowKeys.map(String);
+  const hasSelectedRows = selectedRows.length > 0;
 
   // Bulk actions helpers
   const getBulkActionProps = useCallback(
