@@ -6,7 +6,7 @@ import {
   useGetManualTaskConfigQuery,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionConfigurationResponse, UserResponse } from "~/types/api";
 
 interface UseUserAssignmentProps {
   integration: ConnectionConfigurationResponse;
@@ -43,7 +43,7 @@ export const useUserAssignment = ({ integration }: UseUserAssignmentProps) => {
   const users = usersData?.items ?? [];
 
   // Create options for the assigned to select
-  const userOptions = users.map((user: any) => {
+  const userOptions = users.map((user: UserResponse) => {
     const displayName =
       user.first_name && user.last_name
         ? `${user.first_name} ${user.last_name}`
