@@ -38,8 +38,18 @@ export interface TableState<TSortField extends string = string>
   extends PaginationState {
   sortField?: TSortField;
   sortOrder?: SortOrder;
-  columnFilters: Record<string, FilterValue | null>;
+  columnFilters?: Record<string, FilterValue | null>;
   searchQuery?: string;
+  paginationConfig?: PaginationConfig;
+}
+
+export interface TableStateWithHelpers<TSortField extends string = string>
+  extends TableState<TSortField> {
+  updatePagination: (pageIndex: number, pageSize?: number) => void;
+  updateSorting: (sortField?: TSortField, sortOrder?: SortOrder) => void;
+  updateFilters: (filters: Record<string, FilterValue | null>) => void;
+  resetState: () => void;
+  updateSearch: (searchQuery: string) => void;
 }
 
 /**

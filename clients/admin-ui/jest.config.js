@@ -37,7 +37,6 @@ module.exports = {
     "test-utils.tsx",
   ],
   testEnvironment: "jsdom",
-  extensionsToTreatAsEsm: [".ts", ".tsx"],
   transform: {
     // Use babel-jest to transpile tests with the next/babel preset
     // https://jestjs.io/docs/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object

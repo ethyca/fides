@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
 
 // Mock nuqs to control URL state without relying on Next router
+// NOTE: our code is not modern enough to use the nuqs testing adapter
+// (specifically the ESM module compatibility)
+// so we're using a custom mock for now. Once ESM is more widely supported,
+// we can switch to the nuqs testing adapter.
 jest.mock("nuqs", () => {
   const setCalls: Array<Record<string, any> | null> = [];
   let currentState: Record<string, any> = {};
