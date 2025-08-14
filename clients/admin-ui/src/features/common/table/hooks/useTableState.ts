@@ -1,29 +1,22 @@
 import { AntFilterValue as FilterValue } from "fidesui";
-import {
-  parseAsJson,
-  parseAsString,
-  parseAsStringLiteral,
-  useQueryStates,
-} from "nuqs";
+import { parseAsJson, parseAsString, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
+import { type SortOrder, usePagination, useSorting } from "../../hooks";
 import type {
   QueryStateUpdates,
-  SortOrder,
   TableState,
   TableStateConfig,
   TableStateWithHelpers,
 } from "./types";
-import { usePagination } from "./usePagination";
 
 /**
- * NuQS parsers for table state - filtering, sorting, and search features synced to URL
+ * NuQS parsers for table state - filtering and search features synced to URL
  * Pagination is handled by the usePagination hook
+ * Sorting is handled by the useSorting hook
  */
 const createTableParsers = () => {
   return {
-    sortField: parseAsString.withDefault(""),
-    sortOrder: parseAsStringLiteral(["ascend", "descend"]),
     filters: parseAsJson(
       (value: unknown) => value as Record<string, FilterValue | null>,
     ).withDefault({}),
@@ -67,8 +60,6 @@ export const useTableState = <TSortField extends string = string>(
     onStateChange,
   } = config;
 
-  const { defaultSortField, defaultSortOrder } = sortingConfig;
-
   // Use the standalone pagination hook
   const {
     pageIndex,
@@ -79,6 +70,14 @@ export const useTableState = <TSortField extends string = string>(
     showSizeChanger,
   } = usePagination(paginationConfig);
 
+  // Use the standalone sorting hook
+  const {
+    sortField,
+    sortOrder,
+    updateSorting: updateSortingOnly,
+    resetSorting,
+  } = useSorting(sortingConfig);
+
   // Create parsers for non-pagination table state features
   // Note: Parsers must be stable across renders for NuQS to work properly
   const parsers = useMemo(() => createTableParsers(), []);
@@ -88,32 +87,30 @@ export const useTableState = <TSortField extends string = string>(
     history: "push",
   });
 
-  // Create current state from query state and pagination hook (URL is the single source of truth)
+  // Create current state from query state, pagination hook, and sorting hook (URL is the single source of truth)
   const currentState: TableState<TSortField> = useMemo(() => {
     const state = {
       pageIndex,
       pageSize,
-      sortField: (queryState.sortField as TSortField) || defaultSortField, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
-      sortOrder: (queryState.sortOrder as SortOrder | null) ?? defaultSortOrder, // Use `??` because parseAsStringLiteral returns null when not set
+      sortField,
+      sortOrder,
       columnFilters: queryState.filters ?? {},
       searchQuery: queryState.search || undefined, // Convert empty string to undefined
     };
 
     return state;
-  }, [queryState, pageIndex, pageSize, defaultSortField, defaultSortOrder]);
+  }, [queryState, pageIndex, pageSize, sortField, sortOrder]);
 
   // Update functions that update query state (URL is the single source of truth)
   // Pagination updates are handled by the pagination hook
+  // Sorting updates are handled by the sorting hook
 
   const updateSorting = useCallback(
-    (sortField?: TSortField, sortOrder?: SortOrder) => {
-      setQueryState({
-        sortField: sortField ? String(sortField) : null,
-        sortOrder: sortOrder ?? null,
-      });
+    (sf?: TSortField, so?: SortOrder) => {
+      updateSortingOnly(sf, so);
       resetPagination(); // Reset to first page when sorting changes
     },
-    [setQueryState, resetPagination],
+    [updateSortingOnly, resetPagination],
   );
 
   const updateFilters = useCallback(
@@ -143,14 +140,13 @@ export const useTableState = <TSortField extends string = string>(
   const resetState = useCallback(() => {
     // Reset all URL state
     const urlUpdates: QueryStateUpdates = {
-      sortField: null,
-      sortOrder: null,
       filters: null,
       search: null,
     };
     setQueryState(urlUpdates);
     resetPagination();
-  }, [setQueryState, resetPagination]);
+    resetSorting();
+  }, [setQueryState, resetPagination, resetSorting]);
 
   // Call onStateChange when state changes
   useEffect(() => {
@@ -168,7 +164,7 @@ export const useTableState = <TSortField extends string = string>(
     pageSize: currentState.pageSize,
     updatePagination,
 
-    // Sorting
+    // Sorting (delegated to sorting hook)
     sortField: currentState.sortField,
     sortOrder: currentState.sortOrder,
     updateSorting,

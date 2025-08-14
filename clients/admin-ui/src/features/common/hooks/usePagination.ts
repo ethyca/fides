@@ -5,11 +5,11 @@ import {
   DEFAULT_PAGE_INDEX,
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SIZES,
-} from "../constants";
+} from "../table/constants";
 import type {
   PaginationConfig,
+  PaginationQueryParams,
   PaginationState,
-  PaginationUpdates,
 } from "./types";
 
 /**
@@ -100,7 +100,7 @@ export const usePagination = (config: PaginationConfig = {}) => {
           ? DEFAULT_PAGE_INDEX // Reset to first page when changing page size
           : pageIndex;
 
-      const updates: PaginationUpdates = { page: newPageIndex };
+      const updates: PaginationQueryParams = { page: newPageIndex };
       if (pageSize !== undefined) {
         updates.size = pageSize;
       }

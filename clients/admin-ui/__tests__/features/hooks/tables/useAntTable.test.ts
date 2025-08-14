@@ -5,8 +5,15 @@ import {
   AntTableProps as TableProps,
 } from "fidesui";
 
-import { useAntTable } from "../../../src/features/common/table/hooks/useAntTable";
-import { createMockTableState } from "../../utils/mock-utils";
+// Mock nuqs using shared mock implementation to prevent ESM issues
+// eslint-disable-next-line global-require
+jest.mock("nuqs", () => require("../../../utils/nuqs-mock").nuqsMock);
+
+// Import after mocks so the mocked nuqs is used by the hooks
+// eslint-disable-next-line import/first
+import { useAntTable } from "../../../../src/features/common/table/hooks";
+// eslint-disable-next-line import/first
+import { createMockTableState } from "../../../utils/mock-utils";
 
 type Row = { id?: string; key?: string; name: string };
 type SortField = "name" | "createdAt";

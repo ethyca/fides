@@ -1,35 +1,11 @@
 import type { AntFilterValue as FilterValue } from "fidesui";
 
-/**
- * Sort order type for table sorting
- */
-export type SortOrder = "ascend" | "descend";
-
-/**
- * Configuration for pagination (standalone or table)
- */
-export interface PaginationConfig {
-  defaultPageSize?: number;
-  pageSizeOptions?: number[];
-  showSizeChanger?: boolean;
-  onPaginationChange?: (state: PaginationState) => void;
-}
-
-/**
- * Pagination state interface
- */
-export interface PaginationState {
-  pageIndex: number;
-  pageSize: number;
-}
-
-/**
- * Updates for pagination URL state
- */
-export interface PaginationUpdates {
-  page?: number | null;
-  size?: number | null;
-}
+import type {
+  PaginationConfig,
+  PaginationState,
+  SortingConfig,
+  SortOrder,
+} from "../../hooks/types";
 
 /**
  * Base interface for table state that can be synchronized with URL
@@ -50,15 +26,6 @@ export interface TableStateWithHelpers<TSortField extends string = string>
   updateFilters: (filters: Record<string, FilterValue | null>) => void;
   resetState: () => void;
   updateSearch: (searchQuery: string) => void;
-}
-
-/**
- * Configuration for table sorting
- */
-export interface SortingConfig<TSortField extends string = string> {
-  defaultSortField?: TSortField;
-  defaultSortOrder?: SortOrder;
-  allowMultiSort?: boolean;
 }
 
 /**
@@ -127,10 +94,9 @@ export interface AntTableHookConfig<TData> {
 /**
  * Type for URL query state updates based on enabled features
  * Pagination updates are handled separately by PaginationUpdates
+ * Sorting updates are handled separately by SortingUpdates
  */
 export interface QueryStateUpdates {
-  sortField?: string | null;
-  sortOrder?: SortOrder | null;
   filters?: Record<string, FilterValue | null> | null;
   search?: string | null;
 }
