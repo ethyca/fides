@@ -108,12 +108,7 @@ def dev(session: Session) -> None:
 
     if use_nginx:
         # Run two Fides webservers with nginx load balancer proxy
-        if open_shell:
-            session.run("docker", "compose", "up", "--wait", "fides-1", "fides-2", "fides-cluster", external=True)
-            session.log("~~Remember to login with `fides user login`!~~")
-            session.run(*EXEC_IT, "/bin/bash", external=True)
-        else:
-            session.run("docker", "compose", "up", "fides-1", "fides-2", "fides-cluster", external=True)
+        session.run("docker", "compose", "up", "fides-1", "fides-2", "fides-proxy", external=True)
     elif not datastores:
         if open_shell:
             # Run only a single fides webserver for shell access
