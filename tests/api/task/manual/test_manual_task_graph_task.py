@@ -9,21 +9,20 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
-from fides.api.schemas.policy import ActionType
+from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
     GroupEvaluationResult,
 )
+from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+from fides.api.util.cache import get_cache
+from tests.api.task.manual.conftest import _build_request_task, _build_task_resources
 
 
 def _create_graph_task_setup(db, connection_setup, privacy_request, action_type):
     """Helper to create graph task setup with minimal duplication"""
     connection_config, manual_task, config, field = connection_setup
-
-    from tests.api.task.manual.conftest import (
-        _build_request_task,
-        _build_task_resources,
-    )
 
     request_task = _build_request_task(
         db, privacy_request, connection_config, action_type
@@ -31,8 +30,6 @@ def _create_graph_task_setup(db, connection_setup, privacy_request, action_type)
     resources = _build_task_resources(
         db, privacy_request, privacy_request.policy, connection_config, request_task
     )
-
-    from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 
     graph_task = ManualTaskGraphTask(resources)
 
@@ -1018,10 +1015,6 @@ class TestManualTaskGraphTaskHelperMethods:
         """Test running request when no manual task exists"""
 
         # Create a request task and resources, but without a manual task
-        from tests.api.task.manual.conftest import (
-            _build_request_task,
-            _build_task_resources,
-        )
 
         request_task = _build_request_task(
             db, access_privacy_request, connection_config, ActionType.access
@@ -1033,8 +1026,6 @@ class TestManualTaskGraphTaskHelperMethods:
             connection_config,
             request_task,
         )
-
-        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 
         graph_task = ManualTaskGraphTask(resources)
 
@@ -1089,27 +1080,91 @@ class TestManualTaskGraphTaskHelperMethods:
         graph_task = setup["graph_task"]
         privacy_request = setup["privacy_request"]
 
-        # Create an erasure task instance to verify our setup works
-        erasure_instance = ManualTaskInstance.create(
-            db=db,
-            data={
-                "task_id": manual_task.id,
-                "config_id": setup["config"].id,
-                "entity_id": privacy_request.id,
-                "entity_type": "privacy_request",
-                "status": "pending",
-            },
+        # Set privacy request to in_processing status
+        privacy_request.status = PrivacyRequestStatus.in_processing
+        db.commit()
+
+        # Test that access tasks are NOT skipped when not in erasure phase
+        result = graph_task._run_request(
+            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
+            [],
+        )
+        # Should not be skipped - should raise AwaitingAsyncTaskCallback or return data
+        assert (
+            result is not None
+            or privacy_request.status == PrivacyRequestStatus.requires_input
         )
 
-        # Verify the instance was created correctly
-        assert erasure_instance.id is not None
-        assert erasure_instance.task_id == manual_task.id
-        assert erasure_instance.config_id == setup["config"].id
+        # Now simulate being in erasure phase by setting a checkpoint
+        privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
 
-        # For now, let's skip testing the complex erasure mode logic
-        # and focus on testing that our basic setup works
-        # TODO: Implement a proper test for erasure mode skipping once we understand
-        # how to properly set up the test environment for this scenario
+        # Test that access tasks ARE skipped during erasure phase
+        result = graph_task._run_request(
+            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
+            [],
+        )
+        # Should be skipped (return None) during erasure mode
+        assert result is None
+
+        # Verify the task was marked as complete with the correct message
+        # This would be verified through the execution logs in a real scenario
+
+    def test_is_in_erasure_phase_method(
+        self,
+        db,
+        erasure_task_setup,
+    ):
+        """Test the _is_in_erasure_phase method logic"""
+
+        setup = erasure_task_setup
+        graph_task = setup["graph_task"]
+        privacy_request = setup["privacy_request"]
+
+        # Initially should not be in erasure phase
+        assert not graph_task._is_in_erasure_phase()
+
+        # Test with different checkpoint steps
+
+        # Access phase steps should return False
+        access_phase_steps = [
+            CurrentStep.pre_webhooks,
+            CurrentStep.access,
+            CurrentStep.upload_access,
+        ]
+
+        for step in access_phase_steps:
+            privacy_request.cache_failed_checkpoint_details(step)
+            assert (
+                not graph_task._is_in_erasure_phase()
+            ), f"Step {step} should not be erasure phase"
+
+        # Erasure phase steps should return True
+        erasure_phase_steps = [
+            CurrentStep.erasure,
+            CurrentStep.finalize_erasure,
+            CurrentStep.consent,
+            CurrentStep.finalize_consent,
+            CurrentStep.email_post_send,
+            CurrentStep.post_webhooks,
+            CurrentStep.finalization,
+        ]
+
+        for step in erasure_phase_steps:
+            privacy_request.cache_failed_checkpoint_details(step)
+            assert (
+                graph_task._is_in_erasure_phase()
+            ), f"Step {step} should be erasure phase"
+
+        # Test fallback logic when no checkpoint details exist
+        # Clear checkpoint details
+        cache = get_cache()
+        cache.delete(f"FAILED_LOCATION__{privacy_request.id}")
+
+        # Should fall back to checking access terminator task
+        # Since we don't have access tasks set up, this should return False
+        assert not graph_task._is_in_erasure_phase()
 
     def test_run_request_access_task_not_skipped_during_access_mode(
         self,

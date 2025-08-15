@@ -16,7 +16,7 @@ from fides.api.models.manual_task import (
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.logging_utils import (
     format_evaluation_failure_message,
@@ -138,14 +138,32 @@ class ManualTaskGraphTask(GraphTask):
 
         # Check if any eligible manual tasks have applicable configs
         if not self._check_manual_task_configs(manual_task, config_type, action_type):
+            self.update_status(
+                "No eligible manual tasks found",
+                [],
+                action_type,
+                ExecutionLogStatus.complete,
+            )
             return None
 
-        # If this is an access task but we're actually in erasure mode, skip it
+        # Check if there are any rules for this action type
+        if not self.resources.request.policy.get_rules_for_action(
+            action_type=action_type
+        ):
+            self.update_status(
+                "No rules found for this action type",
+                [],
+                action_type,
+                ExecutionLogStatus.complete,
+            )
+            return None
+
+        # If this is an access task but we're actually in erasure mode, mark as complete
         # (access tasks during erasure are for data collection we should not require user input)
         if (
             action_type == ActionType.access
             and self.resources.request.status == PrivacyRequestStatus.in_processing
-            and self.resources.request.erasure_tasks.count() > 0
+            and self._is_in_erasure_phase()
         ):
             # We're in erasure mode and this is an access task - skip it
             self.update_status(
@@ -160,7 +178,7 @@ class ManualTaskGraphTask(GraphTask):
         conditional_data = extract_conditional_dependency_data_from_inputs(
             *inputs, manual_task=manual_task, input_keys=self.execution_node.input_keys
         )
-        # Evaluate conditional dependencies BEFORE checking policy rules
+        # Evaluate conditional dependencies AFTER checking policy rules
         evaluation_result = evaluate_conditional_dependencies(
             self.resources.session, manual_task, conditional_data=conditional_data
         )
@@ -176,12 +194,6 @@ class ManualTaskGraphTask(GraphTask):
                 ActionType(self.resources.privacy_request_task.action_type),
                 ExecutionLogStatus.skipped,
             )
-            return None
-
-        # Check if there are any rules for this action type
-        if not self.resources.request.policy.get_rules_for_action(
-            action_type=action_type
-        ):
             return None
 
         # Check/Create manual task instances for applicable configs only
@@ -445,3 +457,44 @@ class ManualTaskGraphTask(GraphTask):
             for instance in instances_to_remove:
                 instance.delete(self.resources.session)
                 self.resources.session.commit()
+
+    def _is_in_erasure_phase(self) -> bool:
+        """
+        Determine if the privacy request is currently in the erasure phase.
+
+        This checks the execution checkpoint details to see if we've progressed
+        beyond the access phase into erasure or later phases.
+        """
+
+        # Check if we have checkpoint details indicating we're in erasure or later
+        checkpoint_details = self.resources.request.get_failed_checkpoint_details()
+        if checkpoint_details and checkpoint_details.step:
+            # If we have a checkpoint at erasure or later, we're in erasure mode
+            erasure_phase_steps = [
+                CurrentStep.erasure,
+                CurrentStep.finalize_erasure,
+                CurrentStep.consent,
+                CurrentStep.finalize_consent,
+                CurrentStep.email_post_send,
+                CurrentStep.post_webhooks,
+                CurrentStep.finalization,
+            ]
+            return checkpoint_details.step in erasure_phase_steps
+
+        # Fallback: check if access phase is complete by looking at access terminator task
+        # This handles cases where checkpoint details might not be available
+        try:
+            access_terminator = self.resources.request.get_terminate_task_by_action(
+                ActionType.access
+            )
+            if (
+                access_terminator
+                and access_terminator.status == ExecutionLogStatus.complete
+            ):
+                return True
+        except Exception:
+            # If we can't determine the status, assume we're not in erasure mode
+            # This is safer than potentially skipping tasks incorrectly
+            pass
+
+        return False
