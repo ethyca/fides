@@ -240,6 +240,7 @@ export const DiscoveredAssetsTable = ({
             />
           ),
         }}
+        aria-labelledby="breadcrumb-current-page"
       />
       <AssignSystemModal
         isOpen={isAssignSystemModalOpen}
