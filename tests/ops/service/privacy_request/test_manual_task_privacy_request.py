@@ -1315,7 +1315,8 @@ def erasure_policy_safe_fields(
     except ObjectDeletedError:
         pass
 
-
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 @pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
 def test_manual_task_erasure_end_to_end(
     example_datasets: list[Dict],
