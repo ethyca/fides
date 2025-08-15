@@ -1,8 +1,8 @@
 # Table Hooks Documentation
 
-A reusable table system with URL synchronization and Ant Design integration for the Admin UI.
+A reusable, standardized table system with always-on URL synchronization and Ant Design integration for the Admin UI.
 
-Note: URL sync currently only works for one table per page.
+> **Note:** URL sync currently only works for one table per page.
 
 ## Architecture
 
@@ -22,14 +22,16 @@ Table Component
 import { useTableState, useAntTable } from "~/features/common/table/hooks";
 
 const MyTable = ({ filters }) => {
-  // 1. Table state with URL sync
+  // 1. Table state with URL sync (pagination, sorting, filtering, search)
   const tableState = useTableState({
     pagination: { defaultPageSize: 10, pageSizeOptions: [10, 50] },
+    sorting: { defaultSortKey: "name", defaultSortOrder: "ascend" },
+    search: { defaultSearchQuery: "gtm" },
   });
 
   // 2. API data
   const queryResult = useGetDataQuery({
-    ...tableState.queryParams,
+    ...tableState.state, // Use .state for all query params
     ...filters,
   });
 
@@ -50,14 +52,19 @@ const MyTable = ({ filters }) => {
 
 ## Recommended Pattern
 
-For complex tables, use a dedicated business logic hook:
+For complex tables, use a dedicated business logic hook to encapsulate all table logic, actions, and column definitions.
 
 ### Business Logic Hook
 
 ```tsx
 // hooks/useMyTable.tsx
 export const useMyTable = ({ filters }: Config) => {
-  // ...
+  const tableState = useTableState({
+    // ...config
+  });
+  const antTable = useAntTable(tableState, {
+    // ...config
+  });
 
   // Business actions
   const handleBulkAction = useCallback(async () => {
@@ -69,6 +76,7 @@ export const useMyTable = ({ filters }: Config) => {
     searchQuery: tableState.searchQuery,
     updateSearch: tableState.updateSearch,
     handleBulkAction,
+    columns: useMemo(() => [...], []), // Memoize columns
   };
 };
 ```
@@ -102,18 +110,20 @@ export const MyTable = ({ filters }: Props) => {
 
 ### `useTableState(config)`
 
-Manages table state with optional URL synchronization.
+Manages table state (pagination, sorting, filtering, search) with always-on URL synchronization.
 
 **Config:**
 
 ```tsx
 {
   pagination?: { defaultPageSize?, pageSizeOptions? };
-  sorting?: { defaultSortKey?, defaultSortOrder? };
+  sorting?: { defaultSortKey?, defaultSortOrder?, validColumns? };
+  search?: { defaultSearchQuery? };
+  onStateChange?: (state) => void;
 }
 ```
 
-**Returns:** State management utilities and `queryParams` for API calls.
+**Returns:** State management utilities and `.state` for API calls.
 
 ### `useAntTable(tableState, config)`
 
@@ -128,31 +138,47 @@ Integrates table state with Ant Design Table components.
   dataSource?: any[];
   totalRows?: number;
   isLoading?: boolean;
+  isFetching?: boolean;
   bulkActions?: BulkActionsConfig;
+  currentPage?: number;
+  pageSize?: number;
+  customTableProps?: Partial<TableProps<TData>>;
 }
 ```
 
-**Returns:** `tableProps`, `selectionProps`, selection utilities.
+**Returns:** `tableProps`, `selectionProps`, selection utilities, and helpers for bulk actions and loading state.
+
+### Standalone Hooks
+
+- `usePagination(config)`: Manage pagination state with URL sync.
+- `useSorting(config)`: Manage sorting state with URL sync.
+- `useSearch(config)`: Manage search state with URL sync.
 
 ## Features
 
-- **URL Synchronization**: Deep linking support for pagination, sorting, filtering, and search
+- **URL Synchronization**: Deep linking for pagination, sorting, filtering, and search (always enabled)
 - **Selection Management**: Cross-page row selection with bulk actions
+- **Bulk Actions**: Configurable, with helpers for disabling/loading state
 - **Type Safety**: Full TypeScript support with generic column keys
 - **Performance**: Optimized re-renders and change detection
 - **Consistency**: Standardized table behavior across the app
+- **Accessibility**: Designed for keyboard and screen reader accessibility (see below)
 
 ## Configuration Examples
 
-### URL Sync
+### Table State Config
 
 ```tsx
-urlSync: {
-  pagination: true,    // Sync page/size to URL
-  sorting: true,       // Sync sort field/order to URL
-  filtering: true,     // Sync filters to URL
-  search: true,        // Sync search query to URL
-}
+const tableState = useTableState({
+  pagination: { defaultPageSize: 25, pageSizeOptions: [25, 50, 100] },
+  sorting: {
+    validColumns: ["name", "status", "created_at"],
+    defaultSortKey: "name",
+    defaultSortOrder: "descend",
+  },
+  search: { defaultSearchQuery: "" },
+  onStateChange: (state) => handleStateChange(state),
+});
 ```
 
 ### Bulk Actions
@@ -160,12 +186,15 @@ urlSync: {
 ```tsx
 bulkActions: {
   getRowKey: (row) => row.id,
-  actions: [{
-    key: 'delete',
-    label: 'Delete Selected',
-    onClick: async (selectedRows) => { /* action */ },
-    disabled: (selectedRows) => selectedRows.length === 0,
-  }],
+  actions: [
+    {
+      key: "delete",
+      label: "Delete selected",
+      onClick: async (selectedRows) => { /* action */ },
+      disabled: (selectedRows) => selectedRows.length === 0,
+      loading: false,
+    },
+  ],
 }
 ```
 
@@ -174,7 +203,7 @@ bulkActions: {
 To update existing tables:
 
 1. **Replace manual state** with `useTableState`
-2. **Use RTK Query** with `tableState.queryParams`
+2. **Use RTK Query** with `tableState.state` for query params
 3. **Replace Table props** with `useAntTable` results
 4. **Move business logic** to dedicated hooks
 
@@ -191,7 +220,7 @@ const [selectedRows, setSelectedRows] = useState([]);
 
 ```tsx
 const tableState = useTableState(config);
-const queryResult = useGetDataQuery(tableState.queryParams);
+const queryResult = useGetDataQuery(tableState.state);
 const { tableProps, selectionProps } = useAntTable(tableState, {
   dataSource: queryResult.data?.items,
   isLoading: queryResult.isLoading,
@@ -202,7 +231,16 @@ const { tableProps, selectionProps } = useAntTable(tableState, {
 
 1. **Use dedicated hooks** for complex table logic
 2. **Memoize column definitions** to prevent re-renders
-3. **Enable URL sync** for user-facing tables
-4. **Disable URL sync** for modal/drawer tables
-5. **Reset selections** when filters change
-6. **Provide loading states** for better UX
+3. **Reset selections** when filters change
+4. **Use type-safe column keys** for sorting and filtering
+5. **Test with keyboard and screen readers** for accessibility
+
+## Accessibility
+
+- All interactive elements (bulk actions, pagination, search) should be reachable by keyboard.
+- Use semantic HTML and ARIA attributes for custom cell renderers.
+- Use descriptive labels for all action buttons, especially if they are icon only.
+
+---
+
+For more advanced usage, see the source code and tests for each hook. If you add new features, update this documentation accordingly.
