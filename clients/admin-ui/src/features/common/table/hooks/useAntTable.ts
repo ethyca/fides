@@ -57,6 +57,23 @@ export const useAntTable = <TData, TSortField extends string = string>(
     customTableProps = {},
   } = config;
 
+  // Default rowKey function that prefers 'id' then 'key' properties
+  const defaultGetRowKey = useCallback((record: TData): string => {
+    if (record && typeof record === "object") {
+      const recordObj = record as Record<string, unknown>;
+      if (recordObj.id) {
+        return String(recordObj.id);
+      }
+      if (recordObj.key) {
+        return String(recordObj.key);
+      }
+    }
+    // Fallback to string representation
+    return String(record);
+  }, []);
+
+  const rowKeyFunction = getRowKey || defaultGetRowKey;
+
   // Selection state management (simplified to match original working pattern)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<TData[]>([]);
@@ -168,7 +185,7 @@ export const useAntTable = <TData, TSortField extends string = string>(
       loading: isLoading || isFetching,
       pagination: paginationProps,
       onChange: handleTableChange,
-      rowKey: getRowKey,
+      rowKey: rowKeyFunction,
       scroll: { x: "max-content", scrollToFirstRowOnChange: true },
       size: "small" as const,
       bordered: true,
@@ -180,7 +197,7 @@ export const useAntTable = <TData, TSortField extends string = string>(
       isFetching,
       paginationProps,
       handleTableChange,
-      getRowKey,
+      rowKeyFunction,
       customTableProps,
     ],
   );
