@@ -1,5 +1,6 @@
 import {
   stubIntegrationManagement,
+  stubManualTaskConfig,
   stubPlus,
   stubSystemCrud,
 } from "cypress/support/stubs";
@@ -11,32 +12,7 @@ describe("Integration Management - Manual Task Configuration", () => {
     cy.login();
     stubPlus(true);
     stubIntegrationManagement();
-
-    // Mock manual task related endpoints
-    cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields*", {
-      fixture: "integration-management/manual-tasks/manual-fields.json",
-    }).as("getManualFields");
-
-    cy.intercept("POST", "/api/v1/plus/connection/*/manual-field", {
-      body: {},
-    }).as("createManualField");
-
-    cy.intercept("PUT", "/api/v1/plus/connection/*/manual-field/*", {
-      body: {},
-    }).as("updateManualField");
-
-    cy.intercept("DELETE", "/api/v1/plus/connection/*/manual-field/*", {
-      statusCode: 204,
-    }).as("deleteManualField");
-
-    // Mock user assignment endpoints
-    cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
-      fixture: "integration-management/manual-tasks/task-config.json",
-    }).as("getManualTask");
-
-    cy.intercept("PUT", "/api/v1/plus/connection/*/manual-task/assign-users", {
-      body: {},
-    }).as("assignUsersToManualTask");
+    stubManualTaskConfig();
 
     // Mock config endpoint
     cy.intercept("GET", "/api/v1/config?api_set=false", {
@@ -48,17 +24,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       fixture: "integration-management/manual-tasks/users.json",
     }).as("getUsers");
 
-    // Mock external user creation
-    cy.intercept("POST", "/api/v1/plus/external-user", {
-      body: {},
-    }).as("createExternalUser");
-
     // Navigate to specific integration manual tasks tab
-    cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
-      fixture:
-        "integration-management/manual-tasks/manual-task-connection.json",
-    }).as("getConnection");
-
     cy.visit(`${INTEGRATION_MANAGEMENT_ROUTE}/demo_manual_task_integration`);
     cy.wait("@getConnection");
     cy.getAntTab("Manual tasks").click({ force: true });
