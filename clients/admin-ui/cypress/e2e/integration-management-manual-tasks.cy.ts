@@ -216,12 +216,9 @@ describe("Integration Management - Manual Task Configuration", () => {
 
     it("should unassign users from manual tasks", () => {
       // Remove a selected user
-      cy.getByTestId("assign-users-select")
-        .find(".ant-select-selection-item")
-        .first()
-        .within(() => {
-          cy.get(".ant-select-selection-item-remove").click();
-        });
+      cy.getByTestId("assign-users-select").antRemoveSelectTag(
+        "External 1 User",
+      );
 
       cy.wait("@assignUsersToManualTask").then((interception) => {
         // Verify the request body is an array of user IDs
