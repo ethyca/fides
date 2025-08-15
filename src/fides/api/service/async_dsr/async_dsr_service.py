@@ -35,13 +35,7 @@ def requeue_polling_request(
     )
 
     connection_config = get_connection_config_from_task(db, async_task)
-    if not connection_config:
-        logger.error(
-            "No connection config found for task {} {}",
-            async_task.collection_address,
-            async_task.id,
-        )
-        return None
+
 
     with TaskResources(
         privacy_request,
@@ -73,4 +67,10 @@ def get_connection_config_from_task(
         raise PrivacyRequestError(
             f"DatasetConfig with fides_key {request_task.dataset_name} not found."
         )
-    return ConnectionConfig.get(db=db, object_id=dataset_config.connection_config_id)
+    connection_config = ConnectionConfig.get(db=db, object_id=dataset_config.connection_config_id)
+    if not connection_config:
+        raise PrivacyRequestError(
+            f"ConnectionConfig with id {dataset_config.connection_config_id} not found."
+        )
+
+    return connection_config
