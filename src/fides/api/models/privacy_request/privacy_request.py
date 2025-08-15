@@ -222,6 +222,7 @@ class PrivacyRequest(
     canceled_at = Column(DateTime(timezone=True), nullable=True)
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
     source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
+    location = Column(String, nullable=True)
 
     # A PrivacyRequest can be soft deleted, so we store when it was deleted
     deleted_at = Column(DateTime(timezone=True), nullable=True)

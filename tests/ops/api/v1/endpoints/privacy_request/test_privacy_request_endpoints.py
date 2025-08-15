@@ -289,6 +289,69 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
+    def test_create_privacy_request_stores_location(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_LOCATION = "US-CA"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                },
+                "location": TEST_LOCATION,
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        # Verify location is stored in the database
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.location == TEST_LOCATION
+
+        # Verify location is included in the response
+        assert response_data[0]["location"] == TEST_LOCATION
+
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_create_privacy_request_invalid_location(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": "test@example.com",
+                },
+                "location": "INVALID",  # Invalid location format
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 422  # Validation error
+        assert "Invalid location format" in resp.text
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
     def test_create_privacy_request_stores_multivalue_custom_fields(
         self,
         run_access_request_mock,
@@ -6796,6 +6859,44 @@ class TestCreatePrivacyRequestAuthenticated:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_create_privacy_request_authenticated_with_location(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        generate_auth_header,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_LOCATION = "GB"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": TEST_EMAIL},
+                "location": TEST_LOCATION,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        # Verify location is stored in the database
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.location == TEST_LOCATION
+
+        # Verify location is included in the response
+        assert response_data[0]["location"] == TEST_LOCATION
+
+        pr.delete(db=db)
         assert run_access_request_mock.called
 
     @pytest.mark.parametrize(
