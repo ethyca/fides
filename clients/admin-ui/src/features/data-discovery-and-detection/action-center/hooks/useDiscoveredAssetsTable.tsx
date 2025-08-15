@@ -90,12 +90,7 @@ export const useDiscoveredAssetsTable = ({
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
-  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
-    pagination: {
-      defaultPageSize: 10,
-      pageSizeOptions: [10, 20, 50, 100],
-    },
-  });
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>();
 
   const {
     columnFilters,
