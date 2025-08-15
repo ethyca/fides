@@ -1,12 +1,14 @@
 import traceback
-from typing import Any, Dict, cast
+from typing import Any, Dict, Generator, cast
 
 import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -26,6 +28,7 @@ from fides.api.models.manual_task import (
     ManualTaskSubmission,
     ManualTaskType,
 )
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
@@ -1247,3 +1250,164 @@ def test_manual_task_conditional_dependencies_execute_when_met(
     assert (
         results[manual_addr_key][0]["verification_required"] == "conditional_test_value"
     ), "Manual task should contain submitted value"
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_safe_fields(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    """
+    Create an erasure policy that only targets fields that can be safely erased
+    without violating NOT NULL constraints (like primary keys).
+    """
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "safe erasure policy",
+            "key": "safe_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    # Create rules for different field types that can be safely erased
+    safe_categories = [
+        "user.contact.email",
+        "user.name",
+        "user.contact.address",
+        "user.financial.bank_account",
+        "user.sensor",
+    ]
+
+    for category in safe_categories:
+        erasure_rule = Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.erasure.value,
+                "client_id": oauth_client.id,
+                "name": f"Safe erasure rule for {category}",
+                "policy_id": erasure_policy.id,
+                "masking_strategy": {
+                    "strategy": "string_rewrite",
+                    "configuration": {"rewrite_value": "MASKED"},
+                },
+            },
+        )
+
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": category,
+                "rule_id": erasure_rule.id,
+            },
+        )
+
+    yield erasure_policy
+
+    # Cleanup
+    try:
+        for rule in erasure_policy.rules:
+            for target in rule.targets:
+                target.delete(db)
+            rule.delete(db)
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
+def test_manual_task_erasure_end_to_end(
+    example_datasets: list[Dict],
+    db: Session,
+    connection_config: ConnectionConfig,
+    erasure_policy_safe_fields,
+    run_privacy_request_task,
+    postgres_integration_db,
+    manual_task: ManualTask,
+    manual_config: ManualTaskConfig,
+    manual_field: ManualTaskConfigField,
+):
+    """
+    End-to-end test: A manual task with access config should be skipped during erasure mode.
+    This test verifies that when running a privacy request with erasure rules, access manual tasks
+    are skipped immediately (not wait for input) because they're just for data collection.
+    """
+
+    # Create a conditional dependency that WILL be met
+    ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "field_address": "postgres_example_test_dataset:customer:email",
+            "operator": "exists",
+            "value": None,  # exists operator doesn't need a value
+            "sort_order": 1,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # 1. Use the first example dataset (Postgres)
+    # ------------------------------------------------------------------
+    source_ds = example_datasets[0]
+    source_ctl_ds = CtlDataset.create_from_dataset_dict(db, source_ds)
+    DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": source_ds["fides_key"],
+            "ctl_dataset_id": source_ctl_ds.id,
+        },
+    )
+
+    # ------------------------------------------------------------------
+    # 2. Test that privacy request runs to completion without manual input
+    # ------------------------------------------------------------------
+    pr_data = {"identity": {"email": "customer-1@example.com"}}
+
+    privacy_request = get_privacy_request_results(
+        db,
+        erasure_policy_safe_fields,
+        run_privacy_request_task,
+        pr_data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
+    )
+
+    db.refresh(privacy_request)
+
+    # Should complete without requiring manual input since access manual task is skipped during erasure
+    assert (
+        privacy_request.status == PrivacyRequestStatus.complete
+    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+
+    # Verify NO manual task instance was created (proves manual task was skipped)
+    instance = (
+        db.query(ManualTaskInstance)
+        .filter(
+            ManualTaskInstance.task_id == manual_task.id,
+            ManualTaskInstance.entity_id == privacy_request.id,
+        )
+        .first()
+    )
+    assert (
+        instance is None
+    ), "ManualTaskInstance should NOT be created when access task is skipped during erasure"
+
+    # Verify results contain source data but NO manual task data
+    results = cast(
+        Dict[str, list[Dict[str, Any]]],
+        privacy_request.get_raw_access_results() or {},
+    )
+
+    source_addr_key = "postgres_example_test_dataset:customer"
+
+    # Verify source data is present (proves upstream execution)
+    assert source_addr_key in results, "Source data should be present in results"
+
+    # Check that erasure was attempted (results may be empty if no matching data found)
+    # The key is that the privacy request completed without database constraint violations
+    assert privacy_request.status == PrivacyRequestStatus.complete, (
+        f"Privacy request should complete successfully with erasure policy. "
+        f"Status: {privacy_request.status}, Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    )

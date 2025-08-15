@@ -140,17 +140,27 @@ class ManualTaskGraphTask(GraphTask):
         if not self._check_manual_task_configs(manual_task, config_type, action_type):
             return None
 
-        # Check if there are any rules for this action type
-        if not self.resources.request.policy.get_rules_for_action(
-            action_type=action_type
+        # If this is an access task but we're actually in erasure mode, skip it
+        # (access tasks during erasure are for data collection we should not require user input)
+        if (
+            action_type == ActionType.access
+            and self.resources.request.status == PrivacyRequestStatus.in_processing
+            and self.resources.request.erasure_tasks.count() > 0
         ):
+            # We're in erasure mode and this is an access task - skip it
+            self.update_status(
+                "Access task skipped during erasure mode (data collection only)",
+                [],
+                action_type,
+                ExecutionLogStatus.complete,
+            )
             return None
 
         # Extract conditional dependency data from inputs
         conditional_data = extract_conditional_dependency_data_from_inputs(
             *inputs, manual_task=manual_task, input_keys=self.execution_node.input_keys
         )
-        # Evaluate conditional dependencies
+        # Evaluate conditional dependencies BEFORE checking policy rules
         evaluation_result = evaluate_conditional_dependencies(
             self.resources.session, manual_task, conditional_data=conditional_data
         )
@@ -166,6 +176,12 @@ class ManualTaskGraphTask(GraphTask):
                 ActionType(self.resources.privacy_request_task.action_type),
                 ExecutionLogStatus.skipped,
             )
+            return None
+
+        # Check if there are any rules for this action type
+        if not self.resources.request.policy.get_rules_for_action(
+            action_type=action_type
+        ):
             return None
 
         # Check/Create manual task instances for applicable configs only
