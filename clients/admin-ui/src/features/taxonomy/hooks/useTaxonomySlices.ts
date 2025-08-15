@@ -12,7 +12,12 @@ import {
   useLazyGetAllDataUsesQuery,
   useUpdateDataUseMutation,
 } from "~/features/data-use/data-use.slice";
-import { CoreTaxonomiesEnum } from "~/features/taxonomy/constants";
+import {
+  useCreateSystemGroupMutation,
+  useDeleteSystemGroupMutation,
+  useLazyGetAllSystemGroupsQuery,
+  useUpdateSystemGroupMutation,
+} from "~/features/system-groups/system-group.slice";
 import {
   useCreateDataCategoryMutation,
   useDeleteDataCategoryMutation,
@@ -26,13 +31,6 @@ import {
   useUpdateTaxonomyMutation,
 } from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
-
-const taxonomyTypeToKey: Record<CoreTaxonomiesEnum, string | null> = {
-  [CoreTaxonomiesEnum.DATA_CATEGORIES]: null,
-  [CoreTaxonomiesEnum.DATA_USES]: null,
-  [CoreTaxonomiesEnum.DATA_SUBJECTS]: null,
-  [CoreTaxonomiesEnum.SYSTEM_GROUPS]: "system_group",
-};
 
 type TriggerFn = (...args: any[]) => any;
 export type UseTaxonomySlicesResult = {
@@ -48,7 +46,7 @@ export type UseTaxonomySlicesResult = {
 const useTaxonomySlices = ({
   taxonomyType,
 }: {
-  taxonomyType: CoreTaxonomiesEnum;
+  taxonomyType: string; // fides_key of taxonomy
 }): UseTaxonomySlicesResult => {
   /* GET ALL */
   const [getAllDataCategoriesQueryTrigger, dataCategoriesResult] =
@@ -57,21 +55,26 @@ const useTaxonomySlices = ({
     useLazyGetAllDataSubjectsQuery();
   const [getAllDataUsesQueryTrigger, dataUsesResult] =
     useLazyGetAllDataUsesQuery();
+  const [getAllSystemGroupsQueryTrigger, systemGroupsResult] =
+    useLazyGetAllSystemGroupsQuery();
 
   /* CREATE */
   const [createDataCategoryMutationTrigger] = useCreateDataCategoryMutation();
   const [createDataUseMutationTrigger] = useCreateDataUseMutation();
   const [createDataSubjectMutationTrigger] = useCreateDataSubjectMutation();
+  const [createSystemGroupMutationTrigger] = useCreateSystemGroupMutation();
 
   /* UPDATE */
   const [updateDataCategoryMutationTrigger] = useUpdateDataCategoryMutation();
   const [updateDataUseMutationTrigger] = useUpdateDataUseMutation();
   const [updateDataSubjectsMutationTrigger] = useUpdateDataSubjectMutation();
+  const [updateSystemGroupMutationTrigger] = useUpdateSystemGroupMutation();
 
   /* DELETE  */
   const [deleteDataCategoryMutationTrigger] = useDeleteDataCategoryMutation();
   const [deleteDataUseMutationTrigger] = useDeleteDataUseMutation();
   const [deleteDataSubjectMutationTrigger] = useDeleteDataSubjectMutation();
+  const [deleteSystemGroupMutationTrigger] = useDeleteSystemGroupMutation();
 
   /* Generic taxonomy hooks */
   const [lazyGetTaxonomyTrigger, taxonomyResult] = useLazyGetTaxonomyQuery();
@@ -79,42 +82,40 @@ const useTaxonomySlices = ({
   const [updateTaxonomyTrigger] = useUpdateTaxonomyMutation();
   const [deleteTaxonomyTrigger] = useDeleteTaxonomyMutation();
 
-  const taxonomyKey = taxonomyTypeToKey[taxonomyType];
-
   // Stable callbacks for generic taxonomy
   const taxonomyGetAllTrigger = useCallback(() => {
-    if (!taxonomyKey) {
+    if (!taxonomyType) {
       return Promise.resolve(undefined as any);
     }
-    return lazyGetTaxonomyTrigger(taxonomyKey);
-  }, [taxonomyKey, lazyGetTaxonomyTrigger]);
+    return lazyGetTaxonomyTrigger(taxonomyType);
+  }, [taxonomyType, lazyGetTaxonomyTrigger]);
 
   const taxonomyCreateTrigger = useCallback(
     (payload: any) =>
-      taxonomyKey
-        ? createTaxonomyTrigger({ taxonomyType: taxonomyKey, ...payload })
+      taxonomyType
+        ? createTaxonomyTrigger({ taxonomyType, ...payload })
         : Promise.resolve(undefined as any),
-    [taxonomyKey, createTaxonomyTrigger],
+    [taxonomyType, createTaxonomyTrigger],
   );
 
   const taxonomyUpdateTrigger = useCallback(
     (payload: any) =>
-      taxonomyKey
-        ? updateTaxonomyTrigger({ taxonomyType: taxonomyKey, ...payload })
+      taxonomyType
+        ? updateTaxonomyTrigger({ taxonomyType, ...payload })
         : Promise.resolve(undefined as any),
-    [taxonomyKey, updateTaxonomyTrigger],
+    [taxonomyType, updateTaxonomyTrigger],
   );
 
   const taxonomyDeleteTrigger = useCallback(
     (key: string) =>
-      taxonomyKey
-        ? deleteTaxonomyTrigger({ taxonomyType: taxonomyKey, key })
+      taxonomyType
+        ? deleteTaxonomyTrigger({ taxonomyType, key })
         : Promise.resolve(undefined as any),
-    [taxonomyKey, deleteTaxonomyTrigger],
+    [taxonomyType, deleteTaxonomyTrigger],
   );
 
-  // Data Categories
-  if (taxonomyType === CoreTaxonomiesEnum.DATA_CATEGORIES) {
+  // Legacy core taxonomies using dedicated endpoints
+  if (taxonomyType === "data_category") {
     return {
       getAllTrigger: getAllDataCategoriesQueryTrigger,
       taxonomyItems: dataCategoriesResult.data || [],
@@ -127,7 +128,7 @@ const useTaxonomySlices = ({
   }
 
   // Data Uses
-  if (taxonomyType === CoreTaxonomiesEnum.DATA_USES) {
+  if (taxonomyType === "data_use") {
     return {
       getAllTrigger: getAllDataUsesQueryTrigger,
       taxonomyItems: dataUsesResult.data || [],
@@ -140,7 +141,7 @@ const useTaxonomySlices = ({
   }
 
   // Data Subjects
-  if (taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS) {
+  if (taxonomyType === "data_subject") {
     return {
       getAllTrigger: getAllDataSubjectsQueryTrigger,
       taxonomyItems: dataSubjectsResult.data || [],
@@ -152,21 +153,29 @@ const useTaxonomySlices = ({
     };
   }
 
-  // Generic taxonomies
-  if (taxonomyKey) {
+  // System Groups
+  if (taxonomyType === "system_group") {
     return {
-      getAllTrigger: taxonomyGetAllTrigger,
-      taxonomyItems: taxonomyResult?.data || [],
-      updateTrigger: taxonomyUpdateTrigger,
-      deleteTrigger: taxonomyDeleteTrigger,
-      createTrigger: taxonomyCreateTrigger,
-      isLoading: taxonomyResult?.isLoading || false,
-      isError: taxonomyResult?.isError || false,
+      getAllTrigger: getAllSystemGroupsQueryTrigger,
+      taxonomyItems: systemGroupsResult.data || [],
+      updateTrigger: updateSystemGroupMutationTrigger,
+      deleteTrigger: deleteSystemGroupMutationTrigger,
+      createTrigger: createSystemGroupMutationTrigger,
+      isLoading: systemGroupsResult.isLoading,
+      isError: systemGroupsResult.isError,
     };
   }
 
-  // Should be unreachable for known CoreTaxonomiesEnum values.
-  throw new Error(`Unsupported taxonomy type: ${taxonomyType}`);
+  // Generic taxonomies
+  return {
+    getAllTrigger: taxonomyGetAllTrigger,
+    taxonomyItems: taxonomyResult?.data || [],
+    updateTrigger: taxonomyUpdateTrigger,
+    deleteTrigger: taxonomyDeleteTrigger,
+    createTrigger: taxonomyCreateTrigger,
+    isLoading: taxonomyResult?.isLoading || false,
+    isError: taxonomyResult?.isError || false,
+  };
 };
 
 export default useTaxonomySlices;

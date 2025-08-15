@@ -3,118 +3,47 @@ import { rest } from "msw";
 
 import { TaxonomyEntity } from "./types";
 
-// Seed data for system groups taxonomy
-export const mockSystemGroupData: TaxonomyEntity[] = [
+// Seed data for Sensitivity taxonomy
+export const mockSensitivityData: TaxonomyEntity[] = [
   {
-    fides_key: "analytics_bi",
-    name: "Analytics & Business Intelligence",
-    description: "Systems for analytics and business intelligence",
+    fides_key: "low",
+    name: "Low",
+    description: "Low sensitivity",
     parent_key: null,
     active: true,
     is_default: false,
   },
   {
-    fides_key: "customer_management",
-    name: "Customer Management",
-    description: "Systems for managing customer relationships",
+    fides_key: "medium",
+    name: "Medium",
+    description: "Medium sensitivity",
     parent_key: null,
     active: true,
     is_default: false,
   },
   {
-    fides_key: "internal_operations",
-    name: "Internal Operations",
-    description: "Systems for internal business operations",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "legal_compliance",
-    name: "Legal & Compliance",
-    description: "Systems for legal and compliance management",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "marketing",
-    name: "Marketing",
-    description: "Systems for marketing activities",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "payments_billing",
-    name: "Payments & Billing",
-    description: "Systems for payment processing and billing",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "product_service",
-    name: "Product & Service Delivery",
-    description: "Systems for product and service delivery",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "research_development",
-    name: "Research & Development",
-    description: "Systems for research and development activities",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "sales_revenue",
-    name: "Sales & Revenue Operations",
-    description: "Systems for sales and revenue operations",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "security_fraud",
-    name: "Security & Fraud",
-    description: "Systems for security and fraud prevention",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "customer_care",
-    name: "Customer Care Global",
-    description: "Global customer care and support systems",
-    parent_key: null,
-    active: true,
-    is_default: false,
-  },
-  {
-    fides_key: "marketing_media",
-    name: "Marketing and Media Strategy - Owned",
-    description: "Owned marketing and media strategy systems",
+    fides_key: "high",
+    name: "High",
+    description: "High sensitivity",
     parent_key: null,
     active: true,
     is_default: false,
   },
 ];
 
-// Available dynamic taxonomies list for the UI selector
+// Available dynamic taxonomies list for the UI selector (only sensitivity for now)
 export interface AvailableTaxonomySummary {
   fides_key: string;
   name: string;
 }
 
-// Exclude system_group here; it's handled as a special core taxonomy in the UI
-export const mockAvailableTaxonomies: AvailableTaxonomySummary[] = [];
+export const mockAvailableTaxonomies: AvailableTaxonomySummary[] = [
+  { fides_key: "sensitivity", name: "Sensitivity" },
+];
 
 // Storage helpers backed by localStorage when available (browser),
 // with an in-memory fallback (Node/JSDOM).
-const STORAGE_KEY = "mock_system_group_taxonomy";
+const STORAGE_KEY = "mock_sensitivity_taxonomy";
 const hasLocalStorage = typeof window !== "undefined" && !!window.localStorage;
 
 const readStorage = (): TaxonomyEntity[] => {
@@ -128,7 +57,7 @@ const readStorage = (): TaxonomyEntity[] => {
       // ignore parsing errors and fall back to seed
     }
   }
-  return [...mockSystemGroupData];
+  return [...mockSensitivityData];
 };
 
 const writeStorage = (data: TaxonomyEntity[]) => {
@@ -141,20 +70,18 @@ const writeStorage = (data: TaxonomyEntity[]) => {
   }
 };
 
-let systemGroupStorage = readStorage();
+let sensitivityStorage = readStorage();
 
 // Factory so tests / stories can override data
 export const taxonomyHandlers = (
-  initialData: TaxonomyEntity[] = mockSystemGroupData,
-  taxonomyType = "system_group",
+  initialData: TaxonomyEntity[] = mockSensitivityData,
+  taxonomyType = "sensitivity",
 ) => {
-  // Initialize storage with provided data (and persist)
-  systemGroupStorage = [...(hasLocalStorage ? readStorage() : initialData)];
+  sensitivityStorage = [...(hasLocalStorage ? readStorage() : initialData)];
   if (!hasLocalStorage) {
-    // keep parity with old behavior in Node
-    systemGroupStorage = [...initialData];
+    sensitivityStorage = [...initialData];
   }
-  writeStorage(systemGroupStorage);
+  writeStorage(sensitivityStorage);
 
   const apiBase = "/api/v1"; // we match relative to avoid hard-coding host
   return [
@@ -166,8 +93,8 @@ export const taxonomyHandlers = (
     // GET - return current storage
     rest.get(`${apiBase}/taxonomies/${taxonomyType}`, (_req, res, ctx) => {
       // Sort items so parents come before children using topological sort
-      const sortItems = (items: typeof systemGroupStorage) => {
-        const result: typeof systemGroupStorage = [];
+      const sortItems = (items: typeof sensitivityStorage) => {
+        const result: typeof sensitivityStorage = [];
         const remaining = [...items];
 
         // First pass: add all root items (parent_key === null)
@@ -184,7 +111,7 @@ export const taxonomyHandlers = (
 
         // Add children after their parents
         while (remaining.length > 0) {
-          const addedInThisPass: typeof systemGroupStorage = [];
+          const addedInThisPass: typeof sensitivityStorage = [];
 
           for (let i = remaining.length - 1; i >= 0; i -= 1) {
             const item = remaining[i];
@@ -215,11 +142,10 @@ export const taxonomyHandlers = (
         return result;
       };
 
-      const sortedItems = sortItems(systemGroupStorage);
+      const sortedItems = sortItems(sensitivityStorage);
 
       return res(ctx.status(200), ctx.json(sortedItems));
     }),
-
     // POST (create) - add to storage
     rest.post(
       `${apiBase}/taxonomies/${taxonomyType}`,
@@ -241,7 +167,7 @@ export const taxonomyHandlers = (
 
         // Validate parent_key exists in storage
         const parentExists = newItem.parent_key
-          ? systemGroupStorage.some(
+          ? sensitivityStorage.some(
               (item) => item.fides_key === newItem.parent_key,
             )
           : true;
@@ -258,21 +184,20 @@ export const taxonomyHandlers = (
             newItem.is_default !== undefined ? newItem.is_default : false,
         };
 
-        systemGroupStorage.push(completeItem);
-        writeStorage(systemGroupStorage);
+        sensitivityStorage.push(completeItem);
+        writeStorage(sensitivityStorage);
         return res(ctx.status(201), ctx.json(completeItem));
       },
     ),
-
     // PUT (update) - update in storage
     rest.put(`${apiBase}/taxonomies/${taxonomyType}`, async (req, res, ctx) => {
       const updatedItem = (await req.json()) as TaxonomyEntity;
-      const index = systemGroupStorage.findIndex(
+      const index = sensitivityStorage.findIndex(
         (item) => item.fides_key === updatedItem.fides_key,
       );
       if (index !== -1) {
-        systemGroupStorage[index] = updatedItem;
-        writeStorage(systemGroupStorage);
+        sensitivityStorage[index] = updatedItem;
+        writeStorage(sensitivityStorage);
       }
       return res(ctx.status(200), ctx.json(updatedItem));
     }),
@@ -283,10 +208,10 @@ export const taxonomyHandlers = (
         const { fides_key: fidesKeyParam } = req.params as {
           fides_key: string;
         };
-        systemGroupStorage = systemGroupStorage.filter(
+        sensitivityStorage = sensitivityStorage.filter(
           (item) => item.fides_key !== fidesKeyParam,
         );
-        writeStorage(systemGroupStorage);
+        writeStorage(sensitivityStorage);
         return res(ctx.status(204));
       },
     ),

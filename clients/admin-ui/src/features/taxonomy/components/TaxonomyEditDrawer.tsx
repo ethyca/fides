@@ -22,7 +22,7 @@ import { isErrorResult } from "~/types/errors";
 import EditDrawer, { EditDrawerHeader } from "../../common/EditDrawer";
 import {
   CoreTaxonomiesEnum,
-  taxonomyTypeToScopeRegistryEnum,
+  taxonomyKeyToScopeRegistryEnum,
 } from "../constants";
 import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
@@ -66,10 +66,10 @@ const TaxonomyEditDrawer = ({
   });
 
   const canUserEditTaxonomy = useHasPermission([
-    taxonomyTypeToScopeRegistryEnum(taxonomyType).UPDATE,
+    taxonomyKeyToScopeRegistryEnum(taxonomyType).UPDATE,
   ]);
   const canUserDeleteTaxonomy = useHasPermission([
-    taxonomyTypeToScopeRegistryEnum(taxonomyType).DELETE,
+    taxonomyKeyToScopeRegistryEnum(taxonomyType).DELETE,
   ]);
 
   const handleEdit = async (formValues: TaxonomyEntity) => {

@@ -42,6 +42,7 @@ import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { propertySlice } from "~/features/properties";
 import { systemSlice } from "~/features/system";
+import { systemGroupSlice } from "~/features/system-groups/system-group.slice";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { dataCategorySlice } from "~/features/taxonomy/data-category.slice";
 import { datasetTestSlice } from "~/features/test-datasets";
@@ -98,6 +99,7 @@ const reducer = {
   [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
   [systemSlice.name]: systemSlice.reducer,
   [dataCategorySlice.name]: dataCategorySlice.reducer,
+  [systemGroupSlice.name]: systemGroupSlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
 };
