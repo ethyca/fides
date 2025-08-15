@@ -218,4 +218,58 @@ describe("usePagination", () => {
       "function",
     );
   });
+
+  it("handles invalid negative values by falling back to defaults", () => {
+    // Seed URL state with negative values (should be invalid)
+    nuqsTestHelpers.reset({
+      page: -1,
+      size: -10,
+    });
+
+    const { result } = renderHook(() =>
+      usePagination({
+        defaultPageSize: 25,
+      }),
+    );
+
+    // Should fall back to default values when invalid values are provided
+    expect(result.current.pageIndex).toBe(1);
+    expect(result.current.pageSize).toBe(25);
+  });
+
+  it("handles invalid zero values by falling back to defaults", () => {
+    // Seed URL state with zero values (should be invalid for positive validation)
+    nuqsTestHelpers.reset({
+      page: 0,
+      size: 0,
+    });
+
+    const { result } = renderHook(() =>
+      usePagination({
+        defaultPageSize: 50,
+      }),
+    );
+
+    // Should fall back to default values when zero values are provided
+    expect(result.current.pageIndex).toBe(1);
+    expect(result.current.pageSize).toBe(50);
+  });
+
+  it("accepts valid positive integer values from URL", () => {
+    // Seed URL state with valid positive values
+    nuqsTestHelpers.reset({
+      page: 5,
+      size: 100,
+    });
+
+    const { result } = renderHook(() =>
+      usePagination({
+        defaultPageSize: 25,
+      }),
+    );
+
+    // Should use the valid positive values from URL
+    expect(result.current.pageIndex).toBe(5);
+    expect(result.current.pageSize).toBe(100);
+  });
 });

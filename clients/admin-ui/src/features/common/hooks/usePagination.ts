@@ -1,4 +1,4 @@
-import { parseAsInteger, useQueryStates } from "nuqs";
+import { parseAsNumberLiteral, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
 import {
@@ -6,6 +6,7 @@ import {
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SIZES,
 } from "../table/constants";
+import { parseAsPositiveInteger } from "./nuqs-parsers";
 import type {
   PaginationConfig,
   PaginationQueryParams,
@@ -15,9 +16,17 @@ import type {
 /**
  * NuQS parsers for pagination state - synced to URL
  */
-const createPaginationParsers = (defaults: { pageSize?: number } = {}) => ({
-  page: parseAsInteger.withDefault(DEFAULT_PAGE_INDEX),
-  size: parseAsInteger.withDefault(defaults.pageSize ?? DEFAULT_PAGE_SIZE),
+const createPaginationParsers = (
+  defaults: { pageSize?: number; pageSizeOptions?: readonly number[] } = {},
+) => ({
+  page: parseAsPositiveInteger.withDefault(DEFAULT_PAGE_INDEX),
+  size: defaults.pageSizeOptions
+    ? parseAsNumberLiteral(defaults.pageSizeOptions).withDefault(
+        defaults.pageSize ?? DEFAULT_PAGE_SIZE,
+      )
+    : parseAsPositiveInteger.withDefault(
+        defaults.pageSize ?? DEFAULT_PAGE_SIZE,
+      ),
 });
 
 /**
@@ -74,9 +83,10 @@ export const usePagination = (config: PaginationConfig = {}) => {
   const parsers = useMemo(() => {
     const createdParsers = createPaginationParsers({
       pageSize: defaultPageSize,
+      pageSizeOptions,
     });
     return createdParsers;
-  }, [defaultPageSize]);
+  }, [defaultPageSize, pageSizeOptions]);
 
   // Use NuQS for URL state management
   const [queryState, setQueryState] = useQueryStates(parsers, {
