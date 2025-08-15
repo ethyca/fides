@@ -92,12 +92,20 @@ describe("useAntTable", () => {
     );
     const { tableProps } = result.current;
 
+    // rowKey should always be a function (default provided when getRowKey is not specified)
+    expect(typeof tableProps.rowKey).toBe("function");
+
     const withId = { id: "abc", name: "A" } as Row;
     const withKey = { key: "k1", name: "B" } as Row;
+    const withoutIdOrKey = { name: "C" } as Row;
 
     if (typeof tableProps.rowKey === "function") {
+      // Should prefer id first
       expect(tableProps.rowKey(withId)).toBe("abc");
+      // Should fall back to key if no id
       expect(tableProps.rowKey(withKey)).toBe("k1");
+      // Should handle objects without id or key
+      expect(tableProps.rowKey(withoutIdOrKey)).toBe(String(withoutIdOrKey));
     }
   });
 
@@ -299,8 +307,13 @@ describe("useAntTable", () => {
     );
 
     const testRow = { id: "abc", name: "Test" };
+
+    // rowKey should always be a function
+    expect(typeof result.current.tableProps.rowKey).toBe("function");
+
     if (typeof result.current.tableProps.rowKey === "function") {
-      result.current.tableProps.rowKey(testRow);
+      const resultKey = result.current.tableProps.rowKey(testRow);
+      expect(resultKey).toBe("custom-key");
     }
 
     expect(customGetRowKey).toHaveBeenCalledWith(testRow);
