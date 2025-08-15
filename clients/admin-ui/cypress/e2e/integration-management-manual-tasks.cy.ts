@@ -56,7 +56,7 @@ describe("Integration Management - Manual Task Configuration", () => {
 
     it("should display manual tasks with correct data", () => {
       // Verify first task data is displayed correctly
-      cy.get('[data-row-key="task1"]').within(() => {
+      cy.getAntTableRow("task1").within(() => {
         cy.get("td").eq(0).should("contain", "Customer Data Export");
         cy.get("td")
           .eq(1)
@@ -120,7 +120,7 @@ describe("Integration Management - Manual Task Configuration", () => {
   describe("Edit Manual Task", () => {
     it("should open edit modal when edit button is clicked", () => {
       // Click edit button on first task
-      cy.get('[data-row-key="task1"]').within(() => {
+      cy.getAntTableRow("task1").within(() => {
         cy.getByTestId("edit-btn").click();
       });
 
@@ -131,7 +131,7 @@ describe("Integration Management - Manual Task Configuration", () => {
     });
 
     it("should update manual task successfully", () => {
-      cy.get('[data-row-key="task1"]').within(() => {
+      cy.getAntTableRow("task1").within(() => {
         cy.getByTestId("edit-btn").click();
       });
 
@@ -153,7 +153,7 @@ describe("Integration Management - Manual Task Configuration", () => {
 
   describe("Delete Manual Task", () => {
     it("should delete manual task when confirmed", () => {
-      cy.get('[data-row-key="task1"]').within(() => {
+      cy.getAntTableRow("task1").within(() => {
         cy.getByTestId("delete-btn").click();
       });
 
