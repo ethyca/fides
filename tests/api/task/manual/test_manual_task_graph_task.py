@@ -9,7 +9,7 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
-from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
