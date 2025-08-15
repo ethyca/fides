@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
 
+### Changed
+- Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
+
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
 ### Added
