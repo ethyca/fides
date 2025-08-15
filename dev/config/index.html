@@ -1566,7 +1566,15 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1607,7 +1615,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;44ba45b97fe3c88acca2aa5bff838a6f&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;892afc09405ba3f535f84e2d0359669f&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1672,9 +1680,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># the connection dead and closes it.</span>
 <span class="n">api_engine_keepalives_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
 
+<span class="c1"># If true, the engine will pre-ping connections to ensure they are</span>
+<span class="c1"># still valid before using them.</span>
+<span class="n">api_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
 <span class="c1"># If true, the async engine will pre-ping connections to ensure they</span>
 <span class="c1"># are still valid before using them.</span>
-<span class="n">api_async_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+<span class="n">api_async_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># The name of the application database.</span>
 <span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default_db&quot;</span><span class="w"> </span><span class="c1"># string</span>
@@ -1716,6 +1728,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Maximum number of TCP keepalive retries before the client considers</span>
 <span class="c1"># the connection dead and closes it.</span>
 <span class="n">task_engine_keepalives_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># If true, the engine will pre-ping connections to ensure they are</span>
+<span class="c1"># still valid before using them.</span>
+<span class="n">task_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># The database user with which to login to the application database.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;defaultuser&quot;</span><span class="w"> </span><span class="c1"># string</span>
