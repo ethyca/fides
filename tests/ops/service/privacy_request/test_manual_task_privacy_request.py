@@ -123,6 +123,19 @@ def manual_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
 
 
 @pytest.fixture
+def manual_config_erasure(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
+    return ManualTaskConfig.create(
+        db=db,
+        data={
+            "task_id": manual_task.id,
+            "config_type": ManualTaskConfigurationType.erasure_privacy_request,
+            "version": 1,
+            "is_current": True,
+        },
+    )
+
+
+@pytest.fixture
 def manual_field(
     db: Session, manual_task: ManualTask, manual_config: ManualTaskConfig
 ) -> ManualTaskConfigField:
@@ -137,6 +150,26 @@ def manual_field(
                 "label": "Verification Required",
                 "required": True,
                 "data_categories": ["user.verification"],
+            },
+        },
+    )
+
+
+@pytest.fixture
+def manual_field_erasure(
+    db: Session, manual_task: ManualTask, manual_config_erasure: ManualTaskConfig
+) -> ManualTaskConfigField:
+    return ManualTaskConfigField.create(
+        db=db,
+        data={
+            "task_id": manual_task.id,
+            "config_id": manual_config_erasure.id,
+            "field_key": "erasure_checkbox",
+            "field_type": ManualTaskFieldType.checkbox,
+            "field_metadata": {
+                "label": "Erasure Checkbox",
+                "required": True,
+                "data_categories": ["user.erasure"],
             },
         },
     )
@@ -1327,13 +1360,13 @@ def test_manual_task_erasure_end_to_end(
     run_privacy_request_task,
     postgres_integration_db,
     manual_task: ManualTask,
-    manual_config: ManualTaskConfig,
-    manual_field: ManualTaskConfigField,
+    manual_config_erasure: ManualTaskConfig,
+    manual_field_erasure: ManualTaskConfigField,
 ):
     """
-    End-to-end test: A manual task with access config should be skipped during erasure mode.
-    This test verifies that when running a privacy request with erasure rules, access manual tasks
-    are skipped immediately (not wait for input) because they're just for data collection.
+    End-to-end test: A manual task with access config should wait for input during erasure mode.
+    This test verifies that when running a privacy request with erasure rules, the manual task
+    should wait for user input since it's configured for access mode.
     """
 
     # Create a conditional dependency that WILL be met
@@ -1364,7 +1397,7 @@ def test_manual_task_erasure_end_to_end(
     )
 
     # ------------------------------------------------------------------
-    # 2. Test that privacy request runs to completion without manual input
+    # 2. Test that privacy request waits for manual input for erasure task
     # ------------------------------------------------------------------
     pr_data = {"identity": {"email": "customer-1@example.com"}}
 
@@ -1378,12 +1411,12 @@ def test_manual_task_erasure_end_to_end(
 
     db.refresh(privacy_request)
 
-    # Should complete without requiring manual input since access manual task is skipped during erasure
+    # Should wait for manual input since erasure task requires user input
     assert (
-        privacy_request.status == PrivacyRequestStatus.complete
-    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        privacy_request.status == PrivacyRequestStatus.requires_input
+    ), f"Expected requires_input, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
 
-    # Verify NO manual task instance was created (proves manual task was skipped)
+    # Verify that a manual task instance WAS created for the erasure task
     instance = (
         db.query(ManualTaskInstance)
         .filter(
@@ -1393,10 +1426,10 @@ def test_manual_task_erasure_end_to_end(
         .first()
     )
     assert (
-        instance is None
-    ), "ManualTaskInstance should NOT be created when access task is skipped during erasure"
+        instance is not None
+    ), "ManualTaskInstance should be created for erasure task requiring manual input"
 
-    # Verify results contain source data but NO manual task data
+    # Verify results contain source data (proves upstream execution)
     results = cast(
         Dict[str, list[Dict[str, Any]]],
         privacy_request.get_raw_access_results() or {},
@@ -1406,10 +1439,3 @@ def test_manual_task_erasure_end_to_end(
 
     # Verify source data is present (proves upstream execution)
     assert source_addr_key in results, "Source data should be present in results"
-
-    # Check that erasure was attempted (results may be empty if no matching data found)
-    # The key is that the privacy request completed without database constraint violations
-    assert privacy_request.status == PrivacyRequestStatus.complete, (
-        f"Privacy request should complete successfully with erasure policy. "
-        f"Status: {privacy_request.status}, Error: {getattr(privacy_request, 'error_message', 'No error message')}"
-    )
