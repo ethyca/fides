@@ -12,15 +12,15 @@
  * - Parser factories that match nuqs behavior
  */
 
-const setCalls: Array<Record<string, any> | null> = [];
-let currentState: Record<string, any> = {};
+const setCalls: Array<Record<string, unknown> | null> = [];
+let currentState: Record<string, unknown> = {};
 
 const parseFactory = (defaultValue: unknown) => ({
   withDefault: (value: unknown) => ({ default: value ?? defaultValue }),
 });
 
 const helpers = {
-  reset: (initial: Record<string, any> = {}) => {
+  reset: (initial: Record<string, unknown> = {}) => {
     currentState = { ...initial };
     setCalls.length = 0;
   },
@@ -39,9 +39,24 @@ export const nuqsMock = {
   parseAsJson: () => ({
     withDefault: (value: unknown) => ({ default: value }),
   }),
+  createParser: (config: {
+    parse: (value: string) => unknown;
+    serialize: (value: unknown) => string;
+  }) => ({
+    withDefault: (defaultValue: unknown) => ({
+      default: defaultValue,
+      parse: config.parse,
+      serialize: config.serialize,
+    }),
+  }),
 
-  useQueryStates: (parsers: Record<string, any>) => {
-    const setQueryState = (updates: Record<string, any> | null) => {
+  useQueryStates: (
+    parsers: Record<
+      string,
+      { default?: unknown; parse?: (value: string) => unknown }
+    >,
+  ) => {
+    const setQueryState = (updates: Record<string, unknown> | null) => {
       setCalls.push(updates);
       if (updates && typeof updates === "object") {
         // Handle both approaches: preserve null values (for most tests)
@@ -55,17 +70,29 @@ export const nuqsMock = {
       (acc, key) => {
         const parser = parsers[key];
         const currentValue = currentState[key];
+
         // If value is undefined, use the parser's default
         if (currentValue === undefined && parser?.default !== undefined) {
           // eslint-disable-next-line no-param-reassign
           acc[key] = parser.default;
+        } else if (currentValue !== undefined && parser?.parse) {
+          // If parser has a parse function (custom parser), use it to validate
+          try {
+            const parsedValue = parser.parse(String(currentValue));
+            // eslint-disable-next-line no-param-reassign
+            acc[key] = parsedValue !== null ? parsedValue : parser.default;
+          } catch {
+            // If parsing fails, use default
+            // eslint-disable-next-line no-param-reassign
+            acc[key] = parser.default;
+          }
         } else {
           // eslint-disable-next-line no-param-reassign
           acc[key] = currentValue;
         }
         return acc;
       },
-      {} as Record<string, any>,
+      {} as Record<string, unknown>,
     );
 
     return [stateWithDefaults, setQueryState] as const;
@@ -76,7 +103,7 @@ export const nuqsMock = {
 
 // Type definitions for test helpers
 export type NuqsTestHelpers = {
-  reset: (initial?: Record<string, any>) => void;
-  getSetCalls: () => Array<Record<string, any> | null>;
-  getState: () => Record<string, any>;
+  reset: (initial?: Record<string, unknown>) => void;
+  getSetCalls: () => Array<Record<string, unknown> | null>;
+  getState: () => Record<string, unknown>;
 };
