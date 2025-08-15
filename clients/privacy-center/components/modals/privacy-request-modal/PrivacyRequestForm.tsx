@@ -88,7 +88,7 @@ const usePrivacyRequestForm = ({
               key === "name" ||
               key === "phone" ||
               key === "email" ||
-              (typeof value === "object" && value?.label),
+              (typeof value === "object" && value?.label && key !== "location"),
           )
           .map(([key]) => [key, ""]),
       ),
@@ -270,6 +270,7 @@ const usePrivacyRequestForm = ({
               key !== "email" &&
               key !== "phone" &&
               key !== "name" &&
+              key !== "location" &&
               typeof value !== "string",
           )
           .map(([key, value]) => {
@@ -416,6 +417,7 @@ const PrivacyRequestForm = ({
                   key !== "email" &&
                   key !== "phone" &&
                   key !== "name" &&
+                  key !== "location" &&
                   typeof item !== "string",
               )
               .map(([key, item]) => (

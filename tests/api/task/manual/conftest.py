@@ -404,10 +404,6 @@ def _build_request_task(
         # For testing, we'll create input keys and edges based on the field addresses
         # In a real scenario, these would be determined by the graph traversal
         if field_addresses:
-            # Create a mock dataset graph for field address parsing
-
-            dataset_graph = mock_dataset_graph()
-
             # Use the existing field address parsing utilities to create mappings
             for field_address in field_addresses:
                 source_field_address = field_address

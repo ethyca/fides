@@ -437,13 +437,20 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
     def log_awaiting_processing(
-        self, action_type: ActionType, ex: Optional[BaseException]
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException],
+        extra_message: Optional[str] = None,
     ) -> None:
         """On paused activities"""
         logger.info("Pausing node {}", self.key)
 
+        message = str(ex)
+        if extra_message:
+            message = f"{message}. {extra_message}"
+
         self.update_status(
-            str(ex), [], action_type, ExecutionLogStatus.awaiting_processing
+            message, [], action_type, ExecutionLogStatus.awaiting_processing
         )
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
