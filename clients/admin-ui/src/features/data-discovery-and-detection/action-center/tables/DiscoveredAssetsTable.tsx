@@ -4,9 +4,9 @@ import {
   AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntFlex as Flex,
+  AntMenu as Menu,
   AntSpace as Space,
   AntTable as Table,
-  AntTabs as Tabs,
   AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
@@ -125,13 +125,18 @@ export const DiscoveredAssetsTable = ({
 
   return (
     <>
-      <Tabs
+      <Menu
+        aria-label="Asset state filter"
+        mode="horizontal"
         items={filterTabs.map((tab) => ({
           key: tab.hash,
           label: tab.label,
         }))}
-        activeKey={activeTab}
-        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
+        selectedKeys={[activeTab]}
+        onClick={(menuInfo) =>
+          handleTabChange(menuInfo.key as ActionCenterTabHash)
+        }
+        className="mb-4"
       />
       <Flex justify="space-between" align="center" className="mb-4">
         <DebouncedSearchInput

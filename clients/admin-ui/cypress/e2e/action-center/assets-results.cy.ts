@@ -246,10 +246,13 @@ describe("Action center Asset Results", () => {
     it("should bulk restore ignored assets", () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500); // wait for the original router to update
-      cy.getAntTab("Ignored").click({ force: true });
+      cy.findByRole("menuitem", { name: "Ignored" }).click({ force: true });
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500); // wait for the router to update
-      cy.getAntTab("Ignored").should("have.attr", "aria-selected", "true");
+      cy.findByRole("menuitem", { name: "Ignored" }).should(
+        "have.className",
+        "ant-menu-item-selected",
+      );
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
       cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
@@ -342,7 +345,9 @@ describe("Action center Asset Results", () => {
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getAntTab("Recent activity").click({ force: true });
+        cy.findByRole("menuitem", { name: "Recent activity" }).click({
+          force: true,
+        });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
@@ -364,7 +369,7 @@ describe("Action center Asset Results", () => {
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getAntTab("Ignored").click({ force: true });
+        cy.findByRole("menuitem", { name: "Ignored" }).click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
         cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
@@ -461,7 +466,7 @@ describe("Action center Asset Results", () => {
         cy.location("search").should("contain", "search=collect");
 
         // Switch tab
-        cy.getAntTab("Ignored").click({ force: true });
+        cy.findByRole("menuitem", { name: "Ignored" }).click({ force: true });
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
