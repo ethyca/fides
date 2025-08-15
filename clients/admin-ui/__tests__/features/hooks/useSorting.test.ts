@@ -328,4 +328,94 @@ describe("useSorting", () => {
       expect(result.current.sortOrder).toBe(expected.sortOrder);
     });
   });
+
+  it("enforces validColumns constraint when provided", () => {
+    const validColumns = ["name", "createdAt"] as const;
+
+    // Seed URL with an invalid column
+    nuqsTestHelpers.reset({
+      sortKey: "invalidColumn",
+      sortOrder: "ascend",
+    });
+
+    const { result } = renderHook(() =>
+      useSorting<(typeof validColumns)[number]>({
+        validColumns,
+        defaultSortKey: "name",
+      }),
+    );
+
+    // Should fall back to default when URL has invalid column
+    expect(result.current.sortKey).toBe("name");
+    expect(result.current.sortOrder).toBe("ascend");
+  });
+
+  it("accepts valid columns when validColumns constraint is provided", () => {
+    const validColumns = ["name", "createdAt", "title"] as const;
+
+    // Seed URL with a valid column
+    nuqsTestHelpers.reset({
+      sortKey: "createdAt",
+      sortOrder: "descend",
+    });
+
+    const { result } = renderHook(() =>
+      useSorting<(typeof validColumns)[number]>({
+        validColumns,
+      }),
+    );
+
+    // Should accept the valid column from URL
+    expect(result.current.sortKey).toBe("createdAt");
+    expect(result.current.sortOrder).toBe("descend");
+  });
+
+  it("removes invalid sortKey from URL state when validColumns is provided", () => {
+    const validColumns = ["name", "createdAt"] as const;
+
+    // Seed URL with an invalid column but no default
+    nuqsTestHelpers.reset({
+      sortKey: "invalidColumn",
+      sortOrder: "ascend",
+    });
+
+    const { result } = renderHook(() =>
+      useSorting<(typeof validColumns)[number]>({
+        validColumns,
+        // No defaultSortKey provided
+      }),
+    );
+
+    // Should clear the invalid sortKey completely
+    expect(result.current.sortKey).toBeUndefined();
+    expect(result.current.sortOrder).toBe("ascend"); // sortOrder should remain valid
+  });
+
+  it("handles the exact scenario: ?sortKey=invalid&sortOrder=ascend", () => {
+    const validColumns = Object.values({
+      NAME: "name",
+      RESOURCE_TYPE: "resource_type",
+      CONSENT_AGGREGATED: "consent_aggregated",
+    } as const);
+
+    // Seed URL with exactly the problematic scenario
+    nuqsTestHelpers.reset({
+      sortKey: "invalid",
+      sortOrder: "ascend",
+    });
+
+    const { result } = renderHook(() =>
+      useSorting<string>({
+        validColumns,
+        // No defaultSortKey provided - should clear invalid sortKey completely
+      }),
+    );
+
+    // Should clear the invalid sortKey completely and keep valid sortOrder
+    expect(result.current.sortKey).toBeUndefined();
+    expect(result.current.sortOrder).toBe("ascend");
+
+    // Ant Design props should reflect the cleared state
+    expect(result.current.sortingProps.sortedInfo).toBeUndefined();
+  });
 });

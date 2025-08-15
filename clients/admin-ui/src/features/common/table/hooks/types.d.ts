@@ -10,6 +10,7 @@ import type {
 
 /**
  * Base interface for table state that can be synchronized with URL
+ * TSortKey should be constrained to specific column key enums for type safety
  */
 export interface TableState<TSortKey extends string = string>
   extends PaginationState {
@@ -32,14 +33,36 @@ export interface TableStateWithHelpers<TSortKey extends string = string>
 /**
  * Base configuration for table state management
  * URL synchronization is now always enabled for all features
+ * TSortKey should be constrained to specific column key enums for type safety
+ *
+ * @example
+ * ```tsx
+ * enum TableColumns {
+ *   NAME = "name",
+ *   STATUS = "status",
+ *   CREATED_AT = "created_at"
+ * }
+ *
+ * const config: TableStateConfig<TableColumns> = {
+ *   pagination: { defaultPageSize: 50 },
+ *   sorting: {
+ *     validColumns: Object.values(TableColumns), // Enforces URL validation
+ *     defaultSortKey: TableColumns.NAME,
+ *     defaultSortOrder: "descend"
+ *   },
+ *   search: { defaultSearchQuery: "" },
+ *   onStateChange: (state) => handleStateChange(state)
+ * };
+ * ```
  */
 export interface TableStateConfig<TSortKey extends string = string> {
-  // Default values
+  /** Pagination configuration */
   pagination?: PaginationConfig;
+  /** Sorting configuration with optional URL validation */
   sorting?: SortingConfig<TSortKey>;
+  /** Search configuration */
   search?: SearchConfig;
-
-  // Callbacks
+  /** Callback fired when any table state changes */
   onStateChange?: (state: TableState<TSortKey>) => void;
 }
 

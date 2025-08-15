@@ -50,10 +50,23 @@ const createTableParsers = () => {
  *   sorting: { defaultSortKey: 'name', defaultSortOrder: 'ascend' }
  * });
  *
- * // With state change callback
- * const tableState = useTableState({
+ * // Type-safe table state with enum constraints (recommended)
+ * enum MyTableColumns {
+ *   NAME = "name",
+ *   TYPE = "type",
+ *   CREATED_AT = "createdAt"
+ * }
+ *
+ * const tableState = useTableState<MyTableColumns>({
+ *   pagination: { defaultPageSize: 25 },
+ *   sorting: {
+ *     validColumns: Object.values(MyTableColumns), // Enforces URL validation
+ *     defaultSortKey: MyTableColumns.NAME,
+ *     defaultSortOrder: 'ascend'
+ *   },
  *   onStateChange: (state) => console.log('Table state changed:', state)
  * });
+ * // Now URL sorting is validated against the column enum
  * ```
  */
 export const useTableState = <TSortKey extends string = string>(
