@@ -1,23 +1,28 @@
 import { AntFlex, AntMessage as message, AntSelect, AntTag } from "fidesui";
 import { useState } from "react";
+
 import { getErrorMessage } from "~/features/common/helpers";
 import { TagExpandableCell } from "~/features/common/table/cells";
+import { ColumnState } from "~/features/common/table/cells/types";
 import { useMockUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
   SystemGroup,
   SystemResponseWithGroups,
-  SystemUpsertWithGroups,
 } from "~/mocks/TEMP-system-groups/types";
 import { isErrorResult } from "~/types/errors";
+
+const UPDATE_SYSTEM_GROUPS_MSG_KEY = "update-system-groups-msg";
 
 const SystemGroupCell = ({
   selectedGroups,
   allGroups,
   system,
+  columnState,
 }: {
   selectedGroups: SystemGroup[];
   allGroups: SystemGroup[];
   system: SystemResponseWithGroups;
+  columnState?: ColumnState;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<string[]>(
@@ -30,14 +35,33 @@ const SystemGroupCell = ({
 
   const handleUpdate = async () => {
     setIsAdding(false);
+    messageApi.open({
+      key: UPDATE_SYSTEM_GROUPS_MSG_KEY,
+      type: "loading",
+      content: `Updating groups for ${system.name}...`,
+    });
     const result = await updateSystemMutation({
       ...system,
       groups: pendingSelection,
     });
     if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
+      messageApi.open({
+        key: UPDATE_SYSTEM_GROUPS_MSG_KEY,
+        type: "error",
+        content: getErrorMessage(
+          result.error,
+          "Failed to update system groups",
+        ),
+      });
     } else {
-      messageApi.success("System groups updated");
+      messageApi.open({
+        key: UPDATE_SYSTEM_GROUPS_MSG_KEY,
+        type: "success",
+        content: "System groups updated",
+      });
+      setTimeout(() => {
+        messageApi.destroy(UPDATE_SYSTEM_GROUPS_MSG_KEY);
+      }, 3000);
     }
   };
 
@@ -61,10 +85,8 @@ const SystemGroupCell = ({
                   tagProps: { color: group.color },
                 },
             )}
-            columnState={{
-              isWrapped: true,
-            }}
             bordered={false}
+            columnState={columnState}
           />
         </AntFlex>
       )}

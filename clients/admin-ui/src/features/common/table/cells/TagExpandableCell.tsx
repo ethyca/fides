@@ -18,7 +18,7 @@ type TagExpandableCellValues = {
   tagProps?: TagProps;
 }[];
 
-interface TagExpandableCellProps extends TagProps {
+export interface TagExpandableCellProps extends TagProps {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
 }

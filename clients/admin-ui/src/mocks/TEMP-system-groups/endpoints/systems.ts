@@ -92,7 +92,7 @@ export const useMockGetSystemsWithGroupsQuery = ({
 export const useMockUpdateSystemWithGroupsMutation = () => {
   const update = async (system: SystemUpsertWithGroups) => {
     // eslint-disable-next-line no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return {
       data: system,
     };
@@ -104,7 +104,7 @@ export const useMockUpdateSystemWithGroupsMutation = () => {
 export const useMockBulkUpdateSystemWithGroupsMutation = () => {
   const bulkUpdate = async (payload: SystemBulkAddToGroupPayload) => {
     // eslint-disable-next-line no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return {
       data: payload,
     };
