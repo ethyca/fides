@@ -87,7 +87,7 @@ const CreateExternalUserModal = ({
 
   return (
     <Modal
-      title="Create External Respondent User"
+      title="Create external respondent user"
       open={isOpen}
       onCancel={handleCancel}
       footer={null}

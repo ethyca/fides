@@ -244,7 +244,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       cy.getByTestId("manage-secure-access-btn").click();
 
       cy.getByTestId("create-external-user-modal").should("exist");
-      cy.contains("Create External Respondent User").should("be.visible");
+      cy.contains("Create external respondent user").should("be.visible");
     });
 
     it("should create external user successfully", () => {
