@@ -2,7 +2,12 @@ import { AntFilterValue as FilterValue } from "fidesui";
 import { parseAsJson, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
-import { type SortOrder, usePagination, useSearch, useSorting } from "../../hooks";
+import {
+  type SortOrder,
+  usePagination,
+  useSearch,
+  useSorting,
+} from "../../hooks";
 import type {
   QueryStateUpdates,
   TableState,
@@ -137,8 +142,8 @@ export const useTableState = <TSortField extends string = string>(
   );
 
   const updateSearch = useCallback(
-    (searchQuery?: string) => {
-      updateSearchOnly(searchQuery);
+    (searchString?: string) => {
+      updateSearchOnly(searchString);
       resetPagination(); // Reset to first page when search changes
     },
     [updateSearchOnly, resetPagination],
