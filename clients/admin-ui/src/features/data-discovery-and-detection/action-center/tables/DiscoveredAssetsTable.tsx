@@ -137,6 +137,7 @@ export const DiscoveredAssetsTable = ({
           handleTabChange(menuInfo.key as ActionCenterTabHash)
         }
         className="mb-4"
+        data-testid="asset-state-filter"
       />
       <Flex justify="space-between" align="center" className="mb-4">
         <DebouncedSearchInput
@@ -151,6 +152,7 @@ export const DiscoveredAssetsTable = ({
               Clear filters
             </Button>
             <Dropdown
+              overlayClassName="bulk-actions-menu-dropdown"
               menu={{
                 items: [
                   {
