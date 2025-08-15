@@ -19,6 +19,7 @@ import {
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
+import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { SelectedText } from "~/features/common/table/SelectedText";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -318,6 +319,7 @@ export const DiscoveredSystemAggregateTable = ({
         pagination={{
           current: pageIndex,
           pageSize,
+          pageSizeOptions: DEFAULT_PAGE_SIZES,
           total: data?.total || 0,
         }}
         onChange={handleTableChange}

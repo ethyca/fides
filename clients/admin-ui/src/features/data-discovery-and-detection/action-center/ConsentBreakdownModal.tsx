@@ -9,6 +9,7 @@ import {
 import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { PAGE_SIZES } from "~/features/common/table/v2";
 import {
   ConsentStatus,
@@ -129,6 +130,7 @@ export const ConsentBreakdownModal = ({
                 ? {
                     current: pageIndex,
                     pageSize,
+                    pageSizeOptions: DEFAULT_PAGE_SIZES,
                     total: totalRows || 0,
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,

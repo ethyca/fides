@@ -47,6 +47,7 @@ export const NextBreadcrumb = ({ items, ...props }: NextBreadcrumbProps) => {
                 maxWidth: !isCurrentPage ? 400 : undefined,
               }}
               ellipsis={!isCurrentPage}
+              id={isCurrentPage ? "breadcrumb-current-page" : undefined}
             >
               {modifiedItem.title}
             </Text>

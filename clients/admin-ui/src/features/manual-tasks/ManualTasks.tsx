@@ -24,6 +24,7 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
+import { DEFAULT_PAGE_SIZES } from "../common/table/constants";
 import { useManualTaskColumns } from "./hooks";
 import { useGetTasksQuery } from "./manual-tasks.slice";
 
@@ -250,6 +251,7 @@ export const ManualTasks = () => {
         pagination={{
           current: pageIndex,
           pageSize,
+          pageSizeOptions: DEFAULT_PAGE_SIZES,
           total: totalRows || 0,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,

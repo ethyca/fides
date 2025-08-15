@@ -28,12 +28,12 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import {
-  clearSortFields,
+  clearSortKeys,
   requestCSVDownload,
   selectPrivacyRequestFilters,
   setFuzzySearchStr,
   setSortDirection,
-  setSortField,
+  setSortKey,
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
@@ -112,12 +112,12 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
 
   const handleSort = (columnSort: ColumnSort) => {
     if (!columnSort) {
-      dispatch(clearSortFields());
+      dispatch(clearSortKeys());
       resetPageIndexToDefault();
       return;
     }
     const { id, desc } = columnSort;
-    dispatch(setSortField(id));
+    dispatch(setSortKey(id));
     dispatch(setSortDirection(desc ? "desc" : "asc"));
     resetPageIndexToDefault();
   };
