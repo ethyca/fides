@@ -10,7 +10,7 @@ services:
         "-c",
         "log_destination=stderr"
       ]
-    image: postgres:12
+    image: postgres:16
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
