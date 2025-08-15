@@ -130,7 +130,9 @@ class TestFidesConnectorIntegration:
         # make requests to the running webserver which is connected to the application db,
         # but we need them to talk to the test db in pytest
         monkeypatch.setattr(Client, "send", api_client.send)
-        monkeypatch.setattr(request_service, "get_async_client", lambda: async_api_client)
+        monkeypatch.setattr(
+            request_service, "get_async_client", lambda: async_api_client
+        )
 
         result = test_fides_connector.retrieve_data(
             node=node,

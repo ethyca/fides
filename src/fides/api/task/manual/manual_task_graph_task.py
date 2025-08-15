@@ -256,7 +256,6 @@ class ManualTaskGraphTask(GraphTask):
             base_msg = f"{base_msg}. {awaiting_detail_message}"
         raise AwaitingAsyncTask(base_msg)
 
-
     def _ensure_manual_task_instances(
         self,
         manual_task: ManualTask,
@@ -429,4 +428,3 @@ class ManualTaskGraphTask(GraphTask):
             for instance in instances_to_remove:
                 instance.delete(self.resources.session)
                 self.resources.session.commit()
-
