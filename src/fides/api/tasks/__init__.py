@@ -74,6 +74,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
                 keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
                 keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
                 keepalives_count=CONFIG.database.task_engine_keepalives_count,
+                pool_pre_ping=CONFIG.database.task_engine_pool_pre_ping,
             )
 
         # same for the sessionmaker

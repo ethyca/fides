@@ -43,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Optimized StagedResource ancestors() and descendants() methods [#6444](https://github.com/ethyca/fides/pull/6444)
 - Improved UI for manual task configuration & manual tasks table [#6454](https://github.com/ethyca/fides/pull/6454)
 - Data migration to update `.` in `MonitorConfig.key`s to `_` and update all references to these values [#6441](https://github.com/ethyca/fides/pull/6441) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
+- Standardized DB engine config and allowed `pool_pre_ping` to be configurable on all engines, with default of `True` [#6434](https://github.com/ethyca/fides/pull/6434)
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
