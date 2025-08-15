@@ -1,0 +1,39 @@
+{
+  "id": "man_1fa2a4b3-9317-481d-a6c2-5a6704350a10",
+  "parent_entity_id": "con_99c6049c-ac37-419f-978c-18d54d430e7e",
+  "parent_entity_type": "connection_config",
+  "status": "completed",
+  "created_at": "2025-07-03T17:00:10.483539Z",
+  "updated_at": "2025-07-03T17:00:10.483539Z",
+  "assigned_users": [
+    {
+      "id": "fid_498e6f1d-820e-4b2b-bc1a-8ed63dfae25e",
+      "first_name": "External 1",
+      "last_name": "User",
+      "email_address": "external1@example.com"
+    },
+    {
+      "id": "fid_6a7309c4-1d0e-4aeb-9194-f8d77a4dad2b",
+      "first_name": "Internal",
+      "last_name": "User",
+      "email_address": "internal@example.com"
+    }
+  ],
+  "dependency_conditions": [
+    {
+      "logical_operator": "and",
+      "conditions": [
+        {
+          "field_address": "asdas.asdas123",
+          "operator": "lt",
+          "value": 12
+        },
+        {
+          "field_address": "asdasd",
+          "operator": "gte",
+          "value": "asdasd"
+        }
+      ]
+    }
+  ]
+}
