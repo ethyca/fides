@@ -58,7 +58,12 @@ const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
 
   return (
     <>
-      <Flex align="center" justify="end" gap="small" className="mb-1 mt-[-25px]">
+      <Flex
+        align="center"
+        justify="end"
+        gap="small"
+        className="mb-1 mt-[-25px]"
+      >
         <Button
           type="primary"
           onClick={handleAddManualTask}
