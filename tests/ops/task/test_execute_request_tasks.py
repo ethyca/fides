@@ -35,8 +35,8 @@ from fides.api.task.execute_request_tasks import (
     get_upstream_access_data_for_erasure_task,
     run_prerequisite_task_checks,
 )
-from fides.api.task.graph_runners import use_dsr_3_0_scheduler
 from fides.api.task.graph_task import mark_current_and_downstream_nodes_as_failed
+from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import FidesopsRedis, get_cache
 
