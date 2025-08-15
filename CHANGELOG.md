@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.67.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
+
+## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
 ### Added
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
@@ -27,6 +29,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
 - Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 - Added visual checkmark feedback and screen reader announcements for consent button interactions [#6451](https://github.com/ethyca/fides/pull/6451)
+- Added field to privacy center configuration to support location collection in privacy center actions [#6432](https://github.com/ethyca/fides/pull/6432)
+- Added execution log when DSR enters awaiting_email_send status [#6462](https://github.com/ethyca/fides/pull/6462)
 
 ### Changed
 - Improved data extraction for object fields to return complete data structures instead of empty containers in data package when no nested fields where specified [#6424](https://github.com/ethyca/fides/pull/6424)
@@ -34,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved privacy request detail UI in smaller screens [#6437](https://github.com/ethyca/fides/pull/6437)
 - Refactored ancestor links creation to support bulk creation for multiple staged resources in a single operation [#6426](https://github.com/ethyca/fides/pull/6426)
 - Optimized StagedResource ancestors() and descendants() methods [#6444](https://github.com/ethyca/fides/pull/6444)
+- Data migration to update `.` in `MonitorConfig.key`s to `_` and update all references to these values [#6441](https://github.com/ethyca/fides/pull/6441) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
