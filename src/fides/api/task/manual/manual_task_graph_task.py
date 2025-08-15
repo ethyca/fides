@@ -168,7 +168,7 @@ class ManualTaskGraphTask(GraphTask):
         conditional_data = extract_conditional_dependency_data_from_inputs(
             *inputs, manual_task=manual_task, input_keys=self.execution_node.input_keys
         )
-        # Evaluate conditional dependencies AFTER checking policy rules
+        # Evaluate conditional dependencies
         evaluation_result = evaluate_conditional_dependencies(
             self.resources.session, manual_task, conditional_data=conditional_data
         )
