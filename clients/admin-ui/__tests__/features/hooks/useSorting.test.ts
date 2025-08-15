@@ -16,7 +16,7 @@ const { nuqsTestHelpers } = jest.requireMock("nuqs") as {
   nuqsTestHelpers: NuqsTestHelpers;
 };
 
-type SortField = "name" | "createdAt" | "title" | "status";
+type SortKey = "name" | "createdAt" | "title" | "status";
 
 describe("useSorting", () => {
   beforeEach(() => {
@@ -27,7 +27,7 @@ describe("useSorting", () => {
     const { result } = renderHook(() => useSorting());
 
     // Initial state should have undefined values when no defaults are provided
-    expect(result.current.sortField).toBeUndefined();
+    expect(result.current.sortKey).toBeUndefined();
     expect(result.current.sortOrder).toBeUndefined();
 
     // Functions should be available
@@ -45,15 +45,15 @@ describe("useSorting", () => {
   it("initializes with custom configuration", () => {
     const onSortingChange = jest.fn();
     const { result } = renderHook(() =>
-      useSorting<SortField>({
-        defaultSortField: "name",
+      useSorting<SortKey>({
+        defaultSortKey: "name",
         defaultSortOrder: "ascend",
         onSortingChange,
       }),
     );
 
     // Initial state should reflect configuration defaults
-    expect(result.current.sortField).toBe("name");
+    expect(result.current.sortKey).toBe("name");
     expect(result.current.sortOrder).toBe("ascend");
 
     // Ant Design props should reflect current state
@@ -68,7 +68,7 @@ describe("useSorting", () => {
 
     // Callback should be called with initial state
     expect(onSortingChange).toHaveBeenCalledWith({
-      sortField: "name",
+      sortKey: "name",
       sortOrder: "ascend",
     });
   });
@@ -76,19 +76,19 @@ describe("useSorting", () => {
   it("reads state from URL when available", () => {
     // Seed URL state with sorting values
     nuqsTestHelpers.reset({
-      sortField: "createdAt",
+      sortKey: "createdAt",
       sortOrder: "descend",
     });
 
     const { result } = renderHook(() =>
-      useSorting<SortField>({
-        defaultSortField: "name", // Should be overridden by URL
+      useSorting<SortKey>({
+        defaultSortKey: "name", // Should be overridden by URL
         defaultSortOrder: "ascend", // Should be overridden by URL
       }),
     );
 
     // Current state should reflect URL values, not defaults
-    expect(result.current.sortField).toBe("createdAt");
+    expect(result.current.sortKey).toBe("createdAt");
     expect(result.current.sortOrder).toBe("descend");
 
     // Ant Design props should reflect URL state
@@ -100,7 +100,7 @@ describe("useSorting", () => {
   });
 
   it("calls setQueryState with correct values when updating sorting", () => {
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     act(() => {
       result.current.updateSorting("title", "ascend");
@@ -110,13 +110,13 @@ describe("useSorting", () => {
     const setCalls = nuqsTestHelpers.getSetCalls();
     expect(setCalls).toHaveLength(1);
     expect(setCalls[0]).toEqual({
-      sortField: "title",
+      sortKey: "title",
       sortOrder: "ascend",
     });
   });
 
   it("calls setQueryState correctly when updating only sort field", () => {
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     act(() => {
       result.current.updateSorting("status");
@@ -126,13 +126,13 @@ describe("useSorting", () => {
     const setCalls = nuqsTestHelpers.getSetCalls();
     expect(setCalls).toHaveLength(1);
     expect(setCalls[0]).toEqual({
-      sortField: "status",
+      sortKey: "status",
       sortOrder: null,
     });
   });
 
   it("calls setQueryState correctly when updating only sort order", () => {
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     act(() => {
       result.current.updateSorting(undefined, "descend");
@@ -142,7 +142,7 @@ describe("useSorting", () => {
     const setCalls = nuqsTestHelpers.getSetCalls();
     expect(setCalls).toHaveLength(1);
     expect(setCalls[0]).toEqual({
-      sortField: null,
+      sortKey: null,
       sortOrder: "descend",
     });
   });
@@ -150,11 +150,11 @@ describe("useSorting", () => {
   it("calls setQueryState correctly when resetting sorting", () => {
     // Start with some sorting state
     nuqsTestHelpers.reset({
-      sortField: "name",
+      sortKey: "name",
       sortOrder: "ascend",
     });
 
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     act(() => {
       result.current.resetSorting();
@@ -164,7 +164,7 @@ describe("useSorting", () => {
     const setCalls = nuqsTestHelpers.getSetCalls();
     expect(setCalls).toHaveLength(1);
     expect(setCalls[0]).toEqual({
-      sortField: null,
+      sortKey: null,
       sortOrder: null,
     });
   });
@@ -173,8 +173,8 @@ describe("useSorting", () => {
     const onSortingChange = jest.fn();
 
     renderHook(() =>
-      useSorting<SortField>({
-        defaultSortField: "createdAt",
+      useSorting<SortKey>({
+        defaultSortKey: "createdAt",
         defaultSortOrder: "descend",
         onSortingChange,
       }),
@@ -182,15 +182,15 @@ describe("useSorting", () => {
 
     expect(onSortingChange).toHaveBeenCalledTimes(1);
     expect(onSortingChange).toHaveBeenCalledWith({
-      sortField: "createdAt",
+      sortKey: "createdAt",
       sortOrder: "descend",
     });
   });
 
   it("provides correct Ant Design sorting props", () => {
     const { result } = renderHook(() =>
-      useSorting<SortField>({
-        defaultSortField: "title",
+      useSorting<SortKey>({
+        defaultSortKey: "title",
         defaultSortOrder: "descend",
       }),
     );
@@ -206,7 +206,7 @@ describe("useSorting", () => {
   });
 
   it("provides undefined sortedInfo when no sorting is active", () => {
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     expect(result.current.sortingProps.sortedInfo).toBeUndefined();
   });
@@ -214,14 +214,14 @@ describe("useSorting", () => {
   it("handles clearing sorting completely", () => {
     // Start with sorting active
     nuqsTestHelpers.reset({
-      sortField: "name",
+      sortKey: "name",
       sortOrder: "ascend",
     });
 
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     // Verify initial state
-    expect(result.current.sortField).toBe("name");
+    expect(result.current.sortKey).toBe("name");
     expect(result.current.sortOrder).toBe("ascend");
 
     // Clear sorting
@@ -233,7 +233,7 @@ describe("useSorting", () => {
     const setCalls = nuqsTestHelpers.getSetCalls();
     expect(setCalls).toHaveLength(1);
     expect(setCalls[0]).toEqual({
-      sortField: null,
+      sortKey: null,
       sortOrder: null,
     });
   });
@@ -241,43 +241,43 @@ describe("useSorting", () => {
   it("falls back to defaults when URL has undefined values", () => {
     // Seed URL state with undefined values
     nuqsTestHelpers.reset({
-      sortField: undefined,
+      sortKey: undefined,
       sortOrder: undefined,
     });
 
     const { result } = renderHook(() =>
-      useSorting<SortField>({
-        defaultSortField: "status",
+      useSorting<SortKey>({
+        defaultSortKey: "status",
         defaultSortOrder: "ascend",
       }),
     );
 
     // Should fall back to configured defaults
-    expect(result.current.sortField).toBe("status");
+    expect(result.current.sortKey).toBe("status");
     expect(result.current.sortOrder).toBe("ascend");
   });
 
   it("falls back to defaults when URL has empty string and null values", () => {
     // Seed URL state with values that should trigger fallbacks
     nuqsTestHelpers.reset({
-      sortField: "", // Empty string should trigger fallback with || operator
+      sortKey: "", // Empty string should trigger fallback with || operator
       sortOrder: null, // null should trigger fallback with ?? operator
     });
 
     const { result } = renderHook(() =>
-      useSorting<SortField>({
-        defaultSortField: "name",
+      useSorting<SortKey>({
+        defaultSortKey: "name",
         defaultSortOrder: "descend",
       }),
     );
 
     // Should fall back to configured defaults
-    expect(result.current.sortField).toBe("name");
+    expect(result.current.sortKey).toBe("name");
     expect(result.current.sortOrder).toBe("descend");
   });
 
   it("executes update and reset functions without errors", () => {
-    const { result } = renderHook(() => useSorting<SortField>());
+    const { result } = renderHook(() => useSorting<SortKey>());
 
     // Test that functions execute without errors
     expect(() => {
@@ -296,35 +296,35 @@ describe("useSorting", () => {
     const setCalls = nuqsTestHelpers.getSetCalls();
     expect(setCalls).toHaveLength(3);
     expect(setCalls[0]).toEqual({
-      sortField: "createdAt",
+      sortKey: "createdAt",
       sortOrder: "descend",
     });
-    expect(setCalls[1]).toEqual({ sortField: "status", sortOrder: null });
-    expect(setCalls[2]).toEqual({ sortField: null, sortOrder: null });
+    expect(setCalls[1]).toEqual({ sortKey: "status", sortOrder: null });
+    expect(setCalls[2]).toEqual({ sortKey: null, sortOrder: null });
   });
 
   it("handles URL state changes correctly", () => {
     // Test multiple URL state scenarios
     const testCases = [
       {
-        urlState: { sortField: "name", sortOrder: "ascend" },
-        expected: { sortField: "name", sortOrder: "ascend" },
+        urlState: { sortKey: "name", sortOrder: "ascend" },
+        expected: { sortKey: "name", sortOrder: "ascend" },
       },
       {
-        urlState: { sortField: "title", sortOrder: "descend" },
-        expected: { sortField: "title", sortOrder: "descend" },
+        urlState: { sortKey: "title", sortOrder: "descend" },
+        expected: { sortKey: "title", sortOrder: "descend" },
       },
       {
-        urlState: { sortField: "", sortOrder: null },
-        expected: { sortField: undefined, sortOrder: undefined }, // Should use defaults (undefined)
+        urlState: { sortKey: "", sortOrder: null },
+        expected: { sortKey: undefined, sortOrder: undefined }, // Should use defaults (undefined)
       },
     ];
 
     testCases.forEach(({ urlState, expected }) => {
       nuqsTestHelpers.reset(urlState);
-      const { result } = renderHook(() => useSorting<SortField>());
+      const { result } = renderHook(() => useSorting<SortKey>());
 
-      expect(result.current.sortField).toBe(expected.sortField);
+      expect(result.current.sortKey).toBe(expected.sortKey);
       expect(result.current.sortOrder).toBe(expected.sortOrder);
     });
   });

@@ -40,8 +40,8 @@ import type {
  * return <Table {...tableProps} rowSelection={selectionProps} />;
  * ```
  */
-export const useAntTable = <TData, TSortField extends string = string>(
-  tableState: TableStateWithHelpers<TSortField>,
+export const useAntTable = <TData, TSortKey extends string = string>(
+  tableState: TableStateWithHelpers<TSortKey>,
   config: AntTableHookConfig<TData> = {},
 ) => {
   const {
@@ -136,9 +136,9 @@ export const useAntTable = <TData, TSortField extends string = string>(
       }
 
       // Handle sorting with tableState (only if sorting actually changed)
-      const newSortField =
+      const newSortKey =
         sorter && !Array.isArray(sorter)
-          ? (sorter.field as TSortField)
+          ? (sorter.field as TSortKey)
           : undefined;
       const newSortOrder =
         sorter && !Array.isArray(sorter) && sorter.order !== null
@@ -148,7 +148,7 @@ export const useAntTable = <TData, TSortField extends string = string>(
       // Only update sorting if this is not just a pagination change
       // The pagination reset is handled by updateSorting
       if (!isPaginationChange) {
-        tableState.updateSorting(newSortField, newSortOrder);
+        tableState.updateSorting(newSortKey, newSortOrder);
       }
     },
     [tableState],

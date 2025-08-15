@@ -24,8 +24,7 @@ import { useTableState, useAntTable } from "~/features/common/table/hooks";
 const MyTable = ({ filters }) => {
   // 1. Table state with URL sync
   const tableState = useTableState({
-    urlSync: { pagination: true, sorting: true, search: true },
-    pagination: { defaultPageSize: 25 },
+    pagination: { defaultPageSize: 10, pageSizeOptions: [10, 50] },
   });
 
   // 2. API data
@@ -109,9 +108,8 @@ Manages table state with optional URL synchronization.
 
 ```tsx
 {
-  urlSync?: { pagination?, sorting?, filtering?, search? };
   pagination?: { defaultPageSize?, pageSizeOptions? };
-  sorting?: { defaultSortField?, defaultSortOrder? };
+  sorting?: { defaultSortKey?, defaultSortOrder? };
 }
 ```
 

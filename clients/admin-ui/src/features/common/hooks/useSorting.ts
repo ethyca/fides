@@ -12,7 +12,7 @@ import type {
  * NuQS parsers for sorting state - synced to URL
  */
 const createSortingParsers = () => ({
-  sortField: parseAsString.withDefault(""),
+  sortKey: parseAsString.withDefault(""),
   sortOrder: parseAsStringLiteral(["ascend", "descend"]),
 });
 
@@ -36,7 +36,7 @@ const createSortingParsers = () => ({
  *
  * // With custom default values
  * const sorting = useSorting({
- *   defaultSortField: 'name',
+ *   defaultSortKey: 'name',
  *   defaultSortOrder: 'ascend'
  * });
  *
@@ -60,10 +60,10 @@ const createSortingParsers = () => ({
  * />
  * ```
  */
-export const useSorting = <TSortField extends string = string>(
-  config: SortingConfig<TSortField> = {},
+export const useSorting = <TSortKey extends string = string>(
+  config: SortingConfig<TSortKey> = {},
 ) => {
-  const { defaultSortField, defaultSortOrder, onSortingChange } = config;
+  const { defaultSortKey, defaultSortOrder, onSortingChange } = config;
 
   // Create parsers for sorting state
   // Note: Parsers must be stable across renders for NuQS to work properly
@@ -75,19 +75,19 @@ export const useSorting = <TSortField extends string = string>(
   });
 
   // Create current state from query state (URL is the single source of truth)
-  const currentState: SortingState<TSortField> = useMemo(
+  const currentState: SortingState<TSortKey> = useMemo(
     () => ({
-      sortField: (queryState.sortField as TSortField) || defaultSortField, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
+      sortKey: (queryState.sortKey as TSortKey) || defaultSortKey, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
       sortOrder: (queryState.sortOrder as SortOrder | null) ?? defaultSortOrder, // Use `??` because parseAsStringLiteral returns null when not set
     }),
-    [queryState, defaultSortField, defaultSortOrder],
+    [queryState, defaultSortKey, defaultSortOrder],
   );
 
   // Update functions that update query state (URL is the single source of truth)
   const updateSorting = useCallback(
-    (sortField?: TSortField, sortOrder?: SortOrder) => {
+    (sortKey?: TSortKey, sortOrder?: SortOrder) => {
       const updates: SortingQueryParams = {
-        sortField: sortField ? String(sortField) : null,
+        sortKey: sortKey ? String(sortKey) : null,
         sortOrder: sortOrder ?? null,
       };
       setQueryState(updates);
@@ -98,7 +98,7 @@ export const useSorting = <TSortField extends string = string>(
   const resetSorting = useCallback(() => {
     // Reset sorting URL state
     setQueryState({
-      sortField: null,
+      sortKey: null,
       sortOrder: null,
     });
   }, [setQueryState]);
@@ -122,9 +122,9 @@ export const useSorting = <TSortField extends string = string>(
     sortingProps: {
       sortDirections: ["ascend", "descend"] as const,
       defaultSortOrder: currentState.sortOrder,
-      sortedInfo: currentState.sortField
+      sortedInfo: currentState.sortKey
         ? {
-            field: currentState.sortField,
+            field: currentState.sortKey,
             order: currentState.sortOrder,
           }
         : undefined,
