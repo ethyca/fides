@@ -92,6 +92,7 @@ const CreateExternalUserModal = ({
       onCancel={handleCancel}
       footer={null}
       width={500}
+      data-testid="create-external-user-modal"
     >
       <div style={{ marginBottom: 16 }}>
         <Paragraph type="secondary">

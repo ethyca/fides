@@ -106,14 +106,14 @@ describe("Integration Management - Manual Task Configuration", () => {
       cy.wait("@getManualFields"); // Refresh after creation
 
       // Verify modal is closed and task appears in table
-      cy.get(".chakra-modal__body").should("not.exist");
+      cy.getByTestId("add-manual-task-modal").should("not.exist");
     });
 
     it("should close modal when cancel is clicked", () => {
       cy.getByTestId("add-manual-task-btn").click();
-      cy.get(".chakra-modal__body").should("be.visible");
+      cy.getByTestId("add-manual-task-modal").should("be.visible");
       cy.getByTestId("cancel-btn").click();
-      cy.get(".chakra-modal__body").should("not.exist");
+      cy.getByTestId("add-manual-task-modal").should("not.exist");
     });
   });
 
@@ -125,7 +125,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       });
 
       // Verify modal opens with existing data
-      cy.get(".chakra-modal__body").should("be.visible");
+      cy.getByTestId("add-manual-task-modal").should("be.visible");
       cy.contains("Edit manual task").should("be.visible");
       cy.getByTestId("input-name").should("have.value", "Customer Data Export");
     });
@@ -147,7 +147,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       });
       cy.wait("@getManualFields");
 
-      cy.get(".chakra-modal__body").should("not.exist");
+      cy.getByTestId("add-manual-task-modal").should("not.exist");
     });
   });
 
@@ -164,7 +164,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       cy.wait("@getManualFields");
 
       // Verify task is removed
-      cy.get(".chakra-modal__body").should("not.exist");
+      cy.getByTestId("confirmation-modal").should("not.exist");
     });
   });
 
@@ -236,7 +236,7 @@ describe("Integration Management - Manual Task Configuration", () => {
     it("should open external user creation modal", () => {
       cy.getByTestId("manage-secure-access-btn").click();
 
-      cy.get(".ant-modal").should("be.visible");
+      cy.getByTestId("create-external-user-modal").should("exist");
       cy.contains("Create External Respondent User").should("be.visible");
     });
 
@@ -263,7 +263,7 @@ describe("Integration Management - Manual Task Configuration", () => {
       cy.wait("@getUsers"); // Refresh users list
 
       // Verify modal closes and user is available in dropdown
-      cy.get(".ant-modal").should("not.be.visible");
+      cy.getByTestId("create-external-user-modal").should("not.be.visible");
     });
 
     it("should handle external user creation errors", () => {
@@ -292,7 +292,9 @@ describe("Integration Management - Manual Task Configuration", () => {
 
       // Verify error message is displayed
       cy.contains("Email already exists").should("be.visible");
-      cy.get(".ant-modal").should("be.visible"); // Modal stays open on error
+      cy.getByTestId("create-external-user-modal")
+        .find("form")
+        .should("be.visible"); // Modal stays open on error
     });
   });
 });
