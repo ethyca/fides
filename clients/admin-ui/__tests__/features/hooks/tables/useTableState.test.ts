@@ -16,7 +16,7 @@ const { nuqsTestHelpers } = jest.requireMock("nuqs") as {
   nuqsTestHelpers: NuqsTestHelpers;
 };
 
-type SortField = "name" | "createdAt" | "title";
+type SortKey = "name" | "createdAt" | "title";
 
 describe("useTableState", () => {
   beforeEach(() => {
@@ -26,14 +26,14 @@ describe("useTableState", () => {
   it("manages table state with custom configuration", () => {
     const onStateChange = jest.fn();
     const { result } = renderHook(() =>
-      useTableState<SortField>({
+      useTableState<SortKey>({
         pagination: {
           defaultPageSize: 30,
           pageSizeOptions: [10, 20, 30],
           showSizeChanger: false,
         },
         sorting: {
-          defaultSortField: "name",
+          defaultSortKey: "name",
           defaultSortOrder: "ascend",
         },
         onStateChange,
@@ -43,7 +43,7 @@ describe("useTableState", () => {
     // Initial state reflects configuration defaults
     expect(result.current.pageIndex).toBe(1);
     expect(result.current.pageSize).toBe(30);
-    expect(result.current.sortField).toBe("name");
+    expect(result.current.sortKey).toBe("name");
     expect(result.current.sortOrder).toBe("ascend");
     expect(result.current.columnFilters).toEqual({});
     expect(result.current.searchQuery).toBeUndefined();
@@ -85,17 +85,17 @@ describe("useTableState", () => {
     nuqsTestHelpers.reset({
       page: 3,
       size: 10,
-      sortField: "name",
+      sortKey: "name",
       sortOrder: "ascend",
       filters: { role: ["admin"] }, // Remove null values as they get filtered out
       search: "abc",
     });
 
     const { result } = renderHook(() =>
-      useTableState<SortField>({
+      useTableState<SortKey>({
         pagination: { defaultPageSize: 25 },
         sorting: {
-          defaultSortField: "createdAt",
+          defaultSortKey: "createdAt",
           defaultSortOrder: "descend",
         },
       }),
@@ -104,7 +104,7 @@ describe("useTableState", () => {
     // Current state reflects URL values
     expect(result.current.pageIndex).toBe(3);
     expect(result.current.pageSize).toBe(10);
-    expect(result.current.sortField).toBe("name");
+    expect(result.current.sortKey).toBe("name");
     expect(result.current.sortOrder).toBe("ascend");
     expect(result.current.columnFilters).toEqual({
       role: ["admin"],
@@ -137,17 +137,17 @@ describe("useTableState", () => {
     nuqsTestHelpers.reset({
       page: 1,
       size: 25,
-      sortField: "", // Empty string from parser default
+      sortKey: "", // Empty string from parser default
       sortOrder: null, // null from parseAsStringLiteral when not set
       filters: {},
       search: "", // Empty string from parser default
     });
 
     const { result } = renderHook(() =>
-      useTableState<SortField>({
+      useTableState<SortKey>({
         pagination: { defaultPageSize: 25 },
         sorting: {
-          defaultSortField: "createdAt",
+          defaultSortKey: "createdAt",
           defaultSortOrder: "descend",
         },
       }),
@@ -156,7 +156,7 @@ describe("useTableState", () => {
     // Should fall back to configured defaults when URL has empty strings/null values
     expect(result.current.pageIndex).toBe(1);
     expect(result.current.pageSize).toBe(25);
-    expect(result.current.sortField).toBe("createdAt"); // Falls back to default because "" is falsy
+    expect(result.current.sortKey).toBe("createdAt"); // Falls back to default because "" is falsy
     expect(result.current.sortOrder).toBe("descend"); // Falls back to default because null with ?? operator
     expect(result.current.columnFilters).toEqual({});
     expect(result.current.searchQuery).toBeUndefined(); // Empty string from URL is converted to undefined

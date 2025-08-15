@@ -11,19 +11,19 @@ import type {
 /**
  * Base interface for table state that can be synchronized with URL
  */
-export interface TableState<TSortField extends string = string>
+export interface TableState<TSortKey extends string = string>
   extends PaginationState {
-  sortField?: TSortField;
+  sortKey?: TSortKey;
   sortOrder?: SortOrder;
   columnFilters?: Record<string, FilterValue | null>;
   searchQuery?: string;
   paginationConfig?: PaginationConfig;
 }
 
-export interface TableStateWithHelpers<TSortField extends string = string>
-  extends TableState<TSortField> {
+export interface TableStateWithHelpers<TSortKey extends string = string>
+  extends TableState<TSortKey> {
   updatePagination: (pageIndex: number, pageSize?: number) => void;
-  updateSorting: (sortField?: TSortField, sortOrder?: SortOrder) => void;
+  updateSorting: (sortKey?: TSortKey, sortOrder?: SortOrder) => void;
   updateFilters: (filters: Record<string, FilterValue | null>) => void;
   resetState: () => void;
   updateSearch: (searchQuery: string) => void;
@@ -33,14 +33,14 @@ export interface TableStateWithHelpers<TSortField extends string = string>
  * Base configuration for table state management
  * URL synchronization is now always enabled for all features
  */
-export interface TableStateConfig<TSortField extends string = string> {
+export interface TableStateConfig<TSortKey extends string = string> {
   // Default values
   pagination?: PaginationConfig;
-  sorting?: SortingConfig<TSortField>;
+  sorting?: SortingConfig<TSortKey>;
   search?: SearchConfig;
 
   // Callbacks
-  onStateChange?: (state: TableState<TSortField>) => void;
+  onStateChange?: (state: TableState<TSortKey>) => void;
 }
 
 /**

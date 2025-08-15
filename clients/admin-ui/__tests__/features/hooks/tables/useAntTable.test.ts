@@ -16,7 +16,7 @@ import { useAntTable } from "../../../../src/features/common/table/hooks";
 import { createMockTableState } from "../../../utils/mock-utils";
 
 type Row = { id?: string; key?: string; name: string };
-type SortField = "name" | "createdAt";
+type SortKey = "name" | "createdAt";
 
 const isPaginationConfig = (
   pagination: TableProps<any>["pagination"],
@@ -30,9 +30,9 @@ describe("useAntTable", () => {
   });
 
   it("returns default table props and computes loading, pagination, and utilities", () => {
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         dataSource: [{ id: "1", name: "A" }],
         totalRows: 100,
         isLoading: true,
@@ -62,11 +62,11 @@ describe("useAntTable", () => {
   });
 
   it("honors config overrides for current page, page size, loading, and custom props", () => {
-    const tableState = createMockTableState<SortField>({
+    const tableState = createMockTableState<SortKey>({
       paginationConfig: { pageSizeOptions: [5, 10], showSizeChanger: false },
     });
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         currentPage: 3,
         pageSize: 5,
         isFetching: true,
@@ -86,10 +86,8 @@ describe("useAntTable", () => {
   });
 
   it("provides a default rowKey that prefers id then key", () => {
-    const tableState = createMockTableState<SortField>();
-    const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState),
-    );
+    const tableState = createMockTableState<SortKey>();
+    const { result } = renderHook(() => useAntTable<Row, SortKey>(tableState));
     const { tableProps } = result.current;
 
     // rowKey should always be a function (default provided when getRowKey is not specified)
@@ -110,9 +108,9 @@ describe("useAntTable", () => {
   });
 
   it("exposes selection props when enabled and supports updates/reset", () => {
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, { enableSelection: true }),
+      useAntTable<Row, SortKey>(tableState, { enableSelection: true }),
     );
 
     expect(result.current.selectionProps).toBeDefined();
@@ -140,10 +138,8 @@ describe("useAntTable", () => {
   });
 
   it("handles table change: pagination updates only when page or size differs", () => {
-    const tableState = createMockTableState<SortField>();
-    const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState),
-    );
+    const tableState = createMockTableState<SortKey>();
+    const { result } = renderHook(() => useAntTable<Row, SortKey>(tableState));
 
     act(() => {
       // Simulate a pagination-only change
@@ -161,10 +157,8 @@ describe("useAntTable", () => {
   });
 
   it("handles table change: sorting and filtering update when not a pagination change", () => {
-    const tableState = createMockTableState<SortField>();
-    const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState),
-    );
+    const tableState = createMockTableState<SortKey>();
+    const { result } = renderHook(() => useAntTable<Row, SortKey>(tableState));
 
     act(() => {
       // Same page and size as current -> not a pagination change
@@ -184,10 +178,8 @@ describe("useAntTable", () => {
   });
 
   it("treats sorter with null order as clearing order (undefined)", () => {
-    const tableState = createMockTableState<SortField>();
-    const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState),
-    );
+    const tableState = createMockTableState<SortKey>();
+    const { result } = renderHook(() => useAntTable<Row, SortKey>(tableState));
 
     act(() => {
       result.current.tableProps.onChange?.(
@@ -209,9 +201,9 @@ describe("useAntTable", () => {
     const actionDisabled = jest
       .fn()
       .mockReturnValue(false) as jest.MockedFunction<(rows: Row[]) => boolean>;
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         enableSelection: true,
         bulkActions: {
           actions: [
@@ -255,9 +247,9 @@ describe("useAntTable", () => {
   });
 
   it("handles empty data source correctly", () => {
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         dataSource: [],
         totalRows: 0,
       }),
@@ -271,10 +263,8 @@ describe("useAntTable", () => {
   });
 
   it("handles multi-sort scenarios (ignores array sorters)", () => {
-    const tableState = createMockTableState<SortField>();
-    const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState),
-    );
+    const tableState = createMockTableState<SortKey>();
+    const { result } = renderHook(() => useAntTable<Row, SortKey>(tableState));
 
     act(() => {
       // Simulate multi-sort with array sorter
@@ -299,9 +289,9 @@ describe("useAntTable", () => {
       .mockReturnValue("custom-key") as jest.MockedFunction<
       (record: Row) => string
     >;
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         getRowKey: customGetRowKey,
       }),
     );
@@ -324,9 +314,9 @@ describe("useAntTable", () => {
     const actionDisabled = jest
       .fn()
       .mockReturnValue(true) as jest.MockedFunction<(rows: Row[]) => boolean>;
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         enableSelection: true,
         bulkActions: {
           actions: [
@@ -355,9 +345,9 @@ describe("useAntTable", () => {
 
   it("handles bulk action loading state", () => {
     const onClick = jest.fn() as jest.MockedFunction<(rows: Row[]) => void>;
-    const tableState = createMockTableState<SortField>();
+    const tableState = createMockTableState<SortKey>();
     const { result } = renderHook(() =>
-      useAntTable<Row, SortField>(tableState, {
+      useAntTable<Row, SortKey>(tableState, {
         enableSelection: true,
         bulkActions: {
           actions: [
@@ -384,12 +374,12 @@ describe("useAntTable", () => {
 
   describe("pagination change detection edge cases", () => {
     it("handles undefined pagination.current without triggering false pagination change", () => {
-      const tableState = createMockTableState<SortField>({
+      const tableState = createMockTableState<SortKey>({
         pageIndex: 1,
         pageSize: 25,
       });
       const { result } = renderHook(() =>
-        useAntTable<Row, SortField>(tableState),
+        useAntTable<Row, SortKey>(tableState),
       );
 
       act(() => {
@@ -408,12 +398,12 @@ describe("useAntTable", () => {
     });
 
     it("handles undefined pagination.pageSize without triggering false pagination change", () => {
-      const tableState = createMockTableState<SortField>({
+      const tableState = createMockTableState<SortKey>({
         pageIndex: 1,
         pageSize: 25,
       });
       const { result } = renderHook(() =>
-        useAntTable<Row, SortField>(tableState),
+        useAntTable<Row, SortKey>(tableState),
       );
 
       act(() => {
@@ -432,12 +422,12 @@ describe("useAntTable", () => {
     });
 
     it("handles both pagination.current and pagination.pageSize undefined", () => {
-      const tableState = createMockTableState<SortField>({
+      const tableState = createMockTableState<SortKey>({
         pageIndex: 2,
         pageSize: 50,
       });
       const { result } = renderHook(() =>
-        useAntTable<Row, SortField>(tableState),
+        useAntTable<Row, SortKey>(tableState),
       );
 
       act(() => {
@@ -461,12 +451,12 @@ describe("useAntTable", () => {
     });
 
     it("correctly detects actual pagination changes with undefined fallbacks", () => {
-      const tableState = createMockTableState<SortField>({
+      const tableState = createMockTableState<SortKey>({
         pageIndex: 1,
         pageSize: 25,
       });
       const { result } = renderHook(() =>
-        useAntTable<Row, SortField>(tableState),
+        useAntTable<Row, SortKey>(tableState),
       );
 
       act(() => {
@@ -486,12 +476,12 @@ describe("useAntTable", () => {
     });
 
     it("correctly detects actual pagination changes when current is undefined but effective page differs", () => {
-      const tableState = createMockTableState<SortField>({
+      const tableState = createMockTableState<SortKey>({
         pageIndex: 3,
         pageSize: 25,
       });
       const { result } = renderHook(() =>
-        useAntTable<Row, SortField>(tableState),
+        useAntTable<Row, SortKey>(tableState),
       );
 
       act(() => {
@@ -511,12 +501,12 @@ describe("useAntTable", () => {
 
     it("handles edge case where tableState values are also undefined", () => {
       // Edge case: tableState itself has undefined values
-      const tableState = createMockTableState<SortField>({
+      const tableState = createMockTableState<SortKey>({
         pageIndex: undefined as any,
         pageSize: undefined as any,
       });
       const { result } = renderHook(() =>
-        useAntTable<Row, SortField>(tableState),
+        useAntTable<Row, SortKey>(tableState),
       );
 
       act(() => {

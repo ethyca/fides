@@ -97,7 +97,7 @@ export const useDiscoveredAssetsTable = ({
     pageIndex,
     pageSize,
     resetState,
-    sortField,
+    sortKey,
     sortOrder,
     searchQuery,
     updateSearch,
@@ -111,8 +111,8 @@ export const useDiscoveredAssetsTable = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    sort_by: sortField
-      ? [sortField] // User selected a column to sort by
+    sort_by: sortKey
+      ? [sortKey] // User selected a column to sort by
       : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
     sort_asc: sortOrder !== "descend",
     ...activeParams,
@@ -187,7 +187,7 @@ export const useDiscoveredAssetsTable = ({
         key: DiscoveredAssetsColumnKeys.NAME,
         sorter: true,
         sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.NAME ? sortOrder : null,
+          sortKey === DiscoveredAssetsColumnKeys.NAME ? sortOrder : null,
         render: (name) => (
           <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 300 }}>
             {name}
@@ -201,7 +201,7 @@ export const useDiscoveredAssetsTable = ({
         key: DiscoveredAssetsColumnKeys.RESOURCE_TYPE,
         sorter: true,
         sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.RESOURCE_TYPE
+          sortKey === DiscoveredAssetsColumnKeys.RESOURCE_TYPE
             ? sortOrder
             : null,
         filters: convertToAntFilters(filterOptions?.resource_type),
@@ -335,7 +335,7 @@ export const useDiscoveredAssetsTable = ({
         key: DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED,
         sorter: true,
         sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED
+          sortKey === DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED
             ? sortOrder
             : null,
         filters: convertToAntFilters(
@@ -382,7 +382,7 @@ export const useDiscoveredAssetsTable = ({
   }, [
     filterOptions,
     columnFilters,
-    sortField,
+    sortKey,
     sortOrder,
     assetConsentStatusLabels,
     actionsDisabled,

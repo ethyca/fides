@@ -47,7 +47,7 @@ const createTableParsers = () => {
  * // With custom default values
  * const tableState = useTableState({
  *   pagination: { defaultPageSize: 50 },
- *   sorting: { defaultSortField: 'name', defaultSortOrder: 'ascend' }
+ *   sorting: { defaultSortKey: 'name', defaultSortOrder: 'ascend' }
  * });
  *
  * // With state change callback
@@ -56,8 +56,8 @@ const createTableParsers = () => {
  * });
  * ```
  */
-export const useTableState = <TSortField extends string = string>(
-  config: TableStateConfig<TSortField> = {},
+export const useTableState = <TSortKey extends string = string>(
+  config: TableStateConfig<TSortKey> = {},
 ) => {
   const {
     pagination: paginationConfig = {},
@@ -78,11 +78,11 @@ export const useTableState = <TSortField extends string = string>(
 
   // Use the standalone sorting hook
   const {
-    sortField,
+    sortKey,
     sortOrder,
     updateSorting: updateSortingOnly,
     resetSorting,
-  } = useSorting(sortingConfig);
+  } = useSorting<TSortKey>(sortingConfig);
 
   // Use the standalone search hook
   const {
@@ -101,18 +101,18 @@ export const useTableState = <TSortField extends string = string>(
   });
 
   // Create current state from query state, pagination hook, sorting hook, and search hook (URL is the single source of truth)
-  const currentState: TableState<TSortField> = useMemo(() => {
+  const currentState: TableState<TSortKey> = useMemo(() => {
     const state = {
       pageIndex,
       pageSize,
-      sortField,
+      sortKey,
       sortOrder,
       columnFilters: queryState.filters ?? {},
       searchQuery,
     };
 
     return state;
-  }, [queryState, pageIndex, pageSize, sortField, sortOrder, searchQuery]);
+  }, [queryState, pageIndex, pageSize, sortKey, sortOrder, searchQuery]);
 
   // Update functions that update query state (URL is the single source of truth)
   // Pagination updates are handled by the pagination hook
@@ -120,7 +120,7 @@ export const useTableState = <TSortField extends string = string>(
   // Search updates are handled by the search hook
 
   const updateSorting = useCallback(
-    (sf?: TSortField, so?: SortOrder) => {
+    (sf?: TSortKey, so?: SortOrder) => {
       updateSortingOnly(sf, so);
       resetPagination(); // Reset to first page when sorting changes
     },
@@ -177,7 +177,7 @@ export const useTableState = <TSortField extends string = string>(
     updatePagination,
 
     // Sorting (delegated to sorting hook)
-    sortField: currentState.sortField,
+    sortKey: currentState.sortKey,
     sortOrder: currentState.sortOrder,
     updateSorting,
 
@@ -197,5 +197,5 @@ export const useTableState = <TSortField extends string = string>(
       pageSizeOptions,
       showSizeChanger,
     },
-  } as TableStateWithHelpers<TSortField>;
+  } as TableStateWithHelpers<TSortKey>;
 };

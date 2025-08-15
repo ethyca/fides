@@ -408,7 +408,7 @@ describe("Action center Asset Results", () => {
       it("syncs sorting to URL when sorting by the Asset column", () => {
         cy.findByRole("columnheader", { name: /Asset/ }).click({ force: true });
         // First click should set ascending sort
-        cy.location("search").should("contain", "sortField=name");
+        cy.location("search").should("contain", "sortKey=name");
         cy.location("search").should("contain", "sortOrder=ascend");
       });
 
@@ -430,13 +430,13 @@ describe("Action center Asset Results", () => {
         cy.wait(400);
         cy.findByRole("columnheader", { name: /Asset/ }).click({ force: true });
         cy.location("search").should("contain", "search=gtm");
-        cy.location("search").should("contain", "sortField=name");
+        cy.location("search").should("contain", "sortKey=name");
 
         // Clear
         cy.getByTestId("clear-filters").click({ force: true });
         // URL params cleared/reset
         cy.location("search").should("not.contain", "search=");
-        cy.location("search").should("not.contain", "sortField=");
+        cy.location("search").should("not.contain", "sortKey=");
         cy.location("search").should("not.contain", "sortOrder=");
         cy.location("search").should("not.contain", "page=");
 

@@ -3,11 +3,11 @@ import { jest } from "@jest/globals";
 /**
  * Creates a mock table state for testing table-related hooks
  */
-export function createMockTableState<TSortField = string>(
+export function createMockTableState<TSortKey = string>(
   overrides: Partial<{
     pageIndex: number;
     pageSize: number;
-    sortField?: TSortField;
+    sortKey?: TSortKey;
     sortOrder?: "ascend" | "descend";
     columnFilters: Record<string, any>;
     searchQuery?: string;
@@ -15,7 +15,7 @@ export function createMockTableState<TSortField = string>(
       (pageIndex: number, pageSize?: number) => void
     >;
     updateSorting: jest.MockedFunction<
-      (sortField?: TSortField, sortOrder?: "ascend" | "descend") => void
+      (sortKey?: TSortKey, sortOrder?: "ascend" | "descend") => void
     >;
     updateFilters: jest.MockedFunction<(filters: Record<string, any>) => void>;
     updateSearch: jest.MockedFunction<(query?: string) => void>;
@@ -29,7 +29,7 @@ export function createMockTableState<TSortField = string>(
   return {
     pageIndex: 1,
     pageSize: 25,
-    sortField: undefined,
+    sortKey: undefined,
     sortOrder: undefined,
     columnFilters: {},
     searchQuery: undefined,

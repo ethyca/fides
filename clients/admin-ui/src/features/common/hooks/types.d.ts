@@ -32,26 +32,27 @@ export type SortOrder = "ascend" | "descend";
 /**
  * Sorting state interface
  */
-export interface SortingState<TSortField extends string = string> {
-  sortField?: TSortField;
+export interface SortingState<TSortKey extends string = string> {
+  sortKey?: TSortKey;
   sortOrder?: SortOrder;
 }
 
 /**
  * Configuration for table sorting
  */
-export interface SortingConfig<TSortField extends string = string> {
-  defaultSortField?: TSortField;
+export interface SortingConfig<TSortKey extends string = string> {
+  defaultSortKey?: TSortKey;
   defaultSortOrder?: SortOrder;
   allowMultiSort?: boolean;
-  onSortingChange?: (state: SortingState<TSortField>) => void;
+  validColumns?: readonly TSortKey[];
+  onSortingChange?: (state: SortingState<TSortKey>) => void;
 }
 
 /**
  * Updates for sorting URL state
  */
 export interface SortingQueryParams {
-  sortField?: string | null;
+  sortKey?: string | null;
   sortOrder?: SortOrder | null;
 }
 
