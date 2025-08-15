@@ -1,8 +1,8 @@
 import { AntFilterValue as FilterValue } from "fidesui";
-import { parseAsJson, parseAsString, useQueryStates } from "nuqs";
+import { parseAsJson, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
-import { type SortOrder, usePagination, useSorting } from "../../hooks";
+import { type SortOrder, usePagination, useSearch, useSorting } from "../../hooks";
 import type {
   QueryStateUpdates,
   TableState,
@@ -11,16 +11,16 @@ import type {
 } from "./types";
 
 /**
- * NuQS parsers for table state - filtering and search features synced to URL
+ * NuQS parsers for table state - filtering features synced to URL
  * Pagination is handled by the usePagination hook
  * Sorting is handled by the useSorting hook
+ * Search is handled by the useSearch hook
  */
 const createTableParsers = () => {
   return {
     filters: parseAsJson(
       (value: unknown) => value as Record<string, FilterValue | null>,
     ).withDefault({}),
-    search: parseAsString.withDefault(""),
   };
 };
 
@@ -57,6 +57,7 @@ export const useTableState = <TSortField extends string = string>(
   const {
     pagination: paginationConfig = {},
     sorting: sortingConfig = {},
+    search: searchConfig = {},
     onStateChange,
   } = config;
 
@@ -78,6 +79,13 @@ export const useTableState = <TSortField extends string = string>(
     resetSorting,
   } = useSorting(sortingConfig);
 
+  // Use the standalone search hook
+  const {
+    searchQuery,
+    updateSearch: updateSearchOnly,
+    resetSearch,
+  } = useSearch(searchConfig);
+
   // Create parsers for non-pagination table state features
   // Note: Parsers must be stable across renders for NuQS to work properly
   const parsers = useMemo(() => createTableParsers(), []);
@@ -87,7 +95,7 @@ export const useTableState = <TSortField extends string = string>(
     history: "push",
   });
 
-  // Create current state from query state, pagination hook, and sorting hook (URL is the single source of truth)
+  // Create current state from query state, pagination hook, sorting hook, and search hook (URL is the single source of truth)
   const currentState: TableState<TSortField> = useMemo(() => {
     const state = {
       pageIndex,
@@ -95,15 +103,16 @@ export const useTableState = <TSortField extends string = string>(
       sortField,
       sortOrder,
       columnFilters: queryState.filters ?? {},
-      searchQuery: queryState.search || undefined, // Convert empty string to undefined
+      searchQuery,
     };
 
     return state;
-  }, [queryState, pageIndex, pageSize, sortField, sortOrder]);
+  }, [queryState, pageIndex, pageSize, sortField, sortOrder, searchQuery]);
 
   // Update functions that update query state (URL is the single source of truth)
   // Pagination updates are handled by the pagination hook
   // Sorting updates are handled by the sorting hook
+  // Search updates are handled by the search hook
 
   const updateSorting = useCallback(
     (sf?: TSortField, so?: SortOrder) => {
@@ -129,24 +138,22 @@ export const useTableState = <TSortField extends string = string>(
 
   const updateSearch = useCallback(
     (searchQuery?: string) => {
-      setQueryState({
-        search: searchQuery || null,
-      });
+      updateSearchOnly(searchQuery);
       resetPagination(); // Reset to first page when search changes
     },
-    [setQueryState, resetPagination],
+    [updateSearchOnly, resetPagination],
   );
 
   const resetState = useCallback(() => {
     // Reset all URL state
     const urlUpdates: QueryStateUpdates = {
       filters: null,
-      search: null,
     };
     setQueryState(urlUpdates);
     resetPagination();
     resetSorting();
-  }, [setQueryState, resetPagination, resetSorting]);
+    resetSearch();
+  }, [setQueryState, resetPagination, resetSorting, resetSearch]);
 
   // Call onStateChange when state changes
   useEffect(() => {
