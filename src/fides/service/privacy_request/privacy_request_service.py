@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import (
     FidesopsException,
     MessageDispatchException,
+    PrivacyRequestError,
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -49,15 +50,6 @@ from fides.service.messaging.messaging_service import (
     send_privacy_request_receipt_message_to_user,
     send_verification_code_to_user,
 )
-
-
-class PrivacyRequestError(Exception):
-    """Base exception for privacy request operations."""
-
-    def __init__(self, message: str, data: Optional[Dict] = None):
-        self.message = message
-        self.data = data
-        super().__init__(message)
 
 
 class PrivacyRequestService:

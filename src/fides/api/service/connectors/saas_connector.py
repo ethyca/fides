@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
-    AwaitingAsyncTaskCallback,
+    AwaitingAsyncTask,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
@@ -229,7 +229,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
-
         # An endpoint can be defined with multiple 'read' requests if the data for a single
         # collection can be accessed in multiple ways for example:
         #
@@ -336,8 +335,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if awaiting_async_callback:
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
-            # Raising an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state
-            raise AwaitingAsyncTaskCallback()
+            # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
+            raise AwaitingAsyncTask()
 
         return rows
 
@@ -641,8 +640,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if awaiting_async_callback:
             # Asynchronous masking request detected in saas config.
             # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state.
-            raise AwaitingAsyncTaskCallback()
+            # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
+            raise AwaitingAsyncTask()
         return rows_updated
 
     @staticmethod

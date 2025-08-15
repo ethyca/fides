@@ -2484,6 +2484,8 @@ dataset:
       data_categories: [system]
     - name: callback_succeeded
       data_categories: [system]
+    - name: async_type
+      data_categories: [system]
   - name: monitorconfig
     fields:
     - name: classify_params
