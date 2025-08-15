@@ -23,6 +23,7 @@ def get_db_engine(
     keepalives_idle: int | None = None,
     keepalives_interval: int | None = None,
     keepalives_count: int | None = None,
+    pool_pre_ping: bool = True,
     disable_pooling: bool = False,
 ) -> Engine:
     """Return a database engine.
@@ -61,7 +62,7 @@ def get_db_engine(
     if disable_pooling:
         engine_args["poolclass"] = NullPool
     else:
-        engine_args["pool_pre_ping"] = True
+        engine_args["pool_pre_ping"] = pool_pre_ping
         engine_args["pool_size"] = pool_size
         engine_args["max_overflow"] = max_overflow
 
