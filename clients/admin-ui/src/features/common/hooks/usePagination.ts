@@ -73,17 +73,20 @@ const createPaginationParsers = (
 export const usePagination = (config: PaginationConfig = {}) => {
   const {
     defaultPageSize = DEFAULT_PAGE_SIZE,
-    pageSizeOptions = DEFAULT_PAGE_SIZES,
+    pageSizeOptions,
     showSizeChanger = true,
     onPaginationChange,
   } = config;
+
+  // Use defaults for UI/display purposes, but keep original value for parser logic
+  const displayPageSizeOptions = pageSizeOptions ?? DEFAULT_PAGE_SIZES;
 
   // Create parsers for pagination state
   // Note: Parsers must be stable across renders for NuQS to work properly
   const parsers = useMemo(() => {
     const createdParsers = createPaginationParsers({
       pageSize: defaultPageSize,
-      pageSizeOptions,
+      pageSizeOptions, // Pass undefined if user didn't provide it
     });
     return createdParsers;
   }, [defaultPageSize, pageSizeOptions]);
@@ -143,7 +146,7 @@ export const usePagination = (config: PaginationConfig = {}) => {
     resetPagination,
 
     // Configuration for components
-    pageSizeOptions,
+    pageSizeOptions: displayPageSizeOptions,
     showSizeChanger,
 
     // Ant Design pagination props
@@ -151,7 +154,7 @@ export const usePagination = (config: PaginationConfig = {}) => {
       current: currentState.pageIndex,
       pageSize: currentState.pageSize,
       showSizeChanger,
-      pageSizeOptions: pageSizeOptions.map(String),
+      pageSizeOptions: displayPageSizeOptions.map(String),
       showQuickJumper: true,
       showTotal: (total: number, range: [number, number]) =>
         `${range[0]}-${range[1]} of ${total} items`,

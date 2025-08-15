@@ -36,6 +36,21 @@ export const nuqsMock = {
     withDefault: (value: unknown) => ({ default: value }),
     default: null,
   }),
+  parseAsNumberLiteral: (validValues: number[]) => ({
+    withDefault: (defaultValue: number) => ({
+      default: defaultValue,
+      parse: (value: string) => {
+        const numValue = Number(value);
+        return validValues.includes(numValue) ? numValue : defaultValue;
+      },
+    }),
+    // When no default is provided, return null for invalid values
+    default: null,
+    parse: (value: string) => {
+      const numValue = Number(value);
+      return validValues.includes(numValue) ? numValue : null;
+    },
+  }),
   parseAsStringEnum: (validValues: string[]) => ({
     withDefault: (defaultValue: string) => ({
       default: defaultValue,
