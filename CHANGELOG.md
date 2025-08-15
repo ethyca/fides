@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
 
+### Changed
+- Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
+
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
 ### Added
@@ -29,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
 - Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 - Added visual checkmark feedback and screen reader announcements for consent button interactions [#6451](https://github.com/ethyca/fides/pull/6451)
+- Added field to privacy center configuration to support location collection in privacy center actions [#6432](https://github.com/ethyca/fides/pull/6432)
 - Added execution log when DSR enters awaiting_email_send status [#6462](https://github.com/ethyca/fides/pull/6462)
 
 ### Changed

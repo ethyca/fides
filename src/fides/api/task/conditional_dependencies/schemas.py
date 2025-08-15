@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -100,6 +100,30 @@ class ConditionGroup(BaseModel):
         return self
 
 
+# Evaluation result for a single condition
+class ConditionEvaluationResult(BaseModel):
+    field_address: str
+    operator: Operator
+    expected_value: Optional[
+        Union[str, int, float, bool, List[Union[str, int, float, bool]]]
+    ]
+    actual_value: Any
+    result: bool
+    message: str
+
+
+# Evaluation result for a group of conditions
+class GroupEvaluationResult(BaseModel):
+    logical_operator: GroupOperator
+    condition_results: list["EvaluationResult"]
+    result: bool
+
+
+# Union type for evaluation results
+EvaluationResult = Union[ConditionEvaluationResult, GroupEvaluationResult]
+
+
 # Use model_rebuild to allow recursive nesting
 Condition = Union[ConditionLeaf, ConditionGroup]
 ConditionGroup.model_rebuild()
+GroupEvaluationResult.model_rebuild()
