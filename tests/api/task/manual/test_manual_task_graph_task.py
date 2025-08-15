@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -9,6 +10,7 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
@@ -1068,12 +1070,12 @@ class TestManualTaskGraphTaskHelperMethods:
         instances = access_privacy_request.manual_task_instances
         assert len(instances) == 0
 
-    def test_run_request_access_task_skipped_during_erasure_mode(
+    def test_run_request_erasure_task_processed_normally_during_erasure_phase(
         self,
         db,
         erasure_task_setup,
     ):
-        """Test that access tasks are skipped during erasure mode"""
+        """Test that erasure tasks are processed normally during erasure phase"""
 
         setup = erasure_task_setup
         manual_task = setup["manual_task"]
@@ -1084,43 +1086,92 @@ class TestManualTaskGraphTaskHelperMethods:
         privacy_request.status = PrivacyRequestStatus.in_processing
         db.commit()
 
-        # Test that access tasks are NOT skipped when not in erasure phase
-        result = graph_task._run_request(
-            ManualTaskConfigurationType.access_privacy_request,
-            ActionType.access,
-            [],
-        )
-        # Should not be skipped - should raise AwaitingAsyncTaskCallback or return data
-        assert (
-            result is not None
-            or privacy_request.status == PrivacyRequestStatus.requires_input
-        )
+        # Test that erasure tasks are processed normally when in access phase
+        # (they should raise AwaitingAsyncTaskCallback since no submissions exist)
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            graph_task._run_request(
+                ManualTaskConfigurationType.erasure_privacy_request,
+                ActionType.erasure,
+                [],
+            )
 
         # Now simulate being in erasure phase by setting a checkpoint
         privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
 
-        # Test that access tasks ARE skipped during erasure phase
+        # Test that erasure tasks are still processed normally during erasure phase
+        # They should raise AwaitingAsyncTaskCallback since no submissions exist
+        with pytest.raises(AwaitingAsyncTaskCallback):
+            graph_task._run_request(
+                ManualTaskConfigurationType.erasure_privacy_request,
+                ActionType.erasure,
+                [],
+            )
+
+    def test_run_request_access_task_completed_immediately_for_erasure_request(
+        self,
+        db,
+        erasure_task_setup,
+        erasure_privacy_request,  # Need an erasure privacy request to test the logic
+    ):
+        """Test that access tasks are completed immediately when part of an erasure request"""
+
+        setup = erasure_task_setup
+        manual_task = setup["manual_task"]
+        connection_config = setup["connection_config"]
+
+        # Create a request task and resources for the erasure privacy request
+        request_task = _build_request_task(
+            db, erasure_privacy_request, connection_config, ActionType.access
+        )
+        resources = _build_task_resources(
+            db,
+            erasure_privacy_request,
+            erasure_privacy_request.policy,
+            connection_config,
+            request_task,
+        )
+
+        # Create the graph task
+        graph_task = ManualTaskGraphTask(resources)
+
+        # Set privacy request to in_processing status
+        erasure_privacy_request.status = PrivacyRequestStatus.in_processing
+        db.commit()
+
+        manual_task_found = graph_task._get_manual_task_or_none()
+
+        if manual_task_found:
+            has_configs = graph_task._check_manual_task_configs(
+                manual_task_found,
+                ManualTaskConfigurationType.access_privacy_request,
+                ActionType.access,
+            )
+
+            has_policy_rules = erasure_privacy_request.policy.get_rules_for_action(
+                ActionType.access
+            )
+
+        # Test that access tasks are completed immediately when part of an erasure request
+        # and we're in the access phase (not erasure phase)
         result = graph_task._run_request(
             ManualTaskConfigurationType.access_privacy_request,
             ActionType.access,
             [],
         )
-        # Should be skipped (return None) during erasure mode
+        # Should be completed immediately return None
         assert result is None
-
-        # Verify the task was marked as complete with the correct message
-        # This would be verified through the execution logs in a real scenario
 
     def test_is_in_erasure_phase_method(
         self,
         db,
-        erasure_task_setup,
+        manual_task_setup,
     ):
         """Test the _is_in_erasure_phase method logic"""
 
-        setup = erasure_task_setup
+        setup = manual_task_setup
         graph_task = setup["graph_task"]
         privacy_request = setup["privacy_request"]
+        connection_config = setup["connection_config"]
 
         # Initially should not be in erasure phase
         assert not graph_task._is_in_erasure_phase()
@@ -1158,13 +1209,36 @@ class TestManualTaskGraphTaskHelperMethods:
             ), f"Step {step} should be erasure phase"
 
         # Test fallback logic when no checkpoint details exist
-        # Clear checkpoint details
-        cache = get_cache()
-        cache.delete(f"FAILED_LOCATION__{privacy_request.id}")
+        # Instead of trying to clear cache, create a fresh privacy request with no checkpoint details
+        fresh_privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.utcnow(),
+                "policy_id": privacy_request.policy_id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+
+        # Create fresh resources and graph task for the fresh privacy request
+        fresh_request_task = _build_request_task(
+            db, fresh_privacy_request, connection_config, ActionType.access
+        )
+        fresh_resources = _build_task_resources(
+            db,
+            fresh_privacy_request,
+            fresh_privacy_request.policy,
+            connection_config,
+            fresh_request_task,
+        )
+        fresh_graph_task = ManualTaskGraphTask(fresh_resources)
 
         # Should fall back to checking access terminator task
-        # Since we don't have access tasks set up, this should return False
-        assert not graph_task._is_in_erasure_phase()
+        # Since this is a fresh privacy request with no checkpoint details, this should return False
+        result = fresh_graph_task._is_in_erasure_phase()
+        assert not result
+
+        # Clean up the fresh privacy request
+        fresh_privacy_request.delete(db)
 
     def test_run_request_access_task_not_skipped_during_access_mode(
         self,

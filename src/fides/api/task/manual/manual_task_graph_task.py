@@ -138,36 +138,26 @@ class ManualTaskGraphTask(GraphTask):
 
         # Check if any eligible manual tasks have applicable configs
         if not self._check_manual_task_configs(manual_task, config_type, action_type):
-            self.update_status(
-                "No eligible manual tasks found",
-                [],
-                action_type,
-                ExecutionLogStatus.complete,
-            )
             return None
 
         # Check if there are any rules for this action type
         if not self.resources.request.policy.get_rules_for_action(
             action_type=action_type
         ):
-            self.update_status(
-                "No rules found for this action type",
-                [],
-                action_type,
-                ExecutionLogStatus.complete,
-            )
             return None
 
         # If this is an access task but we're actually in erasure mode, mark as complete
         # (access tasks during erasure are for data collection we should not require user input)
         if (
             action_type == ActionType.access
-            and self.resources.request.status == PrivacyRequestStatus.in_processing
-            and self._is_in_erasure_phase()
+            and self.resources.request.policy.get_rules_for_action(
+                ActionType.erasure
+            )  # This is an erasure request
+            and not self._is_in_erasure_phase()  # We're still in access phase
         ):
-            # We're in erasure mode and this is an access task - skip it
+            # We're in an erasure request but still in access phase - complete access task immediately
             self.update_status(
-                "Access task skipped during erasure mode (data collection only)",
+                "Access task completed immediately for erasure request (data collection only)",
                 [],
                 action_type,
                 ExecutionLogStatus.complete,
