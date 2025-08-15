@@ -191,10 +191,13 @@ describe("Integration Management - Manual Task Configuration", () => {
       cy.getByTestId("assign-users-select").click();
 
       // Verify selected users appear first
-      cy.get(".ant-select-item").first().should("contain", "External 1");
-      cy.get(".ant-select-item")
-        .first()
-        .should("have.class", "ant-select-item-option-selected");
+      cy.getAntSelectOption("External 1 User (external1@example.com)").should(
+        "be.visible",
+      );
+      cy.getAntSelectOption("External 1 User (external1@example.com)").should(
+        "have.class",
+        "ant-select-item-option-selected",
+      );
     });
 
     it("should assign users to manual tasks", () => {
