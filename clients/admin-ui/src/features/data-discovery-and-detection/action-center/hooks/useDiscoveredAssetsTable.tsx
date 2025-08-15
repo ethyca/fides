@@ -90,7 +90,11 @@ export const useDiscoveredAssetsTable = ({
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
-  const tableState = useTableState<DiscoveredAssetsColumnKeys>();
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
+    sorting: {
+      validColumns: Object.values(DiscoveredAssetsColumnKeys),
+    },
+  });
 
   const {
     columnFilters,

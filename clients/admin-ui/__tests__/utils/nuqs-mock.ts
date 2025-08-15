@@ -36,6 +36,19 @@ export const nuqsMock = {
     withDefault: (value: unknown) => ({ default: value }),
     default: null,
   }),
+  parseAsStringEnum: (validValues: string[]) => ({
+    withDefault: (defaultValue: string) => ({
+      default: defaultValue,
+      parse: (value: string) => {
+        return validValues.includes(value) ? value : defaultValue;
+      },
+    }),
+    // When no default is provided, return null for invalid values
+    default: null,
+    parse: (value: string) => {
+      return validValues.includes(value) ? value : null;
+    },
+  }),
   parseAsJson: () => ({
     withDefault: (value: unknown) => ({ default: value }),
   }),
