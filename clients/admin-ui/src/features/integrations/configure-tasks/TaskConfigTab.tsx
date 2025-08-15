@@ -34,7 +34,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
   return (
     <div>
-      <Flex vertical gap={16}>
+      <Flex vertical gap="middle">
         <Typography.Paragraph className="mt-2 w-2/3">
           Configure manual tasks for this integration. Manual tasks allow you to
           define custom data collection or processing steps that require human

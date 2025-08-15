@@ -35,7 +35,7 @@ const ManualTaskAssignmentSection = ({
 
   return (
     <div>
-      <Flex align="center" gap={16}>
+      <Flex align="center" gap="middle">
         <Typography.Text strong>Assign manual tasks to users:</Typography.Text>
         <Select
           className="flex-1"

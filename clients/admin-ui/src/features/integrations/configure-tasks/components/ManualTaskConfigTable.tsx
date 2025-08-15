@@ -58,7 +58,7 @@ const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
 
   return (
     <>
-      <Flex align="center" justify="end" gap={8} className="mb-1 mt-[-25px]">
+      <Flex align="center" justify="end" gap="small" className="mb-1 mt-[-25px]">
         <Button
           type="primary"
           onClick={handleAddManualTask}
@@ -77,8 +77,8 @@ const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
           emptyText: (
             <div className="p-8 text-center">
               <Typography.Paragraph type="secondary">
-                No manual tasks configured yet. Click &apos;Add manual
-                task&apos; to get started.
+                No manual tasks configured yet. Click &quot;Add manual
+                task&quot; to get started.
               </Typography.Paragraph>
             </div>
           ),
@@ -106,8 +106,8 @@ const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
         title="Delete manual task"
         message={
           <span className="text-gray-500">
-            Are you sure you want to delete the manual task &ldquo;
-            {manualTaskToDelete?.name}&rdquo;? This action cannot be undone.
+            Are you sure you want to delete the manual task &quot;
+            {manualTaskToDelete?.name}&quot;? This action cannot be undone.
           </span>
         }
         continueButtonText="Delete"
