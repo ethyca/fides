@@ -1,0 +1,17 @@
+{
+  "connection_type": "manual_task",
+  "secrets": null,
+  "saas_config": null,
+  "name": "Demo manual task integration",
+  "key": "demo_manual_task_integration",
+  "description": "",
+  "access": "write",
+  "created_at": "2025-07-03T17:00:10.470738Z",
+  "updated_at": "2025-07-03T17:02:29.211933Z",
+  "disabled": false,
+  "last_test_timestamp": null,
+  "last_test_succeeded": null,
+  "authorized": false,
+  "enabled_actions": ["access", "erasure"],
+  "system_key": "demo_system"
+}
