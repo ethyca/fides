@@ -47,6 +47,7 @@ const ManualTaskAssignmentSection = ({
           options={sortedOptions}
           optionLabelProp="displayName"
           tokenSeparators={[","]}
+          data-testid="assign-users-select"
           filterOption={(input, option) => {
             return (
               (typeof option?.label === "string" &&

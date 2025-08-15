@@ -172,20 +172,23 @@ describe("Integration Management - Manual Task Configuration", () => {
     it("should display user assignment section", () => {
       // Verify assignment section exists
       cy.contains("Assign manual tasks to users:").should("be.visible");
-      cy.get("[data-testid*='select']").should("be.visible");
+      cy.getByTestId("assign-users-select").should("be.visible");
     });
 
     it("should load and display currently assigned users", () => {
       // Verify pre-selected users are shown
-      cy.get(".ant-select-selection-item").should("have.length.at.least", 1);
-      cy.get(".ant-select-selection-item")
+      cy.getByTestId("assign-users-select")
+        .find(".ant-select-selection-item")
+        .should("have.length.at.least", 1);
+      cy.getByTestId("assign-users-select")
+        .find(".ant-select-selection-item")
         .first()
         .should("contain", "External 1");
     });
 
     it("should show selected users first in dropdown", () => {
       // Open dropdown
-      cy.get(".ant-select-selector").click();
+      cy.getByTestId("assign-users-select").click();
 
       // Verify selected users appear first
       cy.get(".ant-select-item").first().should("contain", "External 1");
@@ -195,9 +198,10 @@ describe("Integration Management - Manual Task Configuration", () => {
     });
 
     it("should assign users to manual tasks", () => {
-      // Open dropdown and select additional user
-      cy.get(".ant-select-selector").click();
-      cy.get(".ant-select-item").contains("Jane Smith").click();
+      // Select additional user using antSelect
+      cy.getByTestId("assign-users-select").antSelect(
+        "Jane Smith (jane.smith@example.com)",
+      );
 
       cy.wait("@assignUsersToManualTask").then((interception) => {
         // Verify the request body is an array of user IDs
@@ -212,7 +216,8 @@ describe("Integration Management - Manual Task Configuration", () => {
 
     it("should unassign users from manual tasks", () => {
       // Remove a selected user
-      cy.get(".ant-select-selection-item")
+      cy.getByTestId("assign-users-select")
+        .find(".ant-select-selection-item")
         .first()
         .within(() => {
           cy.get(".ant-select-selection-item-remove").click();
@@ -228,7 +233,9 @@ describe("Integration Management - Manual Task Configuration", () => {
       });
 
       // Verify user is removed
-      cy.get(".ant-select-selection-item").should("not.contain", "External 1");
+      cy.getByTestId("assign-users-select")
+        .find(".ant-select-selection-item")
+        .should("not.contain", "External 1");
     });
   });
 
