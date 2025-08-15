@@ -1,5 +1,7 @@
 import { format } from "date-fns-tz";
 
+import { User } from "../user-management/types";
+
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
@@ -146,13 +148,7 @@ export const stripHashFromUrl = (url: string) => {
  * @returns A formatted display name string
  */
 export const formatUser = (
-  user: {
-    first_name?: string | null;
-    last_name?: string | null;
-    email_address?: string | null;
-    username?: string | null;
-    id?: string;
-  },
+  user: Partial<User>,
   options: { fallbackToId?: boolean } = {},
 ): string => {
   const { fallbackToId = false } = options;
