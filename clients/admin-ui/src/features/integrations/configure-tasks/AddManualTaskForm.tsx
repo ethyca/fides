@@ -12,6 +12,7 @@ import React, { useEffect } from "react";
 
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
 
+import { FIELD_TYPE_LABELS, REQUEST_TYPE_LABELS } from "./constants";
 import { Task } from "./types";
 
 type Props = {
@@ -52,8 +53,14 @@ const AddManualTaskForm = ({
   const isEditing = !!editingTask;
 
   const requestTypeOptions = [
-    { label: "Access", value: ManualFieldRequestType.ACCESS },
-    { label: "Erasure", value: ManualFieldRequestType.ERASURE },
+    {
+      label: REQUEST_TYPE_LABELS[ManualFieldRequestType.ACCESS],
+      value: ManualFieldRequestType.ACCESS,
+    },
+    {
+      label: REQUEST_TYPE_LABELS[ManualFieldRequestType.ERASURE],
+      value: ManualFieldRequestType.ERASURE,
+    },
   ];
 
   // Watch request type to determine available field type options
@@ -63,12 +70,23 @@ const AddManualTaskForm = ({
   const getFieldTypeOptions = () => {
     if (requestType === ManualFieldRequestType.ACCESS) {
       return [
-        { label: "Text", value: ManualTaskFieldType.TEXT },
-        { label: "Attachment", value: ManualTaskFieldType.ATTACHMENT },
+        {
+          label: FIELD_TYPE_LABELS[ManualTaskFieldType.TEXT],
+          value: ManualTaskFieldType.TEXT,
+        },
+        {
+          label: FIELD_TYPE_LABELS[ManualTaskFieldType.ATTACHMENT],
+          value: ManualTaskFieldType.ATTACHMENT,
+        },
       ];
     }
     if (requestType === ManualFieldRequestType.ERASURE) {
-      return [{ label: "Checkbox", value: ManualTaskFieldType.CHECKBOX }];
+      return [
+        {
+          label: FIELD_TYPE_LABELS[ManualTaskFieldType.CHECKBOX],
+          value: ManualTaskFieldType.CHECKBOX,
+        },
+      ];
     }
     // Return empty options when no request type is selected
     return [];
