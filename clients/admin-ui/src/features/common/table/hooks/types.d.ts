@@ -3,6 +3,7 @@ import type { AntFilterValue as FilterValue } from "fidesui";
 import type {
   PaginationConfig,
   PaginationState,
+  SearchConfig,
   SortingConfig,
   SortOrder,
 } from "../../hooks/types";
@@ -36,6 +37,7 @@ export interface TableStateConfig<TSortField extends string = string> {
   // Default values
   pagination?: PaginationConfig;
   sorting?: SortingConfig<TSortField>;
+  search?: SearchConfig;
 
   // Callbacks
   onStateChange?: (state: TableState<TSortField>) => void;
@@ -95,8 +97,8 @@ export interface AntTableHookConfig<TData> {
  * Type for URL query state updates based on enabled features
  * Pagination updates are handled separately by PaginationUpdates
  * Sorting updates are handled separately by SortingUpdates
+ * Search updates are handled separately by SearchUpdates
  */
 export interface QueryStateUpdates {
   filters?: Record<string, FilterValue | null> | null;
-  search?: string | null;
 }
