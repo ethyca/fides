@@ -246,20 +246,23 @@ describe("Action center Asset Results", () => {
     it("should bulk restore ignored assets", () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500); // wait for the original router to update
-      cy.findByRole("menuitem", { name: "Ignored" }).click({ force: true });
+      cy.getByTestId("asset-state-filter")
+        .contains("Ignored")
+        .click({ force: true });
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500); // wait for the router to update
-      cy.findByRole("menuitem", { name: "Ignored" }).should(
-        "have.className",
-        "ant-menu-item-selected",
-      );
+      cy.getByTestId("asset-state-filter").within(() => {
+        cy.get(".ant-menu-item-selected").contains("Ignored").should("exist");
+      });
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
       cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.findByRole("menuitem", { name: "Restore" }).click({ force: true });
+      cy.get(".bulk-actions-menu-dropdown").within(() => {
+        cy.findByRole("menuitem", { name: "Restore" }).click({ force: true });
+      });
       cy.wait("@restoreAssets");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -315,7 +318,9 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.findByRole("menuitem", { name: "Add consent category" }).click();
+      cy.get(".bulk-actions-menu-dropdown").within(() => {
+        cy.findByRole("menuitem", { name: "Add consent category" }).click();
+      });
       cy.getByTestId("taxonomy-select").antSelect("essential");
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@patchAssets");
@@ -345,9 +350,9 @@ describe("Action center Asset Results", () => {
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.findByRole("menuitem", { name: "Recent activity" }).click({
-          force: true,
-        });
+        cy.getByTestId("asset-state-filter")
+          .contains("Recent activity")
+          .click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
@@ -369,14 +374,18 @@ describe("Action center Asset Results", () => {
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.findByRole("menuitem", { name: "Ignored" }).click({ force: true });
+        cy.getByTestId("asset-state-filter")
+          .contains("Ignored")
+          .click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
         cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
         cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
         cy.getAntTableRow(rowUrns[3]).findByRole("checkbox").click();
         cy.getByTestId("bulk-actions-menu").click();
-        cy.findByRole("menuitem", { name: "Ignore" }).should("not.exist");
+        cy.get(".bulk-actions-menu-dropdown").within(() => {
+          cy.findByRole("menuitem", { name: "Ignore" }).should("not.exist");
+        });
       });
     });
 
@@ -434,11 +443,16 @@ describe("Action center Asset Results", () => {
 
         // Clear
         cy.getByTestId("clear-filters").click({ force: true });
-        // URL params cleared/reset
+
+        // Wait for URL params to be cleared/reset
         cy.location("search").should("not.contain", "search=");
         cy.location("search").should("not.contain", "sortKey=");
         cy.location("search").should("not.contain", "sortOrder=");
         cy.location("search").should("not.contain", "page=");
+
+        // Wait a moment for React state to propagate to the input component
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(100);
 
         // Search input field should be cleared
         cy.findByPlaceholderText("Search by asset name...").should(
@@ -466,7 +480,9 @@ describe("Action center Asset Results", () => {
         cy.location("search").should("contain", "search=collect");
 
         // Switch tab
-        cy.findByRole("menuitem", { name: "Ignored" }).click({ force: true });
+        cy.getByTestId("asset-state-filter")
+          .contains("Ignored")
+          .click({ force: true });
         // wait for router
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
