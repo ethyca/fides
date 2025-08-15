@@ -16,12 +16,9 @@ import type {
 } from "./types";
 
 /**
- * NuQS parsers for table state - filtering features synced to URL
- * Pagination is handled by the usePagination hook
- * Sorting is handled by the useSorting hook
- * Search is handled by the useSearch hook
+ * NuQS parsers for filter state - synced to URL
  */
-const createTableParsers = () => {
+const createFilterParsers = () => {
   return {
     filters: parseAsJson(
       (value: unknown) => value as Record<string, FilterValue | null>,
@@ -104,11 +101,11 @@ export const useTableState = <TSortKey extends string = string>(
     resetSearch,
   } = useSearch(searchConfig);
 
-  // Create parsers for non-pagination table state features
+  // Create parsers for filter state
   // Note: Parsers must be stable across renders for NuQS to work properly
-  const parsers = useMemo(() => createTableParsers(), []);
+  const parsers = useMemo(() => createFilterParsers(), []);
 
-  // Use NuQS for URL state management (excluding pagination)
+  // Use NuQS for URL state management
   const [queryState, setQueryState] = useQueryStates(parsers, {
     history: "push",
   });
@@ -127,15 +124,10 @@ export const useTableState = <TSortKey extends string = string>(
     return state;
   }, [queryState, pageIndex, pageSize, sortKey, sortOrder, searchQuery]);
 
-  // Update functions that update query state (URL is the single source of truth)
-  // Pagination updates are handled by the pagination hook
-  // Sorting updates are handled by the sorting hook
-  // Search updates are handled by the search hook
-
   const updateSorting = useCallback(
     (sf?: TSortKey, so?: SortOrder) => {
       updateSortingOnly(sf, so);
-      resetPagination(); // Reset to first page when sorting changes
+      resetPagination();
     },
     [updateSortingOnly, resetPagination],
   );
@@ -149,7 +141,7 @@ export const useTableState = <TSortKey extends string = string>(
       setQueryState({
         filters: Object.keys(cleanFilters).length > 0 ? cleanFilters : null, // Use null to remove from URL when empty
       });
-      resetPagination(); // Reset to first page when filters change
+      resetPagination();
     },
     [setQueryState, resetPagination],
   );
@@ -157,7 +149,7 @@ export const useTableState = <TSortKey extends string = string>(
   const updateSearch = useCallback(
     (searchString?: string) => {
       updateSearchOnly(searchString);
-      resetPagination(); // Reset to first page when search changes
+      resetPagination();
     },
     [updateSearchOnly, resetPagination],
   );
