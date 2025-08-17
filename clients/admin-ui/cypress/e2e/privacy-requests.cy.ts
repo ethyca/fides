@@ -279,7 +279,6 @@ describe("Privacy Requests", () => {
     });
   });
 
-
   describe("privacy request creation", () => {
     describe("showing button depending on role", () => {
       beforeEach(() => {

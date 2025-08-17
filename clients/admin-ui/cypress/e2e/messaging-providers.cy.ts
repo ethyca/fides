@@ -64,7 +64,9 @@ describe("Messaging Providers", () => {
     cy.findByLabelText("Account SID").type("ACxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     cy.findByLabelText("Auth token").type("auth-token-value");
     // satisfy validation: either Messaging service SID or Phone number
-    cy.findByLabelText("Messaging service SID").type("MGxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+    cy.findByLabelText("Messaging service SID").type(
+      "MGxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    );
     cy.getByTestId("save-btn").should("not.be.disabled").click();
     cy.wait("@postMessagingConfig");
 
