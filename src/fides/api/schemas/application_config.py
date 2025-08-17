@@ -76,7 +76,8 @@ class ExecutionApplicationConfig(FidesSchema):
     memory_watchdog_enabled: Optional[bool] = None
     sql_dry_run: Optional[SqlDryRunMode] = None
 
-    model_config = ConfigDict(use_enum_values=True, extra="forbid")
+    # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through
+    model_config = ConfigDict(use_enum_values=True, extra="ignore")
 
 
 class AdminUIConfig(FidesSchema):

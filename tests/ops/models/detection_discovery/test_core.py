@@ -930,6 +930,134 @@ class TestMonitorConfigModel:
             [".*[P|p]hone_number.*", "user.contact.phone_number"],
         ]
 
+    def test_validate_key_no_dots_on_create(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> None:
+        """
+        Test that the validate_key_no_dots validator prevents creating MonitorConfig with dots in key
+        """
+        # Test that keys with dots raise ValueError
+        with pytest.raises(
+            ValueError, match='MonitorConfig.key cannot contain "." characters'
+        ):
+            MonitorConfig.create(
+                db=db,
+                data={
+                    "name": "test monitor with dots",
+                    "key": "monitor.with.dots",
+                    "connection_config_id": connection_config.id,
+                },
+            )
+
+        # Test that keys without dots work fine
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "test monitor without dots",
+                "key": "monitor_without_dots",
+                "connection_config_id": connection_config.id,
+            },
+        )
+
+    def test_validate_key_no_dots_on_update(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> None:
+        """
+        Test that the validate_key_no_dots validator prevents updating MonitorConfig key to contain dots
+        """
+        # Create a monitor with valid key
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "test monitor",
+                "key": "test_monitor",
+                "connection_config_id": connection_config.id,
+            },
+        )
+
+        # Test that updating to a key with dots raises ValueError
+        with pytest.raises(
+            ValueError, match='MonitorConfig.key cannot contain "." characters'
+        ):
+            mc.update(
+                db=db,
+                data={
+                    "key": "updated.monitor.key",
+                },
+            )
+
+        # Verify original key is unchanged
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        assert mc_from_db.key == "test_monitor"
+
+        # Test that updating to a valid key works
+        mc.update(
+            db=db,
+            data={
+                "key": "updated_monitor_key",
+            },
+        )
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        assert mc_from_db.key == "updated_monitor_key"
+
+    @pytest.mark.parametrize(
+        "invalid_key",
+        [
+            "monitor.key",
+            "monitor.with.multiple.dots",
+            "single.dot",
+            "ending.dot.",
+            ".starting.dot",
+            "middle.dot.here",
+        ],
+    )
+    def test_validate_key_no_dots_various_patterns(
+        self, db: Session, connection_config: ConnectionConfig, invalid_key: str
+    ) -> None:
+        """
+        Test that various patterns of dots in keys are all rejected
+        """
+        with pytest.raises(
+            ValueError, match='MonitorConfig.key cannot contain "." characters'
+        ):
+            MonitorConfig.create(
+                db=db,
+                data={
+                    "name": f"test monitor {invalid_key}",
+                    "key": invalid_key,
+                    "connection_config_id": connection_config.id,
+                },
+            )
+
+    @pytest.mark.parametrize(
+        "valid_key",
+        [
+            "monitor_key",
+            "monitor-key",
+            "monitorkey",
+            "monitor123",
+            "monitor_with_underscores",
+            "monitor-with-dashes",
+            "MONITOR_UPPERCASE",
+        ],
+    )
+    def test_validate_key_no_dots_valid_keys(
+        self, db: Session, connection_config: ConnectionConfig, valid_key: str
+    ) -> None:
+        """
+        Test that keys without dots are accepted
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": f"test monitor {valid_key}",
+                "key": valid_key,
+                "connection_config_id": connection_config.id,
+            },
+        )
+        assert mc.key == valid_key
+        db.delete(mc)
+
 
 class TestMonitorExecutionModel:
     """Tests for the MonitorExecution model"""
