@@ -279,47 +279,6 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe("Message Configuration", () => {
-    beforeEach(() => {
-      cy.visit("/privacy-requests/configure/messaging");
-    });
-
-    it("Can configure Mailgun email", () => {
-      cy.getByTestId("messaging-provider-select").click();
-      cy.contains(".ant-select-item", "Mailgun Email").click();
-      cy.getByTestId("input-domain").type("test-domain");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createMessagingConfiguration").then((interception) => {
-        const { body } = interception.request;
-        expect(body.service_type).to.eql("mailgun");
-        cy.contains(
-          "Mailgun email successfully updated. You can now enter your security key.",
-        );
-      });
-    });
-
-    it("Can configure Twilio email", () => {
-      cy.getByTestId("messaging-provider-select").click();
-      cy.contains(".ant-select-item", "Twilio Email").click();
-      cy.getByTestId("input-email").type("test-email");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createMessagingConfiguration").then(() => {
-        cy.contains(
-          "Twilio email successfully updated. You can now enter your security key.",
-        );
-      });
-    });
-
-    it("Can configure Twilio SMS", () => {
-      cy.getByTestId("messaging-provider-select").click();
-      cy.contains(".ant-select-item", "Twilio SMS").click();
-      cy.getByTestId("input-account_sid").type("test-account_sid");
-      cy.getByTestId("input-auth_token").type("test-auth_token");
-      cy.wait("@createMessagingConfiguration").then(() => {
-        cy.contains("Messaging provider saved successfully.");
-      });
-    });
-  });
 
   describe("privacy request creation", () => {
     describe("showing button depending on role", () => {

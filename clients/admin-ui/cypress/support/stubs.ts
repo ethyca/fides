@@ -211,11 +211,33 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
 
   cy.intercept("GET", "/api/v1/messaging/default/*", {
     fixture: "/privacy-requests/messaging_configuration.json",
-  }).as("createMessagingConfiguration");
+    }).as("createMessagingConfiguration");
 
   cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
     fixture: "/privacy-requests/privacy-center-config.json",
   }).as("getPrivacyCenterConfig");
+};
+
+export const stubMessagingProvidersCrud = (options?: {
+  listItems?: any[];
+  createStatus?: number;
+  createResponse?: any;
+  getByKeyResponse?: any;
+}) => {
+  cy.intercept("GET", "/api/v1/messaging/config", {
+    statusCode: 200,
+    body: { items: options?.listItems ?? [] },
+  }).as("getMessagingConfigs");
+
+  cy.intercept("POST", "/api/v1/messaging/config", {
+    statusCode: options?.createStatus ?? 200,
+    body: options?.createResponse ?? { key: "new_config_key" },
+  }).as("postMessagingConfig");
+
+  cy.intercept("GET", "/api/v1/messaging/config/*", {
+    statusCode: 200,
+    body: options?.getByKeyResponse ?? {},
+  }).as("getMessagingConfigByKey");
 };
 
 export const stubPrivacyNoticesCrud = () => {

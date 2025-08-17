@@ -290,8 +290,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Messaging providers",
         path: routes.MESSAGING_PROVIDERS_ROUTE,
-        requiresFlag: "messagingConfiguration",
-        // requiresPlus: true, TODO: add support for plus
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
