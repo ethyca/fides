@@ -4485,6 +4485,7 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert not mock_dispatch_message.called
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestDenyPrivacyRequest:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request):
