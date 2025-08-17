@@ -211,7 +211,7 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
 
   cy.intercept("GET", "/api/v1/messaging/default/*", {
     fixture: "/privacy-requests/messaging_configuration.json",
-    }).as("createMessagingConfiguration");
+  }).as("createMessagingConfiguration");
 
   cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
     fixture: "/privacy-requests/privacy-center-config.json",
