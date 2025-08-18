@@ -1,6 +1,6 @@
 from typing import Dict, List, Literal, Optional
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, status
 from loguru import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
@@ -14,7 +14,6 @@ from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
-from fides.api.util.rate_limit import fides_limiter, RateLimitBucket
 from fides.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
@@ -83,10 +82,7 @@ def get_cache_health() -> str:
         },
     },
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
-async def database_health(request: Request, db: Session = Depends(get_db)) -> Dict:
+async def database_health(db: Session = Depends(get_db)) -> Dict:
     """Confirm that the API is running and healthy."""
     db_health, revision = get_db_health(CONFIG.database.sync_database_uri, db=db)
 
@@ -130,10 +126,7 @@ async def database_health(request: Request, db: Session = Depends(get_db)) -> Di
         },
     },
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
-async def workers_health(request: Request) -> Dict:
+async def workers_health() -> Dict:
     """Confirm that the API is running and healthy."""
     response = WorkerHealthCheck(
         workers_enabled=False, workers=[], queue_counts={}
@@ -179,10 +172,7 @@ async def workers_health(request: Request) -> Dict:
         },
     },
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
-async def health(request: Request) -> Dict:
+async def health() -> Dict:
     """Confirm that the API is running and healthy."""
     cache_health = get_cache_health()
     response = CoreHealthCheck(
