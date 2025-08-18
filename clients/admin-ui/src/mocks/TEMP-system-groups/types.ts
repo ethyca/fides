@@ -37,7 +37,7 @@ export interface SystemGroupCreate {
 }
 
 export enum CustomTaxonomyColor {
-  WHITE = "taxonomy_white",
+  WHITE = "default",
   RED = "taxonomy_red",
   ORANGE = "taxonomy_orange",
   YELLOW = "taxonomy_yellow",

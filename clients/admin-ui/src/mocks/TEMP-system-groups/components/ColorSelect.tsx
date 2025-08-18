@@ -20,7 +20,7 @@ const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
 };
 
 const COLOR_VALUES: Record<CustomTaxonomyColor, string> = {
-  [CustomTaxonomyColor.WHITE]: "var(--fidesui-bg-taxonomy-white)",
+  [CustomTaxonomyColor.WHITE]: "var(--fidesui-bg-default)",
   [CustomTaxonomyColor.RED]: "var(--fidesui-bg-taxonomy-red)",
   [CustomTaxonomyColor.ORANGE]: "var(--fidesui-bg-taxonomy-orange)",
   [CustomTaxonomyColor.YELLOW]: "var(--fidesui-bg-taxonomy-yellow)",
@@ -36,7 +36,10 @@ const ColorSwatch = ({ color }: { color: string }) => {
     <span
       aria-hidden
       className="mr-2 inline-block size-4 rounded-lg align-middle"
-      style={{ backgroundColor: color }}
+      style={{
+        backgroundColor: color,
+        border: "1px solid var(--fidesui-minos)",
+      }}
     />
   );
 };

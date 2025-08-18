@@ -41,6 +41,21 @@ export const DEFAULT_SYSTEM_GROUPS: SystemGroup[] = [
     name: "Sales",
     color: CustomTaxonomyColor.SANDSTONE,
   },
+  {
+    fides_key: "system.other",
+    name: "Other",
+    color: CustomTaxonomyColor.RED,
+  },
+  {
+    fides_key: "system.other_but_white",
+    name: "Other but white",
+    color: CustomTaxonomyColor.WHITE,
+  },
+  {
+    fides_key: "system.other_but_purple",
+    name: "Other but purple",
+    color: CustomTaxonomyColor.PURPLE,
+  },
 ];
 
 export const DEFAULT_SYSTEM_GROUPS_MAP: Record<string, SystemGroup> =
@@ -95,6 +110,24 @@ export const useMockUpdateSystemWithGroupsMutation = () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return {
       data: system,
+    };
+  };
+
+  return [update];
+};
+
+export const useMockUpdateSystemWithGroupsError = () => {
+  const update = async (system: SystemUpsertWithGroups) => {
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return {
+      isError: true,
+      error: {
+        status: 422,
+        data: {
+          detail: "You picked bad groups, do better next time",
+        },
+      },
     };
   };
 

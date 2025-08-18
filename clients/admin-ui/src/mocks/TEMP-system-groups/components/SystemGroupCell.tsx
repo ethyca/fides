@@ -1,10 +1,19 @@
-import { AntFlex, AntMessage as message, AntSelect, AntTag } from "fidesui";
+import {
+  AntButton,
+  AntFlex,
+  AntMessage as message,
+  AntSelect,
+  AntTag,
+} from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { TagExpandableCell } from "~/features/common/table/cells";
 import { ColumnState } from "~/features/common/table/cells/types";
-import { useMockUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
+import {
+  useMockUpdateSystemWithGroupsError,
+  useMockUpdateSystemWithGroupsMutation,
+} from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
   SystemGroup,
   SystemResponseWithGroups,
@@ -31,6 +40,7 @@ const SystemGroupCell = ({
 
   const [messageApi, contextHolder] = message.useMessage();
 
+  // const [updateSystemMutation] = useMockUpdateSystemWithGroupsError();
   const [updateSystemMutation] = useMockUpdateSystemWithGroupsMutation();
 
   const handleUpdate = async () => {
@@ -69,7 +79,7 @@ const SystemGroupCell = ({
     <>
       {contextHolder}
       {!isAdding && (
-        <AntFlex gap={8}>
+        <AntFlex gap="small">
           <AntTag
             onClick={() => setIsAdding(true)}
             addable
@@ -91,19 +101,24 @@ const SystemGroupCell = ({
         </AntFlex>
       )}
       {isAdding && (
-        <AntSelect
-          options={allGroups.map((group) => ({
-            label: group.name,
-            value: group.fides_key,
-          }))}
-          mode="tags"
-          defaultValue={selectedGroups.map((group) => group.fides_key)}
-          defaultOpen
-          onChange={(value) => {
-            setPendingSelection(value);
-          }}
-          onBlur={handleUpdate}
-        />
+        <AntFlex gap="small">
+          <AntSelect
+            options={allGroups.map((group) => ({
+              label: group.name,
+              value: group.fides_key,
+            }))}
+            mode="tags"
+            defaultValue={selectedGroups.map((group) => group.fides_key)}
+            defaultOpen
+            onChange={(value) => {
+              setPendingSelection(value);
+            }}
+            onBlur={handleUpdate}
+          />
+          {/* <AntButton type="primary" onClick={handleUpdate}>
+            Update
+          </AntButton> */}
+        </AntFlex>
       )}
     </>
   );
