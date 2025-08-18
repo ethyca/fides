@@ -84,3 +84,63 @@ def get_allowed_file_type_or_raise(file_key: str) -> str:
         return AllowedFileType[file_type].value
     except KeyError:
         raise ValueError(error_msg)
+
+
+
+def adaptive_chunk_size(file_size: int) -> int:
+    """Determine optimal chunk size based on file size.
+
+    Larger files use larger chunks for better performance.
+    """
+    if file_size > 100 * 1024 * 1024:  # 100MB+
+        return 1024 * 1024  # 1MB chunks
+    elif file_size > 10 * 1024 * 1024:  # 10MB+
+        return 256 * 1024   # 256KB chunks
+    elif file_size > 1 * 1024 * 1024:   # 1MB+
+        return 128 * 1024   # 128KB chunks
+    else:
+        return 64 * 1024    # 64KB chunks
+
+
+def should_split_package(data: dict, max_attachments: int = 100, max_total_size_gb: int = 5) -> bool:
+    """Determine if the dataset should be split into multiple packages.
+
+    Args:
+        data: The data to process
+        max_attachments: Maximum attachments per package
+        max_total_size_gb: Maximum total size in GB per package
+
+    Returns:
+        True if package should be split
+    """
+    def count_attachments_recursive(obj):
+        """Recursively count attachments and calculate total size."""
+        total_attachments = 0
+        estimated_total_size = 0
+
+        if isinstance(obj, dict):
+            # Check if this dict has attachments
+            if "attachments" in obj:
+                attachments = obj["attachments"]
+                total_attachments += len(attachments)
+                estimated_total_size += sum(att.get("size", 1024 * 1024) for att in attachments)
+
+            # Recursively check all values in the dict
+            for value in obj.values():
+                sub_attachments, sub_size = count_attachments_recursive(value)
+                total_attachments += sub_attachments
+                estimated_total_size += sub_size
+
+        elif isinstance(obj, list):
+            # Recursively check all items in the list
+            for item in obj:
+                sub_attachments, sub_size = count_attachments_recursive(item)
+                total_attachments += sub_attachments
+                estimated_total_size += sub_size
+
+        return total_attachments, estimated_total_size
+
+    total_attachments, estimated_total_size = count_attachments_recursive(data)
+
+    return (total_attachments > max_attachments or
+            estimated_total_size > max_total_size_gb * 1024 * 1024 * 1024)

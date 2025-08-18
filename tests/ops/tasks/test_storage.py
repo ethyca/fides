@@ -142,7 +142,7 @@ class TestWriteToInMemoryBuffer:
     @patch("fides.api.tasks.storage.DsrReportBuilder")
     def test_write_to_in_memory_buffer_html(self, mock_dsr_builder):
         """Test HTML format generation using DsrReportBuilder."""
-        data = {"key": "value"}
+        data = {"collection1": [{"id": 1, "name": "test data"}]}
         privacy_request = MagicMock(id="test-request-id")
         mock_report = BytesIO(b"<html>Test Report</html>")
         mock_dsr_builder.return_value.generate.return_value = mock_report

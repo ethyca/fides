@@ -15,6 +15,7 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
+from fides.api.service.storage.streaming_s3 import upload_to_s3_streaming, upload_to_s3_streaming_advanced
 
 
 def upload(
@@ -88,23 +89,44 @@ def _s3_uploader(
     data: Dict,
     privacy_request: PrivacyRequest,
 ) -> str:
-    """Constructs necessary info needed for s3 before calling upload"""
+    """Constructs necessary info needed for s3 before calling upload using streaming approach"""
     file_key: str = _construct_file_key(privacy_request.id, config)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
     document = None
 
-    return upload_to_s3(
-        config.secrets,  # type: ignore
-        data,
-        bucket_name,
-        file_key,
-        config.format.value,  # type: ignore
-        privacy_request,
-        document,
-        auth_method,
-    )
+    # Check if streaming is enabled in the storage configuration
+    enable_streaming = config.details.get("enable_streaming", False)
+
+    if enable_streaming:
+        # Use streaming upload for better memory efficiency
+        # You can choose between upload_to_s3_streaming or upload_to_s3_streaming_advanced
+        # The advanced version includes multipart upload configuration
+        logger.info("Using streaming S3 upload for {}", file_key)
+        return upload_to_s3_streaming_advanced(
+            config.secrets,  # type: ignore
+            data,
+            bucket_name,
+            file_key,
+            config.format.value,  # type: ignore
+            privacy_request,
+            document,
+            auth_method,
+        )
+    else:
+        # Fall back to traditional upload method
+        logger.info("Using traditional S3 upload for {}", file_key)
+        return upload_to_s3(
+            config.secrets,  # type: ignore
+            data,
+            bucket_name,
+            file_key,
+            config.format.value,  # type: ignore
+            privacy_request,
+            document,
+            auth_method,
+        )
 
 
 def _gcs_uploader(
