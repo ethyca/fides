@@ -49,7 +49,6 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -67,7 +66,6 @@ from fides.common.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 
@@ -134,9 +132,6 @@ def verify_oauth_connection_config(
     status_code=HTTP_200_OK,
     response_model=ValidateSaaSConfigResponse,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def validate_saas_config(
     saas_config: SaaSConfig,
 ) -> ValidateSaaSConfigResponse:
@@ -164,9 +159,6 @@ def validate_saas_config(
     status_code=HTTP_200_OK,
     response_model=SaaSConfig,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def patch_saas_config(
     saas_config: SaaSConfig,
     db: Session = Depends(deps.get_db),
@@ -190,9 +182,6 @@ def patch_saas_config(
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_READ])],
     response_model=SaaSConfig,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_saas_config(
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> SaaSConfig:
@@ -212,9 +201,6 @@ def get_saas_config(
     SAAS_CONFIG,
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_DELETE])],
     status_code=HTTP_204_NO_CONTENT,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_saas_config(
     db: Session = Depends(deps.get_db),
@@ -270,9 +256,6 @@ def delete_saas_config(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_AUTHORIZE])],
     response_model=str,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def authorize_connection(
     request: Request,
     db: Session = Depends(deps.get_db),
@@ -301,9 +284,6 @@ def authorize_connection(
     SAAS_CONNECTOR_FROM_TEMPLATE,
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONNECTION_INSTANTIATE])],
     response_model=SaasConnectionTemplateResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def instantiate_connection_from_template(
     saas_connector_type: str,
@@ -386,9 +366,6 @@ def instantiate_connection(
 @router.post(
     REGISTER_CONNECTOR_TEMPLATE,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def register_custom_connector_template(
     file: bytes = Body(..., media_type="application/zip"),

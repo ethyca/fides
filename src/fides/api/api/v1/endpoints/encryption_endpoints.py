@@ -19,7 +19,6 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length as aes_gcm_encrypt,
 )
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import ENCRYPTION_EXEC
 from fides.common.api.v1.urn_registry import (
     DECRYPT_AES,
@@ -37,9 +36,6 @@ router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
     dependencies=[Security(verify_oauth_client, scopes=[ENCRYPTION_EXEC])],
     response_model=str,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_encryption_key() -> str:
     logger.info("Generating encryption key")
     return cryptographic_util.generate_secure_random_string(
@@ -51,9 +47,6 @@ def get_encryption_key() -> str:
     ENCRYPT_AES,
     dependencies=[Security(verify_oauth_client, scopes=[ENCRYPTION_EXEC])],
     response_model=AesEncryptionResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionResponse:
     logger.info("Starting AES Encryption")
@@ -73,9 +66,6 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
     DECRYPT_AES,
     dependencies=[Security(verify_oauth_client, scopes=[ENCRYPTION_EXEC])],
     response_model=AesDecryptionResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionResponse:
     logger.info("Starting AES Decryption")

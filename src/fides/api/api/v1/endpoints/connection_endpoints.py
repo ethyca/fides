@@ -38,7 +38,6 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     validate_secrets,
 )
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -51,7 +50,6 @@ from fides.common.api.v1.urn_registry import (
     CONNECTIONS,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -60,9 +58,6 @@ router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
     CONNECTIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     response_model=Page[ConnectionConfigurationResponse],
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_connections(
     *,
@@ -162,9 +157,6 @@ def get_connections(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     response_model=ConnectionConfigurationResponseWithSystemKey,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_connection_detail(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
@@ -190,9 +182,6 @@ def get_connection_detail(
     status_code=HTTP_200_OK,
     response_model=BulkPutConnectionConfiguration,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
@@ -213,9 +202,6 @@ def patch_connections(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_DELETE])],
     status_code=HTTP_204_NO_CONTENT,
     response_model=None,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_connection(
     connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
@@ -251,9 +237,6 @@ def validate_and_update_secrets(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def put_connection_config_secrets(
     connection_key: FidesKey,
     *,
@@ -279,9 +262,6 @@ def put_connection_config_secrets(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def patch_connection_config_secrets(
     connection_key: FidesKey,
@@ -320,9 +300,6 @@ def patch_connection_config_secrets(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     response_model=TestStatusMessage,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def test_connection_config_secrets(
     connection_key: FidesKey,

@@ -25,7 +25,6 @@ from fides.api.schemas.manual_webhook_schemas import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
@@ -36,7 +35,6 @@ from fides.common.api.v1.urn_registry import (
     ACCESS_MANUAL_WEBHOOKS,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)
 
@@ -66,9 +64,6 @@ def get_access_manual_webhook_or_404(
     status_code=HTTP_201_CREATED,
     dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_CREATE_OR_UPDATE])],
     response_model=AccessManualWebhookResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -116,9 +111,6 @@ def create_access_manual_webhook(
     dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_CREATE_OR_UPDATE])],
     response_model=AccessManualWebhookResponse,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def patch_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     *,
@@ -151,9 +143,6 @@ def patch_access_manual_webhook(
     dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_READ])],
     response_model=AccessManualWebhookResponse,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> AccessManualWebhook:
@@ -174,9 +163,6 @@ def get_access_manual_webhook(
     ACCESS_MANUAL_WEBHOOK,
     status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_DELETE])],
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -202,9 +188,6 @@ def delete_access_manual_webhook(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_READ])],
     response_model=Sequence[AccessManualWebhookResponse],
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_access_manual_webhooks(
     db: Session = Depends(deps.get_db),

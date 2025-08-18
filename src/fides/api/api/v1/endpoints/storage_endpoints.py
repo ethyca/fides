@@ -54,7 +54,6 @@ from fides.api.service.storage.storage_authenticator_service import secrets_are_
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.api.util.storage_util import get_schema_for_secrets
 from fides.common.api.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
@@ -73,7 +72,6 @@ from fides.common.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 
@@ -83,9 +81,6 @@ router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
     status_code=HTTP_201_CREATED,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=DataUpload,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def upload_data(
     request_id: str,
@@ -124,9 +119,6 @@ def upload_data(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=BulkPutStorageConfigResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def patch_config(
     *,
@@ -183,9 +175,6 @@ def patch_config(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def put_config_secrets(
     config_key: FidesKey,
@@ -258,9 +247,6 @@ def put_config_secrets(
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
     response_model=Page[StorageDestinationResponse],
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_configs(
     *, db: Session = Depends(deps.get_db), params: Params = Depends()
 ) -> AbstractPage[StorageConfig]:
@@ -277,9 +263,6 @@ def get_configs(
     STORAGE_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
     response_model=StorageDestinationResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_config_by_key(
     config_key: FidesKey, *, db: Session = Depends(deps.get_db)
@@ -302,9 +285,6 @@ def get_config_by_key(
     STORAGE_BY_KEY,
     status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_DELETE])],
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_config_by_key(
     config_key: FidesKey, *, db: Session = Depends(deps.get_db)
@@ -338,9 +318,6 @@ def delete_config_by_key(
     STORAGE_ACTIVE_DEFAULT,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
     response_model=StorageDestinationResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_active_default_config(
     *, db: Session = Depends(deps.get_db)
@@ -376,9 +353,6 @@ def get_active_default_config(
             }
         }
     },
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_storage_status(
     *, db: Session = Depends(deps.get_db)
@@ -457,9 +431,6 @@ def _storage_config_requires_secrets(storage_config: StorageConfig) -> bool:
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=StorageDestinationResponse,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def put_default_config(
     *,
     db: Session = Depends(deps.get_db),
@@ -515,9 +486,6 @@ def put_default_config(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def put_default_config_secrets(
     storage_type: StorageType,
@@ -595,9 +563,6 @@ def put_default_config_secrets(
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
     response_model=Page[StorageDestinationResponse],
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_default_configs(
     *, db: Session = Depends(deps.get_db), params: Params = Depends()
 ) -> AbstractPage[StorageConfig]:
@@ -619,9 +584,6 @@ def get_default_configs(
     STORAGE_DEFAULT_BY_TYPE,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
     response_model=StorageDestinationResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_default_config_by_type(
     storage_type: StorageType, *, db: Session = Depends(deps.get_db)

@@ -57,7 +57,6 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.logger import Pii
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -132,9 +131,6 @@ def _filter_consent(
     status_code=HTTP_200_OK,
     response_model=Page[ConsentReport],
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def report_consent_requests(
     *,
     db: Session = Depends(get_db),
@@ -178,9 +174,6 @@ def report_consent_requests(
     CONSENT_REQUEST,
     status_code=HTTP_200_OK,
     response_model=ConsentRequestResponse,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_consent_request(
     *,
@@ -247,9 +240,6 @@ def create_consent_request(
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def consent_request_verify(
     *,
     consent_request_id: str,
@@ -304,9 +294,6 @@ def consent_request_verify(
         },
     },
 )
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-)
 def get_consent_preferences_no_id(
     *,
     db: Session = Depends(get_db),
@@ -341,9 +328,6 @@ def get_consent_preferences_no_id(
     dependencies=[Security(verify_oauth_client, scopes=[CONSENT_READ])],
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_consent_preferences(
     *,
@@ -458,9 +442,6 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def set_consent_preferences(
     *,

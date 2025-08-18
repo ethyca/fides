@@ -11,9 +11,7 @@ from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api import scope_registry
-from fides.config import CONFIG
 
 router = APIRouter(
     tags=["View"],
@@ -26,9 +24,6 @@ router = APIRouter(
     dependencies=[
         Security(verify_oauth_client_prod, scopes=[scope_registry.EVALUATION_READ])
     ],
-)
-@fides_limiter.shared_limit(
-    limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLResponse:
     "Returns an html document with a list of evaluations"

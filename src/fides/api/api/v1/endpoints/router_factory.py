@@ -30,9 +30,7 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
 )
-from fides.api.util.rate_limit import RateLimitBucket, fides_limiter
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.config import CONFIG
 
 
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
@@ -99,9 +97,6 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
             },
         },
     )
-    @fides_limiter.shared_limit(
-        limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-    )
     async def create(
         resource: fides_model,
         db: AsyncSession = Depends(get_async_db),
@@ -139,9 +134,6 @@ def list_router_factory(fides_model: FidesModelType, model_type: str) -> APIRout
         response_model=List[fides_model],
         name="List",
     )
-    @fides_limiter.shared_limit(
-        limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-    )
     async def ls(  # pylint: disable=invalid-name
         db: AsyncSession = Depends(get_async_db),
     ) -> List:
@@ -166,9 +158,6 @@ def get_router_factory(fides_model: FidesModelType, model_type: str) -> APIRoute
             )
         ],
         response_model=fides_model,
-    )
-    @fides_limiter.shared_limit(
-        limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
     )
     async def get(
         fides_key: str,
@@ -210,9 +199,6 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
                 }
             },
         },
-    )
-    @fides_limiter.shared_limit(
-        limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
     )
     async def update(
         resource: fides_model,
@@ -285,9 +271,6 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
             },
         },
     )
-    @fides_limiter.shared_limit(
-        limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
-    )
     async def upsert(
         resources: List[fides_model],
         response: Response,
@@ -349,9 +332,6 @@ def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
                 }
             },
         },
-    )
-    @fides_limiter.shared_limit(
-        limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
     )
     async def delete(
         fides_key: str,
