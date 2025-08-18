@@ -15,6 +15,7 @@ from fides.api.models.manual_task import (
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import GraphTask, retry
@@ -39,6 +40,17 @@ class ManualTaskGraphTask(GraphTask):
         """
         db = self.resources.session
         collection_address = self.execution_node.address
+
+        if self.resources.request.policy.get_action_type() == ActionType.erasure:
+            # We're in an erasure privacy request's access phase - complete access task immediately
+            # since access is just for data collection to support erasure, not for user data access
+            self.update_status(
+                "Access task completed immediately for erasure privacy request (data collection only)",
+                [],
+                ActionType.access,
+                ExecutionLogStatus.complete,
+            )
+            return []
 
         # Verify this is a manual task address
         if not ManualTaskAddress.is_manual_task_address(collection_address):
