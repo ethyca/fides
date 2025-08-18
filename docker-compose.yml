@@ -74,7 +74,7 @@ services:
       - /fides/clients/privacy-center/node_modules
 
   fides-db:
-    image: postgres:12
+    image: postgres:16
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 15s
@@ -189,7 +189,7 @@ services:
       - /fides/src/fides.egg-info
 
   redis:
-    image: "redis:6.2-alpine"
+    image: "redis:8.0-alpine"
     # AUTH option #1: no authentication at all
     # command: redis-server
     # AUTH option #2: require password
