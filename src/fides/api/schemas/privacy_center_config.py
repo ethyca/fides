@@ -12,22 +12,11 @@ class CustomIdentity(FidesSchema):
     label: str
 
 
-class LocationIdentityField(FidesSchema):
-    """Location field configuration that extends the useful parts of CustomPrivacyRequestField"""
-
-    label: str
-    required: Optional[bool] = True
-    default_value: Optional[str] = None
-    query_param_key: Optional[str] = None
-    ip_geolocation_hint: Optional[bool] = False
-    # Note: We intentionally omit 'hidden' field as it doesn't make sense for location identity input
-
 
 class IdentityInputs(FidesSchema):
     name: Optional[RequiredType] = None
     email: Optional[RequiredType] = None
     phone: Optional[RequiredType] = None
-    location: Optional[Union[RequiredType, LocationIdentityField]] = None
     model_config = ConfigDict(extra="allow")
 
     def __init__(self, **data: Any):
@@ -42,14 +31,12 @@ class IdentityInputs(FidesSchema):
                         f'Custom identity "{field}" must be an instance of CustomIdentity '
                         '(e.g. {"label": "Field label"})'
                     )
-            elif field == "location" and isinstance(value, dict):
-                # Handle location field as LocationIdentityField
-                data[field] = LocationIdentityField(**value)
         super().__init__(**data)
 
 
 class CustomPrivacyRequestField(FidesSchema):
     label: str
+    field_type: Optional[Literal["text", "select", "multiselect"]] = None
     required: Optional[bool] = True
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
@@ -69,6 +56,27 @@ class CustomPrivacyRequestField(FidesSchema):
         return values
 
 
+class LocationSelectCustomPrivacyRequestField(CustomPrivacyRequestField):
+    """Location select field that doesn't support options and includes IP geolocation hint"""
+
+    field_type: Literal["locationselect"] = "locationselect"
+    ip_geolocation_hint: Optional[bool] = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_location_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        # Ensure options is not provided for location select fields
+        if "options" in values:
+            raise ValueError("LocationSelectCustomPrivacyRequestField does not support options")
+
+        # Call parent validation
+        return super().validate_default_value(values)
+
+
+# Create a simple union type - Pydantic will use the field_type to determine which model to use
+CustomPrivacyRequestFieldUnion = Union[LocationSelectCustomPrivacyRequestField, CustomPrivacyRequestField]
+
+
 class PrivacyRequestOption(FidesSchema):
     locations: Optional[Union[List[PrivacyNoticeRegion], Literal["fallback"]]] = None
     policy_key: Optional[str] = None
@@ -79,7 +87,7 @@ class PrivacyRequestOption(FidesSchema):
     confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     identity_inputs: Optional[IdentityInputs] = None
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
 
 
 class ConsentConfigButton(FidesSchema):
@@ -89,7 +97,7 @@ class ConsentConfigButton(FidesSchema):
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     icon_path: str
     identity_inputs: IdentityInputs
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
     title: str
     modal_title: Optional[str] = Field(alias="modalTitle", default=None)
 
@@ -174,7 +182,7 @@ class PartialPrivacyRequestOption(FidesSchema):
     policy_key: str
     title: str
     identity_inputs: Optional[IdentityInputs] = None
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
 
 
 class PartialPrivacyCenterConfig(FidesSchema):

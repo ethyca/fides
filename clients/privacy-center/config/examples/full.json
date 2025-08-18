@@ -13,9 +13,12 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "optional",
+        "phone": "optional"
+      },
+      "custom_privacy_request_fields": {
         "location": {
           "label": "Location",
+          "field_type": "locationselect",
           "required": false,
           "ip_geolocation_hint": true
         }
@@ -29,9 +32,12 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "optional",
+        "phone": "optional"
+      },
+      "custom_privacy_request_fields": {
         "location": {
           "label": "Location",
+          "field_type": "locationselect",
           "required": false,
           "ip_geolocation_hint": true
         }

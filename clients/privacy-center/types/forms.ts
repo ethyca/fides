@@ -5,12 +5,13 @@ export interface FormValues
 
 export interface CustomPrivacyRequestField {
   label: string;
-  field_type: "text" | "select" | "multiselect";
+  field_type?: "text" | "select" | "multiselect" | "locationselect";
   required?: boolean;
   options?: string[];
   default_value?: string | string[];
   hidden?: boolean;
   query_param_key?: string;
+  ip_geolocation_hint?: boolean;
 }
 
 export interface CustomPrivacyRequestFields {
