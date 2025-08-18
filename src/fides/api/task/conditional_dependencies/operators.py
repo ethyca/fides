@@ -1,7 +1,7 @@
 import numbers
 import operator as py_operator
 
-from fides.api.task.conditional_dependencies.schemas import Operator
+from fides.api.task.conditional_dependencies.schemas import GroupOperator, Operator
 
 # Define operator methods for validation
 #
@@ -17,7 +17,7 @@ from fides.api.task.conditional_dependencies.schemas import Operator
 #   * None in [] returns False
 #   * None not in [] returns True
 #   * This allows None to be a valid list element for membership testing
-operator_methods = {
+OPERATOR_METHODS = {
     # Basic operators - handle None naturally using Python's built-in behavior
     Operator.exists: lambda a, _: a is not None,
     Operator.not_exists: lambda a, _: a is None,
@@ -101,6 +101,12 @@ operator_methods = {
     Operator.contains: lambda a, b: (
         b in a if isinstance(a, str) and isinstance(b, str) else False
     ),
+}
+
+# Define logical operators for group conditions
+LOGICAL_OPERATORS = {
+    GroupOperator.and_: all,
+    GroupOperator.or_: any,
 }
 
 # Common operators that work with most data types
