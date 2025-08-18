@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from datetime import datetime
 from typing import List, Optional, Set, Tuple, Union
 
-from fastapi import Depends, HTTPException, Request, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -135,7 +137,6 @@ def _filter_consent(
 )
 def report_consent_requests(
     *,
-    request: Request,
     db: Session = Depends(get_db),
     params: Params = Depends(),
     data_use: Optional[str] = None,
@@ -183,7 +184,6 @@ def report_consent_requests(
 )
 def create_consent_request(
     *,
-    request: Request,
     db: Session = Depends(get_db),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
     messaging_service: MessagingService = Depends(get_messaging_service),
@@ -252,7 +252,6 @@ def create_consent_request(
 )
 def consent_request_verify(
     *,
-    request: Request,
     consent_request_id: str,
     db: Session = Depends(get_db),
     data: VerificationCode,
@@ -310,7 +309,6 @@ def consent_request_verify(
 )
 def get_consent_preferences_no_id(
     *,
-    request: Request,
     db: Session = Depends(get_db),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
     consent_request_id: str,
@@ -349,7 +347,6 @@ def get_consent_preferences_no_id(
 )
 def get_consent_preferences(
     *,
-    request: Request,
     db: Session = Depends(get_db),
     data: Identity,
 ) -> ConsentPreferences:
@@ -467,7 +464,6 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
 )
 def set_consent_preferences(
     *,
-    request: Request,
     consent_request_id: str,
     db: Session = Depends(get_db),
     data: ConsentPreferencesWithVerificationCode,
@@ -707,7 +703,7 @@ def _get_consent_request_and_provided_identity(
             )
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
-    provided_identity: Optional[ProvidedIdentity] = ProvidedIdentity.get_by_key_or_id(
+    provided_identity: ProvidedIdentity | None = ProvidedIdentity.get_by_key_or_id(
         db,
         data={"id": consent_request.provided_identity_id},
     )

@@ -6,7 +6,7 @@ Mostly used for `ctl`-related objects.
 """
 from typing import Dict, List
 
-from fastapi import Depends, Request, Response, Security, status
+from fastapi import Depends, Response, Security, status
 from fideslang import FidesModelType
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -104,7 +104,6 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
     )
     async def create(
         resource: fides_model,
-        request: Request,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
@@ -144,7 +143,6 @@ def list_router_factory(fides_model: FidesModelType, model_type: str) -> APIRout
         limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
     )
     async def ls(  # pylint: disable=invalid-name
-        request: Request,
         db: AsyncSession = Depends(get_async_db),
     ) -> List:
         """Get a list of all of the resources of this type."""
@@ -174,7 +172,6 @@ def get_router_factory(fides_model: FidesModelType, model_type: str) -> APIRoute
     )
     async def get(
         fides_key: str,
-        request: Request,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """Get a resource by its fides_key."""
@@ -219,7 +216,6 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
     )
     async def update(
         resource: fides_model,
-        request: Request,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
@@ -295,7 +291,6 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
     async def upsert(
         resources: List[fides_model],
         response: Response,
-        request: Request,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
@@ -360,7 +355,6 @@ def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
     )
     async def delete(
         fides_key: str,
-        request: Request,
         db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """

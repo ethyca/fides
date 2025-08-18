@@ -132,7 +132,6 @@ async def acquire_access_token(
 )
 def create_client(
     *,
-    request: Request,
     db: Session = Depends(get_db),
     scopes: List[str] = Body([]),
 ) -> ClientCreatedResponse:
@@ -159,9 +158,7 @@ def create_client(
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-def delete_client(
-    request: Request, client_id: str, db: Session = Depends(get_db)
-) -> None:
+def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
     client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
@@ -179,9 +176,7 @@ def delete_client(
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-def get_client_scopes(
-    request: Request, client_id: str, db: Session = Depends(get_db)
-) -> List[str]:
+def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str]:
     """Returns a list of the directly-assigned scopes associated with the client.
     Does not return roles associated with the client.
     Returns an empty list if client does not exist."""
@@ -202,7 +197,6 @@ def get_client_scopes(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def set_client_scopes(
-    request: Request,
     client_id: str,
     scopes: List[str],
     db: Session = Depends(get_db),
@@ -232,7 +226,7 @@ def set_client_scopes(
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-def read_scopes(request: Request) -> List[str]:
+def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""
     logger.info("Getting all available scopes")
     return SCOPE_REGISTRY
@@ -245,7 +239,7 @@ def read_scopes(request: Request) -> List[str]:
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-def read_roles_to_scopes_mapping(request: Request) -> Dict[str, List]:
+def read_roles_to_scopes_mapping() -> Dict[str, List]:
     """Returns a list of all roles and associated scopes available for assignment in the system"""
     logger.info("Getting all available roles")
     return ROLES_TO_SCOPES_MAPPING
@@ -255,9 +249,7 @@ def read_roles_to_scopes_mapping(request: Request) -> Dict[str, List]:
 @fides_limiter.shared_limit(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
-def oauth_callback(
-    request: Request, code: str, state: str, db: Session = Depends(get_db)
-) -> Response:
+def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Response:
     """
     Uses the passed in code to generate the token access request
     for the connection associated with the given state.

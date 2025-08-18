@@ -19,7 +19,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Body, Depends, HTTPException, Request, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -222,7 +222,6 @@ def get_privacy_request_or_error(
 )
 def create_privacy_request(
     *,
-    request: Request,
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
@@ -248,7 +247,6 @@ def create_privacy_request(
 )
 def create_privacy_request_authenticated(
     *,
-    request: Request,
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
@@ -791,7 +789,6 @@ def _shared_privacy_request_search(
 )
 def get_request_status(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     request_id: Optional[str] = None,
@@ -875,7 +872,6 @@ def get_request_status(
 )
 def privacy_request_search(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     privacy_request_filter: Optional[PrivacyRequestFilter] = Body(None),
@@ -929,7 +925,6 @@ def privacy_request_search(
 def get_request_status_logs(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
 ) -> AbstractPage[ExecutionLog]:
@@ -966,9 +961,7 @@ def get_request_status_logs(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_privacy_request_notification_info(
-    *,
-    request: Request,
-    db: Session = Depends(deps.get_db),
+    *, db: Session = Depends(deps.get_db)
 ) -> PrivacyRequestNotificationInfo:
     """Retrieve privacy request notification email addresses and number of failures to trigger notifications."""
     info = PrivacyRequestNotifications.all(db)
@@ -1000,10 +993,7 @@ def get_privacy_request_notification_info(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def create_or_update_privacy_request_notifications(
-    *,
-    request: Request,
-    db: Session = Depends(deps.get_db),
-    request_body: PrivacyRequestNotificationInfo,
+    *, db: Session = Depends(deps.get_db), request_body: PrivacyRequestNotificationInfo
 ) -> PrivacyRequestNotificationInfo:
     """Create or update list of email addresses and number of failures for privacy request notifications."""
     # If email_addresses is empty it means notifications were turned off and the email
@@ -1063,7 +1053,6 @@ def create_or_update_privacy_request_notifications(
 )
 def get_request_preview_queries(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     dataset_keys: Optional[List[str]] = Body(None),
 ) -> List[DryRunDatasetResponse]:
@@ -1146,7 +1135,6 @@ def get_request_preview_queries(
 def resume_privacy_request(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     webhook: PolicyPreWebhook = Security(
         verify_callback_oauth_policy_pre_webhook,
@@ -1217,7 +1205,6 @@ def validate_manual_input(
 def bulk_restart_privacy_request_from_failure(
     privacy_request_ids: List[str],
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
     """Bulk restart a of privacy request from failure."""
@@ -1282,7 +1269,6 @@ def bulk_restart_privacy_request_from_failure(
 def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
@@ -1333,7 +1319,6 @@ def restart_privacy_request_from_failure(
 def verify_identification_code(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     messaging_service: MessagingService = Depends(get_messaging_service),
@@ -1382,7 +1367,6 @@ def verify_identification_code(
 )
 def approve_privacy_request(
     *,
-    request: Request,
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1409,7 +1393,6 @@ def approve_privacy_request(
 )
 def deny_privacy_request(
     *,
-    request: Request,
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1453,7 +1436,6 @@ def _validate_privacy_request_pending_or_error(
 def mark_privacy_request_pre_approve_eligible(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
@@ -1549,7 +1531,6 @@ def mark_privacy_request_pre_approve_eligible(
 def mark_privacy_request_pre_approve_not_eligible(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     webhook: PreApprovalWebhook = Security(
         verify_callback_oauth_pre_approval_webhook, scopes=[PRIVACY_REQUEST_REVIEW]
@@ -1629,7 +1610,6 @@ def _handle_manual_webhook_input(
 )
 def upload_manual_webhook_access_data(
     *,
-    request: Request,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
@@ -1662,7 +1642,6 @@ def upload_manual_webhook_access_data(
 )
 def upload_manual_webhook_erasure_data(
     *,
-    request: Request,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
@@ -1693,7 +1672,6 @@ def upload_manual_webhook_erasure_data(
 )
 def privacy_request_data_transfer(
     *,
-    request: Request,
     privacy_request_id: str,
     rule_key: str,
     db: Session = Depends(deps.get_db),
@@ -1769,7 +1747,6 @@ def privacy_request_data_transfer(
 )
 def view_uploaded_manual_webhook_data(
     *,
-    request: Request,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
@@ -1833,7 +1810,6 @@ def view_uploaded_manual_webhook_data(
 )
 def view_uploaded_erasure_manual_webhook_data(
     *,
-    request: Request,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
@@ -1900,7 +1876,6 @@ def view_uploaded_erasure_manual_webhook_data(
 def resume_privacy_request_from_requires_input(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> PrivacyRequestResponse:
     """Resume a privacy request from 'requires_input' status."""
@@ -1967,7 +1942,6 @@ def resume_privacy_request_from_requires_input(
 def finalize_privacy_request(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
@@ -2012,7 +1986,6 @@ def finalize_privacy_request(
 def get_individual_privacy_request_tasks(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> List[RequestTask]:
     """Returns individual Privacy Request Tasks created by DSR 3.0 scheduler
@@ -2041,7 +2014,6 @@ def get_individual_privacy_request_tasks(
 def requeue_privacy_request(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> PrivacyRequestResponse:
     """
@@ -2071,7 +2043,6 @@ def requeue_privacy_request(
 )
 def request_task_async_callback(
     *,
-    request: Request,
     data: RequestTaskCallbackRequest,
     request_task: RequestTask = Security(
         verify_request_task_callback, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME]
@@ -2140,7 +2111,6 @@ def request_task_async_callback(
 )
 def bulk_soft_delete_privacy_requests(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
@@ -2199,7 +2169,6 @@ def bulk_soft_delete_privacy_requests(
 def soft_delete_privacy_request(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
@@ -2234,7 +2203,6 @@ def soft_delete_privacy_request(
 def get_access_results_urls(
     privacy_request_id: str,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> PrivacyRequestAccessResults:
     """
@@ -2274,7 +2242,6 @@ def get_access_results_urls(
 )
 def get_test_privacy_request_results(
     privacy_request_id: str,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> Dict[str, Any]:
     """Get filtered results for a test privacy request and update its status if complete."""
@@ -2335,7 +2302,6 @@ def get_test_privacy_request_results(
 def resubmit_privacy_request(
     privacy_request_id: str,
     *,
-    request: Request,
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
@@ -2435,7 +2401,6 @@ def filter_access_results(
 )
 def get_test_privacy_request_logs(
     privacy_request_id: str,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> List[Dict[str, Any]]:
     """Get logs for a test privacy request."""
@@ -2470,7 +2435,6 @@ def get_test_privacy_request_logs(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def send_batch_email_integrations(
-    request: Request,
     background_tasks: BackgroundTasks,
 ) -> ResponseWithMessage:
     """Send batch email integrations for a privacy request."""

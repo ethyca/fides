@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from typing import Annotated, Any, Dict, List, Optional
 
-from fastapi import Depends, Request
+from fastapi import Depends
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -64,7 +66,6 @@ router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 )
 def get_connections(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     search: Optional[str] = None,
@@ -165,10 +166,7 @@ def get_connections(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_connection_detail(
-    connection_key: FidesKey,
-    *,
-    request: Request,
-    db: Session = Depends(deps.get_db),
+    connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
@@ -197,7 +195,6 @@ def get_connection_detail(
 )
 def patch_connections(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
@@ -221,10 +218,7 @@ def patch_connections(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def delete_connection(
-    connection_key: FidesKey,
-    *,
-    request: Request,
-    db: Session = Depends(deps.get_db),
+    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     delete_connection_config(db, connection_key)
 
@@ -263,7 +257,6 @@ def validate_and_update_secrets(
 def put_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
@@ -293,7 +286,6 @@ def put_connection_config_secrets(
 def patch_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
@@ -335,7 +327,6 @@ def patch_connection_config_secrets(
 def test_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> TestStatusMessage:
     """

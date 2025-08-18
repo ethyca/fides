@@ -1,6 +1,6 @@
 from typing import List, Sequence
 
-from fastapi import Depends, Request, Security
+from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
@@ -73,7 +73,6 @@ def get_access_manual_webhook_or_404(
 def create_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     request_body: AccessManualWebhooks,
 ) -> AccessManualWebhook:
@@ -123,7 +122,6 @@ def create_access_manual_webhook(
 def patch_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     request_body: AccessManualWebhooks,
 ) -> AccessManualWebhook:
@@ -157,7 +155,6 @@ def patch_access_manual_webhook(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_access_manual_webhook(
-    request: Request,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> AccessManualWebhook:
     """
@@ -184,7 +181,6 @@ def get_access_manual_webhook(
 def delete_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> None:
     """
@@ -211,7 +207,6 @@ def delete_access_manual_webhook(
     limit_value=CONFIG.security.request_rate_limit, scope=RateLimitBucket.DEFAULT
 )
 def get_access_manual_webhooks(
-    request: Request,
     db: Session = Depends(deps.get_db),
 ) -> List[AccessManualWebhook]:
     """

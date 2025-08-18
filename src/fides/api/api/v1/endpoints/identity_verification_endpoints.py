@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import Depends, Request
+from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from fides.api.api import deps
@@ -24,7 +24,6 @@ router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 )
 def get_id_verification_config(
     *,
-    request: Request,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
 ) -> IdentityVerificationConfigResponse:
