@@ -1,5 +1,3 @@
-from typing import Optional
-
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -36,7 +34,6 @@ def requeue_polling_request(
 
     connection_config = get_connection_config_from_task(db, async_task)
 
-
     with TaskResources(
         privacy_request,
         privacy_request.policy,
@@ -58,7 +55,7 @@ def requeue_polling_request(
 
 def get_connection_config_from_task(
     db: Session, request_task: RequestTask
-) -> Optional[ConnectionConfig]:
+) -> ConnectionConfig:
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(DatasetConfig.fides_key == request_task.dataset_name),
@@ -67,7 +64,9 @@ def get_connection_config_from_task(
         raise PrivacyRequestError(
             f"DatasetConfig with fides_key {request_task.dataset_name} not found."
         )
-    connection_config = ConnectionConfig.get(db=db, object_id=dataset_config.connection_config_id)
+    connection_config = ConnectionConfig.get(
+        db=db, object_id=dataset_config.connection_config_id
+    )
     if not connection_config:
         raise PrivacyRequestError(
             f"ConnectionConfig with id {dataset_config.connection_config_id} not found."
