@@ -14,7 +14,7 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
 )
 from fides.api.models.taxonomy import TaxonomyUsage
 
-from .handlers import LegacyTaxonomyHandler
+from .handlers import LegacyTaxonomyHandler, TaxonomyHandler
 from .utils import (
     activate_taxonomy_parents,
     check_for_taxonomy_reactivation,
@@ -230,7 +230,7 @@ class TaxonomyService:
 
         return self.create_element(taxonomy_type, element_data)  # type: ignore[call-overload]
 
-    def _get_handler(self, taxonomy_type: str) -> LegacyTaxonomyHandler:
+    def _get_handler(self, taxonomy_type: str) -> TaxonomyHandler:
         """Get the handler for taxonomy operations."""
         return LegacyTaxonomyHandler(self.db, taxonomy_type)
 
