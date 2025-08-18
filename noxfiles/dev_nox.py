@@ -108,7 +108,15 @@ def dev(session: Session) -> None:
 
     if use_nginx:
         # Run two Fides webservers with nginx load balancer proxy
-        session.run("docker", "compose", "up", "fides-1", "fides-2", "fides-proxy", external=True)
+        session.run(
+            "docker",
+            "compose",
+            "up",
+            "fides-1",
+            "fides-2",
+            "fides-proxy",
+            external=True,
+        )
     elif not datastores:
         if open_shell:
             session.run(*START_APP, external=True)

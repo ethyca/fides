@@ -75,9 +75,9 @@ is_rate_limit_enabled = (
 )
 fides_limiter = Limiter(
     storage_uri=CONFIG.redis.connection_url_unencoded,
-    default_limits=[
+    application_limits=[
         CONFIG.security.request_rate_limit
-    ],  # Applied to ALL endpoints automatically
+    ],  # Creates ONE shared bucket for all endpoints
     headers_enabled=True,
     key_prefix=CONFIG.security.rate_limit_prefix,
     key_func=get_client_ip_from_header,
