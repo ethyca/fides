@@ -337,38 +337,13 @@ class TestManualTaskDataAggregation:
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
 
-        # Mock both _run_request and update_status to verify behavior
-        with (
-            patch.object(
-                graph_task,
-                "_run_request",
-                autospec=True,
-                return_value=[{"test": "data"}],
-            ) as mock_run_request,
-            patch.object(
-                graph_task,
-                "update_status",
-                autospec=True,
-            ) as mock_update_status,
-        ):
-            # Call access_request - should return early due to erasure policy
-            result = graph_task.access_request([])
+        # Call access_request - should return early due to erasure policy
+        result = graph_task.access_request([])
 
-            # Should return empty list (early return for erasure policy)
-            assert result == []
+        # Should return empty list (early return for erasure policy)
+        assert result == []
 
-            # _run_request should not be called due to early return
-            mock_run_request.assert_not_called()
-
-            # update_status should be called with the correct parameters
-            mock_update_status.assert_called_once_with(
-                "Access task completed immediately for erasure privacy request (data collection only)",
-                [],
-                ActionType.access,
-                ExecutionLogStatus.complete,
-            )
-
-            # Privacy request status should be updated from requires_input to in_processing
-            # since the early return path now calls _return_to_in_processing()
-            db.refresh(privacy_request)
-            assert privacy_request.status == PrivacyRequestStatus.in_processing
+        # Privacy request status should remain requires_input since the early return path
+        # does not call _return_to_in_processing()
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input

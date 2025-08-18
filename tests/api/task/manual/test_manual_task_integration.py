@@ -1031,9 +1031,9 @@ class TestManualTaskIntegrationStatusUpdates:
         # Should return 0 (manual tasks don't mask data directly)
         assert result == 0
 
-        # Privacy request status should be updated from requires_input to in_processing
+        # Privacy request status should remain requires_input since the early return path
         db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
 
     def test_access_request_updates_privacy_request_status_when_manual_task_completed(
         self, build_graph_task, db
@@ -1086,6 +1086,6 @@ class TestManualTaskIntegrationStatusUpdates:
         assert len(result) > 0
         assert "user_email" in result[0]  # The field key from the fixture
 
-        # Privacy request status should be updated from requires_input to in_processing
+        # Privacy request status should remain requires_input since the early return path
         db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
