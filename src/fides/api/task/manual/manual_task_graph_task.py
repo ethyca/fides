@@ -63,6 +63,19 @@ class ManualTaskGraphTask(GraphTask):
         Calls _run_request with ACCESS configs.
         Returns data if submitted, raise AwaitingAsyncTaskCallback if not
         """
+
+        # If this is an access task for an erasure request, mark as complete
+        # (access tasks during erasure are for data collection we should not require user input)
+        if self.resources.request.policy.get_rules_for_action(ActionType.erasure):
+            # We're in an erasure request but still in access phase - complete access task immediately
+            self.update_status(
+                "Access task completed immediately for erasure request (data collection only)",
+                [],
+                ActionType.access,
+                ExecutionLogStatus.complete,
+            )
+            return []
+
         result = self._run_request(
             ManualTaskConfigurationType.access_privacy_request,
             ActionType.access,

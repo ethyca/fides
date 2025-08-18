@@ -4,12 +4,14 @@ import pytest
 from pytest import param
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.models.execution_log import ExecutionLogStatus
 from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
 )
+from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
@@ -1480,3 +1482,49 @@ class TestManualTaskGraphTaskHelperMethods:
 
             # Verify log_end was never called
             mock_log_end.assert_not_called()
+
+    def test_access_request_early_return_for_erasure_policy(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that access_request returns early and completes immediately for erasure policy"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Mock both _run_request and update_status to verify behavior
+        with (
+            patch.object(
+                graph_task,
+                "_run_request",
+                autospec=True,
+                return_value=[{"test": "data"}],
+            ) as mock_run_request,
+            patch.object(
+                graph_task,
+                "update_status",
+                autospec=True,
+            ) as mock_update_status,
+        ):
+            # Call access_request - should return early due to erasure policy
+            result = graph_task.access_request([])
+
+            # Should return empty list (early return for erasure policy)
+            assert result == []
+
+            # _run_request should not be called due to early return
+            mock_run_request.assert_not_called()
+
+            # update_status should be called with the correct parameters
+            mock_update_status.assert_called_once_with(
+                "Access task completed immediately for erasure request (data collection only)",
+                [],
+                ActionType.access,
+                ExecutionLogStatus.complete,
+            )
+
+            # Privacy request status should remain unchanged (early return path)
+            db.refresh(privacy_request)
+            assert privacy_request.status == PrivacyRequestStatus.requires_input
