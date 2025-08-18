@@ -63,6 +63,19 @@ class ManualTaskGraphTask(GraphTask):
         Calls _run_request with ACCESS configs.
         Returns data if submitted, raise AwaitingAsyncTaskCallback if not
         """
+
+        # If this is an access task for an erasure request, mark as complete
+        # (access tasks during erasure are for data collection we should not require user input)
+        if self.resources.request.policy.get_rules_for_action(ActionType.erasure):
+            # We're in an erasure request but still in access phase - complete access task immediately
+            self.update_status(
+                "Access task completed immediately for erasure request (data collection only)",
+                [],
+                ActionType.access,
+                ExecutionLogStatus.complete,
+            )
+            return []
+
         result = self._run_request(
             ManualTaskConfigurationType.access_privacy_request,
             ActionType.access,
@@ -71,6 +84,11 @@ class ManualTaskGraphTask(GraphTask):
         if result is None:
             # Conditional skip or not applicable already logged upstream; do not mark complete here
             return []
+
+        # Update privacy request status from requires_input to in_processing if manual task was completed
+        if self.resources.request.status == PrivacyRequestStatus.requires_input:
+            self.resources.request.status = PrivacyRequestStatus.in_processing
+            self.resources.request.save(self.resources.session)
 
         # We are picking up after awaiting input and have provided data – mark complete with record count
         self.log_end(ActionType.access, record_count=len(result))
@@ -109,6 +127,11 @@ class ManualTaskGraphTask(GraphTask):
             # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
             self.request_task.rows_masked = 0  # type: ignore[assignment]
 
+        # Update privacy request status from requires_input to in_processing if manual task was completed
+        if self.resources.request.status == PrivacyRequestStatus.requires_input:
+            self.resources.request.status = PrivacyRequestStatus.in_processing
+            self.resources.request.save(self.resources.session)
+
         # Picking up after awaiting input, mark erasure node complete with rows masked count (always 0)
         self.log_end(ActionType.erasure, record_count=0)
         return 0
@@ -144,24 +167,6 @@ class ManualTaskGraphTask(GraphTask):
         if not self.resources.request.policy.get_rules_for_action(
             action_type=action_type
         ):
-            return None
-
-        # If this is an access task but we're actually in erasure mode, mark as complete
-        # (access tasks during erasure are for data collection we should not require user input)
-        if (
-            action_type == ActionType.access
-            and self.resources.request.policy.get_rules_for_action(
-                ActionType.erasure
-            )  # This is an erasure request
-            and not self._is_in_erasure_phase()  # We're still in access phase
-        ):
-            # We're in an erasure request but still in access phase - complete access task immediately
-            self.update_status(
-                "Access task completed immediately for erasure request (data collection only)",
-                [],
-                action_type,
-                ExecutionLogStatus.complete,
-            )
             return None
 
         # Extract conditional dependency data from inputs
@@ -447,44 +452,3 @@ class ManualTaskGraphTask(GraphTask):
             for instance in instances_to_remove:
                 instance.delete(self.resources.session)
                 self.resources.session.commit()
-
-    def _is_in_erasure_phase(self) -> bool:
-        """
-        Determine if the privacy request is currently in the erasure phase.
-
-        This checks the execution checkpoint details to see if we've progressed
-        beyond the access phase into erasure or later phases.
-        """
-
-        # Check if we have checkpoint details indicating we're in erasure or later
-        checkpoint_details = self.resources.request.get_failed_checkpoint_details()
-        if checkpoint_details and checkpoint_details.step:
-            # If we have a checkpoint at erasure or later, we're in erasure mode
-            erasure_phase_steps = [
-                CurrentStep.erasure,
-                CurrentStep.finalize_erasure,
-                CurrentStep.consent,
-                CurrentStep.finalize_consent,
-                CurrentStep.email_post_send,
-                CurrentStep.post_webhooks,
-                CurrentStep.finalization,
-            ]
-            return checkpoint_details.step in erasure_phase_steps
-
-        # Fallback: check if access phase is complete by looking at access terminator task
-        # This handles cases where checkpoint details might not be available
-        try:
-            access_terminator = self.resources.request.get_terminate_task_by_action(
-                ActionType.access
-            )
-            if (
-                access_terminator
-                and access_terminator.status == ExecutionLogStatus.complete
-            ):
-                return True
-        except Exception:
-            # If we can't determine the status, assume we're not in erasure mode
-            # This is safer than potentially skipping tasks incorrectly
-            pass
-
-        return False

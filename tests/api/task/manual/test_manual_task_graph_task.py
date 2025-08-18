@@ -9,6 +9,8 @@ from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
+    ManualTaskEntityType,
+    StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType, CurrentStep
@@ -1161,85 +1163,6 @@ class TestManualTaskGraphTaskHelperMethods:
         # Should be completed immediately return None
         assert result is None
 
-    def test_is_in_erasure_phase_method(
-        self,
-        db,
-        manual_task_setup,
-    ):
-        """Test the _is_in_erasure_phase method logic"""
-
-        setup = manual_task_setup
-        graph_task = setup["graph_task"]
-        privacy_request = setup["privacy_request"]
-        connection_config = setup["connection_config"]
-
-        # Initially should not be in erasure phase
-        assert not graph_task._is_in_erasure_phase()
-
-        # Test with different checkpoint steps
-
-        # Access phase steps should return False
-        access_phase_steps = [
-            CurrentStep.pre_webhooks,
-            CurrentStep.access,
-            CurrentStep.upload_access,
-        ]
-
-        for step in access_phase_steps:
-            privacy_request.cache_failed_checkpoint_details(step)
-            assert (
-                not graph_task._is_in_erasure_phase()
-            ), f"Step {step} should not be erasure phase"
-
-        # Erasure phase steps should return True
-        erasure_phase_steps = [
-            CurrentStep.erasure,
-            CurrentStep.finalize_erasure,
-            CurrentStep.consent,
-            CurrentStep.finalize_consent,
-            CurrentStep.email_post_send,
-            CurrentStep.post_webhooks,
-            CurrentStep.finalization,
-        ]
-
-        for step in erasure_phase_steps:
-            privacy_request.cache_failed_checkpoint_details(step)
-            assert (
-                graph_task._is_in_erasure_phase()
-            ), f"Step {step} should be erasure phase"
-
-        # Test fallback logic when no checkpoint details exist
-        # Instead of trying to clear cache, create a fresh privacy request with no checkpoint details
-        fresh_privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "requested_at": datetime.utcnow(),
-                "policy_id": privacy_request.policy_id,
-                "status": PrivacyRequestStatus.pending,
-            },
-        )
-
-        # Create fresh resources and graph task for the fresh privacy request
-        fresh_request_task = _build_request_task(
-            db, fresh_privacy_request, connection_config, ActionType.access
-        )
-        fresh_resources = _build_task_resources(
-            db,
-            fresh_privacy_request,
-            fresh_privacy_request.policy,
-            connection_config,
-            fresh_request_task,
-        )
-        fresh_graph_task = ManualTaskGraphTask(fresh_resources)
-
-        # Should fall back to checking access terminator task
-        # Since this is a fresh privacy request with no checkpoint details, this should return False
-        result = fresh_graph_task._is_in_erasure_phase()
-        assert not result
-
-        # Clean up the fresh privacy request
-        fresh_privacy_request.delete(db)
-
     def test_run_request_access_task_not_skipped_during_access_mode(
         self,
         db,
@@ -1705,3 +1628,235 @@ class TestManualTaskGraphTaskHelperMethods:
 
             # Verify log_end was never called
             mock_log_end.assert_not_called()
+
+    def test_erasure_request_updates_privacy_request_status_when_manual_task_completed(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that erasure_request properly updates privacy request status when manual task is completed"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status to simulate the scenario
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Create a manual task instance for this privacy request
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,  # Use the first config
+                "entity_id": privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Create a submission to complete the manual task
+        field = manual_task.configs[0].field_definitions[0]  # Use the first field
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,
+                "field_id": field.id,
+                "instance_id": instance.id,
+                "submitted_by": None,
+                "data": {
+                    "field_type": ManualTaskFieldType.text.value,
+                    "value": "test_value",
+                },
+            },
+        )
+
+        # Mark the instance as completed
+        instance.status = StatusType.completed.value
+        instance.save(db)
+
+        # Call erasure_request - should update status and return 0
+        result = graph_task.erasure_request([])
+
+        # Should return 0 (manual tasks don't mask data directly)
+        assert result == 0
+
+        # Privacy request status should be updated from requires_input to in_processing
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+    def test_access_request_updates_privacy_request_status_when_manual_task_completed(
+        self, build_graph_task, db
+    ):
+        """Test that access_request properly updates privacy request status when manual task is completed"""
+        manual_task, graph_task = build_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status to simulate the scenario
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Create a manual task instance for this privacy request
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,  # Use the first config
+                "entity_id": privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Create a submission to complete the manual task
+        field = manual_task.configs[0].field_definitions[0]  # Use the first field
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,
+                "field_id": field.id,
+                "instance_id": instance.id,
+                "submitted_by": None,
+                "data": {
+                    "field_type": ManualTaskFieldType.text.value,
+                    "value": "test_value",
+                },
+            },
+        )
+
+        # Mark the instance as completed
+        instance.status = StatusType.completed.value
+        instance.save(db)
+
+        # Call access_request - should update status and return data
+        result = graph_task.access_request([])
+
+        # Should return the data from the manual task
+        assert len(result) > 0
+        assert "user_email" in result[0]  # The field key from the fixture
+
+        # Privacy request status should be updated from requires_input to in_processing
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+    def test_erasure_request_does_not_update_status_when_manual_task_not_completed(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that erasure_request does not update privacy request status when manual task is not completed"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Create a manual task instance but DON'T complete it
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,
+                "entity_id": privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Don't create any submissions - leave the task incomplete
+
+        # Call erasure_request - should raise AwaitingAsyncTaskCallback
+        # The @retry decorator will catch this and return None
+        result = graph_task.erasure_request([])
+
+        # Should return None (due to @retry decorator catching AwaitingAsyncTaskCallback)
+        assert result is None
+
+        # Privacy request status should remain unchanged
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+    def test_access_request_does_not_update_status_when_manual_task_not_completed(
+        self, build_graph_task, db
+    ):
+        """Test that access_request does not update privacy request status when manual task is not completed"""
+        manual_task, graph_task = build_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Create a manual task instance but DON'T complete it
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,
+                "entity_id": privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Don't create any submissions - leave the task incomplete
+
+        # Call access_request - should raise AwaitingAsyncTaskCallback
+        # The @retry decorator will catch this and return None
+        result = graph_task.access_request([])
+
+        # Should return None (due to @retry decorator catching AwaitingAsyncTaskCallback)
+        assert result is None
+
+        # Privacy request status should remain unchanged
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+    def test_access_request_skips_status_update_for_erasure_policy(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that access_request skips status update when policy has erasure rules (early return path)"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Call access_request - should return early due to erasure policy
+        result = graph_task.access_request([])
+
+        # Should return empty list (early return for erasure policy)
+        assert result == []
+
+        # Privacy request status should remain unchanged (early return path)
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+    def test_access_request_early_return_for_erasure_policy_does_not_call_run_request(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that access_request early return for erasure policy does not call _run_request"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Mock _run_request to verify it's not called
+        with patch.object(
+            graph_task,
+            "_run_request",
+            autospec=True,
+        ) as mock_run_request:
+            # Call access_request - should return early due to erasure policy
+            result = graph_task.access_request([])
+
+            # Should return empty list (early return for erasure policy)
+            assert result == []
+
+            # _run_request should not be called due to early return
+            mock_run_request.assert_not_called()
+
+            # Privacy request status should remain unchanged
+            db.refresh(privacy_request)
+            assert privacy_request.status == PrivacyRequestStatus.requires_input
