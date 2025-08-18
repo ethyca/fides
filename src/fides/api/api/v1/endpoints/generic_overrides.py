@@ -346,9 +346,6 @@ def clean_datasets(
     )
 
 
-# Legacy validation functions removed - functionality moved to TaxonomyService
-
-
 @data_use_router.post(
     "/data_use",
     dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_CREATE])],
