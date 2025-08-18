@@ -38,7 +38,6 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
     """Abstract base class for all custom privacy request fields"""
 
     label: str
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
     required: Optional[bool] = True
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
