@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
+    BaseCustomPrivacyRequestField,
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
@@ -60,15 +61,13 @@ class TestPrivacyCenterConfig:
         with pytest.raises(ValueError):
             IdentityInputs(loyalty_id="invalid")
 
-
-
     def test_location_select_custom_privacy_request_field(self):
         """Test basic LocationSelectCustomPrivacyRequestField creation and properties"""
         location_field = LocationSelectCustomPrivacyRequestField(
             label="User Location",
             required=True,
             ip_geolocation_hint=True,
-            default_value="US"
+            default_value="US",
         )
         assert location_field.label == "User Location"
         assert location_field.field_type == "locationselect"
@@ -90,10 +89,12 @@ class TestPrivacyCenterConfig:
         """Test that LocationSelectCustomPrivacyRequestField rejects options"""
         with pytest.raises(ValueError) as exc:
             LocationSelectCustomPrivacyRequestField(
-                label="Location",
-                options=["US", "CA", "UK"]
+                label="Location", options=["US", "CA", "UK"]
             )
-        assert "LocationSelectCustomPrivacyRequestField does not support options" in str(exc.value)
+        assert (
+            "LocationSelectCustomPrivacyRequestField does not support options"
+            in str(exc.value)
+        )
 
     def test_location_select_field_missing_label(self):
         """Test validation error when label is missing"""
@@ -108,7 +109,7 @@ class TestPrivacyCenterConfig:
             default_value="Unknown",
             hidden=True,
             query_param_key="user_region",
-            ip_geolocation_hint=True
+            ip_geolocation_hint=True,
         )
         assert location_field.label == "Your Current Location"
         assert location_field.field_type == "locationselect"

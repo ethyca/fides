@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import ConfigDict, Field, field_validator, model_validator
@@ -10,7 +11,6 @@ RequiredType = Literal["optional", "required"]
 
 class CustomIdentity(FidesSchema):
     label: str
-
 
 
 class IdentityInputs(FidesSchema):
@@ -34,9 +34,10 @@ class IdentityInputs(FidesSchema):
         super().__init__(**data)
 
 
-class CustomPrivacyRequestField(FidesSchema):
+class BaseCustomPrivacyRequestField(FidesSchema, ABC):
+    """Abstract base class for all custom privacy request fields"""
+
     label: str
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
     required: Optional[bool] = True
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
@@ -56,7 +57,14 @@ class CustomPrivacyRequestField(FidesSchema):
         return values
 
 
-class LocationSelectCustomPrivacyRequestField(CustomPrivacyRequestField):
+class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
+    """Regular custom privacy request field supporting text, select, and multiselect types"""
+
+    field_type: Optional[Literal["text", "select", "multiselect"]] = None
+    options: Optional[List[str]] = None
+
+
+class LocationSelectCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     """Location select field that doesn't support options and includes IP geolocation hint"""
 
     field_type: Literal["locationselect"] = "locationselect"
@@ -67,14 +75,27 @@ class LocationSelectCustomPrivacyRequestField(CustomPrivacyRequestField):
     def validate_location_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         # Ensure options is not provided for location select fields
         if "options" in values:
-            raise ValueError("LocationSelectCustomPrivacyRequestField does not support options")
+            raise ValueError(
+                "LocationSelectCustomPrivacyRequestField does not support options"
+            )
 
-        # Call parent validation
-        return super().validate_default_value(values)
+        # Inline parent validation logic - validate_default_value is a Pydantic model validator decorator which creates a PydanticDescriptorProxy that can't be called directly
+        if (
+            values.get("hidden")
+            and values.get("default_value") is None
+            and values.get("query_param_key") is None
+        ):
+            raise ValueError(
+                "default_value or query_param_key are required when hidden is True"
+            )
+
+        return values
 
 
 # Create a simple union type - Pydantic will use the field_type to determine which model to use
-CustomPrivacyRequestFieldUnion = Union[LocationSelectCustomPrivacyRequestField, CustomPrivacyRequestField]
+CustomPrivacyRequestFieldUnion = Union[
+    LocationSelectCustomPrivacyRequestField, CustomPrivacyRequestField
+]
 
 
 class PrivacyRequestOption(FidesSchema):
@@ -87,7 +108,9 @@ class PrivacyRequestOption(FidesSchema):
     confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     identity_inputs: Optional[IdentityInputs] = None
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
+    custom_privacy_request_fields: Optional[
+        Dict[str, CustomPrivacyRequestFieldUnion]
+    ] = None
 
 
 class ConsentConfigButton(FidesSchema):
@@ -97,7 +120,9 @@ class ConsentConfigButton(FidesSchema):
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     icon_path: str
     identity_inputs: IdentityInputs
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
+    custom_privacy_request_fields: Optional[
+        Dict[str, CustomPrivacyRequestFieldUnion]
+    ] = None
     title: str
     modal_title: Optional[str] = Field(alias="modalTitle", default=None)
 
@@ -182,7 +207,9 @@ class PartialPrivacyRequestOption(FidesSchema):
     policy_key: str
     title: str
     identity_inputs: Optional[IdentityInputs] = None
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
+    custom_privacy_request_fields: Optional[
+        Dict[str, CustomPrivacyRequestFieldUnion]
+    ] = None
 
 
 class PartialPrivacyCenterConfig(FidesSchema):
