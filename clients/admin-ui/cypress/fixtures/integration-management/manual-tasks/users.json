@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "id": "fid_498e6f1d-820e-4b2b-bc1a-8ed63dfae25e",
+      "first_name": "External 1",
+      "last_name": "User",
+      "email_address": "external1@example.com"
+    },
+    {
+      "id": "fid_6a7309c4-1d0e-4aeb-9194-f8d77a4dad2b",
+      "first_name": "Internal",
+      "last_name": "User",
+      "email_address": "internal@example.com"
+    },
+    {
+      "id": "user_jane_smith",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "email_address": "jane.smith@example.com"
+    },
+    {
+      "id": "fid_a39cf44d-99a8-4960-9895-b3ca206175a4",
+      "first_name": "External 2",
+      "last_name": "User",
+      "email_address": "external2@example.com"
+    },
+    {
+      "id": "fid_4cbb4570-d51e-49c4-a92b-772d662c8689",
+      "first_name": "New Internal Respondent",
+      "last_name": "User",
+      "email_address": "new.user@example.com"
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "size": 100
+}

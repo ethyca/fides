@@ -762,6 +762,43 @@ export const stubIntegrationManagement = (
   }).as("getSystems");
 };
 
+export const stubManualTaskConfig = () => {
+  // Mock manual task related endpoints
+  cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields*", {
+    fixture: "integration-management/manual-tasks/manual-fields.json",
+  }).as("getManualFields");
+
+  cy.intercept("POST", "/api/v1/plus/connection/*/manual-field", {
+    body: {},
+  }).as("createManualField");
+
+  cy.intercept("PUT", "/api/v1/plus/connection/*/manual-field/*", {
+    body: {},
+  }).as("updateManualField");
+
+  cy.intercept("DELETE", "/api/v1/plus/connection/*/manual-field/*", {
+    statusCode: 204,
+  }).as("deleteManualField");
+
+  cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
+    fixture: "integration-management/manual-tasks/manual-task-connection.json",
+  }).as("getConnection");
+
+  // Mock user assignment endpoints
+  cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
+    fixture: "integration-management/manual-tasks/task-config.json",
+  }).as("getManualTask");
+
+  cy.intercept("PUT", "/api/v1/plus/connection/*/manual-task/assign-users", {
+    body: {},
+  }).as("assignUsersToManualTask");
+
+  // Mock external user creation
+  cy.intercept("POST", "/api/v1/plus/external-user", {
+    body: {},
+  }).as("createExternalUser");
+};
+
 export const stubSharedMonitorConfig = () => {
   cy.intercept("GET", "/api/v1/plus/shared-monitor-config*", {
     fixture: "detection-discovery/monitors/shared_config_response.json",
