@@ -4477,4 +4477,17 @@ describe("Fides-js TCF", () => {
       });
     });
   });
+
+  describe("when GVL data is missing", () => {
+    it("shows a loading error message when GVL is missing from full experience", () => {
+      stubTCFExperience({
+        experienceFullOverride: {
+          gvl: {} as never,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.getByTestId("tcf-loading-error-message").should("exist");
+      });
+    });
+  });
 });
