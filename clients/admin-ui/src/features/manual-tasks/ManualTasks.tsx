@@ -136,22 +136,21 @@ export const ManualTasks = () => {
         value: user.id,
       })) || [];
 
-    // If it's a root user, it's not going to be in the list of users from the API
-    // so we need to add it to the list of users for it to be a valid option in the dropdown
-    const isRootUser = currentUser?.isRootUser;
-    if (isRootUser) {
-      users.push({
-        text: currentUser?.username || currentUser?.id,
-        value: currentUser.id,
-      });
+    // Check if the current user is already in the list of assigned users
+    // If not, add them to ensure they see an option selected in their filter
+    if (currentUser?.id) {
+      const isCurrentUserInList = users.some(
+        (user) => user.value === currentUser.id,
+      );
+      if (!isCurrentUserInList) {
+        users.push({
+          text: formatUser(currentUser, { fallbackToId: true }),
+          value: currentUser.id,
+        });
+      }
     }
     return users;
-  }, [
-    filterOptions?.assigned_users,
-    currentUser?.id,
-    currentUser?.username,
-    currentUser?.isRootUser,
-  ]);
+  }, [filterOptions?.assigned_users, currentUser]);
 
   const handleTableChange = (
     _pagination: TablePaginationConfig,
@@ -212,8 +211,13 @@ export const ManualTasks = () => {
       return (
         <div data-testid="empty-state-current-user" className="my-4">
           <Typography.Paragraph>
-            You have no tasks assigned. You can modify the &quot;Assigned
-            to&quot; column filter to view tasks assigned to other users.
+            You have no tasks assigned.{" "}
+            {hasAccessToAllTasks && (
+              <span>
+                You can modify the &quot;Assigned to&quot; column filter to view
+                tasks assigned to other users.
+              </span>
+            )}
           </Typography.Paragraph>
         </div>
       );
@@ -262,6 +266,9 @@ export const ManualTasks = () => {
           emptyText: getEmptyText(),
         }}
         loading={showSpinner}
+        scroll={{ scrollToFirstRowOnChange: true }}
+        tableLayout="fixed"
+        className="[&_th]:!break-normal"
       />
     </div>
   );

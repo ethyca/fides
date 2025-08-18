@@ -42,12 +42,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved privacy request detail UI in smaller screens [#6437](https://github.com/ethyca/fides/pull/6437)
 - Refactored ancestor links creation to support bulk creation for multiple staged resources in a single operation [#6426](https://github.com/ethyca/fides/pull/6426)
 - Optimized StagedResource ancestors() and descendants() methods [#6444](https://github.com/ethyca/fides/pull/6444)
+- Improved UI for manual task configuration & manual tasks table [#6454](https://github.com/ethyca/fides/pull/6454)
 - Data migration to update `.` in `MonitorConfig.key`s to `_` and update all references to these values [#6441](https://github.com/ethyca/fides/pull/6441) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 - Standardized DB engine config and allowed `pool_pre_ping` to be configurable on all engines, with default of `True` [#6434](https://github.com/ethyca/fides/pull/6434)
 
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
 - Add `nox -s dev -- workers-all` and rename `worker-other` [#6445](https://github.com/ethyca/fides/pull/6445)
+- Upgraded PostgreSQL from version 12 to 16 and Redis from version 6.2 to 8.0 in local development and test environments [#6456](https://github.com/ethyca/fides/pull/6456)
 
 ### Fixed
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
