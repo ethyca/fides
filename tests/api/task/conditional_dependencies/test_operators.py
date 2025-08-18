@@ -1,7 +1,7 @@
 import pytest
 from pytest import param
 
-from fides.api.task.conditional_dependencies.operators import operator_methods
+from fides.api.task.conditional_dependencies.operators import OPERATOR_METHODS
 from fides.api.task.conditional_dependencies.schemas import Operator
 
 
@@ -26,14 +26,14 @@ class TestCommonOperators:
         self, data_value, operator, user_input_value, expected_result
     ):
         """Test basic operators (exists, not_exists, eq, neq)"""
-        result = operator_methods[operator](data_value, user_input_value)
+        result = OPERATOR_METHODS[operator](data_value, user_input_value)
         assert result is expected_result
 
     def test_edge_case_comparisons(self):
         """Test edge case comparisons"""
-        assert operator_methods[Operator.eq]("", "") is True
-        assert operator_methods[Operator.eq](0, 0) is True
-        assert operator_methods[Operator.eq](False, False) is True
+        assert OPERATOR_METHODS[Operator.eq]("", "") is True
+        assert OPERATOR_METHODS[Operator.eq](0, 0) is True
+        assert OPERATOR_METHODS[Operator.eq](False, False) is True
 
 
 class TestNumericOperators:
@@ -68,20 +68,20 @@ class TestNumericOperators:
         self, data_value, operator, user_input_value, expected_result
     ):
         """Test comparison operators (lt, lte, gt, gte)"""
-        result = operator_methods[operator](data_value, user_input_value)
+        result = OPERATOR_METHODS[operator](data_value, user_input_value)
         assert result is expected_result
 
     def test_numeric_comparisons(self):
         """Test numeric comparisons with different types"""
         # Integer comparisons
-        assert operator_methods[Operator.lt](5, 10.0) is True
-        assert operator_methods[Operator.eq](10.0, 10) is True
-        assert operator_methods[Operator.gt](15.5, 10) is True
+        assert OPERATOR_METHODS[Operator.lt](5, 10.0) is True
+        assert OPERATOR_METHODS[Operator.eq](10.0, 10) is True
+        assert OPERATOR_METHODS[Operator.gt](15.5, 10) is True
 
         # Edge cases with None and invalid types
-        assert operator_methods[Operator.lt](None, 10) is False
-        assert operator_methods[Operator.lt]("invalid", 10) is False
-        assert operator_methods[Operator.lt](True, 10) is False
+        assert OPERATOR_METHODS[Operator.lt](None, 10) is False
+        assert OPERATOR_METHODS[Operator.lt]("invalid", 10) is False
+        assert OPERATOR_METHODS[Operator.lt](True, 10) is False
 
 
 class TestStringOperators:
@@ -225,16 +225,16 @@ class TestStringOperators:
         self, data_value, operator, user_input_value, expected_result
     ):
         """Test string operators (starts_with, ends_with, contains)"""
-        result = operator_methods[operator](data_value, user_input_value)
+        result = OPERATOR_METHODS[operator](data_value, user_input_value)
         assert result == expected_result
 
     def test_string_comparisons(self):
         """Test string comparisons"""
-        assert operator_methods[Operator.eq]("abc", "abc") is True
-        assert operator_methods[Operator.neq]("abc", "def") is True
-        assert operator_methods[Operator.starts_with]("hello world", "hello") is True
-        assert operator_methods[Operator.ends_with]("hello world", "world") is True
-        assert operator_methods[Operator.contains]("hello world", "lo wo") is True
+        assert OPERATOR_METHODS[Operator.eq]("abc", "abc") is True
+        assert OPERATOR_METHODS[Operator.neq]("abc", "def") is True
+        assert OPERATOR_METHODS[Operator.starts_with]("hello world", "hello") is True
+        assert OPERATOR_METHODS[Operator.ends_with]("hello world", "world") is True
+        assert OPERATOR_METHODS[Operator.contains]("hello world", "lo wo") is True
 
 
 class TestListOperators:
@@ -466,45 +466,45 @@ class TestListOperators:
         self, data_value, operator, user_input_value, expected_result
     ):
         """Test list operators (list_contains, not_in_list)"""
-        result = operator_methods[operator](data_value, user_input_value)
+        result = OPERATOR_METHODS[operator](data_value, user_input_value)
         assert result == expected_result
 
     def test_bidirectional_list_operators(self):
         """Test that list operators work in both directions"""
         # Test list_contains - user provides list, check if column value is in it
         assert (
-            operator_methods[Operator.list_contains]("admin", ["admin", "user"]) is True
+            OPERATOR_METHODS[Operator.list_contains]("admin", ["admin", "user"]) is True
         )
         assert (
-            operator_methods[Operator.list_contains]("guest", ["admin", "user"])
+            OPERATOR_METHODS[Operator.list_contains]("guest", ["admin", "user"])
             is False
         )
 
         # Test list_contains - column value is list, check if user value is in it
         assert (
-            operator_methods[Operator.list_contains](["admin", "user"], "admin") is True
+            OPERATOR_METHODS[Operator.list_contains](["admin", "user"], "admin") is True
         )
         assert (
-            operator_methods[Operator.list_contains](["admin", "user"], "guest")
+            OPERATOR_METHODS[Operator.list_contains](["admin", "user"], "guest")
             is False
         )
 
         # Test not_in_list - user provides list, check if column value is NOT in it
         assert (
-            operator_methods[Operator.not_in_list]("admin", ["banned", "suspended"])
+            OPERATOR_METHODS[Operator.not_in_list]("admin", ["banned", "suspended"])
             is True
         )
         assert (
-            operator_methods[Operator.not_in_list]("banned", ["banned", "suspended"])
+            OPERATOR_METHODS[Operator.not_in_list]("banned", ["banned", "suspended"])
             is False
         )
 
         # Test not_in_list - column value is list, check if user value is NOT in it
         assert (
-            operator_methods[Operator.not_in_list](["admin", "user"], "banned") is True
+            OPERATOR_METHODS[Operator.not_in_list](["admin", "user"], "banned") is True
         )
         assert (
-            operator_methods[Operator.not_in_list](["admin", "banned"], "banned")
+            OPERATOR_METHODS[Operator.not_in_list](["admin", "banned"], "banned")
             is False
         )
 
@@ -808,27 +808,27 @@ class TestAdvancedListOperators:
         self, data_value, operator, user_input_value, expected_result
     ):
         """Test advanced list operators (list_intersects, list_subset, list_superset, list_disjoint)"""
-        result = operator_methods[operator](data_value, user_input_value)
+        result = OPERATOR_METHODS[operator](data_value, user_input_value)
         assert result == expected_result
 
     def test_empty_list_edge_cases(self):
         """Test edge cases with empty lists"""
         # Empty lists should work correctly with all operators
-        assert operator_methods[Operator.list_contains]([], "anything") is False
-        assert operator_methods[Operator.not_in_list]([], "anything") is True
+        assert OPERATOR_METHODS[Operator.list_contains]([], "anything") is False
+        assert OPERATOR_METHODS[Operator.not_in_list]([], "anything") is True
 
         # Empty list subset/superset relationships
-        assert operator_methods[Operator.list_subset]([], ["anything"]) is True
-        assert operator_methods[Operator.list_superset](["anything"], []) is True
+        assert OPERATOR_METHODS[Operator.list_subset]([], ["anything"]) is True
+        assert OPERATOR_METHODS[Operator.list_superset](["anything"], []) is True
 
         # Empty lists are disjoint
-        assert operator_methods[Operator.list_disjoint]([], ["anything"]) is True
-        assert operator_methods[Operator.list_disjoint](["anything"], []) is True
-        assert operator_methods[Operator.list_disjoint]([], []) is True
+        assert OPERATOR_METHODS[Operator.list_disjoint]([], ["anything"]) is True
+        assert OPERATOR_METHODS[Operator.list_disjoint](["anything"], []) is True
+        assert OPERATOR_METHODS[Operator.list_disjoint]([], []) is True
 
         # Empty lists don't intersect
-        assert operator_methods[Operator.list_intersects]([], ["anything"]) is False
-        assert operator_methods[Operator.list_intersects](["anything"], []) is False
+        assert OPERATOR_METHODS[Operator.list_intersects]([], ["anything"]) is False
+        assert OPERATOR_METHODS[Operator.list_intersects](["anything"], []) is False
 
     def test_comprehensive_empty_list_scenarios(self):
         """Test comprehensive empty list scenarios with all operators"""
@@ -836,35 +836,35 @@ class TestAdvancedListOperators:
         empty_list = []
 
         # list_contains with empty list
-        assert operator_methods[Operator.list_contains](empty_list, None) is False
-        assert operator_methods[Operator.list_contains](empty_list, 0) is False
-        assert operator_methods[Operator.list_contains](empty_list, False) is False
-        assert operator_methods[Operator.list_contains](empty_list, "") is False
-        assert operator_methods[Operator.list_contains](empty_list, []) is False
+        assert OPERATOR_METHODS[Operator.list_contains](empty_list, None) is False
+        assert OPERATOR_METHODS[Operator.list_contains](empty_list, 0) is False
+        assert OPERATOR_METHODS[Operator.list_contains](empty_list, False) is False
+        assert OPERATOR_METHODS[Operator.list_contains](empty_list, "") is False
+        assert OPERATOR_METHODS[Operator.list_contains](empty_list, []) is False
 
         # not_in_list with empty list
-        assert operator_methods[Operator.not_in_list](empty_list, None) is True
-        assert operator_methods[Operator.not_in_list](empty_list, 0) is True
-        assert operator_methods[Operator.not_in_list](empty_list, False) is True
-        assert operator_methods[Operator.not_in_list](empty_list, "") is True
-        assert operator_methods[Operator.not_in_list](empty_list, []) is True
+        assert OPERATOR_METHODS[Operator.not_in_list](empty_list, None) is True
+        assert OPERATOR_METHODS[Operator.not_in_list](empty_list, 0) is True
+        assert OPERATOR_METHODS[Operator.not_in_list](empty_list, False) is True
+        assert OPERATOR_METHODS[Operator.not_in_list](empty_list, "") is True
+        assert OPERATOR_METHODS[Operator.not_in_list](empty_list, []) is True
 
         # Test non-empty list with empty list
         non_empty_list = ["apple", "banana"]
 
         # list_contains with empty list
-        assert operator_methods[Operator.list_contains](non_empty_list, []) is False
-        assert operator_methods[Operator.list_contains](non_empty_list, []) is False
+        assert OPERATOR_METHODS[Operator.list_contains](non_empty_list, []) is False
+        assert OPERATOR_METHODS[Operator.list_contains](non_empty_list, []) is False
 
         # not_in_list with empty list
-        assert operator_methods[Operator.not_in_list](non_empty_list, []) is True
-        assert operator_methods[Operator.not_in_list](non_empty_list, []) is True
+        assert OPERATOR_METHODS[Operator.not_in_list](non_empty_list, []) is True
+        assert OPERATOR_METHODS[Operator.not_in_list](non_empty_list, []) is True
 
         # Test empty list with empty list for all advanced operators
-        assert operator_methods[Operator.list_intersects]([], []) is False
-        assert operator_methods[Operator.list_subset]([], []) is True
-        assert operator_methods[Operator.list_superset]([], []) is True
-        assert operator_methods[Operator.list_disjoint]([], []) is True
+        assert OPERATOR_METHODS[Operator.list_intersects]([], []) is False
+        assert OPERATOR_METHODS[Operator.list_subset]([], []) is True
+        assert OPERATOR_METHODS[Operator.list_superset]([], []) is True
+        assert OPERATOR_METHODS[Operator.list_disjoint]([], []) is True
 
 
 class TestBooleanOperators:
@@ -872,9 +872,9 @@ class TestBooleanOperators:
 
     def test_boolean_comparisons(self):
         """Test boolean comparisons"""
-        assert operator_methods[Operator.eq](True, True) is True
-        assert operator_methods[Operator.eq](False, False) is True
-        assert operator_methods[Operator.neq](True, False) is True
+        assert OPERATOR_METHODS[Operator.eq](True, True) is True
+        assert OPERATOR_METHODS[Operator.eq](False, False) is True
+        assert OPERATOR_METHODS[Operator.neq](True, False) is True
 
 
 class TestTypeCompatibility:
@@ -883,77 +883,77 @@ class TestTypeCompatibility:
     def test_none_with_all_operators(self):
         """Test that None values are handled correctly with all operators"""
         # Basic operators
-        assert operator_methods[Operator.exists](None, None) is False
-        assert operator_methods[Operator.not_exists](None, None) is True
+        assert OPERATOR_METHODS[Operator.exists](None, None) is False
+        assert OPERATOR_METHODS[Operator.not_exists](None, None) is True
 
         # Comparison operators
-        assert operator_methods[Operator.eq](None, "test") is False
-        assert operator_methods[Operator.neq](None, "test") is True
+        assert OPERATOR_METHODS[Operator.eq](None, "test") is False
+        assert OPERATOR_METHODS[Operator.neq](None, "test") is True
 
         # Numeric operators
-        assert operator_methods[Operator.lt](None, 10) is False
-        assert operator_methods[Operator.lte](None, 10) is False
-        assert operator_methods[Operator.gt](None, 10) is False
-        assert operator_methods[Operator.gte](None, 10) is False
+        assert OPERATOR_METHODS[Operator.lt](None, 10) is False
+        assert OPERATOR_METHODS[Operator.lte](None, 10) is False
+        assert OPERATOR_METHODS[Operator.gt](None, 10) is False
+        assert OPERATOR_METHODS[Operator.gte](None, 10) is False
 
         # String operators
-        assert operator_methods[Operator.starts_with](None, "test") is False
-        assert operator_methods[Operator.ends_with](None, "test") is False
-        assert operator_methods[Operator.contains](None, "test") is False
+        assert OPERATOR_METHODS[Operator.starts_with](None, "test") is False
+        assert OPERATOR_METHODS[Operator.ends_with](None, "test") is False
+        assert OPERATOR_METHODS[Operator.contains](None, "test") is False
 
         # List operators
-        assert operator_methods[Operator.list_contains](None, ["test"]) is False
-        assert operator_methods[Operator.not_in_list](None, ["test"]) is True
-        assert operator_methods[Operator.list_intersects](None, ["test"]) is False
-        assert operator_methods[Operator.list_subset](None, ["test"]) is False
-        assert operator_methods[Operator.list_superset](None, ["test"]) is False
-        assert operator_methods[Operator.list_disjoint](None, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_contains](None, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.not_in_list](None, ["test"]) is True
+        assert OPERATOR_METHODS[Operator.list_intersects](None, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_subset](None, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_superset](None, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_disjoint](None, ["test"]) is False
 
     def test_invalid_types_with_operators(self):
         """Test that invalid types return False for type-specific operators"""
         # String operators with non-string types
-        assert operator_methods[Operator.starts_with](123, "123") is False
-        assert operator_methods[Operator.ends_with](True, "True") is False
-        assert operator_methods[Operator.contains](["list"], "list") is False
+        assert OPERATOR_METHODS[Operator.starts_with](123, "123") is False
+        assert OPERATOR_METHODS[Operator.ends_with](True, "True") is False
+        assert OPERATOR_METHODS[Operator.contains](["list"], "list") is False
 
         # Numeric operators with non-numeric types
-        assert operator_methods[Operator.lt]("string", 10) is False
-        assert operator_methods[Operator.lte](True, 10) is False
-        assert operator_methods[Operator.gt](None, 10) is False
-        assert operator_methods[Operator.gte](["list"], 10) is False
+        assert OPERATOR_METHODS[Operator.lt]("string", 10) is False
+        assert OPERATOR_METHODS[Operator.lte](True, 10) is False
+        assert OPERATOR_METHODS[Operator.gt](None, 10) is False
+        assert OPERATOR_METHODS[Operator.gte](["list"], 10) is False
 
         # List operators with non-list types
-        assert operator_methods[Operator.list_intersects]("string", ["test"]) is False
-        assert operator_methods[Operator.list_subset](123, ["test"]) is False
-        assert operator_methods[Operator.list_superset](True, ["test"]) is False
-        assert operator_methods[Operator.list_disjoint](None, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_intersects]("string", ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_subset](123, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_superset](True, ["test"]) is False
+        assert OPERATOR_METHODS[Operator.list_disjoint](None, ["test"]) is False
 
     def test_empty_and_falsy_values(self):
         """Test behavior with empty strings, lists, and other falsy values"""
         # Empty strings
-        assert operator_methods[Operator.starts_with]("", "anything") is False
-        assert operator_methods[Operator.ends_with]("", "anything") is False
-        assert operator_methods[Operator.contains]("", "anything") is False
+        assert OPERATOR_METHODS[Operator.starts_with]("", "anything") is False
+        assert OPERATOR_METHODS[Operator.ends_with]("", "anything") is False
+        assert OPERATOR_METHODS[Operator.contains]("", "anything") is False
 
         # Empty lists
-        assert operator_methods[Operator.list_contains]([], "anything") is False
-        assert operator_methods[Operator.not_in_list]([], "anything") is True
+        assert OPERATOR_METHODS[Operator.list_contains]([], "anything") is False
+        assert OPERATOR_METHODS[Operator.not_in_list]([], "anything") is True
 
         # Zero values
-        assert operator_methods[Operator.lt](0, 10) is True
-        assert operator_methods[Operator.gt](0, -10) is True
-        assert operator_methods[Operator.eq](0, 0) is True
+        assert OPERATOR_METHODS[Operator.lt](0, 10) is True
+        assert OPERATOR_METHODS[Operator.gt](0, -10) is True
+        assert OPERATOR_METHODS[Operator.eq](0, 0) is True
 
     def test_mixed_type_comparisons(self):
         """Test comparisons between different types"""
         # String vs number
-        assert operator_methods[Operator.eq]("123", 123) is False
-        assert operator_methods[Operator.neq]("123", 123) is True
+        assert OPERATOR_METHODS[Operator.eq]("123", 123) is False
+        assert OPERATOR_METHODS[Operator.neq]("123", 123) is True
 
         # Boolean vs number - Python treats bool as a subclass of int
-        assert operator_methods[Operator.eq](True, 1) is True
-        assert operator_methods[Operator.neq](False, 0) is False
+        assert OPERATOR_METHODS[Operator.eq](True, 1) is True
+        assert OPERATOR_METHODS[Operator.neq](False, 0) is False
 
         # List vs string
-        assert operator_methods[Operator.eq](["test"], "test") is False
-        assert operator_methods[Operator.neq](["test"], "test") is True
+        assert OPERATOR_METHODS[Operator.eq](["test"], "test") is False
+        assert OPERATOR_METHODS[Operator.neq](["test"], "test") is True
