@@ -72,6 +72,8 @@ class ManualTaskGraphTask(GraphTask):
             # Conditional skip or not applicable already logged upstream; do not mark complete here
             return []
 
+        self._return_to_in_processing()
+
         # We are picking up after awaiting input and have provided data – mark complete with record count
         self.log_end(ActionType.access, record_count=len(result))
         return result
@@ -109,6 +111,9 @@ class ManualTaskGraphTask(GraphTask):
             # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
             self.request_task.rows_masked = 0  # type: ignore[assignment]
 
+        # Update privacy request status from requires_input to in_processing if manual task was completed
+        self._return_to_in_processing()
+
         # Picking up after awaiting input, mark erasure node complete with rows masked count (always 0)
         self.log_end(ActionType.erasure, record_count=0)
         return 0
@@ -116,6 +121,12 @@ class ManualTaskGraphTask(GraphTask):
     # ------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------
+
+    def _return_to_in_processing(self) -> None:
+        """Return privacy request to in_processing status if it was previously requires_input"""
+        if self.resources.request.status == PrivacyRequestStatus.requires_input:
+            self.resources.request.status = PrivacyRequestStatus.in_processing
+            self.resources.request.save(self.resources.session)
 
     def _run_request(
         self,
