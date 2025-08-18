@@ -106,7 +106,7 @@ const CustomFieldRenderer = ({
 
   if (field.field_type === "locationselect") {
     // TODO: UI Implementation - this simply prevent Cypress test failures
-    return <></>;
+    return null;
   }
 
   return (

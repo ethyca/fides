@@ -308,7 +308,10 @@ const ConsentRequestForm = ({
               </FormControl>
             ) : null}
             {Object.entries(customPrivacyRequestFields)
-              .filter(([, field]) => !field.hidden && field.field_type !== "locationselect") // TODO: UI Implementation - this simply prevent Cypress test failures
+              .filter(
+                ([, field]) =>
+                  !field.hidden && field.field_type !== "locationselect",
+              ) // TODO: UI Implementation - this simply prevent Cypress test failures
               .map(([key, item]) => (
                 <FormControl
                   key={key}
