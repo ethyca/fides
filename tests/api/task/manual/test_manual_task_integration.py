@@ -974,3 +974,118 @@ class TestManualTaskTraversalIntegration:
 
         # Verify traversal is valid
         assert traversal is not None
+
+
+@pytest.mark.integration
+class TestManualTaskIntegrationStatusUpdates:
+    """Test that manual task status updates correctly"""
+
+    @pytest.mark.usefixtures("erasure_privacy_request")
+    def test_erasure_request_updates_privacy_request_status_when_manual_task_completed(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that erasure_request properly updates privacy request status when manual task is completed"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status to simulate the scenario
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Create a manual task instance for this privacy request
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,  # Use the first config
+                "entity_id": privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Create a submission to complete the manual task
+        field = manual_task.configs[0].field_definitions[0]  # Use the first field
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,
+                "field_id": field.id,
+                "instance_id": instance.id,
+                "submitted_by": None,
+                "data": {
+                    "field_type": ManualTaskFieldType.text.value,
+                    "value": "test_value",
+                },
+            },
+        )
+
+        # Mark the instance as completed
+        instance.status = StatusType.completed.value
+        instance.save(db)
+
+        # Call erasure_request - should update status and return 0
+        result = graph_task.erasure_request([])
+
+        # Should return 0 (manual tasks don't mask data directly)
+        assert result == 0
+
+        # Privacy request status should be updated from requires_input to in_processing
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+    def test_access_request_updates_privacy_request_status_when_manual_task_completed(
+        self, build_graph_task, db
+    ):
+        """Test that access_request properly updates privacy request status when manual task is completed"""
+        manual_task, graph_task = build_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status to simulate the scenario
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Create a manual task instance for this privacy request
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,  # Use the first config
+                "entity_id": privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Create a submission to complete the manual task
+        field = manual_task.configs[0].field_definitions[0]  # Use the first field
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task.configs[0].id,
+                "field_id": field.id,
+                "instance_id": instance.id,
+                "submitted_by": None,
+                "data": {
+                    "field_type": ManualTaskFieldType.text.value,
+                    "value": "test_value",
+                },
+            },
+        )
+
+        # Mark the instance as completed
+        instance.status = StatusType.completed.value
+        instance.save(db)
+
+        # Call access_request - should update status and return data
+        result = graph_task.access_request([])
+
+        # Should return the data from the manual task
+        assert len(result) > 0
+        assert "user_email" in result[0]  # The field key from the fixture
+
+        # Privacy request status should be updated from requires_input to in_processing
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing

@@ -15,6 +15,7 @@ from fides.api.models.manual_task import (
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import GraphTask, retry
@@ -39,6 +40,19 @@ class ManualTaskGraphTask(GraphTask):
         """
         db = self.resources.session
         collection_address = self.execution_node.address
+
+        if self.resources.request.policy.get_action_type() == ActionType.erasure:
+            # We're in an erasure privacy request's access phase - complete access task immediately
+            # since access is just for data collection to support erasure, not for user data access
+            self.update_status(
+                "Access task completed immediately for erasure privacy request (data collection only)",
+                [],
+                ActionType.access,
+                ExecutionLogStatus.complete,
+            )
+            # Update privacy request status from requires_input to in_processing if it was stuck
+            self._return_to_in_processing()
+            return []
 
         # Verify this is a manual task address
         if not ManualTaskAddress.is_manual_task_address(collection_address):
@@ -94,6 +108,8 @@ class ManualTaskGraphTask(GraphTask):
             result: list[Row] = [submitted_data] if submitted_data else []
             self.request_task.access_data = result
 
+            # Update privacy request status from requires_input to in_processing if manual task was completed
+            self._return_to_in_processing()
             # Mark request task as complete and write execution log
             self.log_end(ActionType.access)
             return result
@@ -332,6 +348,15 @@ class ManualTaskGraphTask(GraphTask):
             # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
             self.request_task.rows_masked = 0  # type: ignore[assignment]
 
+        # Update privacy request status from requires_input to in_processing if manual task was completed
+        self._return_to_in_processing()
+
         # Mark successful completion
         self.log_end(ActionType.erasure)
         return 0
+
+    def _return_to_in_processing(self) -> None:
+        """Return privacy request to in_processing status if it was previously requires_input"""
+        if self.resources.request.status == PrivacyRequestStatus.requires_input:
+            self.resources.request.status = PrivacyRequestStatus.in_processing
+            self.resources.request.save(self.resources.session)

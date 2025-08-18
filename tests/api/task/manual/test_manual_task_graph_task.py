@@ -7,6 +7,9 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 
 
 class TestManualTaskDataAggregation:
@@ -322,3 +325,50 @@ class TestManualTaskDataAggregation:
         # Should return None for attachment field with no attachments
         assert "user_email" in result
         assert result["user_email"] is None
+
+    def test_access_request_early_return_for_erasure_policy(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that access_request returns early and completes immediately for erasure policy"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Mock both _run_request and update_status to verify behavior
+        with (
+            patch.object(
+                graph_task,
+                "_run_request",
+                autospec=True,
+                return_value=[{"test": "data"}],
+            ) as mock_run_request,
+            patch.object(
+                graph_task,
+                "update_status",
+                autospec=True,
+            ) as mock_update_status,
+        ):
+            # Call access_request - should return early due to erasure policy
+            result = graph_task.access_request([])
+
+            # Should return empty list (early return for erasure policy)
+            assert result == []
+
+            # _run_request should not be called due to early return
+            mock_run_request.assert_not_called()
+
+            # update_status should be called with the correct parameters
+            mock_update_status.assert_called_once_with(
+                "Access task completed immediately for erasure privacy request (data collection only)",
+                [],
+                ActionType.access,
+                ExecutionLogStatus.complete,
+            )
+
+            # Privacy request status should be updated from requires_input to in_processing
+            # since the early return path now calls _return_to_in_processing()
+            db.refresh(privacy_request)
+            assert privacy_request.status == PrivacyRequestStatus.in_processing
