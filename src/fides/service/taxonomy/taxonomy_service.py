@@ -2,15 +2,19 @@
 Service layer for taxonomy management (data_categories, data_uses, data_subjects).
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, overload
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from fides.api.models.taxonomy import LEGACY_TAXONOMIES, TaxonomyUsage
-from fides.service.taxonomy.handlers.base import TaxonomyHandler
+from fides.api.models.sql_models import (  # type:ignore[attr-defined]
+    DataCategory,
+    DataSubject,
+    DataUse,
+)
+from fides.api.models.taxonomy import TaxonomyUsage
 
-from .handlers import LegacyTaxonomyHandler
+from .handlers import LegacyTaxonomyHandler, TaxonomyHandler
 from .utils import (
     activate_taxonomy_parents,
     check_for_taxonomy_reactivation,
@@ -28,26 +32,81 @@ class TaxonomyService:
     Provides CRUD operations for data_categories, data_uses, and data_subjects.
     """
 
+    # Most of the main methods in this service have a type-specific overload to help with type hints
+
     def __init__(self, db: Session):
         self.db = db
-        self._legacy_handler = LegacyTaxonomyHandler(db)
+
+    @overload
+    def get_elements(
+        self,
+        taxonomy_type: Literal["data_categories"],
+        active_only: bool = True,
+        parent_key: Optional[str] = None,
+    ) -> List[DataCategory]: ...
+
+    @overload
+    def get_elements(
+        self,
+        taxonomy_type: Literal["data_uses"],
+        active_only: bool = True,
+        parent_key: Optional[str] = None,
+    ) -> List[DataUse]: ...
+
+    @overload
+    def get_elements(
+        self,
+        taxonomy_type: Literal["data_subjects"],
+        active_only: bool = True,
+        parent_key: Optional[str] = None,
+    ) -> List[DataSubject]: ...
 
     def get_elements(
         self,
         taxonomy_type: str,
         active_only: bool = True,
         parent_key: Optional[str] = None,
-    ) -> List[Any]:
+    ) -> List[Union[DataCategory, DataUse, DataSubject]]:
         """Get elements for a taxonomy type."""
-        return self._get_handler(taxonomy_type).get_elements(
-            taxonomy_type, active_only, parent_key
-        )
+        return self._get_handler(taxonomy_type).get_elements(active_only, parent_key)
+
+    @overload
+    def get_element(
+        self, taxonomy_type: Literal["data_categories"], fides_key: str
+    ) -> Optional[DataCategory]: ...
+
+    @overload
+    def get_element(
+        self, taxonomy_type: Literal["data_uses"], fides_key: str
+    ) -> Optional[DataUse]: ...
+
+    @overload
+    def get_element(
+        self, taxonomy_type: Literal["data_subjects"], fides_key: str
+    ) -> Optional[DataSubject]: ...
 
     def get_element(self, taxonomy_type: str, fides_key: str) -> Optional[Any]:
         """Get a single element by fides_key."""
-        return self._get_handler(taxonomy_type).get_element(taxonomy_type, fides_key)
+        return self._get_handler(taxonomy_type).get_element(fides_key)
 
-    def create_element(self, taxonomy_type: str, element_data: Dict) -> Any:
+    @overload
+    def create_element(
+        self, taxonomy_type: Literal["data_categories"], element_data: Dict
+    ) -> DataCategory: ...
+
+    @overload
+    def create_element(
+        self, taxonomy_type: Literal["data_uses"], element_data: Dict
+    ) -> DataUse: ...
+
+    @overload
+    def create_element(
+        self, taxonomy_type: Literal["data_subjects"], element_data: Dict
+    ) -> DataSubject: ...
+
+    def create_element(
+        self, taxonomy_type: str, element_data: Dict
+    ) -> Union[DataCategory, DataUse, DataSubject]:
         """Create a new taxonomy element."""
         # Generate fides_key if not provided
         processed_data = element_data.copy()
@@ -62,9 +121,28 @@ class TaxonomyService:
 
         # Centralized validation before delegation
         self._validate_element_data(processed_data, taxonomy_type, action="create")
-        return self._get_handler(taxonomy_type).create_element(
-            taxonomy_type, processed_data
-        )
+        return self._get_handler(taxonomy_type).create_element(processed_data)
+
+    @overload
+    def update_element(
+        self,
+        taxonomy_type: Literal["data_categories"],
+        fides_key: str,
+        element_data: Dict,
+    ) -> Optional[DataCategory]: ...
+
+    @overload
+    def update_element(
+        self, taxonomy_type: Literal["data_uses"], fides_key: str, element_data: Dict
+    ) -> Optional[DataUse]: ...
+
+    @overload
+    def update_element(
+        self,
+        taxonomy_type: Literal["data_subjects"],
+        fides_key: str,
+        element_data: Dict,
+    ) -> Optional[DataSubject]: ...
 
     def update_element(
         self, taxonomy_type: str, fides_key: str, element_data: Dict
@@ -72,12 +150,7 @@ class TaxonomyService:
         """Update an existing taxonomy element."""
         # Get the existing element for validation
         handler = self._get_handler(taxonomy_type)
-        model_class = handler.get_model(taxonomy_type)
-        existing_element = (
-            self.db.query(model_class)
-            .filter(model_class.fides_key == fides_key)
-            .first()
-        )
+        existing_element = handler.get_element(fides_key)
 
         self._validate_element_data(
             element_data,
@@ -87,9 +160,7 @@ class TaxonomyService:
         )
 
         # Update the element via handler
-        updated_element = self._get_handler(taxonomy_type).update_element(
-            taxonomy_type, fides_key, element_data
-        )
+        updated_element = handler.update_element(fides_key, element_data)
 
         # Handle hierarchical activation/deactivation logic at service level
         if updated_element and "active" in element_data:
@@ -109,7 +180,7 @@ class TaxonomyService:
 
         return updated_element
 
-    def delete_element(self, taxonomy_type: str, fides_key: str) -> bool:
+    def delete_element(self, taxonomy_type: str, fides_key: str) -> None:
         """Delete a taxonomy element."""
         # First, remove any TaxonomyUsage rows that reference this element
         # as either the source or the target element. There is no DB cascade
@@ -122,7 +193,23 @@ class TaxonomyService:
         ).delete(synchronize_session=False)
 
         # Then delete the element itself via the appropriate handler
-        return self._get_handler(taxonomy_type).delete_element(taxonomy_type, fides_key)
+        self._get_handler(taxonomy_type).delete_element(fides_key)
+        self.db.commit()
+
+    @overload
+    def create_or_update_element(
+        self, taxonomy_type: Literal["data_categories"], element_data: Dict
+    ) -> DataCategory: ...
+
+    @overload
+    def create_or_update_element(
+        self, taxonomy_type: Literal["data_uses"], element_data: Dict
+    ) -> DataUse: ...
+
+    @overload
+    def create_or_update_element(
+        self, taxonomy_type: Literal["data_subjects"], element_data: Dict
+    ) -> DataSubject: ...
 
     def create_or_update_element(self, taxonomy_type: str, element_data: Dict) -> Any:
         """
@@ -141,23 +228,17 @@ class TaxonomyService:
                 self.db, taxonomy_type, reactivation_element, element_data, handler
             )
 
-        return self.create_element(taxonomy_type, element_data)
+        return self.create_element(taxonomy_type, element_data)  # type: ignore[call-overload]
 
     def _get_handler(self, taxonomy_type: str) -> TaxonomyHandler:
         """Get the handler for taxonomy operations."""
-        # Only legacy taxonomies are supported
-        if taxonomy_type not in LEGACY_TAXONOMIES:
-            raise ValueError(
-                f"Taxonomy type '{taxonomy_type}' not supported. "
-                f"Supported taxonomy types: {list(LEGACY_TAXONOMIES)}"
-            )
-        return self._legacy_handler
+        return LegacyTaxonomyHandler(self.db, taxonomy_type)
 
     def _validate_element_data(
         self,
         element_data: Dict,
         taxonomy_type: str,
-        existing_element: Optional[Union[Dict, Any]] = None,
+        existing_element: Optional[Union[DataCategory, DataUse, DataSubject]] = None,
         action: str = "create",
     ) -> None:
         """
@@ -176,5 +257,5 @@ class TaxonomyService:
         if "parent_key" in element_data and element_data["parent_key"]:
             handler = self._get_handler(taxonomy_type)
             validate_parent_key_exists(
-                self.db, taxonomy_type, element_data["parent_key"], handler
+                taxonomy_type, element_data["parent_key"], handler
             )

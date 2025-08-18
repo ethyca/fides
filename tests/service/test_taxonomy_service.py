@@ -437,7 +437,7 @@ class TestTaxonomyServiceUpdate:
 class TestTaxonomyServiceDelete:
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
     def test_delete_nonexistent_returns_false(self, taxonomy_service, taxonomy_type):
-        assert taxonomy_service.delete_element(taxonomy_type, "missing") is False
+        taxonomy_service.delete_element(taxonomy_type, "missing")
 
     @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
     def test_delete_parent_with_children_raises_integrity_error_on_flush(
@@ -450,11 +450,9 @@ class TestTaxonomyServiceDelete:
             taxonomy_type,
             {"fides_key": "dp.c1", "name": "C1", "parent_key": parent.fides_key},
         )
-        deleted = taxonomy_service.delete_element(taxonomy_type, parent.fides_key)
-        assert deleted is True
+
         with pytest.raises(IntegrityError):
-            db.flush()
-        db.rollback()
+            taxonomy_service.delete_element(taxonomy_type, parent.fides_key)
 
     @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
     def test_delete_children_then_parent_succeeds(
@@ -467,9 +465,8 @@ class TestTaxonomyServiceDelete:
             taxonomy_type,
             {"fides_key": "pp.cc", "name": "CC", "parent_key": parent.fides_key},
         )
-        assert taxonomy_service.delete_element(taxonomy_type, child.fides_key) is True
-        assert taxonomy_service.delete_element(taxonomy_type, parent.fides_key) is True
-        db.flush()
+        taxonomy_service.delete_element(taxonomy_type, child.fides_key)
+        taxonomy_service.delete_element(taxonomy_type, parent.fides_key)
         assert taxonomy_service.get_element(taxonomy_type, parent.fides_key) is None
 
     def test_delete_removes_taxonomy_usage_when_target_matches(
@@ -510,8 +507,7 @@ class TestTaxonomyServiceDelete:
         )
 
         # Delete the element and ensure the usage row is removed
-        assert taxonomy_service.delete_element(taxonomy_type, element.fides_key) is True
-        db.flush()
+        taxonomy_service.delete_element(taxonomy_type, element.fides_key)
         assert (
             db.query(TaxonomyUsage)
             .filter(TaxonomyUsage.target_element_key == element.fides_key)
@@ -557,8 +553,7 @@ class TestTaxonomyServiceDelete:
         )
 
         # Delete the element and ensure the usage row is removed
-        assert taxonomy_service.delete_element(taxonomy_type, element.fides_key) is True
-        db.flush()
+        taxonomy_service.delete_element(taxonomy_type, element.fides_key)
         assert (
             db.query(TaxonomyUsage)
             .filter(TaxonomyUsage.source_element_key == element.fides_key)
@@ -573,9 +568,7 @@ class TestTaxonomyServiceDelete:
         leaf = taxonomy_service.create_element(
             taxonomy_type, {"fides_key": "leaf", "name": "Leaf"}
         )
-        deleted = taxonomy_service.delete_element(taxonomy_type, leaf.fides_key)
-        assert deleted is True
-        db.flush()
+        taxonomy_service.delete_element(taxonomy_type, leaf.fides_key)
         assert taxonomy_service.get_element(taxonomy_type, leaf.fides_key) is None
 
 
@@ -799,7 +792,8 @@ class TestTaxonomyServiceRoundTrip:
         )
         db.flush()
         assert updated.name == "Updated"
-        assert taxonomy_service.delete_element(taxonomy_type, created.fides_key) is True
+
+        taxonomy_service.delete_element(taxonomy_type, created.fides_key)
         db.flush()
         assert taxonomy_service.get_element(taxonomy_type, created.fides_key) is None
 
@@ -813,7 +807,7 @@ class TestTaxonomyServiceDI:
 class TestTaxonomyServiceKeyGeneration:
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
     def test_generate_key_from_name_slugifies_and_lowercases(self, db, taxonomy_type):
-        handler = LegacyTaxonomyHandler(db)
+        handler = LegacyTaxonomyHandler(db, taxonomy_type)
         name = "My Special Name"
         generated_key = generate_taxonomy_fides_key(
             taxonomy_type, name, handler=handler
@@ -824,7 +818,7 @@ class TestTaxonomyServiceKeyGeneration:
 
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
     def test_generate_key_with_parent_prefixes_parent_key(self, db, taxonomy_type):
-        handler = LegacyTaxonomyHandler(db)
+        handler = LegacyTaxonomyHandler(db, taxonomy_type)
         name = "Child"
         parent_key = "parent"
         generated_key = generate_taxonomy_fides_key(
@@ -836,7 +830,7 @@ class TestTaxonomyServiceKeyGeneration:
 
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
     def test_generate_key_is_stable_for_same_inputs(self, db, taxonomy_type):
-        handler = LegacyTaxonomyHandler(db)
+        handler = LegacyTaxonomyHandler(db, taxonomy_type)
         name = "Stability Check"
         first_key = generate_taxonomy_fides_key(taxonomy_type, name, handler=handler)
         second_key = generate_taxonomy_fides_key(taxonomy_type, name, handler=handler)

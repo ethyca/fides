@@ -73,7 +73,7 @@ def validate_default_taxonomy_restrictions(
 
 
 def validate_parent_key_exists(
-    db: Session, taxonomy_type: str, parent_key: str, handler: Any
+    taxonomy_type: str, parent_key: str, handler: Any
 ) -> None:
     """
     Validate that the parent_key exists in the same taxonomy type.
@@ -82,7 +82,7 @@ def validate_parent_key_exists(
     if not parent_key:
         return
 
-    parent_element = handler.get_element(taxonomy_type, parent_key)
+    parent_element = handler.get_element(parent_key)
 
     if not parent_element:
         raise ValidationError(
@@ -101,7 +101,7 @@ def generate_taxonomy_fides_key(
     """
     # Get the actual model class name for key generation
     if handler and hasattr(handler, "get_model"):
-        model_class = handler.get_model(taxonomy_type)
+        model_class = handler.get_model()
         fides_key = get_key_from_data({"name": name}, model_class.__name__)
     else:
         # Fallback to using taxonomy_type
@@ -126,7 +126,7 @@ def check_for_taxonomy_reactivation(
         return None
 
     # Check the specific model table for disabled elements
-    model_class = handler.get_model(taxonomy_type)
+    model_class = handler.get_model()
     disabled_element = (
         db.query(model_class)
         .filter(

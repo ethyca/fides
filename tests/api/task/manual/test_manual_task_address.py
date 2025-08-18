@@ -68,3 +68,8 @@ class TestManualTaskAddress:
         assert ManualTaskAddress._is_manual_data_collection("other_collection") == False
         assert ManualTaskAddress._is_manual_data_collection("users") == False
         assert ManualTaskAddress._is_manual_data_collection("") == False
+
+    def test_is_manual_task_address_string_no_colon(self):
+        """Test detecting manual task addresses with string format that has no colon"""
+        address_without_colon = "postgres_connection"
+        assert ManualTaskAddress.is_manual_task_address(address_without_colon) == False

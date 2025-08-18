@@ -77,7 +77,7 @@ class Taxonomy(Base, FidesBase):
 
         # Create TaxonomyAllowedUsage objects for each applies_to value
         allowed_usages = [
-            TaxonomyAllowedUsage(  # type: ignore
+            TaxonomyAllowedUsage(
                 source_taxonomy_key=taxonomy.fides_key, target_type=target_type
             )
             for target_type in set(applies_to)
@@ -107,7 +107,7 @@ class Taxonomy(Base, FidesBase):
             # Create new TaxonomyAllowedUsage instances for types that don't exist
             for target_type in updated_types - set(existing_usages.keys()):
                 self._allowed_usages.append(
-                    TaxonomyAllowedUsage(  # type: ignore
+                    TaxonomyAllowedUsage(
                         source_taxonomy_key=self.fides_key, target_type=target_type
                     )
                 )
@@ -138,20 +138,14 @@ class TaxonomyAllowedUsage(Base):
         back_populates="_allowed_usages",
     )
 
-    source_taxonomy_key = Column(
+    source_taxonomy_key: Column[str] = Column(
         String,
         ForeignKey("taxonomy.fides_key", ondelete="CASCADE"),
         primary_key=True,
-        index=True,
     )
-    target_type = Column(
+    target_type: Column[str] = Column(
         String, primary_key=True
     )  # Can be "system", "dataset", OR a taxonomy key like "data_categories"
-
-    __table_args__ = (
-        # Simple two-column index for queries
-        Index("ix_allowed_usage_lookup", "source_taxonomy_key", "target_type"),
-    )
 
 
 class TaxonomyElement(Base, FidesBase):
