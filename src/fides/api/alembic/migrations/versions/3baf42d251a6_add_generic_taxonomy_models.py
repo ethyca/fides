@@ -1,7 +1,7 @@
 """add generic taxonomy models
 
 Revision ID: 3baf42d251a6
-Revises: a7065df4dcf1
+Revises: 2f3c1a2d6b10
 Create Date: 2025-08-05 21:49:39.619569
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "3baf42d251a6"
-down_revision = "a7065df4dcf1"
+down_revision = "2f3c1a2d6b10"
 branch_labels = None
 depends_on = None
 
