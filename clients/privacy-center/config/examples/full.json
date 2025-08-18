@@ -13,7 +13,12 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "optional"
+        "phone": "optional",
+        "location": {
+          "label": "Location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       }
     },
     {
@@ -24,7 +29,12 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "optional"
+        "phone": "optional",
+        "location": {
+          "label": "Location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       }
     }
   ],

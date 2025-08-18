@@ -6,9 +6,11 @@ import {
   AntTypography as Typography,
   useToast,
 } from "fidesui";
+import Link from "next/link";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { useCreateExternalUserMutation } from "./external-user.slice";
@@ -85,11 +87,12 @@ const CreateExternalUserModal = ({
 
   return (
     <Modal
-      title="Create External Respondent User"
+      title="Create external respondent user"
       open={isOpen}
       onCancel={handleCancel}
       footer={null}
       width={500}
+      data-testid="create-external-user-modal"
     >
       <div style={{ marginBottom: 16 }}>
         <Paragraph type="secondary">
@@ -100,7 +103,7 @@ const CreateExternalUserModal = ({
         <Paragraph type="secondary">
           If you need to create an internal user that can log in to the Fides
           admin interface, please use the{" "}
-          <Typography.Link>Users page</Typography.Link> instead.
+          <Link href={USER_MANAGEMENT_ROUTE}>Users page</Link> instead.
         </Paragraph>
       </div>
 
@@ -118,7 +121,10 @@ const CreateExternalUserModal = ({
             { type: "email", message: "Please enter a valid email address" },
           ]}
         >
-          <Input placeholder="user@example.com" />
+          <Input
+            placeholder="user@example.com"
+            data-testid="input-email_address"
+          />
         </Form.Item>
 
         <Form.Item
@@ -126,7 +132,7 @@ const CreateExternalUserModal = ({
           label="First Name"
           rules={[{ required: true, message: "First name is required" }]}
         >
-          <Input />
+          <Input data-testid="input-first_name" />
         </Form.Item>
 
         <Form.Item
@@ -134,15 +140,24 @@ const CreateExternalUserModal = ({
           label="Last Name"
           rules={[{ required: true, message: "Last name is required" }]}
         >
-          <Input />
+          <Input data-testid="input-last_name" />
         </Form.Item>
 
         <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <Button onClick={handleCancel} disabled={isLoading}>
+            <Button
+              onClick={handleCancel}
+              disabled={isLoading}
+              data-testid="cancel-btn"
+            >
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" loading={isLoading}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isLoading}
+              data-testid="save-btn"
+            >
               Create User
             </Button>
           </div>

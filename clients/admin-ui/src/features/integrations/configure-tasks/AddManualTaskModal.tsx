@@ -22,7 +22,7 @@ import {
 } from "~/types/api";
 
 import AddManualTaskForm from "./AddManualTaskForm";
-import { Task } from "./useTaskColumns";
+import { Task } from "./types";
 
 type Props = {
   isOpen: boolean;
@@ -102,7 +102,7 @@ const AddManualTaskModal = ({
   return (
     <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalOverlay />
-      <ModalContent minWidth="775px">
+      <ModalContent minWidth="775px" data-testid="add-manual-task-modal">
         <ModalHeader>
           {isEditing ? "Edit manual task" : "Add manual task"}
         </ModalHeader>
