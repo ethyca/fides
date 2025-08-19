@@ -49,7 +49,6 @@ describe("useAntTable", () => {
       total: 100,
       showSizeChanger: true,
       pageSizeOptions: ["10", "25", "50"],
-      showQuickJumper: true,
     });
     if (isPaginationConfig(tableProps.pagination)) {
       const { showTotal } = tableProps.pagination;

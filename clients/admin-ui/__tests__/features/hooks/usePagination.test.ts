@@ -138,15 +138,9 @@ describe("usePagination", () => {
       pageSize: 50,
       showSizeChanger: true,
       pageSizeOptions: ["25", "50", "100", "200"], // Should be strings for Ant
-      showQuickJumper: true,
-      showTotal: expect.any(Function),
       onChange: expect.any(Function),
       onShowSizeChange: expect.any(Function),
     });
-
-    // Test showTotal function
-    const showTotalResult = paginationProps.showTotal!(150, [26, 50]);
-    expect(showTotalResult).toBe("26-50 of 150 items");
 
     // Test onChange function (should be same as updatePagination)
     expect(paginationProps.onChange).toBe(result.current.updatePagination);

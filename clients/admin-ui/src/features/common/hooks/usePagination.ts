@@ -155,9 +155,8 @@ export const usePagination = (config: PaginationConfig = {}) => {
       pageSize: currentState.pageSize,
       showSizeChanger,
       pageSizeOptions: displayPageSizeOptions.map(String),
-      onChange: updatePageIndex,
-      onShowSizeChange: (_: number, pageSize: number) =>
-        updatePageSize(pageSize),
+      onChange: updatePagination,
+      onShowSizeChange: updatePagination,
     },
   };
 };
