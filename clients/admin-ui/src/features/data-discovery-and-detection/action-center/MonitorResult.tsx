@@ -7,6 +7,7 @@ import {
   AntListItemProps as ListItemProps,
   AntRow as Row,
   AntSkeleton as Skeleton,
+  AntTag as Tag,
   AntTypography as Typography,
   Icons,
 } from "fidesui";
@@ -19,6 +20,7 @@ import {
   getDomain,
   getWebsiteIconUrl,
 } from "~/features/common/utils";
+import { ConnectionType } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import { MonitorAggregatedResults } from "./types";
@@ -43,6 +45,7 @@ export const MonitorResult = ({
     last_monitored: lastMonitored,
     secrets,
     key,
+    connection_type: connectionType,
   } = monitorSummary;
 
   const property = useMemo(() => {
@@ -96,6 +99,11 @@ export const MonitorResult = ({
                     {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
                   </NextLink>
                   <DiscoveryStatusIcon consentStatus={consentStatus} />
+                  {connectionType === ConnectionType.TEST_WEBSITE && (
+                    <Tag color="nectar" style={{ fontWeight: "normal" }}>
+                      test monitor
+                    </Tag>
+                  )}
                 </Flex>
               }
               description={`${assetCountString} detected.`}
