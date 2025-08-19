@@ -11,6 +11,7 @@ from fides.api.models.manual_task import (
     ManualTaskSubmission,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
     GroupEvaluationResult,
@@ -1480,3 +1481,25 @@ class TestManualTaskGraphTaskHelperMethods:
 
             # Verify log_end was never called
             mock_log_end.assert_not_called()
+
+    def test_access_request_early_return_for_erasure_policy(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that access_request returns early and completes immediately for erasure policy"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Call access_request - should return early due to erasure policy
+        result = graph_task.access_request([])
+
+        # Should return empty list (early return for erasure policy)
+        assert result == []
+
+        # Privacy request status should remain requires_input since the early return path
+        # does not call _return_to_in_processing()
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
