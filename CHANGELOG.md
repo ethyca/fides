@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
+- Changed Fides.js banner title attributes for better SEO + a11y support [#6470](https://github.com/ethyca/fides/pull/6470)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
@@ -48,6 +49,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
 - Add `nox -s dev -- workers-all` and rename `worker-other` [#6445](https://github.com/ethyca/fides/pull/6445)
+- Upgraded PostgreSQL from version 12 to 16 and Redis from version 6.2 to 8.0 in local development and test environments [#6456](https://github.com/ethyca/fides/pull/6456)
 
 ### Fixed
 - Fixed an issue with the preview while creating a new TCF Experience in the AdminUI [#6428](https://github.com/ethyca/fides/pull/6428)
