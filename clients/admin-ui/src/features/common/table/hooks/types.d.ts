@@ -1,12 +1,7 @@
 import type { AntFilterValue as FilterValue } from "fidesui";
 
-import type {
-  PaginationConfig,
-  PaginationState,
-  SearchConfig,
-  SortingConfig,
-  SortOrder,
-} from "../../hooks/types";
+import type { PaginationConfig, PaginationState } from "../../pagination";
+import type { SearchConfig, SortingConfig, SortOrder } from "../../search";
 
 /**
  * Base interface for table state that can be synchronized with URL

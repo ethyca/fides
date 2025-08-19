@@ -1,4 +1,3 @@
-export * from "./types.d";
 export * from "./useAlert";
 export * from "./useAntPagination";
 export * from "./useAPIHelper";

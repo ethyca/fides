@@ -1,7 +1,7 @@
 import { parseAsString, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
-import type { SearchConfig, SearchQueryParams, SearchState } from "./types";
+import type { SearchConfig, SearchQueryParams, SearchState } from "../search";
 
 /**
  * NuQS parsers for search state - synced to URL

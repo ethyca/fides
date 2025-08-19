@@ -1,13 +1,13 @@
 import { parseAsNumberLiteral, useQueryStates } from "nuqs";
 import { useMemo } from "react";
 
+import type { PaginationConfig, PaginationState } from "../pagination";
 import {
   DEFAULT_PAGE_INDEX,
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SIZES,
 } from "../table/constants";
 import { parseAsPositiveInteger } from "./nuqs-parsers";
-import type { PaginationConfig, PaginationState } from "./types";
 
 /**
  * NuQS parsers for pagination state - synced to URL

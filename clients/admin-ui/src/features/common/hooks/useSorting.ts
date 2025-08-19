@@ -11,7 +11,7 @@ import type {
   SortingQueryParams,
   SortingState,
   SortOrder,
-} from "./types";
+} from "../sorting";
 
 /**
  * NuQS parsers for sorting state - synced to URL

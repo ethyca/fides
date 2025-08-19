@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import type { PaginationConfig } from "./types";
+import type { PaginationConfig } from "../pagination";
 import { usePagination } from "./usePagination";
 
 /**

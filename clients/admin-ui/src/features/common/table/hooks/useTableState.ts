@@ -2,12 +2,8 @@ import { AntFilterValue as FilterValue } from "fidesui";
 import { parseAsJson, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
-import {
-  type SortOrder,
-  usePagination,
-  useSearch,
-  useSorting,
-} from "../../hooks";
+import { usePagination, useSearch, useSorting } from "../../hooks";
+import type { SortOrder } from "../../sorting";
 import type {
   QueryStateUpdates,
   TableState,
