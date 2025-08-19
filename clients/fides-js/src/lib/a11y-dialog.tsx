@@ -76,9 +76,9 @@ export const useA11yDialog = ({
         "aria-hidden": ariaHidden,
         "aria-labelledby": titleId,
       },
-      dialog: { role: "document" } as const,
+      dialog: { role: "document" },
       closeButton: { type: "button", onClick: handleClose },
-      title: { role: "heading", "aria-level": 1, id: titleId } as const,
+      title: { role: "heading", "aria-level": 2, id: titleId }, // h2 to match MDN examples and avoid SEO conflicts
     },
   };
 };
