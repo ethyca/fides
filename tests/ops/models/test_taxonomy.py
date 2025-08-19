@@ -81,6 +81,94 @@ class TestTaxonomyModels:
         assert "data_categories" in taxonomy.applies_to
         assert len(taxonomy.applies_to) == 1
 
+    def test_save_updates_applies_to(self, db: Session):
+        """Directly editing applies_to then calling save updates allowed usages."""
+        taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
+        )
+
+        # Set applies_to directly and save
+        taxonomy.applies_to = ["data_categories"]
+        taxonomy.save(db)
+        db.refresh(taxonomy)
+        assert taxonomy.applies_to == ["data_categories"]
+
+        # Change target list and save again
+        taxonomy.applies_to = ["data_uses"]
+        taxonomy.save(db)
+        db.refresh(taxonomy)
+        assert taxonomy.applies_to == ["data_uses"]
+
+    def test_save_applies_to_is_idempotent(self, db: Session):
+        """Saving the same applies_to should not create duplicates."""
+        taxonomy = Taxonomy.create(
+            db=db,
+            data={
+                "fides_key": "sensitivity",
+                "name": "Sensitivity",
+                "applies_to": ["data_categories"],
+            },
+        )
+
+        assert taxonomy.applies_to == ["data_categories"]
+
+        # Set the same values and save; should remain a single entry
+        taxonomy.applies_to = ["data_categories", "data_categories"]
+        taxonomy.save(db)
+        db.refresh(taxonomy)
+        assert taxonomy.applies_to == ["data_categories"]
+
+    def test_save_remove_applies_to_succeeds_when_unused(self, db: Session):
+        """Removing applies_to via save works when there are no usages."""
+        taxonomy = Taxonomy.create(
+            db=db,
+            data={
+                "fides_key": "sensitivity",
+                "name": "Sensitivity",
+                "applies_to": ["data_categories"],
+            },
+        )
+
+        taxonomy.applies_to = []
+        taxonomy.save(db)
+        db.refresh(taxonomy)
+        assert taxonomy.applies_to == []
+
+    def test_save_remove_applies_to_raises_when_in_use(self, db: Session):
+        """Removing an applies_to in use via save raises due to FK restriction."""
+        source_taxonomy = Taxonomy.create(
+            db=db,
+            data={"fides_key": "sensitivity", "name": "Sensitivity"},
+        )
+        # Allow mapping to legacy taxonomy
+        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        db.flush()
+
+        source_element = TaxonomyElement.create(
+            db=db,
+            data={
+                "fides_key": "low",
+                "name": "Low",
+                "taxonomy_type": source_taxonomy.fides_key,
+            },
+        )
+
+        usage = TaxonomyUsage(
+            source_element_key=source_element.fides_key,
+            target_element_key="user.contact.email",
+            source_taxonomy=source_taxonomy.fides_key,
+            target_taxonomy="data_categories",
+        )
+        db.add(usage)
+        db.flush()
+
+        # Now attempt to remove allowed usage via save
+        source_taxonomy.applies_to = []
+        with pytest.raises(IntegrityError):
+            source_taxonomy.save(db)
+        db.rollback()
+
     def test_prevent_deleting_parent_element_with_children(self, db: Session):
         """Deleting a parent element with children raises an IntegrityError due to RESTRICT."""
         taxonomy = Taxonomy.create(
