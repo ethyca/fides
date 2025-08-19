@@ -70,7 +70,17 @@ class TraversalDetails(FidesSchema):
 
 
 class AsyncTaskType(EnumType):
-    """Enum for async task types"""
+    """
+    Enum for asynchronous RequestTask types
+
+    These tasks differ from our regular tasks in that they are not finished on the same process that they are created,
+    but rather are put into a pause state and then triggered to completion by a different process
+
+    manual: A task that is manually triggered by the user
+    polling: A task that is triggered by a polling mechanism
+    callback: A task that is triggered by a callback from an external system
+
+    """
 
     manual = "manual"
     polling = "polling"
