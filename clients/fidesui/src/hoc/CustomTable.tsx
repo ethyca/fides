@@ -26,7 +26,7 @@ export const CustomTable = <RecordType = any,>({
 
     return {
       showSizeChanger: true,
-      hideOnSinglePage: true,
+      hideOnSinglePage: pagination.pageSize === pagination.pageSizeOptions?.[0],
       // Then apply any user-provided config (allows overriding defaults)
       ...pagination,
     };
