@@ -13,7 +13,6 @@ export interface PaginationConfig {
   defaultPageSize?: number;
   pageSizeOptions?: number[];
   showSizeChanger?: boolean;
-  onPaginationChange?: (state: PaginationState) => void;
 }
 
 /**

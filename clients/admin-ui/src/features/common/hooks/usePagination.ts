@@ -1,5 +1,5 @@
 import { parseAsNumberLiteral, useQueryStates } from "nuqs";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import {
   DEFAULT_PAGE_INDEX,
@@ -49,21 +49,8 @@ const createPaginationParsers = (
  *   pageSizeOptions: [25, 50, 100, 200]
  * });
  *
- * // With state change callback
- * const pagination = usePagination({
- *   onPaginationChange: (state) => console.log('Pagination changed:', state)
- * });
- *
  * // Use with Ant Pagination component
- * <Pagination
- *   current={pagination.pageIndex}
- *   pageSize={pagination.pageSize}
- *   total={totalItems}
- *   showSizeChanger={pagination.showSizeChanger}
- *   pageSizeOptions={pagination.pageSizeOptions.map(String)}
- *   onChange={pagination.updatePagination}
- *   onShowSizeChange={pagination.updatePagination}
- * />
+ * <Pagination {...pagination.paginationProps} total={totalItems} />
  * ```
  */
 export const usePagination = (config: PaginationConfig = {}) => {
@@ -71,7 +58,6 @@ export const usePagination = (config: PaginationConfig = {}) => {
     defaultPageSize = DEFAULT_PAGE_SIZE,
     pageSizeOptions,
     showSizeChanger = true,
-    onPaginationChange,
   } = config;
 
   // Use defaults for UI/display purposes, but keep original value for parser logic
@@ -122,13 +108,6 @@ export const usePagination = (config: PaginationConfig = {}) => {
       size: defaultPageSize,
     });
   };
-
-  // Call onPaginationChange when state changes
-  useEffect(() => {
-    if (onPaginationChange) {
-      onPaginationChange(currentState);
-    }
-  }, [currentState, onPaginationChange]);
 
   return {
     // Current state

@@ -31,13 +31,11 @@ describe("usePagination", () => {
   });
 
   it("initializes with custom configuration", () => {
-    const onPaginationChange = jest.fn();
     const { result } = renderHook(() =>
       usePagination({
         defaultPageSize: 50,
         pageSizeOptions: [10, 20, 50, 100],
         showSizeChanger: false,
-        onPaginationChange,
       }),
     );
 
@@ -45,12 +43,6 @@ describe("usePagination", () => {
     expect(result.current.pageSize).toBe(50);
     expect(result.current.pageSizeOptions).toEqual([10, 20, 50, 100]);
     expect(result.current.showSizeChanger).toBe(false);
-
-    // onPaginationChange should be called with initial state
-    expect(onPaginationChange).toHaveBeenCalledWith({
-      pageIndex: 1,
-      pageSize: 50,
-    });
   });
 
   it("reads state from URL when available", () => {
@@ -103,22 +95,6 @@ describe("usePagination", () => {
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({
       page: 1,
       size: 50,
-    });
-  });
-
-  it("calls onPaginationChange on initial render", () => {
-    const onPaginationChange = jest.fn();
-    renderHook(() =>
-      usePagination({
-        defaultPageSize: 25,
-        onPaginationChange,
-      }),
-    );
-
-    // Should be called on initial render
-    expect(onPaginationChange).toHaveBeenCalledWith({
-      pageIndex: 1,
-      pageSize: 25,
     });
   });
 
