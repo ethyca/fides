@@ -66,11 +66,10 @@ export const usePagination = (config: PaginationConfig = {}) => {
   // Create parsers for pagination state
   // Note: Parsers must be stable across renders for NuQS to work properly
   const parsers = useMemo(() => {
-    const createdParsers = createPaginationParsers({
+    return createPaginationParsers({
       pageSize: defaultPageSize,
       pageSizeOptions, // Pass undefined if user didn't provide it
     });
-    return createdParsers;
   }, [defaultPageSize, pageSizeOptions]);
 
   // Use NuQS for URL state management
