@@ -91,9 +91,8 @@ class TestPrivacyCenterConfig:
             LocationCustomPrivacyRequestField(
                 label="Location", options=["US", "CA", "UK"]
             )
-        assert (
-            "LocationCustomPrivacyRequestField does not support options"
-            in str(exc.value)
+        assert "LocationCustomPrivacyRequestField does not support options" in str(
+            exc.value
         )
 
     def test_location_select_field_missing_label(self):
