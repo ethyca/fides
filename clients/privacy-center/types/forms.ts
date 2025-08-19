@@ -1,7 +1,7 @@
-export interface MultiselectFieldValue extends Array<string> { }
+export interface MultiselectFieldValue extends Array<string> {}
 
 export interface FormValues
-  extends Record<string, string | MultiselectFieldValue> { }
+  extends Record<string, string | MultiselectFieldValue> {}
 
 export interface CustomPrivacyRequestField {
   label: string;

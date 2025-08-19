@@ -104,11 +104,6 @@ const CustomFieldRenderer = ({
     );
   }
 
-  if (field.field_type === "location") {
-    // TODO: UI Implementation - this simply prevent Cypress test failures
-    return null;
-  }
-
   return (
     <>
       <Input

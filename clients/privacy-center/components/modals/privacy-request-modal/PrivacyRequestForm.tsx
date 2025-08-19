@@ -88,7 +88,7 @@ const usePrivacyRequestForm = ({
               key === "name" ||
               key === "phone" ||
               key === "email" ||
-              (typeof value === "object" && value?.label && key !== "location"),
+              (typeof value === "object" && value?.label),
           )
           .map(([key]) => [key, ""]),
       ),
@@ -270,7 +270,6 @@ const usePrivacyRequestForm = ({
               key !== "email" &&
               key !== "phone" &&
               key !== "name" &&
-              key !== "location" &&
               typeof value !== "string",
           )
           .map(([key, value]) => {
@@ -417,7 +416,6 @@ const PrivacyRequestForm = ({
                   key !== "email" &&
                   key !== "phone" &&
                   key !== "name" &&
-                  key !== "location" &&
                   typeof item !== "string",
               )
               .map(([key, item]) => (
@@ -442,10 +440,7 @@ const PrivacyRequestForm = ({
                 </FormControl>
               ))}
             {Object.entries(customPrivacyRequestFields)
-              .filter(
-                ([, field]) =>
-                  !field.hidden && field.field_type !== "location",
-              ) // TODO: UI Implementation - this simply prevent Cypress test failures
+              .filter(([, field]) => !field.hidden)
               .map(([key, item]) => (
                 <FormControl
                   key={key}
