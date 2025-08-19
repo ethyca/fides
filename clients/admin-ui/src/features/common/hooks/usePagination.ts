@@ -79,13 +79,10 @@ export const usePagination = (config: PaginationConfig = {}) => {
   });
 
   // Create current state from query state (URL is the single source of truth)
-  const currentState: PaginationState = useMemo(
-    () => ({
-      pageIndex: queryState.page ?? DEFAULT_PAGE_INDEX,
-      pageSize: queryState.size ?? defaultPageSize,
-    }),
-    [queryState, defaultPageSize],
-  );
+  const currentState: PaginationState = {
+    pageIndex: queryState.page ?? DEFAULT_PAGE_INDEX,
+    pageSize: queryState.size ?? defaultPageSize,
+  };
 
   const updatePageIndex = (pageIndex: number) => {
     setQueryState({ page: pageIndex });
