@@ -30,8 +30,9 @@ export type CustomPrivacyRequestFields = Record<
     default_value?: string | string[];
     query_param_key?: string;
     hidden?: boolean;
-    field_type?: "text" | "multiselect" | "select";
+    field_type?: "text" | "multiselect" | "select" | "locationselect" | string;
     options?: string[];
+    ip_geolocation_hint?: boolean;
   }
 >;
 

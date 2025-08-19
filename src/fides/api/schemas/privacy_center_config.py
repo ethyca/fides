@@ -12,7 +12,6 @@ class CustomIdentity(FidesSchema):
     label: str
 
 
-
 class IdentityInputs(FidesSchema):
     name: Optional[RequiredType] = None
     email: Optional[RequiredType] = None
@@ -36,11 +35,14 @@ class IdentityInputs(FidesSchema):
 
 class CustomPrivacyRequestField(FidesSchema):
     label: str
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
+    field_type: Optional[Literal["text", "select", "multiselect", "locationselect"]] = (
+        None
+    )
     required: Optional[bool] = True
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
     query_param_key: Optional[str] = None
+    ip_geolocation_hint: Optional[bool] = False
 
     @model_validator(mode="before")
     @classmethod
@@ -60,21 +62,34 @@ class LocationSelectCustomPrivacyRequestField(CustomPrivacyRequestField):
     """Location select field that doesn't support options and includes IP geolocation hint"""
 
     field_type: Literal["locationselect"] = "locationselect"
-    ip_geolocation_hint: Optional[bool] = False
 
     @model_validator(mode="before")
     @classmethod
     def validate_location_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         # Ensure options is not provided for location select fields
         if "options" in values:
-            raise ValueError("LocationSelectCustomPrivacyRequestField does not support options")
+            raise ValueError(
+                "LocationSelectCustomPrivacyRequestField does not support options"
+            )
 
-        # Call parent validation
-        return super().validate_default_value(values)
+        # Perform the same validation as parent class
+        # mypy isnt happy with just calling the parent class
+        if (
+            values.get("hidden")
+            and values.get("default_value") is None
+            and values.get("query_param_key") is None
+        ):
+            raise ValueError(
+                "default_value or query_param_key are required when hidden is True"
+            )
+
+        return values
 
 
 # Create a simple union type - Pydantic will use the field_type to determine which model to use
-CustomPrivacyRequestFieldUnion = Union[LocationSelectCustomPrivacyRequestField, CustomPrivacyRequestField]
+CustomPrivacyRequestFieldUnion = Union[
+    LocationSelectCustomPrivacyRequestField, CustomPrivacyRequestField
+]
 
 
 class PrivacyRequestOption(FidesSchema):
@@ -87,7 +102,9 @@ class PrivacyRequestOption(FidesSchema):
     confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     identity_inputs: Optional[IdentityInputs] = None
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
+    custom_privacy_request_fields: Optional[
+        Dict[str, CustomPrivacyRequestFieldUnion]
+    ] = None
 
 
 class ConsentConfigButton(FidesSchema):
@@ -97,7 +114,9 @@ class ConsentConfigButton(FidesSchema):
     cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     icon_path: str
     identity_inputs: IdentityInputs
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
+    custom_privacy_request_fields: Optional[
+        Dict[str, CustomPrivacyRequestFieldUnion]
+    ] = None
     title: str
     modal_title: Optional[str] = Field(alias="modalTitle", default=None)
 
@@ -182,7 +201,9 @@ class PartialPrivacyRequestOption(FidesSchema):
     policy_key: str
     title: str
     identity_inputs: Optional[IdentityInputs] = None
-    custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestFieldUnion]] = None
+    custom_privacy_request_fields: Optional[
+        Dict[str, CustomPrivacyRequestFieldUnion]
+    ] = None
 
 
 class PartialPrivacyCenterConfig(FidesSchema):
