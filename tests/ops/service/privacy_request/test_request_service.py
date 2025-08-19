@@ -187,6 +187,84 @@ class TestPollForExitedPrivacyRequests:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.error
 
+    def test_requires_input_privacy_request_task_with_errored_tasks(
+        self, db, privacy_request_requires_input
+    ):
+        """Privacy requests in requires_input status should be monitored for task errors
+        and marked as errored if tasks fail.
+
+        The "poll_for_exited_privacy_request_tasks" task looks for Privacy Requests in
+        "approved", "in_processing", and "requires_input" states.
+        """
+
+        # Create the necessary tasks for this privacy request (similar to request_task fixture)
+        root_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "complete",
+                "privacy_request_id": privacy_request_requires_input.id,
+                "collection_address": "__ROOT__:__ROOT__",
+                "dataset_name": "__ROOT__",
+                "collection_name": "__ROOT__",
+                "upstream_tasks": [],
+                "downstream_tasks": ["test_dataset:test_collection"],
+                "all_descendant_tasks": [
+                    "test_dataset:test_collection",
+                    "__TERMINATE__:__TERMINATE__",
+                ],
+            },
+        )
+
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "pending",
+                "privacy_request_id": privacy_request_requires_input.id,
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "upstream_tasks": ["__ROOT__:__ROOT__"],
+                "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+                "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
+            },
+        )
+
+        terminator_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "pending",
+                "privacy_request_id": privacy_request_requires_input.id,
+                "collection_address": "__TERMINATE__:__TERMINATE__",
+                "dataset_name": "__TERMINATE__",
+                "collection_name": "__TERMINATE__",
+                "upstream_tasks": ["test_dataset:test_collection"],
+                "downstream_tasks": [],
+                "all_descendant_tasks": [],
+            },
+        )
+
+        # Put all tasks in an exited state - completed, errored, or skipped
+        assert root_task.status == ExecutionLogStatus.complete
+        request_task.update_status(db, ExecutionLogStatus.error)
+        terminator_task.update_status(db, ExecutionLogStatus.error)
+
+        errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
+        assert errored_prs == {privacy_request_requires_input.id}
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.error
+
+        # Clean up created tasks
+        try:
+            root_task.delete(db)
+            request_task.delete(db)
+            terminator_task.delete(db)
+        except Exception:
+            pass
+
     def test_request_tasks_all_exited_none_errored(
         self, db, privacy_request, request_task
     ):
