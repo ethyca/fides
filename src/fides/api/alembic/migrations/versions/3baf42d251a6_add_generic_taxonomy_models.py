@@ -40,6 +40,7 @@ def upgrade():
         sa.Column("name", sa.Text(), nullable=True),
         sa.Column("description", sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint("fides_key"),
+        sa.UniqueConstraint("id", name="uq_taxonomy_id"),
     )
     op.create_index(
         op.f("ix_taxonomy_fides_key"), "taxonomy", ["fides_key"], unique=True
@@ -69,18 +70,7 @@ def upgrade():
             ["source_taxonomy_key"], ["taxonomy.fides_key"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("source_taxonomy_key", "target_type"),
-    )
-    op.create_index(
-        "ix_allowed_usage_lookup",
-        "taxonomy_allowed_usage",
-        ["source_taxonomy_key", "target_type"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_taxonomy_allowed_usage_source_taxonomy_key"),
-        "taxonomy_allowed_usage",
-        ["source_taxonomy_key"],
-        unique=False,
+        sa.UniqueConstraint("id", name="uq_taxonomy_allowed_usage_id"),
     )
 
     # Create taxonomy_element table
@@ -114,6 +104,7 @@ def upgrade():
             ["taxonomy_type"], ["taxonomy.fides_key"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("fides_key"),
+        sa.UniqueConstraint("id", name="uq_taxonomy_element_id"),
     )
     op.create_index(
         op.f("ix_taxonomy_element_fides_key"),
@@ -174,12 +165,18 @@ def upgrade():
         ),
     )
     op.create_index(
-        op.f("ix_taxonomy_usage_id"), "taxonomy_usage", ["id"], unique=False
-    )
-    op.create_index(
         op.f("ix_taxonomy_usage_source_element_key"),
         "taxonomy_usage",
         ["source_element_key"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_taxonomy_usage_id"), "taxonomy_usage", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_taxonomy_usage_source_taxonomy"),
+        "taxonomy_usage",
+        ["source_taxonomy"],
         unique=False,
     )
     op.create_index(
@@ -189,21 +186,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_taxonomy_usage_source_taxonomy"),
-        "taxonomy_usage",
-        ["source_taxonomy"],
-        unique=False,
-    )
-    op.create_index(
         op.f("ix_taxonomy_usage_target_taxonomy"),
         "taxonomy_usage",
         ["target_taxonomy"],
-        unique=False,
-    )
-    op.create_index(
-        "ix_taxonomy_usage_by_taxonomies",
-        "taxonomy_usage",
-        ["source_taxonomy", "target_taxonomy"],
         unique=False,
     )
 
@@ -222,37 +207,31 @@ def upgrade():
 
 def downgrade():
     # Drop taxonomy_usage
-    op.drop_index(op.f("ix_taxonomy_usage_id"), table_name="taxonomy_usage")
-    op.drop_index("ix_taxonomy_usage_by_taxonomies", table_name="taxonomy_usage")
     op.drop_index(
-        op.f("ix_taxonomy_usage_target_taxonomy"), table_name="taxonomy_usage"
+        op.f("ix_taxonomy_usage_source_element_key"), table_name="taxonomy_usage"
     )
     op.drop_index(
-        op.f("ix_taxonomy_usage_source_taxonomy"), table_name="taxonomy_usage"
+        op.f("ix_taxonomy_usage_target_taxonomy"), table_name="taxonomy_usage"
     )
     op.drop_index(
         op.f("ix_taxonomy_usage_target_element_key"), table_name="taxonomy_usage"
     )
     op.drop_index(
-        op.f("ix_taxonomy_usage_source_element_key"), table_name="taxonomy_usage"
+        op.f("ix_taxonomy_usage_source_taxonomy"), table_name="taxonomy_usage"
     )
+    op.drop_index(op.f("ix_taxonomy_usage_id"), table_name="taxonomy_usage")
     op.drop_table("taxonomy_usage")
 
     # Drop taxonomy_element
-    op.drop_index(op.f("ix_taxonomy_element_fides_key"), table_name="taxonomy_element")
     op.drop_index(
         op.f("ix_taxonomy_element_taxonomy_type"), table_name="taxonomy_element"
     )
     op.drop_index(op.f("ix_taxonomy_element_parent_key"), table_name="taxonomy_element")
     op.drop_index(op.f("ix_taxonomy_element_active"), table_name="taxonomy_element")
+    op.drop_index(op.f("ix_taxonomy_element_fides_key"), table_name="taxonomy_element")
     op.drop_table("taxonomy_element")
 
     # Drop taxonomy_allowed_usage
-    op.drop_index(
-        op.f("ix_taxonomy_allowed_usage_source_taxonomy_key"),
-        table_name="taxonomy_allowed_usage",
-    )
-    op.drop_index("ix_allowed_usage_lookup", table_name="taxonomy_allowed_usage")
     op.drop_table("taxonomy_allowed_usage")
 
     # Drop taxonomy
