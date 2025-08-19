@@ -114,13 +114,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
           <div id={`${container.id}-inner-container`}>
             <div className="fides-banner__col">
               <div id="fides-banner-heading">
-                <h1
+                <div
+                  {...title} // adds role, aria-level, id
                   className="fides-banner-title"
-                  {...(title as Partial<HTMLAttributes<HTMLHeadingElement>>)}
-                  id={`${container.id}-title`}
                 >
                   {bannerTitle}
-                </h1>
+                </div>
                 {showGpcBadge && <GpcBadge status={GpcStatus.APPLIED} />}
               </div>
               <div

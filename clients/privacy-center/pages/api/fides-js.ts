@@ -33,7 +33,7 @@ let cachedCustomFidesCss: string = "";
 // used to determine when to refresh the contents
 let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
-let autoRefresh: boolean = true;
+let autoRefresh: boolean = process.env.NODE_ENV === "production";
 
 const missingExperienceBehaviors: Record<
   MissingExperienceBehaviors,
