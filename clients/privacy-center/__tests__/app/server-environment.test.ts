@@ -25,7 +25,7 @@ describe("validateConfig", () => {
     },
     {
       name: "multiple executable consent options",
-      config: produce(fullJson as any, (draftConfig: any) => {
+      config: produce(fullJson, (draftConfig: any) => {
         draftConfig.consent.consentOptions[0].executable = true;
         draftConfig.consent.consentOptions[1].executable = true;
       }),
