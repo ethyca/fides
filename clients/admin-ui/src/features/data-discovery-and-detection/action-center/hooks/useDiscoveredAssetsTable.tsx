@@ -107,7 +107,8 @@ export const useDiscoveredAssetsTable = ({
     updateSearch,
     updateFilters,
     updateSorting,
-    updatePagination,
+    updatePageIndex,
+    updatePageSize,
   } = tableState;
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
@@ -629,7 +630,8 @@ export const useDiscoveredAssetsTable = ({
     updateSearch,
     updateFilters,
     updateSorting,
-    updatePagination,
+    updatePageIndex,
+    updatePageSize,
     resetState,
 
     // Ant Design table integration

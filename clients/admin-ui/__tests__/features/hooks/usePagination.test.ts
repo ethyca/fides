@@ -75,18 +75,18 @@ describe("usePagination", () => {
     const { result } = renderHook(() => usePagination());
 
     // Change page only
-    act(() => result.current.updatePagination(5));
+    act(() => result.current.updatePageIndex(5));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({ page: 5 });
 
     // Change page size (should reset to page 1)
-    act(() => result.current.updatePagination(3, 50));
+    act(() => result.current.updatePageSize(50));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({
       page: 1,
       size: 50,
     });
 
     // Change page without changing size
-    act(() => result.current.updatePagination(2));
+    act(() => result.current.updatePageIndex(2));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({ page: 2 });
   });
 
@@ -141,19 +141,14 @@ describe("usePagination", () => {
       onChange: expect.any(Function),
       onShowSizeChange: expect.any(Function),
     });
-
-    // Test onChange function (should be same as updatePagination)
-    expect(paginationProps.onChange).toBe(result.current.updatePagination);
-    expect(paginationProps.onShowSizeChange).toBe(
-      result.current.updatePagination,
-    );
   });
 
   it("handles pagination update logic correctly", () => {
     const { result } = renderHook(() => usePagination());
 
     // Change page size (should reset to page 1)
-    act(() => result.current.updatePagination(5, 50));
+    act(() => result.current.updatePageIndex(5));
+    act(() => result.current.updatePageSize(50));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({
       page: 1, // Reset to 1 when size changes
       size: 50,
@@ -164,15 +159,17 @@ describe("usePagination", () => {
     const { result: result2 } = renderHook(() => usePagination());
 
     // Update page only (no page size provided)
-    act(() => result2.current.updatePagination(3));
+    act(() => result2.current.updatePageIndex(3));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({ page: 3 }); // Only page is updated
 
     // Update with same page size (should not reset page)
-    act(() => result2.current.updatePagination(3, 50));
+    act(() => result2.current.updatePageIndex(3));
+    act(() => result2.current.updatePageSize(50));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({ page: 3, size: 50 }); // Should not reset page, but size is included
 
     // Update with different page size (should reset page)
-    act(() => result2.current.updatePagination(3, 100));
+    act(() => result2.current.updatePageIndex(3));
+    act(() => result2.current.updatePageSize(100));
     expect(nuqsTestHelpers.getSetCalls().at(-1)).toEqual({
       page: 1, // Should reset to 1
       size: 100,
@@ -205,7 +202,8 @@ describe("usePagination", () => {
     rerender();
 
     // Functions should exist and be callable
-    expect(typeof result.current.updatePagination).toBe("function");
+    expect(typeof result.current.updatePageIndex).toBe("function");
+    expect(typeof result.current.updatePageSize).toBe("function");
     expect(typeof result.current.resetPagination).toBe("function");
     expect(typeof result.current.paginationProps.onChange).toBe("function");
     expect(typeof result.current.paginationProps.onShowSizeChange).toBe(

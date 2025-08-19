@@ -126,10 +126,15 @@ export const useAntTable = <TData, TSortKey extends string = string>(
 
       // Handle pagination with tableState
       if (isPaginationChange) {
-        tableState.updatePagination(
-          pagination.current || 1,
-          pagination.pageSize,
-        );
+        if (pagination.current && pagination.current !== tableState.pageIndex) {
+          tableState.updatePageIndex(pagination.current);
+        }
+        if (
+          pagination.pageSize &&
+          pagination.pageSize !== tableState.pageSize
+        ) {
+          tableState.updatePageSize(pagination.pageSize);
+        }
       } else {
         // Only update filters when it's not a pagination change
         // The pagination reset is handled by updateFilters and updateSorting

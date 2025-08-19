@@ -56,7 +56,8 @@ describe("useTableState", () => {
     expect(typeof result.current.updateSorting).toBe("function");
     expect(typeof result.current.updateFilters).toBe("function");
     expect(typeof result.current.updateSearch).toBe("function");
-    expect(typeof result.current.updatePagination).toBe("function");
+    expect(typeof result.current.updatePageIndex).toBe("function");
+    expect(typeof result.current.updatePageSize).toBe("function");
     expect(typeof result.current.resetState).toBe("function");
 
     // Test that functions execute without errors
@@ -115,7 +116,8 @@ describe("useTableState", () => {
     expect(typeof result.current.updateSorting).toBe("function");
     expect(typeof result.current.updateFilters).toBe("function");
     expect(typeof result.current.updateSearch).toBe("function");
-    expect(typeof result.current.updatePagination).toBe("function");
+    expect(typeof result.current.updatePageIndex).toBe("function");
+    expect(typeof result.current.updatePageSize).toBe("function");
     expect(typeof result.current.resetState).toBe("function");
 
     // Test some URL updates work (detailed behavior tested in individual hook tests)

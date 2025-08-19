@@ -1,5 +1,5 @@
 import { parseAsNumberLiteral, useQueryStates } from "nuqs";
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import {
   DEFAULT_PAGE_INDEX,
@@ -7,11 +7,7 @@ import {
   DEFAULT_PAGE_SIZES,
 } from "../table/constants";
 import { parseAsPositiveInteger } from "./nuqs-parsers";
-import type {
-  PaginationConfig,
-  PaginationQueryParams,
-  PaginationState,
-} from "./types";
+import type { PaginationConfig, PaginationState } from "./types";
 
 /**
  * NuQS parsers for pagination state - synced to URL
@@ -105,22 +101,19 @@ export const usePagination = (config: PaginationConfig = {}) => {
     [queryState, defaultPageSize],
   );
 
-  // Update functions that update query state (URL is the single source of truth)
-  const updatePagination = useCallback(
-    (pageIndex: number, pageSize?: number) => {
-      const newPageIndex =
-        pageSize !== undefined && pageSize !== currentState.pageSize
-          ? DEFAULT_PAGE_INDEX // Reset to first page when changing page size
-          : pageIndex;
+  const updatePageIndex = (pageIndex: number) => {
+    setQueryState({ page: pageIndex });
+  };
 
-      const updates: PaginationQueryParams = { page: newPageIndex };
-      if (pageSize !== undefined) {
-        updates.size = pageSize;
-      }
-      setQueryState(updates);
-    },
-    [setQueryState, currentState.pageSize],
-  );
+  const updatePageSize = (pageSize: number) => {
+    setQueryState({
+      page:
+        pageSize !== currentState.pageSize
+          ? DEFAULT_PAGE_INDEX
+          : currentState.pageIndex,
+      size: pageSize,
+    });
+  };
 
   const resetPagination = () => {
     // Reset pagination URL state
@@ -142,7 +135,8 @@ export const usePagination = (config: PaginationConfig = {}) => {
     ...currentState,
 
     // Update functions
-    updatePagination,
+    updatePageIndex,
+    updatePageSize,
     resetPagination,
 
     // Configuration for components
@@ -155,8 +149,10 @@ export const usePagination = (config: PaginationConfig = {}) => {
       pageSize: currentState.pageSize,
       showSizeChanger,
       pageSizeOptions: displayPageSizeOptions.map(String),
-      onChange: updatePagination,
-      onShowSizeChange: updatePagination,
+      onChange: updatePageIndex,
+      onShowSizeChange: (_: number, pageSize: number) => {
+        updatePageSize(pageSize);
+      },
     },
   };
 };

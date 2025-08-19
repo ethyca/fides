@@ -436,7 +436,7 @@ describe("Action center Asset Results", () => {
         cy.findByPlaceholderText("Search by asset name...").clear().type("gtm");
         // Debounce buffer
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(400);
+        cy.wait(500);
         cy.findByRole("columnheader", { name: /Asset/ }).click({ force: true });
         cy.location("search").should("contain", "search=gtm");
         cy.location("search").should("contain", "sortKey=name");
@@ -452,7 +452,7 @@ describe("Action center Asset Results", () => {
 
         // Wait a moment for React state to propagate to the input component
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(100);
+        cy.wait(500);
 
         // Search input field should be cleared
         cy.findByPlaceholderText("Search by asset name...").should(

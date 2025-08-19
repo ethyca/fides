@@ -81,7 +81,8 @@ export const useTableState = <TSortKey extends string = string>(
     pageIndex,
     pageSize,
     resetPagination,
-    updatePagination,
+    updatePageIndex,
+    updatePageSize,
     pageSizeOptions,
     showSizeChanger,
   } = usePagination(paginationConfig);
@@ -179,7 +180,8 @@ export const useTableState = <TSortKey extends string = string>(
     // Pagination (delegated to pagination hook)
     pageIndex: currentState.pageIndex,
     pageSize: currentState.pageSize,
-    updatePagination,
+    updatePageIndex,
+    updatePageSize,
 
     // Sorting (delegated to sorting hook)
     sortKey: currentState.sortKey,

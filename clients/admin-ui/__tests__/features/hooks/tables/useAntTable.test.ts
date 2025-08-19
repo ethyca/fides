@@ -150,7 +150,8 @@ describe("useAntTable", () => {
       );
     });
 
-    expect(tableState.updatePagination).toHaveBeenCalledWith(2, 25);
+    expect(tableState.updatePageIndex).toHaveBeenCalledWith(2);
+    expect(tableState.updatePageSize).not.toHaveBeenCalled();
     expect(tableState.updateFilters).not.toHaveBeenCalled();
     expect(tableState.updateSorting).not.toHaveBeenCalled();
   });
@@ -469,7 +470,8 @@ describe("useAntTable", () => {
       });
 
       // Should trigger pagination update because effective pageSize changed (25 → 50)
-      expect(tableState.updatePagination).toHaveBeenCalledWith(1, 50);
+      expect(tableState.updatePageIndex).not.toHaveBeenCalled();
+      expect(tableState.updatePageSize).toHaveBeenCalledWith(50);
       expect(tableState.updateFilters).not.toHaveBeenCalled();
       expect(tableState.updateSorting).not.toHaveBeenCalled();
     });

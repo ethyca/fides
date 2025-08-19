@@ -1,31 +1,13 @@
 import { jest } from "@jest/globals";
 
+import { TableStateWithHelpers } from "~/features/common/table/hooks";
+
 /**
  * Creates a mock table state for testing table-related hooks
  */
-export function createMockTableState<TSortKey = string>(
-  overrides: Partial<{
-    pageIndex: number;
-    pageSize: number;
-    sortKey?: TSortKey;
-    sortOrder?: "ascend" | "descend";
-    columnFilters: Record<string, any>;
-    searchQuery?: string;
-    updatePagination: jest.MockedFunction<
-      (pageIndex: number, pageSize?: number) => void
-    >;
-    updateSorting: jest.MockedFunction<
-      (sortKey?: TSortKey, sortOrder?: "ascend" | "descend") => void
-    >;
-    updateFilters: jest.MockedFunction<(filters: Record<string, any>) => void>;
-    updateSearch: jest.MockedFunction<(query?: string) => void>;
-    resetState: jest.MockedFunction<() => void>;
-    paginationConfig?: {
-      pageSizeOptions: number[];
-      showSizeChanger: boolean;
-    };
-  }> = {},
-) {
+export const createMockTableState = <TSortKey extends string = string>(
+  overrides: Partial<TableStateWithHelpers<TSortKey>> = {},
+): TableStateWithHelpers<TSortKey> => {
   return {
     pageIndex: 1,
     pageSize: 25,
@@ -33,7 +15,8 @@ export function createMockTableState<TSortKey = string>(
     sortOrder: undefined,
     columnFilters: {},
     searchQuery: undefined,
-    updatePagination: jest.fn(),
+    updatePageIndex: jest.fn(),
+    updatePageSize: jest.fn(),
     updateSorting: jest.fn(),
     updateFilters: jest.fn(),
     updateSearch: jest.fn(),
@@ -44,4 +27,4 @@ export function createMockTableState<TSortKey = string>(
     },
     ...overrides,
   };
-}
+};
