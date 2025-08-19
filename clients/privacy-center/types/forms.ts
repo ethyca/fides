@@ -1,4 +1,4 @@
-export interface MultiselectFieldValue extends Array<string> {}
+export interface MultiselectFieldValue extends Array<string> { }
 
 export interface FormValues extends Record<string, string | string[]> {}
 
