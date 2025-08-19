@@ -9,9 +9,9 @@ from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
-from fides.api.service.storage.schemas import ProcessingMetrics
-from fides.api.service.storage.storage_client_factory import get_storage_client
-from fides.api.service.storage.streaming_storage import upload_to_storage_streaming
+from fides.api.service.storage.streaming.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.storage_client_factory import get_storage_client
+from fides.api.service.storage.streaming.streaming_storage import upload_to_storage_streaming
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest

@@ -7,7 +7,7 @@ from google.cloud.storage import Blob, Client  # type: ignore
 from google.cloud.exceptions import GoogleCloudError
 from loguru import logger
 
-from fides.api.service.storage.cloud_storage_client import (
+from fides.api.service.storage.streaming.cloud_storage_client import (
     CloudStorageClient,
     MultipartUploadResponse,
     UploadPartResponse,

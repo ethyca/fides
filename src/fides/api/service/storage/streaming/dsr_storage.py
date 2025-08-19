@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from loguru import logger
 
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import DsrReportBuilder
-from fides.api.service.storage.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
+from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest

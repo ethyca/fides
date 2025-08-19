@@ -15,8 +15,8 @@ from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
-from fides.api.service.storage.schemas import ProcessingMetrics
-from fides.api.service.storage.cloud_storage_client import CloudStorageClient, ProgressCallback
+from fides.api.service.storage.streaming.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient, ProgressCallback
 from fides.api.service.storage.util import (
     should_split_package,
     adaptive_chunk_size,
@@ -458,7 +458,7 @@ def upload_to_storage_streaming(
             )
         elif resp_format == ResponseFormat.html.value:
             # For HTML, use the dedicated DSR storage module
-            from fides.api.service.storage.dsr_storage import stream_html_dsr_report_to_storage_multipart
+            from fides.api.service.storage.streaming.dsr_storage import stream_html_dsr_report_to_storage_multipart
             metrics = stream_html_dsr_report_to_storage_multipart(
                 storage_client, bucket_name, file_key, data, privacy_request
             )

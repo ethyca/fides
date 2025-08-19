@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from fides.api.service.storage.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 
 
 class TestProcessingMetrics:

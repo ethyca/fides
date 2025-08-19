@@ -4,9 +4,9 @@ from typing import Any, Dict, Optional
 
 from loguru import logger
 
-from fides.api.service.storage.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.s3_storage_client import create_s3_storage_client
-from fides.api.service.storage.gcs_storage_client import create_gcs_storage_client
+from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
+from fides.api.service.storage.streaming.s3_storage_client import create_s3_storage_client
+from fides.api.service.storage.streaming.gcs_storage_client import create_gcs_storage_client
 
 
 class CloudStorageClientFactory:

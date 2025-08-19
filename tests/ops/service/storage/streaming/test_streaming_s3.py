@@ -13,7 +13,7 @@ import boto3
 from moto import mock_aws
 from botocore.exceptions import ClientError, ParamValidationError
 
-from fides.api.service.storage.streaming_s3 import (
+from fides.api.service.storage.streaming.streaming_s3 import (
     upload_to_s3_streaming,
     upload_to_s3_streaming_advanced,
     split_data_into_packages,
@@ -26,7 +26,7 @@ from fides.api.service.storage.streaming_s3 import (
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets, AWSAuthMethod
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.common_exceptions import StorageUploadError
-from fides.api.service.storage.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 
 
 @pytest.fixture

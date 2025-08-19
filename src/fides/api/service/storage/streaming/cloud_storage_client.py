@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, List, Optional, Protocol
 
-from fides.api.service.storage.schemas import (
+from fides.api.service.storage.streaming.schemas import (
     ProcessingMetrics,
     MultipartUploadResponse,
     UploadPartResponse,
