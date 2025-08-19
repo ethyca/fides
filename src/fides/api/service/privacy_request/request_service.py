@@ -550,6 +550,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         [
                             PrivacyRequestStatus.in_processing,
                             PrivacyRequestStatus.approved,
+                            PrivacyRequestStatus.requires_input,
                         ]
                     )
                 )
