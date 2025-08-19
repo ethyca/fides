@@ -367,7 +367,7 @@ def get_connection_types(
     ):
         connection_system_types.append(
             ConnectionSystemTypeMap(
-                identifier=ConnectionType.test_website,
+                identifier=ConnectionType.test_website.value,
                 type=SystemType.website,
                 human_readable=ConnectionType.test_website.human_readable,
                 supported_actions=[],
