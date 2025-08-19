@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi.concurrency import run_in_threadpool
@@ -11,17 +11,16 @@ from fideslang.models import Dataset as FideslangDataset
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import load_only
 from starlette import status
 from starlette.status import (
     HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.deps import get_db
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
-from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -37,9 +36,8 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreateOrUpdate,
 )
-from fides.api.service.deps import get_dataset_service
+from fides.api.service.deps import get_dataset_service, get_taxonomy_service
 from fides.api.util.api_router import APIRouter
-from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     CTL_DATASET_CREATE,
@@ -57,16 +55,10 @@ from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     DatasetService,
 )
+from fides.service.taxonomy.taxonomy_service import TaxonomyService
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
-)
-
-from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    DataCategory as DataCategoryDbModel,
-    DataSubject as DataSubjectDbModel,
-    DataUse as DataUseDbModel,
-    ModelWithDefaultField,
 )
 
 # We create routers to override specific methods in those defined in generic.py
@@ -354,135 +346,6 @@ def clean_datasets(
     )
 
 
-def activate_taxonomy_parents(
-    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
-    db: Session,
-) -> None:
-    """
-    Activates parents to match newly-active taxonomy node.
-    """
-    parent = resource.parent
-    if parent:
-        parent.active = True
-        db.commit()
-
-        activate_taxonomy_parents(parent, db)
-
-
-def deactivate_taxonomy_node_and_descendants(
-    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
-    db: Session,
-) -> None:
-    """
-    Recursively de-activates all descendants of a given taxonomy node.
-    """
-    resource.active = False
-    db.commit()
-    children = resource.children
-
-    for child in children:
-        # Deactivate current child
-        child.active = False
-        db.commit()
-
-        # Recursively deactivate all descendants of this child
-        deactivate_taxonomy_node_and_descendants(child, db)
-
-
-def validate_and_create_taxonomy(
-    db: Session,
-    model: Union[
-        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
-    ],
-    validation_schema: type,
-    data: Union[
-        DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate
-    ],
-) -> Dict:
-    """
-    Validate and create a taxonomy element.
-    """
-    if not data.fides_key:
-        raise FidesError(f"Fides key is required to create a {model.__name__} resource")
-    if isinstance(data, ModelWithDefaultField) and data.is_default:
-        raise ForbiddenIsDefaultTaxonomyError(
-            model.__name__, data.fides_key, action="create"
-        )
-    validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
-    return model.create(db=db, data=validated_taxonomy.model_dump(mode="json"))
-
-
-def validate_and_update_taxonomy(
-    db: Session,
-    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
-    validation_schema: type,
-    data: Union[
-        DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate
-    ],
-) -> Dict:
-    """
-    Validate and update a taxonomy element.
-    """
-    if (
-        isinstance(data, ModelWithDefaultField)
-        and data.is_default != resource.is_default
-    ):
-        raise ForbiddenIsDefaultTaxonomyError(
-            "resource", data.fides_key, action="modify"
-        )
-
-    # If active field is being updated, cascade change either up or down
-    if hasattr(data, "active"):
-        if data.active:
-            activate_taxonomy_parents(resource, db)
-        else:
-            # Cascade down - deactivate current node and children to match newly-deactivated taxonomy item
-            deactivate_taxonomy_node_and_descendants(resource, db)
-
-    validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
-    return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
-
-
-def create_or_update_taxonomy(
-    db: Session,
-    data: Union[
-        DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate
-    ],
-    model: Union[
-        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
-    ],
-    validation_schema: type,
-) -> Dict:
-    """
-    Create or update a taxonomy element.
-    If the element is deactivated, it will be updated and re-activated, along with its parents.
-    """
-    if data.fides_key is None:
-        disabled_resource_with_name = (
-            db.query(model)
-            .filter(
-                model.active.is_(False),
-                model.name == data.name,
-            )
-            .first()
-        )
-        data.fides_key = get_key_from_data(
-            {"key": data.fides_key, "name": data.name}, validation_schema.__name__
-        )
-        if data.parent_key if hasattr(data, "parent_key") else None:
-            # Updates fides_key if it is not the root level taxonomy node
-            data.fides_key = f"{data.parent_key}.{data.fides_key}"  # type: ignore[union-attr]
-        if disabled_resource_with_name:
-            data.active = True
-            activate_taxonomy_parents(disabled_resource_with_name, db)
-            return validate_and_update_taxonomy(
-                db, disabled_resource_with_name, validation_schema, data
-            )
-        return validate_and_create_taxonomy(db, model, validation_schema, data)
-
-    return validate_and_create_taxonomy(db, model, validation_schema, data)
-
-
 @data_use_router.post(
     "/data_use",
     dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_CREATE])],
@@ -492,19 +355,21 @@ def create_or_update_taxonomy(
 )
 async def create_data_use(
     data_use: DataUseCreateOrUpdate,
-    db: Session = Depends(get_db),
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
     """
     Create a data use. Updates existing data use if data use with name already exists and is disabled.
     """
     try:
-        return create_or_update_taxonomy(db, data_use, DataUseDbModel, DataUse)
+        return taxonomy_service.create_or_update_element(
+            "data_uses", data_use.model_dump()
+        )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
         )
-    except PydanticValidationError as e:
+    except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(e),
@@ -520,20 +385,25 @@ async def create_data_use(
 )
 async def create_data_category(
     data_category: DataCategoryCreateOrUpdate,
-    db: Session = Depends(get_db),
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
     """
     Create a data category
     """
 
     try:
-        return create_or_update_taxonomy(
-            db, data_category, DataCategoryDbModel, DataCategory
+        return taxonomy_service.create_or_update_element(
+            "data_categories", data_category.model_dump()
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
+        )
+    except (ValidationError, PydanticValidationError) as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
         )
 
 
@@ -546,20 +416,25 @@ async def create_data_category(
 )
 async def create_data_subject(
     data_subject: DataSubjectCreateOrUpdate,
-    db: Session = Depends(get_db),
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
     """
     Create a data subject
     """
 
     try:
-        return create_or_update_taxonomy(
-            db, data_subject, DataSubjectDbModel, DataSubject
+        return taxonomy_service.create_or_update_element(
+            "data_subjects", data_subject.model_dump()
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
+        )
+    except (ValidationError, PydanticValidationError) as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
         )
 
 
@@ -572,19 +447,31 @@ async def create_data_subject(
 )
 async def update_data_use(
     data_use: DataUseCreateOrUpdate,
-    db: Session = Depends(get_db),
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
     """
     Update a data use. Ensures updates to "active" are appropriately cascaded.
     """
-
-    resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
-    if not resource:
+    if not data_use.fides_key:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"Data use not found with key: {data_use.fides_key}",
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="fides_key is required for update operations.",
         )
-    return validate_and_update_taxonomy(db, resource, DataUse, data_use)
+    try:
+        result = taxonomy_service.update_element(
+            "data_uses", data_use.fides_key, data_use.model_dump()
+        )
+        if not result:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"Data use not found with key: {data_use.fides_key}",
+            )
+        return result
+    except (ValidationError, PydanticValidationError) as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
 
 
 @data_category_router.put(
@@ -596,21 +483,31 @@ async def update_data_use(
 )
 async def update_data_category(
     data_category: DataCategoryCreateOrUpdate,
-    db: Session = Depends(get_db),
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
     """
     Update a data category. Ensures updates to "active" are appropriately cascaded.
     """
-
-    resource = DataCategoryDbModel.get_by(
-        db, field="fides_key", value=data_category.fides_key
-    )
-    if not resource:
+    if not data_category.fides_key:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"Data category not found with key: {data_category.fides_key}",
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="fides_key is required for update operations.",
         )
-    return validate_and_update_taxonomy(db, resource, DataCategory, data_category)
+    try:
+        result = taxonomy_service.update_element(
+            "data_categories", data_category.fides_key, data_category.model_dump()
+        )
+        if not result:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"Data category not found with key: {data_category.fides_key}",
+            )
+        return result
+    except (ValidationError, PydanticValidationError) as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
 
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()
