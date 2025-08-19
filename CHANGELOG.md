@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
 
+### Added
+- Added models for generic taxonomy support (Fidesplus) [#6421](https://github.com/ethyca/fides/pull/6421)
+
 ### Changed
 - Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
 - Changed Fides.js banner title attributes for better SEO + a11y support [#6470](https://github.com/ethyca/fides/pull/6470)
