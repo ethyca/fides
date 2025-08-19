@@ -64,8 +64,8 @@ class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     options: Optional[List[str]] = None
 
 
-class LocationSelectCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
-    """Location select field that doesn't support options and includes IP geolocation hint"""
+class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
+    """Location field that doesn't support options and includes IP geolocation hint"""
 
     field_type: Literal["location"] = "location"
     ip_geolocation_hint: Optional[bool] = False
@@ -73,28 +73,22 @@ class LocationSelectCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     @model_validator(mode="before")
     @classmethod
     def validate_location_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        # Ensure options is not provided for location select fields
+        # Ensure options is not provided for location fields
         if "options" in values:
             raise ValueError(
-                "LocationSelectCustomPrivacyRequestField does not support options"
+                "LocationCustomPrivacyRequestField does not support options"
             )
 
-        # Inline parent validation logic - validate_default_value is a Pydantic model validator decorator which creates a PydanticDescriptorProxy that can't be called directly
-        if (
-            values.get("hidden")
-            and values.get("default_value") is None
-            and values.get("query_param_key") is None
-        ):
-            raise ValueError(
-                "default_value or query_param_key are required when hidden is True"
-            )
+        # This fieldcannot be hidden
+        if values.get("hidden"):
+            raise ValueError("Custom location fields cannot be hidden")
 
         return values
 
 
 # Create a simple union type - Pydantic will use the field_type to determine which model to use
 CustomPrivacyRequestFieldUnion = Union[
-    LocationSelectCustomPrivacyRequestField, CustomPrivacyRequestField
+    LocationCustomPrivacyRequestField, CustomPrivacyRequestField
 ]
 
 

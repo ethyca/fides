@@ -8,7 +8,7 @@ from fides.api.schemas.privacy_center_config import (
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
-    LocationSelectCustomPrivacyRequestField,
+    LocationCustomPrivacyRequestField,
     PrivacyCenterConfig,
 )
 from fides.api.util.saas_util import load_as_string
@@ -62,8 +62,8 @@ class TestPrivacyCenterConfig:
             IdentityInputs(loyalty_id="invalid")
 
     def test_location_select_custom_privacy_request_field(self):
-        """Test basic LocationSelectCustomPrivacyRequestField creation and properties"""
-        location_field = LocationSelectCustomPrivacyRequestField(
+        """Test basic LocationCustomPrivacyRequestField creation and properties"""
+        location_field = LocationCustomPrivacyRequestField(
             label="User Location",
             required=True,
             ip_geolocation_hint=True,
@@ -76,8 +76,8 @@ class TestPrivacyCenterConfig:
         assert location_field.default_value == "US"
 
     def test_location_select_field_defaults(self):
-        """Test LocationSelectCustomPrivacyRequestField with default values"""
-        location_field = LocationSelectCustomPrivacyRequestField(label="Location")
+        """Test LocationCustomPrivacyRequestField with default values"""
+        location_field = LocationCustomPrivacyRequestField(label="Location")
         assert location_field.label == "Location"
         assert location_field.field_type == "location"
         assert location_field.required is True  # Default from parent
@@ -86,28 +86,27 @@ class TestPrivacyCenterConfig:
         assert location_field.hidden is False  # Default from parent
 
     def test_location_select_field_rejects_options(self):
-        """Test that LocationSelectCustomPrivacyRequestField rejects options"""
+        """Test that LocationCustomPrivacyRequestField rejects options"""
         with pytest.raises(ValueError) as exc:
-            LocationSelectCustomPrivacyRequestField(
+            LocationCustomPrivacyRequestField(
                 label="Location", options=["US", "CA", "UK"]
             )
         assert (
-            "LocationSelectCustomPrivacyRequestField does not support options"
+            "LocationCustomPrivacyRequestField does not support options"
             in str(exc.value)
         )
 
     def test_location_select_field_missing_label(self):
         """Test validation error when label is missing"""
         with pytest.raises(ValidationError):
-            LocationSelectCustomPrivacyRequestField()  # Missing required label field
+            LocationCustomPrivacyRequestField()  # Missing required label field
 
     def test_location_select_field_with_all_properties(self):
-        """Test LocationSelectCustomPrivacyRequestField with all possible properties"""
-        location_field = LocationSelectCustomPrivacyRequestField(
+        """Test LocationCustomPrivacyRequestField with all possible properties"""
+        location_field = LocationCustomPrivacyRequestField(
             label="Your Current Location",
             required=False,
             default_value="Unknown",
-            hidden=True,
             query_param_key="user_region",
             ip_geolocation_hint=True,
         )
@@ -115,9 +114,18 @@ class TestPrivacyCenterConfig:
         assert location_field.field_type == "location"
         assert location_field.required is False
         assert location_field.default_value == "Unknown"
-        assert location_field.hidden is True
+        assert location_field.hidden is False  # Location fields cannot be hidden
         assert location_field.query_param_key == "user_region"
         assert location_field.ip_geolocation_hint is True
+
+    def test_location_field_rejects_hidden(self):
+        """Test that LocationCustomPrivacyRequestField rejects hidden=True"""
+        with pytest.raises(ValidationError) as exc_info:
+            LocationCustomPrivacyRequestField(
+                label="Location",
+                hidden=True,
+            )
+        assert "Custom location fields cannot be hidden" in str(exc_info.value)
 
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig
