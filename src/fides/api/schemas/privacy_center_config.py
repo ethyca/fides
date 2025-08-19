@@ -67,7 +67,7 @@ class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
 class LocationSelectCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     """Location select field that doesn't support options and includes IP geolocation hint"""
 
-    field_type: Literal["locationselect"] = "locationselect"
+    field_type: Literal["location"] = "location"
     ip_geolocation_hint: Optional[bool] = False
 
     @model_validator(mode="before")

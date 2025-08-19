@@ -444,7 +444,7 @@ const PrivacyRequestForm = ({
             {Object.entries(customPrivacyRequestFields)
               .filter(
                 ([, field]) =>
-                  !field.hidden && field.field_type !== "locationselect",
+                  !field.hidden && field.field_type !== "location",
               ) // TODO: UI Implementation - this simply prevent Cypress test failures
               .map(([key, item]) => (
                 <FormControl

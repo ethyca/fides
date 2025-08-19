@@ -52,7 +52,7 @@
         },
         "location": {
           "label": "Location",
-          "field_type": "locationselect",
+          "field_type": "location",
           "required": true,
           "ip_geolocation_hint": true
         }
@@ -83,7 +83,7 @@
         },
         "location": {
           "label": "Location",
-          "field_type": "locationselect",
+          "field_type": "location",
           "required": false,
           "ip_geolocation_hint": true
         }

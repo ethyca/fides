@@ -6,7 +6,7 @@ import { MultiselectFieldValue } from "~/types/forms";
 // Use compatible interface for existing config types
 interface CustomPrivacyRequestField {
   label: string;
-  field_type?: "text" | "select" | "multiselect" | "locationselect" | null;
+  field_type?: "text" | "select" | "multiselect" | "location" | null;
   required?: boolean | null;
   options?: string[] | null;
   default_value?: string | string[] | null;
@@ -104,7 +104,7 @@ const CustomFieldRenderer = ({
     );
   }
 
-  if (field.field_type === "locationselect") {
+  if (field.field_type === "location") {
     // TODO: UI Implementation - this simply prevent Cypress test failures
     return null;
   }

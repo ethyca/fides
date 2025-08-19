@@ -70,7 +70,7 @@ class TestPrivacyCenterConfig:
             default_value="US",
         )
         assert location_field.label == "User Location"
-        assert location_field.field_type == "locationselect"
+        assert location_field.field_type == "location"
         assert location_field.required is True
         assert location_field.ip_geolocation_hint is True
         assert location_field.default_value == "US"
@@ -79,7 +79,7 @@ class TestPrivacyCenterConfig:
         """Test LocationSelectCustomPrivacyRequestField with default values"""
         location_field = LocationSelectCustomPrivacyRequestField(label="Location")
         assert location_field.label == "Location"
-        assert location_field.field_type == "locationselect"
+        assert location_field.field_type == "location"
         assert location_field.required is True  # Default from parent
         assert location_field.ip_geolocation_hint is False  # Default
         assert location_field.default_value is None  # Default from parent
@@ -112,7 +112,7 @@ class TestPrivacyCenterConfig:
             ip_geolocation_hint=True,
         )
         assert location_field.label == "Your Current Location"
-        assert location_field.field_type == "locationselect"
+        assert location_field.field_type == "location"
         assert location_field.required is False
         assert location_field.default_value == "Unknown"
         assert location_field.hidden is True

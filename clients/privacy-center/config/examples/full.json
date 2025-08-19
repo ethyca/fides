@@ -18,7 +18,7 @@
       "custom_privacy_request_fields": {
         "location": {
           "label": "Location",
-          "field_type": "locationselect",
+          "field_type": "location",
           "required": false,
           "ip_geolocation_hint": true
         }
@@ -37,7 +37,7 @@
       "custom_privacy_request_fields": {
         "location": {
           "label": "Location",
-          "field_type": "locationselect",
+          "field_type": "location",
           "required": false,
           "ip_geolocation_hint": true
         }
