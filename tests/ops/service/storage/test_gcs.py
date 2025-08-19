@@ -1,3 +1,4 @@
+from io import BytesIO
 from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
@@ -6,7 +7,7 @@ from google.oauth2.service_account import Credentials
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import GCSAuthMethod
-from fides.api.service.storage.gcs import get_gcs_client
+from fides.api.service.storage.gcs import generic_upload_to_gcs, get_gcs_client
 
 
 class TestGetGCSClient:
@@ -122,3 +123,153 @@ class TestGetGCSBlob:
                     GCSAuthMethod.ADC.value, None, "test-bucket", "test-file.txt"
                 )
             assert "Test error" in str(exc_info.value)
+
+
+class TestGenericUploadToGCS:
+    """Test cases for generic_upload_to_gcs function."""
+
+    @pytest.fixture
+    def mock_blob(self):
+        """Create a mock GCS blob."""
+        blob = create_autospec(storage.Blob)
+        blob.size = 1024
+        blob.generate_signed_url.return_value = (
+            "https://storage.googleapis.com/test-bucket/test-file.txt"
+        )
+        return blob
+
+    @pytest.fixture
+    def sample_document(self):
+        """Create a sample document for testing."""
+        return BytesIO(b"test file content")
+
+    @pytest.fixture
+    def storage_secrets(self):
+        """Create sample storage secrets."""
+        return {
+            "type": "service_account",
+            "project_id": "test-project",
+            "private_key_id": "test-key-id",
+            "private_key": "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----\n",
+            "client_email": "test@test-project.iam.gserviceaccount.com",
+        }
+
+    def test_generic_upload_to_gcs_success(
+        self, mock_blob, sample_document, storage_secrets
+    ):
+        """Test successful generic upload to GCS."""
+        with patch(
+            "fides.api.service.storage.gcs.get_gcs_blob",
+            return_value=mock_blob,
+        ):
+            file_size, signed_url = generic_upload_to_gcs(
+                storage_secrets=storage_secrets,
+                bucket_name="test-bucket",
+                file_key="test-file.txt",
+                auth_method=GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                document=sample_document,
+            )
+
+            assert file_size == 1024
+            assert (
+                signed_url == "https://storage.googleapis.com/test-bucket/test-file.txt"
+            )
+
+            # Verify the blob methods were called correctly
+            mock_blob.upload_from_file.assert_called_once_with(sample_document)
+            mock_blob.reload.assert_called_once()
+            mock_blob.generate_signed_url.assert_called_once_with(
+                version="v4", expiration=3600, method="GET"
+            )
+
+    def test_generic_upload_to_gcs_invalid_document_type(self, storage_secrets):
+        """Test generic upload with invalid document type."""
+        invalid_document = "not a file-like object"
+
+        with pytest.raises(TypeError, match="must be a file-like object"):
+            generic_upload_to_gcs(
+                storage_secrets=storage_secrets,
+                bucket_name="test-bucket",
+                file_key="test-file.txt",
+                auth_method=GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                document=invalid_document,
+            )
+
+    def test_generic_upload_to_gcs_document_seek_error(self, storage_secrets):
+        """Test generic upload with document seek error."""
+        mock_document = MagicMock()
+        mock_document.seek.side_effect = Exception("Seek failed")
+
+        with pytest.raises(ValueError, match="Failed to reset file pointer"):
+            generic_upload_to_gcs(
+                storage_secrets=storage_secrets,
+                bucket_name="test-bucket",
+                file_key="test-file.txt",
+                auth_method=GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                document=mock_document,
+            )
+
+    def test_generic_upload_to_gcs_upload_error(
+        self, mock_blob, sample_document, storage_secrets
+    ):
+        """Test generic upload with upload error."""
+        mock_blob.upload_from_file.side_effect = Exception("Upload failed")
+
+        with patch(
+            "fides.api.service.storage.gcs.get_gcs_blob",
+            return_value=mock_blob,
+        ):
+            with pytest.raises(StorageUploadError, match="Failed to upload file"):
+                generic_upload_to_gcs(
+                    storage_secrets=storage_secrets,
+                    bucket_name="test-bucket",
+                    file_key="test-file.txt",
+                    auth_method=GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                    document=sample_document,
+                )
+
+    def test_generic_upload_to_gcs_document_reset_position(
+        self, mock_blob, storage_secrets
+    ):
+        """Test that document position is reset before upload."""
+        # Create a document that's not at the beginning
+        document = BytesIO(b"test content")
+        document.seek(5)  # Move to middle of content
+
+        with patch(
+            "fides.api.service.storage.gcs.get_gcs_blob",
+            return_value=mock_blob,
+        ):
+            generic_upload_to_gcs(
+                storage_secrets=storage_secrets,
+                bucket_name="test-bucket",
+                file_key="test-file.txt",
+                auth_method=GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                document=document,
+            )
+
+            # Verify the document was reset to position 0
+            assert document.tell() == 0
+
+    def test_generic_upload_to_gcs_with_empty_document(
+        self, mock_blob, storage_secrets
+    ):
+        """Test generic upload with empty document."""
+        empty_document = BytesIO(b"")
+
+        with patch(
+            "fides.api.service.storage.gcs.get_gcs_blob",
+            return_value=mock_blob,
+        ):
+            file_size, signed_url = generic_upload_to_gcs(
+                storage_secrets=storage_secrets,
+                bucket_name="test-bucket",
+                file_key="test-file.txt",
+                auth_method=GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                document=empty_document,
+            )
+
+            assert file_size == 1024  # Mock returns 1024
+            assert (
+                signed_url == "https://storage.googleapis.com/test-bucket/test-file.txt"
+            )

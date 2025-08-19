@@ -5,8 +5,12 @@ from typing import Any, Dict, Optional
 from loguru import logger
 
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.streaming.s3_storage_client import create_s3_storage_client
-from fides.api.service.storage.streaming.gcs_storage_client import create_gcs_storage_client
+from fides.api.service.storage.streaming.gcs.gcs_storage_client import (
+    create_gcs_storage_client,
+)
+from fides.api.service.storage.streaming.s3.s3_storage_client import (
+    create_s3_storage_client,
+)
 
 
 class CloudStorageClientFactory:
@@ -16,7 +20,7 @@ class CloudStorageClientFactory:
     def create_storage_client(
         storage_type: str,
         auth_method: str,
-        storage_secrets: Optional[Dict[str, Any]] = None
+        storage_secrets: Optional[Dict[str, Any]] = None,
     ) -> CloudStorageClient:
         """Create a storage client based on the storage type"""
 
@@ -26,8 +30,7 @@ class CloudStorageClientFactory:
             return create_s3_storage_client(auth_method, storage_secrets)
 
         elif storage_type.lower() in ["gcs", "gcp", "google"]:
-            # GCS streaming not yet implemented - basic client only
-            # The CloudStorageClient interface is ready for future streaming support
+            # GCS streaming is now implemented with full CloudStorageClient interface
             return create_gcs_storage_client(auth_method, storage_secrets)
 
         else:
@@ -48,7 +51,7 @@ class CloudStorageClientFactory:
         return CloudStorageClientFactory.create_storage_client(
             storage_type=storage_type,
             auth_method=auth_method,
-            storage_secrets=storage_secrets
+            storage_secrets=storage_secrets,
         )
 
 
@@ -56,7 +59,7 @@ class CloudStorageClientFactory:
 def get_storage_client(
     storage_type: str,
     auth_method: str,
-    storage_secrets: Optional[Dict[str, Any]] = None
+    storage_secrets: Optional[Dict[str, Any]] = None,
 ) -> CloudStorageClient:
     """Convenience function to create a storage client"""
     return CloudStorageClientFactory.create_storage_client(

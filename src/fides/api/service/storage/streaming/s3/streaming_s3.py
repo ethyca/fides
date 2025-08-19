@@ -8,10 +8,15 @@ from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
-from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
+from fides.api.schemas.storage.storage import StorageSecrets
+from fides.api.service.storage.s3 import generic_upload_to_s3
 from fides.api.service.storage.streaming.schemas import ProcessingMetrics
-from fides.api.service.storage.streaming.storage_client_factory import get_storage_client
-from fides.api.service.storage.streaming.streaming_storage import upload_to_storage_streaming
+from fides.api.service.storage.streaming.storage_client_factory import (
+    get_storage_client,
+)
+from fides.api.service.storage.streaming.streaming_storage import (
+    upload_to_storage_streaming,
+)
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -27,7 +32,7 @@ def upload_to_s3_streaming(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None
+    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads arbitrary data to S3 using production-ready memory-efficient processing.
 
@@ -45,8 +50,6 @@ def upload_to_s3_streaming(
     logger.info("Starting production streaming S3 Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
-        # Fall back to generic upload for document-only uploads
-        from fides.api.service.storage.s3 import generic_upload_to_s3
         _, response = generic_upload_to_s3(
             storage_secrets, bucket_name, file_key, auth_method, document
         )
@@ -68,9 +71,15 @@ def upload_to_s3_streaming(
     try:
         # Use the new cloud-agnostic streaming implementation
         result = upload_to_storage_streaming(
-            storage_client, data, bucket_name, file_key,
-            resp_format, privacy_request, document,
-            max_workers, progress_callback
+            storage_client,
+            data,
+            bucket_name,
+            file_key,
+            resp_format,
+            privacy_request,
+            document,
+            max_workers,
+            progress_callback,
         )
 
         logger.info("Successfully uploaded streaming archive to S3: {}", file_key)
@@ -94,7 +103,7 @@ def upload_to_s3_streaming_advanced(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None
+    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Wrapper function that delegates to the main streaming implementation.
 
@@ -123,8 +132,6 @@ def upload_to_s3_streaming_advanced(
     logger.info("Starting advanced streaming S3 Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
-        # Fall back to generic upload for document-only uploads
-        from fides.api.service.storage.s3 import generic_upload_to_s3
         _, response = generic_upload_to_s3(
             storage_secrets, bucket_name, file_key, auth_method, document
         )
@@ -138,11 +145,20 @@ def upload_to_s3_streaming_advanced(
     try:
         # Use the main streaming function for all formats
         return upload_to_s3_streaming(
-            storage_secrets, data, bucket_name, file_key,
-            resp_format, privacy_request, document, auth_method,
-            max_workers, progress_callback
+            storage_secrets,
+            data,
+            bucket_name,
+            file_key,
+            resp_format,
+            privacy_request,
+            document,
+            auth_method,
+            max_workers,
+            progress_callback,
         )
 
     except Exception as e:
         logger.error("Unexpected error during advanced streaming upload: {}", e)
-        raise StorageUploadError(f"Unexpected error during advanced streaming upload: {e}")
+        raise StorageUploadError(
+            f"Unexpected error during advanced streaming upload: {e}"
+        )

@@ -14,8 +14,11 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
+from fides.api.service.storage.streaming.s3.streaming_s3 import (
+    upload_to_s3_streaming,
+    upload_to_s3_streaming_advanced,
+)
 from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
-from fides.api.service.storage.streaming.streaming_s3 import upload_to_s3_streaming, upload_to_s3_streaming_advanced
 
 
 def upload(

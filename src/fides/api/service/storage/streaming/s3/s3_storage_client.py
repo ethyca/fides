@@ -5,12 +5,22 @@ from typing import Any, Dict, List, Optional
 from botocore.exceptions import ClientError
 from loguru import logger
 
+from fides.api.service.storage.s3 import create_presigned_url_for_s3
 from fides.api.service.storage.streaming.cloud_storage_client import (
     CloudStorageClient,
     MultipartUploadResponse,
     UploadPartResponse,
 )
-from fides.api.service.storage.s3 import create_presigned_url_for_s3
+from fides.api.service.storage.streaming.s3.s3_schemas import (
+    AWSAbortMultipartUploadRequest,
+    AWSCompleteMultipartUploadRequest,
+    AWSCreateMultipartUploadRequest,
+    AWSGeneratePresignedUrlRequest,
+    AWSGetObjectRangeRequest,
+    AWSGetObjectRequest,
+    AWSUploadPartRequest,
+)
+from fides.api.service.storage.streaming.schemas import UploadPartResponse
 from fides.api.util.aws_util import get_s3_client
 
 
@@ -19,35 +29,6 @@ class S3StorageClient(CloudStorageClient):
 
     This client handles S3 multipart uploads, object metadata retrieval, and presigned URL generation.
     It's used by the streaming storage system to enable memory-efficient processing of large files.
-
-    Example:
-        ```python
-        # Create client from storage secrets
-        storage_client = S3StorageClient(s3_client)
-
-        # Initiate multipart upload
-        upload_response = storage_client.create_multipart_upload(
-            bucket="my-bucket",
-            key="large-file.zip",
-            content_type="application/zip"
-        )
-
-        # Upload parts
-        part_response = storage_client.upload_part(
-            bucket="my-bucket",
-            upload_id=upload_response.upload_id,
-            part_number=1,
-            body=b"file content"
-        )
-
-        # Complete upload
-        storage_client.complete_multipart_upload(
-            bucket="my-bucket",
-            key="large-file.zip",
-            upload_id=upload_response.upload_id,
-            parts=[part_response]
-        )
-        ```
     """
 
     def __init__(self, s3_client: Any):
@@ -63,7 +44,7 @@ class S3StorageClient(CloudStorageClient):
         bucket: str,
         key: str,
         content_type: str,
-        metadata: Optional[Dict[str, str]] = None
+        metadata: Optional[Dict[str, str]] = None,
     ) -> MultipartUploadResponse:
         """Initiate S3 multipart upload for large file processing.
 
@@ -82,31 +63,28 @@ class S3StorageClient(CloudStorageClient):
 
         Raises:
             ClientError: If S3 operations fail (e.g., bucket doesn't exist, permissions denied)
-
-        Example:
-            ```python
-            response = storage_client.create_multipart_upload(
-                bucket="data-bucket",
-                key="reports/2024/privacy_report.zip",
-                content_type="application/zip",
-                metadata={"source": "privacy_request", "format": "zip"}
-            )
-            upload_id = response.upload_id
-            ```
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key/content_type)
         """
+        # Validate parameters using Pydantic schema
+        request = AWSCreateMultipartUploadRequest(
+            bucket=bucket,
+            key=key,
+            content_type=content_type,
+            metadata=metadata,
+        )
+
         try:
             params = {
-                'Bucket': bucket,
-                'Key': key,
-                'ContentType': content_type
+                "Bucket": request.bucket,
+                "Key": request.key,
+                "ContentType": request.content_type,
             }
-            if metadata:
-                params['Metadata'] = metadata
+            if request.metadata:
+                params["Metadata"] = request.metadata
 
             response = self.client.create_multipart_upload(**params)
             return MultipartUploadResponse(
-                upload_id=response['UploadId'],
-                metadata=response
+                upload_id=response["UploadId"], metadata=response
             )
         except ClientError as e:
             logger.error("Failed to create multipart upload: {}", e)
@@ -115,10 +93,11 @@ class S3StorageClient(CloudStorageClient):
     def upload_part(
         self,
         bucket: str,
+        key: str,
         upload_id: str,
         part_number: int,
         body: bytes,
-        metadata: Optional[Dict[str, str]] = None
+        metadata: Optional[Dict[str, str]] = None,
     ) -> UploadPartResponse:
         """Upload a part to an existing S3 multipart upload.
 
@@ -128,6 +107,7 @@ class S3StorageClient(CloudStorageClient):
 
         Args:
             bucket: S3 bucket name where the multipart upload was initiated
+            key: S3 object key (file path) for the multipart upload
             upload_id: Upload ID returned from create_multipart_upload
             part_number: Sequential part number (1, 2, 3, etc.)
             body: Binary data content for this part
@@ -138,40 +118,33 @@ class S3StorageClient(CloudStorageClient):
 
         Raises:
             ClientError: If S3 operations fail (e.g., invalid upload_id, part number out of order)
-
-        Example:
-            ```python
-            # Upload first part
-            part1_response = storage_client.upload_part(
-                bucket="data-bucket",
-                upload_id="abc123",
-                part_number=1,
-                body=b"first chunk of data"
-            )
-
-            # Upload second part
-            part2_response = storage_client.upload_part(
-                bucket="data-bucket",
-                upload_id="abc123",
-                part_number=2,
-                body=b"second chunk of data"
-            )
-            ```
+            ValueError: If parameters fail validation (empty/whitespace strings, invalid part numbers, etc.)
         """
+        # Validate parameters using Pydantic schema
+        request = AWSUploadPartRequest(
+            bucket=bucket,
+            key=key,
+            upload_id=upload_id,
+            part_number=part_number,
+            body=body,
+            metadata=metadata,
+        )
+
         try:
             response = self.client.upload_part(
-                Bucket=bucket,
-                PartNumber=part_number,
-                UploadId=upload_id,
-                Body=body
+                Bucket=request.bucket,
+                Key=request.key,
+                PartNumber=request.part_number,
+                UploadId=request.upload_id,
+                Body=request.body,
             )
             return UploadPartResponse(
-                etag=response['ETag'],
-                part_number=part_number,
-                metadata=response
+                etag=response["ETag"],
+                part_number=request.part_number,
+                metadata=response,
             )
         except ClientError as e:
-            logger.error("Failed to upload part {}: {}", part_number, e)
+            logger.error("Failed to upload part {}: {}", request.part_number, e)
             raise
 
     def complete_multipart_upload(
@@ -180,7 +153,9 @@ class S3StorageClient(CloudStorageClient):
         key: str,
         upload_id: str,
         parts: List[UploadPartResponse],
-        metadata: Optional[Dict[str, str]] = None
+        metadata: Optional[
+            Dict[str, str]
+        ] = None,  # matches CloudStorageClient abstract method
     ) -> None:
         """Complete an S3 multipart upload by combining all uploaded parts.
 
@@ -197,47 +172,40 @@ class S3StorageClient(CloudStorageClient):
 
         Raises:
             ClientError: If S3 operations fail (e.g., parts missing, upload already completed)
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key/upload_id, invalid parts list)
 
-        Example:
-            ```python
-            # Complete the multipart upload
-            storage_client.complete_multipart_upload(
-                bucket="data-bucket",
-                key="reports/2024/privacy_report.zip",
-                upload_id="abc123",
-                parts=[part1_response, part2_response, part3_response]
-            )
-            # Object is now available at the specified key
-            ```
         """
+        # Validate parameters using Pydantic schema
+        request = AWSCompleteMultipartUploadRequest(
+            bucket=bucket,
+            key=key,
+            upload_id=upload_id,
+            parts=parts,
+            metadata=metadata,
+        )
+
         try:
             # Convert our parts to S3 format
             s3_parts = [
-                {'ETag': part.etag, 'PartNumber': part.part_number}
-                for part in parts
+                {"ETag": part.etag, "PartNumber": part.part_number}
+                for part in request.parts
             ]
 
             self.client.complete_multipart_upload(
-                Bucket=bucket,
-                Key=key,
-                UploadId=upload_id,
-                MultipartUpload={'Parts': s3_parts}
+                Bucket=request.bucket,
+                Key=request.key,
+                UploadId=request.upload_id,
+                MultipartUpload={"Parts": s3_parts},
             )
         except ClientError as e:
             logger.error("Failed to complete multipart upload: {}", e)
             raise
 
-    def abort_multipart_upload(
-        self,
-        bucket: str,
-        key: str,
-        upload_id: str
-    ) -> None:
-        """Abort an S3 multipart upload and clean up uploaded parts.
+    def abort_multipart_upload(self, bucket: str, key: str, upload_id: str) -> None:
+        """Abort an existing S3 multipart upload.
 
-        This method cancels an in-progress multipart upload and removes all
-        uploaded parts from S3. This is useful for cleanup when uploads fail
-        or need to be cancelled.
+        This method cancels an in-progress multipart upload and removes any uploaded parts.
+        It's used when uploads fail or need to be cancelled.
 
         Args:
             bucket: S3 bucket name where the multipart upload was initiated
@@ -246,38 +214,25 @@ class S3StorageClient(CloudStorageClient):
 
         Raises:
             ClientError: If S3 operations fail (e.g., upload already completed)
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key/upload_id)
 
-        Example:
-            ```python
-            # Abort upload on failure
-            try:
-                # ... upload parts ...
-                storage_client.complete_multipart_upload(...)
-            except Exception:
-                # Clean up failed upload
-                storage_client.abort_multipart_upload(
-                    bucket="data-bucket",
-                    key="reports/2024/privacy_report.zip",
-                    upload_id="abc123"
-                )
-                raise
-            ```
         """
+        # Validate parameters using Pydantic schema
+        request = AWSAbortMultipartUploadRequest(
+            bucket=bucket,
+            key=key,
+            upload_id=upload_id,
+        )
+
         try:
             self.client.abort_multipart_upload(
-                Bucket=bucket,
-                Key=key,
-                UploadId=upload_id
+                Bucket=request.bucket, Key=request.key, UploadId=request.upload_id
             )
         except ClientError as e:
             logger.error("Failed to abort multipart upload: {}", e)
             raise
 
-    def get_object_head(
-        self,
-        bucket: str,
-        key: str
-    ) -> Dict[str, Any]:
+    def get_object_head(self, bucket: str, key: str) -> Dict[str, Any]:
         """Get S3 object metadata without downloading the object content.
 
         This method retrieves object metadata (including size, content type, etc.)
@@ -298,31 +253,21 @@ class S3StorageClient(CloudStorageClient):
 
         Raises:
             ClientError: If S3 operations fail (e.g., object not found, permissions denied)
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key)
 
-        Example:
-            ```python
-            # Get file metadata for streaming
-            metadata = storage_client.get_object_head(
-                bucket="data-bucket",
-                key="attachments/document.pdf"
-            )
-            file_size = metadata['ContentLength']  # 1048576 bytes
-            content_type = metadata['ContentType']  # "application/pdf"
-            ```
         """
+        # Validate parameters using Pydantic schema
+        request = AWSGetObjectRequest(bucket=bucket, key=key)
+
         try:
-            response = self.client.head_object(Bucket=bucket, Key=key)
+            response = self.client.head_object(Bucket=request.bucket, Key=request.key)
             return response
         except ClientError as e:
             logger.error("Failed to get object head: {}", e)
             raise
 
     def get_object_range(
-        self,
-        bucket: str,
-        key: str,
-        start_byte: int,
-        end_byte: int
+        self, bucket: str, key: str, start_byte: int, end_byte: int
     ) -> bytes:
         """Get a specific byte range from an S3 object.
 
@@ -341,44 +286,31 @@ class S3StorageClient(CloudStorageClient):
 
         Raises:
             ClientError: If S3 operations fail (e.g., object not found, invalid range)
-
-        Example:
-            ```python
-            # Download first 1MB chunk
-            chunk1 = storage_client.get_object_range(
-                bucket="data-bucket",
-                key="large_file.zip",
-                start_byte=0,
-                end_byte=1048575  # 1MB - 1
-            )
-
-            # Download second 1MB chunk
-            chunk2 = storage_client.get_object_range(
-                bucket="data-bucket",
-                key="large_file.zip",
-                start_byte=1048576,  # 1MB
-                end_byte=2097151     # 2MB - 1
-            )
-            ```
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key, invalid byte ranges)
         """
+        # Validate parameters using Pydantic schema
+        request = AWSGetObjectRangeRequest(
+            bucket=bucket,
+            key=key,
+            start_byte=start_byte,
+            end_byte=end_byte,
+        )
+
         try:
             response = self.client.get_object(
-                Bucket=bucket,
-                Key=key,
-                Range=f'bytes={start_byte}-{end_byte}'
+                Bucket=request.bucket,
+                Key=request.key,
+                Range=f"bytes={request.start_byte}-{request.end_byte}",
             )
-            data = response['Body'].read()
-            response['Body'].close()
+            data = response["Body"].read()
+            response["Body"].close()
             return data
         except ClientError as e:
             logger.error("Failed to get object range: {}", e)
             raise
 
     def generate_presigned_url(
-        self,
-        bucket: str,
-        key: str,
-        ttl_seconds: Optional[int] = None
+        self, bucket: str, key: str, ttl_seconds: Optional[int] = None
     ) -> str:
         """Generate a presigned URL for secure, time-limited access to an S3 object.
 
@@ -395,28 +327,19 @@ class S3StorageClient(CloudStorageClient):
             Presigned URL string that can be used to download the object
 
         Raises:
-            ValueError: If TTL exceeds 7 days (S3 limit)
+            ValueError: If TTL exceeds 7 days (S3 limit) or parameters fail validation (empty/whitespace strings for bucket/key)
             Exception: If URL generation fails (e.g., object not found, permissions denied)
-
-        Example:
-            ```python
-            # Generate URL with default TTL
-            download_url = storage_client.generate_presigned_url(
-                bucket="data-bucket",
-                key="reports/2024/privacy_report.zip"
-            )
-
-            # Generate URL with custom TTL (24 hours)
-            download_url = storage_client.generate_presigned_url(
-                bucket="data-bucket",
-                key="reports/2024/privacy_report.zip",
-                ttl_seconds=86400
-            )
-            ```
         """
+        # Validate parameters using Pydantic schema
+        request = AWSGeneratePresignedUrlRequest(
+            bucket=bucket,
+            key=key,
+            ttl_seconds=ttl_seconds,
+        )
+
         try:
             return create_presigned_url_for_s3(
-                self.client, bucket, key, ttl_seconds
+                self.client, request.bucket, request.key, request.ttl_seconds
             )
         except Exception as e:
             logger.error("Failed to generate presigned URL: {}", e)
@@ -424,8 +347,7 @@ class S3StorageClient(CloudStorageClient):
 
 
 def create_s3_storage_client(
-    auth_method: str,
-    storage_secrets: Dict[str, Any]
+    auth_method: str, storage_secrets: Dict[str, Any]
 ) -> S3StorageClient:
     """Factory function to create an S3 storage client"""
     s3_client = get_s3_client(auth_method, storage_secrets)

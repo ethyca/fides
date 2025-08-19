@@ -1,14 +1,21 @@
-import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
+import pytest
+
+from fides.api.service.storage.streaming.schemas import (
+    AttachmentInfo,
+    AttachmentProcessingInfo,
+    ChunkDownloadConfig,
+    PackageSplitConfig,
+    ProcessingMetrics,
+    StorageUploadConfig,
+    StreamingBufferConfig,
+)
 
 
 class TestProcessingMetrics:
     """Test cases for the ProcessingMetrics Pydantic model."""
-
-
 
     def test_processing_metrics_default_values(self):
         """Test that ProcessingMetrics can be instantiated with default values."""
@@ -34,7 +41,7 @@ class TestProcessingMetrics:
             start_time=start_time,
             current_attachment="test.pdf",
             current_attachment_progress=75.5,
-            errors=["Error 1", "Error 2"]
+            errors=["Error 1", "Error 2"],
         )
 
         assert metrics.total_attachments == 100
@@ -46,37 +53,68 @@ class TestProcessingMetrics:
         assert metrics.current_attachment_progress == 75.5
         assert metrics.errors == ["Error 1", "Error 2"]
 
-
-    @pytest.mark.parametrize("field, value, expected_error", [
-        pytest.param("total_attachments", -1, "Input should be greater than or equal to 0", id="total_attachments_negative"),
-        pytest.param("processed_attachments", -5, "Input should be greater than or equal to 0", id="processed_attachments_negative"),
-        pytest.param("total_bytes", -100, "Input should be greater than or equal to 0", id="total_bytes_negative"),
-        pytest.param("processed_bytes", -50, "Input should be greater than or equal to 0", id="processed_bytes_negative"),
-        pytest.param("current_attachment_progress", -10.0, "Input should be greater than or equal to 0", id="current_attachment_progress_negative"),
-        pytest.param("current_attachment_progress", 150.0, "Input should be less than or equal to 100", id="current_attachment_progress_too_high")
-    ])
-    def test_processing_metrics_validation_constraints(self, field, value, expected_error):
+    @pytest.mark.parametrize(
+        "field, value, expected_error",
+        [
+            pytest.param(
+                "total_attachments",
+                -1,
+                "Input should be greater than or equal to 0",
+                id="total_attachments_negative",
+            ),
+            pytest.param(
+                "processed_attachments",
+                -5,
+                "Input should be greater than or equal to 0",
+                id="processed_attachments_negative",
+            ),
+            pytest.param(
+                "total_bytes",
+                -100,
+                "Input should be greater than or equal to 0",
+                id="total_bytes_negative",
+            ),
+            pytest.param(
+                "processed_bytes",
+                -50,
+                "Input should be greater than or equal to 0",
+                id="processed_bytes_negative",
+            ),
+            pytest.param(
+                "current_attachment_progress",
+                -10.0,
+                "Input should be greater than or equal to 0",
+                id="current_attachment_progress_negative",
+            ),
+            pytest.param(
+                "current_attachment_progress",
+                150.0,
+                "Input should be less than or equal to 100",
+                id="current_attachment_progress_too_high",
+            ),
+        ],
+    )
+    def test_processing_metrics_validation_constraints(
+        self, field, value, expected_error
+    ):
         """Test that field validation constraints are enforced."""
         # Test non-negative constraints
         with pytest.raises(ValueError, match=expected_error):
             ProcessingMetrics(**{field: value})
 
-
     def test_processed_attachments_cannot_exceed_total(self):
         """Test that processed_attachments cannot exceed total_attachments."""
-        with pytest.raises(ValueError, match="processed_attachments cannot exceed total_attachments"):
-            ProcessingMetrics(
-                total_attachments=10,
-                processed_attachments=15
-            )
+        with pytest.raises(
+            ValueError, match="processed_attachments cannot exceed total_attachments"
+        ):
+            ProcessingMetrics(total_attachments=10, processed_attachments=15)
 
     def test_processed_bytes_cannot_exceed_total(self):
         """Test that processed_bytes cannot exceed total_bytes."""
-        with pytest.raises(ValueError, match="processed_bytes cannot exceed total_bytes"):
-            ProcessingMetrics(
-                total_bytes=1000,
-                processed_bytes=1500
-            )
+        with pytest.raises(
+            ValueError, match="processed_bytes cannot exceed total_bytes"
+        ):
+            ProcessingMetrics(total_bytes=1000, processed_bytes=1500)
 
     def test_validation_on_assignment(self):
         """Test that validation occurs when fields are reassigned."""
@@ -87,15 +125,14 @@ class TestProcessingMetrics:
         assert metrics.processed_attachments == 5
 
         # Invalid assignment should raise error
-        with pytest.raises(ValueError, match="processed_attachments cannot exceed total_attachments"):
+        with pytest.raises(
+            ValueError, match="processed_attachments cannot exceed total_attachments"
+        ):
             metrics.processed_attachments = 15
 
     def test_overall_progress_calculation(self):
         """Test the overall_progress computed field calculation."""
-        metrics = ProcessingMetrics(
-            total_attachments=100,
-            processed_attachments=75
-        )
+        metrics = ProcessingMetrics(total_attachments=100, processed_attachments=75)
 
         assert metrics.overall_progress == 75.0
 
@@ -105,17 +142,13 @@ class TestProcessingMetrics:
 
         # Test edge case: all processed
         metrics_all_processed = ProcessingMetrics(
-            total_attachments=50,
-            processed_attachments=50
+            total_attachments=50, processed_attachments=50
         )
         assert metrics_all_processed.overall_progress == 100.0
 
     def test_bytes_progress_calculation(self):
         """Test the bytes_progress computed field calculation."""
-        metrics = ProcessingMetrics(
-            total_bytes=1024,
-            processed_bytes=512
-        )
+        metrics = ProcessingMetrics(total_bytes=1024, processed_bytes=512)
 
         assert metrics.bytes_progress == 50.0
 
@@ -125,8 +158,7 @@ class TestProcessingMetrics:
 
         # Test edge case: all processed
         metrics_all_processed = ProcessingMetrics(
-            total_bytes=1000,
-            processed_bytes=1000
+            total_bytes=1000, processed_bytes=1000
         )
         assert metrics_all_processed.bytes_progress == 100.0
 
@@ -143,9 +175,7 @@ class TestProcessingMetrics:
         """Test the estimated_remaining_time computed field calculation."""
         past_time = datetime.now(timezone.utc) - timedelta(seconds=10)
         metrics = ProcessingMetrics(
-            total_attachments=100,
-            processed_attachments=50,
-            start_time=past_time
+            total_attachments=100, processed_attachments=50, start_time=past_time
         )
 
         remaining = metrics.estimated_remaining_time
@@ -158,9 +188,7 @@ class TestProcessingMetrics:
 
         # Test edge case: completed
         metrics_completed = ProcessingMetrics(
-            total_attachments=100,
-            processed_attachments=100,
-            start_time=past_time
+            total_attachments=100, processed_attachments=100, start_time=past_time
         )
         assert metrics_completed.estimated_remaining_time == 0.0
 
@@ -175,7 +203,7 @@ class TestProcessingMetrics:
             start_time=start_time,
             current_attachment="test.pdf",
             current_attachment_progress=75.5,
-            errors=["Error 1"]
+            errors=["Error 1"],
         )
 
         json_data = metrics.model_dump_json()
@@ -244,7 +272,7 @@ class TestProcessingMetrics:
         assert example["current_attachment_progress"] == 67.5
         assert example["errors"] == []
 
-    @patch('fides.api.service.storage.schemas.datetime')
+    @patch("fides.api.service.storage.streaming.schemas.datetime")
     def test_utcnow_usage(self, mock_datetime):
         """Test that datetime.now(timezone.utc) is used for default start_time."""
         mock_now = datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
@@ -266,6 +294,102 @@ class TestProcessingMetrics:
 
         # They should return the expected default values
         assert metrics.overall_progress == 100.0  # No attachments = 100% progress
-        assert metrics.bytes_progress == 100.0    # No bytes = 100% progress
-        assert metrics.elapsed_time >= 0.0        # Should be non-negative
+        assert metrics.bytes_progress == 100.0  # No bytes = 100% progress
+        assert metrics.elapsed_time >= 0.0  # Should be non-negative
         assert metrics.estimated_remaining_time == 0.0  # No progress = 0 remaining time
+
+
+class TestStreamingStorageSchemas:
+    """Test cases for the new streaming storage Pydantic models."""
+
+    def test_attachment_info_validation(self):
+        """Test AttachmentInfo model validation."""
+        # Valid attachment
+        valid_attachment = AttachmentInfo(
+            s3_key="test/path/file.pdf",
+            file_name="document.pdf",
+            size=1024,
+            content_type="application/pdf",
+        )
+        assert valid_attachment.s3_key == "test/path/file.pdf"
+        assert valid_attachment.file_name == "document.pdf"
+        assert valid_attachment.size == 1024
+
+        # Test s3_key validation
+        with pytest.raises(ValueError, match="s3_key cannot be empty or whitespace"):
+            AttachmentInfo(s3_key="", file_name="test.pdf")
+
+        with pytest.raises(ValueError, match="s3_key cannot be empty or whitespace"):
+            AttachmentInfo(s3_key="   ", file_name="test.pdf")
+
+    def test_storage_upload_config_validation(self):
+        """Test StorageUploadConfig model validation."""
+        # Valid config
+        valid_config = StorageUploadConfig(
+            bucket_name="test-bucket", file_key="test/file.zip", resp_format="csv"
+        )
+        assert valid_config.bucket_name == "test-bucket"
+        assert valid_config.max_workers == 5  # default value
+
+        # Test validation
+        with pytest.raises(
+            ValueError, match="Storage identifier cannot be empty or whitespace"
+        ):
+            StorageUploadConfig(
+                bucket_name="", file_key="test/file.zip", resp_format="csv"
+            )
+
+        with pytest.raises(
+            ValueError, match="Storage identifier cannot be empty or whitespace"
+        ):
+            StorageUploadConfig(
+                bucket_name="test-bucket", file_key="   ", resp_format="csv"
+            )
+
+    def test_chunk_download_config_validation(self):
+        """Test ChunkDownloadConfig model validation."""
+        # Valid config
+        valid_config = ChunkDownloadConfig(start_byte=0, end_byte=1023)
+        assert valid_config.start_byte == 0
+        assert valid_config.end_byte == 1023
+        assert valid_config.max_retries == 3  # default value
+
+        # Test byte range validation
+        with pytest.raises(
+            ValueError, match="start_byte cannot be greater than end_byte"
+        ):
+            ChunkDownloadConfig(start_byte=1024, end_byte=1023)
+
+    def test_package_split_config_validation(self):
+        """Test PackageSplitConfig model validation."""
+        # Valid config
+        valid_config = PackageSplitConfig(max_attachments=50)
+        assert valid_config.max_attachments == 50
+
+        # Test validation
+        with pytest.raises(ValueError, match="max_attachments must be at least 1"):
+            PackageSplitConfig(max_attachments=0)
+
+    def test_streaming_buffer_config_defaults(self):
+        """Test StreamingBufferConfig default values."""
+        config = StreamingBufferConfig()
+        assert config.zip_buffer_threshold == 5 * 1024 * 1024  # 5MB
+        assert config.stream_buffer_threshold == 512 * 1024  # 512KB
+        assert config.chunk_size_threshold == 1024 * 1024  # 1MB
+
+    def test_attachment_processing_info_validation(self):
+        """Test AttachmentProcessingInfo model validation."""
+        attachment = AttachmentInfo(s3_key="test/file.pdf", file_name="test.pdf")
+        item = {"id": 1, "name": "test"}
+
+        # Valid processing info
+        processing_info = AttachmentProcessingInfo(
+            attachment=attachment, base_path="test/path", item=item
+        )
+        assert processing_info.attachment == attachment
+        assert processing_info.base_path == "test/path"
+        assert processing_info.item == item
+
+        # Test base_path validation
+        with pytest.raises(ValueError, match="base_path cannot be empty or whitespace"):
+            AttachmentProcessingInfo(attachment=attachment, base_path="", item=item)
