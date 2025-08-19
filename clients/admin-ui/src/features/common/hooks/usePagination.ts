@@ -155,11 +155,9 @@ export const usePagination = (config: PaginationConfig = {}) => {
       pageSize: currentState.pageSize,
       showSizeChanger,
       pageSizeOptions: displayPageSizeOptions.map(String),
-      showQuickJumper: true,
-      showTotal: (total: number, range: [number, number]) =>
-        `${range[0]}-${range[1]} of ${total} items`,
-      onChange: updatePagination,
-      onShowSizeChange: updatePagination,
+      onChange: updatePageIndex,
+      onShowSizeChange: (_: number, pageSize: number) =>
+        updatePageSize(pageSize),
     },
   };
 };

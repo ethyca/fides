@@ -6,6 +6,7 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
+import { DEFAULT_PAGE_SIZES } from "../constants";
 import type {
   AntTableHookConfig,
   SelectionState,
@@ -161,12 +162,9 @@ export const useAntTable = <TData, TSortKey extends string = string>(
       pageSize: configPageSize ?? tableState.pageSize,
       total: totalRows,
       showSizeChanger: tableState.paginationConfig?.showSizeChanger ?? true,
-      pageSizeOptions: tableState.paginationConfig?.pageSizeOptions?.map(
-        String,
-      ) ?? ["10", "25", "50", "100"],
-      showQuickJumper: true,
-      showTotal: (total: number, range: [number, number]) =>
-        `${range[0]}-${range[1]} of ${total} items`,
+      pageSizeOptions:
+        tableState.paginationConfig?.pageSizeOptions?.map(String) ??
+        DEFAULT_PAGE_SIZES,
     }),
     [
       currentPage,
