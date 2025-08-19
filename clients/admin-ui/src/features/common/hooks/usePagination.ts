@@ -32,8 +32,8 @@ const createPaginationParsers = (
  * synchronizes it with URL query parameters using NuQS. The URL query parameters
  * are the single source of truth for pagination state.
  *
- * Can be used standalone for any paginated component (not just tables) or
- * consumed by table state management hooks.
+ * This hook is framework agnostic and provides core pagination logic. For Ant Design
+ * specific integration, use `useAntPagination` which wraps this hook.
  *
  * @param config - Configuration for pagination state management
  * @returns Pagination state and update functions
@@ -49,8 +49,8 @@ const createPaginationParsers = (
  *   pageSizeOptions: [25, 50, 100, 200]
  * });
  *
- * // Use with Ant Pagination component
- * <Pagination {...pagination.paginationProps} total={totalItems} />
+ * // Access state and update functions
+ * const { pageIndex, pageSize, updatePageIndex, updatePageSize } = pagination;
  * ```
  */
 export const usePagination = (config: PaginationConfig = {}) => {
@@ -118,17 +118,5 @@ export const usePagination = (config: PaginationConfig = {}) => {
     // Configuration for components
     pageSizeOptions: displayPageSizeOptions,
     showSizeChanger,
-
-    // Ant Design pagination props
-    paginationProps: {
-      current: currentState.pageIndex,
-      pageSize: currentState.pageSize,
-      showSizeChanger,
-      pageSizeOptions: displayPageSizeOptions.map(String),
-      onChange: updatePageIndex,
-      onShowSizeChange: (_: number, pageSize: number) => {
-        updatePageSize(pageSize);
-      },
-    },
   };
 };
