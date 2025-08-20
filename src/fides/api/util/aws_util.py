@@ -87,7 +87,7 @@ def get_assumed_role_session(
 
 def get_s3_client(
     auth_method: str,
-    storage_secrets: Optional[StorageSecrets],
+    storage_secrets: Optional[Dict[StorageSecrets, Any]],
     assume_role_arn: Optional[str] = None,
 ) -> Session:
     """
