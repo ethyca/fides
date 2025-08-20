@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from pytest import param
 
-from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
     ManualTaskFieldType,
@@ -598,8 +598,8 @@ class TestManualTaskConditionalDependencies:
         assert len(initial_instances) == 0
 
         # Call _run_request which should create instances when conditions are met
-        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        # This should raise AwaitingAsyncTask since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
@@ -671,8 +671,8 @@ class TestManualTaskConditionalDependencies:
         assert len(initial_instances) == 0
 
         # Call _run_request which should create instances when all conditions are met
-        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        # This should raise AwaitingAsyncTask since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
@@ -707,8 +707,8 @@ class TestManualTaskConditionalDependencies:
         assert len(initial_instances) == 0
 
         # Call _run_request which should create instances when there are no conditions
-        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        # This should raise AwaitingAsyncTask since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
@@ -1144,9 +1144,9 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task.resources.request, "save", autospec=True
             ),
         ):
-            # This should raise AwaitingAsyncTaskCallback
+            # This should raise AwaitingAsyncTask
             with pytest.raises(
-                AwaitingAsyncTaskCallback,
+                AwaitingAsyncTask,
                 match="Manual task for .* requires user input",
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
@@ -1170,9 +1170,9 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task.resources.request, "save", autospec=True
             ),
         ):
-            # This should raise AwaitingAsyncTaskCallback with the detail message
+            # This should raise AwaitingAsyncTask with the detail message
             with pytest.raises(
-                AwaitingAsyncTaskCallback,
+                AwaitingAsyncTask,
                 match="Manual task for .* requires user input. Test detail",
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
@@ -1472,7 +1472,7 @@ class TestManualTaskGraphTaskHelperMethods:
     ):
         """Test that log_end is not called when manual task is actually awaiting input (real scenario)"""
         with create_log_end_mock(manual_task_graph_task) as mock_log_end:
-            # The retry decorator will catch AwaitingAsyncTaskCallback and return None
+            # The retry decorator will catch AwaitingAsyncTask and return None
             # This simulates the real scenario where the task is paused awaiting input
             result = manual_task_graph_task.access_request([])
 

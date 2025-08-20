@@ -6,12 +6,13 @@ import { MultiselectFieldValue } from "~/types/forms";
 // Use compatible interface for existing config types
 interface CustomPrivacyRequestField {
   label: string;
-  field_type?: "text" | "select" | "multiselect" | null;
+  field_type?: "text" | "select" | "multiselect" | "location" | null;
   required?: boolean | null;
   options?: string[] | null;
   default_value?: string | string[] | null;
   hidden?: boolean | null;
   query_param_key?: string | null;
+  ip_geolocation_hint?: boolean | null;
 }
 
 interface CustomFieldRendererProps {

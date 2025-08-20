@@ -3,7 +3,7 @@ from typing import Any, Optional
 from loguru import logger
 from pydantic.v1.utils import deep_update
 
-from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -138,7 +138,7 @@ class ManualTaskGraphTask(GraphTask):
         Execute manual task logic following the standard GraphTask pattern:
         1. Create ManualTaskInstances if they don't exist
         2. Check if all required submissions are present
-        3. Return data if submitted, raise AwaitingAsyncTaskCallback if not
+        3. Return data if submitted, raise AwaitingAsyncTask if not
         """
         manual_task = self._get_manual_task_or_none()
         if manual_task is None:
@@ -265,7 +265,7 @@ class ManualTaskGraphTask(GraphTask):
         base_msg = f"Manual task for {self.connection_key} requires user input"
         if awaiting_detail_message:
             base_msg = f"{base_msg}. {awaiting_detail_message}"
-        raise AwaitingAsyncTaskCallback(base_msg)
+        raise AwaitingAsyncTask(base_msg)
 
     def _ensure_manual_task_instances(
         self,
@@ -435,7 +435,6 @@ class ManualTaskGraphTask(GraphTask):
         ]
 
         if instances_to_remove:
-
             # Remove instances from the database
             for instance in instances_to_remove:
                 instance.delete(self.resources.session)
