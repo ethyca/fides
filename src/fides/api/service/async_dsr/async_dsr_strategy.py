@@ -23,23 +23,3 @@ class AsyncDSRStrategy(Strategy):
         data_path: Optional[str],
     ) -> Optional[SaaSRequestParams]:
         """Build request to start the async DSR process"""
-
-    def get_status_request(
-        self,
-        client: AuthenticatedClient,
-        node: TraversalNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        input_data: Dict[str, List[Any]],
-        secrets: Dict[str, Any],
-    ) -> Optional[SaaSRequestParams]:
-        """Build request to get the status of the async DSR process"""
-
-    def get_result_request(
-        self,
-        request_params: SaaSRequestParams,
-        connector_params: Dict[str, Any],
-        response: Response,
-        data_path: Optional[str],
-    ) -> Optional[SaaSRequestParams]:
-        """Build request to get the result of the async DSR process"""
