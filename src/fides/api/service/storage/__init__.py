@@ -26,9 +26,7 @@ from fides.api.service.storage.streaming.storage_client_factory import (
     CloudStorageClientFactory,
     get_storage_client,
 )
-from fides.api.service.storage.streaming.streaming_storage import (
-    upload_to_storage_streaming,
-)
+from fides.api.service.storage.streaming.streaming_storage import StreamingStorage
 
 __all__ = [
     # Core abstractions
@@ -36,7 +34,7 @@ __all__ = [
     "CloudStorageClientFactory",
     "get_storage_client",
     # Cloud-agnostic streaming
-    "upload_to_storage_streaming",
+    "StreamingStorage",
     # DSR-specific storage operations
     "stream_html_dsr_report_to_storage_multipart",
     # Data schemas

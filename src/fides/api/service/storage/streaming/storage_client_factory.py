@@ -12,6 +12,7 @@ from fides.api.service.storage.streaming.gcs.gcs_storage_client import (
 from fides.api.service.storage.streaming.s3.s3_storage_client import (
     create_s3_storage_client,
 )
+from fides.api.service.storage.streaming.util import update_storage_secrets
 
 
 class CloudStorageClientFactory:
@@ -30,18 +31,7 @@ class CloudStorageClientFactory:
         if storage_type.lower() == "s3":
             if storage_secrets is None:
                 raise ValueError("Storage secrets are required for S3")
-            # Convert StorageSecretsS3 to dict[StorageSecrets, Any] for backward compatibility
-            if isinstance(storage_secrets, StorageSecretsS3):
-                secrets_dict = {
-                    StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
-                    StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
-                    StorageSecrets.REGION_NAME: storage_secrets.region_name,
-                    StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
-                }
-                # Filter out None values
-                secrets_dict = {k: v for k, v in secrets_dict.items() if v is not None}
-            else:
-                secrets_dict = storage_secrets
+            secrets_dict = update_storage_secrets(storage_secrets)
             return create_s3_storage_client(auth_method, secrets_dict)
 
         if storage_type.lower() in ["gcs", "gcp", "google"]:

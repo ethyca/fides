@@ -15,18 +15,10 @@ from .retry import (
 )
 from .schemas import AttachmentInfo, StorageUploadConfig, StreamingBufferConfig
 from .storage_client_factory import CloudStorageClientFactory, get_storage_client
-from .streaming_storage import (
-    split_data_into_packages,
-    stream_attachments_to_storage_zip,
-    stream_attachments_to_storage_zip_memory_efficient,
-    upload_to_storage_streaming,
-)
+from .streaming_storage import StreamingStorage
 
 __all__ = [
-    "stream_attachments_to_storage_zip",
-    "stream_attachments_to_storage_zip_memory_efficient",
-    "upload_to_storage_streaming",
-    "split_data_into_packages",
+    "StreamingStorage",
     "CloudStorageClient",
     "CloudStorageClientFactory",
     "get_storage_client",

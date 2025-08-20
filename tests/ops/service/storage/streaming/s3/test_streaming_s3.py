@@ -84,8 +84,8 @@ class TestUploadToS3Streaming:
                 return_value=mock_storage_client,
             ),
             patch(
-                "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming",
-                return_value=("https://example.com/test-file.zip"),
+                "fides.api.service.storage.streaming.s3.streaming_s3.StreamingStorage.upload_to_storage_streaming",
+                return_value="https://example.com/test-file.zip",
             ),
         ):
             result_url = upload_to_s3_streaming(
@@ -95,17 +95,20 @@ class TestUploadToS3Streaming:
                 file_key="test-file.zip",
                 resp_format="zip",
                 privacy_request=mock_privacy_request,
-                document=mock_document,
+                document=None,  # Set to None to test streaming path
                 auth_method="secret_keys",
                 max_workers=3,
             )
 
             assert result_url == "https://example.com/test-file.zip"
 
-    def test_fallback_to_generic_upload_when_no_privacy_request(
-        self, mock_storage_secrets, mock_document
+    def test_successful_document_upload(
+        self,
+        mock_storage_secrets,
+        mock_privacy_request,
+        mock_document,
     ):
-        """Test fallback to generic upload when privacy_request is None."""
+        """Test successful document upload to S3 using generic upload path."""
         with patch(
             "fides.api.service.storage.streaming.s3.streaming_s3.generic_upload_to_s3"
         ) as mock_generic_upload:
@@ -120,17 +123,38 @@ class TestUploadToS3Streaming:
                 bucket_name="test-bucket",
                 file_key="test-file.zip",
                 resp_format="zip",
-                privacy_request=None,
-                document=mock_document,
+                privacy_request=mock_privacy_request,
+                document=mock_document,  # This will trigger generic upload path
                 auth_method="secret_keys",
+                max_workers=3,
             )
 
             assert result_url == "https://example.com/test-file.zip"
             mock_generic_upload.assert_called_once()
 
+    def test_fallback_to_generic_upload_when_no_privacy_request(
+        self, mock_storage_secrets, mock_document
+    ):
+        """Test error when privacy_request is None."""
+        with pytest.raises(
+            ValueError, match="Privacy request and document must be provided"
+        ):
+            upload_to_s3_streaming(
+                storage_secrets=mock_storage_secrets,
+                data={},
+                bucket_name="test-bucket",
+                file_key="test-file.zip",
+                resp_format="zip",
+                privacy_request=None,
+                document=mock_document,
+                auth_method="secret_keys",
+            )
+
     def test_error_when_no_privacy_request_and_no_document(self, mock_storage_secrets):
         """Test error when both privacy_request and document are None."""
-        with pytest.raises(ValueError, match="Privacy request must be provided"):
+        with pytest.raises(
+            ValueError, match="Privacy request and document must be provided"
+        ):
             upload_to_s3_streaming(
                 storage_secrets=mock_storage_secrets,
                 data={},
@@ -187,7 +211,9 @@ class TestUploadToS3Streaming:
                     auth_method="secret_keys",
                 )
 
-    def test_upload_execution_error(self, mock_storage_secrets, mock_privacy_request):
+    def test_upload_execution_error(
+        self, mock_storage_secrets, mock_privacy_request, mock_storage_client
+    ):
         """Test error handling when upload execution fails."""
         with (
             patch(
@@ -195,7 +221,7 @@ class TestUploadToS3Streaming:
                 return_value=mock_storage_client,
             ),
             patch(
-                "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming",
+                "fides.api.service.storage.streaming.s3.streaming_s3.StreamingStorage.upload_to_storage_streaming",
                 side_effect=ClientError(
                     {"Error": {"Code": "AccessDenied", "Message": "Access denied"}},
                     "PutObject",
@@ -215,7 +241,7 @@ class TestUploadToS3Streaming:
                 )
 
     def test_unexpected_error_during_upload(
-        self, mock_storage_secrets, mock_privacy_request
+        self, mock_storage_secrets, mock_privacy_request, mock_storage_client
     ):
         """Test error handling when unexpected errors occur during upload."""
         with (
@@ -224,7 +250,7 @@ class TestUploadToS3Streaming:
                 return_value=mock_storage_client,
             ),
             patch(
-                "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming",
+                "fides.api.service.storage.streaming.s3.streaming_s3.StreamingStorage.upload_to_storage_streaming",
                 side_effect=Exception("Unexpected error"),
             ),
         ):
@@ -242,7 +268,9 @@ class TestUploadToS3Streaming:
                     auth_method="secret_keys",
                 )
 
-    def test_custom_max_workers(self, mock_storage_secrets, mock_privacy_request):
+    def test_custom_max_workers(
+        self, mock_storage_secrets, mock_privacy_request, mock_storage_client
+    ):
         """Test that custom max_workers parameter is passed through."""
         with (
             patch(
@@ -250,10 +278,10 @@ class TestUploadToS3Streaming:
                 return_value=mock_storage_client,
             ),
             patch(
-                "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming"
+                "fides.api.service.storage.streaming.s3.streaming_s3.StreamingStorage.upload_to_storage_streaming"
             ) as mock_upload,
         ):
-            mock_upload.return_value = ("https://example.com/test-file.zip",)
+            mock_upload.return_value = "https://example.com/test-file.zip"
 
             upload_to_s3_streaming(
                 storage_secrets=mock_storage_secrets,

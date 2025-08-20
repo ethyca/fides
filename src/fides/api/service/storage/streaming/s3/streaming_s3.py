@@ -14,9 +14,8 @@ from fides.api.service.storage.streaming.schemas import StorageUploadConfig
 from fides.api.service.storage.streaming.storage_client_factory import (
     get_storage_client,
 )
-from fides.api.service.storage.streaming.streaming_storage import (
-    upload_to_storage_streaming,
-)
+from fides.api.service.storage.streaming.streaming_storage import StreamingStorage
+from fides.api.service.storage.streaming.util import update_storage_secrets
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -79,7 +78,7 @@ def upload_to_s3_streaming(
         )
 
         # Use the new cloud-agnostic streaming implementation
-        result = upload_to_storage_streaming(
+        result = StreamingStorage.upload_to_storage_streaming(
             storage_client,
             data,
             upload_config,
@@ -96,23 +95,3 @@ def upload_to_s3_streaming(
     except Exception as e:
         logger.error("Unexpected error during streaming upload: {}", e)
         raise StorageUploadError(f"Unexpected error during streaming upload: {e}")
-
-
-def update_storage_secrets(
-    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]
-) -> dict[StorageSecrets, Any]:
-    """
-    Updates the storage secrets to the expected format.
-    """
-    if isinstance(storage_secrets, StorageSecretsS3):
-        # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
-        secrets_dict = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
-            StorageSecrets.REGION_NAME: storage_secrets.region_name,
-            StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
-        }
-        # Filter out None values
-        return {k: v for k, v in secrets_dict.items() if v is not None}
-
-    return storage_secrets

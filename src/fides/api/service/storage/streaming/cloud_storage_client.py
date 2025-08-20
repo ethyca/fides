@@ -25,7 +25,7 @@ class CloudStorageClient(abc.ABC):
         metadata: Optional[dict[str, str]] = None,
     ) -> MultipartUploadResponse:
         """Initiate a multipart upload"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def upload_part(
@@ -38,7 +38,7 @@ class CloudStorageClient(abc.ABC):
         metadata: Optional[dict[str, str]] = None,
     ) -> UploadPartResponse:
         """Upload a part of a multipart upload"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def complete_multipart_upload(

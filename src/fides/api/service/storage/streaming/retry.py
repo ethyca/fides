@@ -55,6 +55,10 @@ def is_transient_error(error: Exception) -> bool:
     This is a cloud-agnostic implementation that can be extended
     with provider-specific logic.
     """
+    # Check if this is our custom TransientError
+    if isinstance(error, TransientError):
+        return True
+
     error_str = str(error).lower()
 
     # Common transient error patterns across cloud providers

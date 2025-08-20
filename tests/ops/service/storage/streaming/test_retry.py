@@ -124,7 +124,7 @@ class TestRetryDecorators:
         """Test retry decorator when function succeeds after retry."""
         call_count = 0
 
-        @retry_with_backoff(max_retries=2, base_delay=0.1)
+        @retry_with_backoff(retry_config=RetryConfig(max_retries=2, base_delay=0.1))
         def test_func():
             nonlocal call_count
             call_count += 1
@@ -141,7 +141,7 @@ class TestRetryDecorators:
     def test_retry_with_backoff_max_retries_exceeded(self, mock_sleep):
         """Test retry decorator when max retries are exceeded."""
 
-        @retry_with_backoff(max_retries=2, base_delay=0.1)
+        @retry_with_backoff(retry_config=RetryConfig(max_retries=2, base_delay=0.1))
         def test_func():
             raise TransientError("Always fails")
 
@@ -155,7 +155,7 @@ class TestRetryDecorators:
     def test_retry_with_backoff_permanent_error(self, mock_sleep):
         """Test retry decorator with permanent error (no retry)."""
 
-        @retry_with_backoff(max_retries=3, base_delay=0.1)
+        @retry_with_backoff(retry_config=RetryConfig(max_retries=3, base_delay=0.1))
         def test_func():
             raise PermanentError("Configuration error")
 
@@ -194,7 +194,7 @@ class TestRetryIntegration:
         """Test retry system with transient errors."""
         call_count = 0
 
-        @retry_with_backoff(max_retries=2, base_delay=0.1)
+        @retry_with_backoff(retry_config=RetryConfig(max_retries=2, base_delay=0.1))
         def download_operation():
             nonlocal call_count
             call_count += 1
@@ -213,13 +213,11 @@ class TestRetryIntegration:
     def test_retry_config_from_settings(self):
         """Test creating retry config from application settings."""
         with patch(
-            "fides.api.config.execution_settings.get_settings"
-        ) as mock_get_settings:
-            mock_settings = Mock()
-            mock_settings.task_retry_count = 5
-            mock_settings.task_retry_delay = 2
-            mock_settings.task_retry_backoff = 3
-            mock_get_settings.return_value = mock_settings
+            "fides.api.service.storage.streaming.retry.CONFIG.execution"
+        ) as mock_execution:
+            mock_execution.task_retry_count = 5
+            mock_execution.task_retry_delay = 2
+            mock_execution.task_retry_backoff = 3
 
             from fides.api.service.storage.streaming.retry import (
                 create_retry_config_from_settings,
