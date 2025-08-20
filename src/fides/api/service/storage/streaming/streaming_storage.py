@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import csv
 import json
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from io import BytesIO, StringIO
-from typing import TYPE_CHECKING, Any, Dict, Generator, Iterable, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Generator, Iterable, Optional, Tuple
 
+import requests
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 from stream_zip import _ZIP_32_TYPE, stream_zip
@@ -17,13 +17,7 @@ from fides.api.service.storage.streaming.cloud_storage_client import CloudStorag
 from fides.api.service.storage.streaming.dsr_storage import (
     stream_html_dsr_report_to_storage_multipart,
 )
-from fides.api.service.storage.streaming.retry import (
-    PermanentError,
-    TransientError,
-    is_s3_transient_error,
-    is_transient_error,
-    retry_cloud_storage_operation,
-)
+from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
     AttachmentInfo,
     AttachmentProcessingInfo,
@@ -41,7 +35,7 @@ class StreamingStorage:
         self.storage_client = storage_client
 
     def _convert_to_stream_zip_format(
-        self, generator: Generator[Tuple[str, BytesIO, Dict[str, Any]], None, None]
+        self, generator: Generator[Tuple[str, BytesIO, dict[str, Any]], None, None]
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Convert generator from (filename, BytesIO, metadata) to (filename, datetime, mode, method, content_iter) format.
 
@@ -127,8 +121,8 @@ class StreamingStorage:
         # Sort by attachment count (largest first) for better space utilization
         all_items.sort(key=lambda x: x[2], reverse=True)
 
-        packages: List[Dict[str, Any]] = []
-        package_attachment_counts: List[int] = []
+        packages: list[dict[str, Any]] = []
+        package_attachment_counts: list[int] = []
 
         for key, item, attachment_count in all_items:
             # Try to find a package with enough space
@@ -154,7 +148,7 @@ class StreamingStorage:
 
     def _collect_and_validate_attachments(
         self, data: dict
-    ) -> List[AttachmentProcessingInfo]:
+    ) -> list[AttachmentProcessingInfo]:
         """Collect and validate all attachments from the data.
 
         Args:
@@ -166,9 +160,48 @@ class StreamingStorage:
         all_attachments = []
 
         for key, value in data.items():
+            logger.debug(f"Processing key '{key}' with value type: {type(value)}")
+
             if not isinstance(value, list) or not value:
                 continue
 
+            # Special case: if the key is "attachments", treat the items as attachments directly
+            if key == "attachments":
+                for idx, attachment in enumerate(value):
+
+                    if not isinstance(attachment, dict):
+                        continue
+
+                    # Check if this looks like an attachment (has file_name or download_url)
+                    if "file_name" in attachment or "download_url" in attachment:
+                        try:
+                            # Convert to our AttachmentInfo format
+                            storage_key = attachment.get(
+                                "download_url",
+                                attachment.get("url", f"attachment_{idx}"),
+                            )
+                            file_name = attachment.get("file_name", f"attachment_{idx}")
+
+                            attachment_info = AttachmentInfo(
+                                storage_key=storage_key,
+                                file_name=file_name,
+                                size=attachment.get("file_size"),
+                                content_type=attachment.get("content_type"),
+                            )
+
+                            processing_info = AttachmentProcessingInfo(
+                                attachment=attachment_info,
+                                base_path=f"attachments/{idx + 1}",
+                                item=attachment,
+                            )
+                            all_attachments.append(processing_info)
+                        except (ValueError, TypeError, KeyError) as e:
+                            logger.debug(
+                                f"Failed to validate direct attachment {idx}: {e}"
+                            )
+                            continue
+
+            # Regular case: look for nested attachments
             for idx, item in enumerate(value):
                 if not isinstance(item, dict):
                     continue
@@ -192,8 +225,9 @@ class StreamingStorage:
                             item=item,
                         )
                         all_attachments.append(processing_info)
-                    except (ValueError, TypeError, KeyError):
+                    except (ValueError, TypeError, KeyError) as e:
                         # Invalid attachment data, skip it
+                        logger.debug(f"Invalid attachment data: {attachment}")
                         continue
 
         return all_attachments
@@ -337,6 +371,7 @@ class StreamingStorage:
         max_workers: int = 5,
         buffer_config: Optional[StreamingBufferConfig] = None,
         batch_size: int = 10,
+        resp_format: str = "json",
     ) -> None:
         """Stream attachments with minimal memory usage using controlled concurrency and batch processing.
 
@@ -359,53 +394,72 @@ class StreamingStorage:
         all_attachments = self._collect_and_validate_attachments(data)
 
         if not all_attachments:
-            self._upload_data_only_zip(storage_client, bucket_name, file_key, data)
+            logger.info("No attachments found, creating data-only ZIP")
+            self._upload_data_only_zip(
+                storage_client, bucket_name, file_key, data, resp_format
+            )
             return
 
         logger.info(
-            "Starting memory-efficient controlled streaming ZIP creation with {} attachments in batches of {}",
-            len(all_attachments),
-            batch_size,
+            f"Starting streaming ZIP creation with {len(all_attachments)} attachments in batches of {batch_size}"
         )
 
         # Create the ZIP file with data and attachments
         zip_generator = self._create_zip_generator(
-            data, all_attachments, storage_client, bucket_name, max_workers, batch_size
+            data,
+            all_attachments,
+            storage_client,
+            bucket_name,
+            max_workers,
+            batch_size,
+            resp_format,
         )
 
+        # The generator is already in stream_zip format, so use it directly
         storage_client.put_object(
             bucket_name,
             file_key,
-            stream_zip(self._convert_to_stream_zip_format(zip_generator)),
+            stream_zip(zip_generator),
             content_type="application/zip",
         )
 
         logger.info(
-            "Successfully created memory-efficient controlled streaming ZIP: {}",
-            file_key,
+            f"Successfully created memory-efficient controlled streaming ZIP: {file_key}"
         )
 
     def _create_data_files(
         self,
         data: dict,
-    ) -> Generator[Tuple[str, BytesIO, Dict[str, Any]], None, None]:
-        """Create data files (JSON/CSV) from the input data."""
+        resp_format: str = "json",
+    ) -> Generator[Tuple[str, BytesIO, dict[str, Any]], None, None]:
+        """Create data files (JSON/CSV) from the input data based on resp_format configuration."""
+
         for key, value in data.items():
             if isinstance(value, list) and value:
-                if key in ["data", "items", "records"]:
-                    if any("attachments" in item for item in value):
-                        data_content = json.dumps(value, default=str).encode("utf-8")
-                        yield f"{key}.json", BytesIO(data_content), {}
-                    else:
-                        csv_buffer = StringIO()
-                        if value:
-                            writer = csv.DictWriter(
-                                csv_buffer, fieldnames=value[0].keys()
-                            )
-                            writer.writeheader()
-                            writer.writerows(value)
+                # Use the configured response format instead of making decisions based on content
+                if resp_format.lower() == "json":
+                    data_content = json.dumps(value, default=str).encode("utf-8")
+                    yield f"{key}.json", BytesIO(data_content), {}
+                elif resp_format.lower() == "csv":
+                    csv_buffer = StringIO()
+                    if value and isinstance(value[0], dict):
+                        writer = csv.DictWriter(csv_buffer, fieldnames=value[0].keys())
+                        writer.writeheader()
+                        writer.writerows(value)
                         data_content = csv_buffer.getvalue().encode("utf-8")
                         yield f"{key}.csv", BytesIO(data_content), {}
+                    else:
+                        # Fallback to JSON for non-dict list items when CSV is requested
+                        data_content = json.dumps(value, default=str).encode("utf-8")
+                        yield f"{key}.json", BytesIO(data_content), {}
+                elif resp_format.lower() == "html":
+                    # HTML format typically uses JSON for data files since HTML is for the report itself
+                    data_content = json.dumps(value, default=str).encode("utf-8")
+                    yield f"{key}.json", BytesIO(data_content), {}
+                else:
+                    # Default to JSON for unsupported formats
+                    data_content = json.dumps(value, default=str).encode("utf-8")
+                    yield f"{key}.json", BytesIO(data_content), {}
 
     def _upload_data_only_zip(
         self,
@@ -413,156 +467,130 @@ class StreamingStorage:
         bucket_name: str,
         file_key: str,
         data: dict,
+        resp_format: str = "json",
     ) -> None:
         """Upload a ZIP file containing only data (no attachments)."""
+
+        data_files_generator = self._create_data_files(data, resp_format)
+        data_files_list = list(
+            data_files_generator
+        )  # Convert generator to list for logging
+
+        # Recreate the generator for the ZIP
+        data_files_generator = self._create_data_files(data, resp_format)
+
         storage_client.put_object(
             bucket_name,
             file_key,
-            stream_zip(
-                self._convert_to_stream_zip_format(self._create_data_files(data))
-            ),
+            stream_zip(self._convert_to_stream_zip_format(data_files_generator)),
             content_type="application/zip",
         )
 
-    def _process_attachment_batch(
-        self,
-        batch: List[AttachmentProcessingInfo],
-        storage_client: CloudStorageClient,
-        bucket_name: str,
-        max_workers: int,
-    ) -> Generator[Tuple[str, BytesIO, Dict[str, Any]], None, None]:
-        """Process a single batch of attachments with controlled concurrency."""
-        batch_workers = min(max_workers, len(batch))
-
-        logger.debug(
-            "Processing batch with {} workers for {} attachments",
-            batch_workers,
-            len(batch),
+        logger.info(
+            f"Successfully created data-only ZIP: {file_key} with {len(data_files_list)} files"
         )
-
-        with ThreadPoolExecutor(max_workers=batch_workers) as executor:
-            # Submit all attachments in the batch
-            future_to_info = {
-                executor.submit(
-                    self._download_attachment_parallel,
-                    storage_client,
-                    bucket_name,
-                    info.attachment,
-                ): info
-                for info in batch
-            }
-
-            # Process completed futures as they finish
-            for future in future_to_info:
-                try:
-                    filename, content = future.result()
-                    logger.debug(
-                        "Processed attachment: {} ({:.2f} MB)",
-                        filename,
-                        len(content) / (1024 * 1024),
-                    )
-                    yield filename, BytesIO(content), {}
-
-                except Exception as e:
-                    # Handle download failures gracefully - log error and continue
-                    processing_info = future_to_info[future]
-                    error_msg = f"Failed to download attachment {processing_info.attachment.file_name or 'unknown'}: {e}"
-                    logger.warning(error_msg)
-                    # Don't yield this attachment - it will be skipped
 
     def _create_zip_generator(
         self,
         data: dict,
-        all_attachments: List[AttachmentProcessingInfo],
+        all_attachments: list[AttachmentProcessingInfo],
         storage_client: CloudStorageClient,
         bucket_name: str,
         max_workers: int,
         batch_size: int,
-    ) -> Generator[Tuple[str, BytesIO, Dict[str, Any]], None, None]:
+        resp_format: str = "json",
+    ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Create a generator that yields files for the ZIP with minimal memory footprint."""
 
         # First yield data files
-        yield from self._create_data_files(data)
+        yield from self._yield_data_files(data, resp_format)
 
-        # Then yield attachments in controlled batches with progress tracking
+        # Then yield attachments
+        yield from self._yield_attachments(
+            all_attachments, storage_client, bucket_name, batch_size
+        )
+
+    def _yield_data_files(
+        self, data: dict, resp_format: str
+    ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
+        """Yield data files in stream_zip format."""
+        data_files_count = 0
+
+        for data_file in self._create_data_files(data, resp_format):
+            data_files_count += 1
+            filename, content, _ = data_file
+            content_bytes = content.getvalue()
+            yield filename, datetime.now(), 0o644, _ZIP_32_TYPE(), iter([content_bytes])
+
+    def _yield_attachments(
+        self,
+        all_attachments: list[AttachmentProcessingInfo],
+        storage_client: CloudStorageClient,
+        bucket_name: str,
+        batch_size: int,
+    ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
+        """Yield attachments in stream_zip format with true streaming from URLs."""
+        attachment_files_count = 0
         total_batches = (len(all_attachments) + batch_size - 1) // batch_size
 
         for batch_num, batch in enumerate(
             self._get_attachment_batches(all_attachments, batch_size), 1
         ):
-            logger.debug(
-                "Processing batch {}/{} ({:.1f}% complete)",
-                batch_num,
-                total_batches,
-                (batch_num * batch_size) / len(all_attachments) * 100,
-            )
+            for attachment_info in batch:
+                attachment_files_count += 1
+                yield from self._yield_single_attachment(
+                    attachment_info, attachment_files_count, storage_client, bucket_name
+                )
 
-            yield from self._process_attachment_batch(
-                batch, storage_client, bucket_name, max_workers
+    def _yield_single_attachment(
+        self,
+        attachment_info: AttachmentProcessingInfo,
+        file_number: int,
+        storage_client: CloudStorageClient,
+        bucket_name: str,
+    ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
+        """Yield a single attachment in stream_zip format."""
+        filename = attachment_info.attachment.file_name or f"attachment_{file_number}"
+
+        if attachment_info.attachment.storage_key.startswith(("http://", "https://")):
+            # True streaming from URL
+            content_stream = self._create_url_stream(
+                attachment_info.attachment.storage_key
             )
+            yield filename, datetime.now(), 0o644, _ZIP_32_TYPE(), content_stream
+        else:
+            # Fallback for storage-based attachments
+            try:
+                content = storage_client.get_object(
+                    bucket_name, attachment_info.attachment.storage_key
+                )
+                yield filename, datetime.now(), 0o644, _ZIP_32_TYPE(), iter([content])
+            except Exception as e:
+                logger.warning(
+                    f"Failed to download attachment {filename} from storage: {e}"
+                )
+
+    def _create_url_stream(self, url: str) -> Iterable[bytes]:
+        """Create a lazy generator that streams from URL when called."""
+
+        def stream_generator() -> Iterable[bytes]:
+            try:
+                with requests.get(url, timeout=30, stream=True) as response:
+                    response.raise_for_status()
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            yield chunk
+            except Exception as e:
+                logger.error(f"Failed to stream from URL {url}: {e}")
+                raise StorageUploadError(f"Failed to stream from URL {url}: {e}") from e
+
+        return stream_generator()
 
     def _get_attachment_batches(
-        self, all_attachments: List[AttachmentProcessingInfo], batch_size: int
-    ) -> List[List[AttachmentProcessingInfo]]:
+        self, all_attachments: list[AttachmentProcessingInfo], batch_size: int
+    ) -> list[list[AttachmentProcessingInfo]]:
         """Split attachments into batches for controlled processing."""
         return [
             all_attachments[i : i + batch_size]
             for i in range(0, len(all_attachments), batch_size)
         ]
-
-    @retry_cloud_storage_operation(
-        provider="cloud storage",
-        operation_name="download attachment",
-        max_retries=3,
-        base_delay=1.0,
-        max_delay=15.0,
-    )
-    def _download_attachment_parallel(
-        self,
-        storage_client: CloudStorageClient,
-        bucket_name: str,
-        attachment: AttachmentInfo,
-    ) -> Tuple[str, bytes]:
-        """Download a single attachment in parallel.
-
-        Args:
-            storage_client: Cloud storage client
-            bucket_name: Bucket name
-            attachment: Attachment info
-
-        Returns:
-            Tuple of (filename, file_content)
-
-        Raises:
-            Exception: If download fails (will be handled by caller)
-        """
-        try:
-            filename = attachment.file_name or "attachment"
-
-            # Get the file content from storage
-            file_content = storage_client.get_object(
-                bucket_name, attachment.storage_key
-            )
-
-            return filename, file_content
-
-        except (ValueError, AttributeError) as e:
-            # Handle configuration or validation errors during download
-            # These are permanent errors that shouldn't be retried
-            raise PermanentError(
-                f"Configuration error downloading attachment {attachment.file_name}: {e}"
-            ) from e
-        except PermanentError:
-            # Re-raise permanent errors without wrapping
-            raise
-        except Exception as e:
-            # Check if this is a transient error that should be retried
-            if is_transient_error(e) or is_s3_transient_error(e):
-                raise TransientError(
-                    f"Transient error downloading attachment {attachment.file_name}: {e}"
-                ) from e
-
-            # Handle unexpected errors during download
-            raise StorageUploadError(
-                f"Failed to download attachment {attachment.file_name}: {e}"
-            ) from e

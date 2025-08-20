@@ -42,6 +42,7 @@ oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"
 env = "prod"
+subject_request_download_ui_enabled = true
 
 [execution]
 require_manual_request_approval = false

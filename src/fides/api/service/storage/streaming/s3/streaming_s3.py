@@ -78,7 +78,8 @@ def upload_to_s3_streaming(
         )
 
         # Use the new cloud-agnostic streaming implementation
-        result = StreamingStorage.upload_to_storage_streaming(
+        streaming_storage = StreamingStorage(storage_client)
+        result = streaming_storage.upload_to_storage_streaming(
             storage_client,
             data,
             upload_config,

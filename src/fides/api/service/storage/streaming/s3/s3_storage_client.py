@@ -298,7 +298,7 @@ class S3StorageClient(CloudStorageClient):
         Args:
             bucket: S3 bucket name where the object will be stored
             key: S3 object key (file path) within the bucket
-            body: The object content to upload (can be bytes, file-like object, or string)
+            body: The object content to upload (can be bytes, file-like object, string, or generator)
             content_type: Optional MIME type of the object
             metadata: Optional key-value pairs to store as object metadata
 
@@ -310,6 +310,14 @@ class S3StorageClient(CloudStorageClient):
             ValueError: If parameters fail validation (empty/whitespace strings for bucket/key)
         """
         try:
+            # Handle generators by converting them to bytes
+            if hasattr(body, "__iter__") and not isinstance(
+                body, (bytes, bytearray, str)
+            ):
+                # Convert generator to bytes
+                body_bytes = b"".join(body)
+                body = body_bytes
+
             params: dict[str, Any] = {
                 "Bucket": bucket,
                 "Key": key,

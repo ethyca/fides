@@ -543,6 +543,85 @@ class TestAttachmentCollectionAndValidation:
         assert len(attachments) == 1
         assert attachments[0].attachment.storage_key == "key1"
 
+    def test_collect_and_validate_attachments_with_direct_attachments_key(self):
+        """Test collecting attachments from the direct 'attachments' key."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "attachments": [
+                {
+                    "file_name": "test_file_pdf.pdf",
+                    "file_size": 11236,
+                    "download_url": "https://example.com/file1.pdf",
+                    "content_type": "application/pdf",
+                },
+                {
+                    "file_name": "test_file_text.txt",
+                    "file_size": 41,
+                    "download_url": "https://example.com/file2.txt",
+                    "content_type": "text/plain",
+                },
+            ]
+        }
+
+        attachments = processor._collect_and_validate_attachments(data)
+        assert len(attachments) == 2
+
+        # Check first attachment
+        assert attachments[0].attachment.storage_key == "https://example.com/file1.pdf"
+        assert attachments[0].attachment.file_name == "test_file_pdf.pdf"
+        assert attachments[0].attachment.size == 11236
+        assert attachments[0].base_path == "attachments/1"
+
+        # Check second attachment
+        assert attachments[1].attachment.storage_key == "https://example.com/file2.txt"
+        assert attachments[1].attachment.file_name == "test_file_text.txt"
+        assert attachments[1].attachment.size == 41
+        assert attachments[1].base_path == "attachments/2"
+
+    def test_collect_and_validate_attachments_mixed_structure(self):
+        """Test collecting attachments from both direct 'attachments' key and nested structures."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "attachments": [
+                        {"storage_key": "key1", "size": 1000, "file_name": "file1.txt"},
+                    ],
+                }
+            ],
+            "attachments": [
+                {
+                    "file_name": "direct_file.pdf",
+                    "download_url": "https://example.com/direct.pdf",
+                    "file_size": 5000,
+                }
+            ],
+        }
+
+        attachments = processor._collect_and_validate_attachments(data)
+        assert len(attachments) == 2
+
+        # Check nested attachment
+        nested_attachment = next(
+            a for a in attachments if a.base_path == "users/1/attachments"
+        )
+        assert nested_attachment.attachment.storage_key == "key1"
+
+        # Check direct attachment
+        direct_attachment = next(
+            a for a in attachments if a.base_path == "attachments/1"
+        )
+        assert (
+            direct_attachment.attachment.storage_key == "https://example.com/direct.pdf"
+        )
+        assert direct_attachment.attachment.file_name == "direct_file.pdf"
+
 
 # =============================================================================
 # Download Attachment Tests
@@ -1130,15 +1209,26 @@ class TestStreamingZipCreation:
         # Should have 2 data files + 4 attachment files = 6 total
         assert len(files) == 6
 
-        # Check data files
+        # Check data files (first 2 files)
         data_files = [f[0] for f in files[:2]]
         assert "data.json" in data_files
-        assert "items.csv" in data_files
+        assert (
+            "items.json" in data_files
+        )  # Changed from .csv to .json since resp_format defaults to json
 
-        # Check attachment files
+        # Check attachment files (last 4 files)
         attachment_files = [f[0] for f in files[2:]]
         assert all(f.startswith("file") for f in attachment_files)
         assert len(attachment_files) == 4
+
+        # Verify all files are in stream_zip format: (filename, datetime, mode, method, content_iter)
+        for file_info in files:
+            assert len(file_info) == 5
+            filename, dt, mode, method, content_iter = file_info
+            assert isinstance(dt, datetime)
+            assert mode == 0o644
+            assert hasattr(method, "__call__")  # method should be callable
+            assert hasattr(content_iter, "__iter__")  # content_iter should be iterable
 
     def test_upload_data_only_zip(self):
         """Test _upload_data_only_zip method."""
@@ -1812,3 +1902,220 @@ class TestRetryMechanism:
             # Should have retried and succeeded
             assert mock_storage_client.put_object.call_count == 2
             assert result is not None
+
+
+# =============================================================================
+# Helper Method Tests
+# =============================================================================
+
+
+class TestHelperMethods:
+    """Test the new helper methods for cleaner code organization."""
+
+    def test_yield_data_files(self):
+        """Test _yield_data_files method."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "users": [{"id": 1, "name": "User 1"}],
+            "items": [{"id": 1, "name": "Item 1"}],
+        }
+
+        # Test with JSON format
+        generator = processor._yield_data_files(data, "json")
+        files = list(generator)
+
+        assert len(files) == 2
+        assert files[0][0] == "users.json"  # filename
+        assert files[1][0] == "items.json"  # filename
+
+        # Check stream_zip format: (filename, datetime, mode, method, content_iter)
+        for file_info in files:
+            filename, dt, mode, method, content_iter = file_info
+            assert isinstance(dt, datetime)
+            assert mode == 0o644
+            assert hasattr(method, "__call__")  # method should be callable
+            assert hasattr(content_iter, "__iter__")  # content_iter should be iterable
+
+    def test_yield_attachments(self):
+        """Test _yield_attachments method."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Create mock attachments
+        attachments = []
+        for i in range(3):
+            attachment = AttachmentInfo(
+                storage_key=f"https://example.com/file{i}.pdf",
+                file_name=f"file{i}.pdf",
+                size=1000 + i * 100,
+            )
+            processing_info = AttachmentProcessingInfo(
+                attachment=attachment, base_path=f"attachments/{i+1}", item={"id": i}
+            )
+            attachments.append(processing_info)
+
+        # Test with batch size 2
+        generator = processor._yield_attachments(
+            attachments, mock_storage_client, "test-bucket", 2
+        )
+        files = list(generator)
+
+        assert len(files) == 3
+        assert all(
+            f[0].startswith("file") for f in files
+        )  # All filenames start with "file"
+
+    def test_yield_single_attachment_url(self):
+        """Test _yield_single_attachment method with URL attachments."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        attachment = AttachmentInfo(
+            storage_key="https://example.com/test.pdf", file_name="test.pdf", size=5000
+        )
+        processing_info = AttachmentProcessingInfo(
+            attachment=attachment, base_path="attachments/1", item={"id": 1}
+        )
+
+        # Test URL attachment (should create streaming generator)
+        generator = processor._yield_single_attachment(
+            processing_info, 1, mock_storage_client, "test-bucket"
+        )
+        files = list(generator)
+
+        assert len(files) == 1
+        filename, dt, mode, method, content_iter = files[0]
+        assert filename == "test.pdf"
+        assert mode == 0o644
+        assert hasattr(content_iter, "__iter__")  # Should be a generator
+
+    def test_yield_single_attachment_storage(self):
+        """Test _yield_single_attachment method with storage-based attachments."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        mock_storage_client.get_object.return_value = b"test content"
+        processor = StreamingStorage(mock_storage_client)
+
+        attachment = AttachmentInfo(
+            storage_key="storage_key_123", file_name="test.txt", size=100
+        )
+        processing_info = AttachmentProcessingInfo(
+            attachment=attachment, base_path="users/1/attachments", item={"id": 1}
+        )
+
+        # Test storage attachment (should download and yield content)
+        generator = processor._yield_single_attachment(
+            processing_info, 1, mock_storage_client, "test-bucket"
+        )
+        files = list(generator)
+
+        assert len(files) == 1
+        filename, dt, mode, method, content_iter = files[0]
+        assert filename == "test.txt"
+        assert mode == 0o644
+
+        # Verify storage client was called
+        mock_storage_client.get_object.assert_called_once_with(
+            "test-bucket", "storage_key_123"
+        )
+
+    def test_create_url_stream(self):
+        """Test _create_url_stream method creates a lazy generator."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        url = "https://example.com/test.pdf"
+
+        # This should return a generator function, not execute HTTP request
+        stream_generator = processor._create_url_stream(url)
+
+        # Should be callable (returns a function)
+        assert callable(stream_generator)
+
+        # Should not have made any HTTP requests yet
+        # (We can't easily test this without mocking requests, but the key point
+        # is that it returns a function, not executes the request)
+
+    def test_streaming_behavior_no_downloading(self):
+        """Test that URL attachments create lazy generators without downloading."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Create attachment with URL
+        attachment = AttachmentInfo(
+            storage_key="https://example.com/large_file.pdf",
+            file_name="large_file.pdf",
+            size=1000000,  # 1MB file
+        )
+        processing_info = AttachmentProcessingInfo(
+            attachment=attachment, base_path="attachments/1", item={"id": 1}
+        )
+
+        # This should NOT download the file, just create a generator
+        generator = processor._yield_single_attachment(
+            processing_info, 1, mock_storage_client, "test-bucket"
+        )
+        files = list(generator)
+
+        assert len(files) == 1
+        filename, dt, mode, method, content_iter = files[0]
+
+        # The content_iter should be a generator function, not actual content
+        assert callable(content_iter)
+
+        # No HTTP requests should have been made yet
+        # The generator is lazy and only executes when called by stream_zip
+
+    def test_mixed_attachment_types(self):
+        """Test handling of both URL and storage-based attachments."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        mock_storage_client.get_object.return_value = b"storage content"
+        processor = StreamingStorage(mock_storage_client)
+
+        attachments = []
+
+        # URL-based attachment
+        url_attachment = AttachmentInfo(
+            storage_key="https://example.com/url_file.pdf",
+            file_name="url_file.pdf",
+            size=5000,
+        )
+        url_processing_info = AttachmentProcessingInfo(
+            attachment=url_attachment, base_path="attachments/1", item={"id": 1}
+        )
+        attachments.append(url_processing_info)
+
+        # Storage-based attachment
+        storage_attachment = AttachmentInfo(
+            storage_key="storage_key_123", file_name="storage_file.txt", size=100
+        )
+        storage_processing_info = AttachmentProcessingInfo(
+            attachment=storage_attachment,
+            base_path="users/1/attachments",
+            item={"id": 1},
+        )
+        attachments.append(storage_processing_info)
+
+        # Process both types
+        generator = processor._yield_attachments(
+            attachments, mock_storage_client, "test-bucket", 2
+        )
+        files = list(generator)
+
+        assert len(files) == 2
+
+        # Check URL attachment (should be lazy generator)
+        url_file = next(f for f in files if f[0] == "url_file.pdf")
+        assert callable(url_file[4])  # content_iter should be callable
+
+        # Check storage attachment (should have actual content)
+        storage_file = next(f for f in files if f[0] == "storage_file.txt")
+        assert list(storage_file[4]) == [
+            b"storage content"
+        ]  # content_iter should yield content
+
+        # Verify storage client was only called for storage attachment
+        mock_storage_client.get_object.assert_called_once_with(
+            "test-bucket", "storage_key_123"
+        )
