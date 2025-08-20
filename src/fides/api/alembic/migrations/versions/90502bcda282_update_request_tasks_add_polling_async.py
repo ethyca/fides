@@ -1,7 +1,7 @@
 """Update Request Tasks
 
 Revision ID: 90502bcda282
-Revises: 2f3c1a2d6b10
+Revises: 3baf42d251a6
 Create Date: 2025-08-05 16:31:45.335384
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "90502bcda282"
-down_revision = "2f3c1a2d6b10"
+down_revision = "3baf42d251a6"
 branch_labels = None
 depends_on = None
 
