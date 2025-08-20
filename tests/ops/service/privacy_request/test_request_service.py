@@ -8,7 +8,7 @@ from httpx import HTTPStatusError
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.db.seed import create_or_update_parent_user
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
