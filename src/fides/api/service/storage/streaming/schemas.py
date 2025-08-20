@@ -175,7 +175,9 @@ class ProcessingMetrics(BaseModel):
         # Calculate progress directly to avoid computed field access issues
         if self.total_attachments == 0:
             return 0.0
-        progress = min(100.0, (self.processed_attachments / self.total_attachments) * 100)
+        progress = min(
+            100.0, (self.processed_attachments / self.total_attachments) * 100
+        )
         if progress <= 0:
             return 0.0
         # Calculate elapsed time directly
@@ -234,8 +236,7 @@ class MultipartUploadResponse(BaseModel):
     def get_provider_metadata(self, key: str, default: Any = None) -> Any:
         """Get metadata value by key with fallback to default"""
         if self.metadata is not None:
-            metadata: dict[str, Any] = self.metadata
-            return metadata.get(key, default)
+            return self.metadata.get(key, default)  # pylint: disable=no-member
         return default
 
 
@@ -275,6 +276,5 @@ class UploadPartResponse(BaseModel):
     def get_provider_metadata(self, key: str, default: Any = None) -> Any:
         """Get metadata value by key with fallback to default"""
         if self.metadata is not None:
-            metadata: dict[str, Any] = self.metadata
-            return metadata.get(key, default)
+            return self.metadata.get(key, default)  # pylint: disable=no-member
         return default
