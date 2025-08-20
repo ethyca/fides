@@ -89,20 +89,6 @@ class QueryParam(BaseModel):
     value: Union[int, str]
 
 
-class AsyncStrategy(Enum):
-    """Async strategies: supports callback for now, but could be
-    extended to polling as well in the future"""
-
-    callback = "callback"
-
-
-class AsyncConfig(BaseModel):
-    """Async config only has strategy for now, but could be
-    extended with other configuration options when we add polling"""
-
-    strategy: AsyncStrategy
-
-
 class SaaSRequest(BaseModel):
     """
     A single request with static or dynamic path, headers, query, and body params.
@@ -125,7 +111,7 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[Union[bool, List[int]]] = False
     rate_limit_config: Optional[RateLimitConfig] = None
-    async_config: Optional[AsyncConfig] = None
+    async_config: Optional[Strategy] = None
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
     )
