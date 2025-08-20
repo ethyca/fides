@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Optional, Protocol
+from typing import Any, Optional
 
 from fideslang.validation import AnyHttpUrlString
 
 from fides.api.service.storage.streaming.schemas import (
     MultipartUploadResponse,
-    ProcessingMetrics,
     UploadPartResponse,
 )
 
@@ -81,9 +80,3 @@ class CloudStorageClient(abc.ABC):
     ) -> AnyHttpUrlString:
         """Generate a presigned URL for the object"""
         pass  # pragma: no cover
-
-
-class ProgressCallback(Protocol):
-    """Protocol for progress callback functions"""
-
-    def __call__(self, metrics: ProcessingMetrics) -> None: ...

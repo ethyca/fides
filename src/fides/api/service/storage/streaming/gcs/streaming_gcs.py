@@ -16,13 +16,11 @@ TODO: Implement GCS-specific streaming optimizations and features:
 from __future__ import annotations
 
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional
 
 from fideslang.validation import AnyHttpUrlString
 
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.streaming.cloud_storage_client import ProgressCallback
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -38,8 +36,7 @@ def upload_to_gcs_streaming(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
+) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to GCS using production-ready memory-efficient processing.
 
     TODO: This function is not implemented and needs:
@@ -60,10 +57,9 @@ def upload_to_gcs_streaming(
         document: Optional document (for backward compatibility)
         auth_method: Authentication method for GCS
         max_workers: Number of parallel workers for attachment processing
-        progress_callback: Optional callback for progress updates
 
     Returns:
-        Tuple of (signed_url, metrics) where metrics contains processing information
+        signed_url
 
     Raises:
         NotImplementedError: Function not yet implemented
@@ -81,8 +77,7 @@ def upload_to_gcs_streaming_advanced(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
+) -> Optional[AnyHttpUrlString]:
     """Advanced GCS streaming upload with additional features.
 
     TODO: This function is not implemented and needs:
@@ -103,10 +98,9 @@ def upload_to_gcs_streaming_advanced(
         document: Optional document (for backward compatibility)
         auth_method: Authentication method for GCS
         max_workers: Number of parallel workers for attachment processing
-        progress_callback: Optional callback for progress updates
 
     Returns:
-        Tuple of (signed_url, metrics) where metrics contains processing information
+        signed_url
 
     Raises:
         NotImplementedError: Function not yet implemented
@@ -124,8 +118,7 @@ def upload_to_gcs_resumable(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
+) -> Optional[AnyHttpUrlString]:
     """Uploads data to GCS using resumable uploads for large files.
 
     TODO: This function is not implemented and needs:
@@ -146,10 +139,9 @@ def upload_to_gcs_resumable(
         document: Optional document (for backward compatibility)
         auth_method: Authentication method for GCS
         max_workers: Number of parallel workers for attachment processing
-        progress_callback: Optional callback for progress updates
 
     Returns:
-        Tuple of (signed_url, metrics) where metrics contains processing information
+        signed_url
 
     Raises:
         NotImplementedError: Function not yet implemented
@@ -168,8 +160,7 @@ def upload_to_gcs_streaming_with_retry(
     auth_method: str,
     max_workers: int = 5,
     max_retries: int = 3,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
+) -> Optional[AnyHttpUrlString]:
     """Uploads data to GCS with automatic retry logic for transient failures.
 
     TODO: This function is not implemented and needs:
@@ -178,7 +169,6 @@ def upload_to_gcs_streaming_with_retry(
     - Handling of GCS quota limits and rate limiting
     - Implementation of exponential backoff with jitter
     - GCS-specific transient error detection and handling
-    - Retry metrics and monitoring integration
 
     Args:
         storage_secrets: GCS storage secrets
@@ -191,10 +181,9 @@ def upload_to_gcs_streaming_with_retry(
         auth_method: Authentication method for GCS
         max_workers: Number of parallel workers for attachment processing
         max_retries: Maximum number of retry attempts
-        progress_callback: Optional callback for progress updates
 
     Returns:
-        Tuple of (signed_url, metrics) where metrics contains processing information
+        signed_url
 
     Raises:
         NotImplementedError: Function not yet implemented

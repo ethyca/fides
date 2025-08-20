@@ -9,7 +9,6 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 from fides.api.service.storage.streaming.util import CHUNK_SIZE_THRESHOLD
 
 if TYPE_CHECKING:
@@ -22,7 +21,7 @@ def stream_html_dsr_report_to_storage_multipart(
     file_key: str,
     data: dict,
     privacy_request: PrivacyRequest,
-) -> ProcessingMetrics:
+) -> None:
     """Stream HTML DSR report to storage multipart upload.
 
     This function handles the specific logic for generating and streaming DSR reports
@@ -67,9 +66,6 @@ def stream_html_dsr_report_to_storage_multipart(
         logger.info(
             "Completed HTML DSR report streaming upload with {} parts", len(parts)
         )
-
-        # Return minimal metrics for HTML (no attachments)
-        return ProcessingMetrics()
 
     except Exception as e:
         # Abort multipart upload on failure

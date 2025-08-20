@@ -9,6 +9,7 @@ from loguru import logger
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.s3 import create_presigned_url_for_s3
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
+from fides.api.service.storage.streaming.retry import retry_s3_operation
 from fides.api.service.storage.streaming.s3.s3_schemas import (
     AWSAbortMultipartUploadRequest,
     AWSCompleteMultipartUploadRequest,
@@ -38,6 +39,9 @@ class S3StorageClient(CloudStorageClient):
         """
         self.client = s3_client
 
+    @retry_s3_operation(
+        "create multipart upload", max_retries=3, base_delay=1.0, max_delay=10.0
+    )
     def create_multipart_upload(
         self,
         bucket: str,
@@ -89,6 +93,7 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to create multipart upload: {}", e)
             raise
 
+    @retry_s3_operation("upload part", max_retries=3, base_delay=1.0, max_delay=15.0)
     def upload_part(
         self,
         bucket: str,
@@ -146,6 +151,9 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to upload part {}: {}", request.part_number, e)
             raise
 
+    @retry_s3_operation(
+        "complete multipart upload", max_retries=3, base_delay=1.0, max_delay=10.0
+    )
     def complete_multipart_upload(
         self,
         bucket: str,
@@ -200,6 +208,9 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to complete multipart upload: {}", e)
             raise
 
+    @retry_s3_operation(
+        "abort multipart upload", max_retries=2, base_delay=1.0, max_delay=5.0
+    )
     def abort_multipart_upload(self, bucket: str, key: str, upload_id: str) -> None:
         """Abort an existing S3 multipart upload.
 
@@ -231,6 +242,9 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to abort multipart upload: {}", e)
             raise
 
+    @retry_s3_operation(
+        "generate presigned URL", max_retries=2, base_delay=1.0, max_delay=5.0
+    )
     def generate_presigned_url(
         self, bucket: str, key: str, ttl_seconds: Optional[int] = None
     ) -> AnyHttpUrlString:
@@ -267,6 +281,7 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to generate presigned URL: {}", e)
             raise
 
+    @retry_s3_operation("put object", max_retries=3, base_delay=1.0, max_delay=20.0)
     def put_object(
         self,
         bucket: str,
@@ -311,6 +326,7 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to upload object: {}", e)
             raise
 
+    @retry_s3_operation("get object", max_retries=3, base_delay=1.0, max_delay=15.0)
     def get_object(self, bucket: str, key: str) -> bytes:
         """Get the full content of an S3 object.
 

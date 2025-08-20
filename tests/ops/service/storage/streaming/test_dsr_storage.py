@@ -9,7 +9,6 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.storage.streaming.dsr_storage import (
     stream_html_dsr_report_to_storage_multipart,
 )
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 from fides.api.service.storage.streaming.util import CHUNK_SIZE_THRESHOLD
 
 
@@ -84,9 +83,6 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             privacy_request=mock_privacy_request,
         )
 
-        # Verify the result
-        assert isinstance(result, ProcessingMetrics)
-
         # Verify multipart upload was created
         storage_client.create_multipart_upload.assert_called_once_with(
             "test-bucket", "test-report.html", "text/html"
@@ -130,9 +126,6 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             data=sample_dsr_data,
             privacy_request=mock_privacy_request,
         )
-
-        # Verify the result
-        assert isinstance(result, ProcessingMetrics)
 
         # Verify multiple parts were uploaded
         assert storage_client.upload_part.call_count > 1
@@ -179,7 +172,6 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client.create_multipart_upload.assert_called_once_with(
             custom_bucket, custom_key, "text/html"
         )
-        assert isinstance(result, ProcessingMetrics)
 
     @pytest.mark.parametrize(
         "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
@@ -210,7 +202,6 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         )
 
         # Verify the result
-        assert isinstance(result, ProcessingMetrics)
         storage_client.upload_part.assert_called_once()
         storage_client.complete_multipart_upload.assert_called_once()
 
@@ -248,7 +239,6 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         )
 
         # Verify the result
-        assert isinstance(result, ProcessingMetrics)
         assert storage_client.upload_part.call_count > 1
         storage_client.complete_multipart_upload.assert_called_once()
 
@@ -467,9 +457,6 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         # Verify generate was called
         mock_builder.generate.assert_called_once()
 
-        # Verify successful result
-        assert isinstance(result, ProcessingMetrics)
-
     @pytest.mark.parametrize(
         "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
     )
@@ -553,47 +540,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
 
         # Verify exactly 2 parts were created
         assert storage_client.upload_part.call_count == 2
-        assert isinstance(result, ProcessingMetrics)
 
         # Verify part numbers are sequential (check positional arguments)
         call_args = storage_client.upload_part.call_args_list
         # upload_part(bucket_name, file_key, upload_id, part_number, chunk_data)
         assert call_args[0][0][3] == 1  # part_number is 4th positional arg
         assert call_args[1][0][3] == 2  # part_number is 4th positional arg
-
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
-    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
-    def test_processing_metrics_return_value(
-        self,
-        mock_dsr_builder_class,
-        storage_client_fixture,
-        request,
-        mock_privacy_request,
-        sample_dsr_data,
-    ):
-        """Test that ProcessingMetrics is returned with correct default values."""
-        storage_client = request.getfixturevalue(storage_client_fixture)
-
-        mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
-        mock_dsr_builder_class.return_value = mock_builder
-
-        result = stream_html_dsr_report_to_storage_multipart(
-            storage_client=storage_client,
-            bucket_name="test-bucket",
-            file_key="test-report.html",
-            data=sample_dsr_data,
-            privacy_request=mock_privacy_request,
-        )
-
-        # Verify ProcessingMetrics is returned with default values
-        assert isinstance(result, ProcessingMetrics)
-        assert result.total_attachments == 0
-        assert result.processed_attachments == 0
-        assert result.total_bytes == 0
-        assert result.processed_bytes == 0
-        assert result.errors == []

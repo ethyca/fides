@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslang.validation import AnyHttpUrlString
@@ -10,11 +10,7 @@ from loguru import logger
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.s3 import generic_upload_to_s3
-from fides.api.service.storage.streaming.cloud_storage_client import ProgressCallback
-from fides.api.service.storage.streaming.schemas import (
-    ProcessingMetrics,
-    StorageUploadConfig,
-)
+from fides.api.service.storage.streaming.schemas import StorageUploadConfig
 from fides.api.service.storage.streaming.storage_client_factory import (
     get_storage_client,
 )
@@ -36,8 +32,7 @@ def upload_to_s3_streaming(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
+) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to S3 using production-ready memory-efficient processing.
 
     This function maintains backward compatibility while using the new cloud-agnostic
@@ -46,10 +41,9 @@ def upload_to_s3_streaming(
     The production-ready approach includes:
     1. Parallel processing of multiple attachments
     2. Adaptive chunk sizes based on file size
-    3. Progress tracking and comprehensive metrics
-    4. Automatic package splitting for large datasets
-    5. Robust error handling and retry logic
-    6. Memory usage limited to ~5.6MB regardless of attachment count
+    3. Automatic package splitting for large datasets
+    4. Robust error handling and retry logic
+    5. Memory usage limited to ~5.6MB regardless of attachment count
     """
     logger.info("Starting production streaming S3 Upload of {}", file_key)
 
@@ -65,9 +59,7 @@ def upload_to_s3_streaming(
         _, response = generic_upload_to_s3(
             secrets_dict, bucket_name, file_key, auth_method, document
         )
-        # Return empty metrics for backward compatibility
-        empty_metrics = ProcessingMetrics()
-        return response, empty_metrics
+        return response
 
     try:
         # Create S3 storage client using the new abstraction
@@ -93,7 +85,6 @@ def upload_to_s3_streaming(
             upload_config,
             privacy_request,
             document,
-            progress_callback,
         )
 
         logger.info("Successfully uploaded streaming archive to S3: {}", file_key)

@@ -1,4 +1,4 @@
-"""Tests for the CloudStorageClient abstract base class and ProgressCallback protocol."""
+"""Tests for the CloudStorageClient abstract base class."""
 
 from typing import Any, Dict, List, Union, get_type_hints
 from unittest.mock import create_autospec, patch
@@ -6,13 +6,9 @@ from unittest.mock import create_autospec, patch
 import pydantic_core
 import pytest
 
-from fides.api.service.storage.streaming.cloud_storage_client import (
-    CloudStorageClient,
-    ProgressCallback,
-)
+from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.schemas import (
     MultipartUploadResponse,
-    ProcessingMetrics,
     UploadPartResponse,
 )
 
@@ -410,115 +406,3 @@ class TestCloudStorageClient:
             assert args[0] == int
         else:
             assert "Optional" in str(ttl_type) or "Union" in str(ttl_type)
-
-
-class TestProgressCallback:
-    """Test cases for the ProgressCallback protocol."""
-
-    def test_progress_callback_protocol(self):
-        """Test that ProgressCallback protocol is properly defined."""
-        # Create a mock metrics object
-        mock_metrics = create_autospec(ProcessingMetrics)
-
-        # Create a simple callback function
-        def simple_callback(metrics: ProcessingMetrics) -> None:
-            pass
-
-        # Create a callback with side effects
-        callback_called = False
-
-        def test_callback(metrics: ProcessingMetrics) -> None:
-            nonlocal callback_called
-            callback_called = True
-
-        # Test that both functions can be assigned to ProgressCallback
-        callback1: ProgressCallback = simple_callback
-        callback2: ProgressCallback = test_callback
-
-        # Test that the callback can be called
-        callback2(mock_metrics)
-        assert callback_called
-
-    def test_progress_callback_with_actual_metrics(self):
-        """Test ProgressCallback with actual ProcessingMetrics instance."""
-        # Create a real ProcessingMetrics instance
-        metrics = ProcessingMetrics()
-        metrics.total_attachments = 100
-        metrics.processed_attachments = 50
-        metrics.current_attachment = "test.txt"
-        metrics.current_attachment_progress = 50.0
-
-        # Create a callback that modifies the metrics
-        def progress_callback(metrics: ProcessingMetrics) -> None:
-            metrics.current_attachment_progress += 10.0
-
-        # Test the callback
-        initial_progress = metrics.current_attachment_progress
-        progress_callback(metrics)
-        assert metrics.current_attachment_progress == initial_progress + 10.0
-
-    def test_progress_callback_multiple_calls(self):
-        """Test ProgressCallback with multiple calls."""
-        metrics = ProcessingMetrics()
-        metrics.total_attachments = 10
-        metrics.processed_attachments = 0
-
-        call_count = 0
-
-        def progress_callback(metrics: ProcessingMetrics) -> None:
-            nonlocal call_count
-            call_count += 1
-            metrics.processed_attachments += 1
-
-        # Call the callback multiple times
-        for i in range(5):
-            progress_callback(metrics)
-
-        assert call_count == 5
-        assert metrics.processed_attachments == 5
-
-    def test_progress_callback_error_handling(self):
-        """Test ProgressCallback error handling."""
-        metrics = ProcessingMetrics()
-        metrics.errors = []
-
-        def error_callback(metrics: ProcessingMetrics) -> None:
-            # Simulate an error in the callback
-            raise RuntimeError("Callback error")
-
-        # The callback should be able to handle errors gracefully
-        try:
-            error_callback(metrics)
-        except RuntimeError:
-            # Expected error
-            pass
-
-        # The metrics object should still be valid
-        assert isinstance(metrics, ProcessingMetrics)
-        assert hasattr(metrics, "errors")
-
-    def test_progress_callback_type_compatibility(self):
-        """Test that ProgressCallback is compatible with various callable types."""
-        metrics = ProcessingMetrics()
-
-        # Test with lambda
-        lambda_callback: ProgressCallback = lambda m: None
-        lambda_callback(metrics)
-
-        # Test with method
-        class CallbackHandler:
-            def callback(self, metrics: ProcessingMetrics) -> None:
-                pass
-
-        handler = CallbackHandler()
-        method_callback: ProgressCallback = handler.callback
-        method_callback(metrics)
-
-        # Test with partial function
-        from functools import partial
-
-        def base_callback(metrics: ProcessingMetrics, prefix: str) -> None:
-            pass
-
-        partial_callback: ProgressCallback = partial(base_callback, prefix="test")
-        partial_callback(metrics)

@@ -15,7 +15,6 @@ from fideslang.validation import AnyHttpUrlString
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 
 
 @pytest.fixture
@@ -86,10 +85,10 @@ class TestUploadToS3Streaming:
             ),
             patch(
                 "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming",
-                return_value=("https://example.com/test-file.zip", ProcessingMetrics()),
+                return_value=("https://example.com/test-file.zip"),
             ),
         ):
-            result_url, metrics = upload_to_s3_streaming(
+            result_url = upload_to_s3_streaming(
                 storage_secrets=mock_storage_secrets,
                 data=sample_data,
                 bucket_name="test-bucket",
@@ -102,7 +101,6 @@ class TestUploadToS3Streaming:
             )
 
             assert result_url == "https://example.com/test-file.zip"
-            assert isinstance(metrics, ProcessingMetrics)
 
     def test_fallback_to_generic_upload_when_no_privacy_request(
         self, mock_storage_secrets, mock_document
@@ -116,7 +114,7 @@ class TestUploadToS3Streaming:
                 "https://example.com/test-file.zip",
             )
 
-            result_url, metrics = upload_to_s3_streaming(
+            result_url = upload_to_s3_streaming(
                 storage_secrets=mock_storage_secrets,
                 data={},
                 bucket_name="test-bucket",
@@ -128,7 +126,6 @@ class TestUploadToS3Streaming:
             )
 
             assert result_url == "https://example.com/test-file.zip"
-            assert isinstance(metrics, ProcessingMetrics)
             mock_generic_upload.assert_called_once()
 
     def test_error_when_no_privacy_request_and_no_document(self, mock_storage_secrets):
@@ -256,10 +253,7 @@ class TestUploadToS3Streaming:
                 "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming"
             ) as mock_upload,
         ):
-            mock_upload.return_value = (
-                "https://example.com/test-file.zip",
-                ProcessingMetrics(),
-            )
+            mock_upload.return_value = ("https://example.com/test-file.zip",)
 
             upload_to_s3_streaming(
                 storage_secrets=mock_storage_secrets,
@@ -279,41 +273,3 @@ class TestUploadToS3Streaming:
             # The config object is at index 2, and max_workers should be in the config
             config_arg = call_args[0][2]
             assert config_arg.max_workers == 10
-
-    def test_progress_callback_passed_through(
-        self, mock_storage_secrets, mock_privacy_request
-    ):
-        """Test that progress_callback parameter is passed through."""
-        mock_callback = MagicMock()
-
-        with (
-            patch(
-                "fides.api.service.storage.streaming.s3.streaming_s3.get_storage_client",
-                return_value=mock_storage_client,
-            ),
-            patch(
-                "fides.api.service.storage.streaming.s3.streaming_s3.upload_to_storage_streaming"
-            ) as mock_upload,
-        ):
-            mock_upload.return_value = (
-                "https://example.com/test-file.zip",
-                ProcessingMetrics(),
-            )
-
-            upload_to_s3_streaming(
-                storage_secrets=mock_storage_secrets,
-                data={},
-                bucket_name="test-bucket",
-                file_key="test-file.zip",
-                resp_format="zip",
-                privacy_request=mock_privacy_request,
-                document=None,
-                auth_method="secret_keys",
-                progress_callback=mock_callback,
-            )
-
-            # Verify progress_callback was passed to upload function
-            mock_upload.assert_called_once()
-            call_args = mock_upload.call_args
-            # progress_callback is at index 5
-            assert call_args[0][5] == mock_callback
