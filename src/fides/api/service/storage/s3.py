@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import IO, Any, Optional, Tuple, Union
+from typing import IO, Any, Dict, Optional, Tuple, Union
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -17,7 +17,9 @@ from fides.api.util.aws_util import get_s3_client
 from fides.config import CONFIG
 
 
-def maybe_get_s3_client(auth_method: str, storage_secrets: StorageSecrets) -> Any:
+def maybe_get_s3_client(
+    auth_method: str, storage_secrets: Dict[StorageSecrets, Any]
+) -> Any:
     """
     Returns an S3 client if the client can be created successfully, otherwise raises an exception.
     """
@@ -68,7 +70,7 @@ def get_file_size(s3_client: Any, bucket_name: str, file_key: str) -> int:
 
 
 def generic_upload_to_s3(  # pylint: disable=R0913
-    storage_secrets: StorageSecrets,
+    storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
     file_key: str,
     auth_method: str,
@@ -130,7 +132,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
 
 def generic_retrieve_from_s3(
-    storage_secrets: StorageSecrets,
+    storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
     file_key: str,
     auth_method: str,
@@ -177,7 +179,7 @@ def generic_retrieve_from_s3(
 
 
 def generic_delete_from_s3(
-    storage_secrets: StorageSecrets,
+    storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
     file_key: str,
     auth_method: str,
