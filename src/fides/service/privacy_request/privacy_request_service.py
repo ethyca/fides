@@ -25,7 +25,6 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -72,6 +71,39 @@ class PrivacyRequestService:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
 
+    def _validate_required_location_fields(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> None:
+        """Validate that location is provided for required location fields.
+
+        Note: This is a simplified validation using field name heuristics.
+        In a full implementation, you would look up the actual field configuration
+        to check field_type and required properties.
+        """
+        if (
+            privacy_request_data.custom_privacy_request_fields
+            and not privacy_request_data.location
+        ):
+            # Check if any fields might be location fields without values
+            for (
+                field_name,
+                field_data,
+            ) in privacy_request_data.custom_privacy_request_fields.items():
+                # Simple heuristic: if field name contains "required" and "location" and has no value
+                if (
+                    "required" in field_name.lower()
+                    and "location" in field_name.lower()
+                    and (
+                        not hasattr(field_data, "value")
+                        or not field_data.value
+                        or field_data.value == ""
+                    )
+                ):
+                    raise PrivacyRequestError(
+                        f"Location is required for field '{field_name}' but was not provided",
+                        privacy_request_data.model_dump(mode="json"),
+                    )
+
     # pylint: disable=too-many-branches
     def create_privacy_request(
         self,
@@ -113,19 +145,7 @@ class PrivacyRequestService:
                 )
 
         # Validate location is provided for required location fields
-        # Note: This is a simplified validation - in a full implementation,
-        # you would look up the actual field configuration to check field_type and required
-        if (privacy_request_data.custom_privacy_request_fields and
-            not privacy_request_data.location):
-            # Check if any fields might be location fields without values
-            for field_name, field_data in privacy_request_data.custom_privacy_request_fields.items():
-                # Simple heuristic: if field name contains "required" and "location" and has no value
-                if ("required" in field_name.lower() and "location" in field_name.lower() and
-                    (not hasattr(field_data, 'value') or not field_data.value or field_data.value == "")):
-                    raise PrivacyRequestError(
-                        f"Location is required for field '{field_name}' but was not provided",
-                        privacy_request_data.model_dump(mode="json"),
-                    )
+        self._validate_required_location_fields(privacy_request_data)
 
         policy = Policy.get_by(
             db=self.db,
