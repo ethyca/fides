@@ -1,12 +1,15 @@
-from citext import CIText
-from sqlalchemy import ARRAY, Column, ForeignKey, String
-from sqlalchemy import UniqueConstraint
-from sqlalchemy import Enum as EnumColumn
 from enum import Enum
+
+from citext import CIText
+from sqlalchemy import ARRAY, Column
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
+
 from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class CustomTaxonomyColor(str, Enum):
@@ -49,9 +52,12 @@ class SystemGroup(Base):
         server_default="{}",
         default=list,
     )  # a list of `fides_key`s of `DataUse` records
-    data_steward = relationship("FidesUser", foreign_keys=[data_steward_username])
+    data_steward = relationship(
+        "FidesUser", foreign_keys=[data_steward_username], lazy="selectin"
+    )
 
-    systems = relationship("System", secondary="system_group_member")
+    systems = relationship(System, secondary="system_group_member")
+
 
 class SystemGroupMember(Base):
     @declared_attr

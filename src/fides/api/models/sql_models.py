@@ -461,6 +461,13 @@ class System(Base, FidesBase):
         "Asset", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
+    system_groups = relationship(
+        "SystemGroup",
+        secondary="system_group_member",
+        back_populates="systems",
+        lazy="selectin",
+    )
+
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True

@@ -5,10 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import System
-from fides.api.models.system_group import (
-    SystemGroup,
-    SystemGroupMember,
-)
+from fides.api.models.system_group import SystemGroup, SystemGroupMember
 from fides.api.models.taxonomy import Taxonomy, TaxonomyElement
 
 
@@ -49,14 +46,16 @@ class TestSystemGroup:
         assert system_group.fides_key == system_group_element.fides_key
         assert system_group.data_uses == []  # default
         assert system_group.label_color is None
-        assert system_group.data_steward_username is None
+        assert system_group.data_steward is None
 
-    def test_create_system_group_full(self, db: Session, system_group_element: TaxonomyElement, user):
+    def test_create_system_group_full(
+        self, db: Session, system_group_element: TaxonomyElement, user
+    ):
         group = SystemGroup.create(
             db=db,
             data={
                 "fides_key": system_group_element.fides_key,
-                "data_steward_username": user.username,
+                "data_steward": user.username,
                 "data_uses": [
                     "essential.service",
                     "marketing.advertising",
@@ -64,23 +63,36 @@ class TestSystemGroup:
             },
         )
         # color may be set separately; verify other fields
-        assert group.data_steward_username == user.username
+        assert group.data_steward == user.username
         # Relationship present
-        assert group.data_steward is not None and group.data_steward.username == user.username
+        assert (
+            group.data_steward is not None
+            and group.data_steward.username == user.username
+        )
         assert set(group.data_uses) == {"essential.service", "marketing.advertising"}
 
-    def test_fides_key_unique_constraint(self, db: Session, system_group_element: TaxonomyElement):
+    def test_fides_key_unique_constraint(
+        self, db: Session, system_group_element: TaxonomyElement
+    ):
         SystemGroup.create(db=db, data={"fides_key": system_group_element.fides_key})
         with pytest.raises(IntegrityError):
-            SystemGroup.create(db=db, data={"fides_key": system_group_element.fides_key})
+            SystemGroup.create(
+                db=db, data={"fides_key": system_group_element.fides_key}
+            )
 
 
 class TestSystemGroupMember:
     @pytest.fixture
-    def system_group(self, db: Session, system_group_element: TaxonomyElement) -> SystemGroup:
-        return SystemGroup.create(db=db, data={"fides_key": system_group_element.fides_key})
+    def system_group(
+        self, db: Session, system_group_element: TaxonomyElement
+    ) -> SystemGroup:
+        return SystemGroup.create(
+            db=db, data={"fides_key": system_group_element.fides_key}
+        )
 
-    def test_create_member(self, db: Session, system_group: SystemGroup, system: System):
+    def test_create_member(
+        self, db: Session, system_group: SystemGroup, system: System
+    ):
         member = SystemGroupMember.create(
             db=db,
             data={
@@ -92,7 +104,9 @@ class TestSystemGroupMember:
         assert member.system_group_id == system_group.id
         assert member.system_id == system.id
 
-    def test_unique_group_system_pair(self, db: Session, system_group: SystemGroup, system: System):
+    def test_unique_group_system_pair(
+        self, db: Session, system_group: SystemGroup, system: System
+    ):
         SystemGroupMember.create(
             db=db,
             data={
@@ -109,7 +123,9 @@ class TestSystemGroupMember:
                 },
             )
 
-    def test_cascade_delete_on_group(self, db: Session, system_group: SystemGroup, system: System):
+    def test_cascade_delete_on_group(
+        self, db: Session, system_group: SystemGroup, system: System
+    ):
         member = SystemGroupMember.create(
             db=db,
             data={
@@ -122,7 +138,9 @@ class TestSystemGroupMember:
         system_group.delete(db)
         assert db.query(SystemGroupMember).filter_by(id=member_id).first() is None
 
-    def test_cascade_delete_on_system(self, db: Session, system_group: SystemGroup, system_with_cleanup: System):
+    def test_cascade_delete_on_system(
+        self, db: Session, system_group: SystemGroup, system_with_cleanup: System
+    ):
         member = SystemGroupMember.create(
             db=db,
             data={
