@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from pytest import param
 
-from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
     ManualTaskFieldType,
@@ -11,6 +11,7 @@ from fides.api.models.manual_task import (
     ManualTaskSubmission,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionEvaluationResult,
     GroupEvaluationResult,
@@ -597,8 +598,8 @@ class TestManualTaskConditionalDependencies:
         assert len(initial_instances) == 0
 
         # Call _run_request which should create instances when conditions are met
-        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        # This should raise AwaitingAsyncTask since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
@@ -670,8 +671,8 @@ class TestManualTaskConditionalDependencies:
         assert len(initial_instances) == 0
 
         # Call _run_request which should create instances when all conditions are met
-        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        # This should raise AwaitingAsyncTask since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
@@ -706,8 +707,8 @@ class TestManualTaskConditionalDependencies:
         assert len(initial_instances) == 0
 
         # Call _run_request which should create instances when there are no conditions
-        # This should raise AwaitingAsyncTaskCallback since no submissions exist yet
-        with pytest.raises(AwaitingAsyncTaskCallback):
+        # This should raise AwaitingAsyncTask since no submissions exist yet
+        with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
@@ -1143,9 +1144,9 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task.resources.request, "save", autospec=True
             ),
         ):
-            # This should raise AwaitingAsyncTaskCallback
+            # This should raise AwaitingAsyncTask
             with pytest.raises(
-                AwaitingAsyncTaskCallback,
+                AwaitingAsyncTask,
                 match="Manual task for .* requires user input",
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
@@ -1169,9 +1170,9 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task.resources.request, "save", autospec=True
             ),
         ):
-            # This should raise AwaitingAsyncTaskCallback with the detail message
+            # This should raise AwaitingAsyncTask with the detail message
             with pytest.raises(
-                AwaitingAsyncTaskCallback,
+                AwaitingAsyncTask,
                 match="Manual task for .* requires user input. Test detail",
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
@@ -1471,7 +1472,7 @@ class TestManualTaskGraphTaskHelperMethods:
     ):
         """Test that log_end is not called when manual task is actually awaiting input (real scenario)"""
         with create_log_end_mock(manual_task_graph_task) as mock_log_end:
-            # The retry decorator will catch AwaitingAsyncTaskCallback and return None
+            # The retry decorator will catch AwaitingAsyncTask and return None
             # This simulates the real scenario where the task is paused awaiting input
             result = manual_task_graph_task.access_request([])
 
@@ -1480,3 +1481,25 @@ class TestManualTaskGraphTaskHelperMethods:
 
             # Verify log_end was never called
             mock_log_end.assert_not_called()
+
+    def test_access_request_early_return_for_erasure_policy(
+        self, build_erasure_graph_task, db
+    ):
+        """Test that access_request returns early and completes immediately for erasure policy"""
+        manual_task, graph_task = build_erasure_graph_task
+        privacy_request = graph_task.resources.request
+
+        # Set privacy request to requires_input status
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+
+        # Call access_request - should return early due to erasure policy
+        result = graph_task.access_request([])
+
+        # Should return empty list (early return for erasure policy)
+        assert result == []
+
+        # Privacy request status should remain requires_input since the early return path
+        # does not call _return_to_in_processing()
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
