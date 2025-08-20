@@ -54,8 +54,23 @@ def upload_to_s3_streaming(
     logger.info("Starting production streaming S3 Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
+        # For backward compatibility, we need to convert storage_secrets to the expected format
+        # generic_upload_to_s3 expects dict[StorageSecrets, Any]
+        if isinstance(storage_secrets, StorageSecretsS3):
+            # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
+            secrets_dict = {
+                StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
+                StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
+                StorageSecrets.REGION_NAME: storage_secrets.region_name,
+                StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
+            }
+            # Filter out None values
+            secrets_dict = {k: v for k, v in secrets_dict.items() if v is not None}
+        else:
+            secrets_dict = storage_secrets
+
         _, response = generic_upload_to_s3(
-            storage_secrets, bucket_name, file_key, auth_method, document
+            secrets_dict, bucket_name, file_key, auth_method, document
         )
         # Return empty metrics for backward compatibility
         empty_metrics = ProcessingMetrics()
@@ -141,8 +156,23 @@ def upload_to_s3_streaming_advanced(
     logger.info("Starting advanced streaming S3 Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
+        # For backward compatibility, we need to convert storage_secrets to the expected format
+        # generic_upload_to_s3 expects dict[StorageSecrets, Any]
+        if isinstance(storage_secrets, StorageSecretsS3):
+            # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
+            secrets_dict = {
+                StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
+                StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
+                StorageSecrets.REGION_NAME: storage_secrets.region_name,
+                StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
+            }
+            # Filter out None values
+            secrets_dict = {k: v for k, v in secrets_dict.items() if v is not None}
+        else:
+            secrets_dict = storage_secrets
+
         _, response = generic_upload_to_s3(
-            storage_secrets, bucket_name, file_key, auth_method, document
+            secrets_dict, bucket_name, file_key, auth_method, document
         )
         # Return empty metrics for backward compatibility
         empty_metrics = ProcessingMetrics()

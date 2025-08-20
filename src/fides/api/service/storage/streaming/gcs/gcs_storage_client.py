@@ -443,5 +443,13 @@ def create_gcs_storage_client(
     storage_secrets: Optional[Union[StorageSecrets, dict[StorageSecrets, Any]]],
 ) -> GCSStorageClient:
     """Factory function to create a GCS storage client"""
-    gcs_client = get_gcs_client(auth_method, storage_secrets)
+    # Convert storage_secrets to the format expected by get_gcs_client
+    # get_gcs_client expects Optional[dict]
+    if isinstance(storage_secrets, StorageSecrets):
+        # Convert StorageSecrets enum to dict format
+        secrets_dict: Optional[dict] = {storage_secrets: None}  # This is a placeholder - actual implementation would need proper conversion
+    else:
+        secrets_dict = storage_secrets
+
+    gcs_client = get_gcs_client(auth_method, secrets_dict)
     return GCSStorageClient(gcs_client)

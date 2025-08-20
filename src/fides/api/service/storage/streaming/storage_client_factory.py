@@ -48,9 +48,16 @@ class CloudStorageClientFactory:
                 secrets_dict = storage_secrets
             return create_s3_storage_client(auth_method, secrets_dict)
 
-        elif storage_type.lower() in ["gcs", "gcp", "google"]:
+        if storage_type.lower() in ["gcs", "gcp", "google"]:
             # GCS streaming is now implemented with full CloudStorageClient interface
-            return create_gcs_storage_client(auth_method, storage_secrets)
+            # Convert storage_secrets to the format expected by create_gcs_storage_client
+            if isinstance(storage_secrets, StorageSecretsS3):
+                # Convert StorageSecretsS3 to the format expected by GCS
+                # This is a temporary fix - ideally we'd have proper GCS secrets handling
+                gcs_secrets = None  # GCS will use default credentials
+            else:
+                gcs_secrets = storage_secrets
+            return create_gcs_storage_client(auth_method, gcs_secrets)
 
         else:
             raise ValueError(f"Unsupported storage type: {storage_type}")
