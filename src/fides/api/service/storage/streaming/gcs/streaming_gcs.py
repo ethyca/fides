@@ -42,12 +42,13 @@ def upload_to_gcs_streaming(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads arbitrary data to GCS using production-ready memory-efficient processing.
 
-    TODO: This function needs full implementation for GCS-specific streaming:
-    - GCS-native streaming with proper chunk sizes
-    - GCS-specific error handling
-    - GCS metadata management
-    - GCS lifecycle policies
-    - Memory-efficient processing for large datasets
+    TODO: This function is not implemented and needs:
+    - GCS-native streaming with proper chunk sizes and memory management
+    - GCS-specific error handling and exception mapping
+    - GCS metadata management and custom headers
+    - GCS lifecycle policies and object management
+    - Memory-efficient processing for large datasets with streaming
+    - Integration with GCS client and authentication
 
     Args:
         storage_secrets: GCS storage secrets
@@ -67,11 +68,7 @@ def upload_to_gcs_streaming(
     Raises:
         NotImplementedError: Function not yet implemented
     """
-    raise NotImplementedError(
-        "GCS streaming upload not yet implemented. "
-        "TODO: Implement GCS-native streaming with proper chunking, "
-        "error handling, and metadata management."
-    )
+    raise NotImplementedError("GCS streaming upload is not implemented.")
 
 
 def upload_to_gcs_streaming_advanced(
@@ -88,12 +85,13 @@ def upload_to_gcs_streaming_advanced(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Advanced GCS streaming upload with additional features.
 
-    TODO: This function should implement advanced GCS-specific features:
-    - GCS multipart uploads for large files
-    - GCS-specific compression and encoding
-    - GCS metadata and custom headers
-    - GCS lifecycle management
-    - GCS versioning support
+    TODO: This function is not implemented and needs:
+    - GCS multipart uploads for large files with proper chunking
+    - GCS-specific compression and encoding options
+    - GCS metadata and custom headers management
+    - GCS lifecycle management and policy integration
+    - GCS versioning support and object versioning
+    - Advanced progress tracking and monitoring
 
     Args:
         storage_secrets: GCS storage secrets
@@ -113,11 +111,7 @@ def upload_to_gcs_streaming_advanced(
     Raises:
         NotImplementedError: Function not yet implemented
     """
-    raise NotImplementedError(
-        "Advanced GCS streaming upload not yet implemented. "
-        "TODO: Implement GCS multipart uploads, compression, "
-        "metadata management, and lifecycle policies."
-    )
+    raise NotImplementedError("Advanced GCS streaming upload is not implemented.")
 
 
 def upload_to_gcs_resumable(
@@ -134,12 +128,13 @@ def upload_to_gcs_resumable(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads data to GCS using resumable uploads for large files.
 
-    TODO: This function should implement actual GCS resumable uploads:
-    - Use GCS resumable upload API
-    - Implement proper chunking and resume logic
-    - Handle upload session management
-    - Implement progress tracking for resumable uploads
-    - Handle network interruptions and resume from last successful chunk
+    TODO: This function is not implemented and needs:
+    - Integration with GCS resumable upload API endpoints
+    - Implementation of proper chunking and resume logic
+    - Upload session management and persistence
+    - Progress tracking for resumable uploads
+    - Network interruption handling and resume from last successful chunk
+    - GCS-specific upload session validation and cleanup
 
     Args:
         storage_secrets: GCS storage secrets
@@ -159,11 +154,7 @@ def upload_to_gcs_resumable(
     Raises:
         NotImplementedError: Function not yet implemented
     """
-    raise NotImplementedError(
-        "GCS resumable upload not yet implemented. "
-        "TODO: Implement GCS resumable upload API with proper "
-        "chunking, session management, and resume logic."
-    )
+    raise NotImplementedError("GCS resumable upload is not implemented.")
 
 
 def upload_to_gcs_streaming_with_retry(
@@ -181,12 +172,13 @@ def upload_to_gcs_streaming_with_retry(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads data to GCS with automatic retry logic for transient failures.
 
-    TODO: This function should implement GCS-specific retry logic:
-    - GCS-specific error classification (retryable vs non-retryable)
-    - GCS-specific backoff strategies
-    - Handle GCS quota limits and rate limiting
-    - Implement exponential backoff with jitter
-    - Handle GCS-specific transient errors
+    TODO: This function is not implemented and needs:
+    - GCS-specific error classification (retryable vs non-retryable errors)
+    - GCS-specific backoff strategies and retry policies
+    - Handling of GCS quota limits and rate limiting
+    - Implementation of exponential backoff with jitter
+    - GCS-specific transient error detection and handling
+    - Retry metrics and monitoring integration
 
     Args:
         storage_secrets: GCS storage secrets
@@ -207,11 +199,7 @@ def upload_to_gcs_streaming_with_retry(
     Raises:
         NotImplementedError: Function not yet implemented
     """
-    raise NotImplementedError(
-        "GCS streaming upload with retry not yet implemented. "
-        "TODO: Implement GCS-specific retry logic with proper "
-        "error classification, backoff strategies, and rate limiting."
-    )
+    raise NotImplementedError("GCS streaming upload with retry is not implemented.")
 
 
 # TODO: Implement additional GCS-specific functions:

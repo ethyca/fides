@@ -20,10 +20,7 @@ from fides.api.service.storage.streaming.s3.s3_storage_client import (
 )
 
 # Legacy S3 streaming interface (maintains backward compatibility)
-from fides.api.service.storage.streaming.s3.streaming_s3 import (
-    upload_to_s3_streaming,
-    upload_to_s3_streaming_advanced,
-)
+from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
 from fides.api.service.storage.streaming.schemas import (
     MultipartUploadResponse,
     ProcessingMetrics,
@@ -57,7 +54,6 @@ __all__ = [
     # GCS basic client - streaming implementation not yet available
     "GCSStorageClient",
     "create_gcs_storage_client",
-    # Legacy S3 interface
+    # S3 streaming interface
     "upload_to_s3_streaming",
-    "upload_to_s3_streaming_advanced",
 ]

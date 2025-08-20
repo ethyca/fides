@@ -53,19 +53,12 @@ def upload_to_s3_streaming(
     """
     logger.info("Starting production streaming S3 Upload of {}", file_key)
 
-    if privacy_request is None and document is not None:
-        # For backward compatibility, we need to convert storage_secrets to the expected format
-        # generic_upload_to_s3 expects dict[StorageSecrets, Any]
+    if privacy_request is None:
+        raise ValueError("Privacy request and document must be provided")
+
+    if document is not None:
         if isinstance(storage_secrets, StorageSecretsS3):
-            # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
-            secrets_dict = {
-                StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
-                StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
-                StorageSecrets.REGION_NAME: storage_secrets.region_name,
-                StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
-            }
-            # Filter out None values
-            secrets_dict = {k: v for k, v in secrets_dict.items() if v is not None}
+            secrets_dict = update_storage_secrets(storage_secrets)
         else:
             secrets_dict = storage_secrets
 
@@ -75,9 +68,6 @@ def upload_to_s3_streaming(
         # Return empty metrics for backward compatibility
         empty_metrics = ProcessingMetrics()
         return response, empty_metrics
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
 
     try:
         # Create S3 storage client using the new abstraction
@@ -117,87 +107,22 @@ def upload_to_s3_streaming(
         raise StorageUploadError(f"Unexpected error during streaming upload: {e}")
 
 
-def upload_to_s3_streaming_advanced(
-    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]],
-    data: dict,
-    bucket_name: str,
-    file_key: str,
-    resp_format: str,
-    privacy_request: Optional[PrivacyRequest],
-    document: Optional[BytesIO],
-    auth_method: str,
-    max_workers: int = 5,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
-    """Wrapper function that delegates to the main streaming implementation.
-
-    This function maintains backward compatibility by calling upload_to_s3_streaming.
-    The actual streaming logic is implemented in the new cloud-agnostic module.
-
-    Args:
-        storage_secrets: S3 storage secrets
-        data: The data to upload
-        bucket_name: Name of the S3 bucket
-        file_key: Key of the file in the bucket
-        resp_format: Response format (json, csv, html)
-        privacy_request: Privacy request object
-        document: Optional document (for backward compatibility)
-        auth_method: Authentication method for S3
-        max_workers: Number of parallel workers for attachment processing
-        progress_callback: Optional callback for progress updates
-
-    Returns:
-        Tuple of (presigned_url, metrics) where metrics contains processing information
-
-    Raises:
-        StorageUploadError: If upload fails
-        ValueError: If privacy request is not provided
+def update_storage_secrets(
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]
+) -> dict[StorageSecrets, Any]:
     """
-    logger.info("Starting advanced streaming S3 Upload of {}", file_key)
-
-    if privacy_request is None and document is not None:
-        # For backward compatibility, we need to convert storage_secrets to the expected format
-        # generic_upload_to_s3 expects dict[StorageSecrets, Any]
-        if isinstance(storage_secrets, StorageSecretsS3):
-            # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
-            secrets_dict = {
-                StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
-                StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
-                StorageSecrets.REGION_NAME: storage_secrets.region_name,
-                StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
-            }
-            # Filter out None values
-            secrets_dict = {k: v for k, v in secrets_dict.items() if v is not None}
-        else:
-            secrets_dict = storage_secrets
-
-        _, response = generic_upload_to_s3(
-            secrets_dict, bucket_name, file_key, auth_method, document
-        )
-        # Return empty metrics for backward compatibility
-        empty_metrics = ProcessingMetrics()
-        return response, empty_metrics
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
-
-    try:
-        # Use the main streaming function for all formats
-        return upload_to_s3_streaming(
-            storage_secrets,
-            data,
-            bucket_name,
-            file_key,
-            resp_format,
-            privacy_request,
-            document,
-            auth_method,
-            max_workers,
-            progress_callback,
-        )
-
-    except Exception as e:
-        logger.error("Unexpected error during advanced streaming upload: {}", e)
-        raise StorageUploadError(
-            f"Unexpected error during advanced streaming upload: {e}"
-        )
+    Updates the storage secrets to the expected format.
+    """
+    if isinstance(storage_secrets, StorageSecretsS3):
+        # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
+        secrets_dict = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
+            StorageSecrets.REGION_NAME: storage_secrets.region_name,
+            StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
+        }
+        # Filter out None values
+        return {k: v for k, v in secrets_dict.items() if v is not None}
+    else:
+        # Already a dict, return as-is
+        return storage_secrets

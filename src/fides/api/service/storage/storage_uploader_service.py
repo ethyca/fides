@@ -14,9 +14,7 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.api.service.storage.streaming.s3.streaming_s3 import (
-    upload_to_s3_streaming_advanced,
-)
+from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
 from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
 
 
@@ -103,10 +101,8 @@ def _s3_uploader(
 
     if enable_streaming:
         # Use streaming upload for better memory efficiency
-        # You can choose between upload_to_s3_streaming or upload_to_s3_streaming_advanced
-        # The advanced version includes multipart upload configuration
         logger.info("Using streaming S3 upload for {}", file_key)
-        return upload_to_s3_streaming_advanced(
+        return upload_to_s3_streaming(
             config.secrets,  # type: ignore
             data,
             bucket_name,

@@ -1,3 +1,4 @@
+# pylint: disable unnecessary-pass
 from __future__ import annotations
 
 import abc
@@ -49,31 +50,31 @@ class CloudStorageClient(abc.ABC):
         metadata: Optional[dict[str, str]] = None,
     ) -> None:
         """Complete a multipart upload"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def abort_multipart_upload(self, bucket: str, key: str, upload_id: str) -> None:
         """Abort a multipart upload"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def get_object_head(self, bucket: str, key: str) -> dict[str, Any]:
         """Get object metadata (head)"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def get_object_range(
         self, bucket: str, key: str, start_byte: int, end_byte: int
     ) -> bytes:
         """Get a range of bytes from an object"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def generate_presigned_url(
         self, bucket: str, key: str, ttl_seconds: Optional[int] = None
     ) -> AnyHttpUrlString:
         """Generate a presigned URL for the object"""
-        pass  # noqa: W0107
+        pass  # pragma: no cover
 
 
 class ProgressCallback(Protocol):
