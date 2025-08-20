@@ -36,7 +36,7 @@ class SystemService:
         size: Optional[int] = None,
         page: Optional[int] = None,
         show_deleted: bool = False,
-        **kwargs: Dict[str, Any],  # Allow extensions to pass additional parameters
+        **kwargs: Any,
     ) -> Union[List[System], Page[System]]:
         """
         Query systems with flexible filtering and optional pagination.
@@ -93,7 +93,7 @@ class SystemService:
         *,
         filter_params: Optional[FilterParams] = None,
         show_deleted: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ) -> Select:
         """
         Build the base query for systems.
