@@ -446,3 +446,80 @@ class TestPrivacyRequestService:
         )
         assert privacy_request.masking_secrets is not None
         assert len(privacy_request.masking_secrets) > 0
+
+    def test_create_privacy_request_location_required_but_missing(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy
+    ):
+        """Test that a PrivacyRequestError is raised when a location field is required but location is not provided"""
+        from fides.api.common_exceptions import PrivacyRequestError
+
+        identity = Identity(email="jane@example.com")
+        custom_privacy_request_fields = {
+            "required_location": {"label": "Required Location", "value": ""}  # Empty value
+        }
+
+        with pytest.raises(PrivacyRequestError) as exc_info:
+            privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    custom_privacy_request_fields=custom_privacy_request_fields,
+                    policy_key=policy.key,
+                    # location is missing here intentionally
+                ),
+                authenticated=True,
+            )
+
+        assert "Location is required for field 'required_location' but was not provided" in str(exc_info.value)
+
+    def test_create_privacy_request_location_required_and_provided(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy
+    ):
+        """Test that privacy request creation succeeds when required location is provided"""
+        identity = Identity(email="jane@example.com")
+        custom_privacy_request_fields = {
+            "user_location": {"label": "User Location", "value": "US-CA"}
+        }
+
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                identity=identity,
+                custom_privacy_request_fields=custom_privacy_request_fields,
+                policy_key=policy.key,
+                location="US-CA",  # location provided
+            ),
+            authenticated=True,
+        )
+
+        assert privacy_request.location == "US-CA"
+        assert privacy_request.status == PrivacyRequestStatus.pending
+
+    def test_create_privacy_request_location_optional_and_missing(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy
+    ):
+        """Test that privacy request creation succeeds when location field is optional and not provided"""
+        identity = Identity(email="jane@example.com")
+        custom_privacy_request_fields = {
+            "optional_field": {"label": "Optional Field", "value": ""}  # Optional field (no "location" in name)
+        }
+
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                identity=identity,
+                custom_privacy_request_fields=custom_privacy_request_fields,
+                policy_key=policy.key,
+                # location is missing but field is optional
+            ),
+            authenticated=True,
+        )
+
+        assert privacy_request.location is None
+        assert privacy_request.status == PrivacyRequestStatus.pending
