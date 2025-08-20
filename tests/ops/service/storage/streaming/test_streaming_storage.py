@@ -622,106 +622,216 @@ class TestAttachmentCollectionAndValidation:
         )
         assert direct_attachment.attachment.file_name == "direct_file.pdf"
 
-
-# =============================================================================
-# Download Attachment Tests
-# =============================================================================
-
-
-class TestDownloadAttachment:
-    """Test downloading attachments in parallel."""
-
-    def test_download_attachment_parallel(self):
-        """Test successful parallel attachment download."""
+    def test_collect_attachments_direct_only(self):
+        """Test _collect_attachments method with direct attachments only."""
         mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.return_value = b"test content"
         processor = StreamingStorage(mock_storage_client)
 
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
+        data = {
+            "attachments": [
+                {
+                    "file_name": "file1.pdf",
+                    "download_url": "https://example.com/file1.pdf",
+                    "file_size": 1000,
+                },
+                {
+                    "file_name": "file2.txt",
+                    "url": "https://example.com/file2.txt",
+                    "file_size": 500,
+                },
+            ]
+        }
 
-        filename, content = processor._download_attachment_parallel(
-            mock_storage_client, "test-bucket", attachment
-        )
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 2
 
-        assert filename == "test.txt"
-        assert content == b"test content"
-        mock_storage_client.get_object.assert_called_once_with(
-            "test-bucket", "test-key"
-        )
+        # Check first attachment
+        first = raw_attachments[0]
+        assert first["type"] == "direct"
+        assert first["base_path"] == "attachments/1"
+        assert first["attachment"]["file_name"] == "file1.pdf"
 
-    def test_download_attachment_parallel_no_filename(self):
-        """Test parallel attachment download with no filename."""
+        # Check second attachment
+        second = raw_attachments[1]
+        assert second["type"] == "direct"
+        assert second["base_path"] == "attachments/2"
+        assert second["attachment"]["file_name"] == "file2.txt"
+
+    def test_collect_attachments_nested_only(self):
+        """Test _collect_attachments method with nested attachments only."""
         mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.return_value = b"test content"
         processor = StreamingStorage(mock_storage_client)
 
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            # No file_name
-        )
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "attachments": [
+                        {"storage_key": "key1", "file_name": "file1.txt"},
+                        {"storage_key": "key2", "file_name": "file2.txt"},
+                    ],
+                }
+            ]
+        }
 
-        filename, content = processor._download_attachment_parallel(
-            mock_storage_client, "test-bucket", attachment
-        )
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 2
 
-        assert filename == "attachment"  # Default filename
-        assert content == b"test content"
+        # Check first attachment
+        first = raw_attachments[0]
+        assert first["type"] == "nested"
+        assert first["base_path"] == "users/1/attachments"
+        assert first["attachment"]["storage_key"] == "key1"
 
-    def test_download_attachment_parallel_download_failure(self):
-        """Test parallel attachment download failure."""
+        # Check second attachment
+        second = raw_attachments[1]
+        assert second["type"] == "nested"
+        assert second["attachment"]["storage_key"] == "key2"
+
+    def test_collect_attachments_mixed_types(self):
+        """Test _collect_attachments method with both direct and nested attachments."""
         mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = Exception("Download failed")
         processor = StreamingStorage(mock_storage_client)
 
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "attachments": [{"storage_key": "key1", "file_name": "file1.txt"}],
+                }
+            ],
+            "attachments": [
+                {
+                    "file_name": "direct_file.pdf",
+                    "download_url": "https://example.com/direct.pdf",
+                }
+            ],
+        }
 
-        with pytest.raises(Exception, match="Download failed"):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 2
+
+        # Check nested attachment
+        nested = next(a for a in raw_attachments if a["type"] == "nested")
+        assert nested["base_path"] == "users/1/attachments"
+
+        # Check direct attachment
+        direct = next(a for a in raw_attachments if a["type"] == "direct")
+        assert direct["base_path"] == "attachments/1"
+
+    def test_validate_attachment_direct(self):
+        """Test _validate_attachment method with direct attachment."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        attachment_data = {
+            "attachment": {
+                "file_name": "test.pdf",
+                "download_url": "https://example.com/test.pdf",
+                "file_size": 5000,
+                "content_type": "application/pdf",
+            },
+            "base_path": "attachments/1",
+            "item": {"id": 1},
+            "type": "direct",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is not None
+        assert result.attachment.storage_key == "https://example.com/test.pdf"
+        assert result.attachment.file_name == "test.pdf"
+        assert result.attachment.size == 5000
+        assert result.base_path == "attachments/1"
+
+    def test_validate_attachment_nested(self):
+        """Test _validate_attachment method with nested attachment."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        attachment_data = {
+            "attachment": {
+                "storage_key": "storage_key_123",
+                "file_name": "test.txt",
+                "size": 100,
+            },
+            "base_path": "users/1/attachments",
+            "item": {"id": 1},
+            "type": "nested",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is not None
+        assert result.attachment.storage_key == "storage_key_123"
+        assert result.attachment.file_name == "test.txt"
+        assert result.attachment.size == 100
+        assert result.base_path == "users/1/attachments"
+
+    def test_validate_attachment_invalid_data(self):
+        """Test _validate_attachment method with invalid attachment data."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Test with missing required fields
+        attachment_data = {
+            "attachment": {
+                "file_name": "test.txt"
+                # Missing storage_key for nested type
+            },
+            "base_path": "users/1/attachments",
+            "item": {"id": 1},
+            "type": "nested",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is None
+
+        # Test with malformed data
+        attachment_data = {
+            "attachment": "not a dict",
+            "base_path": "attachments/1",
+            "item": {"id": 1},
+            "type": "direct",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is None
+
+    def test_collect_and_validate_attachments_delegation(self):
+        """Test that _collect_and_validate_attachments properly delegates to helper methods."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Mock the helper methods
+        with (
+            patch.object(processor, "_collect_attachments") as mock_collect,
+            patch.object(processor, "_validate_attachment") as mock_validate,
+        ):
+
+            mock_collect.return_value = [
+                {
+                    "attachment": {"storage_key": "key1", "file_name": "file1.txt"},
+                    "base_path": "users/1/attachments",
+                    "item": {"id": 1},
+                    "type": "nested",
+                }
+            ]
+
+            mock_validate.return_value = AttachmentProcessingInfo(
+                attachment=AttachmentInfo(storage_key="key1", file_name="file1.txt"),
+                base_path="users/1/attachments",
+                item={"id": 1},
             )
 
-    def test_download_attachment_parallel_transient_error(self):
-        """Test parallel attachment download with transient error."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = TransientError("Transient error")
-        processor = StreamingStorage(mock_storage_client)
+            data = {"users": [{"id": 1, "attachments": [{"storage_key": "key1"}]}]}
+            result = processor._collect_and_validate_attachments(data)
 
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
+            # Verify helper methods were called
+            mock_collect.assert_called_once_with(data)
+            mock_validate.assert_called_once()
 
-        with pytest.raises(TransientError, match="Transient error"):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
-            )
-
-    def test_download_attachment_parallel_permanent_error(self):
-        """Test parallel attachment download with permanent error."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = PermanentError("Permanent error")
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
-
-        with pytest.raises(PermanentError, match="Permanent error"):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
-            )
+            assert len(result) == 1
+            assert result[0].attachment.storage_key == "key1"
 
 
 # =============================================================================
@@ -801,172 +911,6 @@ class TestStreamingZipCreation:
             call_args = mock_storage_client.put_object.call_args
             assert call_args[0][0] == "test-bucket"
             assert call_args[0][1] == "test-key.zip"
-
-    def test_controlled_streaming_generator_sliding_window(self):
-        """Test the controlled streaming generator with sliding window concurrency."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_privacy_request = Mock()
-        processor = StreamingStorage(mock_storage_client)
-
-        data = {
-            "users": [
-                {
-                    "id": 1,
-                    "attachments": [
-                        {"storage_key": f"key{x}", "size": 1000} for x in range(5)
-                    ],
-                }
-            ]
-        }
-
-        # Mock the _collect_and_validate_attachments function
-        with patch.object(
-            processor, "_collect_and_validate_attachments"
-        ) as mock_collect:
-            # Create proper processing info objects
-            mock_processing_infos = []
-            for i in range(5):
-                attachment = AttachmentInfo(
-                    storage_key=f"key{i}", size=1000, file_name=f"file{i}.txt"
-                )
-                mock_info = AttachmentProcessingInfo(
-                    attachment=attachment, base_path="users", item=data["users"][0]
-                )
-                mock_processing_infos.append(mock_info)
-
-            mock_collect.return_value = mock_processing_infos
-
-            # Mock the _download_attachment_parallel method to avoid actual downloads
-            with patch.object(
-                processor, "_download_attachment_parallel"
-            ) as mock_download:
-                mock_download.return_value = ("file.txt", b"test content")
-
-                processor.stream_attachments_to_storage_zip(
-                    mock_storage_client,
-                    "test-bucket",
-                    "test-key.zip",
-                    data,
-                    mock_privacy_request,
-                    max_workers=2,
-                    batch_size=2,  # Small batch size for testing
-                )
-
-                # Should have called _download_attachment_parallel for each attachment
-                # Note: The actual implementation might not call this method as expected
-                # For now, just verify that the method completes without error
-                assert mock_storage_client.put_object.call_count >= 1
-
-    def test_memory_efficient_batch_controlled_concurrency(self):
-        """Test memory-efficient batch processing with controlled concurrency."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_privacy_request = Mock()
-        processor = StreamingStorage(mock_storage_client)
-
-        data = {
-            "users": [
-                {
-                    "id": 1,
-                    "attachments": [
-                        {"storage_key": f"key{x}", "size": 1000} for x in range(10)
-                    ],
-                }
-            ]
-        }
-
-        # Mock the _collect_and_validate_attachments function
-        with patch.object(
-            processor, "_collect_and_validate_attachments"
-        ) as mock_collect:
-            # Create proper processing info objects
-            mock_processing_infos = []
-            for i in range(10):
-                attachment = AttachmentInfo(
-                    storage_key=f"key{i}", size=1000, file_name=f"file{i}.txt"
-                )
-                mock_info = AttachmentProcessingInfo(
-                    attachment=attachment, base_path="users", item=data["users"][0]
-                )
-                mock_processing_infos.append(mock_info)
-
-            mock_collect.return_value = mock_processing_infos
-
-            # Mock the _download_attachment_parallel method to avoid actual downloads
-            with patch.object(
-                processor, "_download_attachment_parallel"
-            ) as mock_download:
-                mock_download.return_value = ("file.txt", b"test content")
-
-                processor.stream_attachments_to_storage_zip(
-                    mock_storage_client,
-                    "test-bucket",
-                    "test-key.zip",
-                    data,
-                    mock_privacy_request,
-                    max_workers=3,
-                    batch_size=4,  # Process in batches of 4
-                )
-
-                # Should have called _download_attachment_parallel for each attachment
-                # Note: The actual implementation might not call this method as expected
-                # For now, just verify that the method completes without error
-                assert mock_storage_client.put_object.call_count >= 1
-
-    def test_streaming_preserves_memory_efficiency(self):
-        """Test that streaming approach preserves memory efficiency."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_privacy_request = Mock()
-        processor = StreamingStorage(mock_storage_client)
-
-        # Large dataset that would traditionally cause memory issues
-        data = {
-            "users": [
-                {
-                    "id": 1,
-                    "attachments": [
-                        {"storage_key": f"key{x}", "size": 1000} for x in range(100)
-                    ],
-                }
-            ]
-        }
-
-        # Mock the _collect_and_validate_attachments function
-        with patch.object(
-            processor, "_collect_and_validate_attachments"
-        ) as mock_collect:
-            # Create proper processing info objects
-            mock_processing_infos = []
-            for i in range(100):
-                attachment = AttachmentInfo(
-                    storage_key=f"key{i}", size=1000, file_name=f"file{i}.txt"
-                )
-                mock_info = AttachmentProcessingInfo(
-                    attachment=attachment, base_path="users", item=data["users"][0]
-                )
-                mock_processing_infos.append(mock_info)
-
-            mock_collect.return_value = mock_processing_infos
-
-            # Mock the _download_attachment_parallel method to avoid actual downloads
-            with patch.object(
-                processor, "_download_attachment_parallel"
-            ) as mock_download:
-                mock_download.return_value = ("file.txt", b"test content")
-
-                processor.stream_attachments_to_storage_zip(
-                    mock_storage_client,
-                    "test-bucket",
-                    "test-key.zip",
-                    data,
-                    mock_privacy_request,
-                    max_workers=5,
-                    batch_size=20,  # Process in batches of 20
-                )
-
-                # Should have called _download_attachment_parallel for each attachment
-                # Note: The actual implementation might not call this method as expected
-                # For now, just verify that the method completes without error
-                assert mock_storage_client.put_object.call_count >= 1
 
     def test_create_data_files_json_format(self):
         """Test _create_data_files method with JSON format data."""
@@ -1100,81 +1044,6 @@ class TestStreamingZipCreation:
         for batch in batches:
             assert len(batch) == 2
 
-    def test_process_attachment_batch_success(self):
-        """Test _process_attachment_batch method with successful downloads."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.return_value = b"test content"
-        processor = StreamingStorage(mock_storage_client)
-
-        # Create mock processing info objects
-        mock_infos = []
-        for i in range(3):
-            attachment = AttachmentInfo(
-                storage_key=f"key{i}", size=1000, file_name=f"file{i}.txt"
-            )
-            mock_info = AttachmentProcessingInfo(
-                attachment=attachment, base_path="users", item={"id": i}
-            )
-            mock_infos.append(mock_info)
-
-        # Process batch with 2 workers
-        results = list(
-            processor._process_attachment_batch(
-                mock_infos, mock_storage_client, "test-bucket", 2
-            )
-        )
-
-        # Should have 3 results
-        assert len(results) == 3
-
-        # Each result should be (filename, BytesIO, metadata)
-        for i, (filename, content, metadata) in enumerate(results):
-            assert filename == f"file{i}.txt"
-            assert isinstance(content, BytesIO)
-            assert metadata == {}
-
-        # Should have called get_object 3 times
-        assert mock_storage_client.get_object.call_count == 3
-
-    def test_process_attachment_batch_with_failures(self):
-        """Test _process_attachment_batch method with some download failures."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        processor = StreamingStorage(mock_storage_client)
-
-        # Mock some successful downloads and some failures
-        def mock_get_object(bucket, key):
-            if "key1" in key:
-                raise Exception("Download failed")
-            return b"test content"
-
-        mock_storage_client.get_object.side_effect = mock_get_object
-
-        # Create mock processing info objects
-        mock_infos = []
-        for i in range(3):
-            attachment = AttachmentInfo(
-                storage_key=f"key{i}", size=1000, file_name=f"file{i}.txt"
-            )
-            mock_info = AttachmentProcessingInfo(
-                attachment=attachment, base_path="users", item={"id": i}
-            )
-            mock_infos.append(mock_info)
-
-        # Process batch - should handle failures gracefully
-        results = list(
-            processor._process_attachment_batch(
-                mock_infos, mock_storage_client, "test-bucket", 2
-            )
-        )
-
-        # Should have 2 results (one failed)
-        assert len(results) == 2
-
-        # Check that successful downloads are included
-        filenames = [result[0] for result in results]
-        assert "file0.txt" in filenames
-        assert "file2.txt" in filenames
-        assert "file1.txt" not in filenames  # This one failed
 
     def test_create_zip_generator_integration(self):
         """Test _create_zip_generator method integration."""
@@ -1227,7 +1096,8 @@ class TestStreamingZipCreation:
             filename, dt, mode, method, content_iter = file_info
             assert isinstance(dt, datetime)
             assert mode == 0o644
-            assert hasattr(method, "__call__")  # method should be callable
+            # _ZIP_32_TYPE() is a compression method object, not callable
+            assert "ZIP_32_TYPE" in str(type(method))  # method should be _ZIP_32_TYPE
             assert hasattr(content_iter, "__iter__")  # content_iter should be iterable
 
     def test_upload_data_only_zip(self):
@@ -1320,101 +1190,6 @@ class TestStreamingZipCreation:
         filename, datetime_obj, mode, method, content_iter = result[0]
         assert filename == "test.txt"
         assert list(content_iter) == [b"test content"]
-
-    def test_download_attachment_parallel_success(self):
-        """Test _download_attachment_parallel method with successful download."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.return_value = b"test content"
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key", file_name="test.txt", size=1000
-        )
-
-        filename, content = processor._download_attachment_parallel(
-            mock_storage_client, "test-bucket", attachment
-        )
-
-        assert filename == "test.txt"
-        assert content == b"test content"
-        mock_storage_client.get_object.assert_called_once_with(
-            "test-bucket", "test-key"
-        )
-
-    def test_download_attachment_parallel_no_filename(self):
-        """Test _download_attachment_parallel method when attachment has no filename."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.return_value = b"test content"
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(storage_key="test-key", file_name=None, size=1000)
-
-        filename, content = processor._download_attachment_parallel(
-            mock_storage_client, "test-bucket", attachment
-        )
-
-        assert filename == "attachment"  # Default filename
-        assert content == b"test content"
-
-    def test_download_attachment_parallel_configuration_error(self):
-        """Test _download_attachment_parallel method with configuration error."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = ValueError("Invalid bucket")
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key", file_name="test.txt", size=1000
-        )
-
-        with pytest.raises(
-            PermanentError, match="Configuration error downloading attachment test.txt"
-        ):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
-            )
-
-    def test_download_attachment_parallel_transient_error(self):
-        """Test _download_attachment_parallel method with transient error."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = Exception("Network timeout")
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key", file_name="test.txt", size=1000
-        )
-
-        # Mock the is_transient_error function to return False so it goes to StorageUploadError
-        with (
-            patch(
-                "fides.api.service.storage.streaming.streaming_storage.is_transient_error",
-                return_value=False,
-            ),
-            patch(
-                "fides.api.service.storage.streaming.streaming_storage.is_s3_transient_error",
-                return_value=False,
-            ),
-        ):
-            with pytest.raises(
-                StorageUploadError, match="Failed to download attachment test.txt"
-            ):
-                processor._download_attachment_parallel(
-                    mock_storage_client, "test-bucket", attachment
-                )
-
-    def test_download_attachment_parallel_permanent_error(self):
-        """Test _download_attachment_parallel method with permanent error."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = PermanentError("Permanent error")
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key", file_name="test.txt", size=1000
-        )
-
-        with pytest.raises(PermanentError, match="Permanent error"):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
-            )
 
     def test_streaming_storage_initialization(self):
         """Test StreamingStorage class initialization."""
@@ -1809,69 +1584,6 @@ class TestUploadToStorage:
 class TestRetryMechanism:
     """Test retry mechanisms for transient failures."""
 
-    def test_download_attachment_with_retry_success_after_failure(self, mock_sleep):
-        """Test successful retry after transient failure."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = [
-            TransientError("Transient error"),  # First call fails
-            b"test content",  # Second call succeeds
-        ]
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
-
-        filename, content = processor._download_attachment_parallel(
-            mock_storage_client, "test-bucket", attachment
-        )
-
-        assert filename == "test.txt"
-        assert content == b"test content"
-        assert mock_storage_client.get_object.call_count == 2
-
-    def test_download_attachment_retry_permanent_error_no_retry(self, mock_sleep):
-        """Test that permanent errors are not retried."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = PermanentError("Permanent error")
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
-
-        with pytest.raises(PermanentError, match="Permanent error"):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
-            )
-
-        # Should not retry permanent errors
-        assert mock_storage_client.get_object.call_count == 1
-
-    def test_download_attachment_max_retries_exceeded(self, mock_sleep):
-        """Test that max retries are respected."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_storage_client.get_object.side_effect = TransientError("Transient error")
-        processor = StreamingStorage(mock_storage_client)
-
-        attachment = AttachmentInfo(
-            storage_key="test-key",
-            size=1000,
-            file_name="test.txt",
-        )
-
-        with pytest.raises(TransientError, match="Transient error"):
-            processor._download_attachment_parallel(
-                mock_storage_client, "test-bucket", attachment
-            )
-
-        # Should retry up to max retries (3 for download) - total of 4 calls (1 initial + 3 retries)
-        assert mock_storage_client.get_object.call_count == 4
-
     def test_streaming_function_retry_on_storage_failure(self, mock_sleep):
         """Test that streaming functions retry on storage failures."""
         mock_storage_client = create_autospec(CloudStorageClient)
@@ -1935,7 +1647,8 @@ class TestHelperMethods:
             filename, dt, mode, method, content_iter = file_info
             assert isinstance(dt, datetime)
             assert mode == 0o644
-            assert hasattr(method, "__call__")  # method should be callable
+            # _ZIP_32_TYPE() is a compression method object, not callable
+            assert "ZIP_32_TYPE" in str(type(method))  # method should be _ZIP_32_TYPE
             assert hasattr(content_iter, "__iter__")  # content_iter should be iterable
 
     def test_yield_attachments(self):
@@ -1989,7 +1702,7 @@ class TestHelperMethods:
         filename, dt, mode, method, content_iter = files[0]
         assert filename == "test.pdf"
         assert mode == 0o644
-        assert hasattr(content_iter, "__iter__")  # Should be a generator
+        assert hasattr(content_iter, "__iter__")  # Should be iterable
 
     def test_yield_single_attachment_storage(self):
         """Test _yield_single_attachment method with storage-based attachments."""
@@ -2027,15 +1740,15 @@ class TestHelperMethods:
 
         url = "https://example.com/test.pdf"
 
-        # This should return a generator function, not execute HTTP request
+        # This should return a generator, not a callable function
         stream_generator = processor._create_url_stream(url)
 
-        # Should be callable (returns a function)
-        assert callable(stream_generator)
+        # Should be iterable (returns a generator)
+        assert hasattr(stream_generator, "__iter__")
 
         # Should not have made any HTTP requests yet
         # (We can't easily test this without mocking requests, but the key point
-        # is that it returns a function, not executes the request)
+        # is that it returns a generator, not executes the request)
 
     def test_streaming_behavior_no_downloading(self):
         """Test that URL attachments create lazy generators without downloading."""
@@ -2061,8 +1774,8 @@ class TestHelperMethods:
         assert len(files) == 1
         filename, dt, mode, method, content_iter = files[0]
 
-        # The content_iter should be a generator function, not actual content
-        assert callable(content_iter)
+        # The content_iter should be iterable, not necessarily callable
+        assert hasattr(content_iter, "__iter__")
 
         # No HTTP requests should have been made yet
         # The generator is lazy and only executes when called by stream_zip
@@ -2105,9 +1818,9 @@ class TestHelperMethods:
 
         assert len(files) == 2
 
-        # Check URL attachment (should be lazy generator)
+        # Check URL attachment (should be iterable generator)
         url_file = next(f for f in files if f[0] == "url_file.pdf")
-        assert callable(url_file[4])  # content_iter should be callable
+        assert hasattr(url_file[4], "__iter__")  # content_iter should be iterable
 
         # Check storage attachment (should have actual content)
         storage_file = next(f for f in files if f[0] == "storage_file.txt")
@@ -2119,3 +1832,214 @@ class TestHelperMethods:
         mock_storage_client.get_object.assert_called_once_with(
             "test-bucket", "storage_key_123"
         )
+
+    def test_collect_attachments_direct_only(self):
+        """Test _collect_attachments method with direct attachments only."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "attachments": [
+                {
+                    "file_name": "file1.pdf",
+                    "download_url": "https://example.com/file1.pdf",
+                    "file_size": 1000,
+                },
+                {
+                    "file_name": "file2.txt",
+                    "url": "https://example.com/file2.txt",
+                    "file_size": 500,
+                },
+            ]
+        }
+
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 2
+
+        # Check first attachment
+        first = raw_attachments[0]
+        assert first["type"] == "direct"
+        assert first["base_path"] == "attachments/1"
+        assert first["attachment"]["file_name"] == "file1.pdf"
+
+        # Check second attachment
+        second = raw_attachments[1]
+        assert second["type"] == "direct"
+        assert second["base_path"] == "attachments/2"
+        assert second["attachment"]["file_name"] == "file2.txt"
+
+    def test_collect_attachments_nested_only(self):
+        """Test _collect_attachments method with nested attachments only."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "attachments": [
+                        {"storage_key": "key1", "file_name": "file1.txt"},
+                        {"storage_key": "key2", "file_name": "file2.txt"},
+                    ],
+                }
+            ]
+        }
+
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 2
+
+        # Check first attachment
+        first = raw_attachments[0]
+        assert first["type"] == "nested"
+        assert first["base_path"] == "users/1/attachments"
+        assert first["attachment"]["storage_key"] == "key1"
+
+        # Check second attachment
+        second = raw_attachments[1]
+        assert second["type"] == "nested"
+        assert second["attachment"]["storage_key"] == "key2"
+
+    def test_collect_attachments_mixed_types(self):
+        """Test _collect_attachments method with both direct and nested attachments."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "attachments": [{"storage_key": "key1", "file_name": "file1.txt"}],
+                }
+            ],
+            "attachments": [
+                {
+                    "file_name": "direct_file.pdf",
+                    "download_url": "https://example.com/direct.pdf",
+                }
+            ],
+        }
+
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 2
+
+        # Check nested attachment
+        nested = next(a for a in raw_attachments if a["type"] == "nested")
+        assert nested["base_path"] == "users/1/attachments"
+
+        # Check direct attachment
+        direct = next(a for a in raw_attachments if a["type"] == "direct")
+        assert direct["base_path"] == "attachments/1"
+
+    def test_validate_attachment_direct(self):
+        """Test _validate_attachment method with direct attachment."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        attachment_data = {
+            "attachment": {
+                "file_name": "test.pdf",
+                "download_url": "https://example.com/test.pdf",
+                "file_size": 5000,
+                "content_type": "application/pdf",
+            },
+            "base_path": "attachments/1",
+            "item": {"id": 1},
+            "type": "direct",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is not None
+        assert result.attachment.storage_key == "https://example.com/test.pdf"
+        assert result.attachment.file_name == "test.pdf"
+        assert result.attachment.size == 5000
+        assert result.base_path == "attachments/1"
+
+    def test_validate_attachment_nested(self):
+        """Test _validate_attachment method with nested attachment."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        attachment_data = {
+            "attachment": {
+                "storage_key": "storage_key_123",
+                "file_name": "test.txt",
+                "size": 100,
+            },
+            "base_path": "users/1/attachments",
+            "item": {"id": 1},
+            "type": "nested",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is not None
+        assert result.attachment.storage_key == "storage_key_123"
+        assert result.attachment.file_name == "test.txt"
+        assert result.attachment.size == 100
+        assert result.base_path == "users/1/attachments"
+
+    def test_validate_attachment_invalid_data(self):
+        """Test _validate_attachment method with invalid attachment data."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Test with missing required fields
+        attachment_data = {
+            "attachment": {
+                "file_name": "test.txt"
+                # Missing storage_key for nested type
+            },
+            "base_path": "users/1/attachments",
+            "item": {"id": 1},
+            "type": "nested",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is None
+
+        # Test with malformed data
+        attachment_data = {
+            "attachment": "not a dict",
+            "base_path": "attachments/1",
+            "item": {"id": 1},
+            "type": "direct",
+        }
+
+        result = processor._validate_attachment(attachment_data)
+        assert result is None
+
+    def test_collect_and_validate_attachments_delegation(self):
+        """Test that _collect_and_validate_attachments properly delegates to helper methods."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Mock the helper methods
+        with (
+            patch.object(processor, "_collect_attachments") as mock_collect,
+            patch.object(processor, "_validate_attachment") as mock_validate,
+        ):
+
+            mock_collect.return_value = [
+                {
+                    "attachment": {"storage_key": "key1", "file_name": "file1.txt"},
+                    "base_path": "users/1/attachments",
+                    "item": {"id": 1},
+                    "type": "nested",
+                }
+            ]
+
+            mock_validate.return_value = AttachmentProcessingInfo(
+                attachment=AttachmentInfo(storage_key="key1", file_name="file1.txt"),
+                base_path="users/1/attachments",
+                item={"id": 1},
+            )
+
+            data = {"users": [{"id": 1, "attachments": [{"storage_key": "key1"}]}]}
+            result = processor._collect_and_validate_attachments(data)
+
+            # Verify helper methods were called
+            mock_collect.assert_called_once_with(data)
+            mock_validate.assert_called_once()
+
+            assert len(result) == 1
+            assert result[0].attachment.storage_key == "key1"

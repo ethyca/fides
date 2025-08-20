@@ -146,16 +146,17 @@ class StreamingStorage:
 
         return packages
 
-    def _collect_and_validate_attachments(
-        self, data: dict
-    ) -> list[AttachmentProcessingInfo]:
-        """Collect and validate all attachments from the data.
+    def _collect_attachments(self, data: dict) -> list[dict]:
+        """Collect all attachment data from the input data structure.
+
+        This method handles both direct attachments (under 'attachments' key) and
+        nested attachments within items. It returns raw attachment data without validation.
 
         Args:
             data: The data dictionary containing items with attachments
 
         Returns:
-            List of validated AttachmentProcessingInfo objects
+            List of raw attachment dictionaries with metadata
         """
         all_attachments = []
 
@@ -167,39 +168,26 @@ class StreamingStorage:
 
             # Special case: if the key is "attachments", treat the items as attachments directly
             if key == "attachments":
+                logger.debug(
+                    f"Found 'attachments' key with {len(value)} items - processing as direct attachments"
+                )
                 for idx, attachment in enumerate(value):
-
                     if not isinstance(attachment, dict):
                         continue
 
                     # Check if this looks like an attachment (has file_name or download_url)
                     if "file_name" in attachment or "download_url" in attachment:
-                        try:
-                            # Convert to our AttachmentInfo format
-                            storage_key = attachment.get(
-                                "download_url",
-                                attachment.get("url", f"attachment_{idx}"),
-                            )
-                            file_name = attachment.get("file_name", f"attachment_{idx}")
-
-                            attachment_info = AttachmentInfo(
-                                storage_key=storage_key,
-                                file_name=file_name,
-                                size=attachment.get("file_size"),
-                                content_type=attachment.get("content_type"),
-                            )
-
-                            processing_info = AttachmentProcessingInfo(
-                                attachment=attachment_info,
-                                base_path=f"attachments/{idx + 1}",
-                                item=attachment,
-                            )
-                            all_attachments.append(processing_info)
-                        except (ValueError, TypeError, KeyError) as e:
-                            logger.debug(
-                                f"Failed to validate direct attachment {idx}: {e}"
-                            )
-                            continue
+                        # Add metadata for processing
+                        attachment_data = {
+                            "attachment": attachment,
+                            "base_path": f"attachments/{idx + 1}",
+                            "item": attachment,
+                            "type": "direct",
+                        }
+                        all_attachments.append(attachment_data)
+                        logger.debug(
+                            f"Added direct attachment: {attachment.get('file_name', f'attachment_{idx}')}"
+                        )
 
             # Regular case: look for nested attachments
             for idx, item in enumerate(value):
@@ -211,26 +199,112 @@ class StreamingStorage:
                     continue
 
                 for attachment in attachments:
-                    if (
-                        not isinstance(attachment, dict)
-                        or "storage_key" not in attachment
-                    ):
+                    if not isinstance(attachment, dict):
                         continue
 
-                    try:
-                        attachment_info = AttachmentInfo(**attachment)
-                        processing_info = AttachmentProcessingInfo(
-                            attachment=attachment_info,
-                            base_path=f"{key}/{idx + 1}/attachments",
-                            item=item,
-                        )
-                        all_attachments.append(processing_info)
-                    except (ValueError, TypeError, KeyError) as e:
-                        # Invalid attachment data, skip it
-                        logger.debug(f"Invalid attachment data: {attachment}")
-                        continue
+                    # Add metadata for processing
+                    attachment_data = {
+                        "attachment": attachment,
+                        "base_path": f"{key}/{idx + 1}/attachments",
+                        "item": item,
+                        "type": "nested",
+                    }
+                    all_attachments.append(attachment_data)
 
+        logger.debug(f"Collected {len(all_attachments)} raw attachments")
         return all_attachments
+
+    def _validate_attachment(
+        self, attachment_data: dict
+    ) -> Optional[AttachmentProcessingInfo]:
+        """Validate a single attachment and convert it to AttachmentProcessingInfo.
+
+        Args:
+            attachment_data: Dictionary containing attachment data and metadata
+
+        Returns:
+            Validated AttachmentProcessingInfo or None if validation fails
+        """
+        attachment = attachment_data["attachment"]
+        base_path = attachment_data["base_path"]
+        item = attachment_data["item"]
+        attachment_type = attachment_data["type"]
+
+        # Validate that attachment is a dictionary
+        if not isinstance(attachment, dict):
+            logger.debug(f"Skipping attachment with invalid type: {type(attachment)}")
+            return None
+
+        try:
+            if attachment_type == "direct":
+                # Handle direct attachments (from 'attachments' key)
+                storage_key = attachment.get(
+                    "download_url",
+                    attachment.get("url", f"attachment_{hash(attachment)}"),
+                )
+                file_name = attachment.get(
+                    "file_name", f"attachment_{hash(attachment)}"
+                )
+
+                attachment_info = AttachmentInfo(
+                    storage_key=storage_key,
+                    file_name=file_name,
+                    size=attachment.get("file_size"),
+                    content_type=attachment.get("content_type"),
+                )
+            else:
+                # Handle nested attachments (require storage_key)
+                if "storage_key" not in attachment:
+                    logger.debug(
+                        f"Skipping attachment without storage_key: {attachment}"
+                    )
+                    return None
+
+                attachment_info = AttachmentInfo(**attachment)
+
+            processing_info = AttachmentProcessingInfo(
+                attachment=attachment_info,
+                base_path=base_path,
+                item=item,
+            )
+
+            logger.debug(
+                f"Successfully validated attachment: {attachment_info.storage_key}"
+            )
+            return processing_info
+
+        except (ValueError, TypeError, KeyError) as e:
+            logger.debug(f"Failed to validate attachment: {attachment}, error: {e}")
+            return None
+
+    def _collect_and_validate_attachments(
+        self, data: dict
+    ) -> list[AttachmentProcessingInfo]:
+        """Collect and validate all attachments from the data.
+
+        This method now delegates to _collect_attachments and _validate_attachment
+        for better separation of concerns and readability.
+
+        Args:
+            data: The data dictionary containing items with attachments
+
+        Returns:
+            List of validated AttachmentProcessingInfo objects
+        """
+        # Collect raw attachment data
+        raw_attachments = self._collect_attachments(data)
+
+        # Validate and convert each attachment
+        validated_attachments = []
+        for attachment_data in raw_attachments:
+            validated = self._validate_attachment(attachment_data)
+            if validated:
+                validated_attachments.append(validated)
+
+        logger.debug(
+            f"Successfully validated {len(validated_attachments)} out of {len(raw_attachments)} attachments"
+        )
+        return validated_attachments
 
     @retry_cloud_storage_operation(
         provider="cloud storage",
@@ -531,11 +605,8 @@ class StreamingStorage:
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Yield attachments in stream_zip format with true streaming from URLs."""
         attachment_files_count = 0
-        total_batches = (len(all_attachments) + batch_size - 1) // batch_size
 
-        for batch_num, batch in enumerate(
-            self._get_attachment_batches(all_attachments, batch_size), 1
-        ):
+        for batch in self._get_attachment_batches(all_attachments, batch_size):
             for attachment_info in batch:
                 attachment_files_count += 1
                 yield from self._yield_single_attachment(

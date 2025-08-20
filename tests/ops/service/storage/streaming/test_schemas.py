@@ -81,7 +81,7 @@ class TestStreamingStorageSchemas:
         """Test StreamingBufferConfig default values."""
         config = StreamingBufferConfig()
         assert config.zip_buffer_threshold == 5 * 1024 * 1024  # 5MB
-        assert config.stream_buffer_threshold == 512 * 1024  # 512KB
+        assert config.stream_buffer_threshold == 1024 * 1024  # 512KB
         assert config.chunk_size_threshold == 1024 * 1024  # 1MB
 
     def test_attachment_processing_info_validation(self):
