@@ -46,7 +46,7 @@ const SelectIntegrationType = ({
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { oktaMonitor },
+    flags: { oktaMonitor, newIntegrationManagement },
   } = useFlags();
 
   // Fetch connection types for SAAS integration generation
@@ -58,7 +58,15 @@ const SelectIntegrationType = ({
 
   // Generate dynamic integration list including all SAAS integrations
   const allIntegrationTypes = useMemo(() => {
-    const staticIntegrations = INTEGRATION_TYPE_LIST;
+    let staticIntegrations = INTEGRATION_TYPE_LIST;
+
+    // Filter out SaaS integrations if the new integration management flag is disabled
+    if (!newIntegrationManagement) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !== ConnectionType.SAAS,
+      );
+    }
 
     // Generate SAAS integrations from connection types (excluding those already in static list)
     const existingSaasTypes = new Set(
@@ -70,28 +78,50 @@ const SelectIntegrationType = ({
         .map((integration) => integration.placeholder.saas_config?.type),
     );
 
-    const dynamicSaasIntegrations = connectionTypes
-      .filter(
-        (ct) => ct.type === "saas" && !existingSaasTypes.has(ct.identifier),
-      )
-      .map((ct) =>
-        getIntegrationTypeInfo(
-          ConnectionType.SAAS,
-          ct.identifier,
-          connectionTypes,
-        ),
-      );
+    // Only add dynamic SaaS integrations if the flag is enabled
+    const dynamicSaasIntegrations = newIntegrationManagement
+      ? connectionTypes
+          .filter(
+            (ct) => ct.type === "saas" && !existingSaasTypes.has(ct.identifier),
+          )
+          .map((ct) =>
+            getIntegrationTypeInfo(
+              ConnectionType.SAAS,
+              ct.identifier,
+              connectionTypes,
+            ),
+          )
+      : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes]);
+  }, [connectionTypes, newIntegrationManagement]);
 
-  // Get available categories based on flags
+  // Get available categories based on flags and whether they have any integrations
   const availableCategories = useMemo(() => {
-    return Object.values(IntegrationCategoryFilter).filter(
+    const allCategories = Object.values(IntegrationCategoryFilter).filter(
       (tab) =>
         tab !== IntegrationCategoryFilter.IDENTITY_PROVIDER || oktaMonitor,
     );
-  }, [oktaMonitor]);
+
+    // If new integration management is disabled, filter out categories that have no integrations
+    if (!newIntegrationManagement) {
+      return allCategories.filter((category) => {
+        if (category === IntegrationCategoryFilter.ALL) {
+          // Always show "All" if there are any integrations
+          return allIntegrationTypes.length > 0;
+        }
+
+        // Check if this category has any integrations
+        return allIntegrationTypes.some(
+          (integration) =>
+            integration.category ===
+            (category as unknown as ConnectionCategory),
+        );
+      });
+    }
+
+    return allCategories;
+  }, [oktaMonitor, newIntegrationManagement, allIntegrationTypes]);
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {

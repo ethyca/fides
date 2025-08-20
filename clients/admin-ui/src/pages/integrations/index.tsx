@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { useConnectionLogo } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
@@ -27,7 +28,7 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -50,6 +51,10 @@ const IntegrationListView: NextPage = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+
+  const {
+    flags: { newIntegrationManagement },
+  } = useFlags();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -75,8 +80,20 @@ const IntegrationListView: NextPage = () => {
     [connectionTypesData],
   );
 
+  // Filter connection types based on the new integration management flag
+  const connectionTypesToQuery = useMemo(() => {
+    if (newIntegrationManagement) {
+      // Show all integrations (including SaaS) when the flag is enabled
+      return SUPPORTED_INTEGRATIONS;
+    }
+    // Hide SaaS integrations when the flag is disabled
+    return SUPPORTED_INTEGRATIONS.filter(
+      (type) => type !== ConnectionType.SAAS,
+    );
+  }, [newIntegrationManagement]);
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: SUPPORTED_INTEGRATIONS,
+    connection_type: connectionTypesToQuery,
     size: pageSize,
     page,
     search: searchTerm.trim() || undefined,
