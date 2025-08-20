@@ -12,7 +12,6 @@ import {
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
-import { useFlags } from "~/features/common/features";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { FidesTableV2 } from "~/features/common/table/v2";
 import {
@@ -28,7 +27,6 @@ import {
 import AddManualTaskModal from "./AddManualTaskModal";
 import CreateExternalUserModal from "./CreateExternalUserModal";
 import TaskAssignedUsersSection from "./TaskAssignedUsersSection";
-import TaskCreationConditions from "./TaskCreationConditions";
 import { Task, useTaskColumns } from "./useTaskColumns";
 
 const { Paragraph } = Typography;
@@ -43,8 +41,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { flags } = useFlags();
-  const isManualTaskConditionsEnabled = flags.alphaManualTaskConditions;
 
   const {
     isOpen: isCreateUserOpen,
@@ -193,14 +189,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             onManageSecureAccess={onCreateUserOpen}
           />
         </div>
-
-        {isManualTaskConditionsEnabled && (
-          <>
-            <Divider className="my-2" />
-
-            <TaskCreationConditions connectionKey={integration.key} />
-          </>
-        )}
 
         <AddManualTaskModal
           isOpen={isOpen}

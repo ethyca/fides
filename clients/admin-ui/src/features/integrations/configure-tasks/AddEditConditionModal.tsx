@@ -18,7 +18,7 @@ import AddConditionForm from "./AddConditionForm";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onConditionSaved: (condition: ConditionLeaf) => void;
+  onConditionSaved: (condition: ConditionLeaf) => Promise<void>;
   editingCondition?: ConditionLeaf | null;
 };
 
@@ -35,10 +35,40 @@ const AddEditConditionModal = ({
   const handleSubmit = async (condition: ConditionLeaf) => {
     try {
       setIsSubmitting(true);
-      onConditionSaved(condition);
-      onClose();
-    } catch (error) {
-      message.error("Failed to save condition. Please try again.");
+      await onConditionSaved(condition);
+      onClose(); // Only close if save was successful
+    } catch (error: any) {
+      // Parse API error message
+      let errorMessage = "Failed to save condition. Please try again.";
+
+      if (error?.data?.detail) {
+        // Handle API validation errors like the example:
+        // "Found 1 validation error(s):\n\nField: asdasd.d\n  - Invalid field address format: asdasd.d, expected format: dataset_key:collection:field.nested_field\n"
+        const detail = error.data.detail;
+
+        if (detail.includes("validation error")) {
+          // Extract the field-specific error message
+          const lines = detail.split("\n");
+          const errorLine = lines.find((line) => line.trim().startsWith("- "));
+          if (errorLine) {
+            errorMessage = errorLine.trim().replace(/^\s*-\s*/, "");
+          } else {
+            // Fallback: just use the detail as-is, cleaned up
+            errorMessage = detail
+              .replace(/Found \d+ validation error\(s\):\s*\n*/i, "")
+              .trim();
+          }
+        } else {
+          // For non-validation errors, use the detail directly
+          errorMessage = detail;
+        }
+      } else if (error?.message) {
+        // Handle client-side errors (like duplicate condition check)
+        errorMessage = error.message;
+      }
+
+      message.error(errorMessage);
+      // Don't close modal on error - let user fix the issue
     } finally {
       setIsSubmitting(false);
     }

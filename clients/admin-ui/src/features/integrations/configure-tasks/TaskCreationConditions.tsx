@@ -127,7 +127,7 @@ const TaskCreationConditions = ({
   }, []);
 
   const handleConditionSaved = useCallback(
-    async (newCondition: ConditionLeaf) => {
+    async (newCondition: ConditionLeaf): Promise<void> => {
       const originalConditions = conditions; // Capture current state
       let updatedConditions: ConditionLeaf[] = [];
 
@@ -146,10 +146,9 @@ const TaskCreationConditions = ({
         );
 
         if (isDuplicate) {
-          message.warning(
+          throw new Error(
             `A condition for "${newCondition.field_address}" with operator "${newCondition.operator}" already exists.`,
           );
-          return;
         }
 
         updatedConditions = [...originalConditions, newCondition];
@@ -166,10 +165,12 @@ const TaskCreationConditions = ({
             ? "Condition updated successfully!"
             : "Condition added successfully!",
         );
+        // Close modal is now handled by the modal itself on success
       } catch (err) {
-        message.error("Failed to save condition. Please try again.");
         // Revert to captured original state
         setConditions(originalConditions);
+        // Re-throw the error to be handled by the modal
+        throw err;
       }
     },
     [editingIndex, conditions, saveConditions],

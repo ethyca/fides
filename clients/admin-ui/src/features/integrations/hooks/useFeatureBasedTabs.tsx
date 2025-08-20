@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
+import TaskCreationConditions from "~/features/integrations/configure-tasks/TaskCreationConditions";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice, {
   ConnectionStatusData,
@@ -165,6 +166,14 @@ export const useFeatureBasedTabs = ({
         label: "Manual tasks",
         key: "manual-tasks",
         children: <TaskConfigTab integration={connection!} />,
+      });
+    }
+
+    if (enabledFeatures?.includes(IntegrationFeatureEnum.CONDITIONS)) {
+      tabItems.push({
+        label: "Conditions",
+        key: "conditions",
+        children: <TaskCreationConditions connectionKey={connection!.key} />,
       });
     }
 
