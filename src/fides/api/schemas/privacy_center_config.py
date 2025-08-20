@@ -79,7 +79,7 @@ class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
                 "LocationCustomPrivacyRequestField does not support options"
             )
 
-        # This fieldcannot be hidden
+        # This field cannot be hidden
         if values.get("hidden"):
             raise ValueError("Custom location fields cannot be hidden")
 
