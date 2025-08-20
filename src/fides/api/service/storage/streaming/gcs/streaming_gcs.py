@@ -56,7 +56,10 @@ def upload_to_gcs_streaming(
     if privacy_request is None and document is not None:
         # For backward compatibility, we need to create a mock privacy request
         # since the streaming functions require it
-        from fides.api.models.privacy_request import PrivacyRequest as MockPrivacyRequest
+        from fides.api.models.privacy_request import (
+            PrivacyRequest as MockPrivacyRequest,
+        )
+
         mock_request = MockPrivacyRequest(id="backward_compat")
 
         # Instead of calling upload_to_gcs (which has type mismatches),
@@ -172,7 +175,10 @@ def upload_to_gcs_streaming_advanced(
     if privacy_request is None and document is not None:
         # For backward compatibility, we need to create a mock privacy request
         # since the streaming functions require it
-        from fides.api.models.privacy_request import PrivacyRequest as MockPrivacyRequest
+        from fides.api.models.privacy_request import (
+            PrivacyRequest as MockPrivacyRequest,
+        )
+
         mock_request = MockPrivacyRequest(id="backward_compat")
 
         # Instead of calling upload_to_gcs (which has type mismatches),
@@ -272,7 +278,10 @@ def upload_to_gcs_resumable(
     if privacy_request is None and document is not None:
         # For backward compatibility, we need to create a mock privacy request
         # since the streaming functions require it
-        from fides.api.models.privacy_request import PrivacyRequest as MockPrivacyRequest
+        from fides.api.models.privacy_request import (
+            PrivacyRequest as MockPrivacyRequest,
+        )
+
         mock_request = MockPrivacyRequest(id="backward_compat")
 
         # Instead of calling upload_to_gcs (which has type mismatches),
@@ -386,7 +395,10 @@ def upload_to_gcs_streaming_with_retry(
     if privacy_request is None and document is not None:
         # For backward compatibility, we need to create a mock privacy request
         # since the streaming functions require it
-        from fides.api.models.privacy_request import PrivacyRequest as MockPrivacyRequest
+        from fides.api.models.privacy_request import (
+            PrivacyRequest as MockPrivacyRequest,
+        )
+
         mock_request = MockPrivacyRequest(id="backward_compat")
 
         # Instead of calling upload_to_gcs (which has type mismatches),
@@ -453,16 +465,21 @@ def upload_to_gcs_streaming_with_retry(
         except GoogleCloudError as e:
             last_exception = e
             if attempt < max_retries - 1:
-                wait_time = 2 ** attempt  # Exponential backoff
+                wait_time = 2**attempt  # Exponential backoff
                 logger.warning(
                     "GCS upload attempt {} failed, retrying in {} seconds: {}",
-                    attempt + 1, wait_time, e
+                    attempt + 1,
+                    wait_time,
+                    e,
                 )
                 import time
+
                 time.sleep(wait_time)
             else:
                 logger.error("GCS upload failed after {} attempts: {}", max_retries, e)
-                raise StorageUploadError(f"Error uploading to GCS after {max_retries} attempts: {e}")
+                raise StorageUploadError(
+                    f"Error uploading to GCS after {max_retries} attempts: {e}"
+                )
         except Exception as e:
             logger.error("Unexpected error during streaming upload: {}", e)
             raise StorageUploadError(f"Unexpected error during streaming upload: {e}")

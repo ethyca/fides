@@ -447,7 +447,9 @@ def create_gcs_storage_client(
     # get_gcs_client expects Optional[dict]
     if isinstance(storage_secrets, StorageSecrets):
         # Convert StorageSecrets enum to dict format
-        secrets_dict: Optional[dict] = {storage_secrets: None}  # This is a placeholder - actual implementation would need proper conversion
+        secrets_dict: Optional[dict] = {
+            storage_secrets: None
+        }  # This is a placeholder - actual implementation would need proper conversion
     else:
         secrets_dict = storage_secrets
 
