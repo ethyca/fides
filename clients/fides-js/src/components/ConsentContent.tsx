@@ -38,7 +38,7 @@ const ConsentContent = ({
         <div className="fides-modal-body">
           <div
             data-testid="fides-modal-title"
-            {...titleProps}
+            {...titleProps} // adds role, aria-level, id
             className="fides-modal-title"
           >
             {title}

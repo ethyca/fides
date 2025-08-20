@@ -29,6 +29,7 @@ from .fides_settings import FidesSettings
 from .helpers import handle_deprecated_env_variables, handle_deprecated_fields
 from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
+from .privacy_center_settings import PrivacyCenterSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
@@ -82,6 +83,7 @@ class FidesConfig(FidesSettings):
     logging: LoggingSettings
     notifications: NotificationSettings
     redis: RedisSettings
+    privacy_center: PrivacyCenterSettings
     security: SecuritySettings
     user: UserSettings
 
@@ -111,6 +113,7 @@ class FidesConfig(FidesSettings):
             self.security,
             self.execution,
             self.admin_ui,
+            self.privacy_center,
         ]:
             for key, value in settings.model_dump(mode="json").items():  # type: ignore
                 log.debug(
@@ -161,6 +164,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "execution": ExecutionSettings,
         "logging": LoggingSettings,
         "notifications": NotificationSettings,
+        "privacy_center": PrivacyCenterSettings,
         "redis": RedisSettings,
         "security": SecuritySettings,
         "user": UserSettings,

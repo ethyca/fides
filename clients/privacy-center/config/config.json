@@ -8,6 +8,7 @@
   "privacy_policy_url": "https://fid.es/privacy",
   "privacy_policy_url_text": "Privacy Policy",
   "favicon_path": "/favicon.ico",
+
   "actions": [
     {
       "policy_key": "default_access_policy",
@@ -16,7 +17,12 @@
       "description": "We will provide you a report of all your personal data.",
       "description_subtext": [],
       "identity_inputs": {
-        "email": "required"
+        "email": "required",
+        "location": {
+          "label": "Location",
+          "required": true,
+          "ip_geolocation_hint": true
+        }
       },
       "custom_privacy_request_fields": {
         "preferred_format": {
@@ -60,7 +66,12 @@
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "description_subtext": [],
       "identity_inputs": {
-        "email": "required"
+        "email": "required",
+        "location": {
+          "label": "Location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       },
       "custom_privacy_request_fields": {
         "data_categories": {

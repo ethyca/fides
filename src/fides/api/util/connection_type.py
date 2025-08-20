@@ -143,7 +143,9 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
     Note that this does not return actual secrets, instead we return the *types* of
     secret fields needed to authenticate.
     """
-    connection_system_types: list[ConnectionSystemTypeMap] = get_connection_types()
+    connection_system_types: list[ConnectionSystemTypeMap] = get_connection_types(
+        include_test_connections=True
+    )
     if not any(item.identifier == connection_type for item in connection_system_types):
         raise NoSuchConnectionTypeSecretSchemaError(
             f"No connection type found with name '{connection_type}'."
@@ -191,15 +193,15 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
     return schema
 
 
-def get_connection_types(
-    search: str | None = None,
-    system_type: SystemType | None = None,
-    action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
-) -> list[ConnectionSystemTypeMap]:
-    def is_match(elem: str) -> bool:
-        """If a search query param was included, is it a substring of an available connector type?"""
-        return search.lower() in elem.lower() if search else True
+def _is_match(elem: str, search: Optional[str] = None) -> bool:
+    """If a search query param was included, is it a substring of an available connector type?"""
+    return search.lower() in elem.lower() if search else True
 
+
+def get_saas_connection_types(
+    action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
+    search: Optional[str] = None,
+) -> list[ConnectionSystemTypeMap]:
     def saas_request_type_filter(connection_type: str) -> bool:
         """
         If any of the request type filters are set to true,
@@ -218,6 +220,63 @@ def get_connection_types(
             action_type in template.supported_actions for action_type in action_types
         )
 
+    saas_connection_types: list[ConnectionSystemTypeMap] = []
+    saas_types: list[str] = sorted(
+        [
+            saas_type
+            for saas_type in ConnectorRegistry.connector_types()
+            if _is_match(saas_type, search) and saas_request_type_filter(saas_type)
+        ]
+    )
+
+    for item in saas_types:
+        connector_template = ConnectorRegistry.get_connector_template(item)
+        if connector_template is not None:
+            # Read display info from SAAS config if available
+            category = None
+            tags = None
+            enabled_features = None
+
+            try:
+                saas_config = SaaSConfig(**load_config_from_string(connector_template.config))
+                if saas_config.display_info:
+                    category = saas_config.display_info.category
+                    tags = saas_config.display_info.tags
+                    enabled_features = saas_config.display_info.enabled_features
+            except Exception:
+                # If config parsing fails, leave display info as None
+                pass
+
+            saas_connection_types.append(
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.saas,
+                    human_readable=connector_template.human_readable,
+                    encoded_icon=connector_template.icon,
+                    authorization_required=connector_template.authorization_required,
+                    user_guide=connector_template.user_guide,
+                    supported_actions=connector_template.supported_actions,
+                    category=category,
+                    tags=tags,
+                    enabled_features=enabled_features,
+                )
+            )
+
+    return saas_connection_types
+
+
+# FIXME: this function needs a refactor
+def get_connection_types(
+    search: str | None = None,
+    system_type: SystemType | None = None,
+    action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
+    include_test_connections: bool = False,
+) -> list[ConnectionSystemTypeMap]:
+    """
+    Returns a list of ConnectionSystemTypeMap objects that match the given search and system type.
+
+    If include_test_connections is True, test connections like test_website will be included in the response.
+    """
     connection_system_types: list[ConnectionSystemTypeMap] = []
     if (system_type == SystemType.database or system_type is None) and (
         ActionType.access in action_types or ActionType.erasure in action_types
@@ -240,7 +299,7 @@ def get_connection_types(
                     ConnectionType.sovrn,
                     ConnectionType.test_website,
                 ]
-                and is_match(conn_type.value)
+                and _is_match(conn_type.value, search)
             ],
             key=lambda x: x.value,
         )
@@ -256,51 +315,10 @@ def get_connection_types(
             ]
         )
     if system_type == SystemType.saas or system_type is None:
-        saas_types: list[str] = sorted(
-            [
-                saas_type
-                for saas_type in ConnectorRegistry.connector_types()
-                if is_match(saas_type) and saas_request_type_filter(saas_type)
-            ]
+        saas_connection_types = get_saas_connection_types(
+            action_types=action_types, search=search
         )
-
-        for item in saas_types:
-            connector_template = ConnectorRegistry.get_connector_template(item)
-            if connector_template is not None:
-                # Get display info from SAAS config or use smart defaults
-                category, tags, enabled_features = get_default_saas_display_info(item)
-
-                # If the connector has display_info in its config, use that instead
-                try:
-                    from fides.api.util.saas_util import load_config_from_string
-                    from fides.api.schemas.saas.saas_config import SaaSConfig
-
-                    saas_config = SaaSConfig(**load_config_from_string(connector_template.config))
-                    if saas_config.display_info:
-                        if saas_config.display_info.category is not None:
-                            category = saas_config.display_info.category
-                        if saas_config.display_info.tags is not None:
-                            tags = saas_config.display_info.tags
-                        if saas_config.display_info.enabled_features is not None:
-                            enabled_features = saas_config.display_info.enabled_features
-                except Exception:
-                    # If config parsing fails, use defaults
-                    pass
-
-                connection_system_types.append(
-                    ConnectionSystemTypeMap(
-                        identifier=item,
-                        type=SystemType.saas,
-                        human_readable=connector_template.human_readable,
-                        encoded_icon=connector_template.icon,
-                        authorization_required=connector_template.authorization_required,
-                        user_guide=connector_template.user_guide,
-                        supported_actions=connector_template.supported_actions,
-                        category=category,
-                        tags=tags,
-                        enabled_features=enabled_features,
-                    )
-                )
+        connection_system_types.extend(saas_connection_types)
 
     if (system_type == SystemType.manual or system_type is None) and (
         ActionType.access in action_types or ActionType.erasure in action_types
@@ -310,7 +328,7 @@ def get_connection_types(
                 manual_type.value
                 for manual_type in ConnectionType
                 if manual_type == ConnectionType.manual_webhook
-                and is_match(manual_type.value)
+                and _is_match(manual_type.value, search)
             ]
         )
         connection_system_types.extend(
@@ -332,7 +350,7 @@ def get_connection_types(
                 for email_type in ConnectionType
                 if email_type
                 in ERASURE_EMAIL_CONNECTOR_TYPES + CONSENT_EMAIL_CONNECTOR_TYPES
-                and is_match(email_type.value)
+                and _is_match(email_type.value, search)
                 and (  # include consent or erasure connectors if requested, respectively
                     (
                         ActionType.consent in action_types
@@ -364,94 +382,16 @@ def get_connection_types(
             ]
         )
 
+    if include_test_connections and (
+        system_type == SystemType.website or system_type is None
+    ):
+        connection_system_types.append(
+            ConnectionSystemTypeMap(
+                identifier=ConnectionType.test_website.value,
+                type=SystemType.website,
+                human_readable=ConnectionType.test_website.human_readable,
+                supported_actions=[],
+            )
+        )
+
     return connection_system_types
-
-
-def infer_category_from_saas_type(saas_type: str) -> ConnectionCategory:
-    """
-    Infer the appropriate category for a SAAS integration based on its type identifier.
-    Returns ConnectionCategory.CUSTOM as default for unknown types.
-    """
-    type_lower = saas_type.lower()
-
-    # CRM systems
-    if any(keyword in type_lower for keyword in [
-        "salesforce", "hubspot", "pipedrive", "zendesk", "intercom",
-        "freshworks", "kustomer", "gorgias", "gladly", "outreach", "greenhouse"
-    ]):
-        return ConnectionCategory.CRM
-
-    # E-commerce platforms
-    if any(keyword in type_lower for keyword in [
-        "shopify", "stripe", "square", "braintree", "adyen", "recurly",
-        "recharge", "saleor", "aftership", "shipstation", "vend", "doordash"
-    ]):
-        return ConnectionCategory.ECOMMERCE
-
-    # Marketing/Email platforms
-    if any(keyword in type_lower for keyword in [
-        "mailchimp", "sendgrid", "klaviyo", "braze", "iterable", "attentive",
-        "sparkpost", "oracle_responsys", "marigold", "mailchimp_transactional",
-        "friendbuy", "talkable", "yotpo", "powerreviews", "unbounce", "digioh", "snap"
-    ]):
-        return ConnectionCategory.MARKETING
-
-    # Analytics platforms
-    if any(keyword in type_lower for keyword in [
-        "analytics", "amplitude", "heap", "segment", "datadog", "sentry",
-        "fullstory", "statsig", "google_analytics", "universal_analytics",
-        "rollbar", "domo", "appsflyer", "simon_data", "splash"
-    ]):
-        return ConnectionCategory.ANALYTICS
-
-    # Communication platforms
-    if any(keyword in type_lower for keyword in [
-        "slack", "twilio", "aircall", "gong", "ada_chatbot", "sprig",
-        "typeform", "surveymonkey", "alchemer", "qualtrics", "delighted", "iterate"
-    ]):
-        return ConnectionCategory.COMMUNICATION
-
-    # Payment platforms are now part of ECOMMERCE category
-    if any(keyword in type_lower for keyword in [
-        "boostr"
-    ]) and not any(keyword in type_lower for keyword in [
-        "shopify", "saleor", "aftership", "shipstation", "vend", "doordash"
-    ]):
-        return ConnectionCategory.ECOMMERCE
-
-    # Data warehouse/storage
-    if any(keyword in type_lower for keyword in [
-        "warehouse", "bigquery"
-    ]) and "analytics" not in type_lower:
-        return ConnectionCategory.DATA_WAREHOUSE
-
-    # Identity providers
-    if any(keyword in type_lower for keyword in [
-        "auth0", "firebase_auth", "stytch"
-    ]):
-        return ConnectionCategory.IDENTITY_PROVIDER
-
-    # Website/tracking
-    if any(keyword in type_lower for keyword in [
-        "website", "tracking", "web"
-    ]):
-        return ConnectionCategory.WEBSITE
-
-    # Default to CUSTOM for unknown/uncategorized integrations
-    return ConnectionCategory.CUSTOM
-
-def get_default_saas_display_info(saas_type: str) -> tuple[ConnectionCategory, List[str], List[IntegrationFeature]]:
-    """
-    Generate default display information for SAAS integrations without explicit display_info.
-    Returns tuple of (category, tags, enabled_features)
-    """
-    category = infer_category_from_saas_type(saas_type)
-    tags = ["DSR Automation"]
-    enabled_features = [IntegrationFeature.DSR_AUTOMATION]
-
-    # Special case for Salesforce - gets additional data discovery feature
-    if saas_type.lower() == "salesforce":
-        enabled_features.append(IntegrationFeature.DATA_DISCOVERY)
-        tags.append("Discovery")
-
-    return category, tags, enabled_features
