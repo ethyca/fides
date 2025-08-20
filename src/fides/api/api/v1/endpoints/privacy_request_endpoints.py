@@ -50,6 +50,7 @@ from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
+    PrivacyRequestError,
     TraversalError,
     ValidationError,
 )
@@ -175,7 +176,6 @@ from fides.service.dataset.dataset_config_service import (
 )
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
-    PrivacyRequestError,
     PrivacyRequestService,
     _process_privacy_request_restart,
     _requeue_privacy_request,

@@ -61,6 +61,10 @@ class ExecutionSettings(FidesSettings):
         default=3,
         description="The number of times a privacy request will be requeued when its tasks are interrupted before being marked as error",
     )
+    async_tasks_status_polling_interval_seconds: int = Field(
+        default=3600,
+        description="Seconds between polling for async tasks to requeue",
+    )
     erasure_request_finalization_required: bool = Field(
         default=False,
         description="Whether erasure requests require an additional finalization step after all collections have been executed.",
