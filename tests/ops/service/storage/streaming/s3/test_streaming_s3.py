@@ -276,10 +276,12 @@ class TestUploadToS3Streaming:
                 max_workers=10,
             )
 
-            # Verify max_workers was passed to upload function
+            # Verify max_workers was passed to upload function through config
             mock_upload.assert_called_once()
             call_args = mock_upload.call_args
-            assert call_args[0][7] == 10  # max_workers parameter
+            # The config object is at index 2, and max_workers should be in the config
+            config_arg = call_args[0][2]
+            assert config_arg.max_workers == 10
 
     def test_progress_callback_passed_through(
         self, mock_storage_secrets, mock_privacy_request
@@ -316,7 +318,8 @@ class TestUploadToS3Streaming:
             # Verify progress_callback was passed to upload function
             mock_upload.assert_called_once()
             call_args = mock_upload.call_args
-            assert call_args[0][8] == mock_callback  # progress_callback parameter
+            # progress_callback is at index 5
+            assert call_args[0][5] == mock_callback
 
 
 class TestUploadToS3StreamingAdvanced:

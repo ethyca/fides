@@ -15,7 +15,6 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.service.storage.streaming.s3.streaming_s3 import (
-    upload_to_s3_streaming,
     upload_to_s3_streaming_advanced,
 )
 from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
@@ -117,19 +116,19 @@ def _s3_uploader(
             document,
             auth_method,
         )
-    else:
-        # Fall back to traditional upload method
-        logger.info("Using traditional S3 upload for {}", file_key)
-        return upload_to_s3(
-            config.secrets,  # type: ignore
-            data,
-            bucket_name,
-            file_key,
-            config.format.value,  # type: ignore
-            privacy_request,
-            document,
-            auth_method,
-        )
+
+    # Fall back to traditional upload method
+    logger.info("Using traditional S3 upload for {}", file_key)
+    return upload_to_s3(
+        config.secrets,  # type: ignore
+        data,
+        bucket_name,
+        file_key,
+        config.format.value,  # type: ignore
+        privacy_request,
+        document,
+        auth_method,
+    )
 
 
 def _gcs_uploader(

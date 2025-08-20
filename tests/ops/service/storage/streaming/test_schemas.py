@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
+from pydantic import ValidationError
 
 from fides.api.service.storage.streaming.schemas import (
     AttachmentInfo,
@@ -99,20 +100,21 @@ class TestProcessingMetrics:
     ):
         """Test that field validation constraints are enforced."""
         # Test non-negative constraints
-        with pytest.raises(ValueError, match=expected_error):
+        with pytest.raises(ValidationError, match=expected_error):
             ProcessingMetrics(**{field: value})
 
     def test_processed_attachments_cannot_exceed_total(self):
         """Test that processed_attachments cannot exceed total_attachments."""
         with pytest.raises(
-            ValueError, match="processed_attachments cannot exceed total_attachments"
+            ValidationError,
+            match="processed_attachments cannot exceed total_attachments",
         ):
             ProcessingMetrics(total_attachments=10, processed_attachments=15)
 
     def test_processed_bytes_cannot_exceed_total(self):
         """Test that processed_bytes cannot exceed total_bytes."""
         with pytest.raises(
-            ValueError, match="processed_bytes cannot exceed total_bytes"
+            ValidationError, match="processed_bytes cannot exceed total_bytes"
         ):
             ProcessingMetrics(total_bytes=1000, processed_bytes=1500)
 
@@ -126,7 +128,8 @@ class TestProcessingMetrics:
 
         # Invalid assignment should raise error
         with pytest.raises(
-            ValueError, match="processed_attachments cannot exceed total_attachments"
+            ValidationError,
+            match="processed_attachments cannot exceed total_attachments",
         ):
             metrics.processed_attachments = 15
 
@@ -251,10 +254,10 @@ class TestProcessingMetrics:
         ProcessingMetrics(current_attachment_progress=100.0)
 
         # Test invalid values
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             ProcessingMetrics(current_attachment_progress=-0.1)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             ProcessingMetrics(current_attachment_progress=100.1)
 
     def test_schema_extra_example(self):
@@ -316,10 +319,14 @@ class TestStreamingStorageSchemas:
         assert valid_attachment.size == 1024
 
         # Test s3_key validation
-        with pytest.raises(ValueError, match="s3_key cannot be empty or whitespace"):
+        with pytest.raises(
+            ValidationError, match="s3_key cannot be empty or whitespace"
+        ):
             AttachmentInfo(s3_key="", file_name="test.pdf")
 
-        with pytest.raises(ValueError, match="s3_key cannot be empty or whitespace"):
+        with pytest.raises(
+            ValidationError, match="s3_key cannot be empty or whitespace"
+        ):
             AttachmentInfo(s3_key="   ", file_name="test.pdf")
 
     def test_storage_upload_config_validation(self):
@@ -331,16 +338,17 @@ class TestStreamingStorageSchemas:
         assert valid_config.bucket_name == "test-bucket"
         assert valid_config.max_workers == 5  # default value
 
-        # Test validation
+        # Test validation - empty string triggers Pydantic's min_length validation
         with pytest.raises(
-            ValueError, match="Storage identifier cannot be empty or whitespace"
+            ValidationError, match="String should have at least 1 character"
         ):
             StorageUploadConfig(
                 bucket_name="", file_key="test/file.zip", resp_format="csv"
             )
 
+        # Test validation - whitespace passes min_length but fails custom validator
         with pytest.raises(
-            ValueError, match="Storage identifier cannot be empty or whitespace"
+            ValidationError, match="Storage identifier cannot be empty or whitespace"
         ):
             StorageUploadConfig(
                 bucket_name="test-bucket", file_key="   ", resp_format="csv"
@@ -356,7 +364,7 @@ class TestStreamingStorageSchemas:
 
         # Test byte range validation
         with pytest.raises(
-            ValueError, match="start_byte cannot be greater than end_byte"
+            ValidationError, match="start_byte cannot be greater than end_byte"
         ):
             ChunkDownloadConfig(start_byte=1024, end_byte=1023)
 
@@ -367,7 +375,9 @@ class TestStreamingStorageSchemas:
         assert valid_config.max_attachments == 50
 
         # Test validation
-        with pytest.raises(ValueError, match="max_attachments must be at least 1"):
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 1"
+        ):
             PackageSplitConfig(max_attachments=0)
 
     def test_streaming_buffer_config_defaults(self):
@@ -391,5 +401,7 @@ class TestStreamingStorageSchemas:
         assert processing_info.item == item
 
         # Test base_path validation
-        with pytest.raises(ValueError, match="base_path cannot be empty or whitespace"):
+        with pytest.raises(
+            ValidationError, match="base_path cannot be empty or whitespace"
+        ):
             AttachmentProcessingInfo(attachment=attachment, base_path="", item=item)

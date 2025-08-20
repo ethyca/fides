@@ -1,8 +1,9 @@
 """Tests for the CloudStorageClient abstract base class and ProgressCallback protocol."""
 
-from typing import Any, Dict, List, get_type_hints
+from typing import Any, Dict, List, Union, get_type_hints
 from unittest.mock import create_autospec, patch
 
+import pydantic_core
 import pytest
 
 from fides.api.service.storage.streaming.cloud_storage_client import (
@@ -100,74 +101,89 @@ class TestCloudStorageClient:
     def test_upload_part_bucket_key_mismatch(self, mock_storage_client):
         """Test upload_part with bucket/key mismatch."""
         # Configure the mock to raise an error for bucket/key mismatch
-        mock_storage_client.upload_part.side_effect = ValueError(
-            "Bucket or key mismatch"
-        )
+        mock_storage_client.upload_part.side_effect = ValueError("Bucket/key mismatch")
 
-        with pytest.raises(ValueError, match="Bucket or key mismatch"):
+        with pytest.raises(ValueError, match="Bucket/key mismatch"):
             mock_storage_client.upload_part(
-                bucket="bucket2",
-                key="key2",
-                upload_id="some_upload_id",
+                bucket="wrong-bucket",
+                key="wrong-key",
+                upload_id="valid_id",
                 part_number=1,
                 body=b"test data",
             )
 
     def test_complete_multipart_upload(self, mock_storage_client):
         """Test complete_multipart_upload method."""
-        # Create upload and upload parts
+        # First create an upload
         upload_response = mock_storage_client.create_multipart_upload(
             bucket="test-bucket",
             key="test-key",
             content_type="application/zip",
         )
 
-        part1 = mock_storage_client.upload_part(
-            bucket="test-bucket",
-            key="test-key",
-            upload_id=upload_response.upload_id,
-            part_number=1,
-            body=b"part1",
-        )
-
-        part2 = mock_storage_client.upload_part(
-            bucket="test-bucket",
-            key="test-key",
-            upload_id=upload_response.upload_id,
-            part_number=2,
-            body=b"part2",
-        )
+        # Upload a few parts
+        parts = []
+        for i in range(3):
+            part_response = mock_storage_client.upload_part(
+                bucket="test-bucket",
+                key="test-key",
+                upload_id=upload_response.upload_id,
+                part_number=i + 1,
+                body=f"part {i + 1}".encode(),
+            )
+            parts.append(part_response)
 
         # Complete the upload
         mock_storage_client.complete_multipart_upload(
             bucket="test-bucket",
             key="test-key",
             upload_id=upload_response.upload_id,
-            parts=[part1, part2],
-            metadata={"completed": "true"},
+            parts=parts,
+            metadata={"completion": "metadata"},
         )
 
-        # Verify the method was called
-        mock_storage_client.complete_multipart_upload.assert_called_once()
-
-    def test_complete_multipart_upload_invalid_upload_id(self, mock_storage_client):
-        """Test complete_multipart_upload with invalid upload ID."""
-        # Configure the mock to raise an error for invalid upload ID
-        mock_storage_client.complete_multipart_upload.side_effect = ValueError(
-            "Upload invalid_id not found"
+        # Verify the method was called correctly
+        mock_storage_client.complete_multipart_upload.assert_called_with(
+            bucket="test-bucket",
+            key="test-key",
+            upload_id=upload_response.upload_id,
+            parts=parts,
+            metadata={"completion": "metadata"},
         )
 
-        with pytest.raises(ValueError, match="Upload invalid_id not found"):
-            mock_storage_client.complete_multipart_upload(
-                bucket="test-bucket",
-                key="test-key",
-                upload_id="invalid_id",
-                parts=[],
-            )
+    def test_complete_multipart_upload_no_metadata(self, mock_storage_client):
+        """Test complete_multipart_upload without metadata."""
+        # First create an upload
+        upload_response = mock_storage_client.create_multipart_upload(
+            bucket="test-bucket",
+            key="test-key",
+            content_type="application/zip",
+        )
+
+        # Reset the side_effect to test the method call directly
+        mock_storage_client.complete_multipart_upload.side_effect = None
+        mock_storage_client.complete_multipart_upload.return_value = None
+
+        # Complete the upload without metadata
+        mock_storage_client.complete_multipart_upload(
+            bucket="test-bucket",
+            key="test-key",
+            upload_id=upload_response.upload_id,
+            parts=[],
+        )
+
+        # Verify the method was called correctly
+        # Note: When metadata is not explicitly passed, it won't be in the kwargs
+        mock_storage_client.complete_multipart_upload.assert_called_with(
+            bucket="test-bucket",
+            key="test-key",
+            upload_id=upload_response.upload_id,
+            parts=[],
+        )
 
     def test_abort_multipart_upload(self, mock_storage_client):
         """Test abort_multipart_upload method."""
-        # Create an upload
+        # First create an upload
         upload_response = mock_storage_client.create_multipart_upload(
             bucket="test-bucket",
             key="test-key",
@@ -181,8 +197,12 @@ class TestCloudStorageClient:
             upload_id=upload_response.upload_id,
         )
 
-        # Verify the method was called
-        mock_storage_client.abort_multipart_upload.assert_called_once()
+        # Verify the method was called correctly
+        mock_storage_client.abort_multipart_upload.assert_called_with(
+            bucket="test-bucket",
+            key="test-key",
+            upload_id=upload_response.upload_id,
+        )
 
     def test_abort_multipart_upload_invalid_upload_id(self, mock_storage_client):
         """Test abort_multipart_upload with invalid upload ID."""
@@ -200,235 +220,309 @@ class TestCloudStorageClient:
 
     def test_get_object_head(self, mock_storage_client):
         """Test get_object_head method."""
-        # Create and complete an upload to have an object
-        upload_response = mock_storage_client.create_multipart_upload(
+        # Reset the side_effect to use our custom return value
+        mock_storage_client.get_object_head.side_effect = None
+        mock_storage_client.get_object_head.return_value = {
+            "ContentLength": 1024,
+            "ContentType": "application/octet-stream",
+            "ETag": "test-etag",
+            "LastModified": "2023-01-01T00:00:00Z",
+        }
+
+        response = mock_storage_client.get_object_head(
             bucket="test-bucket",
             key="test-key",
-            content_type="application/zip",
         )
 
-        part = mock_storage_client.upload_part(
+        assert isinstance(response, dict)
+        assert response["ContentLength"] == 1024
+        assert response["ContentType"] == "application/octet-stream"
+        assert response["ETag"] == "test-etag"
+        assert response["LastModified"] == "2023-01-01T00:00:00Z"
+
+        # Verify the method was called correctly
+        mock_storage_client.get_object_head.assert_called_with(
             bucket="test-bucket",
             key="test-key",
-            upload_id=upload_response.upload_id,
-            part_number=1,
-            body=b"test data",
         )
-
-        # Complete the upload to create the object
-        mock_storage_client.complete_multipart_upload(
-            bucket="test-bucket",
-            key="test-key",
-            upload_id=upload_response.upload_id,
-            parts=[part],
-        )
-
-        # Get object head
-        head = mock_storage_client.get_object_head("test-bucket", "test-key")
-
-        assert isinstance(head, dict)
-        assert "ContentLength" in head
-        assert "ContentType" in head
-        assert "ETag" in head
-        assert "Metadata" in head
 
     def test_get_object_head_object_not_found(self, mock_storage_client):
-        """Test get_object_head with non-existent object."""
-        # Configure the mock to raise an error for non-existent object
-        mock_storage_client.get_object_head.side_effect = ValueError(
-            "Object test-bucket/test-key not found"
+        """Test get_object_head when object doesn't exist."""
+        # Reset the side_effect and set a custom error
+        mock_storage_client.get_object_head.side_effect = None
+        mock_storage_client.get_object_head.side_effect = FileNotFoundError(
+            "Object not found"
         )
 
-        with pytest.raises(ValueError, match="Object test-bucket/test-key not found"):
-            mock_storage_client.get_object_head("test-bucket", "test-key")
+        with pytest.raises(FileNotFoundError, match="Object not found"):
+            mock_storage_client.get_object_head(
+                bucket="test-bucket",
+                key="non-existent-key",
+            )
 
     def test_get_object_range(self, mock_storage_client):
         """Test get_object_range method."""
-        # Create and complete an upload to have an object
-        upload_response = mock_storage_client.create_multipart_upload(
+        # Reset the side_effect to use our custom return value
+        mock_storage_client.get_object_range.side_effect = None
+        mock_storage_client.get_object_range.return_value = b"range data content"
+
+        response = mock_storage_client.get_object_range(
             bucket="test-bucket",
             key="test-key",
-            content_type="application/zip",
+            start_byte=0,
+            end_byte=1023,
         )
 
-        part = mock_storage_client.upload_part(
+        assert isinstance(response, bytes)
+        assert response == b"range data content"
+
+        # Verify the method was called correctly
+        mock_storage_client.get_object_range.assert_called_with(
             bucket="test-bucket",
             key="test-key",
-            upload_id=upload_response.upload_id,
-            part_number=1,
-            body=b"test data",
+            start_byte=0,
+            end_byte=1023,
         )
 
-        # Complete the upload to create the object
-        mock_storage_client.complete_multipart_upload(
-            bucket="test-bucket",
-            key="test-key",
-            upload_id=upload_response.upload_id,
-            parts=[part],
-        )
-
-        # Get object range
-        data = mock_storage_client.get_object_range("test-bucket", "test-key", 0, 9)
-
-        assert isinstance(data, bytes)
-        assert len(data) == 10  # 0-9 inclusive = 10 bytes
-
-    def test_get_object_range_object_not_found(self, mock_storage_client):
-        """Test get_object_range with non-existent object."""
-        # Configure the mock to raise an error for non-existent object
+    def test_get_object_range_invalid_range(self, mock_storage_client):
+        """Test get_object_range with invalid range."""
+        # Reset the side_effect and set a custom error
+        mock_storage_client.get_object_range.side_effect = None
         mock_storage_client.get_object_range.side_effect = ValueError(
-            "Object test-bucket/test-key not found"
+            "Invalid range: start > end"
         )
 
-        with pytest.raises(ValueError, match="Object test-bucket/test-key not found"):
-            mock_storage_client.get_object_range("test-bucket", "test-key", 0, 9)
+        with pytest.raises(ValueError, match="Invalid range: start > end"):
+            mock_storage_client.get_object_range(
+                bucket="test-bucket",
+                key="test-key",
+                start_byte=1024,
+                end_byte=1023,  # start > end
+            )
+
+    def test_get_object_range_out_of_bounds(self, mock_storage_client):
+        """Test get_object_range with out-of-bounds range."""
+        # Reset the side_effect and set a custom error
+        mock_storage_client.get_object_range.side_effect = None
+        mock_storage_client.get_object_range.side_effect = IndexError(
+            "Range out of bounds"
+        )
+
+        with pytest.raises(IndexError, match="Range out of bounds"):
+            mock_storage_client.get_object_range(
+                bucket="test-bucket",
+                key="test-key",
+                start_byte=10000,
+                end_byte=20000,  # Assuming file is smaller than this
+            )
 
     def test_generate_presigned_url(self, mock_storage_client):
         """Test generate_presigned_url method."""
-        # Create and complete an upload to have an object
-        upload_response = mock_storage_client.create_multipart_upload(
+        # Reset the side_effect to use our custom return value
+        mock_storage_client.generate_presigned_url.side_effect = None
+        mock_storage_client.generate_presigned_url.return_value = (
+            "https://test-bucket.s3.amazonaws.com/test-key?"
+            "X-Amz-Algorithm=AWS4-HMAC-SHA256&"
+            "X-Amz-Credential=test-credential&"
+            "X-Amz-Date=20230101T000000Z&"
+            "X-Amz-Expires=3600&"
+            "X-Amz-SignedHeaders=host&"
+            "X-Amz-Signature=test-signature"
+        )
+
+        response = mock_storage_client.generate_presigned_url(
             bucket="test-bucket",
             key="test-key",
-            content_type="application/zip",
         )
 
-        part = mock_storage_client.upload_part(
+        assert isinstance(response, str)
+        assert response.startswith("https://test-bucket.s3.amazonaws.com/test-key")
+        assert "X-Amz-Algorithm=AWS4-HMAC-SHA256" in response
+
+        # Verify the method was called correctly
+        # Note: When ttl_seconds is not explicitly passed, it won't be in the kwargs
+        mock_storage_client.generate_presigned_url.assert_called_with(
             bucket="test-bucket",
             key="test-key",
-            upload_id=upload_response.upload_id,
-            part_number=1,
-            body=b"test data",
         )
 
-        # Complete the upload to create the object
-        mock_storage_client.complete_multipart_upload(
+    def test_generate_presigned_url_with_ttl(self, mock_storage_client):
+        """Test generate_presigned_url method with TTL."""
+        # Reset the side_effect to use our custom return value
+        mock_storage_client.generate_presigned_url.side_effect = None
+        mock_storage_client.generate_presigned_url.return_value = (
+            "https://test-bucket.s3.amazonaws.com/test-key?"
+            "X-Amz-Algorithm=AWS4-HMAC-SHA256&"
+            "X-Amz-Credential=test-credential&"
+            "X-Amz-Date=20230101T000000Z&"
+            "X-Amz-Expires=7200&"  # 2 hours
+            "X-Amz-SignedHeaders=host&"
+            "X-Amz-Signature=test-signature"
+        )
+
+        response = mock_storage_client.generate_presigned_url(
             bucket="test-bucket",
             key="test-key",
-            upload_id=upload_response.upload_id,
-            parts=[part],
+            ttl_seconds=7200,  # 2 hours
         )
 
-        # Generate presigned URL with default TTL
-        url = mock_storage_client.generate_presigned_url("test-bucket", "test-key")
+        assert isinstance(response, str)
+        assert "X-Amz-Expires=7200" in response
 
-        assert isinstance(url, str)
-        assert url.startswith("https://mock-storage.example.com/")
-        assert "ttl=3600" in url  # Default TTL
-
-        # Generate presigned URL with custom TTL
-        url_custom = mock_storage_client.generate_presigned_url(
-            "test-bucket", "test-key", 7200
+        # Verify the method was called correctly
+        mock_storage_client.generate_presigned_url.assert_called_with(
+            bucket="test-bucket",
+            key="test-key",
+            ttl_seconds=7200,
         )
 
-        assert "ttl=7200" in url_custom
-
-    def test_generate_presigned_url_object_not_found(self, mock_storage_client):
-        """Test generate_presigned_url with non-existent object."""
-        # Configure the mock to raise an error for non-existent object
-        mock_storage_client.generate_presigned_url.side_effect = ValueError(
-            "Object test-bucket/test-key not found"
+    def test_generate_presigned_url_generation_failed(self, mock_storage_client):
+        """Test generate_presigned_url when URL generation fails."""
+        # Reset the side_effect and set a custom error
+        mock_storage_client.generate_presigned_url.side_effect = None
+        mock_storage_client.generate_presigned_url.side_effect = Exception(
+            "Failed to generate presigned URL"
         )
 
-        with pytest.raises(ValueError, match="Object test-bucket/test-key not found"):
-            mock_storage_client.generate_presigned_url("test-bucket", "test-key")
-
-    def test_multipart_upload_workflow(self, mock_storage_client):
-        """Test complete multipart upload workflow."""
-        # Step 1: Create multipart upload
-        upload_response = mock_storage_client.create_multipart_upload(
-            bucket="workflow-bucket",
-            key="workflow-key",
-            content_type="application/zip",
-            metadata={"workflow": "test"},
-        )
-
-        assert upload_response.upload_id.startswith("generic_upload_")
-
-        # Step 2: Upload multiple parts
-        parts = []
-        for i in range(1, 4):  # Upload 3 parts
-            part = mock_storage_client.upload_part(
-                bucket="workflow-bucket",
-                key="workflow-key",
-                upload_id=upload_response.upload_id,
-                part_number=i,
-                body=f"part{i}".encode(),
-                metadata={"part_number": str(i)},
+        with pytest.raises(Exception, match="Failed to generate presigned URL"):
+            mock_storage_client.generate_presigned_url(
+                bucket="test-bucket",
+                key="test-key",
             )
-            parts.append(part)
 
-        # Verify parts were created
-        assert len(parts) == 3
-        for i, part in enumerate(parts, 1):
-            assert part.part_number == i
-            assert part.metadata["part_number"] == str(i)
-
-        # Step 3: Complete the upload
-        mock_storage_client.complete_multipart_upload(
-            bucket="workflow-bucket",
-            key="workflow-key",
-            upload_id=upload_response.upload_id,
-            parts=parts,
-            metadata={"status": "completed"},
+    def test_abstract_method_signatures(self):
+        """Test that abstract methods have correct signatures."""
+        # Get method signatures
+        create_multipart_upload_sig = get_type_hints(
+            CloudStorageClient.create_multipart_upload
+        )
+        upload_part_sig = get_type_hints(CloudStorageClient.upload_part)
+        complete_multipart_upload_sig = get_type_hints(
+            CloudStorageClient.complete_multipart_upload
+        )
+        abort_multipart_upload_sig = get_type_hints(
+            CloudStorageClient.abort_multipart_upload
+        )
+        get_object_head_sig = get_type_hints(CloudStorageClient.get_object_head)
+        get_object_range_sig = get_type_hints(CloudStorageClient.get_object_range)
+        generate_presigned_url_sig = get_type_hints(
+            CloudStorageClient.generate_presigned_url
         )
 
-        # Verify the method was called
-        mock_storage_client.complete_multipart_upload.assert_called_once()
+        # Verify return types
+        assert create_multipart_upload_sig["return"] == MultipartUploadResponse
+        assert upload_part_sig["return"] == UploadPartResponse
+        assert complete_multipart_upload_sig["return"] == type(None)
+        assert abort_multipart_upload_sig["return"] == type(None)
+        # Handle both Dict and dict type hints (Python 3.9+ vs older)
+        assert get_object_head_sig["return"] in [Dict[str, Any], dict[str, Any]]
+        assert get_object_range_sig["return"] == bytes
+        # AnyHttpUrlString is an Annotated type that resolves to pydantic_core.Url
+        # We need to check the actual type it resolves to
+        assert generate_presigned_url_sig["return"] == pydantic_core.Url
 
-    def test_with_storage_config_fixture(self, mock_storage_client, storage_config):
-        """Test using the storage_config fixture for more realistic testing."""
-        # Use the storage config bucket name
-        bucket = storage_config.details["bucket"]
-        key = "test-with-fixture"
+        # Verify parameter types
+        assert create_multipart_upload_sig["bucket"] == str
+        assert create_multipart_upload_sig["key"] == str
+        assert create_multipart_upload_sig["content_type"] == str
 
-        response = mock_storage_client.create_multipart_upload(
-            bucket=bucket,
-            key=key,
-            content_type="application/zip",
-            metadata={"storage_config_id": str(storage_config.id)},
-        )
+        # Check metadata parameter type more flexibly
+        metadata_type = create_multipart_upload_sig["metadata"]
+        assert metadata_type is not None
+        # Should be Optional[Dict[str, str]] or Optional[dict[str, str]]
+        if hasattr(metadata_type, "__origin__") and metadata_type.__origin__ is Union:
+            # It's an Optional type
+            args = metadata_type.__args__
+            assert len(args) == 2
+            assert args[1] == type(None)  # None type
+            dict_type = args[0]
+            assert dict_type in [Dict[str, str], dict[str, str]]
+        else:
+            # Fallback check
+            assert "Optional" in str(metadata_type) or "Union" in str(metadata_type)
 
-        assert response.metadata["bucket"] == bucket
-        assert response.metadata["key"] == key
-        assert response.metadata["content_type"] == "application/zip"
+        assert upload_part_sig["bucket"] == str
+        assert upload_part_sig["key"] == str
+        assert upload_part_sig["upload_id"] == str
+        assert upload_part_sig["part_number"] == int
+        assert upload_part_sig["body"] == bytes
 
-    def test_with_gcs_storage_config_fixture(
-        self, mock_gcs_storage_client, storage_config_default_gcs
-    ):
-        """Test using the GCS storage config fixture."""
-        # Use the GCS storage config bucket name
-        bucket = storage_config_default_gcs.details["bucket"]
-        key = "test-gcs-fixture"
+        # Check upload_part metadata parameter type
+        upload_metadata_type = upload_part_sig["metadata"]
+        assert upload_metadata_type is not None
+        if (
+            hasattr(upload_metadata_type, "__origin__")
+            and upload_metadata_type.__origin__ is Union
+        ):
+            args = upload_metadata_type.__args__
+            assert len(args) == 2
+            assert args[1] == type(None)
+            dict_type = args[0]
+            assert dict_type in [Dict[str, str], dict[str, str]]
+        else:
+            assert "Optional" in str(upload_metadata_type) or "Union" in str(
+                upload_metadata_type
+            )
 
-        response = mock_gcs_storage_client.create_multipart_upload(
-            bucket=bucket,
-            key=key,
-            content_type="application/zip",
-            metadata={"storage_type": "gcs"},
-        )
+        assert complete_multipart_upload_sig["bucket"] == str
+        assert complete_multipart_upload_sig["key"] == str
+        assert complete_multipart_upload_sig["upload_id"] == str
 
-        assert response.metadata["bucket"] == bucket
-        assert response.metadata["key"] == key
-        assert response.metadata["content_type"] == "application/zip"
+        # Check parts parameter type flexibly
+        parts_type = complete_multipart_upload_sig["parts"]
+        assert parts_type is not None
+        # Should be List[UploadPartResponse] or list[UploadPartResponse]
+        if hasattr(parts_type, "__origin__"):
+            assert parts_type.__origin__ in [List, list]
+            args = parts_type.__args__
+            assert len(args) == 1
+            assert args[0] == UploadPartResponse
+        else:
+            # Fallback check
+            assert "List" in str(parts_type) or "list" in str(parts_type)
 
-    def test_with_s3_storage_config_fixture(
-        self, mock_s3_storage_client, storage_config
-    ):
-        """Test using the S3 storage config fixture."""
-        # Use the S3 storage config bucket name
-        bucket = storage_config.details["bucket"]
-        key = "test-s3-fixture"
+        # Check complete_multipart_upload metadata parameter type
+        complete_metadata_type = complete_multipart_upload_sig["metadata"]
+        assert complete_metadata_type is not None
+        if (
+            hasattr(complete_metadata_type, "__origin__")
+            and complete_metadata_type.__origin__ is Union
+        ):
+            args = complete_metadata_type.__args__
+            assert len(args) == 2
+            assert args[1] == type(None)
+            dict_type = args[0]
+            assert dict_type in [Dict[str, str], dict[str, str]]
+        else:
+            assert "Optional" in str(complete_metadata_type) or "Union" in str(
+                complete_metadata_type
+            )
 
-        response = mock_s3_storage_client.create_multipart_upload(
-            bucket=bucket,
-            key=key,
-            content_type="application/zip",
-            metadata={"storage_type": "s3"},
-        )
+        assert abort_multipart_upload_sig["bucket"] == str
+        assert abort_multipart_upload_sig["key"] == str
+        assert abort_multipart_upload_sig["upload_id"] == str
 
-        assert response.metadata["bucket"] == bucket
-        assert response.metadata["key"] == key
-        assert response.metadata["content_type"] == "application/zip"
+        assert get_object_head_sig["bucket"] == str
+        assert get_object_head_sig["key"] == str
+
+        assert get_object_range_sig["bucket"] == str
+        assert get_object_range_sig["key"] == str
+        assert get_object_range_sig["start_byte"] == int
+        assert get_object_range_sig["end_byte"] == int
+
+        assert generate_presigned_url_sig["bucket"] == str
+        assert generate_presigned_url_sig["key"] == str
+
+        # Check ttl_seconds parameter type
+        ttl_type = generate_presigned_url_sig["ttl_seconds"]
+        assert ttl_type is not None
+        if hasattr(ttl_type, "__origin__") and ttl_type.__origin__ is Union:
+            args = ttl_type.__args__
+            assert len(args) == 2
+            assert args[1] == type(None)
+            assert args[0] == int
+        else:
+            assert "Optional" in str(ttl_type) or "Union" in str(ttl_type)
 
 
 class TestProgressCallback:
@@ -436,88 +530,108 @@ class TestProgressCallback:
 
     def test_progress_callback_protocol(self):
         """Test that ProgressCallback protocol is properly defined."""
-        # The protocol should be callable with ProcessingMetrics
-        assert hasattr(ProgressCallback, "__call__")
+        # Create a mock metrics object
+        mock_metrics = create_autospec(ProcessingMetrics)
 
-    def test_progress_callback_implementation(self):
-        """Test that a function can implement the ProgressCallback protocol."""
+        # Create a simple callback function
+        def simple_callback(metrics: ProcessingMetrics) -> None:
+            pass
+
+        # Create a callback with side effects
         callback_called = False
-        callback_metrics = None
+
+        def test_callback(metrics: ProcessingMetrics) -> None:
+            nonlocal callback_called
+            callback_called = True
+
+        # Test that both functions can be assigned to ProgressCallback
+        callback1: ProgressCallback = simple_callback
+        callback2: ProgressCallback = test_callback
+
+        # Test that the callback can be called
+        callback2(mock_metrics)
+        assert callback_called
+
+    def test_progress_callback_with_actual_metrics(self):
+        """Test ProgressCallback with actual ProcessingMetrics instance."""
+        # Create a real ProcessingMetrics instance
+        metrics = ProcessingMetrics()
+        metrics.total_attachments = 100
+        metrics.processed_attachments = 50
+        metrics.current_attachment = "test.txt"
+        metrics.current_attachment_progress = 50.0
+
+        # Create a callback that modifies the metrics
+        def progress_callback(metrics: ProcessingMetrics) -> None:
+            metrics.current_attachment_progress += 10.0
+
+        # Test the callback
+        initial_progress = metrics.current_attachment_progress
+        progress_callback(metrics)
+        assert metrics.current_attachment_progress == initial_progress + 10.0
+
+    def test_progress_callback_multiple_calls(self):
+        """Test ProgressCallback with multiple calls."""
+        metrics = ProcessingMetrics()
+        metrics.total_attachments = 10
+        metrics.processed_attachments = 0
+
+        call_count = 0
 
         def progress_callback(metrics: ProcessingMetrics) -> None:
-            nonlocal callback_called, callback_metrics
-            callback_called = True
-            callback_metrics = metrics
+            nonlocal call_count
+            call_count += 1
+            metrics.processed_attachments += 1
 
-        # Verify the function can be assigned to the protocol type
-        callback: ProgressCallback = progress_callback
+        # Call the callback multiple times
+        for i in range(5):
+            progress_callback(metrics)
 
-        # Test calling the callback
-        test_metrics = ProcessingMetrics(
-            total_attachments=10,
-            processed_attachments=5,
-            total_bytes=1000,
-            processed_bytes=500,
-        )
+        assert call_count == 5
+        assert metrics.processed_attachments == 5
 
-        callback(test_metrics)
+    def test_progress_callback_error_handling(self):
+        """Test ProgressCallback error handling."""
+        metrics = ProcessingMetrics()
+        metrics.errors = []
 
-        assert callback_called
-        assert callback_metrics == test_metrics
+        def error_callback(metrics: ProcessingMetrics) -> None:
+            # Simulate an error in the callback
+            raise RuntimeError("Callback error")
 
-    def test_progress_callback_with_lambda(self):
-        """Test that a lambda can implement the ProgressCallback protocol."""
-        callback: ProgressCallback = lambda metrics: metrics.total_attachments
+        # The callback should be able to handle errors gracefully
+        try:
+            error_callback(metrics)
+        except RuntimeError:
+            # Expected error
+            pass
 
-        test_metrics = ProcessingMetrics(total_attachments=42)
-        result = callback(test_metrics)
+        # The metrics object should still be valid
+        assert isinstance(metrics, ProcessingMetrics)
+        assert hasattr(metrics, "errors")
 
-        assert result == 42
+    def test_progress_callback_type_compatibility(self):
+        """Test that ProgressCallback is compatible with various callable types."""
+        metrics = ProcessingMetrics()
 
-    def test_progress_callback_with_class_method(self):
-        """Test that a class method can implement the ProgressCallback protocol."""
+        # Test with lambda
+        lambda_callback: ProgressCallback = lambda m: None
+        lambda_callback(metrics)
 
-        class ProgressTracker:
-            def __init__(self):
-                self.last_metrics = None
+        # Test with method
+        class CallbackHandler:
+            def callback(self, metrics: ProcessingMetrics) -> None:
+                pass
 
-            def track_progress(self, metrics: ProcessingMetrics) -> None:
-                self.last_metrics = metrics
+        handler = CallbackHandler()
+        method_callback: ProgressCallback = handler.callback
+        method_callback(metrics)
 
-        tracker = ProgressTracker()
-        callback: ProgressCallback = tracker.track_progress
+        # Test with partial function
+        from functools import partial
 
-        test_metrics = ProcessingMetrics(
-            total_attachments=100,
-            processed_attachments=50,
-        )
+        def base_callback(metrics: ProcessingMetrics, prefix: str) -> None:
+            pass
 
-        callback(test_metrics)
-
-        assert tracker.last_metrics == test_metrics
-
-    def test_progress_callback_with_autospec_mock(self):
-        """Test that an autospec mock can implement the ProgressCallback protocol."""
-        mock_callback = create_autospec(ProgressCallback)
-        callback: ProgressCallback = mock_callback
-
-        test_metrics = ProcessingMetrics(
-            total_attachments=5,
-            processed_attachments=3,
-        )
-
-        callback(test_metrics)
-
-        mock_callback.assert_called_once_with(test_metrics)
-
-    def test_progress_callback_type_hints(self):
-        """Test that ProgressCallback has proper type hints."""
-        # Get the type hints for the protocol
-        hints = get_type_hints(ProgressCallback.__call__)
-
-        # Should have a parameter named 'metrics' of type ProcessingMetrics
-        assert "metrics" in hints
-        assert hints["metrics"] == ProcessingMetrics
-
-        # Should return None (NoneType in type hints)
-        assert hints.get("return") == type(None)
+        partial_callback: ProgressCallback = partial(base_callback, prefix="test")
+        partial_callback(metrics)

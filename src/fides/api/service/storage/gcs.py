@@ -1,5 +1,4 @@
-from io import BytesIO
-from typing import IO, Any, Dict, Optional, Tuple
+from typing import IO, Any, Optional, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from google.cloud.storage import Blob, Client  # type: ignore
@@ -7,12 +6,12 @@ from google.oauth2 import service_account
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
-from fides.api.schemas.storage.storage import GCSAuthMethod
+from fides.api.schemas.storage.storage import GCSAuthMethod, StorageSecrets
 
 
 def get_gcs_client(
     auth_method: str,
-    storage_secrets: Optional[dict],
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
 ) -> Client:
     """
     Abstraction to retrieve a GCS client using secrets.
@@ -41,7 +40,10 @@ def get_gcs_client(
 
 
 def get_gcs_blob(
-    auth_method: str, storage_secrets: Optional[dict], bucket_name: str, file_key: str
+    auth_method: str,
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
+    bucket_name: str,
+    file_key: str,
 ) -> Blob:
     try:
         storage_client = get_gcs_client(auth_method, storage_secrets)
@@ -53,7 +55,7 @@ def get_gcs_blob(
 
 
 def generic_upload_to_gcs(
-    storage_secrets: Dict[str, Any],
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
     bucket_name: str,
     file_key: str,
     auth_method: str,

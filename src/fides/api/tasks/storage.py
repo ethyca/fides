@@ -97,7 +97,7 @@ def convert_dict_to_encrypted_json(
 
 
 def upload_to_s3(  # pylint: disable=R0913
-    storage_secrets: dict[StorageSecrets, Any],
+    storage_secrets: StorageSecrets,
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -152,7 +152,7 @@ def upload_to_s3(  # pylint: disable=R0913
 
 
 def upload_to_gcs(
-    storage_secrets: dict,
+    storage_secrets: StorageSecrets,
     data: dict,
     bucket_name: str,
     file_key: str,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -19,13 +19,13 @@ class GCSResumableUploadRequest(BaseModel):
     content_type: Annotated[
         str, Field(..., description="MIME type of the file being uploaded")
     ]
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, str]] = Field(
         default=None, description="Optional key-value pairs to store as object metadata"
     )
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate GCS bucket name format and requirements."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -49,7 +49,7 @@ class GCSResumableUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate GCS object key format and requirements."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -67,7 +67,7 @@ class GCSResumableUploadRequest(BaseModel):
 
     @field_validator("content_type")
     @classmethod
-    def validate_content_type(cls, v):
+    def validate_content_type(cls, v: Any) -> str:
         """Validate content type is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Content type must be a string")
@@ -92,13 +92,13 @@ class GCSResumableUploadResponse(BaseModel):
     resumable_url: Annotated[
         str, Field(..., description="Resumable upload URL for continuing the upload")
     ]
-    metadata: Optional[Dict[str, Any]] = Field(
+    metadata: Optional[dict[str, Any]] = Field(
         default=None, description="Additional metadata from GCS"
     )
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -108,7 +108,7 @@ class GCSResumableUploadResponse(BaseModel):
 
     @field_validator("resumable_url")
     @classmethod
-    def validate_resumable_url(cls, v):
+    def validate_resumable_url(cls, v: Any) -> str:
         """Validate resumable URL is a valid HTTPS URL."""
         if not isinstance(v, str):
             raise ValueError("Resumable URL must be a string")
@@ -147,13 +147,13 @@ class GCSChunkUploadRequest(BaseModel):
     chunk_data: Annotated[
         bytes, Field(..., description="Binary data content for this chunk")
     ]
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, str]] = Field(
         default=None, description="Optional metadata for this specific chunk"
     )
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID format."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -163,7 +163,7 @@ class GCSChunkUploadRequest(BaseModel):
 
     @field_validator("chunk_data")
     @classmethod
-    def validate_chunk_data(cls, v):
+    def validate_chunk_data(cls, v: Any) -> bytes:
         """Validate that the chunk data meets GCS requirements."""
         if not v:
             raise ValueError("Chunk data cannot be empty")
@@ -175,7 +175,7 @@ class GCSChunkUploadRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate GCS bucket name."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -185,7 +185,7 @@ class GCSChunkUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate GCS object key."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -206,13 +206,13 @@ class GCSChunkUploadResponse(BaseModel):
     bytes_uploaded: Annotated[
         int, Field(..., description="Total bytes uploaded so far in this session")
     ]
-    metadata: Optional[Dict[str, Any]] = Field(
+    metadata: Optional[dict[str, Any]] = Field(
         default=None, description="Additional metadata from GCS"
     )
 
     @field_validator("bytes_uploaded")
     @classmethod
-    def validate_bytes_uploaded(cls, v):
+    def validate_bytes_uploaded(cls, v: Any) -> int:
         """Validate bytes uploaded is non-negative."""
         if not isinstance(v, int):
             raise ValueError("Bytes uploaded must be an integer")
@@ -243,13 +243,13 @@ class GCSCompleteResumableUploadRequest(BaseModel):
     upload_id: Annotated[
         str, Field(..., description="Upload ID returned from create_resumable_upload")
     ]
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, str]] = Field(
         default=None, description="Optional metadata for the completed object"
     )
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -259,7 +259,7 @@ class GCSCompleteResumableUploadRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate GCS bucket name."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -269,7 +269,7 @@ class GCSCompleteResumableUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate GCS object key."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -303,7 +303,7 @@ class GCSAbortResumableUploadRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate GCS bucket name."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -313,7 +313,7 @@ class GCSAbortResumableUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate GCS object key."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -323,7 +323,7 @@ class GCSAbortResumableUploadRequest(BaseModel):
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -350,7 +350,7 @@ class GCSGetObjectRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate GCS bucket name."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -360,7 +360,7 @@ class GCSGetObjectRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate GCS object key."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -387,7 +387,7 @@ class GCSGetObjectRangeRequest(GCSGetObjectRequest):
 
     @field_validator("end_byte")
     @classmethod
-    def validate_end_byte(cls, v, info):
+    def validate_end_byte(cls, v: Any, info: Any) -> int:
         """Validate that end_byte is greater than or equal to start_byte."""
         if "start_byte" in info.data and v < info.data["start_byte"]:
             raise ValueError("end_byte must be greater than or equal to start_byte")

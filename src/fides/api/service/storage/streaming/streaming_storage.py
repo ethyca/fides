@@ -4,12 +4,10 @@ import csv
 import json
 import threading
 import time
-import zipfile
+import zlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
-from datetime import datetime
-from io import BytesIO
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+from io import BytesIO, StringIO
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
@@ -32,13 +30,15 @@ from fides.api.service.storage.streaming.schemas import (
     StorageUploadConfig,
     StreamingBufferConfig,
 )
+from fides.api.service.storage.streaming.streaming_zip_util import (
+    create_central_directory_parts,
+    create_data_descriptor,
+    create_local_file_header,
+)
 from fides.api.service.storage.streaming.util import (
     adaptive_chunk_size,
     should_split_package,
 )
-from fides.api.tasks.encryption_utils import encrypt_access_request_results
-from fides.api.util.storage_util import StorageJSONEncoder
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 def split_data_into_packages(
     data: dict, config: Optional[PackageSplitConfig] = None
-) -> List[dict]:
+) -> list[dict]:
     """Split large datasets into multiple smaller packages.
 
     Uses a best-fit decreasing algorithm to optimize package distribution:
@@ -88,8 +88,8 @@ def split_data_into_packages(
     # Sort by attachment count (largest first) for better space utilization
     all_items.sort(key=lambda x: x[2], reverse=True)
 
-    packages = []
-    package_attachment_counts = []
+    packages: List[Dict[str, Any]] = []
+    package_attachment_counts: List[int] = []
 
     for key, item, attachment_count in all_items:
         # Try to find a package with enough space
@@ -112,6 +112,493 @@ def split_data_into_packages(
             package_attachment_counts.append(attachment_count)
 
     return packages
+
+
+def _calculate_data_metrics(data: dict) -> ProcessingMetrics:
+    """Calculate total metrics for the data before processing.
+
+    Args:
+        data: The data dictionary containing items with attachments
+
+    Returns:
+        ProcessingMetrics with total_attachments and total_bytes populated
+    """
+    metrics = ProcessingMetrics()
+
+    for value in data.values():
+        if hasattr(value, "__iter__") and hasattr(value, "__len__") and len(value) > 0:
+            for item in value:
+                try:
+                    attachments = item.get("attachments", [])
+                    metrics.total_attachments += len(attachments)
+                    metrics.total_bytes += sum(
+                        att.get("size", 1024 * 1024) for att in attachments
+                    )
+                except (AttributeError, TypeError):
+                    # Handle mock objects or other types gracefully
+                    pass
+
+    return metrics
+
+
+def _handle_package_splitting(
+    data: dict,
+    file_key: str,
+    storage_client: CloudStorageClient,
+    bucket_name: str,
+    privacy_request: PrivacyRequest,
+    max_workers: int,
+    progress_callback: Optional[ProgressCallback],
+    buffer_config: StreamingBufferConfig,
+) -> ProcessingMetrics:
+    """Handle splitting large datasets into multiple packages.
+
+    Args:
+        data: The data to split
+        file_key: Base file key for the upload
+        storage_client: Cloud storage client
+        bucket_name: Target bucket name
+        privacy_request: Privacy request context
+        max_workers: Maximum parallel workers
+        progress_callback: Optional progress callback
+        buffer_config: Buffer configuration
+
+    Returns:
+        Combined metrics from all packages
+    """
+    logger.info("Large dataset detected, splitting into multiple packages")
+    packages = split_data_into_packages(data)
+    logger.info("Split into {} packages", len(packages))
+
+    # Process each package separately
+    all_metrics = []
+    for i, package in enumerate(packages):
+        package_key = f"{file_key}_part_{i+1}"
+        logger.info("Processing package {}/{}: {}", i + 1, len(packages), package_key)
+
+        package_metrics = stream_attachments_to_storage_zip(
+            storage_client,
+            bucket_name,
+            package_key,
+            package,
+            privacy_request,
+            max_workers,
+            progress_callback,
+            buffer_config,
+        )
+        all_metrics.append(package_metrics)
+
+    # Combine metrics from all packages
+    combined_metrics = ProcessingMetrics()
+    # Calculate total metrics from original data to avoid double-counting
+    original_metrics = _calculate_data_metrics(data)
+    combined_metrics.total_attachments = original_metrics.total_attachments
+    combined_metrics.total_bytes = original_metrics.total_bytes
+
+    for pm in all_metrics:
+        combined_metrics.processed_attachments += pm.processed_attachments
+        combined_metrics.processed_bytes += pm.processed_bytes
+        combined_metrics.errors.extend(pm.errors)
+
+    return combined_metrics
+
+
+def _collect_and_validate_attachments(
+    data: dict, metrics: ProcessingMetrics
+) -> List[AttachmentProcessingInfo]:
+    """Collect and validate all attachments from the data.
+
+    Args:
+        data: The data dictionary containing items with attachments
+        metrics: Processing metrics to track errors
+
+    Returns:
+        List of validated AttachmentProcessingInfo objects
+    """
+    all_attachments = []
+
+    for key, value in data.items():
+        # Check if value is iterable and has length
+        try:
+            if hasattr(value, "__iter__") and hasattr(value, "__len__"):
+                # Convert to int to avoid MagicMock comparison issues
+                value_len = int(len(value))
+                if value_len > 0:
+                    for idx, item in enumerate(value):
+                        try:
+                            # Check if item is a dict-like object before calling .get()
+                            if hasattr(item, "get") and callable(
+                                getattr(item, "get", None)
+                            ):
+                                attachments = item.get("attachments", [])
+                                for attachment in attachments:
+                                    # Check if attachment has required fields
+                                    if "s3_key" not in attachment:
+                                        error_msg = f"Attachment missing required field 's3_key': {attachment}"
+                                        logger.error(error_msg)
+                                        metrics.errors.append(error_msg)
+                                        continue
+
+                                    # Validate attachment data using Pydantic model
+                                    try:
+                                        attachment_info = AttachmentInfo(**attachment)
+                                        processing_info = AttachmentProcessingInfo(
+                                            attachment=attachment_info,
+                                            base_path=f"{key}/{idx + 1}/attachments",
+                                            item=item,
+                                        )
+                                        all_attachments.append(processing_info)
+                                    except (ValueError, TypeError, KeyError) as e:
+                                        error_msg = f"Invalid attachment data: {e}"
+                                        logger.error(error_msg)
+                                        metrics.errors.append(error_msg)
+                                        continue
+                            else:
+                                # Item is not dict-like, log and continue
+                                error_msg = f"Item at index {idx} is not a dict-like object: {type(item)}"
+                                logger.warning(error_msg)
+                                metrics.errors.append(error_msg)
+                                continue
+                        except (AttributeError, TypeError) as e:
+                            # Handle mock objects or other types gracefully
+                            error_msg = f"Failed to process item at index {idx}: {e}"
+                            logger.warning(error_msg)
+                            metrics.errors.append(error_msg)
+                            continue
+        except (TypeError, ValueError) as e:
+            # Handle cases where len() fails or comparison fails
+            error_msg = f"Failed to process value for key '{key}': {e}"
+            logger.warning(error_msg)
+            metrics.errors.append(error_msg)
+            continue
+
+    return all_attachments
+
+
+def _serialize_item_data(
+    item: Any,
+    key: str,
+    idx: int,
+    storage_client: CloudStorageClient,
+    bucket_name: str,
+    file_key: str,
+    upload_id: str,
+    parts: List[Any],
+    part_number: int,
+    file_entries: List[Tuple[str, int, int, int]],
+    current_offset: int,
+    metrics: ProcessingMetrics,
+) -> Tuple[int, int]:
+    """Serialize item data to CSV or JSON and upload as zip part.
+
+    Args:
+        item: The item to serialize
+        key: Data key
+        idx: Item index
+        storage_client: Cloud storage client
+        bucket_name: Target bucket name
+        file_key: File key for upload
+        upload_id: Multipart upload ID
+        parts: List of uploaded parts
+        part_number: Current part number
+        file_entries: File entries for central directory
+        current_offset: Current offset in ZIP file
+        metrics: Processing metrics to track errors
+
+    Returns:
+        Tuple of (updated_part_number, updated_current_offset)
+    """
+    filename = f"{key}/{idx + 1}/item"
+
+    # Try CSV first for dict items - handle both real dicts and mock objects
+    try:
+        if (
+            hasattr(item, "keys")
+            and hasattr(item, "values")
+            and hasattr(item, "__len__")
+        ):
+            # Check if it's a dict-like object (including mocks)
+            try:
+                item_len = int(len(item))
+                if item_len > 0:
+                    try:
+                        # Create CSV data in memory (small, acceptable)
+                        csv_buffer = StringIO()
+                        csv_writer = csv.writer(csv_buffer)
+
+                        # Write header - ensure keys are strings and handle any encoding issues
+                        header = [str(k) for k in item.keys()]
+                        csv_writer.writerow(header)
+                        # Write data - ensure values are strings
+                        row_data = [str(v) for v in item.values()]
+                        csv_writer.writerow(row_data)
+
+                        csv_buffer.seek(0)
+                        csv_data = csv_buffer.getvalue().encode("utf-8")
+
+                        # Create zip part for CSV data
+                        csv_filename = f"{filename}.csv"
+                        csv_crc32 = zlib.crc32(csv_data)
+                        zip_part_data = create_zip_part_for_chunk(
+                            csv_data,
+                            csv_filename,
+                            True,  # First chunk
+                            True,  # Last chunk
+                            len(csv_data),
+                            csv_crc32,
+                        )
+
+                        # Upload CSV zip part to storage
+                        part = storage_client.upload_part(
+                            bucket_name,
+                            file_key,
+                            upload_id,
+                            part_number,
+                            zip_part_data,
+                        )
+                        parts.append(part)
+
+                        # Track file entry for central directory
+                        file_entries.append(
+                            (csv_filename, len(csv_data), current_offset, csv_crc32)
+                        )
+                        current_offset += len(zip_part_data)
+                        part_number += 1
+
+                        return part_number, current_offset
+
+                    except (TypeError, UnicodeEncodeError, csv.Error) as e:
+                        # If CSV writing failed, fall back to JSON
+                        logger.warning(
+                            f"CSV writing failed for item {key}/{idx + 1}, falling back to JSON: {e}"
+                        )
+                        return _serialize_item_as_json(
+                            item,
+                            filename,
+                            storage_client,
+                            bucket_name,
+                            file_key,
+                            upload_id,
+                            parts,
+                            part_number,
+                            file_entries,
+                            current_offset,
+                            metrics,
+                        )
+            except (TypeError, ValueError) as e:
+                # Handle cases where len() fails or comparison fails
+                logger.warning(
+                    f"Failed to determine length for item {key}/{idx + 1}, falling back to JSON: {e}"
+                )
+                return _serialize_item_as_json(
+                    item,
+                    filename,
+                    storage_client,
+                    bucket_name,
+                    file_key,
+                    upload_id,
+                    parts,
+                    part_number,
+                    file_entries,
+                    current_offset,
+                    metrics,
+                )
+    except (TypeError, UnicodeEncodeError, csv.Error, AttributeError) as e:
+        # If CSV writing failed, fall back to JSON
+        logger.warning(
+            f"CSV writing failed for item {key}/{idx + 1}, falling back to JSON: {e}"
+        )
+        return _serialize_item_as_json(
+            item,
+            filename,
+            storage_client,
+            bucket_name,
+            file_key,
+            upload_id,
+            parts,
+            part_number,
+            file_entries,
+            current_offset,
+            metrics,
+        )
+
+    # Handle non-dict items or fallback to JSON
+    return _serialize_item_as_json(
+        item,
+        filename,
+        storage_client,
+        bucket_name,
+        file_key,
+        upload_id,
+        parts,
+        part_number,
+        file_entries,
+        current_offset,
+        metrics,
+    )
+
+
+def _serialize_item_as_json(
+    item: Any,
+    filename: str,
+    storage_client: CloudStorageClient,
+    bucket_name: str,
+    file_key: str,
+    upload_id: str,
+    parts: List[Any],
+    part_number: int,
+    file_entries: List[Tuple[str, int, int, int]],
+    current_offset: int,
+    metrics: ProcessingMetrics,
+) -> Tuple[int, int]:
+    """Serialize item as JSON and upload as zip part.
+
+    Args:
+        item: The item to serialize
+        filename: Base filename (without extension)
+        storage_client: Cloud storage client
+        bucket_name: Target bucket name
+        file_key: File key for upload
+        upload_id: Multipart upload ID
+        parts: List of uploaded parts
+        part_number: Current part number
+        file_entries: File entries for central directory
+        current_offset: Current offset in ZIP file
+        metrics: Processing metrics to track errors
+
+    Returns:
+        Tuple of (updated_part_number, updated_current_offset)
+    """
+    try:
+        item_json = json.dumps(item, default=str)
+        json_data = item_json.encode("utf-8")
+
+        # Create zip part for JSON data
+        json_filename = f"{filename}.json"
+        json_crc32 = zlib.crc32(json_data)
+        zip_part_data = create_zip_part_for_chunk(
+            json_data,
+            json_filename,
+            True,  # First chunk
+            True,  # Last chunk
+            len(json_data),
+            json_crc32,
+        )
+
+        # Upload JSON zip part to storage
+        part = storage_client.upload_part(
+            bucket_name,
+            file_key,
+            upload_id,
+            part_number,
+            zip_part_data,
+        )
+        parts.append(part)
+
+        # Track file entry for central directory
+        file_entries.append((json_filename, len(json_data), current_offset, json_crc32))
+        current_offset += len(zip_part_data)
+        part_number += 1
+
+        return part_number, current_offset
+
+    except (TypeError, UnicodeEncodeError, ValueError) as e:
+        logger.error(f"Failed to serialize item {filename}: {e}")
+        metrics.errors.append(f"Failed to serialize item {filename}: {e}")
+        return part_number, current_offset
+
+
+def _process_item_data(
+    data: dict,
+    storage_client: CloudStorageClient,
+    bucket_name: str,
+    file_key: str,
+    upload_id: str,
+    parts: List[Any],
+    part_number: int,
+    file_entries: List[Tuple[str, int, int, int]],
+    current_offset: int,
+    metrics: ProcessingMetrics,
+) -> Tuple[int, int]:
+    """Process all item data and serialize to zip parts.
+
+    Args:
+        data: The data dictionary containing items
+        storage_client: Cloud storage client
+        bucket_name: Target bucket name
+        file_key: File key for upload
+        upload_id: Multipart upload ID
+        parts: List of uploaded parts
+        part_number: Current part number
+        file_entries: File entries for central directory
+        current_offset: Current offset in ZIP file
+        metrics: Processing metrics to track errors
+
+    Returns:
+        Tuple of (updated_part_number, updated_current_offset)
+    """
+    for key, value in data.items():
+        if hasattr(value, "__iter__") and hasattr(value, "__len__") and len(value) > 0:
+            for idx, item in enumerate(value):
+                if item:  # Only process non-empty items
+                    part_number, current_offset = _serialize_item_data(
+                        item,
+                        key,
+                        idx,
+                        storage_client,
+                        bucket_name,
+                        file_key,
+                        upload_id,
+                        parts,
+                        part_number,
+                        file_entries,
+                        current_offset,
+                        metrics,
+                    )
+
+    return part_number, current_offset
+
+
+def _complete_multipart_upload(
+    storage_client: CloudStorageClient,
+    bucket_name: str,
+    file_key: str,
+    upload_id: str,
+    parts: List[Any],
+    part_number: int,
+    file_entries: List[Tuple[str, int, int, int]],
+    current_offset: int,
+) -> None:
+    """Complete the multipart upload with central directory.
+
+    Args:
+        storage_client: Cloud storage client
+        bucket_name: Target bucket name
+        file_key: File key for upload
+        upload_id: Multipart upload ID
+        parts: List of uploaded parts
+        part_number: Current part number
+        file_entries: File entries for central directory
+        current_offset: Current offset in ZIP file
+    """
+    if parts:
+        # Create central directory
+        central_dir_parts = create_central_directory_parts(file_entries, current_offset)
+
+        # Upload central directory parts
+        for central_dir_part in central_dir_parts:
+            part = storage_client.upload_part(
+                bucket_name, file_key, upload_id, part_number, central_dir_part
+            )
+            parts.append(part)
+            part_number += 1
+
+        storage_client.complete_multipart_upload(
+            bucket_name, file_key, upload_id, parts
+        )
+    else:
+        # If no parts were uploaded, complete with empty parts list
+        storage_client.complete_multipart_upload(bucket_name, file_key, upload_id, [])
 
 
 def stream_attachments_to_storage_zip(
@@ -140,18 +627,8 @@ def stream_attachments_to_storage_zip(
     if buffer_config is None:
         buffer_config = StreamingBufferConfig()
 
-    # Initialize metrics
-    metrics = ProcessingMetrics()
-
-    # Calculate total metrics upfront
-    for value in data.values():
-        if isinstance(value, list) and value:
-            for item in value:
-                attachments = item.get("attachments", [])
-                metrics.total_attachments += len(attachments)
-                metrics.total_bytes += sum(
-                    att.get("size", 1024 * 1024) for att in attachments
-                )
+    # Initialize metrics and calculate totals
+    metrics = _calculate_data_metrics(data)
 
     logger.info(
         "Starting true streaming processing of {} attachments ({:.2f} GB total)",
@@ -161,49 +638,26 @@ def stream_attachments_to_storage_zip(
 
     # Check if we should split into multiple packages
     if should_split_package(data):
-        logger.info("Large dataset detected, splitting into multiple packages")
-        packages = split_data_into_packages(data)
-        logger.info("Split into {} packages", len(packages))
-
-        # Process each package separately
-        all_metrics = []
-        for i, package in enumerate(packages):
-            package_key = f"{file_key}_part_{i+1}"
-            logger.info(
-                "Processing package {}/{}: {}", i + 1, len(packages), package_key
-            )
-
-            package_metrics = stream_attachments_to_storage_zip(
-                storage_client,
-                bucket_name,
-                package_key,
-                package,
-                privacy_request,
-                max_workers,
-                progress_callback,
-                buffer_config,
-            )
-            all_metrics.append(package_metrics)
-
-        # Combine metrics from all packages
-        combined_metrics = ProcessingMetrics()
-        # Don't double-count attachments - use the original total from the main function
-        combined_metrics.total_attachments = metrics.total_attachments
-        combined_metrics.total_bytes = metrics.total_bytes
-        for pm in all_metrics:
-            combined_metrics.processed_attachments += pm.processed_attachments
-            combined_metrics.processed_bytes += pm.processed_bytes
-            combined_metrics.errors.extend(pm.errors)
-
-        return combined_metrics
+        return _handle_package_splitting(
+            data,
+            file_key,
+            storage_client,
+            bucket_name,
+            privacy_request,
+            max_workers,
+            progress_callback,
+            buffer_config,
+        )
 
     # Initiate multipart upload for the zip file
     upload_id = None
-    parts = []
+    parts: List[Any] = []
     part_number = 1
 
     # Track file information for central directory
-    file_entries = []  # List of (filename, size, offset, crc32) tuples
+    file_entries: List[Tuple[str, int, int, int]] = (
+        []
+    )  # List of (filename, size, offset, crc32) tuples
     current_offset = 0
 
     try:
@@ -212,34 +666,8 @@ def stream_attachments_to_storage_zip(
         )
         upload_id = response.upload_id
 
-        # Collect all attachments for parallel processing
-        all_attachments = []
-        for key, value in data.items():
-            if isinstance(value, list) and value:
-                for idx, item in enumerate(value):
-                    attachments = item.get("attachments", [])
-                    for attachment in attachments:
-                        # Check if attachment has required fields
-                        if "s3_key" not in attachment:
-                            error_msg = f"Attachment missing required field 's3_key': {attachment}"
-                            logger.error(error_msg)
-                            metrics.errors.append(error_msg)
-                            continue
-
-                        # Validate attachment data using Pydantic model
-                        try:
-                            attachment_info = AttachmentInfo(**attachment)
-                            processing_info = AttachmentProcessingInfo(
-                                attachment=attachment_info,
-                                base_path=f"{key}/{idx + 1}/attachments",
-                                item=item,
-                            )
-                            all_attachments.append(processing_info)
-                        except (ValueError, TypeError, KeyError) as e:
-                            error_msg = f"Invalid attachment data: {e}"
-                            logger.error(error_msg)
-                            metrics.errors.append(error_msg)
-                            continue
+        # Collect and validate all attachments
+        all_attachments = _collect_and_validate_attachments(data, metrics)
 
         # Check if we have any valid attachments to process
         if not all_attachments:
@@ -253,7 +681,7 @@ def stream_attachments_to_storage_zip(
             return metrics
 
         # Create upload context for coordination
-        upload_context = {
+        upload_context: Dict[str, Any] = {
             "storage_client": storage_client,
             "bucket_name": bucket_name,
             "file_key": file_key,
@@ -272,18 +700,18 @@ def stream_attachments_to_storage_zip(
                 executor.submit(
                     stream_single_attachment_to_storage_streaming,
                     upload_context,
-                    attachment_info.attachment,
-                    attachment_info.base_path,
+                    processing_info.attachment,
+                    processing_info.base_path,
                     metrics,
                     progress_callback,
                     buffer_config,
-                ): attachment_info
-                for attachment_info in all_attachments
+                ): processing_info
+                for processing_info in all_attachments
             }
 
             # Process completed tasks
             for future in as_completed(future_to_attachment):
-                attachment_info = future_to_attachment[future]
+                processing_info: AttachmentProcessingInfo = future_to_attachment[future]
                 try:
                     attachment_metrics = future.result()
                     metrics.processed_attachments += 1
@@ -299,7 +727,7 @@ def stream_attachments_to_storage_zip(
                         "Completed attachment {}/{}: {}",
                         metrics.processed_attachments,
                         metrics.total_attachments,
-                        attachment_info.attachment.file_name or "unknown",
+                        processing_info.attachment.file_name or "unknown",
                     )
 
                 except (
@@ -308,7 +736,7 @@ def stream_attachments_to_storage_zip(
                     ConnectionError,
                     TimeoutError,
                 ) as e:
-                    error_msg = f"Failed to process attachment {attachment_info.attachment.file_name or 'unknown'}: {e}"
+                    error_msg = f"Failed to process attachment {processing_info.attachment.file_name or 'unknown'}: {e}"
                     logger.error(error_msg)
                     metrics.errors.append(error_msg)
 
@@ -316,174 +744,31 @@ def stream_attachments_to_storage_zip(
         parts = upload_context["parts"]
         part_number = upload_context["part_number"]
 
-        # Add the main item data (without attachments) as streaming zip parts
-        for key, value in data.items():
-            if isinstance(value, list) and value:
-                for idx, item in enumerate(value):
-                    # Only add item data if it's a non-empty dictionary with actual content
-                    if item and isinstance(item, dict) and len(item) > 0:
-                        try:
-                            # Create CSV data in memory (small, acceptable)
-                            csv_buffer = BytesIO()
-                            csv_writer = csv.writer(csv_buffer)
+        # Process item data (CSV/JSON serialization)
+        part_number, current_offset = _process_item_data(
+            data,
+            storage_client,
+            bucket_name,
+            file_key,
+            upload_id,
+            parts,
+            part_number,
+            file_entries,
+            current_offset,
+            metrics,
+        )
 
-                            # Write header - ensure keys are strings and handle any encoding issues
-                            header = [str(k) for k in item.keys()]
-                            csv_writer.writerow(header)
-                            # Write data - ensure values are strings
-                            row_data = [str(v) for v in item.values()]
-                            csv_writer.writerow(row_data)
-
-                            csv_buffer.seek(0)
-                            csv_data = csv_buffer.getvalue()
-
-                            # Create zip part for CSV data
-                            filename = f"{key}/{idx + 1}/item.csv"
-                            zip_part_data = create_zip_part_for_chunk(
-                                csv_data,
-                                filename,
-                                True,  # First chunk
-                                True,  # Last chunk
-                                len(csv_data),
-                            )
-
-                            # Upload CSV zip part to storage
-                            part = storage_client.upload_part(
-                                bucket_name,
-                                file_key,
-                                upload_id,
-                                part_number,
-                                zip_part_data,
-                            )
-                            parts.append(part)
-
-                            # Track file entry for central directory
-                            file_entries.append(
-                                (filename, len(csv_data), current_offset, 0)
-                            )
-                            current_offset += len(zip_part_data)
-
-                            part_number += 1
-
-                        except (TypeError, UnicodeEncodeError, csv.Error) as e:
-                            # If CSV writing failed, fall back to JSON
-                            logger.warning(
-                                f"CSV writing failed for item {key}/{idx + 1}, falling back to JSON: {e}"
-                            )
-                            try:
-                                item_json = json.dumps(item, default=str)
-                                json_data = item_json.encode("utf-8")
-
-                                # Create zip part for JSON data
-                                filename = f"{key}/{idx + 1}/item.json"
-                                zip_part_data = create_zip_part_for_chunk(
-                                    json_data,
-                                    filename,
-                                    True,  # First chunk
-                                    True,  # Last chunk
-                                    len(json_data),
-                                )
-
-                                # Upload JSON zip part to storage
-                                part = storage_client.upload_part(
-                                    bucket_name,
-                                    file_key,
-                                    upload_id,
-                                    part_number,
-                                    zip_part_data,
-                                )
-                                parts.append(part)
-
-                                # Track file entry for central directory
-                                file_entries.append(
-                                    (filename, len(json_data), current_offset, 0)
-                                )
-                                current_offset += len(zip_part_data)
-
-                                part_number += 1
-
-                            except (
-                                TypeError,
-                                UnicodeEncodeError,
-                                json.JSONEncodeError,
-                            ) as json_error:
-                                logger.error(
-                                    f"Both CSV and JSON serialization failed for item {key}/{idx + 1}: CSV error: {e}, JSON error: {json_error}"
-                                )
-                                metrics.errors.append(
-                                    f"Failed to serialize item {key}/{idx + 1}: {json_error}"
-                                )
-                                continue
-                    elif item and not isinstance(item, dict):
-                        # Fallback to JSON for non-dict items
-                        try:
-                            item_json = json.dumps(item, default=str)
-                            json_data = item_json.encode("utf-8")
-
-                            # Create zip part for JSON data
-                            filename = f"{key}/{idx + 1}/item.json"
-                            zip_part_data = create_zip_part_for_chunk(
-                                json_data,
-                                filename,
-                                True,  # First chunk
-                                True,  # Last chunk
-                                len(json_data),
-                            )
-
-                            # Upload JSON zip part to storage
-                            part = storage_client.upload_part(
-                                bucket_name,
-                                file_key,
-                                upload_id,
-                                part_number,
-                                zip_part_data,
-                            )
-                            parts.append(part)
-
-                            # Track file entry for central directory
-                            file_entries.append(
-                                (filename, len(json_data), current_offset, 0)
-                            )
-                            current_offset += len(zip_part_data)
-
-                            part_number += 1
-
-                        except (
-                            TypeError,
-                            UnicodeEncodeError,
-                            json.JSONEncodeError,
-                        ) as e:
-                            logger.error(
-                                f"Failed to serialize non-dict item {key}/{idx + 1}: {e}"
-                            )
-                            metrics.errors.append(
-                                f"Failed to serialize item {key}/{idx + 1}: {e}"
-                            )
-                            continue
-
-        # Complete multipart upload only if we have parts
-        if parts:
-            # Create central directory
-            central_dir_parts = create_central_directory_parts(
-                file_entries, current_offset
-            )
-
-            # Upload central directory parts
-            for central_dir_part in central_dir_parts:
-                part = storage_client.upload_part(
-                    bucket_name, file_key, upload_id, part_number, central_dir_part
-                )
-                parts.append(part)
-                part_number += 1
-
-            storage_client.complete_multipart_upload(
-                bucket_name, file_key, upload_id, parts
-            )
-        else:
-            # If no parts were uploaded, complete with empty parts list
-            storage_client.complete_multipart_upload(
-                bucket_name, file_key, upload_id, []
-            )
+        # Complete multipart upload with central directory
+        _complete_multipart_upload(
+            storage_client,
+            bucket_name,
+            file_key,
+            upload_id,
+            parts,
+            part_number,
+            file_entries,
+            current_offset,
+        )
 
         logger.info(
             "Completed true streaming zip upload with {} parts in {:.2f}s",
@@ -516,7 +801,7 @@ def stream_single_attachment_to_storage_streaming(
     metrics: ProcessingMetrics,
     progress_callback: Optional[ProgressCallback] = None,
     buffer_config: Optional[StreamingBufferConfig] = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Stream a single attachment directly to cloud storage without building zip in memory.
 
     This function downloads chunks and immediately uploads them to storage as zip parts,
@@ -564,6 +849,13 @@ def stream_single_attachment_to_storage_streaming(
         zip_filename = f"{base_path}/{filename}"
         local_header_offset = upload_context["current_offset"]
 
+        # Calculate CRC-32 for the entire file first
+        logger.debug("Calculating CRC-32 for attachment: {}", filename)
+        crc32_value = calculate_file_crc32(
+            storage_client, bucket_name, source_key, file_size, chunk_size
+        )
+        logger.debug("CRC-32 calculated for {}: {:08x}", filename, crc32_value)
+
         # Stream download in adaptive chunks and immediately upload to storage as zip parts
         for chunk_num, start_byte in enumerate(range(0, file_size, chunk_size)):
             end_byte = min(start_byte + chunk_size - 1, file_size - 1)
@@ -571,7 +863,10 @@ def stream_single_attachment_to_storage_streaming(
 
             # Download this chunk with retry logic
             chunk_data = download_chunk_with_retry(
-                storage_client, bucket_name, source_key, start_byte, end_byte
+                storage_client,
+                bucket_name,
+                source_key,
+                ChunkDownloadConfig(start_byte=start_byte, end_byte=end_byte),
             )
 
             processed_bytes += chunk_length
@@ -590,6 +885,7 @@ def stream_single_attachment_to_storage_streaming(
                 chunk_num == 0,  # First chunk gets the file header
                 chunk_num == total_chunks - 1,  # Last chunk gets the file footer
                 file_size,
+                crc32_value,  # Use the pre-calculated CRC-32 value
             )
 
             # Upload the zip part directly to storage with thread-safe coordination
@@ -605,22 +901,23 @@ def stream_single_attachment_to_storage_streaming(
                 if chunk_num == 0:  # First chunk
                     upload_context["current_offset"] += len(zip_part_data)
 
-        # Add file entry to central directory tracking
+        # Add file entry to central directory tracking with real CRC-32
         with upload_context["lock"]:
             upload_context["file_entries"].append(
                 (
                     zip_filename,
                     file_size,
                     local_header_offset,
-                    0,  # CRC32 placeholder for now
+                    crc32_value,  # Use real CRC-32 instead of placeholder
                 )
             )
 
         logger.debug(
-            "Completed attachment {}: {} bytes in {} chunks",
+            "Completed attachment {}: {} bytes in {} chunks with CRC-32: {:08x}",
             filename,
             file_size,
             total_chunks,
+            crc32_value,
         )
 
         return {
@@ -653,12 +950,20 @@ def create_zip_part_for_chunk(
     is_first_chunk: bool,
     is_last_chunk: bool,
     file_size: int,
-    crc32: int = 0,
+    crc32: int,
 ) -> bytes:
     """Create a zip part for a single chunk with proper ZIP structure.
 
     This function creates the minimal zip structure needed for a single chunk,
     including local file header and data descriptor if needed.
+
+    Args:
+        chunk_data: The binary data for this chunk
+        filename: The filename to use in the ZIP structure
+        is_first_chunk: Whether this is the first chunk (needs local file header)
+        is_last_chunk: Whether this is the last chunk (needs data descriptor)
+        file_size: The total size of the file
+        crc32: The CRC-32 checksum for the entire file
     """
     # Create a minimal zip part buffer
     zip_part = BytesIO()
@@ -680,312 +985,76 @@ def create_zip_part_for_chunk(
     return zip_part.getvalue()
 
 
-def create_local_file_header(filename: str, file_size: int, crc32: int = 0) -> bytes:
-    """Create a ZIP local file header for a file entry."""
-    # ZIP local file header structure (30 bytes + filename length)
-    header = bytearray()
-
-    # Local file header signature (4 bytes)
-    header.extend(b"PK\x03\x04")
-
-    # Version needed to extract (2 bytes) - version 2.0
-    header.extend(b"\x14\x00")
-
-    # General purpose bit flag (2 bytes) - no encryption, normal compression
-    header.extend(b"\x00\x00")
-
-    # Compression method (2 bytes) - stored (no compression)
-    header.extend(b"\x00\x00")
-
-    # Last mod file time (2 bytes) - current time, but limit to 16-bit range
-    current_time = int(time.time())
-    # ZIP time format: hour*2048 + minute*32 + second/2
-    # Limit to reasonable values to avoid overflow
-    hour = min((current_time // 3600) % 24, 23)
-    minute = min((current_time // 60) % 60, 59)
-    second = min((current_time % 60), 59)
-    zip_time = (hour << 11) | (minute << 5) | (second // 2)
-    header.extend(zip_time.to_bytes(2, "little"))
-
-    # Last mod file date (2 bytes) - current date, but limit to 16-bit range
-    # ZIP date format: (year-1980)*512 + month*32 + day
-    # Use a reasonable year to avoid overflow
-    year = min(2024, 1980 + (current_time // (365 * 24 * 3600)))
-    month = min(((current_time // (30 * 24 * 3600)) % 12) + 1, 12)
-    day = min(((current_time // (24 * 3600)) % 30) + 1, 31)
-    zip_date = ((year - 1980) << 9) | (month << 5) | day
-    header.extend(zip_date.to_bytes(2, "little"))
-
-    # CRC-32 (4 bytes) - use provided value or placeholder
-    header.extend(crc32.to_bytes(4, "little"))
-
-    # Compressed size (4 bytes) - limit to 32-bit range
-    compressed_size = min(file_size, 0xFFFFFFFF)
-    header.extend(compressed_size.to_bytes(4, "little"))
-
-    # Uncompressed size (4 bytes) - limit to 32-bit range
-    uncompressed_size = min(file_size, 0xFFFFFFFF)
-    header.extend(uncompressed_size.to_bytes(4, "little"))
-
-    # Filename length (2 bytes) - limit to 16-bit range
-    filename_bytes = filename.encode("utf-8")
-    filename_length = min(len(filename_bytes), 0xFFFF)
-    header.extend(filename_length.to_bytes(2, "little"))
-
-    # Extra field length (2 bytes) - none
-    header.extend(b"\x00\x00")
-
-    # Filename
-    header.extend(filename_bytes)
-
-    return bytes(header)
-
-
-def create_data_descriptor(file_size: int, crc32: int = 0) -> bytes:
-    """Create a ZIP data descriptor for file size information."""
-    # Data descriptor structure (16 bytes)
-    descriptor = bytearray()
-
-    # Data descriptor signature (4 bytes)
-    descriptor.extend(b"PK\x07\x08")
-
-    # CRC-32 (4 bytes) - use provided value or placeholder
-    descriptor.extend(crc32.to_bytes(4, "little"))
-
-    # Compressed size (4 bytes) - limit to 32-bit range
-    compressed_size = min(file_size, 0xFFFFFFFF)
-    descriptor.extend(compressed_size.to_bytes(4, "little"))
-
-    # Uncompressed size (4 bytes) - limit to 32-bit range
-    uncompressed_size = min(file_size, 0xFFFFFFFF)
-    descriptor.extend(uncompressed_size.to_bytes(4, "little"))
-
-    return bytes(descriptor)
-
-
-def create_central_directory_header(
-    filename: str, file_size: int, local_header_offset: int, crc32: int = 0
-) -> bytes:
-    """Create a ZIP central directory header for a file entry."""
-    # Central directory header structure (46 bytes + filename length)
-    header = bytearray()
-
-    # Central directory signature (4 bytes)
-    header.extend(b"PK\x01\x02")
-
-    # Version made by (2 bytes) - version 2.0
-    header.extend(b"\x14\x00")
-
-    # Version needed to extract (2 bytes) - version 2.0
-    header.extend(b"\x14\x00")
-
-    # General purpose bit flag (2 bytes) - same as local header
-    if file_size > 0xFFFFFFFF:
-        header.extend(b"\x08\x00")  # Data descriptor flag
-    else:
-        header.extend(b"\x00\x00")
-
-    # Compression method (2 bytes) - stored (no compression)
-    header.extend(b"\x00\x00")
-
-    # Last mod file time (2 bytes) - current time, but limit to 16-bit range
-    current_time = int(time.time())
-    # ZIP time format: hour*2048 + minute*32 + second/2
-    # Limit to reasonable values to avoid overflow
-    hour = min((current_time // 3600) % 24, 23)
-    minute = min((current_time // 60) % 60, 59)
-    second = min((current_time % 60), 59)
-    zip_time = (hour << 11) | (minute << 5) | (second // 2)
-    header.extend(zip_time.to_bytes(2, "little"))
-
-    # Last mod file date (2 bytes) - current date, but limit to 16-bit range
-    # ZIP date format: (year-1980)*512 + month*32 + day
-    # Use a reasonable year to avoid overflow
-    year = min(2024, 1980 + (current_time // (365 * 24 * 3600)))
-    month = min(((current_time // (30 * 24 * 3600)) % 12) + 1, 12)
-    day = min(((current_time // (24 * 3600)) % 30) + 1, 31)
-    zip_date = ((year - 1980) << 9) | (month << 5) | day
-    header.extend(zip_date.to_bytes(2, "little"))
-
-    # CRC-32 (4 bytes)
-    header.extend(crc32.to_bytes(4, "little"))
-
-    # Compressed size (4 bytes)
-    if file_size > 0xFFFFFFFF:
-        header.extend(b"\xff\xff\xff\xff")  # ZIP64 marker
-    else:
-        header.extend(file_size.to_bytes(4, "little"))
-
-    # Uncompressed size (4 bytes)
-    if file_size > 0xFFFFFFFF:
-        header.extend(b"\xff\xff\xff\xff")  # ZIP64 marker
-    else:
-        header.extend(file_size.to_bytes(4, "little"))
-
-    # Filename length (2 bytes)
-    filename_bytes = filename.encode("utf-8")
-    header.extend(len(filename_bytes).to_bytes(2, "little"))
-
-    # Extra field length (2 bytes) - none for now
-    header.extend(b"\x00\x00")
-
-    # File comment length (2 bytes) - none
-    header.extend(b"\x00\x00")
-
-    # Disk number start (2 bytes) - 0
-    header.extend(b"\x00\x00")
-
-    # Internal file attributes (2 bytes) - 0
-    header.extend(b"\x00\x00")
-
-    # External file attributes (4 bytes) - 0
-    header.extend(b"\x00\x00\x00\x00")
-
-    # Relative offset of local header (4 bytes)
-    if local_header_offset > 0xFFFFFFFF:
-        header.extend(b"\xff\xff\xff\xff")  # ZIP64 marker
-    else:
-        # Ensure the offset fits in 4 bytes
-        offset_bytes = (local_header_offset & 0xFFFFFFFF).to_bytes(4, "little")
-        header.extend(offset_bytes)
-
-    # Filename
-    header.extend(filename_bytes)
-
-    return bytes(header)
-
-
-def create_central_directory_end(
-    total_entries: int, central_dir_size: int, central_dir_offset: int
-) -> bytes:
-    """Create a ZIP end of central directory record."""
-    # End of central directory structure (22 bytes)
-    end_record = bytearray()
-
-    # End of central directory signature (4 bytes)
-    end_record.extend(b"PK\x05\x06")
-
-    # Number of this disk (2 bytes) - 0
-    end_record.extend(b"\x00\x00")
-
-    # Number of the disk with the start of the central directory (2 bytes) - 0
-    end_record.extend(b"\x00\x00")
-
-    # Total number of entries in the central directory on this disk (2 bytes)
-    if total_entries > 0xFFFF:
-        end_record.extend(b"\xff\xff")  # ZIP64 marker
-    else:
-        end_record.extend(total_entries.to_bytes(2, "little"))
-
-    # Total number of entries in the central directory (2 bytes)
-    if total_entries > 0xFFFF:
-        end_record.extend(b"\xff\xff")  # ZIP64 marker
-    else:
-        end_record.extend(total_entries.to_bytes(2, "little"))
-
-    # Size of the central directory (4 bytes)
-    if central_dir_size > 0xFFFFFFFF:
-        end_record.extend(b"\xff\xff\xff\xff")  # ZIP64 marker
-    else:
-        end_record.extend(central_dir_size.to_bytes(4, "little"))
-
-    # Offset of start of central directory with respect to the starting disk number (4 bytes)
-    if central_dir_offset > 0xFFFFFFFF:
-        end_record.extend(b"\xff\xff\xff\xff")  # ZIP64 marker
-    else:
-        # Ensure the offset fits in 4 bytes
-        offset_bytes = (central_dir_offset & 0xFFFFFFFF).to_bytes(4, "little")
-        end_record.extend(offset_bytes)
-
-    # ZIP file comment length (2 bytes) - none
-    end_record.extend(b"\x00\x00")
-
-    return bytes(end_record)
-
-
-def create_central_directory_parts(
-    file_entries: List[Tuple[str, int, int, int]], data_end_offset: int
-) -> List[bytes]:
-    """Create central directory parts for a valid ZIP archive.
-
-    Args:
-        file_entries: List of (filename, size, offset, crc32) tuples
-        data_end_offset: Offset where the central directory should start
-
-    Returns:
-        List of bytes objects representing central directory parts
-    """
-    if not file_entries:
-        return []
-
-    # Create central directory headers for each file
-    central_dir_data = bytearray()
-
-    for filename, file_size, local_header_offset, crc32 in file_entries:
-        central_dir_header = create_central_directory_header(
-            filename, file_size, local_header_offset, crc32
-        )
-        central_dir_data.extend(central_dir_header)
-
-    # Create end of central directory record
-    end_record = create_central_directory_end(
-        len(file_entries), len(central_dir_data), data_end_offset
-    )
-
-    # Combine central directory and end record
-    central_dir_data.extend(end_record)
-
-    # Split into parts if too large (AWS S3 has 5GB part limit)
-    max_part_size = 5 * 1024 * 1024 * 1024  # 5GB
-    parts = []
-
-    if len(central_dir_data) <= max_part_size:
-        parts.append(bytes(central_dir_data))
-    else:
-        # Split into multiple parts if central directory is very large
-        for i in range(0, len(central_dir_data), max_part_size):
-            part_data = central_dir_data[i : i + max_part_size]
-            parts.append(bytes(part_data))
-
-    return parts
-
-
 def download_chunk_with_retry(
     storage_client: CloudStorageClient,
-    bucket_name: str,
-    source_key: str,
-    start_byte: int,
-    end_byte: int,
-    config: Optional[ChunkDownloadConfig] = None,
+    bucket: str,
+    key: str,
+    config: ChunkDownloadConfig,
 ) -> bytes:
-    """Download a chunk with automatic retry logic and exponential backoff."""
-
-    # Use default config if none provided
-    if config is None:
-        config = ChunkDownloadConfig(start_byte=start_byte, end_byte=end_byte)
-
+    """Download a chunk of data with retry logic."""
     for attempt in range(config.max_retries):
         try:
-            chunk_data = storage_client.get_object_range(
-                bucket_name, source_key, start_byte, end_byte
+            return storage_client.get_object_range(
+                bucket, key, config.start_byte, config.end_byte
             )
-            return chunk_data
-
-        except (StorageUploadError, OSError, ConnectionError, TimeoutError) as e:
+        except Exception as e:
             if attempt == config.max_retries - 1:
-                raise e
-
-            wait_time = 2**attempt  # Exponential backoff: 1s, 2s, 4s
+                raise
             logger.warning(
-                "Chunk download failed (attempt {}/{}), retrying in {}s: {}",
+                "Chunk download attempt {} failed for {}/{} (bytes {}-{}): {}. Retrying...",
                 attempt + 1,
-                config.max_retries,
-                wait_time,
+                bucket,
+                key,
+                config.start_byte,
+                config.end_byte,
                 e,
             )
-            time.sleep(wait_time)
+            time.sleep(0.1 * (2**attempt))  # Exponential backoff
 
-    raise Exception(f"Failed to download chunk after {config.max_retries} attempts")
+    # This should never be reached due to the raise above, but mypy needs it
+    raise RuntimeError("All retry attempts failed")
+
+
+def calculate_file_crc32(
+    storage_client: CloudStorageClient,
+    bucket: str,
+    key: str,
+    file_size: int,
+    chunk_size: int,
+) -> int:
+    """Calculate CRC-32 checksum for an entire file by processing it in chunks.
+
+    This function downloads the file in chunks and calculates the CRC-32 checksum
+    incrementally to avoid loading the entire file into memory at once.
+
+    Args:
+        storage_client: The storage client to use for downloads
+        bucket: The bucket containing the file
+        key: The key (path) of the file
+        file_size: The total size of the file in bytes
+        chunk_size: The size of each chunk to download
+
+    Returns:
+        The CRC-32 checksum as an integer
+    """
+    crc32_calculator = zlib.crc32(b"")
+
+    for start_byte in range(0, file_size, chunk_size):
+        end_byte = min(start_byte + chunk_size - 1, file_size - 1)
+        chunk_length = end_byte - start_byte + 1
+
+        # Download this chunk
+        chunk_data = download_chunk_with_retry(
+            storage_client,
+            bucket,
+            key,
+            ChunkDownloadConfig(start_byte=start_byte, end_byte=end_byte),
+        )
+
+        # Update CRC-32 with this chunk's data
+        crc32_calculator = zlib.crc32(chunk_data, crc32_calculator)
+
+    return crc32_calculator
 
 
 def upload_zip_part_to_storage(

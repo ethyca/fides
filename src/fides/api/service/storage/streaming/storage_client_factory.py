@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional, Union
 
 from loguru import logger
 
+from fides.api.schemas.storage.storage import (
+    StorageSecrets,
+    StorageSecretsGCS,
+    StorageSecretsS3,
+)
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.gcs.gcs_storage_client import (
     create_gcs_storage_client,
@@ -20,14 +25,28 @@ class CloudStorageClientFactory:
     def create_storage_client(
         storage_type: str,
         auth_method: str,
-        storage_secrets: Optional[Dict[str, Any]] = None,
+        storage_secrets: Optional[
+            Union[StorageSecretsS3, dict[StorageSecrets, Any]]
+        ] = None,
     ) -> CloudStorageClient:
         """Create a storage client based on the storage type"""
 
         if storage_type.lower() == "s3":
             if storage_secrets is None:
                 raise ValueError("Storage secrets are required for S3")
-            return create_s3_storage_client(auth_method, storage_secrets)
+            # Convert StorageSecretsS3 to dict[StorageSecrets, Any] for backward compatibility
+            if isinstance(storage_secrets, StorageSecretsS3):
+                secrets_dict = {
+                    StorageSecrets.AWS_ACCESS_KEY_ID: storage_secrets.aws_access_key_id,
+                    StorageSecrets.AWS_SECRET_ACCESS_KEY: storage_secrets.aws_secret_access_key,
+                    StorageSecrets.REGION_NAME: storage_secrets.region_name,
+                    StorageSecrets.AWS_ASSUME_ROLE: storage_secrets.assume_role_arn,
+                }
+                # Filter out None values
+                secrets_dict = {k: v for k, v in secrets_dict.items() if v is not None}
+            else:
+                secrets_dict = storage_secrets
+            return create_s3_storage_client(auth_method, secrets_dict)
 
         elif storage_type.lower() in ["gcs", "gcp", "google"]:
             # GCS streaming is now implemented with full CloudStorageClient interface
@@ -38,7 +57,7 @@ class CloudStorageClientFactory:
 
     @staticmethod
     def create_storage_client_from_config(
-        storage_config: Dict[str, Any]
+        storage_config: dict[str, Any]
     ) -> CloudStorageClient:
         """Create a storage client from a configuration dictionary"""
 
@@ -59,7 +78,9 @@ class CloudStorageClientFactory:
 def get_storage_client(
     storage_type: str,
     auth_method: str,
-    storage_secrets: Optional[Dict[str, Any]] = None,
+    storage_secrets: Optional[
+        Union[StorageSecretsS3, dict[StorageSecrets, Any]]
+    ] = None,
 ) -> CloudStorageClient:
     """Convenience function to create a storage client"""
     return CloudStorageClientFactory.create_storage_client(

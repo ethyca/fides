@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from botocore.exceptions import ClientError
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
+from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.s3 import create_presigned_url_for_s3
-from fides.api.service.storage.streaming.cloud_storage_client import (
-    CloudStorageClient,
-    MultipartUploadResponse,
-    UploadPartResponse,
-)
+from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.s3.s3_schemas import (
     AWSAbortMultipartUploadRequest,
     AWSCompleteMultipartUploadRequest,
@@ -20,7 +18,10 @@ from fides.api.service.storage.streaming.s3.s3_schemas import (
     AWSGetObjectRequest,
     AWSUploadPartRequest,
 )
-from fides.api.service.storage.streaming.schemas import UploadPartResponse
+from fides.api.service.storage.streaming.schemas import (
+    MultipartUploadResponse,
+    UploadPartResponse,
+)
 from fides.api.util.aws_util import get_s3_client
 
 
@@ -44,7 +45,7 @@ class S3StorageClient(CloudStorageClient):
         bucket: str,
         key: str,
         content_type: str,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> MultipartUploadResponse:
         """Initiate S3 multipart upload for large file processing.
 
@@ -74,7 +75,7 @@ class S3StorageClient(CloudStorageClient):
         )
 
         try:
-            params = {
+            params: dict[str, Any] = {
                 "Bucket": request.bucket,
                 "Key": request.key,
                 "ContentType": request.content_type,
@@ -97,7 +98,7 @@ class S3StorageClient(CloudStorageClient):
         upload_id: str,
         part_number: int,
         body: bytes,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> UploadPartResponse:
         """Upload a part to an existing S3 multipart upload.
 
@@ -152,9 +153,9 @@ class S3StorageClient(CloudStorageClient):
         bucket: str,
         key: str,
         upload_id: str,
-        parts: List[UploadPartResponse],
+        parts: list[UploadPartResponse],
         metadata: Optional[
-            Dict[str, str]
+            dict[str, str]
         ] = None,  # matches CloudStorageClient abstract method
     ) -> None:
         """Complete an S3 multipart upload by combining all uploaded parts.
@@ -232,7 +233,7 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to abort multipart upload: {}", e)
             raise
 
-    def get_object_head(self, bucket: str, key: str) -> Dict[str, Any]:
+    def get_object_head(self, bucket: str, key: str) -> dict[str, Any]:
         """Get S3 object metadata without downloading the object content.
 
         This method retrieves object metadata (including size, content type, etc.)
@@ -311,7 +312,7 @@ class S3StorageClient(CloudStorageClient):
 
     def generate_presigned_url(
         self, bucket: str, key: str, ttl_seconds: Optional[int] = None
-    ) -> str:
+    ) -> AnyHttpUrlString:
         """Generate a presigned URL for secure, time-limited access to an S3 object.
 
         This method creates a presigned URL that allows temporary access to an S3 object
@@ -347,8 +348,8 @@ class S3StorageClient(CloudStorageClient):
 
 
 def create_s3_storage_client(
-    auth_method: str, storage_secrets: Dict[str, Any]
+    auth_method: str, storage_secrets: dict[StorageSecrets, Any]
 ) -> S3StorageClient:
     """Factory function to create an S3 storage client"""
-    s3_client = get_s3_client(auth_method, storage_secrets)
+    s3_client = get_s3_client(auth_method, storage_secrets)  # type: ignore[arg-type]
     return S3StorageClient(s3_client)

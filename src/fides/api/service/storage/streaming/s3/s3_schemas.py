@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -28,13 +28,13 @@ class AWSUploadPartRequest(BaseModel):
         int, Field(..., description="Sequential part number (1-10,000)")
     ]
     body: Annotated[bytes, Field(..., description="Binary data content for this part")]
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, str]] = Field(
         default=None, description="Optional metadata for this specific part"
     )
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID format (not empty or whitespace), but allow invalid IDs to pass through to S3."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -44,7 +44,7 @@ class AWSUploadPartRequest(BaseModel):
 
     @field_validator("part_number")
     @classmethod
-    def validate_part_number(cls, v):
+    def validate_part_number(cls, v: Any) -> int:
         """Validate part number is within AWS S3 limits (1-10,000)."""
         if not isinstance(v, int):
             raise ValueError("Part number must be an integer")
@@ -54,7 +54,7 @@ class AWSUploadPartRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate bucket name is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -64,7 +64,7 @@ class AWSUploadPartRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate object key is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -74,7 +74,7 @@ class AWSUploadPartRequest(BaseModel):
 
     @field_validator("body")
     @classmethod
-    def validate_body_size(cls, v, info):
+    def validate_body_size(cls, v: Any, info: Any) -> bytes:
         """Validate that the body is not empty and meets the minimum part size."""
         if not v:
             raise ValueError("Body cannot be empty")
@@ -101,13 +101,13 @@ class AWSCreateMultipartUploadRequest(BaseModel):
     content_type: Annotated[
         str, Field(..., description="MIME type of the file being uploaded")
     ]
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, str]] = Field(
         default=None, description="Optional key-value pairs to store as object metadata"
     )
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate bucket name is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -117,7 +117,7 @@ class AWSCreateMultipartUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate object key is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -127,7 +127,7 @@ class AWSCreateMultipartUploadRequest(BaseModel):
 
     @field_validator("content_type")
     @classmethod
-    def validate_content_type(cls, v):
+    def validate_content_type(cls, v: Any) -> str:
         """Validate content type is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Content type must be a string")
@@ -161,7 +161,7 @@ class AWSAbortMultipartUploadRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate bucket name is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -171,7 +171,7 @@ class AWSAbortMultipartUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate object key is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -181,7 +181,7 @@ class AWSAbortMultipartUploadRequest(BaseModel):
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -208,7 +208,7 @@ class AWSGetObjectRequest(BaseModel):
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate bucket name is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -218,7 +218,7 @@ class AWSGetObjectRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate object key is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -245,7 +245,7 @@ class AWSGetObjectRangeRequest(AWSGetObjectRequest):
 
     @field_validator("end_byte")
     @classmethod
-    def validate_end_byte(cls, v, info):
+    def validate_end_byte(cls, v: Any, info: Any) -> int:
         """Validate that end_byte is greater than or equal to start_byte."""
         if "start_byte" in info.data and v < info.data["start_byte"]:
             raise ValueError("end_byte must be greater than or equal to start_byte")
@@ -292,16 +292,16 @@ class AWSCompleteMultipartUploadRequest(BaseModel):
         str, Field(..., description="Upload ID returned from create_multipart_upload")
     ]
     parts: Annotated[
-        List[UploadPartResponse],
+        list[UploadPartResponse],
         Field(..., min_length=1, description="List of uploaded parts"),
     ]
-    metadata: Optional[Dict[str, str]] = Field(
+    metadata: Optional[dict[str, str]] = Field(
         default=None, description="Optional metadata for the completed object"
     )
 
     @field_validator("bucket")
     @classmethod
-    def validate_bucket(cls, v):
+    def validate_bucket(cls, v: Any) -> str:
         """Validate bucket name is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Bucket must be a string")
@@ -311,7 +311,7 @@ class AWSCompleteMultipartUploadRequest(BaseModel):
 
     @field_validator("key")
     @classmethod
-    def validate_key(cls, v):
+    def validate_key(cls, v: Any) -> str:
         """Validate object key is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Key must be a string")
@@ -321,7 +321,7 @@ class AWSCompleteMultipartUploadRequest(BaseModel):
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")

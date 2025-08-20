@@ -1,3 +1,5 @@
+from typing import Any
+
 # AWS S3 multipart upload requirements
 AWS_MIN_PART_SIZE = 5 * 1024 * 1024  # 5MB minimum per part (except last)
 AWS_MAX_PART_SIZE = 5 * 1024 * 1024 * 1024  # 5GB maximum per part
@@ -35,12 +37,11 @@ def adaptive_chunk_size(file_size: int) -> int:
     """
     if file_size > 100 * 1024 * 1024:  # 100MB+
         return 1024 * 1024  # 1MB chunks
-    elif file_size > 10 * 1024 * 1024:  # 10MB+
+    if file_size > 10 * 1024 * 1024:  # 10MB+
         return 256 * 1024  # 256KB chunks
-    elif file_size > 1 * 1024 * 1024:  # 1MB+
+    if file_size > 1 * 1024 * 1024:  # 1MB+
         return 128 * 1024  # 128KB chunks
-    else:
-        return 64 * 1024  # 64KB chunks
+    return 64 * 1024  # 64KB chunks
 
 
 def should_split_package(
@@ -57,7 +58,7 @@ def should_split_package(
         True if package should be split
     """
 
-    def count_attachments_recursive(obj):
+    def count_attachments_recursive(obj: Any) -> tuple[int, int]:
         """Recursively count attachments and calculate total size."""
         total_attachments = 0
         estimated_total_size = 0

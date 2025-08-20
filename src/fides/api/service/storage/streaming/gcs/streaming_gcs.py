@@ -10,7 +10,11 @@ from loguru import logger
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.gcs import generic_upload_to_gcs
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.cloud_storage_client import ProgressCallback
+from fides.api.service.storage.streaming.schemas import (
+    ProcessingMetrics,
+    StorageUploadConfig,
+)
 from fides.api.service.storage.streaming.storage_client_factory import (
     get_storage_client,
 )
@@ -23,7 +27,7 @@ if TYPE_CHECKING:
 
 
 def upload_to_gcs_streaming(
-    storage_secrets: dict[StorageSecrets, Any],
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -32,7 +36,7 @@ def upload_to_gcs_streaming(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads arbitrary data to GCS using production-ready memory-efficient processing.
 
@@ -69,16 +73,21 @@ def upload_to_gcs_streaming(
         raise StorageUploadError(f"Error getting GCS client: {str(e)}")
 
     try:
+        # Create upload config for the new streaming interface
+        upload_config = StorageUploadConfig(
+            bucket_name=bucket_name,
+            file_key=file_key,
+            resp_format=resp_format,
+            max_workers=max_workers,
+        )
+
         # Use the new cloud-agnostic streaming implementation
         result = upload_to_storage_streaming(
             storage_client,
             data,
-            bucket_name,
-            file_key,
-            resp_format,
+            upload_config,
             privacy_request,
             document,
-            max_workers,
             progress_callback,
         )
 
@@ -94,7 +103,7 @@ def upload_to_gcs_streaming(
 
 
 def upload_to_gcs_streaming_advanced(
-    storage_secrets: dict[StorageSecrets, Any],
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -103,7 +112,7 @@ def upload_to_gcs_streaming_advanced(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Wrapper function that delegates to the main streaming implementation.
 
@@ -165,7 +174,7 @@ def upload_to_gcs_streaming_advanced(
 
 
 def upload_to_gcs_resumable(
-    storage_secrets: dict[StorageSecrets, Any],
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -174,7 +183,7 @@ def upload_to_gcs_resumable(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads data to GCS using resumable uploads for large files.
 
@@ -217,17 +226,22 @@ def upload_to_gcs_resumable(
         # Create GCS storage client
         storage_client = get_storage_client("gcs", auth_method, storage_secrets)
 
+        # Create upload config for the new streaming interface
+        upload_config = StorageUploadConfig(
+            bucket_name=bucket_name,
+            file_key=file_key,
+            resp_format=resp_format,
+            max_workers=max_workers,
+        )
+
         # For resumable uploads, we'll use the cloud-agnostic streaming
         # but with GCS-specific optimizations
         result = upload_to_storage_streaming(
             storage_client,
             data,
-            bucket_name,
-            file_key,
-            resp_format,
+            upload_config,
             privacy_request,
             document,
-            max_workers,
             progress_callback,
         )
 

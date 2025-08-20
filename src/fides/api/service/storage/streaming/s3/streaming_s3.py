@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Callable, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
-from fides.api.schemas.storage.storage import StorageSecrets
+from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.s3 import generic_upload_to_s3
-from fides.api.service.storage.streaming.schemas import ProcessingMetrics
+from fides.api.service.storage.streaming.cloud_storage_client import ProgressCallback
+from fides.api.service.storage.streaming.schemas import (
+    ProcessingMetrics,
+    StorageUploadConfig,
+)
 from fides.api.service.storage.streaming.storage_client_factory import (
     get_storage_client,
 )
@@ -23,7 +27,7 @@ if TYPE_CHECKING:
 
 
 def upload_to_s3_streaming(
-    storage_secrets: dict[StorageSecrets, Any],
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]],
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -32,7 +36,7 @@ def upload_to_s3_streaming(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads arbitrary data to S3 using production-ready memory-efficient processing.
 
@@ -69,16 +73,21 @@ def upload_to_s3_streaming(
         raise StorageUploadError(f"Error getting s3 client: {str(e)}")
 
     try:
+        # Create upload config for the new streaming interface
+        upload_config = StorageUploadConfig(
+            bucket_name=bucket_name,
+            file_key=file_key,
+            resp_format=resp_format,
+            max_workers=max_workers,
+        )
+
         # Use the new cloud-agnostic streaming implementation
         result = upload_to_storage_streaming(
             storage_client,
             data,
-            bucket_name,
-            file_key,
-            resp_format,
+            upload_config,
             privacy_request,
             document,
-            max_workers,
             progress_callback,
         )
 
@@ -94,7 +103,7 @@ def upload_to_s3_streaming(
 
 
 def upload_to_s3_streaming_advanced(
-    storage_secrets: dict[StorageSecrets, Any],
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]],
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -103,7 +112,7 @@ def upload_to_s3_streaming_advanced(
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
-    progress_callback: Optional[Callable[[ProcessingMetrics], None]] = None,
+    progress_callback: Optional[ProgressCallback] = None,
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Wrapper function that delegates to the main streaming implementation.
 

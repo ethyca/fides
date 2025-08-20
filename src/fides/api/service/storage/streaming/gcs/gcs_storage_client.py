@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional, Union
 
+from fideslang.validation import AnyHttpUrlString
 from google.cloud.exceptions import GoogleCloudError
 from google.cloud.storage import Client  # type: ignore
 from loguru import logger
 
+from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.gcs import get_gcs_client
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.gcs.gcs_schemas import (
@@ -32,14 +34,14 @@ class GCSStorageClient(CloudStorageClient):
 
     def __init__(self, gcs_client: Client):
         self.client = gcs_client
-        self._resumable_uploads: Dict[str, Any] = {}
+        self._resumable_uploads: dict[str, Any] = {}
 
     def create_multipart_upload(
         self,
         bucket: str,
         key: str,
         content_type: str,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> MultipartUploadResponse:
         """Initiate GCS resumable upload (multipart equivalent)"""
         # Validate input parameters using GCS-specific schema
@@ -87,7 +89,7 @@ class GCSStorageClient(CloudStorageClient):
         upload_id: str,
         part_number: int,
         body: bytes,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> UploadPartResponse:
         """Upload a part to GCS resumable upload (simulated for compatibility)"""
         # Validate input parameters using GCS-specific schema
@@ -104,8 +106,8 @@ class GCSStorageClient(CloudStorageClient):
                 raise ValueError(f"Unknown upload ID: {request.upload_id}")
 
             upload_info = self._resumable_uploads[request.upload_id]
-            blob = upload_info["blob"]
-            resumable_url = upload_info["resumable_url"]
+            # blob = upload_info["blob"]
+            # resumable_url = upload_info["resumable_url"]
 
             # Validate chunk size meets GCS requirements
             if len(request.chunk_data) < GCS_MIN_CHUNK_SIZE:
@@ -135,8 +137,8 @@ class GCSStorageClient(CloudStorageClient):
         bucket: str,
         key: str,
         upload_id: str,
-        parts: List[UploadPartResponse],
-        metadata: Optional[Dict[str, str]] = None,
+        parts: list[UploadPartResponse],
+        metadata: Optional[dict[str, str]] = None,
     ) -> None:
         """Complete GCS resumable upload"""
         # Validate input parameters using GCS-specific schema
@@ -187,7 +189,7 @@ class GCSStorageClient(CloudStorageClient):
         except Exception as e:
             logger.warning("Failed to abort resumable upload: {}", e)
 
-    def get_object_head(self, bucket: str, key: str) -> Dict[str, Any]:
+    def get_object_head(self, bucket: str, key: str) -> dict[str, Any]:
         """Get GCS object metadata"""
         # Validate input parameters using GCS-specific schema
         request = GCSGetObjectRequest(bucket=bucket, key=key)
@@ -237,7 +239,7 @@ class GCSStorageClient(CloudStorageClient):
 
     def generate_presigned_url(
         self, bucket: str, key: str, ttl_seconds: Optional[int] = None
-    ) -> str:
+    ) -> AnyHttpUrlString:
         """Generate GCS presigned URL"""
         # Validate input parameters using GCS-specific schema
         request = GCSGenerateSignedUrlRequest(
@@ -269,7 +271,7 @@ class GCSStorageClient(CloudStorageClient):
         bucket: str,
         key: str,
         content_type: str,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> GCSResumableUploadResponse:
         """Create a GCS resumable upload session (native GCS method)"""
         request = GCSResumableUploadRequest(
@@ -317,7 +319,7 @@ class GCSStorageClient(CloudStorageClient):
         key: str,
         upload_id: str,
         chunk_data: bytes,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> GCSChunkUploadResponse:
         """Upload a chunk to a GCS resumable upload session"""
         request = GCSChunkUploadRequest(
@@ -358,7 +360,7 @@ class GCSStorageClient(CloudStorageClient):
         bucket: str,
         key: str,
         upload_id: str,
-        metadata: Optional[Dict[str, str]] = None,
+        metadata: Optional[dict[str, str]] = None,
     ) -> None:
         """Complete a GCS resumable upload session"""
         request = GCSCompleteResumableUploadRequest(
@@ -423,7 +425,7 @@ class GCSStorageClient(CloudStorageClient):
         except Exception as e:
             logger.warning("Failed to abort resumable upload: {}", e)
 
-    def get_resumable_upload_status(self, upload_id: str) -> Optional[Dict[str, Any]]:
+    def get_resumable_upload_status(self, upload_id: str) -> Optional[dict[str, Any]]:
         """Get the status of a resumable upload session"""
         if upload_id in self._resumable_uploads:
             upload_info = self._resumable_uploads[upload_id]
@@ -437,7 +439,8 @@ class GCSStorageClient(CloudStorageClient):
 
 
 def create_gcs_storage_client(
-    auth_method: str, storage_secrets: Optional[Dict[str, Any]]
+    auth_method: str,
+    storage_secrets: Optional[Union[StorageSecrets, dict[StorageSecrets, Any]]],
 ) -> GCSStorageClient:
     """Factory function to create a GCS storage client"""
     gcs_client = get_gcs_client(auth_method, storage_secrets)

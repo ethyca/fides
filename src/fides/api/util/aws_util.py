@@ -12,7 +12,7 @@ from fides.config import CONFIG
 
 def get_aws_session(
     auth_method: str,
-    storage_secrets: Optional[Dict[StorageSecrets, Any]],
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
     assume_role_arn: Optional[str] = None,
 ) -> Session:
     """
@@ -87,7 +87,7 @@ def get_assumed_role_session(
 
 def get_s3_client(
     auth_method: str,
-    storage_secrets: Optional[Dict[StorageSecrets, Any]],
+    storage_secrets: Optional[StorageSecrets],
     assume_role_arn: Optional[str] = None,
 ) -> Session:
     """

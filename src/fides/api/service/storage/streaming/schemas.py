@@ -1,12 +1,7 @@
 from datetime import datetime, timezone
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
-
-from fides.api.service.storage.streaming.util import (
-    AWS_MIN_PART_SIZE,
-    GCS_MIN_CHUNK_SIZE,
-)
 
 
 class AttachmentInfo(BaseModel):
@@ -106,7 +101,7 @@ class AttachmentProcessingInfo(BaseModel):
 
     attachment: AttachmentInfo = Field(..., description="Attachment to process")
     base_path: str = Field(..., description="Base path for the attachment in the zip")
-    item: Dict[str, Any] = Field(..., description="Associated item data")
+    item: dict[str, Any] = Field(..., description="Associated item data")
 
     @field_validator("base_path")
     @classmethod
@@ -140,12 +135,12 @@ class ProcessingMetrics(BaseModel):
         le=100.0,
         description="Current attachment progress percentage",
     )
-    errors: List[str] = Field(
+    errors: list[str] = Field(
         default_factory=list, description="List of error messages encountered"
     )
 
     @model_validator(mode="after")
-    def validate_processed_values(self):
+    def validate_processed_values(self) -> "ProcessingMetrics":
         """Validate that processed values don't exceed total values."""
         if self.processed_attachments > self.total_attachments:
             raise ValueError("processed_attachments cannot exceed total_attachments")
@@ -177,10 +172,15 @@ class ProcessingMetrics(BaseModel):
     @computed_field
     def estimated_remaining_time(self) -> float:
         """Estimate remaining time in seconds."""
-        if self.overall_progress <= 0:
+        # Calculate progress directly to avoid computed field access issues
+        if self.total_attachments == 0:
             return 0.0
-        elapsed = self.elapsed_time
-        remaining = (elapsed / self.overall_progress) * (100 - self.overall_progress)
+        progress = min(100.0, (self.processed_attachments / self.total_attachments) * 100)
+        if progress <= 0:
+            return 0.0
+        # Calculate elapsed time directly
+        elapsed = (datetime.now(timezone.utc) - self.start_time).total_seconds()
+        remaining = (elapsed / progress) * (100 - progress)
         return max(0.0, remaining)
 
     model_config = {
@@ -205,13 +205,13 @@ class MultipartUploadResponse(BaseModel):
     upload_id: Annotated[
         str, Field(..., description="Unique identifier for the multipart upload")
     ]
-    metadata: Optional[Dict[str, Any]] = Field(
+    metadata: Optional[dict[str, Any]] = Field(
         default=None, description="Additional metadata from the storage provider"
     )
 
     @field_validator("upload_id")
     @classmethod
-    def validate_upload_id(cls, v):
+    def validate_upload_id(cls, v: Any) -> str:
         """Validate upload ID is not empty or whitespace."""
         if not isinstance(v, str):
             raise ValueError("Upload ID must be a string")
@@ -228,13 +228,14 @@ class MultipartUploadResponse(BaseModel):
         case_sensitive = False
 
     def is_valid_upload_id(self) -> bool:
-        """Check if the upload ID is valid (not empty and properly formatted)"""
+        """Check if the upload ID is valid (not empty or whitespace)"""
         return bool(self.upload_id and self.upload_id.strip())
 
     def get_provider_metadata(self, key: str, default: Any = None) -> Any:
         """Get metadata value by key with fallback to default"""
-        if self.metadata:
-            return self.metadata.get(key, default)
+        if self.metadata is not None:
+            metadata: dict[str, Any] = self.metadata
+            return metadata.get(key, default)
         return default
 
 
@@ -245,13 +246,13 @@ class UploadPartResponse(BaseModel):
     part_number: Annotated[
         int, Field(..., description="Sequential number of the part (1-10,000)")
     ]
-    metadata: Optional[Dict[str, Any]] = Field(
+    metadata: Optional[dict[str, Any]] = Field(
         default=None, description="Additional metadata from the storage provider"
     )
 
     @field_validator("part_number")
     @classmethod
-    def validate_part_number(cls, v):
+    def validate_part_number(cls, v: Any) -> int:
         """Validate part number is within AWS S3 limits (1-10,000)."""
         if not isinstance(v, int):
             raise ValueError("Part number must be an integer")
@@ -273,6 +274,7 @@ class UploadPartResponse(BaseModel):
 
     def get_provider_metadata(self, key: str, default: Any = None) -> Any:
         """Get metadata value by key with fallback to default"""
-        if self.metadata:
-            return self.metadata.get(key, default)
+        if self.metadata is not None:
+            metadata: dict[str, Any] = self.metadata
+            return metadata.get(key, default)
         return default
