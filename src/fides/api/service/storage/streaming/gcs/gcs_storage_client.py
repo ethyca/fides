@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any, Optional, Union
 
 from fideslang.validation import AnyHttpUrlString
@@ -12,58 +11,6 @@ from fides.api.service.storage.streaming.schemas import (
     MultipartUploadResponse,
     UploadPartResponse,
 )
-
-"""
-Use stream-zip
- because Python’s built-in zipfile can’t do sequential streaming.
-
-🔹 Example: GCS → Streaming ZIP → GCS
-
-```
-from google.cloud import storage
-from stream_zip import stream_zip
-
-client = storage.Client()
-bucket = client.bucket("my-bucket")
-
-# Generator that yields (filename, file-like stream, metadata)
-def files_to_zip():
-    for name in ["file1.txt", "file2.txt", "bigfile.dat"]:
-        blob = bucket.blob(name)
-        # blob.open("rb") returns a streaming file-like object
-        yield name, blob.open("rb"), {}
-
-# Create a new blob in GCS to hold the zip
-zip_blob = bucket.blob("archive.zip")
-
-# Open GCS blob for streaming write
-with zip_blob.open("wb") as f:
-    for chunk in stream_zip(files_to_zip()):
-        f.write(chunk)
-```
-
-✅ How this works
-
-blob.open("rb") → streams file contents from GCS lazily.
-
-stream_zip(files_to_zip()) → produces the ZIP file structure chunk-by-chunk.
-
-zip_blob.open("wb") → streams output chunks directly into a new blob in GCS.
-
-No file ever needs to be fully materialized locally or in memory. This will happily scale to multi-GB archives.
-
-🔹 Optional: Resumable Uploads for Huge Zips
-
-If your zips might exceed GCS’s simple upload limits (5 MB for direct, 5 GB max per object unless resumable)
-, you can use:
-
-with zip_blob.open("wb", chunk_size=256*1024) as f:  # 256KB chunks
-    for chunk in stream_zip(files_to_zip()):
-        f.write(chunk)
-
-
-The chunk_size ensures GCS does a resumable, chunked upload behind the scenes.
-"""
 
 
 class GCSStorageClient(CloudStorageClient):

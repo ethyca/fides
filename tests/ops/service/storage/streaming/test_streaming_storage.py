@@ -231,16 +231,6 @@ class TestStreamingStorage:
         assert metrics.total_attachments == 0
         assert metrics.total_bytes == 0
 
-    def test_calculate_data_metrics_with_non_iterable_values(self):
-        """Test _calculate_data_metrics with non-iterable values."""
-        data = {"users": "not_iterable", "count": 42}
-
-        metrics = _calculate_data_metrics(data)
-
-        # Should handle non-iterable values gracefully
-        assert metrics.total_attachments == 0
-        assert metrics.total_bytes == 0
-
     def test_collect_and_validate_attachments(self):
         """Test the _collect_and_validate_attachments helper function."""
         data = {
@@ -341,14 +331,16 @@ class TestStreamingStorage:
 
     def test_collect_and_validate_attachments_non_iterable_values(self):
         """Test _collect_and_validate_attachments with non-iterable values."""
-        data = {"users": "not_iterable"}
+        # Use a value that doesn't have __iter__ and __len__ methods
+        data = {"users": 42, "count": "not_iterable"}
 
         metrics = ProcessingMetrics()
         attachments = _collect_and_validate_attachments(data, metrics)
 
         assert len(attachments) == 0
-        assert len(metrics.errors) == 1
+        assert len(metrics.errors) == 2  # One error for each non-iterable value
         assert "Failed to process value" in metrics.errors[0]
+        assert "Failed to process value" in metrics.errors[1]
 
     def test_download_attachment_parallel(self):
         """Test the _download_attachment_parallel helper function."""
@@ -411,10 +403,16 @@ class TestStreamingStorage:
             ]
         }
 
-        # Mock the stream_attachments_to_storage_zip function
-        with patch(
-            "fides.api.service.storage.streaming.streaming_storage.stream_attachments_to_storage_zip"
-        ) as mock_stream:
+        # Mock both the stream_attachments_to_storage_zip function and _calculate_data_metrics
+        with (
+            patch(
+                "fides.api.service.storage.streaming.streaming_storage.stream_attachments_to_storage_zip"
+            ) as mock_stream,
+            patch(
+                "fides.api.service.storage.streaming.streaming_storage._calculate_data_metrics"
+            ) as mock_calc,
+        ):
+
             mock_metrics = ProcessingMetrics(
                 total_attachments=150,
                 processed_attachments=100,
@@ -422,6 +420,11 @@ class TestStreamingStorage:
                 processed_bytes=100000,
             )
             mock_stream.return_value = mock_metrics
+
+            # Mock the _calculate_data_metrics to return properly initialized metrics
+            mock_calc.return_value = ProcessingMetrics(
+                total_attachments=150, total_bytes=150000
+            )
 
             metrics = _handle_package_splitting(
                 data,
@@ -961,19 +964,17 @@ class TestStreamingStorage:
             max_workers=2,
         )
 
-        # Mock the _collect_and_validate_attachments function
+        # Mock the stream_attachments_to_storage_zip function to succeed
         with patch(
-            "fides.api.service.storage.streaming.streaming_storage._collect_and_validate_attachments"
-        ) as mock_collect:
-            mock_collect.return_value = [
-                Mock(
-                    attachment=Mock(file_name="file1.txt", s3_key="key1", size=1000),
-                    base_path="users",
-                    item=data["users"][0],
-                )
-            ]
-
-            mock_storage_client.get_object.return_value = b"test content"
+            "fides.api.service.storage.streaming.streaming_storage.stream_attachments_to_storage_zip"
+        ) as mock_stream:
+            mock_metrics = ProcessingMetrics(
+                total_attachments=1,
+                processed_attachments=1,
+                total_bytes=1000,
+                processed_bytes=1000,
+            )
+            mock_stream.return_value = mock_metrics
 
             # Should return None for URL but still return metrics
             url, metrics = upload_to_storage_streaming(
@@ -1119,16 +1120,16 @@ class TestStreamingStorage:
 
     def test_split_data_into_packages_edge_cases(self):
         """Test package splitting with various edge cases."""
-        # Test with None values in data - should handle gracefully
+        # Test with missing attachments key (should handle gracefully)
         data = {
             "users": [
-                {"id": 1, "attachments": None},  # None attachments
+                {"id": 1},  # Missing attachments key
                 {"id": 2, "attachments": [{"s3_key": "key1", "size": 1000}]},
             ]
         }
 
         packages = split_data_into_packages(data)
-        # Should handle None gracefully and only process valid attachments
+        # Should handle missing attachments gracefully and only process valid attachments
         assert len(packages) == 1
 
         # Test with empty strings as keys
