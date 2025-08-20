@@ -9,11 +9,11 @@ import {
   ModalOverlay,
   VStack,
 } from "fidesui";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { ConditionLeaf } from "~/types/api";
 
-import AddConditionForm from "./AddConditionForm";
+import AddConditionForm, { AddConditionFormRef } from "./AddConditionForm";
 
 type Props = {
   isOpen: boolean;
@@ -30,6 +30,7 @@ const AddEditConditionModal = ({
 }: Props) => {
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<AddConditionFormRef>(null);
 
   const isEditing = !!editingCondition;
 
@@ -37,6 +38,7 @@ const AddEditConditionModal = ({
     try {
       setIsSubmitting(true);
       await onConditionSaved(condition);
+      formRef.current?.resetForm(); // Reset form on successful save
       onClose(); // Only close if save was successful
     } catch (error) {
       handleError(error);
@@ -66,6 +68,7 @@ const AddEditConditionModal = ({
                 : "Configure a new condition that must be met before a task is created. Use dot notation for nested field paths (e.g., user.age, custom_fields.country)."}
             </Box>
             <AddConditionForm
+              ref={formRef}
               onAdd={handleSubmit}
               onCancel={handleCancel}
               editingCondition={editingCondition}

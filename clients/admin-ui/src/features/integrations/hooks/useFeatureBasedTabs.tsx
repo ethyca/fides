@@ -10,8 +10,8 @@ import { useMemo } from "react";
 
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
+import TaskConditionsTab from "~/features/integrations/configure-tasks/TaskConditionsTab";
 import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
-import TaskCreationConditions from "~/features/integrations/configure-tasks/TaskCreationConditions";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice, {
   ConnectionStatusData,
@@ -173,7 +173,7 @@ export const useFeatureBasedTabs = ({
       tabItems.push({
         label: "Conditions",
         key: "conditions",
-        children: <TaskCreationConditions connectionKey={connection!.key} />,
+        children: <TaskConditionsTab connectionKey={connection!.key} />,
       });
     }
 

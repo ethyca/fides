@@ -1,7 +1,11 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
+  AntList as List,
   AntMessage as message,
+  AntTag as Tag,
   AntTypography as Typography,
+  Icons,
   useDisclosure,
   WarningIcon,
 } from "fidesui";
@@ -12,46 +16,19 @@ import {
   useGetManualTaskConfigQuery,
   useUpdateDependencyConditionsMutation,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { ConditionGroup, ConditionLeaf, GroupOperator } from "~/types/api";
+import { ConditionLeaf } from "~/types/api";
 
 import AddEditConditionModal from "./AddEditConditionModal";
-import ConditionsList from "./ConditionsList";
+import { operatorLabels } from "./constants";
+import { useSaveConditions } from "./hooks/useSaveConditions";
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
-interface TaskCreationConditionsProps {
+interface TaskConditionsTabProps {
   connectionKey: string;
 }
 
-// Custom hook for shared save logic
-const useSaveConditions = (
-  connectionKey: string,
-  updateConditions: ReturnType<typeof useUpdateDependencyConditionsMutation>[0],
-  refetch: () => void,
-) => {
-  const saveConditions = useCallback(
-    async (updatedConditions: ConditionLeaf[]) => {
-      const conditionGroup: ConditionGroup = {
-        logical_operator: GroupOperator.AND,
-        conditions: updatedConditions,
-      };
-
-      await updateConditions({
-        connectionKey,
-        conditions: [conditionGroup],
-      }).unwrap();
-
-      await refetch();
-    },
-    [connectionKey, updateConditions, refetch],
-  );
-
-  return saveConditions;
-};
-
-const TaskCreationConditions = ({
-  connectionKey,
-}: TaskCreationConditionsProps) => {
+const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
   const [conditions, setConditions] = useState<ConditionLeaf[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCondition, setEditingCondition] =
@@ -212,9 +189,7 @@ const TaskCreationConditions = ({
   if (isLoading) {
     return (
       <div className="py-4">
-        <Typography.Text className="text-gray-500">
-          Loading conditions...
-        </Typography.Text>
+        <Text className="text-gray-500">Loading conditions...</Text>
       </div>
     );
   }
@@ -222,9 +197,9 @@ const TaskCreationConditions = ({
   if (error) {
     return (
       <div className="py-4">
-        <Typography.Text className="text-red-500">
+        <Text className="text-red-500">
           Failed to load conditions. Please refresh the page and try again.
-        </Typography.Text>
+        </Text>
       </div>
     );
   }
@@ -239,22 +214,76 @@ const TaskCreationConditions = ({
           privacy request of the corresponding type (access or erasure).
         </Paragraph>
         <Paragraph className="mt-2 text-gray-600">
-          <Typography.Text strong>
+          <Text strong>
             All conditions must be met for the task to be created.
-          </Typography.Text>
+          </Text>
         </Paragraph>
       </div>
 
       <div className="mb-4 flex items-center justify-end gap-2">
-        <Button type="primary" onClick={handleOpenAddModal}>
+        <Button
+          type="primary"
+          onClick={handleOpenAddModal}
+          data-testid="add-condition-btn"
+        >
           Add condition
         </Button>
       </div>
 
-      <ConditionsList
-        conditions={conditions}
-        onEdit={handleOpenEditModal}
-        onDelete={handleDeleteCondition}
+      <List
+        dataSource={conditions}
+        locale={{
+          emptyText: (
+            <div className="py-8 text-center">
+              <Text type="secondary">
+                No conditions configured. Manual tasks will be created for all
+                privacy requests.
+              </Text>
+            </div>
+          ),
+        }}
+        renderItem={(condition: ConditionLeaf, index: number) => (
+          <List.Item
+            key={index}
+            actions={[
+              <Button
+                key="edit"
+                type="link"
+                icon={<Icons.Edit />}
+                onClick={() => handleOpenEditModal(index, condition)}
+                data-testid={`edit-condition-${index}-btn`}
+              >
+                Edit
+              </Button>,
+              <Button
+                key="delete"
+                type="link"
+                danger
+                icon={<Icons.TrashCan />}
+                onClick={() => handleDeleteCondition(index, condition)}
+                data-testid={`delete-condition-${index}-btn`}
+              >
+                Delete
+              </Button>,
+            ]}
+          >
+            <List.Item.Meta
+              title={
+                <Flex gap={8} align="center">
+                  <Text className="font-mono text-sm">
+                    {condition.field_address}
+                  </Text>
+                  <Tag color="blue">{operatorLabels[condition.operator]}</Tag>
+                  {condition.value !== null &&
+                    condition.value !== undefined && (
+                      <Text>{String(condition.value)}</Text>
+                    )}
+                </Flex>
+              }
+            />
+          </List.Item>
+        )}
+        className="mb-4"
       />
 
       <AddEditConditionModal
@@ -273,11 +302,11 @@ const TaskCreationConditions = ({
         onConfirm={handleConfirmDelete}
         title="Delete condition"
         message={
-          <Typography.Text className="text-gray-500">
+          <Text className="text-gray-500">
             Are you sure you want to delete the condition for &ldquo;
             {conditionToDelete?.condition.field_address}&rdquo;? This action
             cannot be undone.
-          </Typography.Text>
+          </Text>
         }
         continueButtonText="Delete"
         isCentered
@@ -287,4 +316,4 @@ const TaskCreationConditions = ({
   );
 };
 
-export default TaskCreationConditions;
+export default TaskConditionsTab;
