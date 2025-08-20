@@ -9,7 +9,10 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.storage.streaming.dsr_storage import (
     stream_html_dsr_report_to_storage_multipart,
 )
-from fides.api.service.storage.streaming.util import CHUNK_SIZE_THRESHOLD
+from fides.api.service.storage.streaming.util import (
+    AWS_MIN_PART_SIZE,
+    CHUNK_SIZE_THRESHOLD,
+)
 
 
 @pytest.fixture
@@ -57,7 +60,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
     )
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
-    def test_successful_upload_single_chunk(
+    def test_successful_upload_small_file_single_upload(
         self,
         mock_dsr_builder_class,
         storage_client_fixture,
@@ -65,14 +68,13 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         mock_privacy_request,
         sample_dsr_data,
     ):
-        """Test successful upload when content fits in single chunk."""
+        """Test successful upload when content is small and uses single upload."""
         storage_client = request.getfixturevalue(storage_client_fixture)
 
-        # Mock the DsrReportBuilder to return small content
+        # Mock the DsrReportBuilder to return small content (below AWS_MIN_PART_SIZE)
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>small content</body></html>"
-        )
+        small_content = "x" * (AWS_MIN_PART_SIZE - 1024)  # Just under 5MB
+        mock_builder.generate.return_value = BytesIO(small_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         result = stream_html_dsr_report_to_storage_multipart(
@@ -83,19 +85,65 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             privacy_request=mock_privacy_request,
         )
 
-        # Verify multipart upload was created
+        # Verify single upload was used (put_object called, not multipart)
+        storage_client.put_object.assert_called_once_with(
+            "test-bucket",
+            "test-report.html",
+            small_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+        # Verify multipart upload was NOT used
+        storage_client.create_multipart_upload.assert_not_called()
+        storage_client.upload_part.assert_not_called()
+        storage_client.complete_multipart_upload.assert_not_called()
+        storage_client.abort_multipart_upload.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
+    )
+    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
+    def test_successful_upload_large_file_multipart(
+        self,
+        mock_dsr_builder_class,
+        storage_client_fixture,
+        request,
+        mock_privacy_request,
+        sample_dsr_data,
+    ):
+        """Test successful upload when content is large and uses multipart upload."""
+        storage_client = request.getfixturevalue(storage_client_fixture)
+
+        # Mock the DsrReportBuilder to return large content (above AWS_MIN_PART_SIZE)
+        mock_builder = Mock()
+        large_content = "x" * (AWS_MIN_PART_SIZE + 1024)  # Just over 5MB
+        mock_builder.generate.return_value = BytesIO(large_content.encode("utf-8"))
+        mock_dsr_builder_class.return_value = mock_builder
+
+        result = stream_html_dsr_report_to_storage_multipart(
+            storage_client=storage_client,
+            bucket_name="test-bucket",
+            file_key="test-report.html",
+            data=sample_dsr_data,
+            privacy_request=mock_privacy_request,
+        )
+
+        # Verify multipart upload was used
         storage_client.create_multipart_upload.assert_called_once_with(
             "test-bucket", "test-report.html", "text/html"
         )
 
-        # Verify upload part was called once
-        storage_client.upload_part.assert_called_once()
+        # Verify upload part was called (should be at least 2 parts for content > 5MB)
+        assert storage_client.upload_part.call_count >= 1
 
         # Verify multipart upload was completed
         storage_client.complete_multipart_upload.assert_called_once()
 
         # Verify no abort was called
         storage_client.abort_multipart_upload.assert_not_called()
+
+        # Verify single upload was NOT used
+        storage_client.put_object.assert_not_called()
 
     @pytest.mark.parametrize(
         "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
@@ -152,9 +200,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
+        # Use small content to trigger single upload path
+        small_content = "x" * (AWS_MIN_PART_SIZE - 1024)
+        mock_builder.generate.return_value = BytesIO(small_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         custom_bucket = "custom-bucket-name"
@@ -168,9 +216,12 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             privacy_request=mock_privacy_request,
         )
 
-        # Verify custom bucket and key were used
-        storage_client.create_multipart_upload.assert_called_once_with(
-            custom_bucket, custom_key, "text/html"
+        # Verify custom bucket and key were used in single upload
+        storage_client.put_object.assert_called_once_with(
+            custom_bucket,
+            custom_key,
+            small_content.encode("utf-8"),
+            content_type="text/html",
         )
 
     @pytest.mark.parametrize(
@@ -188,9 +239,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>empty content</body></html>"
-        )
+        # Use small content to trigger single upload path
+        small_content = "x" * (AWS_MIN_PART_SIZE - 1024)
+        mock_builder.generate.return_value = BytesIO(small_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         result = stream_html_dsr_report_to_storage_multipart(
@@ -202,8 +253,12 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         )
 
         # Verify the result
-        storage_client.upload_part.assert_called_once()
-        storage_client.complete_multipart_upload.assert_called_once()
+        storage_client.put_object.assert_called_once_with(
+            "test-bucket",
+            "test-report.html",
+            small_content.encode("utf-8"),
+            content_type="text/html",
+        )
 
     @pytest.mark.parametrize(
         "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
@@ -309,9 +364,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
+        # Use large content to trigger multipart upload path
+        large_content = "x" * (AWS_MIN_PART_SIZE + 1024)
+        mock_builder.generate.return_value = BytesIO(large_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         # Make create_multipart_upload fail
@@ -349,9 +404,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
+        # Use large content to trigger multipart upload path
+        large_content = "x" * (AWS_MIN_PART_SIZE + 1024)
+        mock_builder.generate.return_value = BytesIO(large_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         # Make complete_multipart_upload fail
@@ -389,9 +444,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
+        # Use large content to trigger multipart upload path
+        large_content = "x" * (AWS_MIN_PART_SIZE + 1024)
+        mock_builder.generate.return_value = BytesIO(large_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         # Make complete_multipart_upload fail
@@ -434,9 +489,9 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
+        # Use small content to trigger single upload path
+        small_content = "x" * (AWS_MIN_PART_SIZE - 1024)
+        mock_builder.generate.return_value = BytesIO(small_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         # Verify DsrReportBuilder is called with correct parameters
@@ -457,11 +512,14 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         # Verify generate was called
         mock_builder.generate.assert_called_once()
 
+        # Verify single upload was used
+        storage_client.put_object.assert_called_once()
+
     @pytest.mark.parametrize(
         "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
     )
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
-    def test_content_type_setting(
+    def test_content_type_setting_single_upload(
         self,
         mock_dsr_builder_class,
         storage_client_fixture,
@@ -469,13 +527,13 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         mock_privacy_request,
         sample_dsr_data,
     ):
-        """Test that content type is set to text/html."""
+        """Test that content type is set to text/html for single upload."""
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         mock_builder = Mock()
-        mock_builder.generate.return_value = BytesIO(
-            b"<html><body>content</body></html>"
-        )
+        # Use small content to trigger single upload path
+        small_content = "x" * (AWS_MIN_PART_SIZE - 1024)
+        mock_builder.generate.return_value = BytesIO(small_content.encode("utf-8"))
         mock_dsr_builder_class.return_value = mock_builder
 
         stream_html_dsr_report_to_storage_multipart(
@@ -486,7 +544,44 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             privacy_request=mock_privacy_request,
         )
 
-        # Verify content type was set to text/html
+        # Verify content type was set to text/html in single upload
+        storage_client.put_object.assert_called_once_with(
+            "test-bucket",
+            "test-report.html",
+            small_content.encode("utf-8"),
+            content_type="text/html",
+        )
+
+    @pytest.mark.parametrize(
+        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
+    )
+    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
+    def test_content_type_setting_multipart_upload(
+        self,
+        mock_dsr_builder_class,
+        storage_client_fixture,
+        request,
+        mock_privacy_request,
+        sample_dsr_data,
+    ):
+        """Test that content type is set to text/html for multipart upload."""
+        storage_client = request.getfixturevalue(storage_client_fixture)
+
+        mock_builder = Mock()
+        # Use large content to trigger multipart upload path
+        large_content = "x" * (AWS_MIN_PART_SIZE + 1024)
+        mock_builder.generate.return_value = BytesIO(large_content.encode("utf-8"))
+        mock_dsr_builder_class.return_value = mock_builder
+
+        stream_html_dsr_report_to_storage_multipart(
+            storage_client=storage_client,
+            bucket_name="test-bucket",
+            file_key="test-report.html",
+            data=sample_dsr_data,
+            privacy_request=mock_privacy_request,
+        )
+
+        # Verify content type was set to text/html in multipart upload
         storage_client.create_multipart_upload.assert_called_once_with(
             "test-bucket", "test-report.html", "text/html"
         )
@@ -503,12 +598,12 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         mock_privacy_request,
         sample_dsr_data,
     ):
-        """Test that CHUNK_SIZE_THRESHOLD is used for chunking."""
+        """Test that CHUNK_SIZE_THRESHOLD is used for chunking in multipart upload."""
         storage_client = request.getfixturevalue(storage_client_fixture)
 
         # Create a much smaller content to avoid memory issues and test chunking
-        # Use a size that's just over CHUNK_SIZE_THRESHOLD to ensure 2 parts
-        content_size = CHUNK_SIZE_THRESHOLD + 1000  # Just over the threshold
+        # Use a size that's just over AWS_MIN_PART_SIZE to ensure multipart upload is used
+        content_size = AWS_MIN_PART_SIZE + 1000  # Just over the threshold
         mock_content = "x" * content_size
 
         # Create mock builder instance
