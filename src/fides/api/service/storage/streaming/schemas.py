@@ -70,9 +70,9 @@ class StreamingBufferConfig(BaseModel):
         description="Zip buffer threshold in bytes (default: 5MB)",
     )
     stream_buffer_threshold: int = Field(
-        default=512 * 1024,
+        default=1024 * 1024,
         ge=1024 * 1024,
-        description="Stream buffer threshold in bytes (default: 512KB)",
+        description="Stream buffer threshold in bytes (default: 1MB)",
     )
     chunk_size_threshold: int = Field(
         default=1024 * 1024,
