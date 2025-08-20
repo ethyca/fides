@@ -44,6 +44,11 @@ class DatabaseSettings(FidesSettings):
         default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
+    api_engine_pool_pre_ping: bool = Field(
+        default=True,
+        description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
+    )
+
     # Async Engine Settings
     api_async_engine_keepalives_idle: Optional[int] = Field(
         default=None,
@@ -58,7 +63,7 @@ class DatabaseSettings(FidesSettings):
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     api_async_engine_pool_pre_ping: bool = Field(
-        default=False,
+        default=True,
         description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
     )
 
@@ -114,6 +119,10 @@ class DatabaseSettings(FidesSettings):
     task_engine_keepalives_count: int = Field(
         default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
+    )
+    task_engine_pool_pre_ping: bool = Field(
+        default=True,
+        description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
     )
     test_db: str = Field(
         default="default_test_db",

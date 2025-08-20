@@ -39,6 +39,9 @@ async_engine = create_async_engine(
 )
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
+# TODO: this engine and session are only used in test modules,
+# and they do not respect engine settings like pool_size, max_overflow, etc.
+# these should be removed, and we should standardize on what's provided in `session.py`
 sync_engine = create_engine(
     CONFIG.database.sync_database_uri,
     echo=False,

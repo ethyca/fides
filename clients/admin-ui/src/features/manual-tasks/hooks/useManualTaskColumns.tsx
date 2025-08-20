@@ -62,21 +62,16 @@ export const useManualTaskColumns = ({
       title: "Task name",
       dataIndex: "name",
       key: "name",
-      width: 300,
+      minWidth: 100,
       render: (name) => (
-        <Typography.Text
-          ellipsis={{ tooltip: name }}
-          className="!max-w-[300px]"
-        >
-          {name}
-        </Typography.Text>
+        <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
       ),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 120,
+      width: 110,
       render: (status: ManualFieldStatus) => (
         <Tag
           color={STATUS_MAP[status].color}
@@ -92,12 +87,9 @@ export const useManualTaskColumns = ({
       title: "System",
       dataIndex: ["system", "name"],
       key: "system_name",
-      width: 210,
+      minWidth: 100,
       render: (systemName: string) => (
-        <Typography.Text
-          ellipsis={{ tooltip: systemName }}
-          className="!max-w-[210px]"
-        >
+        <Typography.Text ellipsis={{ tooltip: systemName }}>
           {systemName}
         </Typography.Text>
       ),
@@ -108,14 +100,18 @@ export const useManualTaskColumns = ({
       title: "Type",
       dataIndex: "request_type",
       key: "request_type",
-      width: 150,
+      width: 80,
       render: (type: ManualFieldRequestType) => {
         const actionType =
           type === ManualFieldRequestType.ACCESS
             ? ActionType.ACCESS
             : ActionType.ERASURE;
         const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
-        return <Typography.Text>{displayName}</Typography.Text>;
+        return (
+          <Typography.Text ellipsis={{ tooltip: displayName }}>
+            {displayName}
+          </Typography.Text>
+        );
       },
       filters: REQUEST_TYPE_FILTER_OPTIONS,
       filterMultiple: false,
@@ -124,7 +120,7 @@ export const useManualTaskColumns = ({
       title: "Assigned to",
       dataIndex: "assigned_users",
       key: "assigned_users",
-      width: 380,
+      minWidth: 100,
       render: (assignedUsers: ManualFieldUser[]) => {
         if (!assignedUsers || assignedUsers.length === 0) {
           return <Typography.Text>-</Typography.Text>;
@@ -156,7 +152,7 @@ export const useManualTaskColumns = ({
       title: "Days left",
       dataIndex: ["privacy_request", "days_left"],
       key: "days_left",
-      width: 140,
+      width: 90,
       render: (daysLeft: number | null) => (
         <DaysLeftTag
           daysLeft={daysLeft || 0}
@@ -169,7 +165,7 @@ export const useManualTaskColumns = ({
       title: "Subject identity",
       dataIndex: ["privacy_request", "subject_identities"],
       key: "subject_identities",
-      width: 200,
+      minWidth: 120,
       render: (subjectIdentities: Record<string, string>) => {
         if (!subjectIdentities) {
           return <Typography.Text>-</Typography.Text>;
@@ -188,7 +184,7 @@ export const useManualTaskColumns = ({
     {
       title: "Actions",
       key: "actions",
-      width: 120,
+      width: 145,
       render: (_, record) => <ActionButtons task={record} />,
     },
   ];

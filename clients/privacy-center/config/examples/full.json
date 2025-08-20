@@ -14,6 +14,14 @@
         "name": "optional",
         "email": "required",
         "phone": "optional"
+      },
+      "custom_privacy_request_fields": {
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       }
     },
     {
@@ -25,6 +33,14 @@
         "name": "optional",
         "email": "required",
         "phone": "optional"
+      },
+      "custom_privacy_request_fields": {
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": false,
+          "ip_geolocation_hint": true
+        }
       }
     }
   ],

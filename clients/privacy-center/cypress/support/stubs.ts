@@ -74,6 +74,9 @@ export const stubConfig = (
   demoPageWindowParams?: any,
   skipVisit?: boolean,
 ) => {
+  cy.intercept("GET", "https://cdn-api.ethyca.com/location", {
+    statusCode: 200, // in case dev env has location service enabled during testing
+  }).as("getLocation");
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const defaultOptions = getCoreFides({
       tcfEnabled: config.options?.tcfEnabled,

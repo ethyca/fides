@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import Enum as EnumType
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from loguru import logger
@@ -15,6 +16,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
+from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -65,6 +67,24 @@ class TraversalDetails(FidesSchema):
             input_keys=[],
             skipped_nodes=[],
         )
+
+
+class AsyncTaskType(EnumType):
+    """
+    Enum for asynchronous RequestTask types
+
+    These tasks differ from our regular tasks in that they are not finished on the same process that they are created,
+    but rather are put into a pause state and then triggered to completion by a different process
+
+    manual: A task that is manually triggered by the user
+    polling: A task that is triggered by a polling mechanism
+    callback: A task that is triggered by a callback from an external system
+
+    """
+
+    manual = "manual"
+    polling = "polling"
+    callback = "callback"
 
 
 # TODO: At some point we will refactor this model to store all task types in a common table that links to tables with specific task attributes.
@@ -145,6 +165,11 @@ class RequestTask(WorkerTask, Base):
 
     # For async tasks awaiting callback
     callback_succeeded = Column(Boolean)
+    # to recognize Polling async task
+    async_type = Column(
+        EnumColumn(AsyncTaskType, native_enum=True),
+        nullable=True,
+    )
 
     # Stores a serialized collection that can be transformed back into a Collection to help
     # execute the current task

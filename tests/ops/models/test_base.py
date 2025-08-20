@@ -7,7 +7,7 @@ from fideslang.validation import FidesValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import KeyValidationError
-from fides.api.db.base_class import get_key_from_data
+from fides.api.db.base_class import FidesBase, get_key_from_data
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageType
 
@@ -112,3 +112,16 @@ class TestSaveKey:
         privacy_request.status = "complete"
         privacy_request.save(db)
         assert "complete" == privacy_request.status.value  # type: ignore
+
+
+def test_sanitize_key_replaces_invalid_chars() -> None:
+    # Allowed characters are [A-Za-z0-9\-_]; everything else becomes '_'
+    assert FidesBase.sanitize_key("valid_key-123") == "valid_key-123"
+    # dots become underscores
+    assert FidesBase.sanitize_key("has.dots") == "has_dots"
+    # spaces and asterisks become underscores
+    assert FidesBase.sanitize_key("bad*chars and spaces") == "bad_chars_and_spaces"
+    # multiple consecutive invalid characters each replaced
+    assert FidesBase.sanitize_key("a..b") == "a__b"
+    # other invalid symbols become underscores
+    assert FidesBase.sanitize_key("weird<>|chars") == "weird___chars"

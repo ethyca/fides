@@ -8,6 +8,7 @@
   "privacy_policy_url": "https://fid.es/privacy",
   "privacy_policy_url_text": "Privacy Policy",
   "favicon_path": "/favicon.ico",
+
   "actions": [
     {
       "policy_key": "default_access_policy",
@@ -48,6 +49,12 @@
             "EPUB",
             "PSD"
           ]
+        },
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": true,
+          "ip_geolocation_hint": true
         }
       },
       "confirmButtonText": "Continue",
@@ -73,6 +80,12 @@
             "Activity History",
             "Analytics Data"
           ]
+        },
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": false,
+          "ip_geolocation_hint": true
         }
       },
       "confirmButtonText": "Continue",
