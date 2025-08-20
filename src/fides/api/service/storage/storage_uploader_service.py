@@ -97,7 +97,7 @@ def _s3_uploader(
     document = None
 
     # Check if streaming is enabled in the storage configuration
-    enable_streaming = config.details.get("enable_streaming", False)
+    enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
 
     if enable_streaming:
         # Use streaming upload for better memory efficiency

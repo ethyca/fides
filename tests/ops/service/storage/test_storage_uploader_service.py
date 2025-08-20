@@ -192,6 +192,59 @@ class TestS3Uploader:
         mock_upload_to_s3.assert_not_called()
 
 
+@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3_streaming")
+def test_uploader_s3_streaming_success(
+    mock_upload_to_s3_streaming: Mock,
+    db: Session,
+    privacy_request: PrivacyRequest,
+) -> None:
+    """Test successful S3 streaming upload when enable_streaming is True."""
+    request_id = privacy_request.id
+
+    mock_config = {
+        "name": "test dest",
+        "key": "test_dest_key",
+        "type": StorageType.s3.value,
+        "details": {
+            "auth_method": AWSAuthMethod.SECRET_KEYS.value,
+            "bucket": "some-bucket",
+            "naming": FileNaming.request_id.value,
+            "max_retries": 10,
+            "enable_streaming": True,
+        },
+        "secrets": {
+            StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
+        },
+    }
+    storage_config = StorageConfig.create(db, data=mock_config)
+
+    mock_upload_to_s3_streaming.return_value = (
+        f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
+    )
+    upload_data = {"phone": "1231231234"}
+
+    upload(
+        db=db,
+        privacy_request=privacy_request,
+        data=upload_data,
+        storage_key=mock_config["key"],
+    )
+
+    mock_upload_to_s3_streaming.assert_called_with(
+        mock_config["secrets"],
+        upload_data,
+        mock_config["details"][StorageDetails.BUCKET.value],
+        f"{request_id}.json",
+        "json",
+        privacy_request,
+        None,
+        AWSAuthMethod.SECRET_KEYS.value,
+    )
+
+    storage_config.delete(db)
+
+
 @mock.patch(
     "fides.api.service.storage.storage_uploader_service.upload_to_gcs", autospec=True
 )
