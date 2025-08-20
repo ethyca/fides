@@ -3,16 +3,12 @@ import { AntMenuProps as MenuProps, Icons } from "fidesui";
 export const COLLAPSE_BUTTON_TEXT = "show less";
 
 /**
- * Import this to use the expand/collapse all menu items in the MenuHeaderCell.
+ * Import this to use the expand/collapse all menu items in table columns.
  * @example
- * <MenuHeaderCell
- *   title="My Column"
- *   menu={{
- *     items: [...expandCollapseAllMenuItems, {
- *       key: "custom-item",
- *       label: "Custom item",
- *       icon: <Icons.CustomIcon />,
- *     }],
+ * const columns = [{
+ *   title: "My Column",
+ *   menu: {
+ *     items: expandCollapseAllMenuItems,
  *     onClick: (e) => {
  *       if (e.key === "expand-all") {
  *         setIsMyColumnExpanded(true);
@@ -22,7 +18,8 @@ export const COLLAPSE_BUTTON_TEXT = "show less";
  *         // Do something
  *       }
  *     },
- *   }}
+ *   }
+ * }];
  */
 export const expandCollapseAllMenuItems: MenuProps["items"] = [
   {
