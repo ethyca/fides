@@ -4,13 +4,9 @@ import time
 from typing import Any, Optional, Union
 
 from fideslang.validation import AnyHttpUrlString
-from google.cloud.exceptions import GoogleCloudError
 from google.cloud.storage import Client  # type: ignore
-from loguru import logger
-from stream_zip import stream_zip
 
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.gcs import get_gcs_client
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.schemas import (
     MultipartUploadResponse,
@@ -152,32 +148,6 @@ class GCSStorageClient(CloudStorageClient):
             "GCS abort_multipart_upload is not implemented. Use abort_resumable_upload for native GCS resumable uploads."
         )
 
-    def get_object_head(self, bucket: str, key: str) -> dict[str, Any]:
-        """
-        Get GCS object metadata
-
-        TODO: This method is not implemented and needs:
-        - HTTP HEAD request to GCS object
-        - Better error handling for missing objects
-        - Caching of metadata for frequently accessed objects
-        - Support for custom metadata fields
-        """
-        raise NotImplementedError("GCS get_object_head is not implemented.")
-
-    def get_object_range(
-        self, bucket: str, key: str, start_byte: int, end_byte: int
-    ) -> bytes:
-        """
-        Get a range of bytes from GCS object
-
-        TODO: This method is not implemented and needs:
-        - HTTP GET request with Range header to GCS
-        - Range validation (start < end, positive values)
-        - Streaming support for large ranges
-        - Caching of frequently accessed ranges
-        """
-        raise NotImplementedError("GCS get_object_range is not implemented.")
-
     def generate_presigned_url(
         self, bucket: str, key: str, ttl_seconds: Optional[int] = None
     ) -> AnyHttpUrlString:
@@ -276,6 +246,39 @@ class GCSStorageClient(CloudStorageClient):
         - Session expiration handling
         """
         raise NotImplementedError("GCS get_resumable_upload_status is not implemented.")
+
+    def put_object(
+        self,
+        bucket: str,
+        key: str,
+        body: Any,
+        content_type: Optional[str] = None,
+        metadata: Optional[dict[str, str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Upload an object to GCS storage.
+
+        TODO: This method is not implemented and needs:
+        - Use GCS client to upload the object
+        - Handle different body types (bytes, file-like objects, strings)
+        - Support for content type and metadata
+        - Proper error handling and retry logic
+        - Integration with GCS authentication and permissions
+        """
+        raise NotImplementedError("GCS put_object is not implemented.")
+
+    def get_object(self, bucket: str, key: str) -> bytes:
+        """
+        Get the full content of a GCS object.
+
+        TODO: This method is not implemented and needs:
+        - Use GCS client to download the object
+        - Handle large objects efficiently
+        - Proper error handling for missing objects
+        - Integration with GCS authentication and permissions
+        - Support for different object formats
+        """
+        raise NotImplementedError("GCS get_object is not implemented.")
 
 
 def create_gcs_storage_client(

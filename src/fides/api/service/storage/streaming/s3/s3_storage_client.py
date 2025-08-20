@@ -14,8 +14,6 @@ from fides.api.service.storage.streaming.s3.s3_schemas import (
     AWSCompleteMultipartUploadRequest,
     AWSCreateMultipartUploadRequest,
     AWSGeneratePresignedUrlRequest,
-    AWSGetObjectRangeRequest,
-    AWSGetObjectRequest,
     AWSUploadPartRequest,
 )
 from fides.api.service.storage.streaming.schemas import (
@@ -233,83 +231,6 @@ class S3StorageClient(CloudStorageClient):
             logger.error("Failed to abort multipart upload: {}", e)
             raise
 
-    def get_object_head(self, bucket: str, key: str) -> dict[str, Any]:
-        """Get S3 object metadata without downloading the object content.
-
-        This method retrieves object metadata (including size, content type, etc.)
-        without downloading the actual file content. The streaming storage system
-        uses this to determine file sizes for chunking and progress tracking.
-
-        Args:
-            bucket: S3 bucket name containing the object
-            key: S3 object key (file path) within the bucket
-
-        Returns:
-            Dictionary containing object metadata including:
-            - ContentLength: File size in bytes
-            - ContentType: MIME type of the object
-            - LastModified: Timestamp of last modification
-            - ETag: Object's ETag for validation
-            - Additional S3 metadata fields
-
-        Raises:
-            ClientError: If S3 operations fail (e.g., object not found, permissions denied)
-            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key)
-
-        """
-        # Validate parameters using Pydantic schema
-        request = AWSGetObjectRequest(bucket=bucket, key=key)
-
-        try:
-            response = self.client.head_object(Bucket=request.bucket, Key=request.key)
-            return response
-        except ClientError as e:
-            logger.error("Failed to get object head: {}", e)
-            raise
-
-    def get_object_range(
-        self, bucket: str, key: str, start_byte: int, end_byte: int
-    ) -> bytes:
-        """Get a specific byte range from an S3 object.
-
-        This method downloads only a portion of an S3 object, specified by byte range.
-        It's essential for the streaming storage system to process large files in
-        small chunks without loading entire files into memory.
-
-        Args:
-            bucket: S3 bucket name containing the object
-            key: S3 object key (file path) within the bucket
-            start_byte: Starting byte position (inclusive, 0-based)
-            end_byte: Ending byte position (inclusive, 0-based)
-
-        Returns:
-            Bytes object containing the requested byte range
-
-        Raises:
-            ClientError: If S3 operations fail (e.g., object not found, invalid range)
-            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key, invalid byte ranges)
-        """
-        # Validate parameters using Pydantic schema
-        request = AWSGetObjectRangeRequest(
-            bucket=bucket,
-            key=key,
-            start_byte=start_byte,
-            end_byte=end_byte,
-        )
-
-        try:
-            response = self.client.get_object(
-                Bucket=request.bucket,
-                Key=request.key,
-                Range=f"bytes={request.start_byte}-{request.end_byte}",
-            )
-            data = response["Body"].read()
-            response["Body"].close()
-            return data
-        except ClientError as e:
-            logger.error("Failed to get object range: {}", e)
-            raise
-
     def generate_presigned_url(
         self, bucket: str, key: str, ttl_seconds: Optional[int] = None
     ) -> AnyHttpUrlString:
@@ -344,6 +265,76 @@ class S3StorageClient(CloudStorageClient):
             )
         except Exception as e:
             logger.error("Failed to generate presigned URL: {}", e)
+            raise
+
+    def put_object(
+        self,
+        bucket: str,
+        key: str,
+        body: Any,
+        content_type: Optional[str] = None,
+        metadata: Optional[dict[str, str]] = None,
+    ) -> dict[str, Any]:
+        """Upload an object to S3 storage.
+
+        This method uploads a complete object to S3. It's used by the streaming storage
+        system to upload ZIP files and other complete objects.
+
+        Args:
+            bucket: S3 bucket name where the object will be stored
+            key: S3 object key (file path) within the bucket
+            body: The object content to upload (can be bytes, file-like object, or string)
+            content_type: Optional MIME type of the object
+            metadata: Optional key-value pairs to store as object metadata
+
+        Returns:
+            S3 response metadata from the upload operation
+
+        Raises:
+            ClientError: If S3 operations fail (e.g., bucket doesn't exist, permissions denied)
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key)
+        """
+        try:
+            params: dict[str, Any] = {
+                "Bucket": bucket,
+                "Key": key,
+                "Body": body,
+            }
+            if content_type:
+                params["ContentType"] = content_type
+            if metadata:
+                params["Metadata"] = metadata
+
+            response = self.client.put_object(**params)
+            return response
+        except ClientError as e:
+            logger.error("Failed to upload object: {}", e)
+            raise
+
+    def get_object(self, bucket: str, key: str) -> bytes:
+        """Get the full content of an S3 object.
+
+        This method downloads the complete content of an S3 object. It's used by the
+        streaming storage system to retrieve attachment files for processing.
+
+        Args:
+            bucket: S3 bucket name containing the object
+            key: S3 object key (file path) within the bucket
+
+        Returns:
+            Bytes object containing the complete object content
+
+        Raises:
+            ClientError: If S3 operations fail (e.g., object not found, permissions denied)
+            ValueError: If parameters fail validation (empty/whitespace strings for bucket/key)
+        """
+        try:
+            response = self.client.get_object(Bucket=bucket, Key=key)
+            data = response["Body"].read()
+            response["Body"].close()
+            return data
+        except ClientError as e:
+            logger.error("Failed to get object: {}", e)
             raise
 
 

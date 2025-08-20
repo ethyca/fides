@@ -4,11 +4,7 @@ from typing import Any, Optional, Union
 
 from loguru import logger
 
-from fides.api.schemas.storage.storage import (
-    StorageSecrets,
-    StorageSecretsGCS,
-    StorageSecretsS3,
-)
+from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.gcs.gcs_storage_client import (
     create_gcs_storage_client,
@@ -59,8 +55,7 @@ class CloudStorageClientFactory:
                 gcs_secrets = storage_secrets
             return create_gcs_storage_client(auth_method, gcs_secrets)
 
-        else:
-            raise ValueError(f"Unsupported storage type: {storage_type}")
+        raise ValueError(f"Unsupported storage type: {storage_type}")
 
     @staticmethod
     def create_storage_client_from_config(

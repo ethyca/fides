@@ -4,7 +4,7 @@ import csv
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO, StringIO
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
@@ -440,7 +440,7 @@ def stream_attachments_to_storage_zip(
             logger.warning("No valid attachments found in data")
 
             # Create ZIP with just data files
-            def files_to_zip():
+            def files_to_zip() -> Any:
                 # Add CSV/JSON data files only
                 for key, value in data.items():
                     if isinstance(value, list) and value:
@@ -462,7 +462,7 @@ def stream_attachments_to_storage_zip(
                                 yield f"{key}.csv", BytesIO(data_content), {}
 
             # Upload ZIP with just data files
-            response = storage_client.put_object(
+            storage_client.put_object(
                 bucket_name,
                 file_key,
                 stream_zip(files_to_zip()),
@@ -527,7 +527,7 @@ def stream_attachments_to_storage_zip(
             "Creating streaming ZIP file with {} attachments", len(attachment_contents)
         )
 
-        def files_to_zip():
+        def files_to_zip() -> Any:
             """Generator that yields (filename, file-like object, metadata) tuples for stream_zip."""
             # Add CSV/JSON data files
             for key, value in data.items():
@@ -554,7 +554,7 @@ def stream_attachments_to_storage_zip(
                 yield filename, BytesIO(content), {}
 
         # Upload the ZIP file using stream_zip
-        response = storage_client.put_object(
+        storage_client.put_object(
             bucket_name,
             file_key,
             stream_zip(files_to_zip()),

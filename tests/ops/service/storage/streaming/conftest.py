@@ -59,30 +59,6 @@ def mock_storage_client():
     client.complete_multipart_upload.side_effect = mock_complete_upload
     client.abort_multipart_upload.return_value = None
 
-    # Mock object retrieval methods
-    def mock_get_object_head(bucket, key):
-        object_key = f"{bucket}/{key}"
-        if object_key in mock_objects:
-            obj = mock_objects[object_key]
-            return {
-                "ContentLength": obj["size"],
-                "ContentType": "application/octet-stream",
-                "ETag": f"mock_etag_{object_key}",
-                "Metadata": obj["metadata"],
-            }
-        raise ValueError(f"Object {object_key} not found")
-
-    client.get_object_head.side_effect = mock_get_object_head
-
-    def mock_get_object_range(bucket, key, start_byte, end_byte):
-        object_key = f"{bucket}/{key}"
-        if object_key in mock_objects:
-            range_size = end_byte - start_byte + 1
-            return b"x" * max(0, range_size)
-        raise ValueError(f"Object {object_key} not found")
-
-    client.get_object_range.side_effect = mock_get_object_range
-
     def mock_generate_presigned_url(bucket, key, ttl_seconds=None):
         object_key = f"{bucket}/{key}"
         if object_key in mock_objects:

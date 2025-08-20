@@ -196,8 +196,8 @@ class AWSAbortMultipartUploadRequest(BaseModel):
         case_sensitive = False
 
 
-class AWSGetObjectRequest(BaseModel):
-    """Request parameters for getting object metadata or content"""
+class AWSGeneratePresignedUrlRequest(BaseModel):
+    """Request parameters for generating a presigned URL"""
 
     bucket: Annotated[
         str, Field(..., description="S3 bucket name containing the object")
@@ -205,6 +205,12 @@ class AWSGetObjectRequest(BaseModel):
     key: Annotated[
         str, Field(..., description="S3 object key (file path) within the bucket")
     ]
+    ttl_seconds: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=604800,  # 7 days in seconds
+        description="Optional TTL in seconds (max 7 days)",
+    )
 
     @field_validator("bucket")
     @classmethod
@@ -225,48 +231,6 @@ class AWSGetObjectRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("Key cannot be empty or whitespace")
         return v.strip()
-
-    class Config:
-        """Pydantic model configuration"""
-
-        extra = "forbid"
-        case_sensitive = False
-
-
-class AWSGetObjectRangeRequest(AWSGetObjectRequest):
-    """Request parameters for getting a specific byte range from an object"""
-
-    start_byte: Annotated[
-        int, Field(..., ge=0, description="Starting byte position (inclusive, 0-based)")
-    ]
-    end_byte: Annotated[
-        int, Field(..., ge=0, description="Ending byte position (inclusive, 0-based)")
-    ]
-
-    @field_validator("end_byte")
-    @classmethod
-    def validate_end_byte(cls, v: Any, info: Any) -> int:
-        """Validate that end_byte is greater than or equal to start_byte."""
-        if "start_byte" in info.data and v < info.data["start_byte"]:
-            raise ValueError("end_byte must be greater than or equal to start_byte")
-        return v
-
-    class Config:
-        """Pydantic model configuration"""
-
-        extra = "forbid"
-        case_sensitive = False
-
-
-class AWSGeneratePresignedUrlRequest(AWSGetObjectRequest):
-    """Request parameters for generating a presigned URL"""
-
-    ttl_seconds: Optional[int] = Field(
-        default=None,
-        ge=1,
-        le=604800,  # 7 days in seconds
-        description="Optional TTL in seconds (max 7 days)",
-    )
 
     class Config:
         """Pydantic model configuration"""

@@ -1,4 +1,5 @@
-# pylint: disable unnecessary-pass
+# pylint: disable=unnecessary-pass
+
 from __future__ import annotations
 
 import abc
@@ -58,15 +59,20 @@ class CloudStorageClient(abc.ABC):
         pass  # pragma: no cover
 
     @abc.abstractmethod
-    def get_object_head(self, bucket: str, key: str) -> dict[str, Any]:
-        """Get object metadata (head)"""
+    def put_object(
+        self,
+        bucket: str,
+        key: str,
+        body: Any,
+        content_type: Optional[str] = None,
+        metadata: Optional[dict[str, str]] = None,
+    ) -> dict[str, Any]:
+        """Upload an object to storage"""
         pass  # pragma: no cover
 
     @abc.abstractmethod
-    def get_object_range(
-        self, bucket: str, key: str, start_byte: int, end_byte: int
-    ) -> bytes:
-        """Get a range of bytes from an object"""
+    def get_object(self, bucket: str, key: str) -> bytes:
+        """Get the full content of an object"""
         pass  # pragma: no cover
 
     @abc.abstractmethod

@@ -123,6 +123,5 @@ def update_storage_secrets(
         }
         # Filter out None values
         return {k: v for k, v in secrets_dict.items() if v is not None}
-    else:
-        # Already a dict, return as-is
-        return storage_secrets
+
+    return storage_secrets

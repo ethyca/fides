@@ -6,8 +6,6 @@ from fides.api.service.storage.streaming.s3.s3_schemas import (
     AWSCompleteMultipartUploadRequest,
     AWSCreateMultipartUploadRequest,
     AWSGeneratePresignedUrlRequest,
-    AWSGetObjectRangeRequest,
-    AWSGetObjectRequest,
     AWSUploadPartRequest,
 )
 from fides.api.service.storage.streaming.schemas import UploadPartResponse
@@ -357,175 +355,6 @@ class TestAWSAbortMultipartUploadRequest:
         assert request.upload_id == "test-upload-id-123"
 
 
-class TestAWSGetObjectRequest:
-    """Test cases for AWSGetObjectRequest schema."""
-
-    def test_valid_get_object_request(self):
-        """Test that a valid get object request can be created."""
-        request = AWSGetObjectRequest(
-            bucket="test-bucket",
-            key="test-file.zip",
-        )
-
-        assert request.bucket == "test-bucket"
-        assert request.key == "test-file.zip"
-
-    @pytest.mark.parametrize(
-        "field, invalid_value, expected_error",
-        [
-            pytest.param(
-                "bucket", "", "Bucket cannot be empty or whitespace", id="bucket-empty"
-            ),
-            pytest.param(
-                "bucket",
-                "   ",
-                "Bucket cannot be empty or whitespace",
-                id="bucket-whitespace",
-            ),
-            pytest.param(
-                "bucket", None, "Input should be a valid string", id="bucket-none"
-            ),
-            pytest.param(
-                "key", "", "Key cannot be empty or whitespace", id="key-empty"
-            ),
-            pytest.param(
-                "key", "   ", "Key cannot be empty or whitespace", id="key-whitespace"
-            ),
-            pytest.param("key", None, "Input should be a valid string", id="key-none"),
-        ],
-    )
-    def test_get_object_request_validation_errors(
-        self, field, invalid_value, expected_error
-    ):
-        """Test that validation errors are raised for invalid values."""
-        valid_data = {
-            "bucket": "test-bucket",
-            "key": "test-file.zip",
-        }
-        valid_data[field] = invalid_value
-
-        with pytest.raises(ValueError, match=expected_error):
-            AWSGetObjectRequest(**valid_data)
-
-    def test_get_object_request_whitespace_trimming(self):
-        """Test that whitespace is trimmed from string fields."""
-        request = AWSGetObjectRequest(
-            bucket="  test-bucket  ",
-            key="  test-file.zip  ",
-        )
-
-        assert request.bucket == "test-bucket"
-        assert request.key == "test-file.zip"
-
-
-class TestAWSGetObjectRangeRequest:
-    """Test cases for AWSGetObjectRangeRequest schema."""
-
-    def test_valid_get_object_range_request(self):
-        """Test that a valid get object range request can be created."""
-        request = AWSGetObjectRangeRequest(
-            bucket="test-bucket",
-            key="test-file.zip",
-            start_byte=0,
-            end_byte=1023,
-        )
-
-        assert request.bucket == "test-bucket"
-        assert request.key == "test-file.zip"
-        assert request.start_byte == 0
-        assert request.end_byte == 1023
-
-    def test_get_object_range_request_same_start_end(self):
-        """Test that start_byte and end_byte can be the same value."""
-        request = AWSGetObjectRangeRequest(
-            bucket="test-bucket",
-            key="test-file.zip",
-            start_byte=100,
-            end_byte=100,
-        )
-
-        assert request.start_byte == 100
-        assert request.end_byte == 100
-
-    def test_get_object_range_request_end_byte_less_than_start(self):
-        """Test that end_byte cannot be less than start_byte."""
-        with pytest.raises(
-            ValueError, match="end_byte must be greater than or equal to start_byte"
-        ):
-            AWSGetObjectRangeRequest(
-                bucket="test-bucket",
-                key="test-file.zip",
-                start_byte=100,
-                end_byte=99,
-            )
-
-    @pytest.mark.parametrize(
-        "start_byte, end_byte, should_raise",
-        [
-            (0, 0, False),  # Same value
-            (0, 1, False),  # End greater than start
-            (100, 200, False),  # End greater than start
-            (1, 0, True),  # End less than start
-            (100, 99, True),  # End less than start
-        ],
-    )
-    def test_get_object_range_request_byte_validation(
-        self, start_byte, end_byte, should_raise
-    ):
-        """Test various byte range combinations."""
-        if should_raise:
-            with pytest.raises(
-                ValueError, match="end_byte must be greater than or equal to start_byte"
-            ):
-                AWSGetObjectRangeRequest(
-                    bucket="test-bucket",
-                    key="test-file.zip",
-                    start_byte=start_byte,
-                    end_byte=end_byte,
-                )
-        else:
-            request = AWSGetObjectRangeRequest(
-                bucket="test-bucket",
-                key="test-file.zip",
-                start_byte=start_byte,
-                end_byte=end_byte,
-            )
-            assert request.start_byte == start_byte
-            assert request.end_byte == end_byte
-
-    @pytest.mark.parametrize(
-        "field, invalid_value, expected_error",
-        [
-            pytest.param(
-                "start_byte",
-                -1,
-                "Input should be greater than or equal to 0",
-                id="start-byte-negative",
-            ),
-            pytest.param(
-                "end_byte",
-                -1,
-                "Input should be greater than or equal to 0",
-                id="end-byte-negative",
-            ),
-        ],
-    )
-    def test_get_object_range_request_validation_errors(
-        self, field, invalid_value, expected_error
-    ):
-        """Test that validation errors are raised for invalid values."""
-        valid_data = {
-            "bucket": "test-bucket",
-            "key": "test-file.zip",
-            "start_byte": 0,
-            "end_byte": 1023,
-        }
-        valid_data[field] = invalid_value
-
-        with pytest.raises(ValidationError, match=expected_error):
-            AWSGetObjectRangeRequest(**valid_data)
-
-
 class TestAWSGeneratePresignedUrlRequest:
     """Test cases for AWSGeneratePresignedUrlRequest schema."""
 
@@ -713,8 +542,6 @@ class TestAWSSchemasConfig:
             AWSUploadPartRequest,
             AWSCreateMultipartUploadRequest,
             AWSAbortMultipartUploadRequest,
-            AWSGetObjectRequest,
-            AWSGetObjectRangeRequest,
             AWSGeneratePresignedUrlRequest,
             AWSCompleteMultipartUploadRequest,
         ],
@@ -741,18 +568,6 @@ class TestAWSSchemasConfig:
                 bucket="test-bucket",
                 key="test-file.zip",
                 upload_id="test-upload-id-123",
-            )
-        elif schema_class == AWSGetObjectRequest:
-            instance = schema_class(
-                bucket="test-bucket",
-                key="test-file.zip",
-            )
-        elif schema_class == AWSGetObjectRangeRequest:
-            instance = schema_class(
-                bucket="test-bucket",
-                key="test-file.zip",
-                start_byte=0,
-                end_byte=1023,
             )
         elif schema_class == AWSGeneratePresignedUrlRequest:
             instance = schema_class(
@@ -781,8 +596,6 @@ class TestAWSSchemasConfig:
             AWSUploadPartRequest,
             AWSCreateMultipartUploadRequest,
             AWSAbortMultipartUploadRequest,
-            AWSGetObjectRequest,
-            AWSGetObjectRangeRequest,
             AWSGeneratePresignedUrlRequest,
             AWSCompleteMultipartUploadRequest,
         ],
@@ -809,18 +622,6 @@ class TestAWSSchemasConfig:
                 bucket="test-bucket",
                 key="test-file.zip",
                 upload_id="test-upload-id-123",
-            )
-        elif schema_class == AWSGetObjectRequest:
-            instance = schema_class(
-                bucket="test-bucket",
-                key="test-file.zip",
-            )
-        elif schema_class == AWSGetObjectRangeRequest:
-            instance = schema_class(
-                bucket="test-bucket",
-                key="test-file.zip",
-                start_byte=0,
-                end_byte=1023,
             )
         elif schema_class == AWSGeneratePresignedUrlRequest:
             instance = schema_class(

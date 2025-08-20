@@ -33,8 +33,8 @@ class TestCloudStorageClient:
             "upload_part",
             "complete_multipart_upload",
             "abort_multipart_upload",
-            "get_object_head",
-            "get_object_range",
+            "put_object",
+            "get_object",
             "generate_presigned_url",
         }
         assert abstract_methods == expected_methods
@@ -218,104 +218,6 @@ class TestCloudStorageClient:
                 upload_id="invalid_id",
             )
 
-    def test_get_object_head(self, mock_storage_client):
-        """Test get_object_head method."""
-        # Reset the side_effect to use our custom return value
-        mock_storage_client.get_object_head.side_effect = None
-        mock_storage_client.get_object_head.return_value = {
-            "ContentLength": 1024,
-            "ContentType": "application/octet-stream",
-            "ETag": "test-etag",
-            "LastModified": "2023-01-01T00:00:00Z",
-        }
-
-        response = mock_storage_client.get_object_head(
-            bucket="test-bucket",
-            key="test-key",
-        )
-
-        assert isinstance(response, dict)
-        assert response["ContentLength"] == 1024
-        assert response["ContentType"] == "application/octet-stream"
-        assert response["ETag"] == "test-etag"
-        assert response["LastModified"] == "2023-01-01T00:00:00Z"
-
-        # Verify the method was called correctly
-        mock_storage_client.get_object_head.assert_called_with(
-            bucket="test-bucket",
-            key="test-key",
-        )
-
-    def test_get_object_head_object_not_found(self, mock_storage_client):
-        """Test get_object_head when object doesn't exist."""
-        # Reset the side_effect and set a custom error
-        mock_storage_client.get_object_head.side_effect = None
-        mock_storage_client.get_object_head.side_effect = FileNotFoundError(
-            "Object not found"
-        )
-
-        with pytest.raises(FileNotFoundError, match="Object not found"):
-            mock_storage_client.get_object_head(
-                bucket="test-bucket",
-                key="non-existent-key",
-            )
-
-    def test_get_object_range(self, mock_storage_client):
-        """Test get_object_range method."""
-        # Reset the side_effect to use our custom return value
-        mock_storage_client.get_object_range.side_effect = None
-        mock_storage_client.get_object_range.return_value = b"range data content"
-
-        response = mock_storage_client.get_object_range(
-            bucket="test-bucket",
-            key="test-key",
-            start_byte=0,
-            end_byte=1023,
-        )
-
-        assert isinstance(response, bytes)
-        assert response == b"range data content"
-
-        # Verify the method was called correctly
-        mock_storage_client.get_object_range.assert_called_with(
-            bucket="test-bucket",
-            key="test-key",
-            start_byte=0,
-            end_byte=1023,
-        )
-
-    def test_get_object_range_invalid_range(self, mock_storage_client):
-        """Test get_object_range with invalid range."""
-        # Reset the side_effect and set a custom error
-        mock_storage_client.get_object_range.side_effect = None
-        mock_storage_client.get_object_range.side_effect = ValueError(
-            "Invalid range: start > end"
-        )
-
-        with pytest.raises(ValueError, match="Invalid range: start > end"):
-            mock_storage_client.get_object_range(
-                bucket="test-bucket",
-                key="test-key",
-                start_byte=1024,
-                end_byte=1023,  # start > end
-            )
-
-    def test_get_object_range_out_of_bounds(self, mock_storage_client):
-        """Test get_object_range with out-of-bounds range."""
-        # Reset the side_effect and set a custom error
-        mock_storage_client.get_object_range.side_effect = None
-        mock_storage_client.get_object_range.side_effect = IndexError(
-            "Range out of bounds"
-        )
-
-        with pytest.raises(IndexError, match="Range out of bounds"):
-            mock_storage_client.get_object_range(
-                bucket="test-bucket",
-                key="test-key",
-                start_byte=10000,
-                end_byte=20000,  # Assuming file is smaller than this
-            )
-
     def test_generate_presigned_url(self, mock_storage_client):
         """Test generate_presigned_url method."""
         # Reset the side_effect to use our custom return value
@@ -403,8 +305,6 @@ class TestCloudStorageClient:
         abort_multipart_upload_sig = get_type_hints(
             CloudStorageClient.abort_multipart_upload
         )
-        get_object_head_sig = get_type_hints(CloudStorageClient.get_object_head)
-        get_object_range_sig = get_type_hints(CloudStorageClient.get_object_range)
         generate_presigned_url_sig = get_type_hints(
             CloudStorageClient.generate_presigned_url
         )
@@ -414,11 +314,6 @@ class TestCloudStorageClient:
         assert upload_part_sig["return"] == UploadPartResponse
         assert complete_multipart_upload_sig["return"] == type(None)
         assert abort_multipart_upload_sig["return"] == type(None)
-        # Handle both Dict and dict type hints (Python 3.9+ vs older)
-        assert get_object_head_sig["return"] in [Dict[str, Any], dict[str, Any]]
-        assert get_object_range_sig["return"] == bytes
-        # AnyHttpUrlString is an Annotated type that resolves to pydantic_core.Url
-        # We need to check the actual type it resolves to
         assert generate_presigned_url_sig["return"] == pydantic_core.Url
 
         # Verify parameter types
@@ -501,14 +396,6 @@ class TestCloudStorageClient:
         assert abort_multipart_upload_sig["bucket"] == str
         assert abort_multipart_upload_sig["key"] == str
         assert abort_multipart_upload_sig["upload_id"] == str
-
-        assert get_object_head_sig["bucket"] == str
-        assert get_object_head_sig["key"] == str
-
-        assert get_object_range_sig["bucket"] == str
-        assert get_object_range_sig["key"] == str
-        assert get_object_range_sig["start_byte"] == int
-        assert get_object_range_sig["end_byte"] == int
 
         assert generate_presigned_url_sig["bucket"] == str
         assert generate_presigned_url_sig["key"] == str
