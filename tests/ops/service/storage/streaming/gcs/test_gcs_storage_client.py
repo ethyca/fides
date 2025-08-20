@@ -177,184 +177,37 @@ class TestGCSStorageClientMultipartUpload:
                 content_type="application/zip",
             )
 
-    def test_upload_part_success(
-        self, gcs_storage_client, mock_bucket, mock_blob, chunk_content
-    ):
-        """Test successful part upload."""
-        # First create a multipart upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
-
-        upload_response = gcs_storage_client.create_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-parts.zip",
-            content_type="application/zip",
-        )
-
-        # Ensure we meet the minimum size requirement
-        assert len(chunk_content) >= GCS_MIN_CHUNK_SIZE
-
-        response = gcs_storage_client.upload_part(
-            bucket="test-bucket-123",
-            key="test-parts.zip",
-            upload_id=upload_response.upload_id,
-            part_number=1,
-            body=chunk_content,
-        )
-
-        assert isinstance(response, UploadPartResponse)
-        assert response.etag is not None
-        assert response.etag.startswith("gcs_part_")
-        assert response.part_number == 1
-        assert "gcs_resumable" in response.metadata
-
-        # Clean up
-        gcs_storage_client.abort_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-parts.zip",
-            upload_id=upload_response.upload_id,
-        )
-
-    def test_upload_part_invalid_upload_id(self, gcs_storage_client, chunk_content):
-        """Test part upload with invalid upload ID."""
-        with pytest.raises(ValueError, match="Unknown upload ID: invalid-upload-id"):
+    def test_upload_part_not_implemented(self, gcs_storage_client, chunk_content):
+        """Test that upload_part raises NotImplementedError."""
+        with pytest.raises(NotImplementedError, match="GCS upload_part is not implemented"):
             gcs_storage_client.upload_part(
                 bucket="test-bucket-123",
                 key="test-parts.zip",
-                upload_id="invalid-upload-id",
+                upload_id="test-upload-id",
                 part_number=1,
                 body=chunk_content,
             )
 
-    def test_upload_part_chunk_too_small(
-        self, gcs_storage_client, mock_bucket, mock_blob
-    ):
-        """Test part upload with chunk below minimum size."""
-        # First create a multipart upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
-
-        upload_response = gcs_storage_client.create_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-parts.zip",
-            content_type="application/zip",
-        )
-
-        # Create a chunk that's just below the minimum size
-        # We need to bypass schema validation for this test since we want to test the warning behavior
-        small_chunk = b"x" * (GCS_MIN_CHUNK_SIZE - 1)
-
-        # Mock the schema validation to allow small chunks for testing
-        with patch(
-            "fides.api.service.storage.streaming.gcs.gcs_storage_client.GCSChunkUploadRequest"
-        ) as mock_schema:
-            mock_request = MagicMock()
-            mock_request.upload_id = upload_response.upload_id
-            mock_request.chunk_data = small_chunk
-            mock_schema.return_value = mock_request
-
-            response = gcs_storage_client.upload_part(
-                bucket="test-bucket-123",
-                key="test-parts.zip",
-                upload_id=upload_response.upload_id,
-                part_number=1,
-                body=small_chunk,
-            )
-
-            assert response is not None
-
-        # Clean up
-        gcs_storage_client.abort_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-parts.zip",
-            upload_id=upload_response.upload_id,
-        )
-
-    def test_complete_multipart_upload_success(
-        self, gcs_storage_client, mock_bucket, mock_blob
-    ):
-        """Test successful multipart upload completion."""
-        # First create a multipart upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
-
-        upload_response = gcs_storage_client.create_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-complete.zip",
-            content_type="application/zip",
-        )
-
-        # Create mock parts
-        parts = [
-            UploadPartResponse(etag="etag1", part_number=1),
-            UploadPartResponse(etag="etag2", part_number=2),
-        ]
-
-        gcs_storage_client.complete_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-complete.zip",
-            upload_id=upload_response.upload_id,
-            parts=parts,
-        )
-
-        # Verify upload was cleaned up
-        assert upload_response.upload_id not in gcs_storage_client._resumable_uploads
-
-    def test_complete_multipart_upload_invalid_upload_id(self, gcs_storage_client):
-        """Test multipart upload completion with invalid upload ID."""
+    def test_complete_multipart_upload_not_implemented(self, gcs_storage_client):
+        """Test that complete_multipart_upload raises NotImplementedError."""
         parts = [UploadPartResponse(etag="etag1", part_number=1)]
 
-        with pytest.raises(ValueError, match="Unknown upload ID: invalid-upload-id"):
+        with pytest.raises(NotImplementedError, match="GCS complete_multipart_upload is not implemented"):
             gcs_storage_client.complete_multipart_upload(
                 bucket="test-bucket-123",
                 key="test-complete.zip",
-                upload_id="invalid-upload-id",
+                upload_id="test-upload-id",
                 parts=parts,
             )
 
-    def test_abort_multipart_upload_success(
-        self, gcs_storage_client, mock_bucket, mock_blob
-    ):
-        """Test successful multipart upload abortion."""
-        # First create a multipart upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
-
-        upload_response = gcs_storage_client.create_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-abort.zip",
-            content_type="application/zip",
-        )
-
-        gcs_storage_client.abort_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-abort.zip",
-            upload_id=upload_response.upload_id,
-        )
-
-        # Verify upload was cleaned up
-        assert upload_response.upload_id not in gcs_storage_client._resumable_uploads
-
-    def test_abort_multipart_upload_invalid_upload_id(self, gcs_storage_client):
-        """Test multipart upload abortion with invalid upload ID."""
-        # This should not raise an error, just log a warning
-        gcs_storage_client.abort_multipart_upload(
-            bucket="test-bucket-123",
-            key="test-abort.zip",
-            upload_id="invalid-upload-id",
-        )
+    def test_abort_multipart_upload_not_implemented(self, gcs_storage_client):
+        """Test that abort_multipart_upload raises NotImplementedError."""
+        with pytest.raises(NotImplementedError, match="GCS abort_multipart_upload is not implemented"):
+            gcs_storage_client.abort_multipart_upload(
+                bucket="test-bucket-123",
+                key="test-abort.zip",
+                upload_id="test-upload-id",
+            )
 
 
 class TestGCSStorageClientResumableUpload:
@@ -395,115 +248,33 @@ class TestGCSStorageClientResumableUpload:
             upload_id=response.upload_id,
         )
 
-    def test_upload_chunk_success(
-        self, gcs_storage_client, mock_bucket, mock_blob, chunk_content
-    ):
-        """Test successful chunk upload."""
-        # First create a resumable upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
-
-        upload_response = gcs_storage_client.create_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-chunks.zip",
-            content_type="application/zip",
-        )
-
-        response = gcs_storage_client.upload_chunk(
-            bucket="test-bucket-123",
-            key="test-chunks.zip",
-            upload_id=upload_response.upload_id,
-            chunk_data=chunk_content,
-        )
-
-        assert isinstance(response, GCSChunkUploadResponse)
-        assert response.bytes_uploaded == len(chunk_content)
-        assert "chunk_size" in response.metadata
-
-        # Verify bytes were tracked
-        upload_info = gcs_storage_client._resumable_uploads[upload_response.upload_id]
-        assert upload_info["bytes_uploaded"] == len(chunk_content)
-
-        # Clean up
-        gcs_storage_client.abort_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-chunks.zip",
-            upload_id=upload_response.upload_id,
-        )
-
-    def test_upload_chunk_invalid_upload_id(self, gcs_storage_client, chunk_content):
-        """Test chunk upload with invalid upload ID."""
-        with pytest.raises(ValueError, match="Unknown upload ID: invalid-upload-id"):
+    def test_upload_chunk_not_implemented(self, gcs_storage_client, chunk_content):
+        """Test that upload_chunk raises NotImplementedError."""
+        with pytest.raises(NotImplementedError, match="GCS upload_chunk is not fully implemented"):
             gcs_storage_client.upload_chunk(
                 bucket="test-bucket-123",
                 key="test-chunks.zip",
-                upload_id="invalid-upload-id",
+                upload_id="test-upload-id",
                 chunk_data=chunk_content,
             )
 
-    def test_complete_resumable_upload_success(
-        self, gcs_storage_client, mock_bucket, mock_blob
-    ):
-        """Test successful resumable upload completion."""
-        # First create a resumable upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
+    def test_complete_resumable_upload_not_implemented(self, gcs_storage_client):
+        """Test that complete_resumable_upload raises NotImplementedError."""
+        with pytest.raises(NotImplementedError, match="GCS complete_resumable_upload is not fully implemented"):
+            gcs_storage_client.complete_resumable_upload(
+                bucket="test-bucket-123",
+                key="test-complete-resumable.zip",
+                upload_id="test-upload-id",
+            )
 
-        upload_response = gcs_storage_client.create_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-complete-resumable.zip",
-            content_type="application/zip",
-        )
-
-        # Upload a chunk to track bytes
-        chunk_data = b"x" * GCS_MIN_CHUNK_SIZE
-        gcs_storage_client.upload_chunk(
-            bucket="test-bucket-123",
-            key="test-complete-resumable.zip",
-            upload_id=upload_response.upload_id,
-            chunk_data=chunk_data,
-        )
-
-        gcs_storage_client.complete_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-complete-resumable.zip",
-            upload_id=upload_response.upload_id,
-        )
-
-        # Verify upload was cleaned up
-        assert upload_response.upload_id not in gcs_storage_client._resumable_uploads
-
-    def test_abort_resumable_upload_success(
-        self, gcs_storage_client, mock_bucket, mock_blob
-    ):
-        """Test successful resumable upload abortion."""
-        # First create a resumable upload
-        gcs_storage_client.client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.create_resumable_upload_session.return_value = (
-            "https://resumable-url.com"
-        )
-
-        upload_response = gcs_storage_client.create_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-abort-resumable.zip",
-            content_type="application/zip",
-        )
-
-        gcs_storage_client.abort_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-abort-resumable.zip",
-            upload_id=upload_response.upload_id,
-        )
-
-        # Verify upload was cleaned up
-        assert upload_response.upload_id not in gcs_storage_client._resumable_uploads
+    def test_abort_resumable_upload_not_implemented(self, gcs_storage_client):
+        """Test that abort_resumable_upload raises NotImplementedError."""
+        with pytest.raises(NotImplementedError, match="GCS abort_resumable_upload is not fully implemented"):
+            gcs_storage_client.abort_resumable_upload(
+                bucket="test-bucket-123",
+                key="test-abort-resumable.zip",
+                upload_id="test-upload-id",
+            )
 
     def test_get_resumable_upload_status(
         self, gcs_storage_client, mock_bucket, mock_blob
@@ -536,12 +307,8 @@ class TestGCSStorageClientResumableUpload:
         invalid_status = gcs_storage_client.get_resumable_upload_status("invalid-id")
         assert invalid_status is None
 
-        # Clean up
-        gcs_storage_client.abort_resumable_upload(
-            bucket="test-bucket-123",
-            key="test-status.zip",
-            upload_id=upload_response.upload_id,
-        )
+        # Clean up - since abort is not implemented, manually remove from dict
+        del gcs_storage_client._resumable_uploads[upload_response.upload_id]
 
 
 class TestGCSStorageClientObjectOperations:
@@ -740,17 +507,9 @@ class TestGCSStorageClientEdgeCases:
             assert response1.upload_id != response2.upload_id
             assert len(gcs_storage_client._resumable_uploads) == 2
 
-            # Clean up
-            gcs_storage_client.abort_multipart_upload(
-                bucket="test-bucket-123",
-                key="same-key.zip",
-                upload_id=response1.upload_id,
-            )
-            gcs_storage_client.abort_multipart_upload(
-                bucket="test-bucket-123",
-                key="same-key.zip",
-                upload_id=response2.upload_id,
-            )
+            # Clean up - manually remove since abort is not implemented
+            del gcs_storage_client._resumable_uploads[response1.upload_id]
+            del gcs_storage_client._resumable_uploads[response2.upload_id]
 
     def test_upload_id_collision_handling(
         self, gcs_storage_client, mock_bucket, mock_blob
@@ -786,12 +545,8 @@ class TestGCSStorageClientEdgeCases:
                 assert response1.upload_id == response2.upload_id
                 assert len(gcs_storage_client._resumable_uploads) == 1
 
-                # Clean up
-                gcs_storage_client.abort_multipart_upload(
-                    bucket="test-bucket-123",
-                    key="collision-test1.zip",
-                    upload_id=response1.upload_id,
-                )
+                # Clean up - manually remove since abort is not implemented
+                del gcs_storage_client._resumable_uploads[response1.upload_id]
 
     def test_cleanup_on_exception(self, gcs_storage_client, mock_bucket, mock_blob):
         """Test that uploads are properly cleaned up even when exceptions occur."""
@@ -816,12 +571,10 @@ class TestGCSStorageClientEdgeCases:
         try:
             raise Exception("Test exception")
         except Exception:
-            # Even with exception, cleanup should work
-            gcs_storage_client.abort_multipart_upload(
-                bucket="test-bucket-123",
-                key="cleanup-test.zip",
-                upload_id=response.upload_id,
-            )
+            # Even with exception, cleanup should work manually
+            # Since abort is not implemented, we clean up manually
+            if response.upload_id in gcs_storage_client._resumable_uploads:
+                del gcs_storage_client._resumable_uploads[response.upload_id]
 
         # Verify upload was cleaned up
         assert response.upload_id not in gcs_storage_client._resumable_uploads

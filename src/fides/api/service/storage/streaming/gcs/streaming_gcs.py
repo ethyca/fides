@@ -1,26 +1,28 @@
+"""
+GCS Streaming Storage Implementation
+
+This module provides GCS-specific streaming upload functionality for the Fides privacy platform.
+Currently, this module is a work-in-progress that needs full implementation.
+
+TODO: Implement GCS-specific streaming optimizations and features:
+1. GCS-native streaming uploads with proper chunking
+2. GCS-specific error handling and retry logic
+3. GCS metadata and lifecycle management
+4. GCS-specific progress tracking
+5. GCS resumable upload implementation
+6. GCS multipart upload for large files
+"""
+
 from __future__ import annotations
 
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 from fideslang.validation import AnyHttpUrlString
-from google.cloud.exceptions import GoogleCloudError
-from loguru import logger
 
-from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.streaming.cloud_storage_client import ProgressCallback
-from fides.api.service.storage.streaming.schemas import (
-    ProcessingMetrics,
-    StorageUploadConfig,
-)
-from fides.api.service.storage.streaming.storage_client_factory import (
-    get_storage_client,
-)
-from fides.api.service.storage.streaming.streaming_storage import (
-    upload_to_storage_streaming,
-)
-from fides.api.tasks.storage import upload_to_gcs
+from fides.api.service.storage.streaming.schemas import ProcessingMetrics
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -40,116 +42,12 @@ def upload_to_gcs_streaming(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads arbitrary data to GCS using production-ready memory-efficient processing.
 
-    This function maintains backward compatibility while using the new cloud-agnostic
-    streaming implementation under the hood.
-
-    The production-ready approach includes:
-    1. Parallel processing of multiple attachments
-    2. Adaptive chunk sizes based on file size
-    3. Progress tracking and comprehensive metrics
-    4. Automatic package splitting for large datasets
-    5. Robust error handling and retry logic
-    6. Memory usage limited to ~5.6MB regardless of attachment count
-    """
-    logger.info("Starting production streaming GCS Upload of {}", file_key)
-
-    if privacy_request is None and document is not None:
-        # For backward compatibility, we need to create a mock privacy request
-        # since the streaming functions require it
-        from fides.api.models.privacy_request import (
-            PrivacyRequest as MockPrivacyRequest,
-        )
-
-        mock_request = MockPrivacyRequest(id="backward_compat")
-
-        # Instead of calling upload_to_gcs (which has type mismatches),
-        # we'll use the streaming implementation directly
-        try:
-            # Create GCS storage client using the new abstraction
-            storage_client = get_storage_client("gcs", auth_method, storage_secrets)
-
-            # Create upload config for the new streaming interface
-            upload_config = StorageUploadConfig(
-                bucket_name=bucket_name,
-                file_key=file_key,
-                resp_format=resp_format,
-                max_workers=max_workers,
-            )
-
-            # Use the new cloud-agnostic streaming implementation
-            result = upload_to_storage_streaming(
-                storage_client,
-                data,
-                upload_config,
-                mock_request,
-                document,
-                progress_callback,
-            )
-
-            logger.info("Successfully uploaded streaming archive to GCS: {}", file_key)
-            return result
-
-        except GoogleCloudError as e:
-            logger.error(f"Error getting GCS client: {str(e)}")
-            raise StorageUploadError(f"Error getting GCS client: {str(e)}")
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
-
-    try:
-        # Create GCS storage client using the new abstraction
-        storage_client = get_storage_client("gcs", auth_method, storage_secrets)
-
-    except GoogleCloudError as e:
-        logger.error(f"Error getting GCS client: {str(e)}")
-        raise StorageUploadError(f"Error getting GCS client: {str(e)}")
-
-    try:
-        # Create upload config for the new streaming interface
-        upload_config = StorageUploadConfig(
-            bucket_name=bucket_name,
-            file_key=file_key,
-            resp_format=resp_format,
-            max_workers=max_workers,
-        )
-
-        # Use the new cloud-agnostic streaming implementation
-        result = upload_to_storage_streaming(
-            storage_client,
-            data,
-            upload_config,
-            privacy_request,
-            document,
-            progress_callback,
-        )
-
-        logger.info("Successfully uploaded streaming archive to GCS: {}", file_key)
-        return result
-
-    except GoogleCloudError as e:
-        logger.error("Encountered error while uploading GCS object: {}", e)
-        raise StorageUploadError(f"Error uploading to GCS: {e}")
-    except Exception as e:
-        logger.error("Unexpected error during streaming upload: {}", e)
-        raise StorageUploadError(f"Unexpected error during streaming upload: {e}")
-
-
-def upload_to_gcs_streaming_advanced(
-    storage_secrets: Optional[dict[StorageSecrets, Any]],
-    data: dict,
-    bucket_name: str,
-    file_key: str,
-    resp_format: str,
-    privacy_request: Optional[PrivacyRequest],
-    document: Optional[BytesIO],
-    auth_method: str,
-    max_workers: int = 5,
-    progress_callback: Optional[ProgressCallback] = None,
-) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
-    """Wrapper function that delegates to the main streaming implementation.
-
-    This function maintains backward compatibility by calling upload_to_gcs.
-    The actual streaming logic is implemented in the new cloud-agnostic module.
+    TODO: This function needs full implementation for GCS-specific streaming:
+    - GCS-native streaming with proper chunk sizes
+    - GCS-specific error handling
+    - GCS metadata management
+    - GCS lifecycle policies
+    - Memory-efficient processing for large datasets
 
     Args:
         storage_secrets: GCS storage secrets
@@ -167,74 +65,59 @@ def upload_to_gcs_streaming_advanced(
         Tuple of (signed_url, metrics) where metrics contains processing information
 
     Raises:
-        StorageUploadError: If upload fails
-        ValueError: If privacy request is not provided
+        NotImplementedError: Function not yet implemented
     """
-    logger.info("Starting advanced streaming GCS Upload of {}", file_key)
+    raise NotImplementedError(
+        "GCS streaming upload not yet implemented. "
+        "TODO: Implement GCS-native streaming with proper chunking, "
+        "error handling, and metadata management."
+    )
 
-    if privacy_request is None and document is not None:
-        # For backward compatibility, we need to create a mock privacy request
-        # since the streaming functions require it
-        from fides.api.models.privacy_request import (
-            PrivacyRequest as MockPrivacyRequest,
-        )
 
-        mock_request = MockPrivacyRequest(id="backward_compat")
+def upload_to_gcs_streaming_advanced(
+    storage_secrets: Optional[dict[StorageSecrets, Any]],
+    data: dict,
+    bucket_name: str,
+    file_key: str,
+    resp_format: str,
+    privacy_request: Optional[PrivacyRequest],
+    document: Optional[BytesIO],
+    auth_method: str,
+    max_workers: int = 5,
+    progress_callback: Optional[ProgressCallback] = None,
+) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
+    """Advanced GCS streaming upload with additional features.
 
-        # Instead of calling upload_to_gcs (which has type mismatches),
-        # we'll use the streaming implementation directly
-        try:
-            # Create GCS storage client using the new abstraction
-            storage_client = get_storage_client("gcs", auth_method, storage_secrets)
+    TODO: This function should implement advanced GCS-specific features:
+    - GCS multipart uploads for large files
+    - GCS-specific compression and encoding
+    - GCS metadata and custom headers
+    - GCS lifecycle management
+    - GCS versioning support
 
-            # Create upload config for the new streaming interface
-            upload_config = StorageUploadConfig(
-                bucket_name=bucket_name,
-                file_key=file_key,
-                resp_format=resp_format,
-                max_workers=max_workers,
-            )
+    Args:
+        storage_secrets: GCS storage secrets
+        data: The data to upload
+        bucket_name: Name of the GCS bucket
+        file_key: Key of the file in the bucket
+        resp_format: Response format (json, csv, html)
+        privacy_request: Privacy request object
+        document: Optional document (for backward compatibility)
+        auth_method: Authentication method for GCS
+        max_workers: Number of parallel workers for attachment processing
+        progress_callback: Optional callback for progress updates
 
-            # Use the new cloud-agnostic streaming implementation
-            result = upload_to_storage_streaming(
-                storage_client,
-                data,
-                upload_config,
-                mock_request,
-                document,
-                progress_callback,
-            )
+    Returns:
+        Tuple of (signed_url, metrics) where metrics contains processing information
 
-            logger.info("Successfully uploaded streaming archive to GCS: {}", file_key)
-            return result
-
-        except GoogleCloudError as e:
-            logger.error(f"Error getting GCS client: {str(e)}")
-            raise StorageUploadError(f"Error getting GCS client: {str(e)}")
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
-
-    try:
-        # Use the main streaming function for all formats
-        return upload_to_gcs_streaming(
-            storage_secrets,
-            data,
-            bucket_name,
-            file_key,
-            resp_format,
-            privacy_request,
-            document,
-            auth_method,
-            max_workers,
-            progress_callback,
-        )
-
-    except Exception as e:
-        logger.error("Unexpected error during advanced streaming upload: {}", e)
-        raise StorageUploadError(
-            f"Unexpected error during advanced streaming upload: {e}"
-        )
+    Raises:
+        NotImplementedError: Function not yet implemented
+    """
+    raise NotImplementedError(
+        "Advanced GCS streaming upload not yet implemented. "
+        "TODO: Implement GCS multipart uploads, compression, "
+        "metadata management, and lifecycle policies."
+    )
 
 
 def upload_to_gcs_resumable(
@@ -251,8 +134,12 @@ def upload_to_gcs_resumable(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads data to GCS using resumable uploads for large files.
 
-    This function uses GCS's native resumable upload capability for better
-    handling of large files and network interruptions.
+    TODO: This function should implement actual GCS resumable uploads:
+    - Use GCS resumable upload API
+    - Implement proper chunking and resume logic
+    - Handle upload session management
+    - Implement progress tracking for resumable uploads
+    - Handle network interruptions and resume from last successful chunk
 
     Args:
         storage_secrets: GCS storage secrets
@@ -270,86 +157,13 @@ def upload_to_gcs_resumable(
         Tuple of (signed_url, metrics) where metrics contains processing information
 
     Raises:
-        StorageUploadError: If upload fails
-        ValueError: If privacy request is not provided
+        NotImplementedError: Function not yet implemented
     """
-    logger.info("Starting GCS resumable upload of {}", file_key)
-
-    if privacy_request is None and document is not None:
-        # For backward compatibility, we need to create a mock privacy request
-        # since the streaming functions require it
-        from fides.api.models.privacy_request import (
-            PrivacyRequest as MockPrivacyRequest,
-        )
-
-        mock_request = MockPrivacyRequest(id="backward_compat")
-
-        # Instead of calling upload_to_gcs (which has type mismatches),
-        # we'll use the streaming implementation directly
-        try:
-            # Create GCS storage client using the new abstraction
-            storage_client = get_storage_client("gcs", auth_method, storage_secrets)
-
-            # Create upload config for the new streaming interface
-            upload_config = StorageUploadConfig(
-                bucket_name=bucket_name,
-                file_key=file_key,
-                resp_format=resp_format,
-                max_workers=max_workers,
-            )
-
-            # Use the new cloud-agnostic streaming implementation
-            result = upload_to_storage_streaming(
-                storage_client,
-                data,
-                upload_config,
-                mock_request,
-                document,
-                progress_callback,
-            )
-
-            logger.info("Successfully uploaded streaming archive to GCS: {}", file_key)
-            return result
-
-        except GoogleCloudError as e:
-            logger.error(f"Error getting GCS client: {str(e)}")
-            raise StorageUploadError(f"Error getting GCS client: {str(e)}")
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
-
-    try:
-        # Create GCS storage client
-        storage_client = get_storage_client("gcs", auth_method, storage_secrets)
-
-        # Create upload config for the new streaming interface
-        upload_config = StorageUploadConfig(
-            bucket_name=bucket_name,
-            file_key=file_key,
-            resp_format=resp_format,
-            max_workers=max_workers,
-        )
-
-        # For resumable uploads, we'll use the cloud-agnostic streaming
-        # but with GCS-specific optimizations
-        result = upload_to_storage_streaming(
-            storage_client,
-            data,
-            upload_config,
-            privacy_request,
-            document,
-            progress_callback,
-        )
-
-        logger.info("Successfully uploaded using GCS resumable upload: {}", file_key)
-        return result
-
-    except GoogleCloudError as e:
-        logger.error("Encountered error during GCS resumable upload: {}", e)
-        raise StorageUploadError(f"Error during GCS resumable upload: {e}")
-    except Exception as e:
-        logger.error("Unexpected error during GCS resumable upload: {}", e)
-        raise StorageUploadError(f"Unexpected error during GCS resumable upload: {e}")
+    raise NotImplementedError(
+        "GCS resumable upload not yet implemented. "
+        "TODO: Implement GCS resumable upload API with proper "
+        "chunking, session management, and resume logic."
+    )
 
 
 def upload_to_gcs_streaming_with_retry(
@@ -367,8 +181,12 @@ def upload_to_gcs_streaming_with_retry(
 ) -> Tuple[Optional[AnyHttpUrlString], ProcessingMetrics]:
     """Uploads data to GCS with automatic retry logic for transient failures.
 
-    This function implements exponential backoff and retry logic for handling
-    transient network issues and temporary GCS service unavailability.
+    TODO: This function should implement GCS-specific retry logic:
+    - GCS-specific error classification (retryable vs non-retryable)
+    - GCS-specific backoff strategies
+    - Handle GCS quota limits and rate limiting
+    - Implement exponential backoff with jitter
+    - Handle GCS-specific transient errors
 
     Args:
         storage_secrets: GCS storage secrets
@@ -387,102 +205,20 @@ def upload_to_gcs_streaming_with_retry(
         Tuple of (signed_url, metrics) where metrics contains processing information
 
     Raises:
-        StorageUploadError: If upload fails after all retries
-        ValueError: If privacy request is not provided
+        NotImplementedError: Function not yet implemented
     """
-    logger.info("Starting GCS streaming upload with retry logic of {}", file_key)
+    raise NotImplementedError(
+        "GCS streaming upload with retry not yet implemented. "
+        "TODO: Implement GCS-specific retry logic with proper "
+        "error classification, backoff strategies, and rate limiting."
+    )
 
-    if privacy_request is None and document is not None:
-        # For backward compatibility, we need to create a mock privacy request
-        # since the streaming functions require it
-        from fides.api.models.privacy_request import (
-            PrivacyRequest as MockPrivacyRequest,
-        )
 
-        mock_request = MockPrivacyRequest(id="backward_compat")
-
-        # Instead of calling upload_to_gcs (which has type mismatches),
-        # we'll use the streaming implementation directly
-        try:
-            # Create GCS storage client using the new abstraction
-            storage_client = get_storage_client("gcs", auth_method, storage_secrets)
-
-            # Create upload config for the new streaming interface
-            upload_config = StorageUploadConfig(
-                bucket_name=bucket_name,
-                file_key=file_key,
-                resp_format=resp_format,
-                max_workers=max_workers,
-            )
-
-            # Use the new cloud-agnostic streaming implementation
-            result = upload_to_storage_streaming(
-                storage_client,
-                data,
-                upload_config,
-                mock_request,
-                document,
-                progress_callback,
-            )
-
-            logger.info("Successfully uploaded streaming archive to GCS: {}", file_key)
-            return result
-
-        except GoogleCloudError as e:
-            logger.error(f"Error getting GCS client: {str(e)}")
-            raise StorageUploadError(f"Error getting GCS client: {str(e)}")
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
-
-    last_exception = None
-    for attempt in range(max_retries):
-        try:
-            # Create GCS storage client
-            storage_client = get_storage_client("gcs", auth_method, storage_secrets)
-
-            # Create upload config for the new streaming interface
-            upload_config = StorageUploadConfig(
-                bucket_name=bucket_name,
-                file_key=file_key,
-                resp_format=resp_format,
-                max_workers=max_workers,
-            )
-
-            # Use the new cloud-agnostic streaming implementation
-            result = upload_to_storage_streaming(
-                storage_client,
-                data,
-                upload_config,
-                privacy_request,
-                document,
-                progress_callback,
-            )
-
-            logger.info("Successfully uploaded streaming archive to GCS: {}", file_key)
-            return result
-
-        except GoogleCloudError as e:
-            last_exception = e
-            if attempt < max_retries - 1:
-                wait_time = 2**attempt  # Exponential backoff
-                logger.warning(
-                    "GCS upload attempt {} failed, retrying in {} seconds: {}",
-                    attempt + 1,
-                    wait_time,
-                    e,
-                )
-                import time
-
-                time.sleep(wait_time)
-            else:
-                logger.error("GCS upload failed after {} attempts: {}", max_retries, e)
-                raise StorageUploadError(
-                    f"Error uploading to GCS after {max_retries} attempts: {e}"
-                )
-        except Exception as e:
-            logger.error("Unexpected error during streaming upload: {}", e)
-            raise StorageUploadError(f"Unexpected error during streaming upload: {e}")
-
-    # This should never be reached, but mypy requires it
-    raise StorageUploadError(f"Upload failed after {max_retries} attempts")
+# TODO: Implement additional GCS-specific functions:
+# - upload_to_gcs_multipart: For very large files using GCS multipart uploads
+# - upload_to_gcs_with_metadata: With custom GCS metadata and headers
+# - upload_to_gcs_with_lifecycle: With GCS lifecycle management policies
+# - upload_to_gcs_with_versioning: With GCS object versioning support
+# - upload_to_gcs_with_encryption: With GCS customer-managed encryption keys
+# - upload_to_gcs_with_compression: With GCS-native compression
+# - upload_to_gcs_with_validation: With GCS object validation and checksums
