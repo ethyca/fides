@@ -186,5 +186,6 @@ class PollingAsyncDSRConfiguration(StrategyConfiguration):
     """
 
     status_request: SaaSRequest
+    status_path: str
     result_request: SaaSRequest
     result_path: str

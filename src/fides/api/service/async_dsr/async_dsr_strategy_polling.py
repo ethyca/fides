@@ -2,7 +2,8 @@ from typing import Any, Dict, List, Optional
 
 from requests import Response
 
-from fides.api.graph.traversal import TraversalNode
+from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
@@ -10,6 +11,7 @@ from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfigu
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.saas_util import map_param_values
+from loguru import logger
 
 
 class PollingAsyncDSRStrategy(AsyncDSRStrategy):
@@ -37,12 +39,12 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
     def get_status_request(
         self,
         client: AuthenticatedClient,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
         secrets: Dict[str, Any],
-    ) -> Optional[SaaSRequestParams]:
+    ) -> SaaSRequestParams:
         """Executes the status requests, and move forward if its true"""
         prepared_status_request = map_param_values(
             "status",
@@ -50,26 +52,36 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
             self.status_request,
             secrets,  # type: ignore
         )
-        response: Response = client.send(prepared_status_request, privacy_request.id)
+        response: Response = client.send(prepared_status_request)
 
-        return None
-        # TODO: Finish up status
-
+        logger.info(f"Status request response: {response}")
         if response.ok:
-            return self.get_result_request(
-                client,
-                node,
-                policy,
-                privacy_request,
-                input_data,
-                secrets,
-            )
+
+            status_path_value = response.json().get(self.status_path)
+            return status_path_value
+
+        raise PrivacyRequestError(f"Status request failed with status code {response.status_code}")
 
     def get_result_request(
         self,
-        request_params: SaaSRequestParams,
-        connector_params: Dict[str, Any],
-        response: Response,
-        data_path: Optional[str],
+        client: AuthenticatedClient,
+        node: ExecutionNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
+        secrets: Dict[str, Any],
     ) -> Optional[SaaSRequestParams]:
-        pass
+        """Build request to get the result of the async DSR process"""
+        prepared_result_request = map_param_values(
+            "result",
+            "Polling",
+            self.result_request,
+            secrets,  # type: ignore
+        )
+        response: Response = client.send(prepared_result_request)
+        logger.info(f"Result request response: {response}")
+        if response.ok:
+            result_value = response.json().get(self.result_path)
+            return result_value
+
+        raise PrivacyRequestError(f"Result request failed with status code {response.status_code}")
