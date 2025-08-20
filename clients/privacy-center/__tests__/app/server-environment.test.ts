@@ -18,14 +18,14 @@ describe("validateConfig", () => {
     },
     {
       name: "valid consent options",
-      config: fullJson,
+      config: fullJson as any,
       expected: {
         isValid: true,
       },
     },
     {
       name: "multiple executable consent options",
-      config: produce(fullJson, (draftConfig) => {
+      config: produce(fullJson, (draftConfig: any) => {
         draftConfig.consent.consentOptions[0].executable = true;
         draftConfig.consent.consentOptions[1].executable = true;
       }),
