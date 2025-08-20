@@ -9,7 +9,6 @@ from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.gcs import generic_upload_to_gcs
 from fides.api.service.storage.streaming.cloud_storage_client import ProgressCallback
 from fides.api.service.storage.streaming.schemas import (
     ProcessingMetrics,
@@ -21,6 +20,7 @@ from fides.api.service.storage.streaming.storage_client_factory import (
 from fides.api.service.storage.streaming.streaming_storage import (
     upload_to_storage_streaming,
 )
+from fides.api.tasks.storage import upload_to_gcs
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -54,7 +54,7 @@ def upload_to_gcs_streaming(
     logger.info("Starting production streaming GCS Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
-        _, response = generic_upload_to_gcs(
+        _, response = upload_to_gcs(
             storage_secrets, bucket_name, file_key, auth_method, document
         )
         # Return empty metrics for backward compatibility
@@ -141,7 +141,7 @@ def upload_to_gcs_streaming_advanced(
     logger.info("Starting advanced streaming GCS Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
-        _, response = generic_upload_to_gcs(
+        _, response = upload_to_gcs(
             storage_secrets, bucket_name, file_key, auth_method, document
         )
         # Return empty metrics for backward compatibility
@@ -212,7 +212,7 @@ def upload_to_gcs_resumable(
     logger.info("Starting GCS resumable upload of {}", file_key)
 
     if privacy_request is None and document is not None:
-        _, response = generic_upload_to_gcs(
+        _, response = upload_to_gcs(
             storage_secrets, bucket_name, file_key, auth_method, document
         )
         # Return empty metrics for backward compatibility
