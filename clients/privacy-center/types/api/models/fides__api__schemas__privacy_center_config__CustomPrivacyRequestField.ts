@@ -11,5 +11,4 @@ export type fides__api__schemas__privacy_center_config__CustomPrivacyRequestFiel
     query_param_key?: string | null;
     field_type?: "text" | "multiselect" | "select" | "location" | null;
     options?: string[] | null;
-    ip_geolocation_hint?: boolean | null;
   };
