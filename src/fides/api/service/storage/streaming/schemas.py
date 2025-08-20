@@ -45,22 +45,6 @@ class StorageUploadConfig(BaseModel):
         return v.strip()
 
 
-class ChunkDownloadConfig(BaseModel):
-    """Configuration for chunk download operations"""
-
-    start_byte: int = Field(..., ge=0, description="Starting byte position")
-    end_byte: int = Field(..., ge=0, description="Ending byte position")
-    max_retries: int = Field(
-        default=3, ge=1, le=10, description="Maximum retry attempts"
-    )
-
-    @model_validator(mode="after")
-    def validate_byte_range(self) -> "ChunkDownloadConfig":
-        if self.start_byte > self.end_byte:
-            raise ValueError("start_byte cannot be greater than end_byte")
-        return self
-
-
 class PackageSplitConfig(BaseModel):
     """Configuration for package splitting operations"""
 

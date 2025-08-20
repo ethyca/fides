@@ -18,59 +18,19 @@ from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
 from fides.api.service.storage.streaming.schemas import (
     AttachmentInfo,
-    ChunkDownloadConfig,
     MultipartUploadResponse,
     StorageUploadConfig,
-    StreamingBufferConfig,
     UploadPartResponse,
 )
 from fides.api.service.storage.streaming.streaming_storage import (
-    calculate_file_crc32,
-    create_zip_part_for_chunk,
-    download_chunk_with_retry,
     split_data_into_packages,
     stream_attachments_to_storage_zip,
-    stream_single_attachment_to_storage_streaming,
     upload_to_storage_streaming,
-    upload_zip_part_to_storage,
-)
-from fides.api.service.storage.streaming.util import (
-    adaptive_chunk_size,
-    should_split_package,
 )
 
 
 class TestStreamingStorage:
     """Test the streaming storage implementation."""
-
-    def test_create_zip_part_for_chunk(self):
-        """Test ZIP part creation for individual chunks."""
-        chunk_data = b"test data content"
-        filename = "test.txt"
-        file_size = len(chunk_data)
-        crc32 = 0xABCDEF01  # Test CRC-32 value
-
-        # Test first chunk (with header)
-        first_chunk = create_zip_part_for_chunk(
-            chunk_data, filename, True, False, file_size, crc32
-        )
-        assert first_chunk.startswith(b"PK\x03\x04")  # Has local file header
-        assert chunk_data in first_chunk
-
-        # Test last chunk (with footer)
-        last_chunk = create_zip_part_for_chunk(
-            chunk_data, filename, False, True, file_size, crc32
-        )
-        assert chunk_data in last_chunk
-        assert b"PK\x07\x08" in last_chunk  # Has data descriptor signature
-
-        # Test middle chunk (no header/footer)
-        middle_chunk = create_zip_part_for_chunk(
-            chunk_data, filename, False, False, file_size, crc32
-        )
-        assert chunk_data in middle_chunk
-        assert not middle_chunk.startswith(b"PK\x03\x04")  # No header
-        assert not middle_chunk.endswith(b"PK\x07\x08")  # No footer
 
     def test_split_data_into_packages(self):
         """Test data package splitting logic."""
@@ -183,142 +143,6 @@ class TestStreamingStorage:
         assert len(packages) == 1
         assert "users" in packages[0]
         assert len(packages[0]["users"]) == 2
-
-    def test_adaptive_chunk_size(self):
-        """Test adaptive chunk size calculation."""
-        # Test small files (less than 1MB)
-        assert adaptive_chunk_size(512 * 1024) == 64 * 1024  # 512KB -> 64KB
-
-        # Test medium files (1MB to 10MB) - should return 128KB
-        assert adaptive_chunk_size(1024 * 1024) == 64 * 1024  # 1MB -> 64KB
-        assert adaptive_chunk_size(3 * 1024 * 1024) == 128 * 1024  # 3MB -> 128KB
-
-        # Test large files (10MB to 100MB) - should return 128KB
-        assert adaptive_chunk_size(10 * 1024 * 1024) == 128 * 1024  # 10MB -> 128KB
-
-        # Test very large files (100MB+) - should return 256KB
-        assert adaptive_chunk_size(100 * 1024 * 1024) == 256 * 1024  # 100MB -> 256KB
-
-    def test_should_split_package(self):
-        """Test package splitting decision logic."""
-        # Small dataset (should not split)
-        small_data = {
-            "users": [
-                {
-                    "id": 1,
-                    "attachments": [{"s3_key": "key1", "size": 1000}] * 50,
-                }
-            ]
-        }
-        assert not should_split_package(small_data)
-
-        # Large dataset (should split)
-        large_data = {
-            "users": [
-                {
-                    "id": 1,
-                    "attachments": [{"s3_key": "key1", "size": 1000}] * 150000,
-                }
-            ]
-        }
-        assert should_split_package(large_data)
-
-    def test_download_chunk_with_retry_success_first_try(self):
-        """Test successful chunk download on first attempt."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.get_object_range.return_value = b"test data"
-
-        config = ChunkDownloadConfig(start_byte=0, end_byte=1023)
-        result = download_chunk_with_retry(mock_client, "bucket", "key", config)
-
-        assert result == b"test data"
-        mock_client.get_object_range.assert_called_once_with("bucket", "key", 0, 1023)
-
-    def test_download_chunk_with_retry_with_retries(self):
-        """Test chunk download with retries."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.get_object_range.side_effect = [
-            Exception("Network error"),
-            Exception("Still failing"),
-            b"success data",
-        ]
-
-        config = ChunkDownloadConfig(start_byte=0, end_byte=1023)
-        result = download_chunk_with_retry(mock_client, "bucket", "key", config)
-
-        assert result == b"success data"
-        assert mock_client.get_object_range.call_count == 3
-
-    def test_download_chunk_with_retry_max_retries_exceeded(self):
-        """Test chunk download when max retries are exceeded."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.get_object_range.side_effect = Exception("Persistent failure")
-
-        config = ChunkDownloadConfig(start_byte=0, end_byte=1023, max_retries=2)
-        with pytest.raises(Exception, match="Persistent failure"):
-            download_chunk_with_retry(mock_client, "bucket", "key", config)
-
-        assert mock_client.get_object_range.call_count == 2
-
-    def test_calculate_file_crc32(self):
-        """Test CRC-32 calculation for entire file."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.get_object_range.side_effect = [b"chunk1", b"chunk2", b"chunk3"]
-
-        result = calculate_file_crc32(mock_client, "bucket", "key", 3000, 1000)
-
-        # Verify chunks were requested correctly
-        expected_calls = [
-            call("bucket", "key", 0, 999),
-            call("bucket", "key", 1000, 1999),
-            call("bucket", "key", 2000, 2999),
-        ]
-        mock_client.get_object_range.assert_has_calls(expected_calls)
-
-        # Verify result is a valid CRC-32 (4-byte integer)
-        assert isinstance(result, int)
-        assert 0 <= result <= 0xFFFFFFFF
-
-    def test_upload_zip_part_to_storage_success(self):
-        """Test successful zip part upload."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.upload_part.return_value = UploadPartResponse(
-            etag="test-etag", part_number=1
-        )
-
-        buffer = BytesIO(b"test zip data")
-        buffer.seek(0, 2)  # Move to end to set tell() position
-
-        result = upload_zip_part_to_storage(
-            mock_client, "bucket", "key", "upload_id", 1, buffer
-        )
-
-        assert result.etag == "test-etag"
-        mock_client.upload_part.assert_called_once()
-
-    def test_upload_zip_part_to_storage_empty_buffer(self):
-        """Test zip part upload with empty buffer."""
-        mock_client = create_autospec(CloudStorageClient)
-        buffer = BytesIO()
-
-        with pytest.raises(ValueError, match="Cannot upload empty zip buffer"):
-            upload_zip_part_to_storage(
-                mock_client, "bucket", "key", "upload_id", 1, buffer
-            )
-
-    def test_upload_zip_part_to_storage_buffer_too_large(self):
-        """Test zip part upload with buffer exceeding max size."""
-        mock_client = create_autospec(CloudStorageClient)
-
-        # Create a buffer that exceeds 5GB
-        large_data = b"x" * (6 * 1024 * 1024 * 1024)  # 6GB
-        buffer = BytesIO(large_data)
-        buffer.seek(0, 2)
-
-        with pytest.raises(ValueError, match="exceeds maximum part size"):
-            upload_zip_part_to_storage(
-                mock_client, "bucket", "key", "upload_id", 1, buffer
-            )
 
     def test_stream_attachments_to_storage_zip_no_valid_attachments(self):
         """Test streaming when no valid attachments are found."""
@@ -510,69 +334,6 @@ class TestStreamingStorage:
         with pytest.raises(StorageUploadError, match="Part upload failed"):
             stream_attachments_to_storage_zip(
                 mock_client, "bucket", "key", data, mock_privacy_request
-            )
-
-    def test_stream_single_attachment_to_storage_streaming_success(self):
-        """Test successful single attachment streaming."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.get_object_head.return_value = {"ContentLength": 1000}
-        mock_client.get_object_range.return_value = b"chunk data"
-
-        upload_context = {
-            "storage_client": mock_client,
-            "bucket_name": "bucket",
-            "file_key": "key",
-            "upload_id": "upload_id",
-            "parts": [],
-            "part_number": 1,
-            "lock": MagicMock(),
-            "file_entries": [],
-            "current_offset": 0,
-        }
-
-        attachment = AttachmentInfo(s3_key="test-key", file_name="test.txt", size=1000)
-        metrics = create_autospec(
-            "fides.api.service.storage.streaming.schemas.ProcessingMetrics"
-        )
-
-        result = stream_single_attachment_to_storage_streaming(
-            upload_context, attachment, "base/path", metrics
-        )
-
-        assert result["processed_bytes"] == 1000
-        assert result["chunks"] == 1
-        assert (
-            result["chunk_size"] == 64 * 1024
-        )  # 64KB for small file (1000 bytes < 1MB)
-
-    def test_stream_single_attachment_to_storage_streaming_storage_error(self):
-        """Test single attachment streaming when storage fails."""
-        mock_client = create_autospec(CloudStorageClient)
-        mock_client.get_object_head.side_effect = StorageUploadError("Head failed")
-
-        upload_context = {
-            "storage_client": mock_client,
-            "bucket_name": "bucket",
-            "file_key": "key",
-            "upload_id": "upload_id",
-            "parts": [],
-            "part_number": 1,
-            "lock": MagicMock(),
-            "file_entries": [],
-            "current_offset": 0,
-        }
-
-        attachment = AttachmentInfo(s3_key="test-key", file_name="test.txt", size=1000)
-
-        # Create a proper mock for metrics with the required attributes
-        metrics = MagicMock()
-        metrics.errors = []
-        metrics.current_attachment = None
-        metrics.current_attachment_progress = 0.0
-
-        with pytest.raises(StorageUploadError, match="Head failed"):
-            stream_single_attachment_to_storage_streaming(
-                upload_context, attachment, "base/path", metrics
             )
 
     def test_upload_to_storage_streaming_csv_format(self):
@@ -1037,3 +798,68 @@ class TestStreamingStorage:
             "bucket", "key", "test-upload", []
         )
         assert len(metrics.errors) == 0
+
+    def test_stream_attachments_to_storage_zip(self):
+        """Test the streaming ZIP approach using stream_zip with parallel processing."""
+        # Mock storage client
+        mock_storage_client = create_autospec(CloudStorageClient)
+        mock_storage_client.put_object.return_value = Mock()
+
+        # Mock privacy request
+        mock_privacy_request = Mock()
+
+        # Test data with attachments
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "attachments": [{"s3_key": "key1", "size": 1000}],
+                }
+            ]
+        }
+
+        # Mock attachment info
+        mock_attachment = Mock()
+        mock_attachment.file_name = "test.txt"
+        mock_attachment.s3_key = "key1"
+        mock_attachment.size = 1000
+
+        # Mock the _collect_and_validate_attachments function
+        with patch(
+            "fides.api.service.storage.streaming.streaming_storage._collect_and_validate_attachments"
+        ) as mock_collect:
+            mock_collect.return_value = [
+                Mock(
+                    attachment=mock_attachment, base_path="users", item=data["users"][0]
+                )
+            ]
+
+            # Mock get_object to return test content
+            mock_storage_client.get_object.return_value = b"test file content"
+
+            # Call the function
+            metrics = stream_attachments_to_storage_zip(
+                mock_storage_client,
+                "test-bucket",
+                "test-key.zip",
+                data,
+                mock_privacy_request,
+                max_workers=2,
+            )
+
+            # Verify metrics
+            assert metrics.processed_attachments == 1
+            assert metrics.processed_bytes == 1000
+
+            # Verify put_object was called with stream_zip
+            mock_storage_client.put_object.assert_called_once()
+            call_args = mock_storage_client.put_object.call_args
+            assert call_args[0][0] == "test-bucket"  # bucket
+            assert call_args[0][1] == "test-key.zip"  # key
+            assert call_args[1]["content_type"] == "application/zip"
+
+            # The third argument should be a generator from stream_zip
+            zip_generator = call_args[0][2]
+            # Verify it's a generator (we can't easily test the exact content without more complex mocking)
+            assert hasattr(zip_generator, "__iter__")

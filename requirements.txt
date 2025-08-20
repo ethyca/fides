@@ -67,6 +67,7 @@ sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
 sshtunnel==0.4.0
+stream-zip==0.0.83
 tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0
