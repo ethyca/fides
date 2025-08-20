@@ -925,19 +925,55 @@ class TestStreamingZipCreation:
             "items": [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}],
         }
 
-        files = list(processor._create_data_files(data))
+        # Test with JSON format (default)
+        files = list(processor._create_data_files(data, resp_format="json"))
 
-        # Should create 2 files: data.json and items.csv
+        # Should create 2 files: data.json and items.json
         assert len(files) == 2
 
-        # Check data.json (has attachments, so JSON format)
+        # Check data.json
         data_file = files[0]
         assert data_file[0] == "data.json"
         assert isinstance(data_file[1], BytesIO)
         content = data_file[1].read().decode("utf-8")
         assert '"attachments"' in content
 
-        # Check items.csv (no attachments, so CSV format)
+        # Check items.json
+        items_file = files[1]
+        assert items_file[0] == "items.json"
+        assert isinstance(items_file[1], BytesIO)
+        content = items_file[1].read().decode("utf-8")
+        assert '"id"' in content
+        assert '"Item 1"' in content
+
+    def test_create_data_files_csv_format(self):
+        """Test _create_data_files method with CSV format data."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {
+            "data": [
+                {"id": 1, "name": "User 1", "attachments": [{"key": "value"}]},
+                {"id": 2, "name": "User 2", "attachments": [{"key": "value2"}]},
+            ],
+            "items": [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}],
+        }
+
+        # Test with CSV format
+        files = list(processor._create_data_files(data, resp_format="csv"))
+
+        # Should create 2 files: data.csv and items.csv
+        assert len(files) == 2
+
+        # Check data.csv (with attachments, but still CSV as requested)
+        data_file = files[0]
+        assert data_file[0] == "data.csv"
+        assert isinstance(data_file[1], BytesIO)
+        content = data_file[1].read().decode("utf-8")
+        assert "id,name,attachments" in content
+        assert "1,User 1," in content
+
+        # Check items.csv
         items_file = files[1]
         assert items_file[0] == "items.csv"
         assert isinstance(items_file[1], BytesIO)
@@ -1043,7 +1079,6 @@ class TestStreamingZipCreation:
         # Each batch should have exactly 2 items
         for batch in batches:
             assert len(batch) == 2
-
 
     def test_create_zip_generator_integration(self):
         """Test _create_zip_generator method integration."""
@@ -1930,6 +1965,89 @@ class TestHelperMethods:
         # Check direct attachment
         direct = next(a for a in raw_attachments if a["type"] == "direct")
         assert direct["base_path"] == "attachments/1"
+
+    def test_collect_attachments_task_based_structure(self):
+        """Test _collect_attachments method with task-based attachment structure."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        processor = StreamingStorage(mock_storage_client)
+
+        # Data structure similar to real manualtask:manual_data format
+        data = {
+            "postgres_example_test_dataset:customer": [
+                {"email": "jane@example.com", "name": "Jane Customer", "id": 3}
+            ],
+            "manualtask:manual_data": [
+                {
+                    "access_task": {
+                        "test_file_pdf.pdf": {
+                            "url": "https://fides-data-test-ethyca-demos.s3.amazonaws.com/att_a944763b-6453-4546-899a-8a7cead22418/test_file_pdf.pdf",
+                            "size": "11.0 KB",
+                            "content_type": "application/pdf",
+                        },
+                        "test_file_text.txt": {
+                            "url": "https://fides-data-test-ethyca-demos.s3.amazonaws.com/att_bdaaed43-e49d-4921-aa7a-d4875afb34ba/test_file_text.txt",
+                            "size": "5.0 KB",
+                            "content_type": "text/plain",
+                        },
+                    },
+                    "erasure_task": {
+                        "deletion_log.csv": {
+                            "url": "https://example.com/deletion_log.csv",
+                            "size": "2.0 KB",
+                            "content_type": "text/csv",
+                        }
+                    },
+                }
+            ],
+        }
+
+        raw_attachments = processor._collect_attachments(data)
+        assert len(raw_attachments) == 3
+
+        # Check PDF attachment from access_task
+        pdf_attachment = next(
+            a
+            for a in raw_attachments
+            if a["attachment"]["file_name"] == "test_file_pdf.pdf"
+        )
+        assert pdf_attachment["type"] == "nested"
+        assert pdf_attachment["base_path"] == "manualtask:manual_data/1/access_task"
+        assert (
+            pdf_attachment["attachment"]["storage_key"]
+            == "https://fides-data-test-ethyca-demos.s3.amazonaws.com/att_a944763b-6453-4546-899a-8a7cead22418/test_file_pdf.pdf"
+        )
+        assert pdf_attachment["attachment"]["content_type"] == "application/pdf"
+
+        # Check text file attachment from access_task
+        txt_attachment = next(
+            a
+            for a in raw_attachments
+            if a["attachment"]["file_name"] == "test_file_text.txt"
+        )
+        assert txt_attachment["type"] == "nested"
+        assert txt_attachment["base_path"] == "manualtask:manual_data/1/access_task"
+        assert (
+            txt_attachment["attachment"]["storage_key"]
+            == "https://fides-data-test-ethyca-demos.s3.amazonaws.com/att_bdaaed43-e49d-4921-aa7a-d4875afb34ba/test_file_text.txt"
+        )
+        assert txt_attachment["attachment"]["content_type"] == "text/plain"
+
+        # Check CSV attachment from erasure_task
+        csv_attachment = next(
+            a
+            for a in raw_attachments
+            if a["attachment"]["file_name"] == "deletion_log.csv"
+        )
+        assert csv_attachment["type"] == "nested"
+        assert csv_attachment["base_path"] == "manualtask:manual_data/1/erasure_task"
+        assert (
+            csv_attachment["attachment"]["storage_key"]
+            == "https://example.com/deletion_log.csv"
+        )
+        assert csv_attachment["attachment"]["content_type"] == "text/csv"
+
+        # Verify no regular attachments were found (since we don't have standard "attachments" keys)
+        assert not any(a["type"] == "direct" for a in raw_attachments)
 
     def test_validate_attachment_direct(self):
         """Test _validate_attachment method with direct attachment."""

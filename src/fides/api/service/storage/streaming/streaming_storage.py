@@ -166,53 +166,163 @@ class StreamingStorage:
             if not isinstance(value, list) or not value:
                 continue
 
-            # Special case: if the key is "attachments", treat the items as attachments directly
+            # Collect direct attachments if this key is "attachments"
             if key == "attachments":
-                logger.debug(
-                    f"Found 'attachments' key with {len(value)} items - processing as direct attachments"
-                )
-                for idx, attachment in enumerate(value):
-                    if not isinstance(attachment, dict):
-                        continue
+                all_attachments.extend(self._collect_direct_attachments(value))
 
-                    # Check if this looks like an attachment (has file_name or download_url)
-                    if "file_name" in attachment or "download_url" in attachment:
-                        # Add metadata for processing
-                        attachment_data = {
-                            "attachment": attachment,
-                            "base_path": f"attachments/{idx + 1}",
-                            "item": attachment,
-                            "type": "direct",
-                        }
-                        all_attachments.append(attachment_data)
-                        logger.debug(
-                            f"Added direct attachment: {attachment.get('file_name', f'attachment_{idx}')}"
-                        )
-
-            # Regular case: look for nested attachments
-            for idx, item in enumerate(value):
-                if not isinstance(item, dict):
-                    continue
-
-                attachments = item.get("attachments", [])
-                if not isinstance(attachments, list):
-                    continue
-
-                for attachment in attachments:
-                    if not isinstance(attachment, dict):
-                        continue
-
-                    # Add metadata for processing
-                    attachment_data = {
-                        "attachment": attachment,
-                        "base_path": f"{key}/{idx + 1}/attachments",
-                        "item": item,
-                        "type": "nested",
-                    }
-                    all_attachments.append(attachment_data)
+            # Collect nested attachments from items
+            all_attachments.extend(self._collect_nested_attachments(key, value))
 
         logger.debug(f"Collected {len(all_attachments)} raw attachments")
         return all_attachments
+
+    def _collect_direct_attachments(self, attachments_list: list) -> list[dict]:
+        """Collect attachments from a direct attachments list.
+
+        Args:
+            attachments_list: List of attachment dictionaries
+
+        Returns:
+            List of attachment data dictionaries with metadata
+        """
+        direct_attachments = []
+
+        logger.debug(
+            f"Found 'attachments' key with {len(attachments_list)} items - processing as direct attachments"
+        )
+
+        for idx, attachment in enumerate(attachments_list):
+            if not isinstance(attachment, dict):
+                continue
+
+            # Check if this looks like an attachment (has file_name or download_url)
+            if "file_name" in attachment or "download_url" in attachment:
+                # Add metadata for processing
+                attachment_data = {
+                    "attachment": attachment,
+                    "base_path": f"attachments/{idx + 1}",
+                    "item": attachment,
+                    "type": "direct",
+                }
+                direct_attachments.append(attachment_data)
+                logger.debug(
+                    f"Added direct attachment: {attachment.get('file_name', f'attachment_{idx}')}"
+                )
+
+        return direct_attachments
+
+    def _collect_nested_attachments(self, key: str, items: list) -> list[dict]:
+        """Collect nested attachments from items in a list.
+
+        Args:
+            key: The key name for the items list
+            items: List of items that may contain attachments
+
+        Returns:
+            List of attachment data dictionaries with metadata
+        """
+        nested_attachments = []
+
+        for idx, item in enumerate(items):
+            if not isinstance(item, dict):
+                continue
+
+            # Check for standard attachments list
+            nested_attachments.extend(
+                self._collect_standard_nested_attachments(key, idx, item)
+            )
+
+            # Check for task-based attachment structure
+            nested_attachments.extend(
+                self._collect_task_based_attachments(key, idx, item)
+            )
+
+        return nested_attachments
+
+    def _collect_standard_nested_attachments(
+        self, key: str, idx: int, item: dict
+    ) -> list[dict]:
+        """Collect standard nested attachments from an item's attachments list.
+
+        Args:
+            key: The key name for the items list
+            idx: Index of the item in the list
+            item: The item dictionary
+
+        Returns:
+            List of attachment data dictionaries with metadata
+        """
+        attachments = item.get("attachments", [])
+        if not isinstance(attachments, list):
+            return []
+
+        standard_attachments = []
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+
+            # Add metadata for processing
+            attachment_data = {
+                "attachment": attachment,
+                "base_path": f"{key}/{idx + 1}/attachments",
+                "item": item,
+                "type": "nested",
+            }
+            standard_attachments.append(attachment_data)
+
+        return standard_attachments
+
+    def _collect_task_based_attachments(
+        self, key: str, idx: int, item: dict
+    ) -> list[dict]:
+        """Collect task-based attachments from an item's task keys.
+
+        Args:
+            key: The key name for the items list
+            idx: Index of the item in the list
+            item: The item dictionary
+
+        Returns:
+            List of attachment data dictionaries with metadata
+        """
+        task_attachments = []
+
+        # Look for keys that might contain attachment data (e.g., "access_task", "erasure_task", etc.)
+        for task_key, task_value in item.items():
+            if not isinstance(task_value, dict):
+                continue
+
+            # Check if this looks like a task with file attachments
+            # Files are keys with values containing url/size (like your data structure)
+            for filename, file_data in task_value.items():
+                if not isinstance(file_data, dict):
+                    continue
+
+                # Check if this looks like an attachment (has url, size, etc.)
+                if "url" in file_data or "download_url" in file_data:
+                    # Create attachment object with filename and file data
+                    attachment_obj = {
+                        "file_name": filename,
+                        "url": file_data.get("url"),
+                        "download_url": file_data.get("download_url"),
+                        "file_size": file_data.get("size"),
+                        "content_type": file_data.get("content_type"),
+                        "storage_key": file_data.get("url")
+                        or file_data.get("download_url"),
+                    }
+
+                    attachment_data = {
+                        "attachment": attachment_obj,
+                        "base_path": f"{key}/{idx + 1}/{task_key}",
+                        "item": item,
+                        "type": "nested",
+                    }
+                    task_attachments.append(attachment_data)
+                    logger.debug(
+                        f"Added task-based attachment: {filename} from {task_key}"
+                    )
+
+        return task_attachments
 
     def _validate_attachment(
         self, attachment_data: dict
@@ -240,11 +350,9 @@ class StreamingStorage:
                 # Handle direct attachments (from 'attachments' key)
                 storage_key = attachment.get(
                     "download_url",
-                    attachment.get("url", f"attachment_{hash(attachment)}"),
+                    attachment.get("url", f"attachment_{id(attachment)}"),
                 )
-                file_name = attachment.get(
-                    "file_name", f"attachment_{hash(attachment)}"
-                )
+                file_name = attachment.get("file_name", f"attachment_{id(attachment)}")
 
                 attachment_info = AttachmentInfo(
                     storage_key=storage_key,
