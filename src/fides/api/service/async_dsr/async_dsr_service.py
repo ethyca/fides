@@ -72,6 +72,7 @@ def requeue_polling_request(
             input_data: NodeInput = graph_task.pre_process_input_data(
                 *upstream_access_data, group_dependent_fields=True
             )
+
             execute_read_polling_requests(
                 db,
                 async_task,
@@ -147,7 +148,24 @@ def execute_read_polling_requests(
                     secrets,
                 )
 
-                logger.info(f"Polling request - {async_task.id} is ready. Result: {result}")
+                if result:
+                    # Get existing access data from the request task
+                    existing_data = async_task.get_access_data()
+
+                    # Append async results to existing data
+                    if isinstance(result, list):
+                        existing_data.extend(result)
+                    else:
+                        existing_data.append(result)
+
+                    # Save updated data back to the request task
+                    async_task.access_data = existing_data
+                    db.add(async_task)
+                    db.commit()
+
+                    logger.info(f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results")
+                else:
+                    logger.info(f"Polling request - {async_task.id} is ready but returned no results")
 
             else:
                 logger.info(f"Polling request - {async_task.id} still not Ready. ")
