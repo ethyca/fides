@@ -802,12 +802,14 @@ def planet_express_functions() -> str:
 
 @pytest.fixture
 def saas_async_config() -> Dict:
-    return load_config("tests/fixtures/saas/test_data/saas_async_config.yml")
+    return load_config("tests/fixtures/saas/test_data/saas_async_callback_config.yml")
 
 
 @pytest.fixture
 def saas_async_dataset() -> Dict:
-    return load_dataset("tests/fixtures/saas/test_data/saas_async_dataset.yml")[0]
+    return load_dataset(
+        "tests/fixtures/saas/test_data/saas_async_callback_dataset.yml"
+    )[0]
 
 
 @pytest.fixture(scope="function")
