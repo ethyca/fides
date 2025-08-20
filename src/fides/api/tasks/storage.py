@@ -97,7 +97,7 @@ def convert_dict_to_encrypted_json(
 
 
 def upload_to_s3(  # pylint: disable=R0913
-    storage_secrets: StorageSecrets,
+    storage_secrets: dict[StorageSecrets, Any],
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -109,12 +109,9 @@ def upload_to_s3(  # pylint: disable=R0913
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of {}", file_key)
 
-    # Convert StorageSecrets to dict format expected by the called functions
-    storage_secrets_dict = {storage_secrets: None} if storage_secrets else {}
-
     if privacy_request is None and document is not None:
         _, response = generic_upload_to_s3(
-            storage_secrets_dict, bucket_name, file_key, auth_method, document
+            storage_secrets, bucket_name, file_key, auth_method, document
         )
         return response
 
@@ -124,7 +121,7 @@ def upload_to_s3(  # pylint: disable=R0913
     try:
         s3_client = get_s3_client(
             auth_method,
-            storage_secrets_dict,
+            storage_secrets,
         )
     except (ClientError, ParamValidationError) as e:
         logger.error(f"Error getting s3 client: {str(e)}")
@@ -155,7 +152,7 @@ def upload_to_s3(  # pylint: disable=R0913
 
 
 def upload_to_gcs(
-    storage_secrets: StorageSecrets,
+    storage_secrets: dict,
     data: dict,
     bucket_name: str,
     file_key: str,
@@ -171,10 +168,7 @@ def upload_to_gcs(
         ResponseFormat.html.value: "application/zip",
     }
 
-    # Convert StorageSecrets to dict format expected by get_gcs_blob
-    storage_secrets_dict = {storage_secrets: None} if storage_secrets else None
-
-    blob = get_gcs_blob(auth_method, storage_secrets_dict, bucket_name, file_key)
+    blob = get_gcs_blob(auth_method, storage_secrets, bucket_name, file_key)
     in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
 
     try:
