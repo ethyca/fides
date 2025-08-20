@@ -1067,9 +1067,9 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     dsr_version,
     request,
 ) -> None:
-    """Run a failed privacy request and restart from failure testing DSR 2.0 → 3.0 transition.
+    """Run a failed privacy request and restart from failure testing DSR 2.0 -> 3.0 transition.
 
-    Note: DSR 3.0 → 2.0 transitions are no longer supported. Only DSR 2.0 → 3.0 is allowed.
+    Note: DSR 3.0 -> 2.0 transitions are no longer supported. Only DSR 2.0 -> 3.0 is allowed.
     """
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
@@ -1129,8 +1129,8 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     # For DSR 2.0, we don't assert about access_tasks since it depends on scheduler decision
 
     # This test verifies DSR version behavior during restart-from-failure:
-    # - When dsr_version="use_dsr_3_0": starts with DSR 3.0 → continues with DSR 3.0 for restart
-    # - When dsr_version="use_dsr_2_0": starts with DSR 2.0 → may continue with DSR 2.0 or switch to DSR 3.0
+    # - When dsr_version="use_dsr_3_0": starts with DSR 3.0 -> continues with DSR 3.0 for restart
+    # - When dsr_version="use_dsr_2_0": starts with DSR 2.0 -> may continue with DSR 2.0 or switch to DSR 3.0
     #
     # Both DSR 2.0 and DSR 3.0 restart-from-failure mechanisms avoid re-running successfully completed tasks.
     # DSR 2.0 uses cached results, DSR 3.0 uses RequestTask status tracking.
