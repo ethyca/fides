@@ -12,7 +12,7 @@ from fides.config import CONFIG
 
 def get_aws_session(
     auth_method: str,
-    storage_secrets: Optional[dict[StorageSecrets, Any]],
+    storage_secrets: Optional[Dict[StorageSecrets, Any]],
     assume_role_arn: Optional[str] = None,
 ) -> Session:
     """
