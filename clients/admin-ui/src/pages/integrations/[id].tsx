@@ -22,12 +22,10 @@ import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const router = useRouter();
-  const id = Array.isArray(router.query.id)
-    ? router.query.id[0]
-    : router.query.id;
+  const id = router.query.id as string;
 
   const { data: connection, isLoading } = useGetDatastoreConnectionByKeyQuery(
-    id!,
+    id,
     {
       skip: !id,
     },
