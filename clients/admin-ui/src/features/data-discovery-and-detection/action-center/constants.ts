@@ -25,3 +25,8 @@ export enum DiscoveredSystemAggregateColumnKeys {
   DOMAINS = "domains",
   ACTIONS = "actions",
 }
+
+export enum ConsentBreakdownColumnKeys {
+  LOCATION = "location",
+  PAGE = "page",
+}

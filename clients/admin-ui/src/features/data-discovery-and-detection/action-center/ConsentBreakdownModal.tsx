@@ -6,20 +6,12 @@ import {
   AntTable as Table,
   AntTypography as Typography,
 } from "fidesui";
-import { useMemo, useState } from "react";
 
-import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
-import { PAGE_SIZES } from "~/features/common/table/v2";
-import {
-  ConsentStatus,
-  PrivacyNoticeRegion,
-  StagedResourceAPIResponse,
-} from "~/types/api";
+import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 
-import { useGetConsentBreakdownQuery } from "./action-center.slice";
+import { useConsentBreakdownTable } from "./hooks/useConsentBreakdownTable";
 
-const { Paragraph, Text, Link } = Typography;
+const { Paragraph, Text } = Typography;
 
 interface ConsentBreakdownModalProps {
   isOpen: boolean;
@@ -36,26 +28,10 @@ export const ConsentBreakdownModal = ({
   onCancel,
   onDownload,
 }: ConsentBreakdownModalProps) => {
-  const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
-
-  const { data, isFetching, isError } = useGetConsentBreakdownQuery({
-    stagedResourceUrn: stagedResource.urn,
+  const { columns, tableProps, isError } = useConsentBreakdownTable({
+    stagedResource,
     status,
-    page: pageIndex,
-    size: pageSize,
   });
-
-  const { items, total: totalRows } = useMemo(
-    () =>
-      data || {
-        items: [],
-        total: 0,
-        pages: 0,
-        filterOptions: { assigned_users: [], systems: [] },
-      },
-    [data],
-  );
 
   return (
     <Modal
@@ -103,50 +79,7 @@ export const ConsentBreakdownModal = ({
             showIcon
           />
         ) : (
-          <Table
-            columns={[
-              {
-                title: "Location",
-                dataIndex: "location",
-                key: "location",
-                render: (location: PrivacyNoticeRegion) =>
-                  PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
-              },
-              {
-                title: "Page",
-                dataIndex: "page",
-                key: "page",
-                render: (page: string) => (
-                  <Link href={page} target="_blank" rel="noopener noreferrer">
-                    {page}
-                  </Link>
-                ),
-              },
-            ]}
-            rowKey={(record) => record.location}
-            dataSource={items}
-            pagination={
-              !!totalRows && (pageIndex > 1 || pageSize > PAGE_SIZES[0])
-                ? {
-                    current: pageIndex,
-                    pageSize,
-                    pageSizeOptions: DEFAULT_PAGE_SIZES,
-                    total: totalRows || 0,
-                    showTotal: (total, range) =>
-                      `${range[0]}-${range[1]} of ${total} items`,
-                    onChange: (page, size) => {
-                      setPageIndex(page);
-                      if (size !== pageSize) {
-                        setPageSize(size);
-                        setPageIndex(1);
-                      }
-                    },
-                  }
-                : false
-            }
-            loading={isFetching}
-            data-testid="consent-breakdown-modal-table"
-          />
+          <Table {...tableProps} columns={columns} />
         )}
       </Flex>
     </Modal>
