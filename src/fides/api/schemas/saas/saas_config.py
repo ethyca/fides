@@ -1,4 +1,5 @@
 from enum import Enum
+from logging import StringTemplateStyle
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
@@ -68,7 +69,7 @@ class Strategy(BaseModel):
     """General shape for swappable strategies (ex: auth, processors, pagination, etc.)"""
 
     strategy: str
-    configuration: Dict[str, Any]
+    configuration: Optional[Dict[str, Any]] = None
 
 
 class ClientConfig(BaseModel):
