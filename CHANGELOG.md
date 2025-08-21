@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
 - Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
+- Added reusable table system with URL synchronization and Ant Design integration for standardized table behavior and deep linking support [#6447](https://github.com/ethyca/fides/pull/6447)
 - Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 - Added visual checkmark feedback and screen reader announcements for consent button interactions [#6451](https://github.com/ethyca/fides/pull/6451)
 - Added field to privacy center configuration to support location collection in privacy center actions [#6432](https://github.com/ethyca/fides/pull/6432)
