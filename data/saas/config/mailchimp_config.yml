@@ -5,7 +5,6 @@ saas_config:
   description: A sample schema representing the Mailchimp connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/mailchimp
   version: 0.0.3
-
   display_info:
     category: "MARKETING"
     tags: ["API", "DSR Automation"]

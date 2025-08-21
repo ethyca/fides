@@ -5,7 +5,6 @@ saas_config:
   description: A sample schema representing the HubSpot connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot
   version: 0.0.8
-
   display_info:
     category: "CRM"
     tags: ["API", "DSR Automation"]

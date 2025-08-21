@@ -5,7 +5,6 @@ saas_config:
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/stripe
   description: A sample schema representing the Stripe connector for Fides
   version: 0.0.9
-
   display_info:
     category: "ECOMMERCE"
     tags: ["API", "DSR Automation"]
