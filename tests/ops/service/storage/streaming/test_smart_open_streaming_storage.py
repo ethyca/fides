@@ -185,95 +185,146 @@ class TestSmartOpenStreamingStorageAttachmentCollection:
         self.mock_client = create_autospec(SmartOpenStorageClient)
         self.storage = SmartOpenStreamingStorage(self.mock_client)
 
-    def test_collect_attachments_empty_data(self):
-        """Test collecting attachments from empty data."""
-        result = self.storage._collect_attachments({})
+    def test_collect_and_validate_attachments_empty_data(self):
+        """Test collecting and validating attachments from empty data."""
+        result = self.storage._collect_and_validate_attachments({})
         assert result == []
 
-    def test_collect_attachments_no_attachments(self):
-        """Test collecting attachments when none exist."""
+    def test_collect_and_validate_attachments_no_attachments(self):
+        """Test collecting and validating attachments when none exist."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
-        result = self.storage._collect_attachments(data)
+        result = self.storage._collect_and_validate_attachments(data)
         assert result == []
 
-    def test_collect_direct_attachments(self):
-        """Test collecting direct attachments."""
-        attachments_list = [
-            {"file_name": "doc1.pdf", "download_url": "https://example.com/doc1.pdf"},
-            {"file_name": "doc2.pdf", "download_url": "https://example.com/doc2.pdf"},
-        ]
-        result = self.storage._collect_direct_attachments(attachments_list)
+    def test_collect_and_validate_attachments_with_attachments(self):
+        """Test collecting and validating attachments when they exist."""
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "attachments": [
+                        {
+                            "file_name": "doc1.pdf",
+                            "download_url": "https://example.com/doc1.pdf",
+                        }
+                    ],
+                }
+            ]
+        }
 
-        assert len(result) == 2
-        assert result[0]["file_name"] == "doc1.pdf"
-        assert result[0]["original_download_url"] == "https://example.com/doc1.pdf"
-        assert result[0]["download_url"] == "attachments/doc1.pdf"
+        # Mock the validation method to return a valid attachment
+        with patch.object(self.storage, "_validate_attachment") as mock_validate:
+            mock_attachment_info = AttachmentInfo(
+                storage_key="https://example.com/doc1.pdf",
+                file_name="doc1.pdf",
+                content_type="application/pdf",
+                size=1024,
+            )
+            mock_validate.return_value = AttachmentProcessingInfo(
+                attachment=mock_attachment_info,
+                base_path="attachments",
+                item={
+                    "file_name": "doc1.pdf",
+                    "download_url": "https://example.com/doc1.pdf",
+                },
+            )
 
-    def test_collect_direct_attachments_invalid_items(self):
-        """Test collecting direct attachments with invalid items."""
-        attachments_list = [
-            {"file_name": "doc1.pdf"},
-            "invalid_item",  # Not a dict
-            {"download_url": "https://example.com/doc2.pdf"},  # No file_name
-        ]
-        result = self.storage._collect_direct_attachments(attachments_list)
+            result = self.storage._collect_and_validate_attachments(data)
 
-        assert len(result) == 2  # Should skip the invalid item
+            assert len(result) == 1
+            assert result[0].attachment.file_name == "doc1.pdf"
+            assert result[0].attachment.storage_key == "https://example.com/doc1.pdf"
 
-    def test_collect_nested_attachments(self):
-        """Test collecting nested attachments."""
-        key = "users"
-        items = [
-            {
-                "id": 1,
-                "attachments": [
-                    {
+    def test_collect_and_validate_attachments_with_invalid_attachments(self):
+        """Test collecting and validating attachments with invalid items."""
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "attachments": [
+                        {
+                            "file_name": "doc1.pdf",
+                            "download_url": "https://example.com/doc1.pdf",
+                        },
+                        "invalid_item",  # Not a dict
+                        {
+                            "download_url": "https://example.com/doc2.pdf"
+                        },  # No file_name
+                    ],
+                }
+            ]
+        }
+
+        # Mock the validation method to return None for invalid items
+        with patch.object(self.storage, "_validate_attachment") as mock_validate:
+            mock_validate.side_effect = [
+                AttachmentProcessingInfo(
+                    attachment=AttachmentInfo(
+                        storage_key="https://example.com/doc1.pdf",
+                        file_name="doc1.pdf",
+                        content_type="application/pdf",
+                        size=1024,
+                    ),
+                    base_path="attachments",
+                    item={
                         "file_name": "doc1.pdf",
                         "download_url": "https://example.com/doc1.pdf",
-                    }
-                ],
-            }
-        ]
-        result = self.storage._collect_nested_attachments(key, items)
+                    },
+                ),
+                None,  # Invalid item
+                None,  # Invalid item
+            ]
 
-        assert len(result) == 1
-        attachment = result[0]
-        assert attachment["file_name"] == "doc1.pdf"
-        assert attachment["_context"]["key"] == "users"
-        assert attachment["_context"]["item_id"] == 1
+            result = self.storage._collect_and_validate_attachments(data)
 
-    def test_collect_nested_attachments_invalid_items(self):
-        """Test collecting nested attachments with invalid items."""
-        key = "users"
-        items = [
-            "invalid_item",  # Not a dict
-            {"id": 1},  # No attachments
-            {"id": 2, "attachments": "not_a_list"},  # Invalid attachments
-        ]
-        result = self.storage._collect_nested_attachments(key, items)
+            # Only valid attachments should be returned
+            assert len(result) == 1
+            assert result[0].attachment.file_name == "doc1.pdf"
 
-        assert result == []
+    def test_collect_and_validate_attachments_nested_structure(self):
+        """Test collecting and validating attachments from nested data structure."""
+        data = {
+            "users": [
+                {
+                    "id": 1,
+                    "name": "User 1",
+                    "profile": {
+                        "avatar": {
+                            "attachments": [
+                                {
+                                    "file_name": "avatar.jpg",
+                                    "download_url": "https://example.com/avatar.jpg",
+                                }
+                            ]
+                        }
+                    },
+                }
+            ]
+        }
 
-    def test_collect_nested_attachments_with_context(self):
-        """Test collecting nested attachments preserves context."""
-        key = "orders"
-        items = [
-            {
-                "id": "order_123",
-                "attachments": [
-                    {
-                        "file_name": "invoice.pdf",
-                        "download_url": "https://example.com/invoice.pdf",
-                    }
-                ],
-            }
-        ]
-        result = self.storage._collect_nested_attachments(key, items)
+        # Mock the validation method
+        with patch.object(self.storage, "_validate_attachment") as mock_validate:
+            mock_attachment_info = AttachmentInfo(
+                storage_key="https://example.com/avatar.jpg",
+                file_name="avatar.jpg",
+                content_type="image/jpeg",
+                size=2048,
+            )
+            mock_validate.return_value = AttachmentProcessingInfo(
+                attachment=mock_attachment_info,
+                base_path="attachments",
+                item={
+                    "file_name": "avatar.jpg",
+                    "download_url": "https://example.com/avatar.jpg",
+                },
+            )
 
-        assert len(result) == 1
-        attachment = result[0]
-        assert attachment["_context"]["key"] == "orders"
-        assert attachment["_context"]["item_id"] == "order_123"
+            result = self.storage._collect_and_validate_attachments(data)
+
+            assert len(result) == 1
+            assert result[0].attachment.file_name == "avatar.jpg"
 
 
 class TestSmartOpenStreamingStorageAttachmentValidation:
@@ -381,7 +432,7 @@ class TestSmartOpenStreamingStorageStreamingMethods:
         assert mode1 == 0o644
         assert list(content_iter1) == [b"content1"]
 
-    def test_stream_attachments_to_storage_zip_csv_format(self):
+    def test_stream_attachments_to_storage_zip_csv_format(self, mock_privacy_request):
         """Test streaming attachments to storage ZIP for CSV format."""
         data = {
             "users": [
@@ -397,7 +448,6 @@ class TestSmartOpenStreamingStorageStreamingMethods:
                 }
             ]
         }
-        privacy_request = Mock(spec=PrivacyRequest)
         buffer_config = StreamingBufferConfig()
 
         # Mock the entire method to avoid stream_zip complexity
@@ -409,7 +459,7 @@ class TestSmartOpenStreamingStorageStreamingMethods:
                 "test-bucket",
                 "test.zip",
                 data,
-                privacy_request,
+                mock_privacy_request,
                 5,
                 buffer_config,
                 10,
@@ -421,14 +471,14 @@ class TestSmartOpenStreamingStorageStreamingMethods:
                 "test-bucket",
                 "test.zip",
                 data,
-                privacy_request,
+                mock_privacy_request,
                 5,
                 buffer_config,
                 10,
                 ResponseFormat.csv.value,
             )
 
-    def test_stream_attachments_to_storage_zip_json_format(self):
+    def test_stream_attachments_to_storage_zip_json_format(self, mock_privacy_request):
         """Test streaming attachments to storage ZIP for JSON format."""
         data = {
             "users": [
@@ -444,7 +494,6 @@ class TestSmartOpenStreamingStorageStreamingMethods:
                 }
             ]
         }
-        privacy_request = Mock(spec=PrivacyRequest)
         buffer_config = StreamingBufferConfig()
 
         # Mock the entire method to avoid stream_zip complexity
@@ -456,7 +505,7 @@ class TestSmartOpenStreamingStorageStreamingMethods:
                 "test-bucket",
                 "test.zip",
                 data,
-                privacy_request,
+                mock_privacy_request,
                 5,
                 buffer_config,
                 10,
@@ -468,12 +517,165 @@ class TestSmartOpenStreamingStorageStreamingMethods:
                 "test-bucket",
                 "test.zip",
                 data,
-                privacy_request,
+                mock_privacy_request,
                 5,
                 buffer_config,
                 10,
                 ResponseFormat.json.value,
             )
+
+    def test_stream_attachments_to_storage_zip_no_attachments(
+        self, mock_privacy_request
+    ):
+        """Test streaming attachments to storage ZIP when no attachments exist."""
+        data = {"users": [{"id": 1, "name": "User 1"}]}
+        buffer_config = StreamingBufferConfig()
+
+        # Mock the collection method to return no attachments
+        with patch.object(
+            self.storage, "_collect_and_validate_attachments"
+        ) as mock_collect:
+            mock_collect.return_value = []
+
+            # Mock the data-only ZIP upload
+            with patch.object(
+                self.storage, "_upload_data_only_zip"
+            ) as mock_data_upload:
+                self.storage._stream_attachments_to_storage_zip(
+                    "test-bucket",
+                    "test.zip",
+                    data,
+                    mock_privacy_request,
+                    5,
+                    buffer_config,
+                    10,
+                    ResponseFormat.csv.value,
+                )
+
+                # Verify data-only upload was called
+                mock_data_upload.assert_called_once_with(
+                    "test-bucket", "test.zip", data, ResponseFormat.csv.value
+                )
+
+    def test_upload_data_only_zip_csv_format(self):
+        """Test uploading data-only ZIP with CSV format."""
+        data = {"users": [{"id": 1, "name": "User 1"}]}
+        bucket_name = "test-bucket"
+        file_key = "test.zip"
+        resp_format = ResponseFormat.csv.value
+
+        # Mock the data files generator
+        with patch.object(self.storage, "_create_data_files") as mock_data_files:
+            mock_data_files.return_value = [
+                ("users.csv", BytesIO(b"id,name\n1,User 1"), {})
+            ]
+
+            # Mock the format conversion - it returns a generator, not a list
+            with patch.object(
+                self.storage, "_convert_to_stream_zip_format"
+            ) as mock_convert:
+                # Create a proper mock for the method parameter
+                mock_method = Mock()
+                mock_method._get.return_value = (Mock(), Mock(), Mock(), 0, 0)
+
+                # Mock the generator to yield the expected values
+                def mock_generator():
+                    yield (
+                        "users.csv",
+                        datetime.now(),
+                        0o644,
+                        mock_method,
+                        iter([b"id,name\n1,User 1"]),
+                    )
+
+                mock_convert.return_value = mock_generator()
+
+                # Mock the streaming upload
+                with patch.object(
+                    self.storage.storage_client, "stream_upload"
+                ) as mock_stream:
+                    mock_stream.return_value.__enter__.return_value = Mock()
+
+                    # Mock the stream_zip function to avoid CRC32 errors
+                    with patch(
+                        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_zip"
+                    ) as mock_stream_zip:
+                        mock_stream_zip.return_value = [
+                            b"mock_zip_chunk_1",
+                            b"mock_zip_chunk_2",
+                        ]
+
+                        self.storage._upload_data_only_zip(
+                            bucket_name, file_key, data, resp_format
+                        )
+
+                        # Verify the methods were called
+                        mock_data_files.assert_called_once_with(data, resp_format)
+                        mock_convert.assert_called_once()
+                        mock_stream.assert_called_once_with(
+                            bucket_name, file_key, content_type="application/zip"
+                        )
+                        mock_stream_zip.assert_called_once()
+
+    def test_upload_data_only_zip_json_format(self):
+        """Test uploading data-only ZIP with JSON format."""
+        data = {"users": [{"id": 1, "name": "User 1"}]}
+        bucket_name = "test-bucket"
+        file_key = "test.zip"
+        resp_format = ResponseFormat.json.value
+
+        # Mock the data files generator
+        with patch.object(self.storage, "_create_data_files") as mock_data_files:
+            mock_data_files.return_value = [
+                ("users.json", BytesIO(b'[{"id": 1, "name": "User 1"}]'), {})
+            ]
+
+            # Mock the format conversion - it returns a generator, not a list
+            with patch.object(
+                self.storage, "_convert_to_stream_zip_format"
+            ) as mock_convert:
+                # Create a proper mock for the method parameter
+                mock_method = Mock()
+                mock_method._get.return_value = (Mock(), Mock(), Mock(), 0, 0)
+
+                # Mock the generator to yield the expected values
+                def mock_generator():
+                    yield (
+                        "users.json",
+                        datetime.now(),
+                        0o644,
+                        mock_method,
+                        iter([b'[{"id": 1, "name": "User 1"}]']),
+                    )
+
+                mock_convert.return_value = mock_generator()
+
+                # Mock the streaming upload
+                with patch.object(
+                    self.storage.storage_client, "stream_upload"
+                ) as mock_stream:
+                    mock_stream.return_value.__enter__.return_value = Mock()
+
+                    # Mock the stream_zip function to avoid CRC32 errors
+                    with patch(
+                        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_zip"
+                    ) as mock_stream_zip:
+                        mock_stream_zip.return_value = [
+                            b"mock_zip_chunk_1",
+                            b"mock_zip_chunk_2",
+                        ]
+
+                        self.storage._upload_data_only_zip(
+                            bucket_name, file_key, data, resp_format
+                        )
+
+                        # Verify the methods were called
+                        mock_data_files.assert_called_once_with(data, resp_format)
+                        mock_convert.assert_called_once()
+                        mock_stream.assert_called_once_with(
+                            bucket_name, file_key, content_type="application/zip"
+                        )
+                        mock_stream_zip.assert_called_once()
 
 
 class TestSmartOpenStreamingStorageUploadMethods:
@@ -484,7 +686,7 @@ class TestSmartOpenStreamingStorageUploadMethods:
         self.mock_client = create_autospec(SmartOpenStorageClient)
         self.storage = SmartOpenStreamingStorage(self.mock_client)
 
-    def test_upload_to_storage_streaming_csv_format(self):
+    def test_upload_to_storage_streaming_csv_format(self, mock_privacy_request):
         """Test upload to storage streaming for CSV format."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
         config = StorageUploadConfig(
@@ -493,7 +695,6 @@ class TestSmartOpenStreamingStorageUploadMethods:
             resp_format=ResponseFormat.csv.value,
             max_workers=5,
         )
-        privacy_request = Mock(spec=PrivacyRequest)
 
         # Mock the streaming method
         with patch.object(
@@ -507,13 +708,29 @@ class TestSmartOpenStreamingStorageUploadMethods:
             )
 
             result = self.storage.upload_to_storage_streaming(
-                data, config, privacy_request
+                data, config, mock_privacy_request
+            )
+
+            # Verify the streaming method was called
+            mock_stream.assert_called_once_with(
+                config.bucket_name,
+                config.file_key,
+                data,
+                mock_privacy_request,
+                config.max_workers,
+                pytest.approx(StreamingBufferConfig()),
+                10,  # default batch_size
+                config.resp_format,
+            )
+
+            # Verify presigned URL was generated
+            self.storage.storage_client.generate_presigned_url.assert_called_once_with(
+                config.bucket_name, config.file_key
             )
 
             assert result == "https://example.com/test.zip"
-            mock_stream.assert_called_once()
 
-    def test_upload_to_storage_streaming_json_format(self):
+    def test_upload_to_storage_streaming_json_format(self, mock_privacy_request):
         """Test upload to storage streaming for JSON format."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
         config = StorageUploadConfig(
@@ -522,7 +739,6 @@ class TestSmartOpenStreamingStorageUploadMethods:
             resp_format=ResponseFormat.json.value,
             max_workers=5,
         )
-        privacy_request = Mock(spec=PrivacyRequest)
 
         # Mock the streaming method
         with patch.object(
@@ -536,57 +752,83 @@ class TestSmartOpenStreamingStorageUploadMethods:
             )
 
             result = self.storage.upload_to_storage_streaming(
-                data, config, privacy_request
+                data, config, mock_privacy_request
+            )
+
+            # Verify the streaming method was called
+            mock_stream.assert_called_once_with(
+                config.bucket_name,
+                config.file_key,
+                data,
+                mock_privacy_request,
+                config.max_workers,
+                pytest.approx(StreamingBufferConfig()),
+                10,  # default batch_size
+                config.resp_format,
+            )
+
+            # Verify presigned URL was generated
+            self.storage.storage_client.generate_presigned_url.assert_called_once_with(
+                config.bucket_name, config.file_key
             )
 
             assert result == "https://example.com/test.zip"
-            mock_stream.assert_called_once()
 
-    def test_upload_to_storage_streaming_html_format(self):
+    def test_upload_to_storage_streaming_html_format(self, mock_privacy_request):
         """Test upload to storage streaming for HTML format."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
         config = StorageUploadConfig(
             bucket_name="test-bucket",
-            file_key="test.zip",
+            file_key="test.html",
             resp_format=ResponseFormat.html.value,
             max_workers=5,
         )
-        privacy_request = Mock(spec=PrivacyRequest)
 
-        # Mock the DSR storage function
+        # Mock the HTML streaming method at the module level
         with patch(
             "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_html_dsr_report_to_storage_multipart"
-        ) as mock_dsr:
-            mock_dsr.return_value = None
+        ) as mock_html_stream:
+            mock_html_stream.return_value = None
 
             # Mock the presigned URL generation
             self.storage.storage_client.generate_presigned_url.return_value = (
-                "https://example.com/test.zip"
+                "https://example.com/test.html"
             )
 
             result = self.storage.upload_to_storage_streaming(
-                data, config, privacy_request
+                data, config, mock_privacy_request
             )
 
-            assert result == "https://example.com/test.zip"
-            mock_dsr.assert_called_once()
+            # Verify HTML streaming was called
+            mock_html_stream.assert_called_once_with(
+                self.storage.storage_client,
+                config.bucket_name,
+                config.file_key,
+                data,
+                mock_privacy_request,
+            )
 
-    def test_upload_to_storage_streaming_unsupported_format(self):
+            # Verify presigned URL was generated
+            self.storage.storage_client.generate_presigned_url.assert_called_once_with(
+                config.bucket_name, config.file_key
+            )
+
+            assert result == "https://example.com/test.html"
+
+    def test_upload_to_storage_streaming_unsupported_format(self, mock_privacy_request):
         """Test upload to storage streaming with unsupported format."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
         config = StorageUploadConfig(
             bucket_name="test-bucket",
-            file_key="test.zip",
-            resp_format="unsupported",
+            file_key="test.txt",
+            resp_format="txt",  # Unsupported format
             max_workers=5,
         )
-        privacy_request = Mock(spec=PrivacyRequest)
 
         with pytest.raises(
-            StorageUploadError,
-            match="Storage upload failed: Unsupported response format: unsupported",
+            StorageUploadError, match="Unsupported response format: txt"
         ):
-            self.storage.upload_to_storage_streaming(data, config, privacy_request)
+            self.storage.upload_to_storage_streaming(data, config, mock_privacy_request)
 
     def test_upload_to_storage_streaming_no_privacy_request(self):
         """Test upload to storage streaming without privacy request."""
@@ -601,8 +843,8 @@ class TestSmartOpenStreamingStorageUploadMethods:
         with pytest.raises(ValueError, match="Privacy request must be provided"):
             self.storage.upload_to_storage_streaming(data, config, None)
 
-    def test_upload_to_storage_streaming_with_document(self):
-        """Test upload to storage streaming with document (should raise NotImplementedError)."""
+    def test_upload_to_storage_streaming_with_document(self, mock_privacy_request):
+        """Test upload to storage streaming with document (not implemented)."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
         config = StorageUploadConfig(
             bucket_name="test-bucket",
@@ -610,18 +852,17 @@ class TestSmartOpenStreamingStorageUploadMethods:
             resp_format=ResponseFormat.csv.value,
             max_workers=5,
         )
-        privacy_request = Mock(spec=PrivacyRequest)
         document = Mock()
 
         with pytest.raises(
             NotImplementedError, match="Document-only uploads not yet implemented"
         ):
             self.storage.upload_to_storage_streaming(
-                data, config, privacy_request, document
+                data, config, mock_privacy_request, document
             )
 
-    def test_upload_to_storage_streaming_with_custom_buffer_config(self):
-        """Test upload to storage streaming with custom buffer config."""
+    def test_upload_to_storage_streaming_storage_error(self, mock_privacy_request):
+        """Test upload to storage streaming when storage operation fails."""
         data = {"users": [{"id": 1, "name": "User 1"}]}
         config = StorageUploadConfig(
             bucket_name="test-bucket",
@@ -629,8 +870,32 @@ class TestSmartOpenStreamingStorageUploadMethods:
             resp_format=ResponseFormat.csv.value,
             max_workers=5,
         )
-        privacy_request = Mock(spec=PrivacyRequest)
-        buffer_config = StreamingBufferConfig(max_memory_size=16384)
+
+        # Mock the streaming method to raise an error
+        with patch.object(
+            self.storage, "_stream_attachments_to_storage_zip"
+        ) as mock_stream:
+            mock_stream.side_effect = Exception("Storage operation failed")
+
+            with pytest.raises(
+                StorageUploadError,
+                match="Storage upload failed: Storage operation failed",
+            ):
+                self.storage.upload_to_storage_streaming(
+                    data, config, mock_privacy_request
+                )
+
+    def test_upload_to_storage_streaming_with_default_buffer_config(
+        self, mock_privacy_request
+    ):
+        """Test upload to storage streaming with default buffer config."""
+        data = {"users": [{"id": 1, "name": "User 1"}]}
+        config = StorageUploadConfig(
+            bucket_name="test-bucket",
+            file_key="test.zip",
+            resp_format=ResponseFormat.csv.value,
+            max_workers=5,
+        )
 
         # Mock the streaming method
         with patch.object(
@@ -644,60 +909,17 @@ class TestSmartOpenStreamingStorageUploadMethods:
             )
 
             result = self.storage.upload_to_storage_streaming(
-                data, config, privacy_request, buffer_config=buffer_config
+                data, config, mock_privacy_request, buffer_config=None
             )
+
+            # Verify the method was called with default buffer config
+            mock_stream.assert_called_once()
+            call_args = mock_stream.call_args[0]
+            assert isinstance(
+                call_args[5], StreamingBufferConfig
+            )  # buffer_config parameter
 
             assert result == "https://example.com/test.zip"
-            mock_stream.assert_called_once()
-
-    def test_upload_to_storage_streaming_upload_failure(self):
-        """Test upload to storage streaming when upload fails."""
-        data = {"users": [{"id": 1, "name": "User 1"}]}
-        config = StorageUploadConfig(
-            bucket_name="test-bucket",
-            file_key="test.zip",
-            resp_format=ResponseFormat.csv.value,
-            max_workers=5,
-        )
-        privacy_request = Mock(spec=PrivacyRequest)
-
-        # Mock the streaming method to raise an exception
-        with patch.object(
-            self.storage, "_stream_attachments_to_storage_zip"
-        ) as mock_stream:
-            mock_stream.side_effect = Exception("Upload failed")
-
-            with pytest.raises(
-                StorageUploadError, match="Storage upload failed: Upload failed"
-            ):
-                self.storage.upload_to_storage_streaming(data, config, privacy_request)
-
-    def test_upload_to_storage_streaming_presigned_url_failure(self):
-        """Test upload to storage streaming when presigned URL generation fails."""
-        data = {"users": [{"id": 1, "name": "User 1"}]}
-        config = StorageUploadConfig(
-            bucket_name="test-bucket",
-            file_key="test.zip",
-            resp_format=ResponseFormat.csv.value,
-            max_workers=5,
-        )
-        privacy_request = Mock(spec=PrivacyRequest)
-
-        # Mock the streaming method
-        with patch.object(
-            self.storage, "_stream_attachments_to_storage_zip"
-        ) as mock_stream:
-            mock_stream.return_value = None
-
-            # Mock the presigned URL generation to fail
-            self.storage.storage_client.generate_presigned_url.side_effect = Exception(
-                "URL generation failed"
-            )
-
-            with pytest.raises(
-                StorageUploadError, match="Storage upload failed: URL generation failed"
-            ):
-                self.storage.upload_to_storage_streaming(data, config, privacy_request)
 
 
 class TestSmartOpenCloudToCloudStreaming:

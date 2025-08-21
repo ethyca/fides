@@ -252,11 +252,30 @@ class SmartOpenStreamingStorage:
             if not isinstance(item, dict):
                 continue
 
-            attachments = item.get("attachments", [])
-            if not isinstance(attachments, list):
-                continue
+            # Recursively search for attachments in nested structures
+            item_attachments = self._find_attachments_recursive(item, key)
+            nested_attachments.extend(item_attachments)
 
-            for attachment in attachments:
+        return nested_attachments
+
+    def _find_attachments_recursive(
+        self, item: dict, context_key: str, path: str = ""
+    ) -> list[dict]:
+        """Recursively find attachments in nested dictionary structures.
+
+        Args:
+            item: Dictionary item to search
+            context_key: The top-level key for context
+            path: Current path in the nested structure
+
+        Returns:
+            List of attachment data dictionaries with metadata
+        """
+        attachments = []
+
+        # Check if this item has direct attachments
+        if "attachments" in item and isinstance(item["attachments"], list):
+            for attachment in item["attachments"]:
                 if not isinstance(attachment, dict):
                     continue
 
@@ -265,8 +284,9 @@ class SmartOpenStreamingStorage:
                     # Add context about which item this attachment belongs to
                     attachment_with_context = attachment.copy()
                     attachment_with_context["_context"] = {
-                        "key": key,
+                        "key": context_key,
                         "item_id": item.get("id", "unknown"),
+                        "path": path,
                     }
 
                     # Transform download_url to internal access package URL
@@ -278,9 +298,18 @@ class SmartOpenStreamingStorage:
                             f"attachments/{attachment.get('file_name', 'attachment')}"
                         )
 
-                    nested_attachments.append(attachment_with_context)
+                    attachments.append(attachment_with_context)
 
-        return nested_attachments
+        # Recursively search nested dictionaries
+        for key, value in item.items():
+            if isinstance(value, dict):
+                current_path = f"{path}.{key}" if path else key
+                nested_attachments = self._find_attachments_recursive(
+                    value, context_key, current_path
+                )
+                attachments.extend(nested_attachments)
+
+        return attachments
 
     def _validate_attachment(
         self, attachment: dict
