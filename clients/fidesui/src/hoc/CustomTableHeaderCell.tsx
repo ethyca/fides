@@ -21,6 +21,9 @@ export const CustomTableHeaderCell = (
               type="text"
               // Use the filter button class name to match other button styles in the table header
               className={`ant-table-filter-trigger ${styles.customTableHeaderCell__button}`}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
             />
           </Dropdown>
         </div>
