@@ -7,6 +7,7 @@ $bg-caution: #f6e3a4;
 $bg-success: #c3e6b2;
 $bg-info: #a5d6f3;
 $bg-alert: #d9b0d7;
+$bg-default: #f5f5f5;
 
 $colors: (
   "full-black": #000000,
@@ -27,7 +28,7 @@ $colors: (
   "neutral-900": #2b2e35,
 
   // Brand //
-  "bg-default": #f5f5f5,
+  "bg-default": $bg-default,
   "corinth": #fafafa,
   "bg-corinth": #fafafa,
   "limestone": #f1efee,
@@ -58,6 +59,7 @@ $colors: (
   "bg-alert": $bg-alert,
 
   // Taxonomy colors //
+  "bg-taxonomy-white": $bg-default,
   "bg-taxonomy-red": $bg-error,
   "bg-taxonomy-orange": $bg-warning,
   "bg-taxonomy-yellow": $bg-caution,

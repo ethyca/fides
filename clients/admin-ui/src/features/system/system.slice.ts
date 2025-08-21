@@ -91,9 +91,23 @@ const systemApi = baseApi.injectEndpoints({
         "System Vendors",
       ],
     }),
+    bulkDeleteSystems: build.mutation<SystemDeleteResponse, string[]>({
+      query: (keys) => ({
+        url: `system/bulk-delete`,
+        method: "POST",
+        body: keys,
+      }),
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Datastore Connection",
+        "Privacy Notices",
+        "System Vendors",
+      ],
+    }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
-        url: `/system/upsert`,
+        url: `system/upsert`,
         method: "POST",
         body: systems,
       }),
@@ -179,6 +193,7 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useDeleteSystemMutation,
+  useBulkDeleteSystemsMutation,
   useUpsertSystemsMutation,
   usePatchSystemConnectionConfigsMutation,
   useDeleteSystemConnectionConfigMutation,

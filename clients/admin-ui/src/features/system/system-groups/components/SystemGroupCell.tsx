@@ -1,4 +1,11 @@
-import { AntFlex, AntMessage as message, AntSelect, AntTag } from "fidesui";
+import {
+  AntButton,
+  AntFlex,
+  AntMessage as message,
+  AntSelect,
+  AntTag,
+  Icons,
+} from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -56,10 +63,10 @@ const SystemGroupCell = ({
         type: "success",
         content: "System groups updated",
       });
-      setTimeout(() => {
-        messageApi.destroy(UPDATE_SYSTEM_GROUPS_MSG_KEY);
-      }, 3000);
     }
+    setTimeout(() => {
+      messageApi.destroy(UPDATE_SYSTEM_GROUPS_MSG_KEY);
+    }, 3000);
   };
 
   return (
@@ -100,8 +107,8 @@ const SystemGroupCell = ({
             onChange={(value) => {
               setPendingSelection(value);
             }}
-            onBlur={handleUpdate}
           />
+          <AntButton icon={<Icons.Checkmark />} onClick={handleUpdate} />
         </AntFlex>
       )}
     </>

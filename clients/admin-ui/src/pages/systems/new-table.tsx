@@ -34,7 +34,6 @@ import {
   useGetAllSystemGroupsQuery,
 } from "~/features/system/system-groups/system-groups.slice";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
-import { useGetAllUsersQuery } from "~/features/user-management";
 import { useMockBulkUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
   BasicSystemResponseExtended,
@@ -60,12 +59,6 @@ const NewTable = ({ loading = false }: NewTableProps) => {
   const [createSystemGroup] = useCreateSystemGroupMutation();
   const [deleteSystem] = useDeleteSystemMutation();
   const [bulkUpdate] = useMockBulkUpdateSystemWithGroupsMutation();
-
-  const { data: allUsers } = useGetAllUsersQuery({
-    page: 1,
-    size: 100,
-    username: "",
-  });
 
   const [messageApi, messageContext] = message.useMessage();
 
