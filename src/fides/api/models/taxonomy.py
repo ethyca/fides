@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 from __future__ import annotations
 
 from enum import Enum
@@ -8,7 +9,6 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     ForeignKeyConstraint,
-    Index,
     String,
     Text,
     UniqueConstraint,
@@ -28,20 +28,30 @@ class TargetType(str, Enum):
     """Enumeration of target types that taxonomies can apply to."""
 
     SYSTEM = "system"
-    DATASET = "dataset"
-    COLLECTION = "collection"
-    FIELD = "field"
     PRIVACY_DECLARATION = "privacy_declaration"
     TAXONOMY = "taxonomy"  # For taxonomy-to-taxonomy relationships
 
 
 class Taxonomy(Base, FidesBase):
-    """The SQL model for taxonomy resources."""
+    """The SQL model for taxonomy resources.
 
+    This is a generic taxonomy model that can be used to create any taxonomy.
+    For now we seed the database with the legacy taxonomies (data_category, data use, data subject)
+    so that these legacy taxonomy types can be used for allowed usage relationships.
+    """
+
+    # Overriding the id definition from Base so we don't treat this as the primary key
     id = Column(
-        String(255), nullable=False, index=False, default=FidesBase.generate_uuid
+        String(255),
+        nullable=False,
+        index=False,
+        unique=True,
+        default=FidesBase.generate_uuid,
     )
 
+    # The fides_key is inherited from FidesBase and acts as the primary key
+
+    # This is private to encourage the use of applies_to (see comment below)
     _allowed_usages: RelationshipProperty[List[TaxonomyAllowedUsage]] = relationship(
         "TaxonomyAllowedUsage",
         back_populates="source_taxonomy",
@@ -53,7 +63,12 @@ class Taxonomy(Base, FidesBase):
     # This allows getting a list of strings while the actual storage
     # is handled through the TaxonomyAllowedUsage model
     # Updates should be done through the create/update methods
-    applies_to: List[str] = association_proxy("_allowed_usages", "target_type")
+    applies_to: List[str] = association_proxy(
+        "_allowed_usages",
+        "target_type",
+        # Allow setting via strings, the relationship backref will set FK
+        creator=lambda target_type: TaxonomyAllowedUsage(target_type=target_type),
+    )
 
     @classmethod
     def create(
@@ -75,14 +90,9 @@ class Taxonomy(Base, FidesBase):
         # Create the taxonomy
         taxonomy: Taxonomy = super().create(db=db, data=data, check_name=check_name)
 
-        # Create TaxonomyAllowedUsage objects for each applies_to value
-        allowed_usages = [
-            TaxonomyAllowedUsage(
-                source_taxonomy_key=taxonomy.fides_key, target_type=target_type
-            )
-            for target_type in set(applies_to)
-        ]
-        taxonomy._allowed_usages = allowed_usages  # pylint: disable=protected-access
+        # Reconcile allowed usages if applies_to was provided
+        if applies_to:
+            taxonomy._reconcile_allowed_usages(db, applies_to)
 
         return cls.persist_obj(db, taxonomy)
 
@@ -93,26 +103,48 @@ class Taxonomy(Base, FidesBase):
         # Update the base fields
         super().update(db=db, data=data)
 
-        # If applies_to was provided, update it
+        # If applies_to was provided, reconcile allowed usages
         if applies_to is not None:
-            existing_usages = {
-                usage.target_type: usage for usage in self._allowed_usages
-            }
-            updated_types = set(applies_to)
-
-            # Delete TaxonomyAllowedUsage instances that are not in the updated list
-            for target_type in set(existing_usages.keys()) - updated_types:
-                db.delete(existing_usages[target_type])
-
-            # Create new TaxonomyAllowedUsage instances for types that don't exist
-            for target_type in updated_types - set(existing_usages.keys()):
-                self._allowed_usages.append(
-                    TaxonomyAllowedUsage(
-                        source_taxonomy_key=self.fides_key, target_type=target_type
-                    )
-                )
+            self._reconcile_allowed_usages(db, applies_to)
 
         return self
+
+    def save(self, db: Session) -> "Taxonomy":
+        """Override save to reconcile any direct `applies_to` edits before persisting.
+
+        This allows callers to mutate `applies_to` via the association proxy and then call save.
+        """
+        # Ensure no duplicate target types and reconcile relationship objects to the current values
+        self._reconcile_allowed_usages(db, list(self.applies_to))
+        return super().save(db)  # type: ignore[return-value]
+
+    def _reconcile_allowed_usages(self, db: Session, applies_to: List[str]) -> None:
+        """Ensure `_allowed_usages` matches the provided `applies_to` list.
+
+        - Deletes usages not in the provided list
+        - Creates usages missing from the relationship
+        - Deduplicates by target_type
+        """
+        existing_usages = {usage.target_type: usage for usage in self._allowed_usages}
+        desired_types = set(applies_to)
+
+        # Delete usages that should no longer exist
+        for target_type in set(existing_usages.keys()) - desired_types:
+            # Remove from relationship; delete-orphan cascade will handle DB delete
+            self._allowed_usages.remove(existing_usages[target_type])
+
+        # Add missing usages
+        for target_type in desired_types - set(existing_usages.keys()):
+            self._allowed_usages.append(TaxonomyAllowedUsage(target_type=target_type))
+
+        # Deduplicate any accidental duplicates in-memory
+        seen: set[str] = set()
+        for usage in list(self._allowed_usages):
+            if usage.target_type in seen:
+                # Remove duplicate from relationship; delete-orphan will handle DB
+                self._allowed_usages.remove(usage)
+            else:
+                seen.add(usage.target_type)
 
 
 class TaxonomyAllowedUsage(Base):
@@ -121,7 +153,7 @@ class TaxonomyAllowedUsage(Base):
     Defines what types of targets a taxonomy can be applied to.
 
     target_type can be either:
-    - A generic type: "system", "dataset", "field", "collection", "privacy_declaration"
+    - A generic type: "system", "privacy_declaration", "taxonomy"
     - A taxonomy key: "data_categories", "data_uses", etc.
     """
 
@@ -130,7 +162,11 @@ class TaxonomyAllowedUsage(Base):
         return "taxonomy_allowed_usage"
 
     id = Column(
-        String(255), nullable=False, index=False, default=FidesBase.generate_uuid
+        String(255),
+        nullable=False,
+        index=False,
+        unique=True,
+        default=FidesBase.generate_uuid,
     )
 
     source_taxonomy: RelationshipProperty[Taxonomy] = relationship(
@@ -151,6 +187,11 @@ class TaxonomyAllowedUsage(Base):
 class TaxonomyElement(Base, FidesBase):
     """
     The SQL model for taxonomy elements.
+
+    This is a generic taxonomy element model that can be used to create any taxonomy element.
+
+    As of now the legacy taxonomy elements still exist in their own tables (ctl_data_categories, ctl_data_uses, ctl_data_subjects),
+    but we can migrate them to this model in the future if needed.
     """
 
     @declared_attr
@@ -158,7 +199,11 @@ class TaxonomyElement(Base, FidesBase):
         return "taxonomy_element"
 
     id = Column(
-        String(255), nullable=False, index=False, default=FidesBase.generate_uuid
+        String(255),
+        nullable=False,
+        index=False,
+        unique=True,
+        default=FidesBase.generate_uuid,
     )
 
     # Which taxonomy this element belongs to
@@ -227,6 +272,4 @@ class TaxonomyUsage(Base):
             "target_element_key",
             name="uq_taxonomy_usage",
         ),
-        # Index for finding all usages by taxonomy combination
-        Index("ix_taxonomy_usage_by_taxonomies", "source_taxonomy", "target_taxonomy"),
     )

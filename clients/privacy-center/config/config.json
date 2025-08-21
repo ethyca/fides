@@ -17,12 +17,7 @@
       "description": "We will provide you a report of all your personal data.",
       "description_subtext": [],
       "identity_inputs": {
-        "email": "required",
-        "location": {
-          "label": "Location",
-          "required": true,
-          "ip_geolocation_hint": true
-        }
+        "email": "required"
       },
       "custom_privacy_request_fields": {
         "preferred_format": {
@@ -54,6 +49,12 @@
             "EPUB",
             "PSD"
           ]
+        },
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": true,
+          "ip_geolocation_hint": true
         }
       },
       "confirmButtonText": "Continue",
@@ -66,12 +67,7 @@
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "description_subtext": [],
       "identity_inputs": {
-        "email": "required",
-        "location": {
-          "label": "Location",
-          "required": false,
-          "ip_geolocation_hint": true
-        }
+        "email": "required"
       },
       "custom_privacy_request_fields": {
         "data_categories": {
@@ -84,6 +80,12 @@
             "Activity History",
             "Analytics Data"
           ]
+        },
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": false,
+          "ip_geolocation_hint": true
         }
       },
       "confirmButtonText": "Continue",

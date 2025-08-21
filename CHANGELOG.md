@@ -21,9 +21,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
 
+### Added
+- Added models for generic taxonomy support (Fidesplus) [#6421](https://github.com/ethyca/fides/pull/6421)
+
 ### Changed
 - Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
 - Changed Fides.js banner title attributes for better SEO + a11y support [#6470](https://github.com/ethyca/fides/pull/6470)
+- Test Website Monitors now show the brand image and a "test monitor" tag [#6476](https://github.com/ethyca/fides/pull/6476)
+- Privacy Request runner will now also check for awaiting input tags as part of `poll_for_exited_privacy_request_tasks` [#6471](https://github.com/ethyca/fides/pull/6471)
+- Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
+
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
@@ -31,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
 - Manual Task Graph Tasks now receive data from any nodes referenced by their conditional dependencies. [#6402](https://github.com/ethyca/fides/pull/6402)
 - Added PrivacyCenterSettings to the config. [#6349](https://github.com/ethyca/fides/pull/6439)
+- Added reusable table system with URL synchronization and Ant Design integration for standardized table behavior and deep linking support [#6447](https://github.com/ethyca/fides/pull/6447)
 - Added DSR task conditional operators list types and data type/operator compatibility [#6429](https://github.com/ethyca/fides/pull/6429)
 - Added visual checkmark feedback and screen reader announcements for consent button interactions [#6451](https://github.com/ethyca/fides/pull/6451)
 - Added field to privacy center configuration to support location collection in privacy center actions [#6432](https://github.com/ethyca/fides/pull/6432)

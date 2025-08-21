@@ -17,10 +17,10 @@ describe("The Config type", () => {
    * Discussion: https://github.com/ethyca/fides/discussions/2392
    */
   it("is backwards-compatible with old JSON files", () => {
-    const minimalTyped: LegacyConfig = minimalJson;
-    const basicTyped: LegacyConfig = basicJson;
-    const fullTyped: LegacyConfig = fullJson;
-    const v2ConsentObject: LegacyConfig = v2ConsentJson;
+    const minimalTyped: LegacyConfig = minimalJson as LegacyConfig;
+    const basicTyped: LegacyConfig = basicJson as LegacyConfig;
+    const fullTyped: LegacyConfig = fullJson as LegacyConfig;
+    const v2ConsentObject: LegacyConfig = v2ConsentJson as LegacyConfig;
 
     expect(minimalTyped).toBeDefined();
     expect(basicTyped).toBeDefined();

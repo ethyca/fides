@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
-    AwaitingAsyncTaskCallback,
+    AwaitingAsyncTask,
     CollectionDisabled,
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
@@ -114,17 +114,17 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
-                except AwaitingAsyncTaskCallback as ex:
+                except AwaitingAsyncTask as ex:
                     traceback.print_exc()
                     logger.warning(
-                        "Request Task {} {} {} awaiting async callback",
+                        "Request Task {} {} {} awaiting async continuation",
                         self.request_task.id if self.request_task.id else None,
                         method_name,
                         self.execution_node.address,
                     )
                     # Log the awaiting processing status and exit without retrying.
                     self.log_awaiting_processing(action_type, ex)
-                    # Request Task put in "awaiting_processing" status and exited, awaiting Async Callback
+                    # Request Task put in "awaiting_processing" status and exited, awaiting for Async continuation
                     return None
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()

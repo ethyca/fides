@@ -58,6 +58,7 @@ export {
   Menu as AntMenu,
   message as AntMessage,
   Modal as AntModal,
+  Pagination as AntPagination,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
@@ -82,7 +83,6 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 // Higher-order components
 export {
   CustomDateRangePicker as AntDateRangePicker,
-  CustomPagination as AntPagination,
   CustomSelect as AntSelect,
   CustomTable as AntTable,
   CustomTag as AntTag,
@@ -90,9 +90,6 @@ export {
   CustomTypography as AntTypography,
 } from "./hoc";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
-
-// Constants
-export { PAGE_SIZES } from "./hoc/CustomPagination";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
