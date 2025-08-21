@@ -31,6 +31,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Privacy Request runner will now also check for awaiting input tags as part of `poll_for_exited_privacy_request_tasks` [#6471](https://github.com/ethyca/fides/pull/6471)
 - Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
 
+### Developer Experience
+- Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
+
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
