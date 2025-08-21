@@ -12,7 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
@@ -28,6 +33,7 @@ from fides.api.db.system import (
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
+from fides.api.oauth.roles import APPROVER
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_request_body_cli,
@@ -46,7 +52,11 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.system import BasicSystemResponse, SystemResponse
+from fides.api.schemas.system import (
+    AssignStewardRequest,
+    BasicSystemResponse,
+    SystemResponse,
+)
 from fides.api.service.deps import get_system_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
@@ -370,6 +380,89 @@ async def system_bulk_delete(
     return {
         "message": f"Deleted {len(deleted)} system(s)",
         "deleted": deleted,
+    }
+
+
+@SYSTEM_ROUTER.post(
+    "/assign-steward",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_UPDATE],
+        )
+    ],
+)
+async def bulk_assign_steward(
+    data: AssignStewardRequest,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """Assign the given `data_steward` (username) as a system manager for the list of `system_keys`.
+
+    This mirrors the behavior of the user permissions endpoint that assigns systems to a given user but
+    from the perspective of the System API. It validates that:
+
+    1. The provided user exists.
+    2. The user already has permissions (cannot be None).
+    3. The user is not an approver (approvers are explicitly disallowed from being system managers).
+    4. All provided `system_keys` resolve to existing System records.
+    5. There are no duplicate keys in the payload.
+    """
+
+    data_steward = data.data_steward
+    system_keys = data.system_keys
+
+    user: Optional[FidesUser] = FidesUser.get_by(
+        db, field="username", value=data_steward
+    )
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No user found with username {data_steward}.",
+        )
+
+    # Validate user has permissions assigned
+    if not (user.permissions and user.permissions.roles):  # type: ignore[attr-defined]
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {data_steward} needs permissions before they can be assigned as system manager.",
+        )
+
+    # Approvers are not allowed to be system managers
+    if APPROVER in user.permissions.roles:  # type: ignore[attr-defined]
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {data_steward} is an {APPROVER} and cannot be assigned as a system manager.",
+        )
+
+    # Check for duplicate system keys
+    if len(set(system_keys)) != len(system_keys):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot add user {data_steward} as system manager. Duplicate systems in request body.",
+        )
+
+    # Retrieve systems and validate existence
+    systems_query = db.query(System).filter(System.fides_key.in_(system_keys))
+    if systems_query.count() != len(system_keys):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Cannot add user {data_steward} as system manager. System(s) not found.",
+        )
+
+    systems = systems_query.all()
+
+    logger.info(
+        "Assigning user {} as data steward for {} systems", data_steward, len(systems)
+    )
+
+    updated_count = 0
+    for system in systems:
+        if user not in system.data_stewards:
+            user.set_as_system_manager(db, system)
+            updated_count += 1
+
+    return {
+        "message": f"User {data_steward} assigned as data steward to {updated_count} system(s)",
     }
 
 
