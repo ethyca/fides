@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 import {
   AntButton,
   AntButton as Button,
@@ -5,7 +6,6 @@ import {
   AntFlex,
   AntMessage as message,
   AntModal,
-  AntSpace as Space,
   AntTable as Table,
   Icons,
 } from "fidesui";
@@ -68,10 +68,6 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
       {} as Record<string, SystemGroup>,
     );
   }, [allSystemGroups]);
-
-  const handleEdit = (record: BasicSystemResponse) => {
-    router.push(`/systems/configure/${record.fides_key}`);
-  };
 
   const handleDelete = async (system: BasicSystemResponse) => {
     const result = await deleteSystem(system.fides_key);
@@ -213,31 +209,49 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
         width: 200,
       },
       {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        render: (description: string | null) => description,
+        width: 200,
+      },
+      {
         title: "Actions",
         key: "actions",
         render: (_: unknown, record: BasicSystemResponse) => (
-          <Space size="small">
-            <Button
-              size="small"
-              icon={<Icons.Edit />}
-              onClick={() => handleEdit(record)}
-            >
-              Edit
-            </Button>
-            <Button
-              size="small"
-              icon={<Icons.TrashCan />}
-              onClick={() => {
-                setSelectedSystemForDelete(record);
-                setDeleteModalIsOpen(true);
+          <AntFlex justify="end">
+            <AntDropdown
+              trigger={["click"]}
+              menu={{
+                items: [
+                  {
+                    key: "edit",
+                    label: "Edit",
+                    icon: <Icons.Edit />,
+                    onClick: () =>
+                      router.push(`/systems/configure/${record.fides_key}`),
+                  },
+                  {
+                    key: "delete",
+                    label: "Delete",
+                    icon: <Icons.TrashCan />,
+                    onClick: () => {
+                      setSelectedSystemForDelete(record);
+                      setDeleteModalIsOpen(true);
+                    },
+                  },
+                ],
               }}
-              aria-label="Delete"
             >
-              Delete
-            </Button>
-          </Space>
+              <Button
+                size="small"
+                icon={<Icons.OverflowMenuVertical />}
+                aria-label="More actions"
+              />
+            </AntDropdown>
+          </AntFlex>
         ),
-        width: 100,
+        width: 10,
       },
     ];
   }, [
@@ -245,8 +259,7 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
     isDataUsesExpanded,
     systemGroupMap,
     allSystemGroups,
-    handleEdit,
-    handleBulkAddToGroup,
+    router,
   ]);
 
   const groupMenuItems = useMemo(() => {
@@ -312,7 +325,9 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
         centered
       >
         <CustomTypography.Paragraph>
-          Delete {selectedSystemForDelete?.name}? This action cannot be undone.
+          Are you sure you want to delete{" "}
+          {selectedSystemForDelete?.name ?? selectedSystemForDelete?.fides_key}?
+          This action cannot be undone.
         </CustomTypography.Paragraph>
       </AntModal>
       <Table

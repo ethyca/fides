@@ -1,3 +1,5 @@
+import { HTMLAttributes, useState } from "react";
+
 import {
   ControlledSelect,
   ControlledSelectProps,
@@ -31,14 +33,21 @@ const COLOR_VALUES: Record<CustomTaxonomyColor, string> = {
   [CustomTaxonomyColor.MINOS]: "var(--fidesui-bg-minos)",
 };
 
-const ColorSwatch = ({ color }: { color: string }) => {
+const ColorSwatch = ({
+  color,
+  ...props
+}: { color: string } & HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
       aria-hidden
       className="mr-2 inline-block size-4 rounded-lg align-middle"
       style={{
         backgroundColor: color,
-        border: "1px solid var(--fidesui-minos)",
+        border:
+          color === COLOR_VALUES[CustomTaxonomyColor.WHITE]
+            ? "1px solid var(--fidesui-neutral-200)"
+            : "none",
+        ...props.style,
       }}
     />
   );
@@ -64,12 +73,26 @@ const ColorSelect = (props: ColorSelectProps) => {
     label: COLOR_LABELS[value],
   }));
 
+  const [value, setValue] = useState<CustomTaxonomyColor | undefined>(
+    undefined,
+  );
+
   return (
     <ControlledSelect
       {...props}
       options={options}
       optionRender={renderColorOption}
       layout="stacked"
+      value={value}
+      onChange={(newValue) => {
+        setValue(newValue as CustomTaxonomyColor);
+      }}
+      prefix={
+        <ColorSwatch
+          color={COLOR_VALUES[value ?? CustomTaxonomyColor.WHITE]}
+          style={{ marginBottom: "2px" }}
+        />
+      }
     />
   );
 };

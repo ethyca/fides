@@ -13,7 +13,7 @@ import {
 export const DEFAULT_SYSTEM_GROUPS: SystemGroup[] = [
   {
     fides_key: "system.product_eng",
-    name: "Product & ENG",
+    name: "Product & ENG & something else & something else to make this tag very long",
     color: CustomTaxonomyColor.YELLOW,
   },
   {

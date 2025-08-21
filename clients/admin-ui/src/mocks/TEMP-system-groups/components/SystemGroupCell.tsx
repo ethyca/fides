@@ -115,9 +115,6 @@ const SystemGroupCell = ({
             }}
             onBlur={handleUpdate}
           />
-          {/* <AntButton type="primary" onClick={handleUpdate}>
-            Update
-          </AntButton> */}
         </AntFlex>
       )}
     </>

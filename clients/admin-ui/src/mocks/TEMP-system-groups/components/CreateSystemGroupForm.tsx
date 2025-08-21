@@ -143,7 +143,7 @@ const CreateSystemGroupForm = ({
               loading={isLoadingUsers}
             />
 
-            <Flex gap="small" justify="flex-end" className="pt-4">
+            <Flex gap="small" justify="space-between" className="pt-4">
               <Button onClick={onCancel} disabled={isSubmitting}>
                 Cancel
               </Button>
