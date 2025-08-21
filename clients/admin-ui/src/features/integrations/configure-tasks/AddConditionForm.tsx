@@ -5,7 +5,7 @@ import {
   AntSelect as Select,
   Flex,
 } from "fidesui";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { DatasetReferencePicker } from "~/features/common/dataset";
 import { ConditionLeaf, Operator } from "~/types/api";
@@ -110,6 +110,13 @@ const AddConditionForm = ({
   const isValueDisabled =
     selectedOperator === Operator.EXISTS ||
     selectedOperator === Operator.NOT_EXISTS;
+
+  // Clear value field when operator changes to EXISTS or NOT_EXISTS
+  useEffect(() => {
+    if (isValueDisabled) {
+      form.setFieldValue("value", "");
+    }
+  }, [isValueDisabled, form]);
 
   return (
     <Form
