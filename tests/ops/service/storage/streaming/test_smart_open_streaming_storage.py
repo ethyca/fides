@@ -138,22 +138,23 @@ class TestSmartOpenStreamingStoragePackageSplitting:
                 {
                     "id": 1,
                     "name": "User 1",
-                    "attachments": [{"file_name": f"doc{i}.pdf"} for i in range(8)],
+                    "attachments": [{"file_name": f"doc{i}.pdf"} for i in range(8)]
                 },
                 {
                     "id": 2,
                     "name": "User 2",
-                    "attachments": [{"file_name": f"doc{i}.pdf"} for i in range(6)],
-                },
+                    "attachments": [{"file_name": f"doc{i}.pdf"} for i in range(6)]
+                }
             ]
         }
         config = PackageSplitConfig(max_attachments=5)
         result = self.storage.split_data_into_packages(data, config)
 
-        # Should create 4 packages:
-        # - User 1: 8 attachments split into 2 packages (5 + 3)
-        # - User 2: 6 attachments split into 2 packages (5 + 1)
-        assert len(result) == 4
+        # Should create 3 packages due to optimization:
+        # - Package 1: User 1 with 5 attachments (doc0-doc4)
+        # - Package 2: User 2 with 5 attachments (doc0-doc4)
+        # - Package 3: User 1 with 3 remaining (doc5-doc7) + User 2 with 1 remaining (doc5)
+        assert len(result) == 3
 
         # Verify that each package has at most 5 attachments
         for package in result:
