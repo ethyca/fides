@@ -72,42 +72,6 @@ def mock_storage_client():
 
 
 @pytest.fixture
-def mock_gcs_storage_client():
-    """Create a mock GCS storage client using Mock."""
-    client = Mock(spec=CloudStorageClient)
-
-    # Mock the multipart upload response
-    def mock_create_upload(bucket, key, content_type, metadata=None):
-        upload_response = Mock()
-        upload_response.upload_id = f"gcs_upload_{bucket}_{key}_123"
-        upload_response.metadata = {
-            "bucket": bucket,
-            "key": key,
-            "content_type": content_type,
-            **(metadata or {}),
-        }
-        return upload_response
-
-    client.create_multipart_upload.side_effect = mock_create_upload
-
-    # Mock upload part responses
-    def mock_upload_part(bucket, key, upload_id, part_number, body, metadata=None):
-        part = Mock()
-        part.etag = f"gcs_etag_{part_number}"
-        part.part_number = part_number
-        part.metadata = metadata or {}
-        return part
-
-    client.upload_part.side_effect = mock_upload_part
-
-    # Mock the complete and abort methods
-    client.complete_multipart_upload.return_value = None
-    client.abort_multipart_upload.return_value = None
-
-    return client
-
-
-@pytest.fixture
 def mock_s3_storage_client():
     """Create a mock S3 storage client using Mock."""
     client = Mock(spec=CloudStorageClient)

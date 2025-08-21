@@ -1,7 +1,6 @@
 """Tests for the CloudStorageClient abstract base class."""
 
-from typing import Any, Dict, List, Union, get_type_hints
-from unittest.mock import create_autospec, patch
+from typing import Union, get_type_hints
 
 import pydantic_core
 import pytest
@@ -327,7 +326,7 @@ class TestCloudStorageClient:
             assert len(args) == 2
             assert args[1] == type(None)  # None type
             dict_type = args[0]
-            assert dict_type in [Dict[str, str], dict[str, str]]
+            assert dict_type in [dict[str, str], dict[str, str]]
         else:
             # Fallback check
             assert "Optional" in str(metadata_type) or "Union" in str(metadata_type)
@@ -349,7 +348,7 @@ class TestCloudStorageClient:
             assert len(args) == 2
             assert args[1] == type(None)
             dict_type = args[0]
-            assert dict_type in [Dict[str, str], dict[str, str]]
+            assert dict_type in [dict[str, str], dict[str, str]]
         else:
             assert "Optional" in str(upload_metadata_type) or "Union" in str(
                 upload_metadata_type
@@ -364,7 +363,7 @@ class TestCloudStorageClient:
         assert parts_type is not None
         # Should be List[UploadPartResponse] or list[UploadPartResponse]
         if hasattr(parts_type, "__origin__"):
-            assert parts_type.__origin__ in [List, list]
+            assert parts_type.__origin__ in [list, list]
             args = parts_type.__args__
             assert len(args) == 1
             assert args[0] == UploadPartResponse
@@ -383,7 +382,7 @@ class TestCloudStorageClient:
             assert len(args) == 2
             assert args[1] == type(None)
             dict_type = args[0]
-            assert dict_type in [Dict[str, str], dict[str, str]]
+            assert dict_type in [dict[str, str], dict[str, str]]
         else:
             assert "Optional" in str(complete_metadata_type) or "Union" in str(
                 complete_metadata_type

@@ -6,9 +6,6 @@ from loguru import logger
 
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.streaming.gcs.gcs_storage_client import (
-    create_gcs_storage_client,
-)
 from fides.api.service.storage.streaming.s3.s3_storage_client import (
     create_s3_storage_client,
 )
@@ -35,15 +32,7 @@ class CloudStorageClientFactory:
             return create_s3_storage_client(auth_method, secrets_dict)
 
         if storage_type.lower() in ["gcs", "gcp", "google"]:
-            # GCS streaming is now implemented with full CloudStorageClient interface
-            # Convert storage_secrets to the format expected by create_gcs_storage_client
-            if isinstance(storage_secrets, StorageSecretsS3):
-                # Convert StorageSecretsS3 to the format expected by GCS
-                # This is a temporary fix - ideally we'd have proper GCS secrets handling
-                gcs_secrets = None  # GCS will use default credentials
-            else:
-                gcs_secrets = storage_secrets
-            return create_gcs_storage_client(auth_method, gcs_secrets)
+            raise NotImplementedError("GCS streaming is not yet implemented")
 
         raise ValueError(f"Unsupported storage type: {storage_type}")
 

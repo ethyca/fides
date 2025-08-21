@@ -4,12 +4,6 @@ from fides.api.service.storage.streaming.dsr_storage import (
     stream_html_dsr_report_to_storage_multipart,
 )
 
-# GCS storage client - basic implementation only, streaming not yet available
-from fides.api.service.storage.streaming.gcs.gcs_storage_client import (
-    GCSStorageClient,
-    create_gcs_storage_client,
-)
-
 # Provider-specific implementations
 from fides.api.service.storage.streaming.s3.s3_storage_client import (
     S3StorageClient,
@@ -43,9 +37,6 @@ __all__ = [
     # Provider implementations
     "S3StorageClient",
     "create_s3_storage_client",
-    # GCS basic client - streaming implementation not yet available
-    "GCSStorageClient",
-    "create_gcs_storage_client",
     # S3 streaming interface
     "upload_to_s3_streaming",
 ]

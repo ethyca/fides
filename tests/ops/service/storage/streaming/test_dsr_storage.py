@@ -56,9 +56,7 @@ def sample_dsr_data():
 class TestStreamHtmlDsrReportToStorageMultipart:
     """Test cases for stream_html_dsr_report_to_storage_multipart function."""
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_successful_upload_small_file_single_upload(
         self,
@@ -99,9 +97,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client.complete_multipart_upload.assert_not_called()
         storage_client.abort_multipart_upload.assert_not_called()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_successful_upload_large_file_multipart(
         self,
@@ -145,9 +141,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         # Verify single upload was NOT used
         storage_client.put_object.assert_not_called()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_successful_upload_multiple_chunks(
         self,
@@ -184,9 +178,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         # Verify no abort was called
         storage_client.abort_multipart_upload.assert_not_called()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_upload_with_custom_bucket_and_key(
         self,
@@ -224,9 +216,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             content_type="text/html",
         )
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_upload_with_empty_dsr_data(
         self,
@@ -260,9 +250,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             content_type="text/html",
         )
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_upload_with_large_dsr_data(
         self,
@@ -297,9 +285,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         assert storage_client.upload_part.call_count > 1
         storage_client.complete_multipart_upload.assert_called_once()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_upload_failure_during_part_upload(
         self,
@@ -348,9 +334,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client.abort_multipart_upload.assert_called_once()
         storage_client.complete_multipart_upload.assert_not_called()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_upload_failure_during_multipart_creation(
         self,
@@ -388,9 +372,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client.abort_multipart_upload.assert_not_called()
         storage_client.complete_multipart_upload.assert_not_called()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_upload_failure_during_completion(
         self,
@@ -428,9 +410,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client.abort_multipart_upload.assert_called_once()
         storage_client.complete_multipart_upload.assert_called_once()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_abort_upload_failure_handling(
         self,
@@ -473,9 +453,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         storage_client.abort_multipart_upload.assert_called_once()
         storage_client.complete_multipart_upload.assert_called_once()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_dsr_report_builder_integration(
         self,
@@ -515,9 +493,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         # Verify single upload was used
         storage_client.put_object.assert_called_once()
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_content_type_setting_single_upload(
         self,
@@ -552,9 +528,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             content_type="text/html",
         )
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_content_type_setting_multipart_upload(
         self,
@@ -586,9 +560,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
             "test-bucket", "test-report.html", "text/html"
         )
 
-    @pytest.mark.parametrize(
-        "storage_client_fixture", ["mock_gcs_storage_client", "mock_s3_storage_client"]
-    )
+    @pytest.mark.parametrize("storage_client_fixture", ["mock_s3_storage_client"])
     @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_chunk_size_threshold_usage(
         self,

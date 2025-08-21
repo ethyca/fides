@@ -37,72 +37,6 @@ class TestCloudStorageClientFactory:
         assert result == mock_s3_storage_client
         mock_create_s3_client.assert_called_once_with(auth_method, storage_secrets)
 
-    @patch(
-        "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-    )
-    def test_create_storage_client_gcs_success(
-        self, mock_create_gcs_client, mock_gcs_storage_client
-    ):
-        """Test successful GCS storage client creation."""
-        # Arrange
-        mock_create_gcs_client.return_value = mock_gcs_storage_client
-        storage_type = "gcs"
-        auth_method = "adc"
-        storage_secrets = {"project_id": "test-project"}
-
-        # Act
-        result = CloudStorageClientFactory.create_storage_client(
-            storage_type, auth_method, storage_secrets
-        )
-
-        # Assert
-        assert result == mock_gcs_storage_client
-        mock_create_gcs_client.assert_called_once_with(auth_method, storage_secrets)
-
-    @patch(
-        "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-    )
-    def test_create_storage_client_gcp_alias_success(
-        self, mock_create_gcs_client, mock_gcs_storage_client
-    ):
-        """Test successful GCS storage client creation using 'gcp' alias."""
-        # Arrange
-        mock_create_gcs_client.return_value = mock_gcs_storage_client
-        storage_type = "gcp"
-        auth_method = "service_account"
-        storage_secrets = {"project_id": "test-project"}
-
-        # Act
-        result = CloudStorageClientFactory.create_storage_client(
-            storage_type, auth_method, storage_secrets
-        )
-
-        # Assert
-        assert result == mock_gcs_storage_client
-        mock_create_gcs_client.assert_called_once_with(auth_method, storage_secrets)
-
-    @patch(
-        "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-    )
-    def test_create_storage_client_google_alias_success(
-        self, mock_create_gcs_client, mock_gcs_storage_client
-    ):
-        """Test successful GCS storage client creation using 'google' alias."""
-        # Arrange
-        mock_create_gcs_client.return_value = mock_gcs_storage_client
-        storage_type = "google"
-        auth_method = "adc"
-        storage_secrets = None
-
-        # Act
-        result = CloudStorageClientFactory.create_storage_client(
-            storage_type, auth_method, storage_secrets
-        )
-
-        # Assert
-        assert result == mock_gcs_storage_client
-        mock_create_gcs_client.assert_called_once_with(auth_method, storage_secrets)
-
     def test_create_storage_client_s3_missing_secrets(self):
         """Test S3 storage client creation fails when secrets are missing."""
         # Arrange
@@ -172,27 +106,6 @@ class TestCloudStorageClientFactory:
             assert result == mock_s3_storage_client
             mock_create_s3.assert_called_once_with(auth_method, storage_secrets)
 
-    def test_create_storage_client_case_insensitive_gcs(self, mock_gcs_storage_client):
-        """Test storage client creation is case insensitive for GCS."""
-        # Arrange
-        storage_type = "GCS"
-        auth_method = "adc"
-        storage_secrets = {"project_id": "test-project"}
-
-        with patch(
-            "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-        ) as mock_create_gcs:
-            mock_create_gcs.return_value = mock_gcs_storage_client
-
-            # Act
-            result = CloudStorageClientFactory.create_storage_client(
-                storage_type, auth_method, storage_secrets
-            )
-
-            # Assert
-            assert result == mock_gcs_storage_client
-            mock_create_gcs.assert_called_once_with(auth_method, storage_secrets)
-
     @patch(
         "fides.api.service.storage.streaming.storage_client_factory.create_s3_storage_client"
     )
@@ -222,30 +135,6 @@ class TestCloudStorageClientFactory:
             "automatic", storage_config["secrets"]
         )
 
-    @patch(
-        "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-    )
-    def test_create_storage_client_from_config_gcs(
-        self, mock_create_gcs_client, mock_gcs_storage_client
-    ):
-        """Test creating GCS storage client from configuration dictionary."""
-        # Arrange
-        mock_create_gcs_client.return_value = mock_gcs_storage_client
-        storage_config = {
-            "type": "gcs",
-            "auth_method": "adc",
-            "secrets": {"project_id": "test-project"},
-        }
-
-        # Act
-        result = CloudStorageClientFactory.create_storage_client_from_config(
-            storage_config
-        )
-
-        # Assert
-        assert result == mock_gcs_storage_client
-        mock_create_gcs_client.assert_called_once_with("adc", storage_config["secrets"])
-
     def test_create_storage_client_from_config_defaults(self, mock_s3_storage_client):
         """Test creating storage client from config with default values."""
         # Arrange
@@ -272,27 +161,6 @@ class TestCloudStorageClientFactory:
             mock_create_s3.assert_called_once_with(
                 "automatic", storage_config["secrets"]
             )
-
-    def test_create_storage_client_from_config_no_secrets(
-        self, mock_gcs_storage_client
-    ):
-        """Test creating storage client from config with no secrets."""
-        # Arrange
-        storage_config = {"type": "gcs", "auth_method": "adc"}
-
-        with patch(
-            "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-        ) as mock_create_gcs:
-            mock_create_gcs.return_value = mock_gcs_storage_client
-
-            # Act
-            result = CloudStorageClientFactory.create_storage_client_from_config(
-                storage_config
-            )
-
-            # Assert
-            assert result == mock_gcs_storage_client
-            mock_create_gcs.assert_called_once_with("adc", None)
 
     def test_create_storage_client_from_config_empty_dict(self):
         """Test creating storage client from empty config dictionary raises error for S3."""
@@ -356,26 +224,6 @@ class TestGetStorageClient:
         # Assert
         assert result == mock_s3_storage_client
         mock_create_s3_client.assert_called_once_with(auth_method, storage_secrets)
-
-    @patch(
-        "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-    )
-    def test_get_storage_client_gcs_success(
-        self, mock_create_gcs_client, mock_gcs_storage_client
-    ):
-        """Test successful GCS storage client creation via convenience function."""
-        # Arrange
-        mock_create_gcs_client.return_value = mock_gcs_storage_client
-        storage_type = "gcs"
-        auth_method = "adc"
-        storage_secrets = {"project_id": "test-project"}
-
-        # Act
-        result = get_storage_client(storage_type, auth_method, storage_secrets)
-
-        # Assert
-        assert result == mock_gcs_storage_client
-        mock_create_gcs_client.assert_called_once_with(auth_method, storage_secrets)
 
     def test_get_storage_client_s3_missing_secrets(self):
         """Test convenience function fails when S3 secrets are missing."""
@@ -447,24 +295,3 @@ class TestStorageClientFactoryIntegration:
             # Assert
             assert result == mock_s3_storage_client
             mock_create_s3.assert_called_once_with(auth_method, storage_secrets)
-
-    def test_gcs_client_creation_integration(self, mock_gcs_storage_client):
-        """Test integration of GCS client creation through the factory using mock fixture."""
-        # Arrange
-        storage_type = "gcs"
-        auth_method = "adc"
-        storage_secrets = {"project_id": "test-project"}
-
-        with patch(
-            "fides.api.service.storage.streaming.storage_client_factory.create_gcs_storage_client"
-        ) as mock_create_gcs:
-            mock_create_gcs.return_value = mock_gcs_storage_client
-
-            # Act
-            result = CloudStorageClientFactory.create_storage_client(
-                storage_type, auth_method, storage_secrets
-            )
-
-            # Assert
-            assert result == mock_gcs_storage_client
-            mock_create_gcs.assert_called_once_with(auth_method, storage_secrets)
