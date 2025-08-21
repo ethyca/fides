@@ -32,28 +32,23 @@ describe("System Navigation", () => {
     cy.location("hash").should("eq", "#information");
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Data uses").click({ force: true });
+    cy.clickAntTab("Data uses");
     cy.location("hash").should("eq", "#data-uses");
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Data flow").click({ force: true });
+    cy.clickAntTab("Data flow");
     cy.location("hash").should("eq", "#data-flow");
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Integrations").click({ force: true });
+    cy.clickAntTab("Integrations");
     cy.location("hash").should("eq", "#integrations");
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Assets").click({ force: true });
+    cy.clickAntTab("Assets");
     cy.location("hash").should("eq", "#assets");
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("History").click({ force: true });
+    cy.clickAntTab("History");
     cy.location("hash").should("eq", "#history");
   });
 

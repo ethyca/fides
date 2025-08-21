@@ -1,8 +1,6 @@
 import {
   stubPlus,
-  stubSystemVendors,
   stubTaxonomyEntities,
-  stubVendorList,
   stubWebsiteMonitor,
 } from "cypress/support/stubs";
 
@@ -219,6 +217,7 @@ describe("Action center system aggregate results", () => {
     it("maintains hash when clicking on a row", () => {
       // no hash (default tab)
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+      cy.wait("@getSystemAggregateResults");
 
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
@@ -228,7 +227,8 @@ describe("Action center system aggregate results", () => {
         );
       });
 
-      cy.get("[role='tab']").contains("Recent activity").click();
+      cy.clickAntTab("Recent activity");
+      cy.wait("@getSystemAggregateResults");
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
@@ -237,7 +237,8 @@ describe("Action center system aggregate results", () => {
         );
       });
 
-      cy.get("[role='tab']").contains("Ignored").click();
+      cy.clickAntTab("Ignored");
+      cy.wait("@getSystemAggregateResults");
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
@@ -246,7 +247,7 @@ describe("Action center system aggregate results", () => {
         );
       });
 
-      cy.get("[role='tab']").contains("Attention required").click();
+      cy.clickAntTab("Attention required");
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link")
           .should(

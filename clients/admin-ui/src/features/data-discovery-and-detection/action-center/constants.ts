@@ -16,3 +16,12 @@ export enum DiscoveredAssetsColumnKeys {
   CONSENT_AGGREGATED = "consent_aggregated",
   ACTIONS = "actions",
 }
+
+export enum DiscoveredSystemAggregateColumnKeys {
+  SYSTEM_NAME = "system_name",
+  TOTAL_UPDATES = "total_updates",
+  DATA_USE = "data_use",
+  LOCATIONS = "locations",
+  DOMAINS = "domains",
+  ACTIONS = "actions",
+}
