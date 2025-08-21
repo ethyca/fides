@@ -6,7 +6,6 @@ saas_config:
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot
   version: 0.0.8
 
-  # Optional display information for enhanced frontend presentation
   display_info:
     category: "CRM"
     tags: ["API", "DSR Automation"]
