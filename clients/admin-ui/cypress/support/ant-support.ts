@@ -42,6 +42,11 @@ declare global {
        * @example cy.getAntTab("Some tab").should("have.attr", "aria-disabled", "true");
        */
       getAntTab: (tab: string) => Chainable;
+      /**
+       * Click an option from an Ant Design Tabs component by label
+       * @param tab The label of the tab to click
+       */
+      clickAntTab: (tab: string) => Chainable;
 
       /**
        * Get a panel from an Ant Design Tabs component by label
@@ -174,8 +179,15 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("getAntTab", (tab: string) =>
-  cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
+  cy
+    .get("[role='tab'], .ant-menu-horizontal  [role='menuitem']")
+    .filter(`:contains("${tab}")`),
 );
+Cypress.Commands.add("clickAntTab", (tab: string) => {
+  cy.getAntTab(tab).click({ force: true });
+  // eslint-disable-next-line cypress/no-unnecessary-waiting
+  cy.wait(500); // Wait for the animation/router to complete
+});
 Cypress.Commands.add("getAntTabPanel", (tab: string) =>
   cy.get(`#rc-tabs-0-panel-${tab}`),
 );
