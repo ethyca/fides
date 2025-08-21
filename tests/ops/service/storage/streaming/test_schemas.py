@@ -51,7 +51,7 @@ class TestStreamingStorageSchemas:
 
         # Test validation - empty string triggers Pydantic's min_length validation
         with pytest.raises(
-            ValidationError, match="String should have at least 1 character"
+            ValidationError, match="Storage identifier cannot be empty or whitespace"
         ):
             StorageUploadConfig(
                 bucket_name="", file_key="test/file.zip", resp_format="csv"

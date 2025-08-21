@@ -63,6 +63,7 @@ module = [
   "pymysql.*",
   "RestrictedPython.*",
   "sendgrid.*",
+  "smart_open.*",
   "snowflake.*",
   "sqlalchemy_utils.*",
   "sqlalchemy.ext.*",

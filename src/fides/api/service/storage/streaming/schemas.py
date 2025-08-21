@@ -2,6 +2,12 @@ from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+# multipart upload requirements
+MIN_PART_SIZE = 5 * 1024 * 1024  # 5MB minimum part size for AWS S3 uploads
+ZIP_BUFFER_THRESHOLD = 5 * 1024 * 1024  # 5MB threshold for zip buffer uploads
+CHUNK_SIZE_THRESHOLD = 5 * 1024 * 1024  # 5MB threshold for chunk-based uploads
+LARGE_FILE_THRESHOLD = 25 * 1024 * 1024  # 25MB threshold for large file handling
+
 
 class AttachmentInfo(BaseModel):
     """Schema for attachment information in streaming storage"""
@@ -31,8 +37,8 @@ class AttachmentInfo(BaseModel):
 class StorageUploadConfig(BaseModel):
     """Configuration for storage upload operations"""
 
-    bucket_name: str = Field(..., min_length=1, description="Storage bucket name")
-    file_key: str = Field(..., min_length=1, description="File key in storage")
+    bucket_name: str = Field(..., description="Storage bucket name")
+    file_key: str = Field(..., description="File key in storage")
     max_workers: int = Field(
         default=5, ge=1, le=20, description="Maximum parallel workers"
     )
@@ -106,6 +112,10 @@ class MultipartUploadResponse(BaseModel):
         default=None, description="Additional metadata from the storage provider"
     )
 
+    model_config = {
+        "extra": "allow",  # Allow extra fields from storage providers
+    }
+
     @field_validator("upload_id")
     @classmethod
     def validate_upload_id(cls, v: Any) -> str:
@@ -115,14 +125,6 @@ class MultipartUploadResponse(BaseModel):
         if not v or not v.strip():
             raise ValueError("Upload ID cannot be empty or whitespace")
         return v.strip()
-
-    class Config:
-        """Pydantic model configuration"""
-
-        # Allow extra fields from storage providers
-        extra = "allow"
-        # Use case-insensitive field names
-        case_sensitive = False
 
     def is_valid_upload_id(self) -> bool:
         """Check if the upload ID is valid (not empty or whitespace)"""
@@ -146,6 +148,10 @@ class UploadPartResponse(BaseModel):
         default=None, description="Additional metadata from the storage provider"
     )
 
+    model_config = {
+        "extra": "allow",  # Allow extra fields from storage providers
+    }
+
     @field_validator("part_number")
     @classmethod
     def validate_part_number(cls, v: Any) -> int:
@@ -155,14 +161,6 @@ class UploadPartResponse(BaseModel):
         if v < 1 or v > 10000:
             raise ValueError("Part number must be between 1 and 10,000")
         return v
-
-    class Config:
-        """Pydantic model configuration"""
-
-        # Allow extra fields from storage providers
-        extra = "allow"
-        # Use case-insensitive field names
-        case_sensitive = False
 
     def is_valid_etag(self) -> bool:
         """Check if the ETag is valid (not empty and properly formatted)"""

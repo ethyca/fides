@@ -3,24 +3,30 @@ from __future__ import annotations
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from botocore.exceptions import ClientError, ParamValidationError
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.s3 import generic_upload_to_s3
+from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import StorageUploadConfig
-from fides.api.service.storage.streaming.storage_client_factory import (
-    get_storage_client,
+from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
+from fides.api.service.storage.streaming.smart_open_streaming_storage import (
+    SmartOpenStreamingStorage,
 )
-from fides.api.service.storage.streaming.streaming_storage import StreamingStorage
-from fides.api.service.storage.streaming.util import update_storage_secrets
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
 
 
+@retry_cloud_storage_operation(
+    provider="s3_streaming",
+    operation_name="upload_to_s3_streaming",
+    max_retries=2,
+    base_delay=2.0,
+    max_delay=30.0,
+)
 def upload_to_s3_streaming(
     storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]],
     data: dict,
@@ -32,44 +38,40 @@ def upload_to_s3_streaming(
     auth_method: str,
     max_workers: int = 5,
 ) -> Optional[AnyHttpUrlString]:
-    """Uploads arbitrary data to S3 using production-ready memory-efficient processing.
+    """Uploads arbitrary data to S3 using smart-open streaming for memory efficiency.
 
-    This function maintains backward compatibility while using the new cloud-agnostic
-    streaming implementation under the hood.
-
-    The production-ready approach includes:
-    1. Parallel processing of multiple attachments
-    2. Adaptive chunk sizes based on file size
-    3. Automatic package splitting for large datasets
-    4. Robust error handling and retry logic
-    5. Memory usage limited to ~5.6MB regardless of attachment count
+    This function now uses smart-open for efficient cloud storage operations while maintaining
+    our DSR-specific business logic for package splitting and attachment processing.
     """
-    logger.info("Starting production streaming S3 Upload of {}", file_key)
+    logger.info("Starting smart-open streaming S3 Upload of {}", file_key)
 
     if privacy_request is None:
-        raise ValueError("Privacy request and document must be provided")
+        raise ValueError("Privacy request must be provided")
+
+    if isinstance(storage_secrets, StorageSecretsS3):
+        secrets_dict = update_storage_secrets_s3(storage_secrets)
+    else:
+        # Convert dict[StorageSecrets, Any] to dict[str, Any] for SmartOpenStorageClient
+        secrets_dict = update_storage_secrets_s3(storage_secrets)
 
     if document is not None:
-        if isinstance(storage_secrets, StorageSecretsS3):
-            secrets_dict = update_storage_secrets(storage_secrets)
-        else:
-            secrets_dict = storage_secrets
-
+        # Convert to dict[StorageSecrets, Any] for generic_upload_to_s3 compatibility
+        generic_secrets = convert_to_storage_secrets_format(storage_secrets)
         _, response = generic_upload_to_s3(
-            secrets_dict, bucket_name, file_key, auth_method, document
+            generic_secrets, bucket_name, file_key, auth_method, document
         )
         return response
 
     try:
-        # Create S3 storage client using the new abstraction
-        storage_client = get_storage_client("s3", auth_method, storage_secrets)
+        # Create smart-open S3 storage client directly
+        storage_client = SmartOpenStorageClient("s3", secrets_dict)
 
-    except (ClientError, ParamValidationError) as e:
-        logger.error(f"Error getting s3 client: {str(e)}")
-        raise StorageUploadError(f"Error getting s3 client: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error creating smart-open S3 client: {str(e)}")
+        raise StorageUploadError(f"Error creating smart-open S3 client: {str(e)}")
 
     try:
-        # Create upload config for the new streaming interface
+        # Create upload config for the streaming interface
         upload_config = StorageUploadConfig(
             bucket_name=bucket_name,
             file_key=file_key,
@@ -77,22 +79,82 @@ def upload_to_s3_streaming(
             max_workers=max_workers,
         )
 
-        # Use the new cloud-agnostic streaming implementation
-        streaming_storage = StreamingStorage(storage_client)
+        # Use the smart-open streaming implementation
+        streaming_storage = SmartOpenStreamingStorage(storage_client)
         result = streaming_storage.upload_to_storage_streaming(
-            storage_client,
             data,
             upload_config,
             privacy_request,
             document,
         )
 
-        logger.info("Successfully uploaded streaming archive to S3: {}", file_key)
+        logger.info(
+            "Successfully uploaded streaming archive to S3 using smart-open: {}",
+            file_key,
+        )
         return result
 
-    except ClientError as e:
-        logger.error("Encountered error while uploading s3 object: {}", e)
-        raise StorageUploadError(f"Error uploading to S3: {e}")
     except Exception as e:
-        logger.error("Unexpected error during streaming upload: {}", e)
-        raise StorageUploadError(f"Unexpected error during streaming upload: {e}")
+        logger.error("Unexpected error during smart-open streaming upload: {}", e)
+        raise StorageUploadError(
+            f"Unexpected error during smart-open streaming upload: {e}"
+        )
+
+
+def update_storage_secrets_s3(
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]
+) -> dict[str, Any]:
+    """
+    Updates the storage secrets to the expected format for SmartOpenStorageClient.
+    Returns dict[str, Any] for compatibility with smart-open.
+    """
+    if not isinstance(storage_secrets, dict):
+        if isinstance(storage_secrets, StorageSecretsS3):
+            try:
+                # Preserve all values including None for test compatibility
+                secrets_dict = storage_secrets.model_dump()
+                return secrets_dict
+            except AttributeError:
+                raise ValueError(
+                    "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
+                )
+    try:
+        if not all(isinstance(k, StorageSecrets) for k in storage_secrets.keys()):
+            raise ValueError(
+                "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
+            )
+    except AttributeError:
+        raise ValueError(
+            "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
+        )
+
+    # Convert StorageSecrets enum keys to string keys for SmartOpenStorageClient
+    converted_secrets = {}
+    for k, v in storage_secrets.items():
+        converted_secrets[k.value] = v
+
+    return converted_secrets
+
+
+def convert_to_storage_secrets_format(
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]
+) -> dict[StorageSecrets, Any]:
+    """
+    Converts storage secrets to the format expected by generic_upload_to_s3.
+    Returns dict[StorageSecrets, Any] for compatibility with existing S3 functions.
+    """
+    if isinstance(storage_secrets, StorageSecretsS3):
+        # Convert StorageSecretsS3 to dict[StorageSecrets, Any]
+        secrets_dict = storage_secrets.model_dump()
+        converted_secrets = {}
+        for k, v in secrets_dict.items():
+            if v is not None:
+                # Map string keys back to StorageSecrets enum keys
+                for enum_key in StorageSecrets:
+                    if enum_key.value == k:
+                        converted_secrets[enum_key] = v
+                        break
+        return converted_secrets
+
+    # Already in the correct format
+    return storage_secrets

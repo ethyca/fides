@@ -1,69 +1,69 @@
+"""Factory for creating provider-specific storage clients."""
+
 from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any
 
-from loguru import logger
-
-from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
-from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.streaming.s3.s3_storage_client import (
-    create_s3_storage_client,
+from fides.api.service.storage.streaming.azure.azure_storage_client import (
+    AzureStorageClient,
 )
-from fides.api.service.storage.streaming.util import update_storage_secrets
+from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
+from fides.api.service.storage.streaming.gcs.gcs_storage_client import GCSStorageClient
+from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
-class CloudStorageClientFactory:
-    """Factory for creating cloud storage clients based on storage type and configuration"""
+class StorageClientFactory:
+    """Factory for creating provider-specific storage clients.
+
+    This factory creates the appropriate storage client implementation based on
+    the storage type, providing a clean separation between the main client and
+    provider-specific logic.
+    """
 
     @staticmethod
-    def create_storage_client(
-        storage_type: str,
-        auth_method: str,
-        storage_secrets: Optional[
-            Union[StorageSecretsS3, dict[StorageSecrets, Any]]
-        ] = None,
-    ) -> CloudStorageClient:
-        """Create a storage client based on the storage type"""
+    def create_client(
+        storage_type: str, storage_secrets: dict[str, Any]
+    ) -> BaseStorageClient:
+        """Create a provider-specific storage client.
 
-        if storage_type.lower() == "s3":
-            if storage_secrets is None:
-                raise ValueError("Storage secrets are required for S3")
-            secrets_dict = update_storage_secrets(storage_secrets)
-            return create_s3_storage_client(auth_method, secrets_dict)
+        Args:
+            storage_type: Type of storage ('s3', 'gcs', 'azure')
+            storage_secrets: Storage credentials and configuration
 
-        if storage_type.lower() in ["gcs", "gcp", "google"]:
-            raise NotImplementedError("GCS streaming is not yet implemented")
+        Returns:
+            Provider-specific storage client implementation
 
+        Raises:
+            ValueError: If the storage type is not supported
+        """
+        normalized_type = StorageClientFactory._normalize_storage_type(storage_type)
+
+        if normalized_type == "s3":
+            return S3StorageClient(storage_secrets)
+        if normalized_type == "gcs":
+            return GCSStorageClient(storage_secrets)
+        if normalized_type == "azure":
+            return AzureStorageClient(storage_secrets)
         raise ValueError(f"Unsupported storage type: {storage_type}")
 
     @staticmethod
-    def create_storage_client_from_config(
-        storage_config: dict[str, Any]
-    ) -> CloudStorageClient:
-        """Create a storage client from a configuration dictionary"""
+    def _normalize_storage_type(storage_type: str) -> str:
+        """Normalize storage type to standard values.
 
-        storage_type = storage_config.get("type", "s3")
-        auth_method = storage_config.get("auth_method", "automatic")
-        storage_secrets = storage_config.get("secrets")
+        Args:
+            storage_type: Raw storage type string
 
-        logger.info("Creating storage client for type: {}", storage_type)
+        Returns:
+            Normalized storage type string
+        """
+        storage_type = storage_type.lower()
 
-        return CloudStorageClientFactory.create_storage_client(
-            storage_type=storage_type,
-            auth_method=auth_method,
-            storage_secrets=storage_secrets,
-        )
+        # Normalize storage type
+        if storage_type in {"gcs", "gcp", "google"}:
+            return "gcs"
+        if storage_type == "s3":
+            return "s3"
+        if storage_type == "azure":
+            return "azure"
 
-
-# Convenience function for backward compatibility
-def get_storage_client(
-    storage_type: str,
-    auth_method: str,
-    storage_secrets: Optional[
-        Union[StorageSecretsS3, dict[StorageSecrets, Any]]
-    ] = None,
-) -> CloudStorageClient:
-    """Convenience function to create a storage client"""
-    return CloudStorageClientFactory.create_storage_client(
-        storage_type, auth_method, storage_secrets
-    )
+        return storage_type

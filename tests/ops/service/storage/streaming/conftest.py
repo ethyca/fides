@@ -1,107 +1,97 @@
-from unittest.mock import Mock, create_autospec
+from unittest.mock import MagicMock, Mock, create_autospec
 
 import pytest
 
-from fides.api.service.storage.streaming.cloud_storage_client import CloudStorageClient
-from fides.api.service.storage.streaming.schemas import (
-    MultipartUploadResponse,
-    UploadPartResponse,
-)
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 
 
 @pytest.fixture
-def mock_storage_client():
-    """Create a comprehensive mock storage client using autospec."""
-    client = create_autospec(CloudStorageClient, spec_set=False)
+def mock_smart_open_client():
+    """Create a mock smart-open storage client."""
+    client = create_autospec(SmartOpenStorageClient)
 
-    # Mock the multipart upload response using autospec with spec_set=False to allow attribute setting
-    def mock_create_upload(bucket, key, content_type, metadata=None):
-        upload_response = create_autospec(MultipartUploadResponse, spec_set=False)
-        upload_response.upload_id = f"generic_upload_{bucket}_{key}_789"
-        upload_response.metadata = {
-            "bucket": bucket,
-            "key": key,
-            "content_type": content_type,
-            **(metadata or {}),
-        }
-        return upload_response
+    # Mock streaming methods
+    mock_upload_stream = MagicMock()
+    mock_upload_stream.__enter__ = Mock(return_value=mock_upload_stream)
+    mock_upload_stream.__exit__ = Mock(return_value=None)
+    mock_upload_stream.write = Mock()
 
-    client.create_multipart_upload.side_effect = mock_create_upload
+    # Create a more realistic read stream that yields chunks
+    mock_read_stream = MagicMock()
+    mock_read_stream.__enter__ = Mock(return_value=mock_read_stream)
+    mock_read_stream.__exit__ = Mock(return_value=None)
 
-    # Create a list to store mock parts for tracking
-    mock_parts = []
+    # Simulate chunked reading - first call returns content, subsequent calls return empty
+    chunk_content = b"mock_attachment_content"
+    mock_read_stream.read = Mock(side_effect=[chunk_content, b""])
 
-    # Mock upload part responses with proper call tracking
-    def mock_upload_part(*args, **kwargs):
-        part = create_autospec(UploadPartResponse, spec_set=False)
-        call_count = len(mock_parts) + 1
-        part.etag = f"generic_etag_{call_count}"
-        part.part_number = kwargs.get("part_number", call_count)
-        part.metadata = kwargs.get("metadata", {})
-        mock_parts.append(part)
-        return part
+    # Ensure stream_upload returns the mock with context manager methods
+    client.stream_upload.return_value = mock_upload_stream
+    client.stream_read.return_value = mock_read_stream
 
-    # Use side_effect with a function that creates fresh mocks
-    client.upload_part.side_effect = mock_upload_part
-
-    # Mock object storage for completed uploads
-    mock_objects = {}
-
-    def mock_complete_upload(bucket, key, upload_id, parts, metadata=None):
-        object_key = f"{bucket}/{key}"
-        mock_objects[object_key] = {
-            "parts": parts,
-            "metadata": metadata or {},
-            "size": sum(len(part.etag) for part in parts) if parts else 0,
-        }
-        return None
-
-    client.complete_multipart_upload.side_effect = mock_complete_upload
-    client.abort_multipart_upload.return_value = None
-
-    def mock_generate_presigned_url(bucket, key, ttl_seconds=None):
-        object_key = f"{bucket}/{key}"
-        if object_key in mock_objects:
-            ttl = ttl_seconds or 3600
-            return f"https://mock-storage.example.com/{bucket}/{key}?ttl={ttl}"
-        raise ValueError(f"Object {object_key} not found")
-
-    client.generate_presigned_url.side_effect = mock_generate_presigned_url
+    # Mock the generate_presigned_url method with a default return value
+    client.generate_presigned_url = Mock(return_value="https://example.com/test.zip")
 
     return client
 
 
 @pytest.fixture
-def mock_s3_storage_client():
-    """Create a mock S3 storage client using Mock."""
-    client = Mock(spec=CloudStorageClient)
+def mock_smart_open_client_s3(mock_smart_open_client):
+    """Create a mock SmartOpenStorageClient."""
+    client = mock_smart_open_client
+    client.storage_type = "s3"
 
-    # Mock the multipart upload response
-    def mock_create_upload(bucket, key, content_type, metadata=None):
-        upload_response = Mock()
-        upload_response.upload_id = f"s3_upload_{bucket}_{key}_456"
-        upload_response.metadata = {
-            "bucket": bucket,
-            "key": key,
-            "content_type": content_type,
-            **(metadata or {}),
-        }
-        return upload_response
-
-    client.create_multipart_upload.side_effect = mock_create_upload
-
-    # Mock upload part responses
-    def mock_upload_part(bucket, key, upload_id, part_number, body, metadata=None):
-        part = Mock()
-        part.etag = f"s3_etag_{part_number}"
-        part.part_number = part_number
-        part.metadata = metadata or {}
-        return part
-
-    client.upload_part.side_effect = mock_upload_part
-
-    # Mock the complete and abort methods
-    client.complete_multipart_upload.return_value = None
-    client.abort_multipart_upload.return_value = None
+    # Mock the generate_presigned_url method
+    client.generate_presigned_url = Mock(return_value="https://example.com/test.zip")
 
     return client
+
+
+@pytest.fixture
+def mock_smart_open_client_gcs():
+    """Create a mock SmartOpenStorageClient for GCS."""
+    client = create_autospec(spec=SmartOpenStorageClient)
+    client.storage_type = "gcs"
+
+    # Mock the generate_presigned_url method to return a proper presigned URL
+    client.generate_presigned_url = Mock(
+        return_value="https://storage.googleapis.com/test-bucket/test.zip"
+    )
+
+    return client
+
+
+@pytest.fixture
+def mock_privacy_request():
+    """Create a mock privacy request."""
+    privacy_request = Mock(autospec=PrivacyRequest)
+    privacy_request.id = "test_request_123"
+    privacy_request.policy = Mock()
+    privacy_request.policy.get_action_type.return_value = Mock(value="access")
+    privacy_request.get_persisted_identity.return_value = Mock(
+        labeled_dict=lambda include_default_labels: {
+            "email": {"value": "test@example.com"},
+            "phone_number": {"value": "+1234567890"},
+        }
+    )
+    privacy_request.requested_at = Mock(strftime=lambda fmt: "01/01/2024 12:00 UTC")
+    return privacy_request
+
+
+@pytest.fixture
+def sample_data():
+    """Sample data for testing."""
+    return {
+        "test_dataset": [
+            {
+                "id": "1",
+                "name": "Test User",
+                "email": "test@example.com",
+                "attachments": [
+                    {"filename": "doc1.pdf", "url": "https://example.com/doc1.pdf"},
+                    {"filename": "doc2.pdf", "url": "https://example.com/doc2.pdf"},
+                ],
+            }
+        ]
+    }
