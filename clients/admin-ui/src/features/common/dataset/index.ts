@@ -9,3 +9,4 @@ export {
   transformFieldsToTreeNodes,
   updateTreeNodeChildren,
 } from "./utils";
+export { default as TreeNodeTitle } from "./TreeNodeTitle";

@@ -1,5 +1,5 @@
 import { AntTreeSelect as TreeSelect, Box, Text } from "fidesui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks/useAlert";
@@ -9,6 +9,7 @@ import {
 } from "~/features/dataset/dataset.slice";
 import { Dataset, DatasetCollection } from "~/types/api";
 
+import TreeNodeTitle from "./TreeNodeTitle";
 import {
   DATASET_REFERENCE_SEPARATOR,
   DatasetTreeNode,
@@ -55,14 +56,17 @@ export const DatasetReferencePicker = ({
       return [];
     }
 
-    return datasets.map((dataset) => ({
-      key: dataset.fides_key,
-      title: dataset.name || dataset.fides_key,
-      value: dataset.fides_key,
-      isLeaf: false,
-      selectable: false, // Datasets are not selectable
-      children: undefined,
-    }));
+    return datasets.map((dataset) => {
+      const title = dataset.name || dataset.fides_key;
+      return {
+        key: dataset.fides_key,
+        title,
+        value: dataset.fides_key,
+        isLeaf: false,
+        selectable: false, // Datasets are not selectable
+        children: undefined,
+      };
+    });
   }, [datasets]);
 
   // Initialize tree with datasets
@@ -125,6 +129,7 @@ export const DatasetReferencePicker = ({
               collection.fields,
               datasetKey,
               collectionName,
+              "",
             );
             setTreeData((prev) =>
               updateTreeNodeChildren(prev, nodeKey, fieldNodes),
@@ -151,6 +156,11 @@ export const DatasetReferencePicker = ({
     [onChange],
   );
 
+  // Custom title renderer for tree nodes using treeTitleRender prop
+  const treeTitleRender = useCallback((nodeData: any) => {
+    return <TreeNodeTitle nodeData={nodeData} />;
+  }, []);
+
   // Show empty state if no datasets available
   if (!isLoading && datasets?.length === 0) {
     return <EmptyState />;
@@ -169,6 +179,7 @@ export const DatasetReferencePicker = ({
       showSearch
       style={{ width: "100%" }}
       treeNodeFilterProp="title"
+      treeTitleRender={treeTitleRender}
       data-testid="dataset-reference-picker"
     />
   );
