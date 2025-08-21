@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate

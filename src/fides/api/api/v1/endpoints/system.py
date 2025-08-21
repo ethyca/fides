@@ -334,8 +334,42 @@ async def delete(
         mode="json"
     )
     return {
-        "message": "resource deleted",
-        "resource": deleted_resource_dict,
+        "message": "Deleted 1 system",
+        "deleted": deleted_resource_dict,
+    }
+
+
+@SYSTEM_ROUTER.post(
+    "/bulk-delete",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_DELETE],
+        )
+    ],
+    status_code=status.HTTP_200_OK,
+)
+async def system_bulk_delete(
+    fides_keys: List[str],
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    """Delete multiple systems by their fides_keys."""
+
+    deleted: List[Dict] = []
+
+    async with db.begin():
+        # Retrieve all systems within the same transactional context
+        stmt = select(System).filter(System.fides_key.in_(fides_keys))
+        result = await db.execute(stmt)
+        systems_to_delete = result.scalars().all()
+
+        for system in systems_to_delete:
+            await db.delete(system)
+            deleted.append(SystemSchema.model_validate(system).model_dump(mode="json"))
+
+    return {
+        "message": f"Deleted {len(deleted)} system(s)",
+        "deleted": deleted,
     }
 
 
