@@ -4,11 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fides.api.service.storage.streaming.azure.azure_storage_client import (
-    AzureStorageClient,
-)
 from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
-from fides.api.service.storage.streaming.gcs.gcs_storage_client import GCSStorageClient
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
@@ -41,9 +37,7 @@ class StorageClientFactory:
         if normalized_type == "s3":
             return S3StorageClient(storage_secrets)
         if normalized_type == "gcs":
-            return GCSStorageClient(storage_secrets)
-        if normalized_type == "azure":
-            return AzureStorageClient(storage_secrets)
+            raise NotImplementedError("GCS storage is not yet supported")
         raise ValueError(f"Unsupported storage type: {storage_type}")
 
     @staticmethod
@@ -63,7 +57,5 @@ class StorageClientFactory:
             return "gcs"
         if storage_type == "s3":
             return "s3"
-        if storage_type == "azure":
-            return "azure"
 
         return storage_type

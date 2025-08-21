@@ -2,10 +2,6 @@
 
 import pytest
 
-from fides.api.service.storage.streaming.azure.azure_storage_client import (
-    AzureStorageClient,
-)
-from fides.api.service.storage.streaming.gcs.gcs_storage_client import GCSStorageClient
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 from fides.api.service.storage.streaming.storage_client_factory import (
     StorageClientFactory,
@@ -23,22 +19,6 @@ class TestStorageClientFactory:
         assert isinstance(client, S3StorageClient)
         assert client.storage_secrets == secrets
 
-    def test_create_gcs_client(self):
-        """Test creating a GCS storage client."""
-        secrets = {"service_account_info": {"type": "service_account"}}
-        client = StorageClientFactory.create_client("gcs", secrets)
-
-        assert isinstance(client, GCSStorageClient)
-        assert client.storage_secrets == secrets
-
-    def test_create_azure_client(self):
-        """Test creating an Azure storage client."""
-        secrets = {"account_name": "testaccount"}
-        client = StorageClientFactory.create_client("azure", secrets)
-
-        assert isinstance(client, AzureStorageClient)
-        assert client.storage_secrets == secrets
-
     def test_create_client_case_insensitive(self):
         """Test that storage type is case insensitive."""
         secrets = {"aws_access_key_id": "test_key"}
@@ -50,20 +30,6 @@ class TestStorageClientFactory:
         # Test mixed case
         client_mixed = StorageClientFactory.create_client("S3", secrets)
         assert isinstance(client_mixed, S3StorageClient)
-
-    def test_create_client_gcp_alias(self):
-        """Test that GCP alias creates GCS client."""
-        secrets = {"service_account_info": {"type": "service_account"}}
-        client = StorageClientFactory.create_client("gcp", secrets)
-
-        assert isinstance(client, GCSStorageClient)
-
-    def test_create_client_google_alias(self):
-        """Test that Google alias creates GCS client."""
-        secrets = {"service_account_info": {"type": "service_account"}}
-        client = StorageClientFactory.create_client("google", secrets)
-
-        assert isinstance(client, GCSStorageClient)
 
     def test_create_client_unsupported_type(self):
         """Test that unsupported storage type raises ValueError."""
@@ -86,11 +52,6 @@ class TestStorageClientFactory:
         assert StorageClientFactory._normalize_storage_type("GCS") == "gcs"
         assert StorageClientFactory._normalize_storage_type("GCP") == "gcs"
         assert StorageClientFactory._normalize_storage_type("GOOGLE") == "gcs"
-
-    def test_normalize_storage_type_azure(self):
-        """Test Azure storage type normalization."""
-        assert StorageClientFactory._normalize_storage_type("azure") == "azure"
-        assert StorageClientFactory._normalize_storage_type("AZURE") == "azure"
 
     def test_normalize_storage_type_unknown(self):
         """Test unknown storage type normalization."""

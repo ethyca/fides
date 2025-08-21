@@ -1,9 +1,6 @@
 """Streaming storage module for efficient cloud-to-cloud data transfer."""
 
-from .azure.azure_storage_client import AzureStorageClient
 from .base_storage_client import BaseStorageClient
-from .gcs.gcs_storage_client import GCSStorageClient
-from .gcs.streaming_gcs import upload_to_gcs_streaming
 from .retry import (
     PermanentError,
     RetryableError,
@@ -28,13 +25,9 @@ __all__ = [
     "StorageClientFactory",
     # Provider-specific clients
     "S3StorageClient",
-    "GCSStorageClient",
-    "AzureStorageClient",
     # Main clients
     "SmartOpenStorageClient",
     "SmartOpenStreamingStorage",
-    # Legacy streaming functions
-    "upload_to_gcs_streaming",
     # Schemas
     "StorageUploadConfig",
     "StreamingBufferConfig",
