@@ -189,7 +189,7 @@ describe("Action center system aggregate results", () => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
       cy.location("hash").should("eq", "#attention-required");
 
-      cy.getAntTab("Recent activity").click();
+      cy.clickAntTab("Recent activity");
       cy.location("hash").should("eq", "#recent-activity");
 
       // "recent activity" tab should be read-only
@@ -203,7 +203,7 @@ describe("Action center system aggregate results", () => {
 
       cy.get(".ant-spin-spinning").should("not.exist");
 
-      cy.getAntTab("Ignored").click();
+      cy.clickAntTab("Ignored");
       cy.location("hash").should("eq", "#ignored");
 
       // "ignore" option should not show in bulk actions menu
