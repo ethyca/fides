@@ -11,7 +11,8 @@ import {
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
@@ -19,30 +20,43 @@ import {
   expandCollapseAllMenuItems,
   MenuHeaderCell,
 } from "~/features/common/table/cells/MenuHeaderCell";
-import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { useDeleteSystemMutation } from "~/features/system";
-import CreateSystemGroupForm from "~/mocks/TEMP-system-groups/components/CreateSystemGroupForm";
-import SystemDataUseCell from "~/mocks/TEMP-system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/mocks/TEMP-system-groups/components/SystemGroupCell";
 import {
-  useMockCreateSystemGroupMutation,
-  useMockGetSystemGroupsQuery,
-} from "~/mocks/TEMP-system-groups/endpoints/system-groups";
+  TableSkeletonLoader,
+  useServerSidePagination,
+} from "~/features/common/table/v2";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import { useDeleteSystemMutation, useGetSystemsQuery } from "~/features/system";
+import {
+  useCreateSystemGroupMutation,
+  useGetAllSystemGroupsQuery,
+} from "~/features/system/system-groups/system-groups.slice";
+import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
+import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import { useMockBulkUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
+  BasicSystemResponseExtended,
+  PrivacyDeclaration,
   SystemGroup,
   SystemGroupCreate,
-} from "~/mocks/TEMP-system-groups/types";
-import { BasicSystemResponse, PrivacyDeclaration } from "~/types/api";
+} from "~/types/api";
 
 interface NewTableProps {
-  data: BasicSystemResponse[];
   loading?: boolean;
 }
 
-const NewTable = ({ data, loading = false }: NewTableProps) => {
-  const { data: allSystemGroups } = useMockGetSystemGroupsQuery();
-  const [createSystemGroup] = useMockCreateSystemGroupMutation();
+const EMPTY_RESPONSE = {
+  items: [],
+  total: 0,
+  page: 1,
+  size: 25,
+  pages: 1,
+};
+
+const NewTable = ({ loading = false }: NewTableProps) => {
+  const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
+  const [createSystemGroup, { isLoading: isCreatingSystemGroup }] =
+    useCreateSystemGroupMutation();
   const [deleteSystem] = useDeleteSystemMutation();
   const [bulkUpdate] = useMockBulkUpdateSystemWithGroupsMutation();
 
@@ -57,19 +71,36 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
 
   const [selectedSystemForDelete, setSelectedSystemForDelete] =
-    useState<BasicSystemResponse | null>(null);
+    useState<BasicSystemResponseExtended | null>(null);
+
+  const [globalFilter, setGlobalFilter] = useState<string>();
+
+  const { pageSize, pageIndex, setTotalPages } = useServerSidePagination();
+
+  const { data: systemsResponse, isLoading } = useGetSystemsQuery({
+    page: pageIndex,
+    size: pageSize,
+    search: globalFilter,
+  });
+
+  const { items: data, pages: totalPages } = useMemo(
+    () => systemsResponse ?? EMPTY_RESPONSE,
+    [systemsResponse],
+  );
 
   const systemGroupMap = useMemo(() => {
-    return allSystemGroups?.reduce(
-      (acc, group) => ({
-        ...acc,
-        [group.fides_key]: group,
-      }),
-      {} as Record<string, SystemGroup>,
-    );
+    return allSystemGroups
+      ? allSystemGroups.reduce(
+          (acc, group) => ({
+            ...acc,
+            [group.fides_key]: group,
+          }),
+          {} as Record<string, SystemGroup>,
+        )
+      : {};
   }, [allSystemGroups]);
 
-  const handleDelete = async (system: BasicSystemResponse) => {
+  const handleDelete = async (system: BasicSystemResponseExtended) => {
     const result = await deleteSystem(system.fides_key);
     if (isErrorResult(result)) {
       messageApi.error(
@@ -110,14 +141,20 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
       ...systemGroup,
       // TODO: add input for handling fides_key
       fides_key: formatKey(systemGroup.name),
+      active: true,
     };
+    console.log("payload", payload);
     const result = await createSystemGroup(payload);
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
     } else {
-      messageApi.success(
-        `System group '${result.data.name}' created with ${result.data.systems.length} systems`,
-      );
+      let successMessage = `System group '${result.data.name}' created`;
+      if (result.data.systems?.length === 1) {
+        successMessage += ` with system '${result.data.systems[0]}'`;
+      } else if (result.data.systems?.length) {
+        successMessage += ` with ${result.data.systems.length} systems`;
+      }
+      messageApi.success(successMessage);
     }
     setCreateModalIsOpen(false);
   };
@@ -128,7 +165,7 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
         title: "Name",
         dataIndex: "name",
         key: "name",
-        render: (name: string | null, record: BasicSystemResponse) => (
+        render: (name: string | null, record: BasicSystemResponseExtended) => (
           <LinkCell href={`/systems/${record.fides_key}`}>
             {name || record.fides_key}
           </LinkCell>
@@ -137,16 +174,21 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
         ellipsis: true,
       },
       {
-        dataIndex: "groups",
-        key: "groups",
-        render: (groups: string[], record: BasicSystemResponse) => (
+        dataIndex: "system_groups",
+        key: "system_groups",
+        render: (
+          systemGroups: string[] | undefined,
+          record: BasicSystemResponseExtended,
+        ) => (
           <SystemGroupCell
-            // @ts-ignore - TS doesn't know we filter out undefineds
-            selectedGroups={groups
-              .map((key) => systemGroupMap?.[key])
-              .filter((group) => group !== undefined)}
+            // @ts-ignore - TS doesn't know we filter out undefined
+            selectedGroups={
+              systemGroups
+                ?.map((key) => systemGroupMap?.[key])
+                .filter((group) => !!group) ?? []
+            }
             allGroups={allSystemGroups!}
-            system={{ ...record, groups }}
+            system={{ ...record, system_groups: systemGroups ?? [] }}
             columnState={{
               isWrapped: true,
               isExpanded: isGroupsExpanded,
@@ -214,11 +256,12 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
         key: "description",
         render: (description: string | null) => description,
         width: 200,
+        ellipsis: true,
       },
       {
         title: "Actions",
         key: "actions",
-        render: (_: unknown, record: BasicSystemResponse) => (
+        render: (_: undefined, record: BasicSystemResponseExtended) => (
           <AntFlex justify="end">
             <AntDropdown
               trigger={["click"]}
@@ -247,6 +290,7 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
                 size="small"
                 icon={<Icons.OverflowMenuVertical />}
                 aria-label="More actions"
+                type="text"
               />
             </AntDropdown>
           </AntFlex>
@@ -272,34 +316,68 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
     );
   }, [allSystemGroups, handleBulkAddToGroup]);
 
+  if (isLoading) {
+    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
+  }
+
   return (
     <>
       {messageContext}
-      <AntFlex justify="end">
-        <AntDropdown
-          trigger={["click"]}
-          menu={{
-            items: [
-              {
-                key: "new-group",
-                label: "Create new group +",
-                onClick: () => setCreateModalIsOpen(true),
-              },
-              {
-                type: "divider",
-              },
-              ...groupMenuItems,
-            ],
-          }}
-          className="my-4"
-        >
-          <AntButton
-            disabled={selectedRowKeys.length === 0}
-            icon={<Icons.ChevronDown />}
+      <AntFlex justify="space-between" className="mb-4">
+        <DebouncedSearchInput value={globalFilter} onChange={setGlobalFilter} />
+        <AntFlex gap="small">
+          <AntDropdown
+            trigger={["click"]}
+            menu={{
+              items: [
+                {
+                  key: "new-group",
+                  label: "Create new group +",
+                  onClick: () => setCreateModalIsOpen(true),
+                },
+                {
+                  type: "divider",
+                },
+                ...groupMenuItems,
+              ],
+            }}
           >
-            Add to group
-          </AntButton>
-        </AntDropdown>
+            <AntButton
+              disabled={selectedRowKeys.length === 0}
+              icon={<Icons.ChevronDown />}
+            >
+              Add to group
+            </AntButton>
+          </AntDropdown>
+          <AntDropdown
+            trigger={["click"]}
+            menu={{
+              items: [
+                {
+                  key: "update-data-steward",
+                  label: "Update data steward",
+                  onClick: () => {
+                    console.log("update data steward");
+                  },
+                },
+                {
+                  key: "delete",
+                  label: "Delete",
+                  onClick: () => {
+                    console.log("delete data steward");
+                  },
+                },
+              ],
+            }}
+          >
+            <AntButton
+              disabled={selectedRowKeys.length === 0}
+              icon={<Icons.ChevronDown />}
+            >
+              Actions
+            </AntButton>
+          </AntDropdown>
+        </AntFlex>
       </AntFlex>
       <AntModal
         open={createModalIsOpen}
@@ -338,6 +416,10 @@ const NewTable = ({ data, loading = false }: NewTableProps) => {
         size="small"
         rowSelection={rowSelection}
         tableLayout="fixed"
+        pagination={{
+          pageSize: 25,
+          total: data.length,
+        }}
       />
     </>
   );

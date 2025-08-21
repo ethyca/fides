@@ -6,7 +6,7 @@ import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
-  Page_BasicSystemResponse_,
+  Page_BasicSystemResponseExtended_,
   System,
   SystemResponse,
   TestStatusMessage,
@@ -34,7 +34,7 @@ export type ConnectionConfigSecretsRequest = {
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
-      Page_BasicSystemResponse_,
+      Page_BasicSystemResponseExtended_,
       PaginationQueryParams & SearchQueryParams
     >({
       query: (params) => ({

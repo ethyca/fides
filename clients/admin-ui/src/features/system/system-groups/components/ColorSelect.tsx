@@ -4,31 +4,30 @@ import {
   ControlledSelect,
   ControlledSelectProps,
 } from "~/features/common/form/ControlledSelect";
-
-import { CustomTaxonomyColor } from "../types";
+import { CustomTaxonomyColor } from "~/types/api";
 
 type ColorSelectProps = Omit<ControlledSelectProps, "options">;
 
 const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
-  [CustomTaxonomyColor.WHITE]: "White",
-  [CustomTaxonomyColor.RED]: "Red",
-  [CustomTaxonomyColor.ORANGE]: "Orange",
-  [CustomTaxonomyColor.YELLOW]: "Yellow",
-  [CustomTaxonomyColor.GREEN]: "Green",
-  [CustomTaxonomyColor.BLUE]: "Blue",
-  [CustomTaxonomyColor.PURPLE]: "Purple",
+  [CustomTaxonomyColor.TAXONOMY_WHITE]: "White",
+  [CustomTaxonomyColor.TAXONOMY_RED]: "Red",
+  [CustomTaxonomyColor.TAXONOMY_ORANGE]: "Orange",
+  [CustomTaxonomyColor.TAXONOMY_YELLOW]: "Yellow",
+  [CustomTaxonomyColor.TAXONOMY_GREEN]: "Green",
+  [CustomTaxonomyColor.TAXONOMY_BLUE]: "Blue",
+  [CustomTaxonomyColor.TAXONOMY_PURPLE]: "Purple",
   [CustomTaxonomyColor.SANDSTONE]: "Sandstone",
   [CustomTaxonomyColor.MINOS]: "Minos",
 };
 
 const COLOR_VALUES: Record<CustomTaxonomyColor, string> = {
-  [CustomTaxonomyColor.WHITE]: "var(--fidesui-bg-default)",
-  [CustomTaxonomyColor.RED]: "var(--fidesui-bg-taxonomy-red)",
-  [CustomTaxonomyColor.ORANGE]: "var(--fidesui-bg-taxonomy-orange)",
-  [CustomTaxonomyColor.YELLOW]: "var(--fidesui-bg-taxonomy-yellow)",
-  [CustomTaxonomyColor.GREEN]: "var(--fidesui-bg-taxonomy-green)",
-  [CustomTaxonomyColor.BLUE]: "var(--fidesui-bg-taxonomy-blue)",
-  [CustomTaxonomyColor.PURPLE]: "var(--fidesui-bg-taxonomy-purple)",
+  [CustomTaxonomyColor.TAXONOMY_WHITE]: "var(--fidesui-bg-default)",
+  [CustomTaxonomyColor.TAXONOMY_RED]: "var(--fidesui-bg-taxonomy-red)",
+  [CustomTaxonomyColor.TAXONOMY_ORANGE]: "var(--fidesui-bg-taxonomy-orange)",
+  [CustomTaxonomyColor.TAXONOMY_YELLOW]: "var(--fidesui-bg-taxonomy-yellow)",
+  [CustomTaxonomyColor.TAXONOMY_GREEN]: "var(--fidesui-bg-taxonomy-green)",
+  [CustomTaxonomyColor.TAXONOMY_BLUE]: "var(--fidesui-bg-taxonomy-blue)",
+  [CustomTaxonomyColor.TAXONOMY_PURPLE]: "var(--fidesui-bg-taxonomy-purple)",
   [CustomTaxonomyColor.SANDSTONE]: "var(--fidesui-bg-sandstone)",
   [CustomTaxonomyColor.MINOS]: "var(--fidesui-bg-minos)",
 };
@@ -44,7 +43,7 @@ const ColorSwatch = ({
       style={{
         backgroundColor: color,
         border:
-          color === COLOR_VALUES[CustomTaxonomyColor.WHITE]
+          color === COLOR_VALUES[CustomTaxonomyColor.TAXONOMY_WHITE]
             ? "1px solid var(--fidesui-neutral-200)"
             : "none",
         ...props.style,
@@ -77,6 +76,8 @@ const ColorSelect = (props: ColorSelectProps) => {
     undefined,
   );
 
+  console.log("value", value);
+
   return (
     <ControlledSelect
       {...props}
@@ -89,7 +90,7 @@ const ColorSelect = (props: ColorSelectProps) => {
       }}
       prefix={
         <ColorSwatch
-          color={COLOR_VALUES[value ?? CustomTaxonomyColor.WHITE]}
+          color={COLOR_VALUES[value ?? CustomTaxonomyColor.TAXONOMY_WHITE]}
           style={{ marginBottom: "2px" }}
         />
       }

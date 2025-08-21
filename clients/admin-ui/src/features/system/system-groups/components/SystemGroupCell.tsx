@@ -1,23 +1,12 @@
-import {
-  AntButton,
-  AntFlex,
-  AntMessage as message,
-  AntSelect,
-  AntTag,
-} from "fidesui";
+import { AntFlex, AntMessage as message, AntSelect, AntTag } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { TagExpandableCell } from "~/features/common/table/cells";
 import { ColumnState } from "~/features/common/table/cells/types";
-import {
-  useMockUpdateSystemWithGroupsError,
-  useMockUpdateSystemWithGroupsMutation,
-} from "~/mocks/TEMP-system-groups/endpoints/systems";
-import {
-  SystemGroup,
-  SystemResponseWithGroups,
-} from "~/mocks/TEMP-system-groups/types";
+import { useUpdateSystemMutation } from "~/features/system";
+import { useMockUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
+import { BasicSystemResponseExtended, SystemGroup } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const UPDATE_SYSTEM_GROUPS_MSG_KEY = "update-system-groups-msg";
@@ -30,7 +19,7 @@ const SystemGroupCell = ({
 }: {
   selectedGroups: SystemGroup[];
   allGroups: SystemGroup[];
-  system: SystemResponseWithGroups;
+  system: BasicSystemResponseExtended;
   columnState?: ColumnState;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
@@ -40,7 +29,7 @@ const SystemGroupCell = ({
 
   const [messageApi, contextHolder] = message.useMessage();
 
-  // const [updateSystemMutation] = useMockUpdateSystemWithGroupsError();
+  // const [updateSystemMutation] = useUpdateSystemMutation();
   const [updateSystemMutation] = useMockUpdateSystemWithGroupsMutation();
 
   const handleUpdate = async () => {
@@ -92,7 +81,7 @@ const SystemGroupCell = ({
                 group && {
                   label: group.name,
                   key: group.fides_key,
-                  tagProps: { color: group.color },
+                  tagProps: { color: group.label_color },
                 },
             )}
             bordered={false}
