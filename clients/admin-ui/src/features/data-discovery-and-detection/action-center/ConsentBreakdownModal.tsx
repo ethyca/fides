@@ -79,7 +79,11 @@ export const ConsentBreakdownModal = ({
             showIcon
           />
         ) : (
-          <Table {...tableProps} columns={columns} />
+          <Table
+            {...tableProps}
+            columns={columns}
+            data-testid="consent-breakdown-modal-table"
+          />
         )}
       </Flex>
     </Modal>
