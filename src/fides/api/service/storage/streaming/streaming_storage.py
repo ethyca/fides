@@ -651,12 +651,12 @@ class StreamingStorage:
             return data
 
         # Simple recursive replacement
-        def replace_urls(obj):
+        def replace_urls(obj: Any) -> Any:
             if isinstance(obj, dict):
                 return {k: replace_urls(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
+            if isinstance(obj, list):
                 return [replace_urls(item) for item in obj]
-            elif isinstance(obj, str) and obj in url_mapping:
+            if isinstance(obj, str) and obj in url_mapping:
                 return url_mapping[obj]
             return obj
 
