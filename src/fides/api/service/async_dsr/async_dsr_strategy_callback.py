@@ -13,9 +13,9 @@ class CallbackAsyncDSRStrategy(AsyncDSRStrategy):
     """
 
     name = "callback"
-    configuration_model = StrategyConfiguration
 
-    def __init__(self, configuration: StrategyConfiguration):
+
+    def __init__(self):
         pass
 
     def start_request(
