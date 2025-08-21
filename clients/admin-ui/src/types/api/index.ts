@@ -562,6 +562,7 @@ export type { SystemResponse } from "./models/SystemResponse";
 export type { SystemScanHistory } from "./models/SystemScanHistory";
 export type { SystemScannerStatus } from "./models/SystemScannerStatus";
 export type { SystemScanResponse } from "./models/SystemScanResponse";
+export type { SystemSchemaExtended } from "./models/SystemSchemaExtended";
 export type { SystemsDiff } from "./models/SystemsDiff";
 export type { SystemStagedResourcesAggregateRecord } from "./models/SystemStagedResourcesAggregateRecord";
 export type { SystemSummary } from "./models/SystemSummary";

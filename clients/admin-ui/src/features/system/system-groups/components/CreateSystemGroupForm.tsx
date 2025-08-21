@@ -8,8 +8,8 @@ import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
-import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import ColorSelect from "~/features/system/system-groups/components/ColorSelect";
+import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import {
   CustomTaxonomyColor,
   DataUse,
@@ -26,7 +26,7 @@ interface CreateSystemGroupFormProps {
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required").label("Name"),
-  color: Yup.string().required("Color is required").label("Color"),
+  label_color: Yup.string().required("Color is required").label("Color"),
   systems: Yup.array().of(Yup.string()).label("Systems"),
   data_uses: Yup.array().of(Yup.string()).label("Data uses"),
 });
@@ -92,8 +92,7 @@ const CreateSystemGroupForm = ({
       onSubmit={onSubmit}
       enableReinitialize
     >
-      {({ isValid, dirty, values }) => {
-        console.log("values", values);
+      {({ isValid, dirty }) => {
         return (
           <Form>
             <Flex vertical gap="middle">

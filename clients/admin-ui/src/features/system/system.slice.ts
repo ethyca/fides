@@ -9,6 +9,7 @@ import {
   Page_BasicSystemResponseExtended_,
   System,
   SystemResponse,
+  SystemSchemaExtended,
   TestStatusMessage,
 } from "~/types/api";
 import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
@@ -106,7 +107,7 @@ const systemApi = baseApi.injectEndpoints({
     }),
     updateSystem: build.mutation<
       SystemResponse,
-      Partial<System> & Pick<System, "fides_key">
+      Partial<SystemSchemaExtended> & Pick<SystemSchemaExtended, "fides_key">
     >({
       query: ({ ...patch }) => ({
         url: `system`,

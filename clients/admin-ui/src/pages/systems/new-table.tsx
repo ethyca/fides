@@ -11,9 +11,9 @@ import {
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useCallback, useMemo, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import {
@@ -26,13 +26,15 @@ import {
 } from "~/features/common/table/v2";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useDeleteSystemMutation, useGetSystemsQuery } from "~/features/system";
+import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
+import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import {
   useCreateSystemGroupMutation,
   useGetAllSystemGroupsQuery,
 } from "~/features/system/system-groups/system-groups.slice";
-import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
-import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
+import SystemActionsMenu from "~/features/system/SystemActionsMenu";
+import { useGetAllUsersQuery } from "~/features/user-management";
 import { useMockBulkUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
   BasicSystemResponseExtended,
@@ -55,10 +57,15 @@ const EMPTY_RESPONSE = {
 
 const NewTable = ({ loading = false }: NewTableProps) => {
   const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
-  const [createSystemGroup, { isLoading: isCreatingSystemGroup }] =
-    useCreateSystemGroupMutation();
+  const [createSystemGroup] = useCreateSystemGroupMutation();
   const [deleteSystem] = useDeleteSystemMutation();
   const [bulkUpdate] = useMockBulkUpdateSystemWithGroupsMutation();
+
+  const { data: allUsers } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    username: "",
+  });
 
   const [messageApi, messageContext] = message.useMessage();
 
@@ -75,7 +82,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
 
   const [globalFilter, setGlobalFilter] = useState<string>();
 
-  const { pageSize, pageIndex, setTotalPages } = useServerSidePagination();
+  const { pageSize, pageIndex } = useServerSidePagination();
 
   const { data: systemsResponse, isLoading } = useGetSystemsQuery({
     page: pageIndex,
@@ -83,7 +90,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
     search: globalFilter,
   });
 
-  const { items: data, pages: totalPages } = useMemo(
+  const { items: data } = useMemo(
     () => systemsResponse ?? EMPTY_RESPONSE,
     [systemsResponse],
   );
@@ -143,7 +150,6 @@ const NewTable = ({ loading = false }: NewTableProps) => {
       fides_key: formatKey(systemGroup.name),
       active: true,
     };
-    console.log("payload", payload);
     const result = await createSystemGroup(payload);
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
@@ -166,7 +172,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
         dataIndex: "name",
         key: "name",
         render: (name: string | null, record: BasicSystemResponseExtended) => (
-          <LinkCell href={`/systems/${record.fides_key}`}>
+          <LinkCell href={`/systems/configure/${record.fides_key}`}>
             {name || record.fides_key}
           </LinkCell>
         ),
@@ -349,34 +355,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
               Add to group
             </AntButton>
           </AntDropdown>
-          <AntDropdown
-            trigger={["click"]}
-            menu={{
-              items: [
-                {
-                  key: "update-data-steward",
-                  label: "Update data steward",
-                  onClick: () => {
-                    console.log("update data steward");
-                  },
-                },
-                {
-                  key: "delete",
-                  label: "Delete",
-                  onClick: () => {
-                    console.log("delete data steward");
-                  },
-                },
-              ],
-            }}
-          >
-            <AntButton
-              disabled={selectedRowKeys.length === 0}
-              icon={<Icons.ChevronDown />}
-            >
-              Actions
-            </AntButton>
-          </AntDropdown>
+          <SystemActionsMenu selectedRowKeys={selectedRowKeys} />
         </AntFlex>
       </AntFlex>
       <AntModal

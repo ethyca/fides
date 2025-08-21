@@ -76,8 +76,6 @@ const ColorSelect = (props: ColorSelectProps) => {
     undefined,
   );
 
-  console.log("value", value);
-
   return (
     <ControlledSelect
       {...props}

@@ -5,7 +5,6 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { TagExpandableCell } from "~/features/common/table/cells";
 import { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateSystemMutation } from "~/features/system";
-import { useMockUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import { BasicSystemResponseExtended, SystemGroup } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -29,8 +28,7 @@ const SystemGroupCell = ({
 
   const [messageApi, contextHolder] = message.useMessage();
 
-  // const [updateSystemMutation] = useUpdateSystemMutation();
-  const [updateSystemMutation] = useMockUpdateSystemWithGroupsMutation();
+  const [updateSystemMutation] = useUpdateSystemMutation();
 
   const handleUpdate = async () => {
     setIsAdding(false);
@@ -41,7 +39,7 @@ const SystemGroupCell = ({
     });
     const result = await updateSystemMutation({
       ...system,
-      groups: pendingSelection,
+      system_groups: pendingSelection,
     });
     if (isErrorResult(result)) {
       messageApi.open({
