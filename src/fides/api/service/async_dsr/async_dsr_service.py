@@ -4,6 +4,7 @@ from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -12,7 +13,9 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
-from fides.api.service.async_dsr.async_dsr_strategy_polling import PollingAsyncDSRStrategy
+from fides.api.service.async_dsr.async_dsr_strategy_polling import (
+    PollingAsyncDSRStrategy,
+)
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -23,7 +26,6 @@ from fides.api.task.execute_request_tasks import (
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import NodeInput, Row
-from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 
 
 def requeue_polling_request(
@@ -96,6 +98,7 @@ def get_connection_config_from_task(
         raise PrivacyRequestError(
             f"DatasetConfig with fides_key {request_task.dataset_name} not found."
         )
+
     connection_config = ConnectionConfig.get(
         db=db, object_id=dataset_config.connection_config_id
     )
@@ -103,6 +106,7 @@ def get_connection_config_from_task(
         raise PrivacyRequestError(
             f"ConnectionConfig with id {dataset_config.connection_config_id} not found."
         )
+
     return connection_config
 
 
@@ -118,7 +122,7 @@ def execute_read_polling_requests(
     read_requests = query_config.get_read_requests_by_identity()
     for read_request in read_requests:
         if read_request.async_config:
-            strategy: PollingAsyncDSRStrategy = AsyncDSRStrategy.get_strategy(
+            strategy: PollingAsyncDSRStrategy = AsyncDSRStrategy.get_strategy(  # type: ignore
                 read_request.async_config.strategy,
                 read_request.async_config.configuration,
             )
@@ -153,6 +157,7 @@ def execute_read_polling_requests(
                     existing_data = async_task.get_access_data()
 
                     # Append async results to existing data
+                    # TODO: Check if this is the correct way to append the results
                     if isinstance(result, list):
                         existing_data.extend(result)
                     else:
@@ -163,13 +168,18 @@ def execute_read_polling_requests(
                     db.add(async_task)
                     db.commit()
 
-                    logger.info(f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results")
+                    logger.info(
+                        f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
+                    )
                 else:
-                    logger.info(f"Polling request - {async_task.id} is ready but returned no results")
+                    logger.info(
+                        f"Polling request - {async_task.id} is ready but returned no results"
+                    )
 
             else:
                 logger.info(f"Polling request - {async_task.id} still not Ready. ")
-                return None
+                continue
+
 
 def execute_erasure_polling_requests(
     db: Session,

@@ -20,6 +20,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -27,7 +28,6 @@ from fides.api.schemas.consentable_item import (
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
-    AsyncStrategy,
     ClientConfig,
     ConsentRequestMap,
     ParamValue,
@@ -269,7 +269,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             self.set_saas_request_state(read_request)
             if (
                 read_request.async_config
-                and read_request.async_config.strategy == AsyncStrategy.callback
+                and read_request.async_config.strategy == AsyncTaskType.callback
                 and request_task.id  # Only supported in DSR 3.0
             ):
                 # Asynchronous read request detected. We will exit below and put the
@@ -633,7 +633,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         awaiting_async_callback: bool = bool(
             masking_request.async_config
-            and masking_request.async_config.strategy == AsyncStrategy.callback
+            and masking_request.async_config.strategy == AsyncTaskType.callback
         ) and bool(
             request_task.id
         )  # Only supported in DSR 3.0
