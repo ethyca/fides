@@ -5,7 +5,6 @@ import {
   AntMessage as message,
   AntTag as Tag,
   AntTypography as Typography,
-  Icons,
   useDisclosure,
   WarningIcon,
 } from "fidesui";
@@ -249,19 +248,18 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
               <Button
                 key="edit"
                 type="link"
-                icon={<Icons.Edit />}
                 onClick={() => handleOpenEditModal(index, condition)}
                 data-testid={`edit-condition-${index}-btn`}
+                className="px-1"
               >
                 Edit
               </Button>,
               <Button
                 key="delete"
                 type="link"
-                danger
-                icon={<Icons.TrashCan />}
                 onClick={() => handleDeleteCondition(index, condition)}
                 data-testid={`delete-condition-${index}-btn`}
+                className="px-1"
               >
                 Delete
               </Button>,
@@ -270,14 +268,25 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
             <List.Item.Meta
               title={
                 <Flex gap={8} align="center">
-                  <Text className="font-mono text-sm">
-                    {condition.field_address}
-                  </Text>
-                  <Tag color="blue">{operatorLabels[condition.operator]}</Tag>
-                  {condition.value !== null &&
-                    condition.value !== undefined && (
-                      <Text>{String(condition.value)}</Text>
-                    )}
+                  <div className="max-w-[300px]">
+                    <Text
+                      ellipsis={{ tooltip: condition.field_address }}
+                      className="font-mono text-sm"
+                    >
+                      {condition.field_address}
+                    </Text>
+                  </div>
+                  <Tag color="sandstone">
+                    {operatorLabels[condition.operator]}
+                  </Tag>
+                  <div className="max-w-[300px]">
+                    {condition.value !== null &&
+                      condition.value !== undefined && (
+                        <Text ellipsis={{ tooltip: String(condition.value) }}>
+                          {String(condition.value)}
+                        </Text>
+                      )}
+                  </div>
                 </Flex>
               }
             />
