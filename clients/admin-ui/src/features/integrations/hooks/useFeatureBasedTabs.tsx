@@ -50,7 +50,7 @@ export const useFeatureBasedTabs = ({
 
   const tabs = useMemo(() => {
     // Don't show tabs until enabledFeatures is loaded
-    if (!enabledFeatures) {
+    if (!enabledFeatures || !enabledFeatures.length) {
       return [];
     }
     const tabItems: TabsProps["items"] = [];
