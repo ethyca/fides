@@ -7,7 +7,6 @@ from io import BytesIO, StringIO
 from typing import TYPE_CHECKING, Any, Generator, Iterable, Optional, Tuple
 
 import requests
-from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 from stream_zip import _ZIP_32_TYPE, stream_zip
 
@@ -430,7 +429,7 @@ class StreamingStorage:
         document: Optional[Any] = None,
         buffer_config: Optional[StreamingBufferConfig] = None,
         batch_size: int = 10,
-    ) -> Optional[AnyHttpUrlString]:
+    ) -> Optional[str]:
         """Upload data to cloud storage using streaming for memory efficiency.
 
         This function implements true streaming from source to destination cloud storage,
@@ -446,7 +445,7 @@ class StreamingStorage:
             batch_size: Number of attachments to process in each batch
 
         Returns:
-            presigned_url
+            access_package_url or None if URL generation fails
 
         Raises:
             ValueError: If privacy_request is not provided
@@ -503,27 +502,32 @@ class StreamingStorage:
                     f"Unexpected error during true streaming upload: unsupported format {config.resp_format}"
                 )
 
-            # Generate presigned URL for download
+            # Generate access package URL instead of presigned download URL
             try:
-                presigned_url = storage_client.generate_presigned_url(
-                    config.bucket_name, config.file_key
+                # For all three types (csv, json, html), return the access package URL
+                # This should point to where the files are located in the access package
+                # rather than being a direct download link
+                access_package_url = self._generate_access_package_url(
+                    config.bucket_name, config.file_key, config.resp_format
                 )
             except (ValueError, AttributeError) as e:
                 # Handle configuration or method availability issues
                 logger.warning(
-                    "Failed to generate presigned URL for {}: {}", config.file_key, e
-                )
-                presigned_url = None
-            except Exception as e:
-                # Catch any other unexpected errors during presigned URL generation
-                logger.warning(
-                    "Unexpected error generating presigned URL for {}: {}",
+                    "Failed to generate access package URL for {}: {}",
                     config.file_key,
                     e,
                 )
-                presigned_url = None
+                access_package_url = None
+            except Exception as e:
+                # Catch any other unexpected errors during access package URL generation
+                logger.warning(
+                    "Unexpected error generating access package URL for {}: {}",
+                    config.file_key,
+                    e,
+                )
+                access_package_url = None
 
-            return presigned_url
+            return access_package_url
 
         except (ValueError, AttributeError) as e:
             # Handle configuration or validation errors
@@ -773,3 +777,36 @@ class StreamingStorage:
             all_attachments[i : i + batch_size]
             for i in range(0, len(all_attachments), batch_size)
         ]
+
+    def _generate_access_package_url(
+        self, bucket_name: str, file_key: str, resp_format: str
+    ) -> str:
+        """Generates an access package URL that points to where the files are located.
+
+        For all three types (CSV, JSON, HTML), this URL should point to the access package
+        location rather than being a direct download link. The access package contains the
+        organized data files and users can navigate to specific files within it.
+
+        Args:
+            bucket_name: The name of the bucket containing the access package
+            file_key: The key of the access package file (e.g., "23847234.zip")
+            resp_format: The response format of the access package (e.g., "csv", "json", "html")
+
+        Returns:
+            An access package URL string that points to the package location
+        """
+        # The file_key represents the access package itself (e.g., "23847234.zip")
+        # We want to return a URL that points to where this access package is located
+        # so users can access the individual files within it
+
+        # For S3, construct the access package URL
+        # This should point to the access package location, not a direct download
+        access_package_url = f"https://{bucket_name}.s3.amazonaws.com/{file_key}"
+
+        logger.info(
+            "Generated access package URL for {} format: {}",
+            resp_format,
+            access_package_url,
+        )
+
+        return access_package_url

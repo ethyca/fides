@@ -1282,26 +1282,20 @@ class TestStreamingZipCreation:
             resp_format=ResponseFormat.html,
         )
 
-        # Mock successful upload and presigned URL generation
-        mock_storage_client.put_object.return_value = None
-        mock_storage_client.generate_presigned_url.return_value = (
-            "https://test-bucket.s3.amazonaws.com/test-data"
-        )
+        # Mock successful upload (HTML format uses different streaming approach)
+        # No need to mock generate_presigned_url since we now use _generate_access_package_url
 
         result = processor.upload_to_storage_streaming(
             mock_storage_client, data, config, mock_privacy_request
         )
 
-        # Should return a presigned URL
+        # Should return an access package URL
         assert result is not None
         assert "test-bucket" in result
         assert "test-data" in result
 
         # HTML format uses different streaming approach, so put_object may not be called
-        # Should generate presigned URL
-        mock_storage_client.generate_presigned_url.assert_called_once_with(
-            "test-bucket", "test-data"
-        )
+        # We no longer call generate_presigned_url directly, so no need to assert on it
 
     def test_upload_to_storage_streaming_with_buffer_config(self):
         """Test upload_to_storage_streaming method with custom buffer config."""
@@ -1375,26 +1369,21 @@ class TestUploadToStorage:
             resp_format=ResponseFormat.csv,
         )
 
-        # Mock successful upload and presigned URL generation
-        mock_storage_client.put_object.return_value = None
-        mock_storage_client.generate_presigned_url.return_value = (
-            "https://test-bucket.s3.amazonaws.com/test-data"
-        )
+        # Mock successful upload
+        # No need to mock generate_presigned_url since we now use _generate_access_package_url
 
         result = processor.upload_to_storage_streaming(
             mock_storage_client, data, config, mock_privacy_request
         )
 
-        # Should return a presigned URL
+        # Should return an access package URL
         assert result is not None
         assert "test-bucket" in result
         assert "test-data" in result
 
-        # Should have called put_object and generate_presigned_url
+        # Should have called put_object but not generate_presigned_url
         mock_storage_client.put_object.assert_called_once()
-        mock_storage_client.generate_presigned_url.assert_called_once_with(
-            "test-bucket", "test-data"
-        )
+        # We no longer call generate_presigned_url directly, so no need to assert on it
 
     def test_upload_to_storage_streaming_json_format(self):
         """Test uploading data in JSON format."""
@@ -1415,26 +1404,21 @@ class TestUploadToStorage:
             resp_format=ResponseFormat.json,
         )
 
-        # Mock successful upload and presigned URL generation
-        mock_storage_client.put_object.return_value = None
-        mock_storage_client.generate_presigned_url.return_value = (
-            "https://test-bucket.s3.amazonaws.com/test-data"
-        )
+        # Mock successful upload
+        # No need to mock generate_presigned_url since we now use _generate_access_package_url
 
         result = processor.upload_to_storage_streaming(
             mock_storage_client, data, config, mock_privacy_request
         )
 
-        # Should return a presigned URL
+        # Should return an access package URL
         assert result is not None
         assert "test-bucket" in result
         assert "test-data" in result
 
-        # Should have called put_object and generate_presigned_url
+        # Should have called put_object but not generate_presigned_url
         mock_storage_client.put_object.assert_called_once()
-        mock_storage_client.generate_presigned_url.assert_called_once_with(
-            "test-bucket", "test-data"
-        )
+        # We no longer call generate_presigned_url directly, so no need to assert on it
 
     def test_upload_to_storage_streaming_html_format(self):
         """Test uploading data in HTML format."""
@@ -1472,25 +1456,20 @@ class TestUploadToStorage:
             resp_format=ResponseFormat.html,
         )
 
-        # Mock successful upload and presigned URL generation
-        mock_storage_client.put_object.return_value = None
-        mock_storage_client.generate_presigned_url.return_value = (
-            "https://test-bucket.s3.amazonaws.com/test-data"
-        )
+        # Mock successful upload (HTML format uses different streaming approach)
+        # No need to mock generate_presigned_url since we now use _generate_access_package_url
 
         result = processor.upload_to_storage_streaming(
             mock_storage_client, data, config, mock_privacy_request
         )
 
-        # Should return a presigned URL
+        # Should return an access package URL
         assert result is not None
         assert "test-bucket" in result
         assert "test-data" in result
 
         # HTML format uses different streaming approach, so put_object may not be called
-        mock_storage_client.generate_presigned_url.assert_called_once_with(
-            "test-bucket", "test-data"
-        )
+        # We no longer call generate_presigned_url directly, so no need to assert on it
 
     def test_upload_to_storage_streaming_unsupported_format(self):
         """Test uploading data with unsupported format."""
@@ -1554,34 +1533,6 @@ class TestUploadToStorage:
                 mock_storage_client, data, config, mock_privacy_request, mock_document
             )
 
-    def test_upload_to_storage_streaming_presigned_url_generation_failure(self):
-        """Test upload failure when presigned URL generation fails."""
-        mock_storage_client = create_autospec(CloudStorageClient)
-        mock_privacy_request = Mock()
-        processor = StreamingStorage(mock_storage_client)
-
-        data = {"users": [{"id": 1, "name": "User 1"}]}
-
-        config = StorageUploadConfig(
-            bucket_name="test-bucket",
-            file_key="test-data",
-            resp_format=ResponseFormat.json,
-        )
-
-        # Mock successful upload but failed presigned URL generation
-        mock_storage_client.put_object.return_value = None
-        mock_storage_client.generate_presigned_url.side_effect = Exception(
-            "Presigned URL generation failed"
-        )
-
-        # Should not raise an exception, just return None for presigned URL
-        result = processor.upload_to_storage_streaming(
-            mock_storage_client, data, config, mock_privacy_request
-        )
-
-        # Should return None when presigned URL generation fails
-        assert result is None
-
     def test_upload_to_storage_streaming_upload_failure(self):
         """Test upload failure when storage upload fails."""
         mock_storage_client = create_autospec(CloudStorageClient)
@@ -1609,6 +1560,35 @@ class TestUploadToStorage:
 
         # Should have called put_object at least once (the initial attempt)
         assert mock_storage_client.put_object.call_count >= 1
+
+    def test_upload_to_storage_streaming_access_package_url_generation_success(self):
+        """Test that access package URL generation succeeds and returns a valid URL."""
+        mock_storage_client = create_autospec(CloudStorageClient)
+        mock_privacy_request = Mock()
+        processor = StreamingStorage(mock_storage_client)
+
+        data = {"users": [{"id": 1, "name": "User 1"}]}
+
+        config = StorageUploadConfig(
+            bucket_name="test-bucket",
+            file_key="test-data",
+            resp_format=ResponseFormat.json,
+        )
+
+        # Mock successful upload
+        mock_storage_client.put_object.return_value = None
+        # We no longer call generate_presigned_url directly, so no need to mock it
+
+        # Should successfully generate access package URL
+        result = processor.upload_to_storage_streaming(
+            mock_storage_client, data, config, mock_privacy_request
+        )
+
+        # Should return a valid access package URL
+        assert result is not None
+        assert "test-bucket" in result
+        assert "test-data" in result
+        assert result.startswith("https://")
 
 
 # =============================================================================
