@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
+- Added new npm task for Admin UI that enables optimized Cypress testing with API server connectivity during local development [#6483](https://github.com/ethyca/fides/pull/6483)
 
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
