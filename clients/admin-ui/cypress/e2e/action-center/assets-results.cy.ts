@@ -244,13 +244,7 @@ describe("Action center Asset Results", () => {
     });
 
     it("should bulk restore ignored assets", () => {
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(500); // wait for the original router to update
-      cy.getByTestId("asset-state-filter")
-        .contains("Ignored")
-        .click({ force: true });
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(500); // wait for the router to update
+      cy.clickAntTab("Ignored");
       cy.getByTestId("asset-state-filter").within(() => {
         cy.get(".ant-menu-item-selected").contains("Ignored").should("exist");
       });
