@@ -7,6 +7,7 @@ from io import BytesIO, StringIO
 from typing import TYPE_CHECKING, Any, Generator, Iterable, Optional, Tuple
 
 import requests
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 from stream_zip import _ZIP_32_TYPE, stream_zip
 
@@ -196,9 +197,23 @@ class StreamingStorage:
 
             # Check if this looks like an attachment (has file_name or download_url)
             if "file_name" in attachment or "download_url" in attachment:
+                # Transform download_url to internal access package URL for access package display
+                # Keep original URL for actual file access
+                original_url = attachment.get("download_url") or attachment.get("url")
+                file_name = attachment.get("file_name", f"attachment_{idx}")
+                internal_access_url = f"attachments/{file_name}"
+
+                # Create a copy of the attachment with transformed URLs for access package
+                transformed_attachment = attachment.copy()
+                transformed_attachment["url"] = internal_access_url
+                transformed_attachment["download_url"] = internal_access_url
+                transformed_attachment["storage_key"] = (
+                    original_url  # Keep original for file access
+                )
+
                 # Add metadata for processing
                 attachment_data = {
-                    "attachment": attachment,
+                    "attachment": transformed_attachment,
                     "base_path": f"attachments/{idx + 1}",
                     "item": attachment,
                     "type": "direct",
@@ -299,15 +314,19 @@ class StreamingStorage:
 
                 # Check if this looks like an attachment (has url, size, etc.)
                 if "url" in file_data or "download_url" in file_data:
+                    # Transform download_url to internal access package URL
+                    # This URL should point to where the attachment is located within the access package
+                    original_url = file_data.get("url") or file_data.get("download_url")
+                    internal_access_url = f"attachments/{filename}"
+
                     # Create attachment object with filename and file data
                     attachment_obj = {
                         "file_name": filename,
-                        "url": file_data.get("url"),
-                        "download_url": file_data.get("download_url"),
+                        "url": internal_access_url,  # Use internal access package URL
+                        "download_url": internal_access_url,  # Use internal access package URL
                         "file_size": file_data.get("size"),
                         "content_type": file_data.get("content_type"),
-                        "storage_key": file_data.get("url")
-                        or file_data.get("download_url"),
+                        "storage_key": original_url,  # Keep original URL for actual file access
                     }
 
                     attachment_data = {
@@ -347,7 +366,9 @@ class StreamingStorage:
         try:
             if attachment_type == "direct":
                 # Handle direct attachments (from 'attachments' key)
-                storage_key = attachment.get(
+                # Use storage_key if available (contains original URL for file access)
+                # Otherwise fall back to download_url or url
+                storage_key = attachment.get("storage_key") or attachment.get(
                     "download_url",
                     attachment.get("url", f"attachment_{id(attachment)}"),
                 )
@@ -429,7 +450,7 @@ class StreamingStorage:
         document: Optional[Any] = None,
         buffer_config: Optional[StreamingBufferConfig] = None,
         batch_size: int = 10,
-    ) -> Optional[str]:
+    ) -> Optional[AnyHttpUrlString]:
         """Upload data to cloud storage using streaming for memory efficiency.
 
         This function implements true streaming from source to destination cloud storage,
@@ -445,7 +466,7 @@ class StreamingStorage:
             batch_size: Number of attachments to process in each batch
 
         Returns:
-            access_package_url or None if URL generation fails
+            presigned_url or None if URL generation fails
 
         Raises:
             ValueError: If privacy_request is not provided
@@ -502,32 +523,27 @@ class StreamingStorage:
                     f"Unexpected error during true streaming upload: unsupported format {config.resp_format}"
                 )
 
-            # Generate access package URL instead of presigned download URL
+            # Generate presigned URL for download
             try:
-                # For all three types (csv, json, html), return the access package URL
-                # This should point to where the files are located in the access package
-                # rather than being a direct download link
-                access_package_url = self._generate_access_package_url(
-                    config.bucket_name, config.file_key, config.resp_format
+                presigned_url = storage_client.generate_presigned_url(
+                    config.bucket_name, config.file_key
                 )
             except (ValueError, AttributeError) as e:
                 # Handle configuration or method availability issues
                 logger.warning(
-                    "Failed to generate access package URL for {}: {}",
-                    config.file_key,
-                    e,
+                    "Failed to generate presigned URL for {}: {}", config.file_key, e
                 )
-                access_package_url = None
+                presigned_url = None
             except Exception as e:
-                # Catch any other unexpected errors during access package URL generation
+                # Catch any other unexpected errors during presigned URL generation
                 logger.warning(
-                    "Unexpected error generating access package URL for {}: {}",
+                    "Unexpected error generating presigned URL for {}: {}",
                     config.file_key,
                     e,
                 )
-                access_package_url = None
+                presigned_url = None
 
-            return access_package_url
+            return presigned_url
 
         except (ValueError, AttributeError) as e:
             # Handle configuration or validation errors
@@ -613,12 +629,50 @@ class StreamingStorage:
             f"Successfully created memory-efficient controlled streaming ZIP: {file_key}"
         )
 
+    def _transform_data_for_access_package(
+        self, data: dict, all_attachments: list[AttachmentProcessingInfo]
+    ) -> dict:
+        """
+        Transform the data structure to replace download URLs with internal access package paths.
+        This ensures that when data is serialized to JSON/CSV, it contains internal references
+        instead of external download URLs.
+        """
+        if not all_attachments:
+            return data
+
+        # Create a simple mapping of original URLs to internal paths
+        url_mapping = {
+            attachment.attachment.storage_key: f"attachments/{attachment.attachment.file_name or f'attachment_{id(attachment.attachment)}'}"
+            for attachment in all_attachments
+            if attachment.attachment.storage_key.startswith(("http://", "https://"))
+        }
+
+        if not url_mapping:
+            return data
+
+        # Simple recursive replacement
+        def replace_urls(obj):
+            if isinstance(obj, dict):
+                return {k: replace_urls(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [replace_urls(item) for item in obj]
+            elif isinstance(obj, str) and obj in url_mapping:
+                return url_mapping[obj]
+            return obj
+
+        return replace_urls(data)
+
     def _create_data_files(
         self,
         data: dict,
         resp_format: str = "json",
+        all_attachments: Optional[list[AttachmentProcessingInfo]] = None,
     ) -> Generator[Tuple[str, BytesIO, dict[str, Any]], None, None]:
         """Create data files (JSON/CSV) from the input data based on resp_format configuration."""
+
+        # Transform data to use internal access package URLs if attachments are provided
+        if all_attachments:
+            data = self._transform_data_for_access_package(data, all_attachments)
 
         for key, value in data.items():
             if isinstance(value, list) and value:
@@ -689,7 +743,7 @@ class StreamingStorage:
         """Create a generator that yields files for the ZIP with minimal memory footprint."""
 
         # First yield data files
-        yield from self._yield_data_files(data, resp_format)
+        yield from self._yield_data_files(data, resp_format, all_attachments)
 
         # Then yield attachments
         yield from self._yield_attachments(
@@ -697,12 +751,15 @@ class StreamingStorage:
         )
 
     def _yield_data_files(
-        self, data: dict, resp_format: str
+        self,
+        data: dict,
+        resp_format: str,
+        all_attachments: Optional[list[AttachmentProcessingInfo]] = None,
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Yield data files in stream_zip format."""
         data_files_count = 0
 
-        for data_file in self._create_data_files(data, resp_format):
+        for data_file in self._create_data_files(data, resp_format, all_attachments):
             data_files_count += 1
             filename, content, _ = data_file
             content_bytes = content.getvalue()
@@ -777,36 +834,3 @@ class StreamingStorage:
             all_attachments[i : i + batch_size]
             for i in range(0, len(all_attachments), batch_size)
         ]
-
-    def _generate_access_package_url(
-        self, bucket_name: str, file_key: str, resp_format: str
-    ) -> str:
-        """Generates an access package URL that points to where the files are located.
-
-        For all three types (CSV, JSON, HTML), this URL should point to the access package
-        location rather than being a direct download link. The access package contains the
-        organized data files and users can navigate to specific files within it.
-
-        Args:
-            bucket_name: The name of the bucket containing the access package
-            file_key: The key of the access package file (e.g., "23847234.zip")
-            resp_format: The response format of the access package (e.g., "csv", "json", "html")
-
-        Returns:
-            An access package URL string that points to the package location
-        """
-        # The file_key represents the access package itself (e.g., "23847234.zip")
-        # We want to return a URL that points to where this access package is located
-        # so users can access the individual files within it
-
-        # For S3, construct the access package URL
-        # This should point to the access package location, not a direct download
-        access_package_url = f"https://{bucket_name}.s3.amazonaws.com/{file_key}"
-
-        logger.info(
-            "Generated access package URL for {} format: {}",
-            resp_format,
-            access_package_url,
-        )
-
-        return access_package_url
