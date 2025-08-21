@@ -129,6 +129,7 @@ export const {
   useGetAllDatasetsQuery,
   useGetAllFilteredDatasetsQuery,
   useGetDatasetByKeyQuery,
+  useLazyGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
   useUpsertDatasetsMutation,
   useCreateDatasetMutation,

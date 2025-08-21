@@ -5,8 +5,9 @@ import {
   AntSelect as Select,
   Flex,
 } from "fidesui";
-import { forwardRef, useCallback, useImperativeHandle } from "react";
+import { useCallback } from "react";
 
+import { DatasetReferencePicker } from "~/features/common/dataset";
 import { ConditionLeaf, Operator } from "~/types/api";
 
 interface FormValues {
@@ -53,142 +54,124 @@ interface AddConditionFormProps {
   isSubmitting?: boolean;
 }
 
-export interface AddConditionFormRef {
-  resetForm: () => void;
-}
+const AddConditionForm = ({
+  onAdd,
+  onCancel,
+  editingCondition,
+  isSubmitting = false,
+}: AddConditionFormProps) => {
+  const [form] = Form.useForm();
+  const isEditing = !!editingCondition;
 
-const AddConditionForm = forwardRef<AddConditionFormRef, AddConditionFormProps>(
-  ({ onAdd, onCancel, editingCondition, isSubmitting = false }, ref) => {
-    const [form] = Form.useForm();
+  // Operator options for the select dropdown
+  const operatorOptions = [
+    { label: "Equals", value: Operator.EQ },
+    { label: "Not equals", value: Operator.NEQ },
+    { label: "Greater than", value: Operator.GT },
+    { label: "Greater than or equal", value: Operator.GTE },
+    { label: "Less than", value: Operator.LT },
+    { label: "Less than or equal", value: Operator.LTE },
+    { label: "Exists", value: Operator.EXISTS },
+    { label: "Does not exist", value: Operator.NOT_EXISTS },
+    { label: "List contains", value: Operator.LIST_CONTAINS },
+    { label: "Not in list", value: Operator.NOT_IN_LIST },
+  ];
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        resetForm: () => form.resetFields(),
-      }),
-      [form],
-    );
-    const isEditing = !!editingCondition;
+  // Set initial values if editing
+  const initialValues = editingCondition
+    ? {
+        fieldAddress: editingCondition.field_address,
+        operator: editingCondition.operator,
+        value: editingCondition.value?.toString() || "",
+      }
+    : {};
 
-    // Operator options for the select dropdown
-    const operatorOptions = [
-      { label: "Equals", value: Operator.EQ },
-      { label: "Not equals", value: Operator.NEQ },
-      { label: "Greater than", value: Operator.GT },
-      { label: "Greater than or equal", value: Operator.GTE },
-      { label: "Less than", value: Operator.LT },
-      { label: "Less than or equal", value: Operator.LTE },
-      { label: "Exists", value: Operator.EXISTS },
-      { label: "Does not exist", value: Operator.NOT_EXISTS },
-      { label: "List contains", value: Operator.LIST_CONTAINS },
-      { label: "Not in list", value: Operator.NOT_IN_LIST },
-    ];
+  const handleSubmit = useCallback(
+    (values: FormValues) => {
+      const condition: ConditionLeaf = {
+        field_address: values.fieldAddress.trim(),
+        operator: values.operator,
+        value: parseConditionValue(values.operator, values.value),
+      };
 
-    // Set initial values if editing
-    const initialValues = editingCondition
-      ? {
-          fieldAddress: editingCondition.field_address,
-          operator: editingCondition.operator,
-          value: editingCondition.value?.toString() || "",
-        }
-      : {};
+      onAdd(condition);
+      // Don't reset form here - let the modal handle it on successful save
+    },
+    [onAdd],
+  );
 
-    const handleSubmit = useCallback(
-      (values: FormValues) => {
-        const condition: ConditionLeaf = {
-          field_address: values.fieldAddress.trim(),
-          operator: values.operator,
-          value: parseConditionValue(values.operator, values.value),
-        };
+  const handleCancel = useCallback(() => {
+    form.resetFields();
+    onCancel();
+  }, [form, onCancel]);
 
-        onAdd(condition);
-        // Don't reset form here - let the modal handle it on successful save
-      },
-      [onAdd],
-    );
+  // Check if value field should be disabled
+  const selectedOperator = Form.useWatch("operator", form);
+  const isValueDisabled =
+    selectedOperator === Operator.EXISTS ||
+    selectedOperator === Operator.NOT_EXISTS;
 
-    const handleCancel = useCallback(() => {
-      form.resetFields();
-      onCancel();
-    }, [form, onCancel]);
-
-    // Check if value field should be disabled
-    const selectedOperator = Form.useWatch("operator", form);
-    const isValueDisabled =
-      selectedOperator === Operator.EXISTS ||
-      selectedOperator === Operator.NOT_EXISTS;
-
-    return (
-      <Form
-        form={form}
-        onFinish={handleSubmit}
-        layout="vertical"
-        initialValues={initialValues}
+  return (
+    <Form
+      form={form}
+      onFinish={handleSubmit}
+      layout="vertical"
+      initialValues={initialValues}
+    >
+      <Form.Item
+        name="fieldAddress"
+        label="Dataset Field"
+        rules={[{ required: true, message: "Dataset field is required" }]}
+        tooltip="Select a field from your datasets to use in the condition"
       >
-        <Form.Item
-          name="fieldAddress"
-          label="Field Path"
-          rules={[
-            { required: true, message: "Field path is required" },
-            {
-              pattern: /^[a-zA-Z_][a-zA-Z0-9_.:]*$/,
-              message:
-                "Field path must start with a letter or underscore, and contain only letters, numbers, dots, and underscores",
-            },
-          ]}
-          tooltip="Use dot notation to access nested fields (e.g., user.age, custom_fields.country, identity.email)"
-        >
-          <Input placeholder="e.g., user.age, custom_fields.country, identity.email" />
-        </Form.Item>
+        <DatasetReferencePicker placeholder="Select a dataset field..." />
+      </Form.Item>
 
-        <Form.Item
-          name="operator"
-          label="Operator"
-          rules={[{ required: true, message: "Operator is required" }]}
-        >
-          <Select placeholder="Select operator" options={operatorOptions} />
-        </Form.Item>
+      <Form.Item
+        name="operator"
+        label="Operator"
+        rules={[{ required: true, message: "Operator is required" }]}
+      >
+        <Select placeholder="Select operator" options={operatorOptions} />
+      </Form.Item>
 
-        <Form.Item
-          name="value"
-          label="Value"
-          rules={[
-            {
-              required: !isValueDisabled,
-              message: "Value is required for this operator",
-            },
-          ]}
-          tooltip={
+      <Form.Item
+        name="value"
+        label="Value"
+        rules={[
+          {
+            required: !isValueDisabled,
+            message: "Value is required for this operator",
+          },
+        ]}
+        tooltip={
+          isValueDisabled
+            ? "Value is not required for exists/not exists operators"
+            : "Enter the value to compare against. Can be text, number, or true/false"
+        }
+      >
+        <Input
+          placeholder={
             isValueDisabled
-              ? "Value is not required for exists/not exists operators"
-              : "Enter the value to compare against. Can be text, number, or true/false"
+              ? "Not required"
+              : "Enter value (text, number, or true/false)"
           }
-        >
-          <Input
-            placeholder={
-              isValueDisabled
-                ? "Not required"
-                : "Enter value (text, number, or true/false)"
-            }
-            disabled={isValueDisabled}
-          />
-        </Form.Item>
+          disabled={isValueDisabled}
+        />
+      </Form.Item>
 
-        <Form.Item>
-          <Flex gap={2} justify="flex-end">
-            <Button onClick={handleCancel} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={isSubmitting}>
-              {isEditing ? "Update" : "Add"}
-            </Button>
-          </Flex>
-        </Form.Item>
-      </Form>
-    );
-  },
-);
-
-AddConditionForm.displayName = "AddConditionForm";
+      <Form.Item>
+        <Flex gap={2} justify="flex-end">
+          <Button onClick={handleCancel} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+            {isEditing ? "Update" : "Add"}
+          </Button>
+        </Flex>
+      </Form.Item>
+    </Form>
+  );
+};
 
 export default AddConditionForm;
