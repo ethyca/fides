@@ -41,13 +41,13 @@ def requeue_polling_request(
     logger.info(f"Privacy request {privacy_request.id} status: {privacy_request.status.value}")
     ## NOTE: Its starting with Error instead of pending. It shouldnt be.|
 
-    #if privacy_request.status not in [
-    #    PrivacyRequestStatus.approved,
-    #    PrivacyRequestStatus.in_processing,
-    #]:
-    #    raise PrivacyRequestError(
-    #        f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
-    #    )
+    if privacy_request.status not in [
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
+        raise PrivacyRequestError(
+            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
 
     logger.info(
         "Polling starting for {} task {} {}",
