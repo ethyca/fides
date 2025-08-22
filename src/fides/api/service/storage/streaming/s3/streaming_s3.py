@@ -41,13 +41,15 @@ def upload_to_s3_streaming(
     This function now uses smart-open for efficient cloud storage operations while maintaining
     our DSR-specific business logic for package splitting and attachment processing.
     """
-    logger.debug("Starting smart-open streaming S3 Upload of {}", file_key)
-
     formatted_secrets = format_secrets(storage_secrets)
 
     if document is not None:
         _, response = generic_upload_to_s3(
-            formatted_secrets, bucket_name, file_key, auth_method, document
+            formatted_secrets,  # type: ignore[arg-type]
+            bucket_name,
+            file_key,
+            auth_method,
+            document,
         )
         return response
 
@@ -86,17 +88,78 @@ def upload_to_s3_streaming(
 
 def format_secrets(
     storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]
-) -> dict[StorageSecrets, Any]:
+) -> dict[str, Any]:
     """
-    Converts StorageSecretsS3 to dict[StorageSecrets, Any] with enum keys.
+    Returns the correct format for the S3StorageClient.
+
+    This function handles multiple credential formats and processes them through several stages:
+    1. Input processing: Accepts either StorageSecretsS3 models (from API) or raw dicts (from database)
+    2. Key normalization: Converts all keys to string format for consistency
+    3. Default setting: Sets default region if missing
+    4. Validation: Ensures all required AWS credentials are present
+    5. Return: Returns string-keyed dict ready for S3StorageClient
+
+    Input formats:
+    - StorageSecretsS3: Used by storage API endpoints (e.g., put_config_secrets)
+    - dict[StorageSecrets, Any]: Used by storage models (e.g., StorageConfig.secrets)
+    - dict[str, Any]: Used by database queries (e.g., StorageConfig.get_by)
+
+    Output format:
+    - dict[str, Any]: Required by S3StorageClient.generate_presigned_url() and other AWS operations
+
+    Returns:
+        dict[str, Any]: Credentials with string keys like 'aws_access_key_id'
+
+    Raises:
+        ValueError: If required AWS credentials are missing
     """
-    secrets_for_streaming: dict[StorageSecrets, Any] = {}
+    logger.debug("format_secrets called with type: {}", type(storage_secrets).__name__)
+
+    # Stage 1: Process input and create final format directly
+    # We'll build the final string-keyed dictionary from the start
+    final_secrets: dict[str, Any] = {}
+
     if isinstance(storage_secrets, StorageSecretsS3):
+        # Convert StorageSecretsS3 model directly to string keys
+        # This handles input from storage API endpoints (e.g., put_config_secrets)
         for key, value in storage_secrets.model_dump().items():
             if value is not None:
-                for enum_key in StorageSecrets:
-                    if enum_key.value == key:
-                        secrets_for_streaming[enum_key] = value
-                        break
-        return secrets_for_streaming
-    return {k: v for k, v in storage_secrets.items() if isinstance(k, StorageSecrets)}
+                final_secrets[key] = value
+    else:
+        # Process dict input, converting enum keys to strings if needed
+        # This handles input from StorageConfig.secrets (database storage)
+        for key, value in (storage_secrets or {}).items():
+            if isinstance(key, str):
+                final_secrets[key] = value
+            elif isinstance(key, StorageSecrets):
+                # Convert enum key to string key
+                final_secrets[key.value] = value  # type: ignore[assignment]
+
+    # Stage 2: Set default region if missing
+    # AWS S3 operations require a region, so we provide a sensible default
+    # This is needed for S3StorageClient.generate_presigned_url() and other AWS calls
+    if "region_name" not in final_secrets or not final_secrets["region_name"]:
+        logger.debug("Setting default region to 'us-east-1'")
+        final_secrets["region_name"] = "us-east-1"
+
+    # Stage 3: Validate required credentials
+    # Ensure all necessary AWS credentials are present before proceeding
+    # These are required by S3StorageClient and AWS SDK operations
+    required_secrets = ["aws_access_key_id", "aws_secret_access_key", "region_name"]
+
+    missing_secrets = [
+        secret
+        for secret in required_secrets
+        if secret not in final_secrets or not final_secrets[secret]
+    ]
+
+    if missing_secrets:
+        raise ValueError(
+            f"Missing required AWS credentials: {missing_secrets}. "
+            "Storage configuration must include valid AWS access key, secret key, and region."
+        )
+
+    logger.debug(
+        "format_secrets completed successfully with {} keys", len(final_secrets)
+    )
+    return final_secrets

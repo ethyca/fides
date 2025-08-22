@@ -99,7 +99,9 @@ class SmartOpenStreamingStorage:
             parts = clean_url.split(S3_AMAZONAWS_COM_DOMAIN)
             if len(parts) == 2:
                 bucket = parts[0].replace("https://", "").replace("http://", "")
-                key = parts[1]
+                key = parts[1].lstrip(
+                    "/"
+                )  # Strip leading forward slash for S3 compatibility
                 return bucket, key
 
         # Handle generic HTTP(S) URLs

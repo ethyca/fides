@@ -27,8 +27,7 @@ class S3StorageClient(BaseStorageClient):
             storage_secrets: Provider-specific storage credentials and configuration using StorageSecrets enum keys
         """
         super().__init__(storage_secrets)
-        # Store the full secrets for methods that need access to additional keys
-        self._full_secrets: dict[StorageSecrets, Any] = storage_secrets
+        self.storage_secrets: dict[StorageSecrets, Any] = storage_secrets
 
     def build_uri(self, bucket: str, key: str) -> str:
         """Build the S3 URI for the storage location.

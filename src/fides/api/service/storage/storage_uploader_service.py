@@ -34,6 +34,8 @@ def upload(
     :param storage_key: Key representing where to upload data
     :return str representing location of upload (url or simply a description of where to find the data)
     """
+    logger.debug("upload called with storage_key: {}", storage_key)
+
     config: Optional[StorageConfig] = StorageConfig.get_by(
         db=db, field="key", value=storage_key
     )
@@ -41,7 +43,29 @@ def upload(
     if config is None:
         logger.warning("Storage type not found: {}", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
+
+    logger.debug(
+        "Retrieved storage config: key={}, type={}, has_secrets={}",
+        config.key,
+        config.type,
+        config.secrets is not None,
+    )
+
+    if config.secrets:
+        logger.debug("Storage config secrets type: {}", type(config.secrets))
+        if isinstance(config.secrets, dict):
+            logger.debug("Storage config secrets keys: {}", list(config.secrets.keys()))
+        else:
+            logger.debug("Storage config secrets is not a dict: {}", config.secrets)
+    else:
+        logger.warning("Storage config has no secrets!")
+
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
+    logger.debug(
+        "Using uploader: {}",
+        uploader.__name__ if hasattr(uploader, "__name__") else type(uploader),
+    )
+
     return uploader(db, config, data, privacy_request)
 
 
@@ -94,6 +118,26 @@ def _s3_uploader(
     If `enable_streaming` is configured in the storage config, we use a streaming approach for better memory efficiency.
     Otherwise we fall back to the traditional upload method.
     """
+    logger.debug(
+        "_s3_uploader called with config: key={}, type={}, has_secrets={}",
+        config.key,
+        config.type,
+        config.secrets is not None,
+    )
+
+    if config.secrets:
+        logger.debug(
+            "Config secrets keys: {}",
+            (
+                list(config.secrets.keys())
+                if isinstance(config.secrets, dict)
+                else "Not a dict"
+            ),
+        )
+        logger.debug("Config secrets type: {}", type(config.secrets))
+    else:
+        logger.warning("Config secrets is None or empty!")
+
     file_key: str = _construct_file_key(privacy_request.id, config)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
@@ -105,6 +149,7 @@ def _s3_uploader(
         file_key = f"{privacy_request.id}.zip"
         # Use streaming upload for better memory efficiency
         logger.debug("Using streaming S3 upload for {}", file_key)
+        logger.debug("Calling upload_to_s3_streaming with secrets: {}", config.secrets)
         return upload_to_s3_streaming(
             config.secrets,  # type: ignore
             data,
@@ -119,6 +164,7 @@ def _s3_uploader(
     file_key = _construct_file_key(privacy_request.id, config)
 
     # Fall back to traditional upload method
+    logger.debug("Using traditional S3 upload for {}", file_key)
     return upload_to_s3(
         config.secrets,  # type: ignore
         data,
