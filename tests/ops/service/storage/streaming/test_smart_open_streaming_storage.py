@@ -580,7 +580,10 @@ class TestSmartOpenStreamingStorage:
 
         data = {"users": [{"id": "1", "name": "Test"}]}
 
-        with pytest.raises(StorageUploadError, match="Storage upload failed: Unsupported response format: txt"):
+        with pytest.raises(
+            StorageUploadError,
+            match="Storage upload failed: Unsupported response format: txt",
+        ):
             storage.upload_to_storage_streaming(data, config, mock_privacy_request)
 
     def test_upload_to_storage_streaming_storage_error(

@@ -13,6 +13,7 @@ import pytest
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.streaming.s3.streaming_s3 import (
+    convert_to_storage_secrets_format,
     update_storage_secrets_s3,
     upload_to_s3_streaming,
 )
@@ -92,6 +93,46 @@ class TestUploadToS3Streaming:
             mock_privacy_request,
             None,  # document
         )
+
+    @patch("fides.api.service.storage.streaming.s3.streaming_s3.generic_upload_to_s3")
+    def test_document_upload_path(
+        self,
+        mock_generic_upload,
+        mock_storage_secrets,
+        sample_data,
+        mock_privacy_request,
+        mock_document,
+    ):
+        """Test the document upload path that calls generic_upload_to_s3."""
+        # Mock generic_upload_to_s3 to return success
+        mock_generic_upload.return_value = (
+            "bucket",
+            "https://example.com/test-file.zip",
+        )
+
+        result_url = upload_to_s3_streaming(
+            storage_secrets=mock_storage_secrets,
+            data=sample_data,
+            bucket_name="test-bucket",
+            file_key="test-file.zip",
+            resp_format="zip",
+            privacy_request=mock_privacy_request,
+            document=mock_document,  # Set document to trigger this path
+            auth_method="secret_keys",
+            max_workers=3,
+        )
+
+        # Verify the result
+        assert result_url == "https://example.com/test-file.zip"
+
+        # Verify generic_upload_to_s3 was called with converted secrets
+        mock_generic_upload.assert_called_once()
+        call_args = mock_generic_upload.call_args
+        assert call_args[0][0] == mock_storage_secrets  # secrets
+        assert call_args[0][1] == "test-bucket"  # bucket_name
+        assert call_args[0][2] == "test-file.zip"  # file_key
+        assert call_args[0][3] == "secret_keys"  # auth_method
+        assert call_args[0][4] == mock_document  # document
 
     @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
     def test_client_creation_failure(
@@ -420,6 +461,20 @@ class TestUploadToS3Streaming:
             ValueError,
             id="invalid_object",
         ),
+        pytest.param(
+            MagicMock(
+                spec=[]
+            ),  # Mock object that's not StorageSecretsS3 and has no model_dump method
+            ValueError,
+            id="object_without_model_dump",
+        ),
+        pytest.param(
+            MagicMock(
+                keys=MagicMock(side_effect=AttributeError("keys not callable"))
+            ),  # Object with non-callable keys
+            ValueError,
+            id="object_with_non_callable_keys",
+        ),
     ],
 )
 def test_update_storage_secrets_s3(secrets, error):
@@ -439,3 +494,72 @@ def test_update_storage_secrets_s3(secrets, error):
             # Convert StorageSecrets enum keys to their values to match the function behavior
             secrets_dict = {k.value: v for k, v in secrets.items()}
         assert secrets_updated == secrets_dict
+
+
+class TestConvertToStorageSecretsFormat:
+    """Tests for convert_to_storage_secrets_format function."""
+
+    def test_convert_storage_secrets_s3(self):
+        """Test converting StorageSecretsS3 to dict[StorageSecrets, Any]."""
+        storage_secrets = StorageSecretsS3(
+            aws_access_key_id="test_key",
+            aws_secret_access_key="test_secret",
+            region_name="us-east-1",
+            assume_role_arn=None,
+        )
+
+        result = convert_to_storage_secrets_format(storage_secrets)
+
+        # Should convert to dict with StorageSecrets enum keys
+        assert StorageSecrets.AWS_ACCESS_KEY_ID in result
+        assert StorageSecrets.AWS_SECRET_ACCESS_KEY in result
+        assert StorageSecrets.REGION_NAME in result
+        assert result[StorageSecrets.AWS_ACCESS_KEY_ID] == "test_key"
+        assert result[StorageSecrets.AWS_SECRET_ACCESS_KEY] == "test_secret"
+        assert result[StorageSecrets.REGION_NAME] == "us-east-1"
+        # None values should be excluded
+        assert StorageSecrets.AWS_ASSUME_ROLE not in result
+
+    def test_convert_storage_secrets_s3_with_assume_role(self):
+        """Test converting StorageSecretsS3 with assume_role_arn."""
+        storage_secrets = StorageSecretsS3(
+            aws_access_key_id="test_key",
+            aws_secret_access_key="test_secret",
+            region_name="us-east-1",
+            assume_role_arn="arn:aws:iam::123456789012:role/test-role",
+        )
+
+        result = convert_to_storage_secrets_format(storage_secrets)
+
+        # Should include assume_role_arn since it's not None
+        assert StorageSecrets.AWS_ASSUME_ROLE in result
+        assert (
+            result[StorageSecrets.AWS_ASSUME_ROLE]
+            == "arn:aws:iam::123456789012:role/test-role"
+        )
+
+    def test_convert_dict_storage_secrets(self):
+        """Test converting dict[StorageSecrets, Any] (already in correct format)."""
+        storage_secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-east-1",
+        }
+
+        result = convert_to_storage_secrets_format(storage_secrets)
+
+        # Should return the same dict unchanged
+        assert result == storage_secrets
+
+    def test_convert_dict_storage_secrets_with_none_values(self):
+        """Test converting dict[StorageSecrets, Any] with None values."""
+        storage_secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: None,
+            StorageSecrets.REGION_NAME: "us-east-1",
+        }
+
+        result = convert_to_storage_secrets_format(storage_secrets)
+
+        # Should return the same dict unchanged, including None values
+        assert result == storage_secrets
