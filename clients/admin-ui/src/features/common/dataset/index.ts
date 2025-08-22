@@ -1,5 +1,6 @@
 export type { DatasetReferencePickerProps } from "./DatasetReferencePicker";
 export { DatasetReferencePicker } from "./DatasetReferencePicker";
+export { default as TreeNodeTitle } from "./TreeNodeTitle";
 export type { DatasetTreeNode } from "./utils";
 export {
   buildFieldReference,
@@ -9,4 +10,3 @@ export {
   transformFieldsToTreeNodes,
   updateTreeNodeChildren,
 } from "./utils";
-export { default as TreeNodeTitle } from "./TreeNodeTitle";

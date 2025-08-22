@@ -1,4 +1,10 @@
-import { AntTreeSelect as TreeSelect, Box, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntSelect as Select,
+  AntTreeSelect as TreeSelect,
+  Box,
+  Text,
+} from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -7,12 +13,13 @@ import {
   useGetAllFilteredDatasetsQuery,
   useLazyGetDatasetByKeyQuery,
 } from "~/features/dataset/dataset.slice";
-import { Dataset, DatasetCollection } from "~/types/api";
+import { DatasetCollection } from "~/types/api";
 
 import TreeNodeTitle from "./TreeNodeTitle";
 import {
   DATASET_REFERENCE_SEPARATOR,
   DatasetTreeNode,
+  parseFieldReference,
   transformFieldsToTreeNodes,
   updateTreeNodeChildren,
 } from "./utils";
@@ -20,7 +27,6 @@ import {
 export interface DatasetReferencePickerProps {
   value?: string;
   onChange?: (value: string | undefined) => void;
-  placeholder?: string;
   disabled?: boolean;
 }
 
@@ -35,122 +41,154 @@ const EmptyState = () => (
 export const DatasetReferencePicker = ({
   value,
   onChange,
-  placeholder = "Select a dataset field",
   disabled = false,
 }: DatasetReferencePickerProps) => {
+  const [selectedDataset, setSelectedDataset] = useState<string | undefined>();
+  const [selectedFieldReference, setSelectedFieldReference] = useState<
+    string | undefined
+  >();
   const [treeData, setTreeData] = useState<DatasetTreeNode[]>([]);
-  const [datasetCache, setDatasetCache] = useState<Map<string, Dataset>>(
-    new Map(),
-  );
   const { errorAlert } = useAlert();
 
   // Load initial datasets (minimal data)
-  const { data: datasets, isLoading } = useGetAllFilteredDatasetsQuery({
-    minimal: true,
-  });
+  const { data: datasets, isLoading: datasetsLoading } =
+    useGetAllFilteredDatasetsQuery({
+      minimal: true,
+    });
   const [getDatasetByKey] = useLazyGetDatasetByKeyQuery();
 
-  // Memoized tree data transformation
-  const initialTreeData = useMemo(() => {
+  // Parse incoming value to set initial state
+  useEffect(() => {
+    if (value) {
+      const { datasetKey, collectionName, fieldPath } =
+        parseFieldReference(value);
+      if (datasetKey) {
+        setSelectedDataset(datasetKey);
+        if (collectionName && fieldPath) {
+          // Keep the full reference for the field selection
+          setSelectedFieldReference(value);
+        }
+      }
+    } else {
+      setSelectedDataset(undefined);
+      setSelectedFieldReference(undefined);
+    }
+  }, [value]);
+
+  // Dataset options for Select component
+  const datasetOptions = useMemo(() => {
     if (!datasets) {
       return [];
     }
 
-    return datasets.map((dataset) => {
-      const title = dataset.name || dataset.fides_key;
-      return {
-        key: dataset.fides_key,
-        title,
-        value: dataset.fides_key,
-        isLeaf: false,
-        selectable: false, // Datasets are not selectable
-        children: undefined,
-      };
-    });
+    return datasets.map((dataset) => ({
+      value: dataset.fides_key,
+      label: dataset.name || dataset.fides_key,
+    }));
   }, [datasets]);
 
-  // Initialize tree with datasets
+  // Load collections for selected dataset
   useEffect(() => {
-    setTreeData(initialTreeData);
-  }, [initialTreeData]);
-
-  // Async load collections and fields with caching and error handling
-  const loadData = useCallback(
-    async (treeNode: any) => {
-      const nodeKey = treeNode.key as string;
-
-      try {
-        if (!nodeKey.includes(DATASET_REFERENCE_SEPARATOR)) {
-          // Load dataset collections - check cache first
-          let dataset = datasetCache.get(nodeKey);
-          if (!dataset) {
-            const fetchedDataset = await getDatasetByKey(nodeKey).unwrap();
-            dataset = fetchedDataset;
-            setDatasetCache((prev) =>
-              new Map(prev).set(nodeKey, fetchedDataset),
-            );
-          }
+    if (selectedDataset) {
+      const loadCollections = async () => {
+        try {
+          const dataset = await getDatasetByKey(selectedDataset).unwrap();
 
           const collectionNodes: DatasetTreeNode[] =
             dataset.collections?.map((collection: DatasetCollection) => ({
-              key: `${nodeKey}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
+              key: `${selectedDataset}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
               title: collection.name,
-              value: `${nodeKey}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
+              value: `${selectedDataset}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
               isLeaf: false,
               selectable: false, // Collections are not selectable
               children: undefined,
             })) || [];
 
+          setTreeData(collectionNodes);
+        } catch (error: any) {
+          const errorMessage = getErrorMessage(
+            error,
+            "Failed to load dataset collections",
+          );
+          errorAlert(errorMessage);
+        }
+      };
+
+      loadCollections();
+    } else {
+      setTreeData([]);
+      setSelectedFieldReference(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDataset]);
+
+  // Async load collection fields
+  const loadData = useCallback(
+    async (treeNode: any) => {
+      if (!selectedDataset) {
+        return;
+      }
+
+      const nodeKey = treeNode.key as string;
+      const [, collectionName] = nodeKey.split(DATASET_REFERENCE_SEPARATOR);
+
+      if (!collectionName) {
+        return;
+      }
+
+      try {
+        const dataset = await getDatasetByKey(selectedDataset).unwrap();
+
+        const collection = dataset.collections?.find(
+          (c: DatasetCollection) => c.name === collectionName,
+        );
+
+        if (collection && collection.fields) {
+          const fieldNodes = transformFieldsToTreeNodes(
+            collection.fields,
+            selectedDataset,
+            collectionName,
+            "",
+          );
           setTreeData((prev) =>
-            updateTreeNodeChildren(prev, nodeKey, collectionNodes),
+            updateTreeNodeChildren(prev, nodeKey, fieldNodes),
           );
-        } else {
-          // Load collection fields
-          const [datasetKey, collectionName] = nodeKey.split(
-            DATASET_REFERENCE_SEPARATOR,
-          );
-
-          // Check cache first
-          let dataset = datasetCache.get(datasetKey);
-          if (!dataset) {
-            const fetchedDataset = await getDatasetByKey(datasetKey).unwrap();
-            dataset = fetchedDataset;
-            setDatasetCache((prev) =>
-              new Map(prev).set(datasetKey, fetchedDataset),
-            );
-          }
-
-          const collection = dataset.collections?.find(
-            (c: DatasetCollection) => c.name === collectionName,
-          );
-
-          if (collection && collection.fields) {
-            const fieldNodes = transformFieldsToTreeNodes(
-              collection.fields,
-              datasetKey,
-              collectionName,
-              "",
-            );
-            setTreeData((prev) =>
-              updateTreeNodeChildren(prev, nodeKey, fieldNodes),
-            );
-          }
         }
       } catch (error: any) {
         const errorMessage = getErrorMessage(
           error,
-          "Failed to load dataset data",
+          "Failed to load collection fields",
         );
         errorAlert(errorMessage);
       }
     },
-    [getDatasetByKey, datasetCache, errorAlert],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedDataset],
   );
 
-  const handleChange = useCallback(
-    (newValue: string | undefined) => {
+  // Handle dataset selection change
+  const handleDatasetChange = useCallback(
+    (datasetKey: string | undefined) => {
+      setSelectedDataset(datasetKey);
+      setSelectedFieldReference(undefined);
+
+      // Clear the overall value since field selection is reset
       if (onChange) {
-        onChange(newValue);
+        onChange(undefined);
+      }
+    },
+    [onChange],
+  );
+
+  // Handle field selection change
+  const handleFieldChange = useCallback(
+    (fieldReference: string | undefined) => {
+      setSelectedFieldReference(fieldReference);
+
+      // The fieldReference is already in the correct format (dataset:collection:field)
+      // from transformFieldsToTreeNodes, so we can pass it directly
+      if (onChange) {
+        onChange(fieldReference);
       }
     },
     [onChange],
@@ -162,25 +200,39 @@ export const DatasetReferencePicker = ({
   }, []);
 
   // Show empty state if no datasets available
-  if (!isLoading && datasets?.length === 0) {
+  if (!datasetsLoading && datasets?.length === 0) {
     return <EmptyState />;
   }
 
   return (
-    <TreeSelect
-      value={value}
-      onChange={handleChange}
-      treeData={treeData}
-      loadData={loadData}
-      placeholder={placeholder}
-      disabled={disabled}
-      loading={isLoading}
-      allowClear
-      showSearch
-      style={{ width: "100%" }}
-      treeNodeFilterProp="title"
-      treeTitleRender={treeTitleRender}
-      data-testid="dataset-reference-picker"
-    />
+    <Flex gap={8} data-testid="dataset-reference-picker">
+      <Select
+        value={selectedDataset}
+        onChange={handleDatasetChange}
+        options={datasetOptions}
+        placeholder="Select a dataset"
+        disabled={disabled}
+        loading={datasetsLoading}
+        allowClear
+        showSearch
+        style={{ width: "50%" }}
+        data-testid="dataset-select"
+      />
+
+      <TreeSelect
+        value={selectedFieldReference}
+        onChange={handleFieldChange}
+        treeData={treeData}
+        loadData={loadData}
+        placeholder="Select a field"
+        disabled={disabled || !selectedDataset}
+        allowClear
+        showSearch
+        style={{ width: "50%" }}
+        treeNodeFilterProp="title"
+        treeTitleRender={treeTitleRender}
+        data-testid="field-tree-select"
+      />
+    </Flex>
   );
 };
