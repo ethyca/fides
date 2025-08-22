@@ -3,16 +3,13 @@ from __future__ import annotations
 import zipfile
 from datetime import datetime
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Generator, Tuple
+from typing import Any, Generator, Tuple
 
 from loguru import logger
 from stream_zip import _ZIP_32_TYPE
 
+from fides.api.service.storage.streaming.schemas import AttachmentProcessingInfo
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
-
-if TYPE_CHECKING:
-    from fides.api.models.privacy_request import PrivacyRequest
-    from fides.api.service.storage.streaming.schemas import AttachmentProcessingInfo
 
 
 def stream_dsr_buffer_to_storage(
@@ -74,7 +71,7 @@ def create_dsr_report_files_generator(
     Returns:
         Generator yielding DSR report files in stream_zip format
     """
-    logger.info(
+    logger.debug(
         f"Creating DSR report files generator with {len(all_attachments)} attachments"
     )
 
@@ -95,4 +92,4 @@ def create_dsr_report_files_generator(
                     content
                 )
 
-    logger.info("DSR report files extracted and ready for ZIP creation")
+    logger.debug("DSR report files extracted and ready for ZIP creation")

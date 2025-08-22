@@ -112,7 +112,7 @@ class SmartOpenStorageClient:
                     # Try to convert to string
                     fout.write(str(body).encode("utf-8"))
 
-            logger.info(f"Successfully uploaded object to {uri}")
+            logger.debug(f"Successfully uploaded object to {uri}")
             return {"status": "success", "uri": uri}
 
         except Exception as e:
@@ -206,33 +206,6 @@ class SmartOpenStorageClient:
             part_number=part_number,
             etag=f"smart_open_part_{part_number}",
             metadata={"storage_type": self.storage_type, "method": "streaming"},
-        )
-
-    def complete_multipart_upload(
-        self,
-        bucket: str,
-        key: str,
-        upload_id: str,
-        parts: list[UploadPartResponse],
-        metadata: Optional[dict[str, str]] = None,
-    ) -> None:
-        """Complete a multipart upload (simplified for smart-open).
-
-        Since smart-open handles streaming efficiently, we don't need complex multipart logic.
-        This method exists for compatibility but does nothing.
-        """
-        logger.info(
-            f"Multipart upload completed for {bucket}/{key} using smart-open streaming"
-        )
-
-    def abort_multipart_upload(self, bucket: str, key: str, upload_id: str) -> None:
-        """Abort a multipart upload (simplified for smart-open).
-
-        Since smart-open handles streaming efficiently, we don't need complex multipart logic.
-        This method exists for compatibility but does nothing.
-        """
-        logger.info(
-            f"Multipart upload aborted for {bucket}/{key} using smart-open streaming"
         )
 
     @retry_cloud_storage_operation(

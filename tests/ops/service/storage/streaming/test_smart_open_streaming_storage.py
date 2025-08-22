@@ -508,6 +508,9 @@ class TestSmartOpenStreamingStorage:
         self, mock_html_report, mock_smart_open_client, mock_privacy_request
     ):
         """Test uploading HTML data to storage."""
+        # Mock the stream_dsr_buffer_to_storage to return a presigned URL
+        mock_html_report.return_value = "https://example.com/test.zip"
+
         storage = SmartOpenStreamingStorage(mock_smart_open_client)
 
         config = StorageUploadConfig(
@@ -580,8 +583,8 @@ class TestSmartOpenStreamingStorage:
         data = {"users": [{"id": "1", "name": "Test"}]}
 
         with pytest.raises(
-            StorageUploadError,
-            match="Storage upload failed: Unsupported response format: txt",
+            ValueError,
+            match="Unsupported response format: txt",
         ):
             storage.upload_to_storage_streaming(data, config, mock_privacy_request)
 
@@ -606,7 +609,7 @@ class TestSmartOpenStreamingStorage:
         data = {"users": [{"id": "1", "name": "Test"}]}
 
         with pytest.raises(
-            StorageUploadError, match="Storage upload failed: Storage error"
+            StorageUploadError, match="Failed to generate presigned URL: Storage error"
         ):
             storage.upload_to_storage_streaming(data, config, mock_privacy_request)
 
@@ -794,9 +797,7 @@ class TestSmartOpenStreamingStorage:
             )
         ]
 
-        result = list(
-            storage._create_attachment_files(attachments, "test-bucket", 4, 10)
-        )
+        result = list(storage._create_attachment_files(attachments))
 
         assert len(result) == 1
         assert result[0][0] == "attachments/doc1.pdf"
@@ -815,9 +816,7 @@ class TestSmartOpenStreamingStorage:
             )
         ]
 
-        result = list(
-            storage._create_attachment_files(attachments, "test-bucket", 4, 10)
-        )
+        result = list(storage._create_attachment_files(attachments))
 
         assert len(result) == 1
         assert result[0][0] == "attachments/doc1.pdf"
@@ -842,12 +841,12 @@ class TestSmartOpenStreamingStorage:
                 )
             ]
 
-            result = list(
-                storage._create_attachment_files(attachments, "test-bucket", 4, 10)
-            )
-
-            # Should continue with other attachments
-            assert len(result) == 0
+            # Should raise StorageUploadError when attachment processing fails
+            with pytest.raises(
+                StorageUploadError,
+                match="Failed to process attachment http://example.com/doc1.pdf: Failed to create content stream for attachment: Test error",
+            ):
+                list(storage._create_attachment_files(attachments))
 
     def test_transform_data_for_access_package(self, mock_smart_open_client):
         """Test transforming data for access package."""

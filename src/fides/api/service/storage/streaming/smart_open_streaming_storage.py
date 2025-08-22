@@ -6,13 +6,15 @@ import csv
 import json
 from datetime import datetime
 from io import BytesIO, StringIO
-from typing import TYPE_CHECKING, Any, Generator, Iterable, Optional, Tuple
+from typing import Any, Generator, Iterable, Optional, Tuple
+from urllib.parse import urlparse
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 from stream_zip import _ZIP_32_TYPE, stream_zip
 
 from fides.api.common_exceptions import StorageUploadError
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
@@ -32,8 +34,9 @@ from fides.api.service.storage.streaming.schemas import (
 )
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 
-if TYPE_CHECKING:
-    from fides.api.models.privacy_request import PrivacyRequest
+DEFAULT_ATTACHMENT_NAME = "attachment"
+DEFAULT_FILE_MODE = 0o644
+S3_AMAZONAWS_COM_DOMAIN = ".s3.amazonaws.com"
 
 
 class SmartOpenStreamingStorage:
@@ -65,6 +68,49 @@ class SmartOpenStreamingStorage:
         self.storage_client = storage_client
         self.chunk_size = chunk_size
 
+    def _parse_storage_url(self, storage_key: str) -> tuple[str, str]:
+        """Parse storage URL and return (bucket, key).
+
+        Supports multiple URL formats:
+        - s3://bucket/path
+        - https://bucket.s3.amazonaws.com/path
+        - http://bucket.s3.amazonaws.com/path
+        - Generic HTTP(S) URLs (returns domain as bucket, path as key)
+
+        Args:
+            storage_key: Storage key or URL
+
+        Returns:
+            Tuple of (bucket_name, object_key)
+
+        Raises:
+            ValueError: If URL cannot be parsed
+        """
+        if storage_key.startswith("s3://"):
+            # Extract bucket from S3 URL: s3://bucket/path
+            parts = storage_key.split("/")
+            if len(parts) < 4:
+                raise ValueError(f"Invalid S3 URL format: {storage_key}")
+            return parts[2], "/".join(parts[3:])
+
+        if S3_AMAZONAWS_COM_DOMAIN in storage_key:
+            # Extract bucket and key from HTTP(S) S3 URL
+            clean_url = storage_key.split("?")[0]
+            parts = clean_url.split(S3_AMAZONAWS_COM_DOMAIN)
+            if len(parts) == 2:
+                bucket = parts[0].replace("https://", "").replace("http://", "")
+                key = parts[1]
+                return bucket, key
+
+        # Handle generic HTTP(S) URLs
+        if storage_key.startswith(("http://", "https://")):
+            parsed = urlparse(storage_key)
+            bucket = parsed.netloc
+            key = parsed.path.lstrip("/")
+            return bucket, key
+
+        raise ValueError(f"Could not parse storage URL: {storage_key}")
+
     def _convert_to_stream_zip_format(
         self, generator: Generator[Tuple[str, BytesIO, dict[str, Any]], None, None]
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
@@ -79,7 +125,9 @@ class SmartOpenStreamingStorage:
             content_bytes = content.read()
             content.seek(0)  # Reset for potential reuse
 
-            yield filename, datetime.now(), 0o644, _ZIP_32_TYPE(), iter([content_bytes])
+            yield filename, datetime.now(), DEFAULT_FILE_MODE, _ZIP_32_TYPE(), iter(
+                [content_bytes]
+            )
 
     def build_attachments_list(
         self, data: dict, config: PackageSplitConfig
@@ -470,112 +518,199 @@ class SmartOpenStreamingStorage:
             NotImplementedError: If document-only upload is attempted
             StorageUploadError: If upload fails
         """
+        self._validate_upload_inputs(privacy_request, document)
         if not privacy_request:
             raise ValueError("Privacy request must be provided")
-
-        if document:
-            raise NotImplementedError("Document-only uploads not yet implemented")
 
         # Use default buffer config if none provided
         if buffer_config is None:
             buffer_config = StreamingBufferConfig()
 
         try:
-            if config.resp_format == ResponseFormat.csv.value:
-                self._stream_attachments_to_storage_zip(
-                    config.bucket_name,
-                    config.file_key,
-                    data,
-                    privacy_request,
-                    config.max_workers,
-                    buffer_config,
-                    batch_size,
-                    config.resp_format,
+            if config.resp_format in [
+                ResponseFormat.csv.value,
+                ResponseFormat.json.value,
+            ]:
+                return self._handle_data_format_upload(
+                    config, data, privacy_request, buffer_config, batch_size
                 )
-
-            elif config.resp_format == ResponseFormat.json.value:
-                self._stream_attachments_to_storage_zip(
-                    config.bucket_name,
-                    config.file_key,
-                    data,
-                    privacy_request,
-                    config.max_workers,
-                    buffer_config,
-                    batch_size,
-                    config.resp_format,
+            if config.resp_format == ResponseFormat.html.value:
+                return self._handle_html_format_upload(
+                    config, data, privacy_request, buffer_config, batch_size
                 )
+            raise ValueError(f"Unsupported response format: {config.resp_format}")
 
-            elif config.resp_format == ResponseFormat.html.value:
-                # For HTML, we need to handle the DSR report generation AND attachments
-                # Generate the DSR report first, then create a ZIP with both report and attachments
-                dsr_buffer = DsrReportBuilder(
-                    privacy_request=privacy_request,
-                    dsr_data=data,
-                ).generate()
+        except (ValueError, NotImplementedError):
+            # Re-raise validation errors as-is - these are user errors, not system errors
+            raise
+        except StorageUploadError:
+            # Re-raise storage errors as-is
+            raise
+        except Exception as e:
+            # Log unexpected errors and wrap them in StorageUploadError
+            logger.error(f"Unexpected error during storage upload: {e}", exc_info=True)
+            raise StorageUploadError(
+                f"Storage upload failed due to unexpected error: {e}"
+            ) from e
 
-                # Check if there are attachments to include
-                all_attachments = self._collect_and_validate_attachments(data)
+    def _validate_upload_inputs(
+        self, privacy_request: Optional[PrivacyRequest], document: Optional[Any]
+    ) -> None:
+        """Validate upload input parameters.
 
-                if not all_attachments:
-                    # No attachments, just upload the DSR report
-                    stream_dsr_buffer_to_storage(
-                        self.storage_client,
-                        config.bucket_name,
-                        config.file_key,
-                        dsr_buffer,
-                    )
-                else:
-                    # Create a ZIP containing both the DSR report and attachments
-                    logger.info(
-                        f"Creating HTML DSR report ZIP with {len(all_attachments)} attachments"
-                    )
+        Args:
+            privacy_request: Privacy request object
+            document: Optional document
 
-                    # Create ZIP generator with DSR report files
-                    dsr_files_generator = create_dsr_report_files_generator(
-                        dsr_buffer,
-                        all_attachments,
-                        config.bucket_name,
-                        config.max_workers,
-                        batch_size,
-                    )
+        Raises:
+            ValueError: If privacy_request is not provided
+            NotImplementedError: If document-only upload is attempted
+        """
+        if not privacy_request:
+            raise ValueError("Privacy request must be provided")
 
-                    # Create ZIP generator with attachment files
-                    attachment_files_generator = self._create_attachment_files(
-                        all_attachments,
-                        config.bucket_name,
-                        config.max_workers,
-                        batch_size,
-                    )
+        if document:
+            raise NotImplementedError("Document-only uploads not yet implemented")
 
-                    # Combine both generators and stream the complete ZIP to storage
-                    with self.storage_client.stream_upload(
-                        config.bucket_name,
-                        config.file_key,
-                        content_type="application/zip",
-                    ) as upload_stream:
-                        # First stream the DSR report files
-                        for chunk in stream_zip(dsr_files_generator):
-                            upload_stream.write(chunk)
+    def _handle_data_format_upload(
+        self,
+        config: StorageUploadConfig,
+        data: dict,
+        privacy_request: PrivacyRequest,
+        buffer_config: StreamingBufferConfig,
+        batch_size: int,
+    ) -> Optional[AnyHttpUrlString]:
+        """Handle CSV/JSON format uploads.
 
-                        # Then stream the attachment files
-                        for chunk in stream_zip(attachment_files_generator):
-                            upload_stream.write(chunk)
+        Args:
+            config: Upload configuration
+            data: Data to upload
+            privacy_request: Privacy request object
+            buffer_config: Buffer configuration
+            batch_size: Number of attachments to process in each batch
 
-                    logger.info(
-                        f"Successfully uploaded HTML DSR report ZIP with attachments: {config.file_key}"
-                    )
+        Returns:
+            presigned_url or None if URL generation fails
+        """
+        self._stream_attachments_to_storage_zip(
+            config.bucket_name,
+            config.file_key,
+            data,
+            privacy_request,
+            config.max_workers,
+            buffer_config,
+            batch_size,
+            config.resp_format,
+        )
 
-            else:
-                raise ValueError(f"Unsupported response format: {config.resp_format}")
-
-            # Generate presigned URL for the uploaded file
+        # Generate presigned URL for the uploaded file
+        try:
             return self.storage_client.generate_presigned_url(
                 config.bucket_name, config.file_key
             )
-
         except Exception as e:
-            logger.error(f"Failed to upload data to storage: {e}")
-            raise StorageUploadError(f"Storage upload failed: {e}") from e
+            logger.error(
+                f"Failed to generate presigned URL for {config.bucket_name}/{config.file_key}: {e}"
+            )
+            raise StorageUploadError(f"Failed to generate presigned URL: {e}") from e
+
+    def _handle_html_format_upload(
+        self,
+        config: StorageUploadConfig,
+        data: dict,
+        privacy_request: PrivacyRequest,
+        buffer_config: StreamingBufferConfig,
+        batch_size: int,
+    ) -> Optional[AnyHttpUrlString]:
+        """Handle HTML format uploads with DSR report generation.
+
+        Args:
+            config: Upload configuration
+            data: Data to upload
+            privacy_request: Privacy request object
+            buffer_config: Buffer configuration
+            batch_size: Number of attachments to process in each batch
+
+        Returns:
+            presigned_url or None if URL generation fails
+        """
+        # Generate the DSR report first
+        try:
+            dsr_buffer = DsrReportBuilder(
+                privacy_request=privacy_request,
+                dsr_data=data,
+            ).generate()
+        except Exception as e:
+            logger.error(f"Failed to generate DSR report: {e}")
+            raise StorageUploadError(f"Failed to generate DSR report: {e}") from e
+
+        # Check if there are attachments to include
+        all_attachments = self._collect_and_validate_attachments(data)
+
+        if not all_attachments:
+            # No attachments, just upload the DSR report
+            stream_dsr_buffer_to_storage(
+                self.storage_client,
+                config.bucket_name,
+                config.file_key,
+                dsr_buffer,
+            )
+
+            try:
+                return self.storage_client.generate_presigned_url(
+                    config.bucket_name, config.file_key
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to generate presigned URL for {config.bucket_name}/{config.file_key}: {e}"
+                )
+                raise StorageUploadError(
+                    f"Failed to generate presigned URL: {e}"
+                ) from e
+        logger.debug(
+            f"Creating HTML DSR report ZIP with {len(all_attachments)} attachments"
+        )
+
+        # Create ZIP generator with DSR report files
+        dsr_files_generator = create_dsr_report_files_generator(
+            dsr_buffer,
+            all_attachments,
+            config.bucket_name,
+            config.max_workers,
+            batch_size,
+        )
+
+        # Create ZIP generator with attachment files
+        attachment_files_generator = self._create_attachment_files(all_attachments)
+
+        # Combine both generators and stream the complete ZIP to storage
+        with self.storage_client.stream_upload(
+            config.bucket_name,
+            config.file_key,
+            content_type="application/zip",
+        ) as upload_stream:
+            # First stream the DSR report files
+            for chunk in stream_zip(dsr_files_generator):
+                upload_stream.write(chunk)
+
+            # Then stream the attachment files
+            for chunk in stream_zip(attachment_files_generator):
+                upload_stream.write(chunk)
+
+        logger.debug(
+            f"Successfully uploaded HTML DSR report ZIP with attachments: {config.file_key}"
+        )
+
+        # Generate presigned URL for the uploaded file
+        try:
+            return self.storage_client.generate_presigned_url(
+                config.bucket_name, config.file_key
+            )
+        except Exception as e:
+            logger.error(
+                f"Failed to generate presigned URL for {config.bucket_name}/{config.file_key}: {e}"
+            )
+            raise StorageUploadError(f"Failed to generate presigned URL: {e}") from e
 
     @retry_cloud_storage_operation(
         provider="smart_open_streaming",
@@ -619,7 +754,7 @@ class SmartOpenStreamingStorage:
             self._upload_data_only_zip(bucket_name, file_key, data, resp_format)
             return
 
-        logger.info(
+        logger.debug(
             f"Starting streaming ZIP creation with {len(all_attachments)} attachments in batches of {batch_size}"
         )
 
@@ -640,7 +775,7 @@ class SmartOpenStreamingStorage:
             for chunk in stream_zip(zip_generator):
                 upload_stream.write(chunk)
 
-        logger.info(
+        logger.debug(
             f"Successfully created memory-efficient streaming ZIP using smart-open: {file_key}"
         )
 
@@ -655,7 +790,7 @@ class SmartOpenStreamingStorage:
             data: Data to upload
             resp_format: Response format
         """
-        logger.info("Creating data-only ZIP file (no attachments)")
+        logger.debug("Creating data-only ZIP file (no attachments)")
 
         # Create data files generator
         data_files_generator = self._create_data_files(data, resp_format)
@@ -670,7 +805,7 @@ class SmartOpenStreamingStorage:
             for chunk in stream_zip(zip_generator):
                 upload_stream.write(chunk)
 
-        logger.info(f"Successfully uploaded data-only ZIP: {file_key}")
+        logger.debug(f"Successfully uploaded data-only ZIP: {file_key}")
 
     def _create_zip_generator(
         self,
@@ -694,20 +829,18 @@ class SmartOpenStreamingStorage:
         Returns:
             Generator yielding ZIP file entries in stream_zip format
         """
-        logger.info(f"Creating ZIP generator with {len(all_attachments)} attachments")
+        logger.debug(f"Creating ZIP generator with {len(all_attachments)} attachments")
 
         # First, yield data files (convert to stream_zip format and stream directly)
         data_files_generator = self._create_data_files(
             data, resp_format, all_attachments
         )
-        logger.info("Yielding data files for ZIP")
+        logger.debug("Yielding data files for ZIP")
         yield from self._convert_to_stream_zip_format(data_files_generator)
 
         # Then, yield attachment files (already in stream_zip format, stream directly)
-        attachment_files_generator = self._create_attachment_files(
-            all_attachments, bucket_name, max_workers, batch_size
-        )
-        logger.info("Yielding attachment files for ZIP")
+        attachment_files_generator = self._create_attachment_files(all_attachments)
+        logger.debug("Yielding attachment files for ZIP")
         yield from attachment_files_generator
 
     def _create_data_files(
@@ -752,9 +885,6 @@ class SmartOpenStreamingStorage:
     def _create_attachment_files(
         self,
         all_attachments: list[AttachmentProcessingInfo],
-        bucket_name: str,
-        max_workers: int,
-        batch_size: int,
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Create attachment files for the ZIP using true cloud-to-cloud streaming.
 
@@ -764,90 +894,17 @@ class SmartOpenStreamingStorage:
 
         Args:
             all_attachments: List of validated attachments
-            bucket_name: Storage bucket name
-            max_workers: Maximum parallel workers
-            batch_size: Number of attachments to process in each batch
 
         Returns:
             Generator yielding attachment file entries in stream_zip format
         """
-        logger.info(f"Processing {len(all_attachments)} attachments for ZIP creation")
-
         for attachment_info in all_attachments:
-            try:
-                logger.debug(
-                    f"Processing attachment: {attachment_info.attachment.file_name} with storage_key: {attachment_info.attachment.storage_key}"
-                )
-
-                # Extract bucket and key from storage key
-                storage_key = attachment_info.attachment.storage_key
-                source_bucket = bucket_name
-                source_key = storage_key
-
-                if storage_key.startswith("s3://"):
-                    # Extract bucket from S3 URL: s3://bucket/path
-                    bucket_from_key = storage_key.split("/")[2]
-                    source_bucket = bucket_from_key
-                    source_key = "/".join(storage_key.split("/")[3:])
-                    logger.debug(
-                        f"Parsed S3 URL - bucket: {source_bucket}, key: {source_key}"
-                    )
-                elif (
-                    storage_key.startswith("https://")
-                    and ".s3.amazonaws.com" in storage_key
-                ):
-                    # Extract bucket and key from HTTP S3 URL: https://bucket.s3.amazonaws.com/key
-                    # Remove query parameters first
-                    clean_url = storage_key.split("?")[0]
-                    # Split by .s3.amazonaws.com and extract bucket and key
-                    parts = clean_url.split(".s3.amazonaws.com/")
-                    if len(parts) == 2:
-                        bucket_part = parts[0].replace("https://", "")
-                        source_bucket = bucket_part
-                        source_key = parts[1]
-                        logger.debug(
-                            f"Parsed HTTPS S3 URL - bucket: {source_bucket}, key: {source_key}"
-                        )
-                    else:
-                        logger.warning(f"Could not parse S3 HTTP URL: {storage_key}")
-                        continue
-                elif (
-                    storage_key.startswith("http://")
-                    and ".s3.amazonaws.com" in storage_key
-                ):
-                    # Handle HTTP (non-HTTPS) S3 URLs
-                    clean_url = storage_key.split("?")[0]
-                    parts = clean_url.split(".s3.amazonaws.com/")
-                    if len(parts) == 2:
-                        bucket_part = parts[0].replace("http://", "")
-                        source_bucket = bucket_part
-                        source_key = parts[1]
-                        logger.debug(
-                            f"Parsed HTTP S3 URL - bucket: {source_bucket}, key: {source_key}"
-                        )
-                    else:
-                        logger.warning(f"Could not parse S3 HTTP URL: {storage_key}")
-                        continue
-
-                # Create the file path in the ZIP
-                file_path = f"{attachment_info.base_path}/{attachment_info.attachment.file_name or 'attachment'}"
-                logger.debug(f"Adding attachment to ZIP at path: {file_path}")
-
-                # Yield in stream_zip format: (filename, datetime, mode, method, content_iter)
-                yield file_path, datetime.now(), 0o644, _ZIP_32_TYPE(), self._create_attachment_content_stream(
-                    source_bucket, source_key, storage_key
-                )
-
-            except Exception as e:
-                logger.warning(
-                    f"Failed to process attachment {attachment_info.attachment.storage_key}: {e}"
-                )
-                # Continue with other attachments
-                continue
+            result = self._process_attachment_safely(attachment_info)
+            yield result
 
     def _transform_data_for_access_package(
-        self, data: dict, all_attachments: list[AttachmentProcessingInfo]
-    ) -> dict:
+        self, data: dict[str, Any], all_attachments: list[AttachmentProcessingInfo]
+    ) -> dict[str, Any]:
         """
         Transform the data structure to replace download URLs with internal access package paths.
         This ensures that when data is serialized to JSON/CSV, it contains internal references
@@ -877,3 +934,62 @@ class SmartOpenStreamingStorage:
             return obj
 
         return replace_urls(data)
+
+    def _process_attachment_safely(
+        self,
+        attachment_info: AttachmentProcessingInfo,
+    ) -> tuple[str, datetime, int, Any, Iterable[bytes]]:
+        """Process attachment with consistent error handling.
+
+        Args:
+            attachment_info: Attachment processing information
+
+        Returns:
+            Stream ZIP format tuple
+
+        Raises:
+            StorageUploadError: If attachment processing fails for any reason
+        """
+        try:
+            storage_key = attachment_info.attachment.storage_key
+
+            try:
+                source_bucket, source_key = self._parse_storage_url(storage_key)
+                logger.debug(
+                    f"Parsed storage URL - bucket: {source_bucket}, key: {source_key}"
+                )
+            except ValueError as e:
+                logger.error(f"Could not parse storage URL: {storage_key} - {e}")
+                raise StorageUploadError(
+                    f"Could not parse storage URL: {storage_key} - {e}"
+                ) from e
+
+            file_path = f"{attachment_info.base_path}/{attachment_info.attachment.file_name or DEFAULT_ATTACHMENT_NAME}"
+
+            try:
+                content_stream = self._create_attachment_content_stream(
+                    source_bucket, source_key, storage_key
+                )
+                return (
+                    file_path,
+                    datetime.now(),
+                    DEFAULT_FILE_MODE,
+                    _ZIP_32_TYPE(),
+                    content_stream,
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to create content stream for attachment {storage_key}: {e}"
+                )
+                raise StorageUploadError(
+                    f"Failed to create content stream for attachment: {e}"
+                ) from e
+
+        except Exception as e:
+            logger.error(
+                f"Failed to process attachment {attachment_info.attachment.storage_key}: {e}",
+                exc_info=True,
+            )
+            raise StorageUploadError(
+                f"Failed to process attachment {attachment_info.attachment.storage_key}: {e}"
+            ) from e

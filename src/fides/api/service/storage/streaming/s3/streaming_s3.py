@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Any, Optional, Union
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.s3 import generic_upload_to_s3
 from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
@@ -15,9 +16,6 @@ from fides.api.service.storage.streaming.smart_open_client import SmartOpenStora
 from fides.api.service.storage.streaming.smart_open_streaming_storage import (
     SmartOpenStreamingStorage,
 )
-
-if TYPE_CHECKING:
-    from fides.api.models.privacy_request import PrivacyRequest
 
 
 @retry_cloud_storage_operation(
@@ -43,7 +41,7 @@ def upload_to_s3_streaming(
     This function now uses smart-open for efficient cloud storage operations while maintaining
     our DSR-specific business logic for package splitting and attachment processing.
     """
-    logger.info("Starting smart-open streaming S3 Upload of {}", file_key)
+    logger.debug("Starting smart-open streaming S3 Upload of {}", file_key)
 
     if privacy_request is None:
         raise ValueError("Privacy request must be provided")
@@ -76,7 +74,7 @@ def upload_to_s3_streaming(
             document,
         )
 
-        logger.info(
+        logger.debug(
             "Successfully uploaded streaming archive to S3 using smart-open: {}",
             file_key,
         )

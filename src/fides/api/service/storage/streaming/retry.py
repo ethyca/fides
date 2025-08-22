@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import time
 from functools import wraps
 from typing import Any, Callable, Optional, Type
@@ -107,8 +108,6 @@ def calculate_backoff_delay(
 
     # Add jitter to prevent multiple retries from synchronizing
     if jitter:
-        import random
-
         jitter_amount = delay * 0.1  # 10% jitter
         delay += random.uniform(-jitter_amount, jitter_amount)
         delay = max(0, delay)  # Ensure non-negative
