@@ -47,6 +47,7 @@ class Asset(Base):
     name = Column(String, index=True, nullable=False)
     asset_type = Column(String, index=True, nullable=False)
     domain = Column(String, index=True)
+    duration = Column(String, nullable=True)
     parent = Column(ARRAY(String), server_default="{}", nullable=False)
     parent_domain = Column(String)
     locations = Column(ARRAY(String), server_default="{}", nullable=False)

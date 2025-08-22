@@ -45,6 +45,7 @@ import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import CookieList from "./CookieList";
 
 const NoticeOverlay = () => {
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
@@ -181,12 +182,23 @@ const NoticeOverlay = () => {
       noticeKey: item.notice.notice_key,
       title: item.bestTranslation?.title || item.notice.name || "",
       description: item.bestTranslation?.description,
+      cookies: item.notice.cookies,
       checked,
       consentMechanism: item.notice.consent_mechanism,
       disabled: item.notice.disabled,
       gpcStatus,
     };
   });
+
+  const [isCookieListView, setIsCookieListView] = useState(false);
+
+  const noticesWithCookies = privacyNoticeItems
+    .map((item) => ({
+      noticeKey: item.notice.notice_key,
+      title: item.bestTranslation?.title || item.notice.name || "",
+      cookies: item.notice.cookies || [],
+    }))
+    .filter((n) => n.cookies && n.cookies.length > 0);
 
   useNoticesServed({
     privacyExperienceConfigHistoryId,
@@ -421,13 +433,39 @@ const NoticeOverlay = () => {
       }}
       renderModalContent={() => (
         <div>
-          <div className="fides-modal-notices">
-            <NoticeToggles
-              noticeToggles={noticeToggles}
-              enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={handleToggleChange}
+          {isCookieListView ? (
+            <CookieList
+              cookiesByNotice={noticesWithCookies}
+              onBack={() => setIsCookieListView(false)}
             />
-          </div>
+          ) : (
+            <div className="fides-modal-notices">
+              <NoticeToggles
+                noticeToggles={noticeToggles}
+                enabledNoticeKeys={draftEnabledNoticeKeys}
+                onChange={handleToggleChange}
+                renderDescription={(props) => {
+                  const hasCookies = (props.cookies || []).length > 0;
+                  return (
+                    <div>
+                      {props.description}
+                      {hasCookies ? (
+                        <div style={{ marginTop: "12px" }}>
+                          <button
+                            type="button"
+                            className="fides-link-button"
+                            onClick={() => setIsCookieListView(true)}
+                          >
+                            View Cookie List
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
       renderModalFooter={({ onClose }) => (

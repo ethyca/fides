@@ -1,4 +1,4 @@
-import { GpcStatus } from "../../lib/consent-types";
+import { Cookies, GpcStatus } from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
@@ -13,12 +13,14 @@ export interface NoticeToggleProps {
   checked: boolean;
   disabled?: boolean;
   gpcStatus: GpcStatus;
+  cookies?: Cookies[];
 }
 
 export const NoticeToggles = ({
   noticeToggles,
   enabledNoticeKeys,
   onChange,
+  renderDescription,
 }: {
   noticeToggles: NoticeToggleProps[];
   enabledNoticeKeys: Array<string>;
@@ -26,6 +28,7 @@ export const NoticeToggles = ({
     keys: Array<string>,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
+  renderDescription?: (props: NoticeToggleProps) => preact.ComponentChildren;
 }) => {
   const { i18n } = useI18n();
   const handleToggle = (noticeKey: string) => {
@@ -73,7 +76,7 @@ export const NoticeToggles = ({
               onLabel={toggleOnLabel}
               offLabel={toggleOffLabel}
             >
-              {description}
+              {renderDescription ? renderDescription(props) : description}
             </DataUseToggle>
             {!isLast ? <Divider /> : null}
           </div>
