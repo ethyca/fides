@@ -376,19 +376,23 @@ class SmartOpenStreamingStorage:
             Iterator that yields chunks of the attachment content
         """
         try:
-            logger.debug(f"Starting streaming read of {storage_key}")
+            logger.debug(
+                f"Starting streaming read of {storage_key} from bucket: {bucket}, key: {key}"
+            )
             with self.storage_client.stream_read(bucket, key) as content_stream:
                 # Stream in chunks instead of reading entire file
                 chunk_count = 0
+                total_bytes = 0
                 while True:
                     chunk = content_stream.read(self.chunk_size)
                     if not chunk:
                         break
                     chunk_count += 1
+                    total_bytes += len(chunk)
                     yield chunk
 
                 logger.debug(
-                    f"Completed streaming {chunk_count} chunks for {storage_key}"
+                    f"Completed streaming {chunk_count} chunks ({total_bytes} bytes) for {storage_key}"
                 )
         except Exception as e:
             logger.warning(f"Failed to stream attachment {storage_key}: {e}")
@@ -636,16 +640,20 @@ class SmartOpenStreamingStorage:
         Returns:
             Generator yielding ZIP file entries in stream_zip format
         """
-        # First, yield data files (convert to stream_zip format)
+        logger.info(f"Creating ZIP generator with {len(all_attachments)} attachments")
+
+        # First, yield data files (convert to stream_zip format and stream directly)
         data_files_generator = self._create_data_files(
             data, resp_format, all_attachments
         )
+        logger.info("Yielding data files for ZIP")
         yield from self._convert_to_stream_zip_format(data_files_generator)
 
-        # Then, yield attachment files (already in stream_zip format)
+        # Then, yield attachment files (already in stream_zip format, stream directly)
         attachment_files_generator = self._create_attachment_files(
             all_attachments, bucket_name, max_workers, batch_size
         )
+        logger.info("Yielding attachment files for ZIP")
         yield from attachment_files_generator
 
     def _create_data_files(
@@ -709,22 +717,67 @@ class SmartOpenStreamingStorage:
         Returns:
             Generator yielding attachment file entries in stream_zip format
         """
+        logger.info(f"Processing {len(all_attachments)} attachments for ZIP creation")
+
         for attachment_info in all_attachments:
             try:
-                # Extract bucket from storage key if it's an S3 URL
+                logger.debug(
+                    f"Processing attachment: {attachment_info.attachment.file_name} with storage_key: {attachment_info.attachment.storage_key}"
+                )
+
+                # Extract bucket and key from storage key
                 storage_key = attachment_info.attachment.storage_key
+                source_bucket = bucket_name
+                source_key = storage_key
+
                 if storage_key.startswith("s3://"):
-                    # Extract bucket from S3 URL
-                    bucket_from_key = storage_key.split("/")[2]  # s3://bucket/path
+                    # Extract bucket from S3 URL: s3://bucket/path
+                    bucket_from_key = storage_key.split("/")[2]
                     source_bucket = bucket_from_key
-                    source_key = "/".join(storage_key.split("/")[3:])  # path part
-                else:
-                    # Use the provided bucket name for non-S3 keys
-                    source_bucket = bucket_name
-                    source_key = storage_key
+                    source_key = "/".join(storage_key.split("/")[3:])
+                    logger.debug(
+                        f"Parsed S3 URL - bucket: {source_bucket}, key: {source_key}"
+                    )
+                elif (
+                    storage_key.startswith("https://")
+                    and ".s3.amazonaws.com" in storage_key
+                ):
+                    # Extract bucket and key from HTTP S3 URL: https://bucket.s3.amazonaws.com/key
+                    # Remove query parameters first
+                    clean_url = storage_key.split("?")[0]
+                    # Split by .s3.amazonaws.com and extract bucket and key
+                    parts = clean_url.split(".s3.amazonaws.com/")
+                    if len(parts) == 2:
+                        bucket_part = parts[0].replace("https://", "")
+                        source_bucket = bucket_part
+                        source_key = parts[1]
+                        logger.debug(
+                            f"Parsed HTTPS S3 URL - bucket: {source_bucket}, key: {source_key}"
+                        )
+                    else:
+                        logger.warning(f"Could not parse S3 HTTP URL: {storage_key}")
+                        continue
+                elif (
+                    storage_key.startswith("http://")
+                    and ".s3.amazonaws.com" in storage_key
+                ):
+                    # Handle HTTP (non-HTTPS) S3 URLs
+                    clean_url = storage_key.split("?")[0]
+                    parts = clean_url.split(".s3.amazonaws.com/")
+                    if len(parts) == 2:
+                        bucket_part = parts[0].replace("http://", "")
+                        source_bucket = bucket_part
+                        source_key = parts[1]
+                        logger.debug(
+                            f"Parsed HTTP S3 URL - bucket: {source_bucket}, key: {source_key}"
+                        )
+                    else:
+                        logger.warning(f"Could not parse S3 HTTP URL: {storage_key}")
+                        continue
 
                 # Create the file path in the ZIP
                 file_path = f"{attachment_info.base_path}/{attachment_info.attachment.file_name or 'attachment'}"
+                logger.debug(f"Adding attachment to ZIP at path: {file_path}")
 
                 # Yield in stream_zip format: (filename, datetime, mode, method, content_iter)
                 yield file_path, datetime.now(), 0o644, _ZIP_32_TYPE(), self._create_attachment_content_stream(

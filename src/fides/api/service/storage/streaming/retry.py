@@ -1,4 +1,3 @@
-# pylint: disable=unnecessary-pass
 from __future__ import annotations
 
 import time
@@ -13,19 +12,13 @@ from fides.config import CONFIG
 class RetryableError(Exception):
     """Base exception for errors that should trigger retries."""
 
-    pass  # pragma: no cover
-
 
 class TransientError(RetryableError):
     """Exception for transient errors that should be retried."""
 
-    pass  # pragma: no cover
-
 
 class PermanentError(RetryableError):
     """Exception for permanent errors that should not be retried."""
-
-    pass  # pragma: no cover
 
 
 class RetryConfig:

@@ -50,8 +50,8 @@ class S3StorageClient(BaseStorageClient):
             params["access_key"] = self.storage_secrets["aws_access_key_id"]
         if "aws_secret_access_key" in self.storage_secrets:
             params["secret_key"] = self.storage_secrets["aws_secret_access_key"]
-        if "region" in self.storage_secrets:
-            params["region"] = self.storage_secrets["region"]
+        if "region_name" in self.storage_secrets:
+            params["region"] = self.storage_secrets["region_name"]
         if "endpoint_url" in self.storage_secrets:
             params["endpoint_url"] = self.storage_secrets["endpoint_url"]
 
@@ -75,17 +75,29 @@ class S3StorageClient(BaseStorageClient):
         """
         try:
             # Convert storage secrets to the format expected by get_s3_client
-            s3_secrets: Dict[StorageSecrets, Any] = {}
+            # get_s3_client expects dict[str, Any] where keys are the enum values (strings)
+            s3_secrets: Dict[str, Any] = {}
+
+            # Map the string keys from storage_secrets to the format expected by get_s3_client
+            # The keys should be the enum values (strings), not the enum objects
             if "aws_access_key_id" in self.storage_secrets:
-                s3_secrets[StorageSecrets.AWS_ACCESS_KEY_ID] = self.storage_secrets[
-                    "aws_access_key_id"
-                ]
+                s3_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value] = (
+                    self.storage_secrets["aws_access_key_id"]
+                )
             if "aws_secret_access_key" in self.storage_secrets:
-                s3_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY] = self.storage_secrets[
-                    "aws_secret_access_key"
+                s3_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY.value] = (
+                    self.storage_secrets["aws_secret_access_key"]
+                )
+            if "region_name" in self.storage_secrets:
+                s3_secrets[StorageSecrets.REGION_NAME.value] = self.storage_secrets[
+                    "region_name"
                 ]
-            if "region" in self.storage_secrets:
-                s3_secrets[StorageSecrets.REGION_NAME] = self.storage_secrets["region"]
+            if "assume_role_arn" in self.storage_secrets:
+                s3_secrets[StorageSecrets.AWS_ASSUME_ROLE.value] = self.storage_secrets[
+                    "assume_role_arn"
+                ]
+
+            logger.debug("Converted storage secrets for S3 client: {}", s3_secrets)
 
             # Use a default auth method if not specified
             auth_method = self.storage_secrets.get(

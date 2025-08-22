@@ -44,13 +44,17 @@ def upload_to_s3_streaming(
     our DSR-specific business logic for package splitting and attachment processing.
     """
     logger.info("Starting smart-open streaming S3 Upload of {}", file_key)
+    logger.info("Storage secrets type: {}", type(storage_secrets))
+    logger.debug("Storage secrets content: {}", storage_secrets)
 
     if privacy_request is None:
         raise ValueError("Privacy request must be provided")
 
     if isinstance(storage_secrets, StorageSecretsS3):
+        logger.info("Processing StorageSecretsS3 object")
         secrets_dict = update_storage_secrets_s3(storage_secrets)
     else:
+        logger.info("Processing dict[StorageSecrets, Any] object")
         # Convert dict[StorageSecrets, Any] to dict[str, Any] for SmartOpenStorageClient
         secrets_dict = update_storage_secrets_s3(storage_secrets)
 
@@ -108,32 +112,71 @@ def update_storage_secrets_s3(
     Updates the storage secrets to the expected format for SmartOpenStorageClient.
     Returns dict[str, Any] for compatibility with smart-open.
     """
+    logger.info("Processing storage secrets of type: {}", type(storage_secrets))
+    logger.debug("Storage secrets content: {}", storage_secrets)
+
     if not isinstance(storage_secrets, dict):
-        if isinstance(storage_secrets, StorageSecretsS3):
+        # Check if it's a StorageSecretsS3-like object (including docs versions)
+        if hasattr(storage_secrets, "model_dump"):
             try:
                 # Preserve all values including None for test compatibility
                 secrets_dict = storage_secrets.model_dump()
+                logger.info(
+                    "Converted StorageSecretsS3 object to dict: {}", secrets_dict
+                )
                 return secrets_dict
             except AttributeError:
+                logger.error("StorageSecretsS3 object missing model_dump method")
                 raise ValueError(
                     "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
                 )
-    try:
-        if not all(isinstance(k, StorageSecrets) for k in storage_secrets.keys()):
+        else:
+            logger.error("Storage secrets is not a dict and has no model_dump method")
             raise ValueError(
                 "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
             )
+
+    # Handle the case where secrets come from database as dict[str, Any]
+    # Check if keys are string values of StorageSecrets enum
+    if all(isinstance(k, str) for k in storage_secrets.keys()):
+        # Keys are already strings, check if they match StorageSecrets enum values
+        storage_secret_values = {secret.value for secret in StorageSecrets}
+        if all(k in storage_secret_values for k in storage_secrets.keys()):
+            logger.info(
+                "Storage secrets already in correct string format for SmartOpenStorageClient"
+            )
+            return storage_secrets
+        else:
+            logger.warning(
+                "Some storage secret keys don't match StorageSecrets enum values: {}",
+                [k for k in storage_secrets.keys() if k not in storage_secret_values],
+            )
+            # Still return as-is since this might be a valid case
+
+    # Handle the case where keys are StorageSecrets enum objects
+    try:
+        if all(isinstance(k, StorageSecrets) for k in storage_secrets.keys()):
+            # Convert StorageSecrets enum keys to string keys for SmartOpenStorageClient
+            converted_secrets = {}
+            for k, v in storage_secrets.items():
+                converted_secrets[k.value] = v
+            logger.info("Converted StorageSecrets enum keys to string keys")
+            return converted_secrets
     except AttributeError:
+        logger.error("Error checking if keys are StorageSecrets enum objects")
         raise ValueError(
             "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
         )
 
-    # Convert StorageSecrets enum keys to string keys for SmartOpenStorageClient
-    converted_secrets = {}
-    for k, v in storage_secrets.items():
-        converted_secrets[k.value] = v
-
-    return converted_secrets
+    # If we get here, the keys are neither StorageSecrets enum objects nor valid string values
+    logger.error(
+        "Storage secrets keys are neither StorageSecrets enum objects nor valid string values"
+    )
+    logger.error("Keys found: {}", list(storage_secrets.keys()))
+    logger.error("Expected keys: {}", [secret.value for secret in StorageSecrets])
+    raise ValueError(
+        "Storage secrets must be of type StorageSecretsS3, or dict[StorageSecrets, Any]"
+    )
 
 
 def convert_to_storage_secrets_format(

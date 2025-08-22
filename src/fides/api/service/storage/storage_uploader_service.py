@@ -45,22 +45,15 @@ def upload(
     return uploader(db, config, data, privacy_request)
 
 
-def get_extension(resp_format: ResponseFormat) -> str:
+def get_extension(resp_format: ResponseFormat, has_attachments: bool = False) -> str:
     """
     Determine file extension for various response formats.
 
-    CSV's and HTML reports are zipped together before uploading to s3.
+    All response formats (JSON, CSV, HTML) are zipped together before uploading to S3.
+    The response format determines what goes inside the ZIP, not the file extension.
     """
-    if resp_format == ResponseFormat.csv:
-        return "zip"
-
-    if resp_format == ResponseFormat.json:
-        return "json"
-
-    if resp_format == ResponseFormat.html:
-        return "zip"
-
-    raise NotImplementedError(f"No extension defined for {resp_format}")
+    # Always return .zip since we're creating ZIP files for all response formats
+    return "zip"
 
 
 def _construct_file_key(request_id: str, config: StorageConfig) -> str:
