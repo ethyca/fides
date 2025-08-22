@@ -45,15 +45,22 @@ def upload(
     return uploader(db, config, data, privacy_request)
 
 
-def get_extension(resp_format: ResponseFormat, has_attachments: bool = False) -> str:
+def get_extension(resp_format: ResponseFormat) -> str:
     """
     Determine file extension for various response formats.
 
-    All response formats (JSON, CSV, HTML) are zipped together before uploading to S3.
-    The response format determines what goes inside the ZIP, not the file extension.
+    CSV's and HTML reports are zipped together before uploading to s3.
     """
-    # Always return .zip since we're creating ZIP files for all response formats
-    return "zip"
+    if resp_format == ResponseFormat.csv:
+        return "zip"
+
+    if resp_format == ResponseFormat.json:
+        return "json"
+
+    if resp_format == ResponseFormat.html:
+        return "zip"
+
+    raise NotImplementedError(f"No extension defined for {resp_format}")
 
 
 def _construct_file_key(request_id: str, config: StorageConfig) -> str:
@@ -84,7 +91,7 @@ def _s3_uploader(
 ) -> str:
     """
     Constructs necessary info needed for s3 before calling upload.
-    If `enable_streaming` is configured in the storage config, we use a streaming approach for better memory efficiency. 
+    If `enable_streaming` is configured in the storage config, we use a streaming approach for better memory efficiency.
     Otherwise we fall back to the traditional upload method.
     """
     file_key: str = _construct_file_key(privacy_request.id, config)
@@ -93,10 +100,9 @@ def _s3_uploader(
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
     document = None
 
-    # Check if streaming is enabled in the storage configuration
     enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
-
     if enable_streaming:
+        file_key = f"{privacy_request.id}.zip"
         # Use streaming upload for better memory efficiency
         logger.info("Using streaming S3 upload for {}", file_key)
         return upload_to_s3_streaming(
@@ -109,6 +115,8 @@ def _s3_uploader(
             document,
             auth_method,
         )
+
+    file_key = _construct_file_key(privacy_request.id, config)
 
     # Fall back to traditional upload method
     logger.info("Using traditional S3 upload for {}", file_key)
