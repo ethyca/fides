@@ -693,11 +693,9 @@ class SmartOpenStreamingStorage:
             config.file_key,
             content_type="application/zip",
         ) as upload_stream:
-            # First stream the attachment files
             for chunk in stream_zip(attachment_files_generator):
                 upload_stream.write(chunk)
 
-            # Then stream the DSR report files (this ensures HTML files overwrite any conflicting attachment files)
             for chunk in stream_zip(dsr_files_generator):
                 upload_stream.write(chunk)
 
