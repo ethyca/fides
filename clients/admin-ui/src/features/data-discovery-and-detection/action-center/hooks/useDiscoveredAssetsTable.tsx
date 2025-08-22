@@ -221,7 +221,9 @@ export const useDiscoveredAssetsTable = ({
             <SystemCell
               aggregateSystem={record}
               monitorConfigId={record.monitor_config_id}
-              readonly={actionsDisabled ?? false}
+              readonly={
+                actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
+              }
             />
           ),
       },
@@ -236,7 +238,9 @@ export const useDiscoveredAssetsTable = ({
         render: (_, record) => (
           <DiscoveredAssetDataUseCell
             asset={record}
-            readonly={actionsDisabled ?? false}
+            readonly={
+              actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
+            }
           />
         ),
       },
@@ -376,12 +380,13 @@ export const useDiscoveredAssetsTable = ({
 
     return baseColumns;
   }, [
-    filterOptions,
-    columnFilters,
     sortKey,
     sortOrder,
+    filterOptions,
+    columnFilters,
     assetConsentStatusLabels,
     actionsDisabled,
+    activeTab,
     isLocationsExpanded,
     isPagesExpanded,
     firstItemConsentStatus,
