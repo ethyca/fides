@@ -22,7 +22,7 @@ import { SuccessToastContent } from "../../SuccessToastContent";
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
-  onTabChange: (tab: ActionCenterTabHash) => void;
+  onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
 }
 
 export const DiscoveredAssetActionsCell = ({
@@ -85,7 +85,9 @@ export const DiscoveredAssetActionsCell = ({
         successToastParams(
           SuccessToastContent(
             `${type} "${name}" has been ignored and will not appear in future scans.`,
-            () => onTabChange(ActionCenterTabHash.IGNORED),
+            async () => {
+              await onTabChange(ActionCenterTabHash.IGNORED);
+            },
           ),
         ),
       );
