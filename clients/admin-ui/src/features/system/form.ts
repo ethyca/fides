@@ -3,9 +3,9 @@ import {
   CustomFieldValues,
 } from "~/features/common/custom-fields";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { System } from "~/types/api";
+import { SystemSchemaExtended } from "~/types/api";
 
-export type FormValues = System &
+export type FormValues = SystemSchemaExtended &
   CustomFieldsFormValues & {
     customFieldValues?: CustomFieldValues;
     data_stewards: string;
@@ -39,10 +39,11 @@ export const defaultInitialValues: FormValues = {
   cookie_refresh: false,
   uses_non_cookie_access: false,
   legitimate_interest_disclosure_url: "",
+  system_groups: [],
 };
 
 export const transformSystemToFormValues = (
-  system: System,
+  system: SystemSchemaExtended,
   customFieldValues?: CustomFieldValues,
 ): FormValues => {
   // @ts-ignore
@@ -83,11 +84,14 @@ export const transformSystemToFormValues = (
     legal_basis_for_transfers: system.legal_basis_for_transfers
       ? system.legal_basis_for_transfers
       : "",
-    data_stewards: dataStewards,
+    data_stewards: dataStewards || "",
+    system_groups: system.system_groups || [],
   };
 };
 
-export const transformFormValuesToSystem = (formValues: FormValues): System => {
+export const transformFormValuesToSystem = (
+  formValues: FormValues,
+): SystemSchemaExtended => {
   const key = formValues.fides_key
     ? formValues.fides_key
     : formatKey(formValues.name!);
@@ -95,7 +99,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const privacyPolicy =
     formValues.privacy_policy === "" ? undefined : formValues.privacy_policy;
 
-  let payload: System = {
+  let payload: SystemSchemaExtended = {
     system_type: formValues.system_type,
     fides_key: key,
     name: formValues.name,
@@ -131,6 +135,7 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
     vendor_deleted_date: formValues.vendor_deleted_date
       ? formValues.vendor_deleted_date
       : undefined,
+    system_groups: formValues.system_groups,
   };
 
   if (!formValues.processes_personal_data) {

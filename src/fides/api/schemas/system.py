@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
 
 from fideslang.models import PrivacyDeclaration, System
+from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field
 from pydantic.main import BaseModel
 
@@ -61,3 +62,10 @@ class SystemHistoryResponse(BaseModel):
     after: Dict[str, Any]
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+
+class AssignStewardRequest(BaseModel):
+    """Request schema for assigning a data steward to one or more systems."""
+
+    data_steward: str
+    system_keys: List[FidesKey]

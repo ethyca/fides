@@ -59,6 +59,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
+import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
@@ -162,6 +163,17 @@ const SystemInformationForm = ({
     skip: !features.dictionaryService,
   });
   const [getDictionaryDataUseTrigger] = useLazyGetDictionaryDataUsesQuery();
+
+  const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
+
+  const systemGroupOptions = useMemo(
+    () =>
+      allSystemGroups?.map((group) => ({
+        value: group.fides_key,
+        label: group.name,
+      })) || [],
+    [allSystemGroups],
+  );
 
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
   const lockedForGVL = useAppSelector(selectLockedForGVL);
@@ -372,6 +384,14 @@ const SystemInformationForm = ({
                 }
                 layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
+              />
+              <ControlledSelect
+                name="system_groups"
+                label="System groups"
+                options={systemGroupOptions}
+                tooltip="Which system groups are associated with this system?"
+                mode="multiple"
+                layout="stacked"
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">

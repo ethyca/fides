@@ -33,6 +33,11 @@ export const CustomTable = <RecordType = any,>({
     };
   }, [pagination, dataSource]);
 
+  const rowSelection = {
+    ...props.rowSelection,
+    columnWidth: 1,
+  };
+
   return (
     <Table
       size={size}
@@ -40,6 +45,7 @@ export const CustomTable = <RecordType = any,>({
       pagination={paginationDefaults}
       dataSource={dataSource}
       scroll={scroll}
+      rowSelection={rowSelection}
       {...props}
     />
   );
