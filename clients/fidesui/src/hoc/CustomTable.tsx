@@ -1,11 +1,13 @@
 import { ColumnsType } from "antd/es/table";
 import { MenuProps, Table, TableProps } from "antd/lib";
 import React from "react";
+import { ResizeCallbackData } from "react-resizable";
 
 import { CustomTableHeaderCell } from "./CustomTableHeaderCell";
 
 type CustomColumnType<RecordType = any> = ColumnsType<RecordType>[number] & {
   menu?: MenuProps;
+  disableResize?: boolean;
 };
 
 export type CustomColumnsType<RecordType = any> =
@@ -37,6 +39,12 @@ export const CustomTable = <RecordType = any,>({
   scroll = { scrollToFirstRowOnChange: true, x: "max-content" },
   ...props
 }: CustomTableProps<RecordType>) => {
+  const [newColumns, setNewColumns] = React.useState(columns);
+
+  React.useEffect(() => {
+    setNewColumns(columns);
+  }, [columns]);
+
   const paginationDefaults = React.useMemo(() => {
     if (pagination === false || !pagination) {
       return pagination;
@@ -51,21 +59,36 @@ export const CustomTable = <RecordType = any,>({
     };
   }, [pagination, dataSource]);
 
+  const handleResize =
+    (index: number) =>
+    (_: React.SyntheticEvent<Element>, data: ResizeCallbackData) => {
+      setNewColumns((cols) => {
+        const nextColumns = [...cols];
+        if (nextColumns[index]) {
+          nextColumns[index].width = data.size.width;
+        }
+        return nextColumns;
+      });
+    };
+
   const customColumns = React.useMemo(() => {
-    return columns.map((column) => ({
+    return newColumns.map((column, index: number) => ({
       ...column,
-      onHeaderCell: (data: any, index: number) => {
+      onHeaderCell: (data: React.HTMLAttributes<HTMLTableCellElement>) => {
         // Get existing onHeaderCell props if they exist
-        const existingProps = column.onHeaderCell?.(data, index) || {};
+        const existingProps = column.onHeaderCell?.(data) || {};
 
         // Merge with our menu prop
         return {
           ...existingProps,
           menu: column.menu,
+          disableResize: column.disableResize,
+          width: column.width,
+          onResize: handleResize(index),
         };
       },
     }));
-  }, [columns]);
+  }, [columns, newColumns]);
 
   return (
     <Table
@@ -76,13 +99,13 @@ export const CustomTable = <RecordType = any,>({
       scroll={scroll}
       {...props}
       components={{
+        ...components,
         header: {
           ...components?.header,
           cell: CustomTableHeaderCell,
         },
-        ...components,
       }}
-      columns={customColumns as ColumnsType<RecordType>}
+      columns={customColumns as unknown as ColumnsType<RecordType>}
     />
   );
 };
