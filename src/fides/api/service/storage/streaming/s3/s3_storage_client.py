@@ -104,7 +104,7 @@ class S3StorageClient(BaseStorageClient):
                 "auth_method", AWSAuthMethod.SECRET_KEYS.value
             )
 
-            s3_client = get_s3_client(auth_method, s3_secrets)
+            s3_client = get_s3_client(auth_method, s3_secrets)  # type: ignore[arg-type]
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:
             logger.error(f"Failed to generate S3 presigned URL: {e}")

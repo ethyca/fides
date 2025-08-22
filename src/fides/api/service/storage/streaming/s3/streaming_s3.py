@@ -146,12 +146,12 @@ def update_storage_secrets_s3(
                 "Storage secrets already in correct string format for SmartOpenStorageClient"
             )
             return storage_secrets
-        else:
-            logger.warning(
-                "Some storage secret keys don't match StorageSecrets enum values: {}",
-                [k for k in storage_secrets.keys() if k not in storage_secret_values],
-            )
-            # Still return as-is since this might be a valid case
+
+        logger.warning(
+            "Some storage secret keys don't match StorageSecrets enum values: {}",
+            [k for k in storage_secrets.keys() if k not in storage_secret_values],
+        )
+        # Still return as-is since this might be a valid case
 
     # Handle the case where keys are StorageSecrets enum objects
     try:
@@ -200,4 +200,4 @@ def convert_to_storage_secrets_format(
         return converted_secrets
 
     # Already in the correct format
-    return storage_secrets
+    return storage_secrets  # type: ignore[return-value]
