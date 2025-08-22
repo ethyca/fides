@@ -8,7 +8,6 @@ export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
-export type { ColumnsType as AntColumnsType } from "antd/es/table";
 export type {
   FilterValue as AntFilterValue,
   SorterResult as AntSorterResult,
@@ -89,6 +88,7 @@ export {
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 
 // Export the destructured Typography components individually

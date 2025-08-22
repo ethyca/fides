@@ -1,6 +1,22 @@
-import { TableProps } from "antd/es/table";
-import { Table } from "antd/lib";
+import { ColumnsType } from "antd/es/table";
+import { MenuProps, Table, TableProps } from "antd/lib";
 import React from "react";
+
+import { CustomTableHeaderCell } from "./CustomTableHeaderCell";
+
+type CustomColumnType<RecordType = any> = ColumnsType<RecordType>[number] & {
+  menu?: MenuProps;
+};
+
+export type CustomColumnsType<RecordType = any> =
+  CustomColumnType<RecordType>[];
+
+export type CustomTableProps<RecordType = any> = Omit<
+  TableProps<RecordType>,
+  "columns"
+> & {
+  columns: CustomColumnsType<RecordType>;
+};
 
 /**
  * Higher-order component that adds consistent styling and enhanced functionality to Ant Design's Table component.
@@ -16,9 +32,11 @@ export const CustomTable = <RecordType = any,>({
   bordered = true,
   pagination,
   dataSource,
+  components,
+  columns,
   scroll = { scrollToFirstRowOnChange: true, x: "max-content" },
   ...props
-}: TableProps<RecordType>) => {
+}: CustomTableProps<RecordType>) => {
   const paginationDefaults = React.useMemo(() => {
     if (pagination === false || !pagination) {
       return pagination;
@@ -33,6 +51,22 @@ export const CustomTable = <RecordType = any,>({
     };
   }, [pagination, dataSource]);
 
+  const customColumns = React.useMemo(() => {
+    return columns.map((column) => ({
+      ...column,
+      onHeaderCell: (data: any, index: number) => {
+        // Get existing onHeaderCell props if they exist
+        const existingProps = column.onHeaderCell?.(data, index) || {};
+
+        // Merge with our menu prop
+        return {
+          ...existingProps,
+          menu: column.menu,
+        };
+      },
+    }));
+  }, [columns]);
+
   return (
     <Table
       size={size}
@@ -41,6 +75,14 @@ export const CustomTable = <RecordType = any,>({
       dataSource={dataSource}
       scroll={scroll}
       {...props}
+      components={{
+        header: {
+          ...components?.header,
+          cell: CustomTableHeaderCell,
+        },
+        ...components,
+      }}
+      columns={customColumns as ColumnsType<RecordType>}
     />
   );
 };
