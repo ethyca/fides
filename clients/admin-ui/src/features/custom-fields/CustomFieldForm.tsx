@@ -85,7 +85,8 @@ export const CustomFieldForm = ({
             options={FIELD_TYPE_OPTIONS_NEW}
             onChange={handleDropdownChange}
           />
-          {values.field_type !== FieldTypes.OPEN_TEXT ? (
+          {values.field_type !== FieldTypes.OPEN_TEXT &&
+          values.field_type !== FieldTypes.LOCATION_SELECT ? (
             <Flex
               flexDirection="column"
               gap="12px"

@@ -20,6 +20,12 @@
         "email": "required"
       },
       "custom_privacy_request_fields": {
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "ip_geolocation_hint": true,
+          "required": true
+        },
         "preferred_format": {
           "label": "Preferred format",
           "field_type": "select",
