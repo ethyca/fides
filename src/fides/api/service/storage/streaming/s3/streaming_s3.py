@@ -128,12 +128,12 @@ def format_secrets(
     else:
         # Process dict input, converting enum keys to strings if needed
         # This handles input from StorageConfig.secrets (database storage)
-        for key, value in (storage_secrets or {}).items():
+        for key, value in (storage_secrets or {}).items():  # type: ignore[assignment]
             if isinstance(key, str):
                 final_secrets[key] = value
             elif isinstance(key, StorageSecrets):
                 # Convert enum key to string key
-                final_secrets[key.value] = value  # type: ignore[assignment]
+                final_secrets[key.value] = value
 
     # Stage 2: Set default region if missing
     # AWS S3 operations require a region, so we provide a sensible default

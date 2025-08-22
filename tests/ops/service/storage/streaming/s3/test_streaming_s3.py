@@ -72,10 +72,11 @@ class TestUploadToS3Streaming:
         # Verify the result
         assert result_url == "https://example.com/test-file.zip"
 
-        # Verify the client was created with the same enum keys (no conversion needed)
+        # Verify the client was created with formatted secrets (string keys + region)
         expected_secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_access_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret_key",
+            "aws_access_key_id": "test_access_key",
+            "aws_secret_access_key": "test_secret_key",
+            "region_name": "us-east-1",
         }
         mock_client_class.assert_called_once_with("s3", expected_secrets)
 
@@ -121,10 +122,15 @@ class TestUploadToS3Streaming:
         # Verify the result
         assert result_url == "https://example.com/test-file.zip"
 
-        # Verify generic_upload_to_s3 was called with converted secrets
+        # Verify generic_upload_to_s3 was called with formatted secrets
         mock_generic_upload.assert_called_once()
         call_args = mock_generic_upload.call_args
-        assert call_args[0][0] == mock_storage_secrets  # secrets
+        expected_formatted_secrets = {
+            "aws_access_key_id": "test_access_key",
+            "aws_secret_access_key": "test_secret_key",
+            "region_name": "us-east-1",
+        }
+        assert call_args[0][0] == expected_formatted_secrets  # secrets
         assert call_args[0][1] == "test-bucket"  # bucket_name
         assert call_args[0][2] == "test-file.zip"  # file_key
         assert call_args[0][3] == "secret_keys"  # auth_method
@@ -243,10 +249,11 @@ class TestUploadToS3Streaming:
             # Verify the result
             assert result_url == "https://example.com/test-file.zip"
 
-            # Verify the client was created with the same enum keys (no conversion needed)
+            # Verify the client was created with formatted secrets (string keys + region)
             expected_secrets = {
-                StorageSecrets.AWS_ACCESS_KEY_ID: "test_access_key",
-                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret_key",
+                "aws_access_key_id": "test_access_key",
+                "aws_secret_access_key": "test_secret_key",
+                "region_name": "us-east-1",
             }
             mock_client_class.assert_called_once_with("s3", expected_secrets)
 
