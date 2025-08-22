@@ -29,6 +29,7 @@ export interface DatasetReferencePickerProps {
   value?: string;
   onChange?: (value: string | undefined) => void;
   disabled?: boolean;
+  excludeSaasDataset?: boolean;
 }
 
 // Empty state component
@@ -43,6 +44,7 @@ export const DatasetReferencePicker = ({
   value,
   onChange,
   disabled = false,
+  excludeSaasDataset = true,
 }: DatasetReferencePickerProps) => {
   const [selectedDataset, setSelectedDataset] = useState<string | undefined>();
   const [selectedFieldReference, setSelectedFieldReference] = useState<
@@ -55,6 +57,7 @@ export const DatasetReferencePicker = ({
   const { data: datasets, isLoading: datasetsLoading } =
     useGetAllFilteredDatasetsQuery({
       minimal: true,
+      exclude_saas_datasets: excludeSaasDataset,
     });
 
   // Load selected dataset (skipped when no dataset selected)

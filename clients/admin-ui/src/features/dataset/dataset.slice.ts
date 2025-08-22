@@ -57,14 +57,21 @@ const datasetApi = baseApi.injectEndpoints({
         onlyUnlinkedDatasets?: boolean;
         minimal?: boolean;
         connection_type?: ConnectionType;
+        exclude_saas_datasets?: boolean;
       }
     >({
-      query: ({ onlyUnlinkedDatasets, minimal, connection_type }) => ({
+      query: ({
+        onlyUnlinkedDatasets,
+        minimal,
+        connection_type,
+        exclude_saas_datasets,
+      }) => ({
         url: `/dataset`,
         params: {
           only_unlinked_datasets: onlyUnlinkedDatasets,
           minimal,
           connection_type,
+          exclude_saas_datasets,
         },
       }),
       providesTags: () => ["Datasets"],

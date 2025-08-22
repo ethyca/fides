@@ -131,7 +131,7 @@ const AddConditionForm = ({
         rules={[{ required: true, message: "Dataset field is required" }]}
         tooltip="Select a field from your datasets to use in the condition"
       >
-        <DatasetReferencePicker placeholder="Select a dataset field..." />
+        <DatasetReferencePicker />
       </Form.Item>
 
       <Form.Item
