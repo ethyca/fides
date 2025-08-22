@@ -55,6 +55,7 @@ describe("System Navigation", () => {
   it("loads correct tab directly based on URL hash", () => {
     // Visit page with specific hash
     cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+    cy.wait("@getMinimalUnlinkedDatasets");
 
     // Verify correct tab is active
     cy.getAntTab("Data uses").should("have.attr", "aria-selected", "true");
