@@ -87,7 +87,7 @@ def upload_to_s3_streaming(
 
 
 def format_secrets(
-    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]  # type: ignore[misc]
 ) -> dict[str, Any]:
     """
     Returns the correct format for the S3StorageClient.
