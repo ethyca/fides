@@ -104,7 +104,7 @@ def _s3_uploader(
     if enable_streaming:
         file_key = f"{privacy_request.id}.zip"
         # Use streaming upload for better memory efficiency
-        logger.info("Using streaming S3 upload for {}", file_key)
+        logger.debug("Using streaming S3 upload for {}", file_key)
         return upload_to_s3_streaming(
             config.secrets,  # type: ignore
             data,
@@ -119,7 +119,6 @@ def _s3_uploader(
     file_key = _construct_file_key(privacy_request.id, config)
 
     # Fall back to traditional upload method
-    logger.info("Using traditional S3 upload for {}", file_key)
     return upload_to_s3(
         config.secrets,  # type: ignore
         data,
