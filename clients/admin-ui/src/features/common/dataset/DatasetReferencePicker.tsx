@@ -7,12 +7,9 @@ import {
 } from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks/useAlert";
 import {
   useGetAllFilteredDatasetsQuery,
   useGetDatasetByKeyQuery,
-  useLazyGetDatasetByKeyQuery,
 } from "~/features/dataset/dataset.slice";
 import { DatasetCollection } from "~/types/api";
 
@@ -22,7 +19,6 @@ import {
   DatasetTreeNode,
   parseFieldReference,
   transformFieldsToTreeNodes,
-  updateTreeNodeChildren,
 } from "./utils";
 
 export interface DatasetReferencePickerProps {
@@ -51,7 +47,6 @@ export const DatasetReferencePicker = ({
     string | undefined
   >();
   const [treeData, setTreeData] = useState<DatasetTreeNode[]>([]);
-  const { errorAlert } = useAlert();
 
   // Load initial datasets (minimal data)
   const { data: datasets, isLoading: datasetsLoading } =
@@ -66,9 +61,7 @@ export const DatasetReferencePicker = ({
     { skip: !selectedDataset },
   );
 
-  const [getDatasetByKey] = useLazyGetDatasetByKeyQuery();
-
-  // Transform selected dataset into tree data for collections
+  // Transform selected dataset into tree data with all collections and fields pre-loaded
   const collectionTreeData = useMemo(() => {
     if (!selectedDatasetData || !selectedDataset) {
       return [];
@@ -81,7 +74,14 @@ export const DatasetReferencePicker = ({
         value: `${selectedDataset}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
         isLeaf: false,
         selectable: false, // Collections are not selectable
-        children: undefined,
+        children: collection.fields
+          ? transformFieldsToTreeNodes(
+              collection.fields,
+              selectedDataset,
+              collection.name,
+              "",
+            )
+          : undefined,
       })) || []
     );
   }, [selectedDatasetData, selectedDataset]);
@@ -123,50 +123,6 @@ export const DatasetReferencePicker = ({
       label: dataset.name || dataset.fides_key,
     }));
   }, [datasets]);
-
-  // Async load collection fields
-  const loadData = useCallback(
-    async (treeNode: any) => {
-      if (!selectedDataset) {
-        return;
-      }
-
-      const nodeKey = treeNode.key as string;
-      const [, collectionName] = nodeKey.split(DATASET_REFERENCE_SEPARATOR);
-
-      if (!collectionName) {
-        return;
-      }
-
-      try {
-        const dataset = await getDatasetByKey(selectedDataset).unwrap();
-
-        const collection = dataset.collections?.find(
-          (c: DatasetCollection) => c.name === collectionName,
-        );
-
-        if (collection && collection.fields) {
-          const fieldNodes = transformFieldsToTreeNodes(
-            collection.fields,
-            selectedDataset,
-            collectionName,
-            "",
-          );
-          setTreeData((prev) =>
-            updateTreeNodeChildren(prev, nodeKey, fieldNodes),
-          );
-        }
-      } catch (error: any) {
-        const errorMessage = getErrorMessage(
-          error,
-          "Failed to load collection fields",
-        );
-        errorAlert(errorMessage);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedDataset],
-  );
 
   // Handle dataset selection change
   const handleDatasetChange = useCallback(
@@ -225,7 +181,6 @@ export const DatasetReferencePicker = ({
         value={selectedFieldReference}
         onChange={handleFieldChange}
         treeData={treeData}
-        loadData={loadData}
         placeholder="Select a field"
         disabled={disabled || !selectedDataset}
         allowClear
