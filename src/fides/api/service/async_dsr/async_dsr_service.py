@@ -115,8 +115,6 @@ def execute_read_polling_requests(
     async_task: RequestTask,
     query_config: SaaSQueryConfig,
     connector: SaaSConnector,
-    node: ExecutionNode,
-    input_data: NodeInput,
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
     read_requests = query_config.get_read_requests_by_identity()
@@ -135,20 +133,12 @@ def execute_read_polling_requests(
 
             status = strategy.get_status_request(
                 client,
-                node,
-                policy,
-                privacy_request,
-                input_data,
                 secrets,
             )
 
             if status:
                 result = strategy.get_result_request(
                     client,
-                    node,
-                    policy,
-                    privacy_request,
-                    input_data,
                     secrets,
                 )
 

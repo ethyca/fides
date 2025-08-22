@@ -29,22 +29,10 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         self.result_request = configuration.result_request
         self.result_path = configuration.result_path
 
-    def start_request(
-        self,
-        request_params: SaaSRequestParams,
-        connector_params: Dict[str, Any],
-        response: Response,
-        data_path: Optional[str],
-    ) -> Optional[SaaSRequestParams]:
-        pass
 
     def get_status_request(
         self,
         client: AuthenticatedClient,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        input_data: Dict[str, List[Any]],
         secrets: Dict[str, Any],
     ) -> bool:
         """Executes the status requests, and move forward if its true"""
@@ -69,10 +57,6 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
     def get_result_request(
         self,
         client: AuthenticatedClient,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        input_data: Dict[str, List[Any]],
         secrets: Dict[str, Any],
     ) -> List[Row]:
         """Build request to get the result of the async DSR process"""
