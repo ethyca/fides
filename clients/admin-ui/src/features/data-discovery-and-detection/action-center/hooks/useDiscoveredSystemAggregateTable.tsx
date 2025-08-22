@@ -201,7 +201,9 @@ export const useDiscoveredSystemAggregateTable = ({
         successToastParams(
           SuccessToastContent(
             `${totalUpdates} assets have been ignored and will not appear in future scans.`,
-            () => onTabChange(ActionCenterTabHash.IGNORED),
+            async () => {
+              await onTabChange(ActionCenterTabHash.IGNORED);
+            },
           ),
         ),
       );

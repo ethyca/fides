@@ -24,7 +24,7 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
   allowIgnore?: boolean;
-  onTabChange: (tab: ActionCenterTabHash) => void;
+  onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   consentStatus?: ConsentAlertInfo;
   rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
 }

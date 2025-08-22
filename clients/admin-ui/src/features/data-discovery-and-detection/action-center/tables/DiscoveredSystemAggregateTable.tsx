@@ -62,9 +62,9 @@ export const DiscoveredSystemAggregateTable = ({
           label: tab.label,
         }))}
         selectedKeys={[activeTab]}
-        onClick={(menuInfo) =>
-          handleTabChange(menuInfo.key as ActionCenterTabHash)
-        }
+        onClick={async (menuInfo) => {
+          await handleTabChange(menuInfo.key as ActionCenterTabHash);
+        }}
         className="mb-4"
         data-testid="asset-state-filter"
       />
