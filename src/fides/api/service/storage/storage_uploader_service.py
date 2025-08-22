@@ -82,7 +82,11 @@ def _s3_uploader(
     data: Dict,
     privacy_request: PrivacyRequest,
 ) -> str:
-    """Constructs necessary info needed for s3 before calling upload using streaming approach"""
+    """
+    Constructs necessary info needed for s3 before calling upload.
+    If `enable_streaming` is configured in the storage config, we use a streaming approach for better memory efficiency. 
+    Otherwise we fall back to the traditional upload method.
+    """
     file_key: str = _construct_file_key(privacy_request.id, config)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
