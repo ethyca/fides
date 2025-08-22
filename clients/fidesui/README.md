@@ -23,3 +23,16 @@ Some things that may not belong in this repo ([original discussion](https://gith
 ## How to use
 
 This package is included in both the `admin-ui` and `privacy-center` NextJS applications as a turbo Internal Package called `fidesui` and will automatically get bundled in those projects by NextJS using `transpileModules`. This means that you can import components from this package directly in your NextJS application and there is no reason to prebuild these components. When making changes or creating new components here it's important to test them in the consuming applications to ensure that they work as expected.
+
+## Storybook
+
+The goal of this Storybook project is to keep an authoritative record of how to make design decisions and how to use our component library to implement them.
+To get started, you can run `turbo run storybook` from the root of the `/clients` directory.
+Docs on how to write stories can be found here: https://storybook.js.org/docs/writing-stories
+
+#### Roadmap
+
+- [x] Initial project setup
+- [ ] Host on Chromatic or similar platform
+- [ ] Implement Autodocs/MDX
+- [ ] Migrate all existing design decisions from confluence and other sources

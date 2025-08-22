@@ -1,6 +1,11 @@
 import { CellContext } from "@tanstack/react-table";
-import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
-import React, { useState } from "react";
+import {
+  AntTag as Tag,
+  AntTooltip as Tooltip,
+  formatIsoLocation,
+  isoStringToEntry,
+} from "fidesui";
+import React, { ReactNode, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell } from "~/features/common/table/v2/cells";
@@ -23,13 +28,17 @@ export const MechanismCell = (value: ConsentMechanism | undefined) => {
 
 export const getRegions = (
   regions: PrivacyNoticeRegion[] | undefined,
-): string[] => {
+): (string | ReactNode)[] => {
   if (!regions) {
     return [];
   }
-  const values: string[] = [];
+  const values: (string | ReactNode)[] = [];
   regions.forEach((region) => {
-    const value = PRIVACY_NOTICE_REGION_MAP.get(region);
+    const isoEntry = isoStringToEntry(region);
+    const value = isoEntry
+      ? formatIsoLocation({ isoEntry, showFlag: true })
+      : PRIVACY_NOTICE_REGION_MAP.get(region);
+
     if (value !== undefined) {
       values.push(value);
     }
