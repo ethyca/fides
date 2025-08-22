@@ -139,7 +139,7 @@ def update_storage_secrets_s3(
     # Handle the case where secrets come from database as dict[str, Any]
     # Check if keys are string values of StorageSecrets enum
     if all(isinstance(k, str) for k in storage_secrets.keys()):
-        # Keys are already strings, check if they match StorageSecrets enum values
+                # Keys are already strings, check if they match StorageSecrets enum values
         storage_secret_values = {secret.value for secret in StorageSecrets}
         if all(k in storage_secret_values for k in storage_secrets.keys()):
             logger.info(
@@ -152,6 +152,7 @@ def update_storage_secrets_s3(
             [k for k in storage_secrets.keys() if k not in storage_secret_values],
         )
         # Still return as-is since this might be a valid case
+        return storage_secrets
 
     # Handle the case where keys are StorageSecrets enum objects
     try:
