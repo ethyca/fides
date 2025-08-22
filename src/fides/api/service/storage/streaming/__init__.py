@@ -7,10 +7,8 @@ from .retry import (
     RetryConfig,
     TransientError,
     create_retry_config_from_settings,
-    is_s3_transient_error,
     is_transient_error,
     retry_cloud_storage_operation,
-    retry_s3_operation,
     retry_with_backoff,
 )
 from .s3.s3_storage_client import S3StorageClient
@@ -38,9 +36,7 @@ __all__ = [
     "TransientError",
     "PermanentError",
     "retry_with_backoff",
-    "retry_s3_operation",
     "retry_cloud_storage_operation",
     "create_retry_config_from_settings",
     "is_transient_error",
-    "is_s3_transient_error",
 ]

@@ -17,14 +17,13 @@ class StorageClientFactory:
     """
 
     @staticmethod
-    def create_client(
-        storage_type: str, storage_secrets: dict[str, Any]
-    ) -> BaseStorageClient:
+    def create_client(storage_type: str, storage_secrets: Any) -> BaseStorageClient:
         """Create a provider-specific storage client.
 
         Args:
             storage_type: Type of storage ('s3', 'gcs', 'azure')
-            storage_secrets: Storage credentials and configuration
+            storage_secrets: Storage credentials and configuration.
+                           Will be passed to the specific storage client implementation.
 
         Returns:
             Provider-specific storage client implementation

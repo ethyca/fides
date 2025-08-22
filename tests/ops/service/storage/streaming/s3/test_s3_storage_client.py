@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
+from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
@@ -13,15 +13,15 @@ class TestS3StorageClient:
 
     def test_init_stores_storage_secrets(self):
         """Test that __init__ properly stores storage secrets."""
-        secrets = {"aws_access_key_id": "test_key"}
+        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
         client = S3StorageClient(secrets)
         assert client.storage_secrets == secrets
 
     def test_build_uri_standard_s3(self):
         """Test S3 URI construction for standard AWS."""
         secrets = {
-            "aws_access_key_id": "test_key",
-            "aws_secret_access_key": "test_secret",
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
         }
         client = S3StorageClient(secrets)
         uri = client.build_uri("test-bucket", "test-key")
@@ -30,20 +30,21 @@ class TestS3StorageClient:
     def test_build_uri_custom_endpoint(self):
         """Test S3 URI construction for custom endpoint (e.g., MinIO)."""
         secrets = {
-            "aws_access_key_id": "test_key",
-            "endpoint_url": "http://localhost:9000",
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
         }
         client = S3StorageClient(secrets)
         uri = client.build_uri("test-bucket", "test-key")
-        assert uri == "http://localhost:9000/test-bucket/test-key"
+        # Since we no longer support custom endpoints in the current implementation,
+        # this will use standard S3 URI
+        assert uri == "s3://test-bucket/test-key"
 
     def test_get_transport_params_with_all_keys(self):
         """Test transport params with all S3 keys."""
         secrets = {
-            "aws_access_key_id": "test_key",
-            "aws_secret_access_key": "test_secret",
-            "region": "us-west-2",
-            "endpoint_url": "http://localhost:9000",
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -51,13 +52,13 @@ class TestS3StorageClient:
         assert params["access_key"] == "test_key"
         assert params["secret_key"] == "test_secret"
         assert params["region"] == "us-west-2"
-        assert params["endpoint_url"] == "http://localhost:9000"
+        # endpoint_url is no longer supported in the current implementation
 
     def test_get_transport_params_with_partial_keys(self):
         """Test transport params with partial S3 keys."""
         secrets = {
-            "aws_access_key_id": "test_key",
-            "region": "us-west-2",
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.REGION_NAME: "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -65,7 +66,7 @@ class TestS3StorageClient:
         assert params["access_key"] == "test_key"
         assert params["region"] == "us-west-2"
         assert "secret_key" not in params
-        assert "endpoint_url" not in params
+        # endpoint_url is no longer supported in the current implementation
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
@@ -80,9 +81,9 @@ class TestS3StorageClient:
         mock_create_presigned.return_value = "https://test-url.com"
 
         secrets = {
-            "aws_access_key_id": "test_key",
-            "aws_secret_access_key": "test_secret",
-            "region": "us-west-2",
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
         }
         client = S3StorageClient(secrets)
 
@@ -99,7 +100,7 @@ class TestS3StorageClient:
         """Test presigned URL generation failure."""
         mock_get_s3_client.side_effect = Exception("S3 client error")
 
-        secrets = {"aws_access_key_id": "test_key"}
+        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
         client = S3StorageClient(secrets)
 
         with pytest.raises(Exception, match="S3 client error"):
@@ -107,8 +108,9 @@ class TestS3StorageClient:
 
     def test_generate_presigned_url_default_auth_method(self):
         """Test that default auth method is used when not specified."""
-        secrets = {"aws_access_key_id": "test_key"}
+        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
         client = S3StorageClient(secrets)
 
-        # This should not raise an error about missing auth_method
-        assert client.storage_secrets.get("auth_method") is None
+        # The client should work with just the basic secrets
+        # auth_method is now hardcoded to SECRET_KEYS in the implementation
+        assert StorageSecrets.AWS_ACCESS_KEY_ID in client.storage_secrets

@@ -2,6 +2,7 @@
 
 import pytest
 
+from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 from fides.api.service.storage.streaming.storage_client_factory import (
     StorageClientFactory,
@@ -13,7 +14,7 @@ class TestStorageClientFactory:
 
     def test_create_s3_client(self):
         """Test creating an S3 storage client."""
-        secrets = {"aws_access_key_id": "test_key"}
+        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
         client = StorageClientFactory.create_client("s3", secrets)
 
         assert isinstance(client, S3StorageClient)
@@ -21,7 +22,7 @@ class TestStorageClientFactory:
 
     def test_create_client_case_insensitive(self):
         """Test that storage type is case insensitive."""
-        secrets = {"aws_access_key_id": "test_key"}
+        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
 
         # Test uppercase
         client_upper = StorageClientFactory.create_client("S3", secrets)

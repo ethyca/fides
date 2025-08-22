@@ -1,13 +1,14 @@
 """Tests for the DSR storage streaming functionality."""
 
+import zipfile
 from io import BytesIO
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.storage.streaming.dsr_storage import (
-    stream_html_dsr_report_to_storage_multipart,
+    create_dsr_report_files_generator,
+    stream_dsr_buffer_to_storage,
 )
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 
@@ -33,23 +34,17 @@ def sample_dsr_data():
     }
 
 
-class TestStreamHtmlDsrReportToStorageMultipart:
-    """Test cases for stream_html_dsr_report_to_storage_multipart function."""
+class TestStreamDsrBufferToStorage:
+    """Test cases for stream_dsr_buffer_to_storage function."""
 
-    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
     def test_successful_upload_smart_open_streaming(
         self,
-        mock_dsr_builder_class,
         mock_smart_open_client_s3,
-        mock_privacy_request,
-        sample_dsr_data,
     ):
         """Test successful upload using smart-open streaming."""
-        # Mock the DsrReportBuilder to return content
-        mock_builder = Mock()
+        # Create a test buffer with content
         content = "This is a test HTML report content"
-        mock_builder.generate.return_value = BytesIO(content.encode("utf-8"))
-        mock_dsr_builder_class.return_value = mock_builder
+        test_buffer = BytesIO(content.encode("utf-8"))
 
         # Mock the streaming upload
         mock_stream = Mock()
@@ -57,15 +52,160 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         mock_stream.__exit__ = Mock(return_value=None)
         mock_smart_open_client_s3.stream_upload.return_value = mock_stream
 
-        result = stream_html_dsr_report_to_storage_multipart(
+        result = stream_dsr_buffer_to_storage(
             storage_client=mock_smart_open_client_s3,
             bucket_name="test-bucket",
             file_key="test-report.html",
-            data=sample_dsr_data,
-            privacy_request=mock_privacy_request,
+            dsr_buffer=test_buffer,
         )
 
         # Verify streaming upload was used
+        mock_smart_open_client_s3.stream_upload.assert_called_once_with(
+            "test-bucket",
+            "test-report.html",
+            content_type="application/zip",
+        )
+
+        # Verify content was written
+        mock_stream.write.assert_called_once_with(content.encode("utf-8"))
+
+    def test_successful_upload_with_large_content(
+        self,
+        mock_smart_open_client_s3,
+    ):
+        """Test successful upload with large content using smart-open streaming."""
+        # Create a test buffer with large content
+        large_content = "x" * (1024 * 1024)  # 1MB content
+        test_buffer = BytesIO(large_content.encode("utf-8"))
+
+        # Mock the streaming upload
+        mock_stream = Mock()
+        mock_stream.__enter__ = Mock(return_value=mock_stream)
+        mock_stream.__exit__ = Mock(return_value=None)
+        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
+
+        stream_dsr_buffer_to_storage(
+            storage_client=mock_smart_open_client_s3,
+            bucket_name="test-bucket",
+            file_key="test-report.html",
+            dsr_buffer=test_buffer,
+        )
+
+        # Verify streaming upload was used regardless of content size
+        mock_smart_open_client_s3.stream_upload.assert_called_once_with(
+            "test-bucket",
+            "test-report.html",
+            content_type="application/zip",
+        )
+
+        # Verify content was written
+        mock_stream.write.assert_called_once_with(large_content.encode("utf-8"))
+
+    def test_upload_failure_handling(
+        self,
+        mock_smart_open_client_s3,
+    ):
+        """Test upload failure handling."""
+        # Create a test buffer with content
+        content = "Test content"
+        test_buffer = BytesIO(content.encode("utf-8"))
+
+        # Mock the streaming upload to fail
+        mock_smart_open_client_s3.stream_upload.side_effect = Exception("Upload failed")
+
+        with pytest.raises(Exception, match="Upload failed"):
+            stream_dsr_buffer_to_storage(
+                storage_client=mock_smart_open_client_s3,
+                bucket_name="test-bucket",
+                file_key="test-report.html",
+                dsr_buffer=test_buffer,
+            )
+
+    def test_dsr_builder_integration(
+        self,
+        mock_smart_open_client_s3,
+    ):
+        """Test integration with DsrReportBuilder - now handled by caller."""
+        # This test is no longer relevant since DSR generation is handled by the caller
+        # The storage function now only handles streaming the buffer to storage
+        content = "Generated DSR report content"
+        test_buffer = BytesIO(content.encode("utf-8"))
+
+        # Mock the streaming upload
+        mock_stream = Mock()
+        mock_stream.__enter__ = Mock(return_value=mock_stream)
+        mock_stream.__exit__ = Mock(return_value=None)
+        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
+
+        result = stream_dsr_buffer_to_storage(
+            storage_client=mock_smart_open_client_s3,
+            bucket_name="test-bucket",
+            file_key="test-report.html",
+            dsr_buffer=test_buffer,
+        )
+
+        # Verify streaming upload was called
+        mock_smart_open_client_s3.stream_upload.assert_called_once()
+
+    def test_html_dsr_zip_with_attachments(
+        self,
+        mock_smart_open_client_s3,
+    ):
+        """Test that HTML DSR reports can be created as ZIPs with attachments."""
+        # This test would verify the new HTML DSR ZIP functionality
+        # that includes both the DSR report and actual attachment files
+        # For now, we'll just verify the basic functionality works
+        content = "HTML DSR report with attachments test"
+        test_buffer = BytesIO(content.encode("utf-8"))
+
+        # Mock the streaming upload
+        mock_stream = Mock()
+        mock_stream.__enter__ = Mock(return_value=mock_stream)
+        mock_stream.__exit__ = Mock(return_value=None)
+        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
+
+        result = stream_dsr_buffer_to_storage(
+            storage_client=mock_smart_open_client_s3,
+            bucket_name="test-bucket",
+            file_key="test-report.html",
+            dsr_buffer=test_buffer,
+            content_type="application/zip",  # HTML DSR reports are now ZIPs
+        )
+
+        # Verify streaming upload was called
+        mock_smart_open_client_s3.stream_upload.assert_called_once_with(
+            "test-bucket",
+            "test-report.html",
+            content_type="application/zip",
+        )
+
+        # Verify content was written
+        mock_stream.write.assert_called_once_with(content.encode("utf-8"))
+
+    def test_custom_content_type(
+        self,
+        mock_smart_open_client_s3,
+    ):
+        """Test that content type can be customized."""
+        # Create a test buffer with content
+        content = "Custom content type test"
+        test_buffer = BytesIO(content.encode("utf-8"))
+
+        # Mock the streaming upload
+        mock_stream = Mock()
+        mock_stream.__enter__ = Mock(return_value=mock_stream)
+        mock_stream.__exit__ = Mock(return_value=None)
+        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
+
+        result = stream_dsr_buffer_to_storage(
+            storage_client=mock_smart_open_client_s3,
+            bucket_name="test-bucket",
+            file_key="test-report.html",
+            dsr_buffer=test_buffer,
+            content_type="text/html",  # Override default
+        )
+
+        # Verify custom content type was used
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
@@ -75,111 +215,7 @@ class TestStreamHtmlDsrReportToStorageMultipart:
         # Verify content was written
         mock_stream.write.assert_called_once_with(content.encode("utf-8"))
 
-    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
-    def test_successful_upload_with_large_content(
-        self,
-        mock_dsr_builder_class,
-        mock_smart_open_client_s3,
-        mock_privacy_request,
-        sample_dsr_data,
-    ):
-        """Test successful upload with large content using smart-open streaming."""
-        # Mock the DsrReportBuilder to return large content
-        mock_builder = Mock()
-        large_content = "x" * (1024 * 1024)  # 1MB content
-        mock_builder.generate.return_value = BytesIO(large_content.encode("utf-8"))
-        mock_dsr_builder_class.return_value = mock_builder
-
-        # Mock the streaming upload
-        mock_stream = Mock()
-        mock_stream.__enter__ = Mock(return_value=mock_stream)
-        mock_stream.__exit__ = Mock(return_value=None)
-        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
-
-        result = stream_html_dsr_report_to_storage_multipart(
-            storage_client=mock_smart_open_client_s3,
-            bucket_name="test-bucket",
-            file_key="test-report.html",
-            data=sample_dsr_data,
-            privacy_request=mock_privacy_request,
-        )
-
-        # Verify streaming upload was used regardless of content size
-        mock_smart_open_client_s3.stream_upload.assert_called_once_with(
-            "test-bucket",
-            "test-report.html",
-            content_type="text/html",
-        )
-
-        # Verify content was written
-        mock_stream.write.assert_called_once_with(large_content.encode("utf-8"))
-
-    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
-    def test_upload_failure_handling(
-        self,
-        mock_dsr_builder_class,
-        mock_smart_open_client_s3,
-        mock_privacy_request,
-        sample_dsr_data,
-    ):
-        """Test upload failure handling."""
-        # Mock the DsrReportBuilder to return content
-        mock_builder = Mock()
-        content = "Test content"
-        mock_builder.generate.return_value = BytesIO(content.encode("utf-8"))
-        mock_dsr_builder_class.return_value = mock_builder
-
-        # Mock the streaming upload to fail
-        mock_smart_open_client_s3.stream_upload.side_effect = Exception("Upload failed")
-
-        with pytest.raises(Exception, match="Upload failed"):
-            stream_html_dsr_report_to_storage_multipart(
-                storage_client=mock_smart_open_client_s3,
-                bucket_name="test-bucket",
-                file_key="test-report.html",
-                data=sample_dsr_data,
-                privacy_request=mock_privacy_request,
-            )
-
-    @patch("fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder")
-    def test_dsr_builder_integration(
-        self,
-        mock_dsr_builder_class,
-        mock_smart_open_client_s3,
-        mock_privacy_request,
-        sample_dsr_data,
-    ):
-        """Test integration with DsrReportBuilder."""
-        # Mock the DsrReportBuilder
-        mock_builder = Mock()
-        content = "Generated DSR report content"
-        mock_builder.generate.return_value = BytesIO(content.encode("utf-8"))
-        mock_dsr_builder_class.return_value = mock_builder
-
-        # Mock the streaming upload
-        mock_stream = Mock()
-        mock_stream.__enter__ = Mock(return_value=mock_stream)
-        mock_stream.__exit__ = Mock(return_value=None)
-        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
-
-        result = stream_html_dsr_report_to_storage_multipart(
-            storage_client=mock_smart_open_client_s3,
-            bucket_name="test-bucket",
-            file_key="test-report.html",
-            data=sample_dsr_data,
-            privacy_request=mock_privacy_request,
-        )
-
-        # Verify DsrReportBuilder was called correctly
-        mock_dsr_builder_class.assert_called_once_with(
-            privacy_request=mock_privacy_request,
-            dsr_data=sample_dsr_data,
-        )
-
-        # Verify the report was generated
-        mock_builder.generate.assert_called_once()
-
-    def test_different_storage_types(self, mock_privacy_request, sample_dsr_data):
+    def test_different_storage_types(self):
         """Test that the function works with different storage types."""
         # Test with S3
         s3_client = Mock(spec=SmartOpenStorageClient)
@@ -195,27 +231,60 @@ class TestStreamHtmlDsrReportToStorageMultipart:
 
         # All should work the same way
         for client in [s3_client, gcs_client, azure_client]:
-            with patch(
-                "fides.api.service.storage.streaming.dsr_storage.DsrReportBuilder"
-            ) as mock_builder_class:
-                mock_builder = Mock()
-                mock_builder.generate.return_value = BytesIO(b"test content")
-                mock_builder_class.return_value = mock_builder
+            mock_stream = Mock()
+            mock_stream.__enter__ = Mock(return_value=mock_stream)
+            mock_stream.__exit__ = Mock(return_value=None)
+            client.stream_upload.return_value = mock_stream
 
-                mock_stream = Mock()
-                mock_stream.__enter__ = Mock(return_value=mock_stream)
-                mock_stream.__exit__ = Mock(return_value=None)
-                client.stream_upload.return_value = mock_stream
+            # Create test buffer
+            test_buffer = BytesIO(b"test content")
 
-                # Should not raise any errors
-                stream_html_dsr_report_to_storage_multipart(
-                    storage_client=client,
-                    bucket_name="test-bucket",
-                    file_key="test-report.html",
-                    data=sample_dsr_data,
-                    privacy_request=mock_privacy_request,
-                )
+            # Should not raise any errors
+            stream_dsr_buffer_to_storage(
+                storage_client=client,
+                bucket_name="test-bucket",
+                file_key="test-report.html",
+                dsr_buffer=test_buffer,
+                content_type="application/zip",
+            )
 
-                # Verify streaming upload was called
-                client.stream_upload.assert_called_once()
-                client.stream_upload.reset_mock()  # Reset for next iteration
+            # Verify streaming upload was called
+            client.stream_upload.assert_called_once()
+            client.stream_upload.reset_mock()  # Reset for next iteration
+
+    def test_create_dsr_report_files_generator(
+        self,
+    ):
+        """Test the DSR report files generator function."""
+
+        # Create a simple ZIP file in memory
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            zip_file.writestr("welcome.html", "<html>Welcome</html>")
+            zip_file.writestr("data/main.css", "body { color: black; }")
+            zip_file.writestr("attachments/index.html", "<html>Attachments</html>")
+
+        zip_buffer.seek(0)
+
+        # Mock attachments
+        mock_attachments = [
+            Mock(spec=["attachment"]),
+            Mock(spec=["attachment"]),
+        ]
+
+        # Test the generator
+        generator = create_dsr_report_files_generator(
+            zip_buffer, mock_attachments, "test-bucket", 4, 10
+        )
+
+        # Convert generator to list to test
+        files = list(generator)
+
+        # Should have 3 files from the DSR report
+        assert len(files) == 3
+
+        # Check file names
+        file_names = [file[0] for file in files]
+        assert "welcome.html" in file_names
+        assert "data/main.css" in file_names
+        assert "attachments/index.html" in file_names

@@ -14,8 +14,12 @@ from stream_zip import _ZIP_32_TYPE, stream_zip
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    DsrReportBuilder,
+)
 from fides.api.service.storage.streaming.dsr_storage import (
-    stream_html_dsr_report_to_storage_multipart,
+    create_dsr_report_files_generator,
+    stream_dsr_buffer_to_storage,
 )
 from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
@@ -502,14 +506,64 @@ class SmartOpenStreamingStorage:
                 )
 
             elif config.resp_format == ResponseFormat.html.value:
-                # For HTML, we need to handle the DSR report generation
-                stream_html_dsr_report_to_storage_multipart(
-                    self.storage_client,
-                    config.bucket_name,
-                    config.file_key,
-                    data,
-                    privacy_request,
-                )
+                # For HTML, we need to handle the DSR report generation AND attachments
+                # Generate the DSR report first, then create a ZIP with both report and attachments
+                dsr_buffer = DsrReportBuilder(
+                    privacy_request=privacy_request,
+                    dsr_data=data,
+                ).generate()
+
+                # Check if there are attachments to include
+                all_attachments = self._collect_and_validate_attachments(data)
+
+                if not all_attachments:
+                    # No attachments, just upload the DSR report
+                    stream_dsr_buffer_to_storage(
+                        self.storage_client,
+                        config.bucket_name,
+                        config.file_key,
+                        dsr_buffer,
+                    )
+                else:
+                    # Create a ZIP containing both the DSR report and attachments
+                    logger.info(
+                        f"Creating HTML DSR report ZIP with {len(all_attachments)} attachments"
+                    )
+
+                    # Create ZIP generator with DSR report files
+                    dsr_files_generator = create_dsr_report_files_generator(
+                        dsr_buffer,
+                        all_attachments,
+                        config.bucket_name,
+                        config.max_workers,
+                        batch_size,
+                    )
+
+                    # Create ZIP generator with attachment files
+                    attachment_files_generator = self._create_attachment_files(
+                        all_attachments,
+                        config.bucket_name,
+                        config.max_workers,
+                        batch_size,
+                    )
+
+                    # Combine both generators and stream the complete ZIP to storage
+                    with self.storage_client.stream_upload(
+                        config.bucket_name,
+                        config.file_key,
+                        content_type="application/zip",
+                    ) as upload_stream:
+                        # First stream the DSR report files
+                        for chunk in stream_zip(dsr_files_generator):
+                            upload_stream.write(chunk)
+
+                        # Then stream the attachment files
+                        for chunk in stream_zip(attachment_files_generator):
+                            upload_stream.write(chunk)
+
+                    logger.info(
+                        f"Successfully uploaded HTML DSR report ZIP with attachments: {config.file_key}"
+                    )
 
             else:
                 raise ValueError(f"Unsupported response format: {config.resp_format}")

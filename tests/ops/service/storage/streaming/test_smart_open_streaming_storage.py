@@ -1,12 +1,10 @@
 """Tests for SmartOpenStreamingStorage class."""
 
 import json
-from datetime import datetime
-from io import BytesIO, StringIO
-from unittest.mock import MagicMock, Mock, create_autospec, patch
+from io import BytesIO
+from unittest.mock import MagicMock, patch
 
 import pytest
-from stream_zip import _ZIP_32_TYPE
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat
@@ -409,8 +407,9 @@ class TestSmartOpenStreamingStorage:
         # Mock the stream_read to return our mock stream
         mock_stream = MagicMock()
         mock_stream.read.side_effect = [b"chunk1", b"chunk2", b""]
-        mock_stream.__enter__ = Mock(return_value=mock_stream)
-        mock_stream.__exit__ = Mock(return_value=None)
+        # Set up context manager methods properly
+        mock_stream.__enter__ = MagicMock(return_value=mock_stream)
+        mock_stream.__exit__ = MagicMock(return_value=None)
         mock_smart_open_client.stream_read.return_value = mock_stream
 
         result = list(
@@ -457,7 +456,7 @@ class TestSmartOpenStreamingStorage:
         assert result[0].attachment.file_name == "doc1.pdf"
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_html_dsr_report_to_storage_multipart"
+        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
     def test_upload_to_storage_streaming_csv(
         self, mock_html_report, mock_smart_open_client, mock_privacy_request
@@ -480,7 +479,7 @@ class TestSmartOpenStreamingStorage:
         mock_html_report.assert_not_called()
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_html_dsr_report_to_storage_multipart"
+        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
     def test_upload_to_storage_streaming_json(
         self, mock_html_report, mock_smart_open_client, mock_privacy_request
@@ -503,7 +502,7 @@ class TestSmartOpenStreamingStorage:
         mock_html_report.assert_not_called()
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_html_dsr_report_to_storage_multipart"
+        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
     def test_upload_to_storage_streaming_html(
         self, mock_html_report, mock_smart_open_client, mock_privacy_request

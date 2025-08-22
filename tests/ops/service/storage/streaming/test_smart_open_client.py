@@ -5,6 +5,7 @@ from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 
+from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 from fides.api.service.storage.streaming.storage_client_factory import (
@@ -18,9 +19,9 @@ class TestSmartOpenStorageClient:
     def test_init_with_s3_storage_type(self):
         """Test initialization with S3 storage type."""
         storage_secrets = {
-            "aws_access_key_id": "test_key",
-            "aws_secret_access_key": "test_secret",
-            "aws_region": "us-east-1",
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-east-1",
         }
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:
@@ -37,8 +38,10 @@ class TestSmartOpenStorageClient:
 
     def test_init_with_gcs_storage_type(self):
         """Test initialization with GCS storage type."""
+        # GCS is not yet implemented, so we'll use a mock that doesn't require real secrets
         storage_secrets = {
-            "google_service_account_info": '{"type": "service_account"}',
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",  # Use S3 secrets for testing
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
         }
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:

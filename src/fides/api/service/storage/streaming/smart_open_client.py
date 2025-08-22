@@ -29,12 +29,13 @@ class SmartOpenStorageClient:
 
     min_part_size: int = MIN_PART_SIZE
 
-    def __init__(self, storage_type: str, storage_secrets: dict[str, Any]):
+    def __init__(self, storage_type: str, storage_secrets: Any):
         """Initialize the smart-open storage client.
 
         Args:
             storage_type: Type of storage ('s3', 'gcs', 'azure')
-            storage_secrets: Storage credentials and configuration
+            storage_secrets: Storage credentials and configuration.
+                           Will be passed to the specific storage client implementation.
         """
         self.storage_type = StorageClientFactory._normalize_storage_type(storage_type)
         self.storage_secrets = storage_secrets

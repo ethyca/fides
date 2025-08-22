@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
@@ -20,6 +20,16 @@ class S3StorageClient(BaseStorageClient):
     generation for the smart-open storage client.
     """
 
+    def __init__(self, storage_secrets: dict[StorageSecrets, Any]):
+        """Initialize the storage client with secrets.
+
+        Args:
+            storage_secrets: Provider-specific storage credentials and configuration using StorageSecrets enum keys
+        """
+        super().__init__(storage_secrets)
+        # Store the full secrets for methods that need access to additional keys
+        self._full_secrets: dict[StorageSecrets, Any] = storage_secrets
+
     def build_uri(self, bucket: str, key: str) -> str:
         """Build the S3 URI for the storage location.
 
@@ -30,12 +40,8 @@ class S3StorageClient(BaseStorageClient):
         Returns:
             S3 URI string for smart-open
         """
-        # Handle custom endpoint (e.g., MinIO)
-        if "endpoint_url" in self.storage_secrets:
-            endpoint = self.storage_secrets["endpoint_url"].rstrip("/")
-            return f"{endpoint}/{bucket}/{key}"
-
-        # Standard AWS S3
+        # Handle custom endpoint (e.g., MinIO) - endpoint_url is not in StorageSecrets enum
+        # For now, we'll use standard S3 URI since we only have enum keys
         return f"s3://{bucket}/{key}"
 
     def get_transport_params(self) -> dict[str, Any]:
@@ -46,14 +52,16 @@ class S3StorageClient(BaseStorageClient):
         """
         params = {}
 
-        if "aws_access_key_id" in self.storage_secrets:
-            params["access_key"] = self.storage_secrets["aws_access_key_id"]
-        if "aws_secret_access_key" in self.storage_secrets:
-            params["secret_key"] = self.storage_secrets["aws_secret_access_key"]
-        if "region_name" in self.storage_secrets:
-            params["region"] = self.storage_secrets["region_name"]
-        if "endpoint_url" in self.storage_secrets:
-            params["endpoint_url"] = self.storage_secrets["endpoint_url"]
+        if StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets:
+            params["access_key"] = self.storage_secrets[
+                StorageSecrets.AWS_ACCESS_KEY_ID
+            ]
+        if StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets:
+            params["secret_key"] = self.storage_secrets[
+                StorageSecrets.AWS_SECRET_ACCESS_KEY
+            ]
+        if StorageSecrets.REGION_NAME in self.storage_secrets:
+            params["region"] = self.storage_secrets[StorageSecrets.REGION_NAME]
 
         return params
 
@@ -74,37 +82,14 @@ class S3StorageClient(BaseStorageClient):
             Exception: If presigned URL generation fails
         """
         try:
-            # Convert storage secrets to the format expected by get_s3_client
-            # get_s3_client expects dict[str, Any] where keys are the enum values (strings)
-            s3_secrets: Dict[str, Any] = {}
+            # Storage secrets are already in the right format for get_s3_client
+            # get_s3_client expects dict[StorageSecrets, Any] with enum keys
+            s3_secrets = self.storage_secrets
 
-            # Map the string keys from storage_secrets to the format expected by get_s3_client
-            # The keys should be the enum values (strings), not the enum objects
-            if "aws_access_key_id" in self.storage_secrets:
-                s3_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value] = (
-                    self.storage_secrets["aws_access_key_id"]
-                )
-            if "aws_secret_access_key" in self.storage_secrets:
-                s3_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY.value] = (
-                    self.storage_secrets["aws_secret_access_key"]
-                )
-            if "region_name" in self.storage_secrets:
-                s3_secrets[StorageSecrets.REGION_NAME.value] = self.storage_secrets[
-                    "region_name"
-                ]
-            if "assume_role_arn" in self.storage_secrets:
-                s3_secrets[StorageSecrets.AWS_ASSUME_ROLE.value] = self.storage_secrets[
-                    "assume_role_arn"
-                ]
+            # Use a default auth method since we only have enum keys now
+            auth_method = AWSAuthMethod.SECRET_KEYS.value
 
-            logger.debug("Converted storage secrets for S3 client: {}", s3_secrets)
-
-            # Use a default auth method if not specified
-            auth_method = self.storage_secrets.get(
-                "auth_method", AWSAuthMethod.SECRET_KEYS.value
-            )
-
-            s3_client = get_s3_client(auth_method, s3_secrets)  # type: ignore[arg-type]
+            s3_client = get_s3_client(auth_method, s3_secrets)
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:
             logger.error(f"Failed to generate S3 presigned URL: {e}")

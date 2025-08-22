@@ -76,42 +76,6 @@ def is_transient_error(error: Exception) -> bool:
     return any(pattern in error_str for pattern in transient_patterns)
 
 
-def is_s3_transient_error(error: Exception) -> bool:
-    """
-    Determine if an S3-specific error is transient and should be retried.
-
-    This leverages AWS-specific error codes for optimal retry behavior.
-    """
-    try:
-        # Check if this is a boto3 ClientError with AWS error codes
-        if hasattr(error, "response") and hasattr(error.response, "get"):
-            error_code = error.response.get("Error", {}).get("Code", "")
-
-            # S3 transient error codes that should be retried
-            transient_codes = {
-                "ThrottlingException",
-                "RequestLimitExceeded",
-                "SlowDown",
-                "InternalError",
-                "ServiceUnavailable",
-                "RequestTimeout",
-                "NetworkingError",
-                "ConnectionError",
-                "Http500Error",
-                "Http502Error",
-                "Http503Error",
-                "Http504Error",
-            }
-
-            return error_code in transient_codes
-
-    except (AttributeError, KeyError):
-        pass
-
-    # Fall back to generic transient error detection
-    return is_transient_error(error)
-
-
 def calculate_backoff_delay(
     attempt: int,
     base_delay: float,
@@ -212,7 +176,7 @@ def retry_with_backoff(
                     should_retry = (
                         attempt < retry_config.max_retries
                         and isinstance(e, retry_config.retry_on_exceptions)
-                        and (is_transient_error(e) or is_s3_transient_error(e))
+                        and is_transient_error(e)
                     )
 
                     if not should_retry:
@@ -262,40 +226,6 @@ def retry_with_backoff(
         return wrapper
 
     return decorator
-
-
-def retry_s3_operation(
-    operation_name: str = "S3 operation",
-    max_retries: int = 3,
-    base_delay: float = 1.0,
-    max_delay: float = 30.0,
-    backoff_factor: float = 2.0,
-) -> Callable:
-    """
-    S3-optimized retry decorator with AWS-specific error handling.
-
-    This decorator provides optimal retry behavior for S3 operations
-    while maintaining cloud-agnostic compatibility.
-
-    Args:
-        operation_name: Name of the S3 operation
-        max_retries: Maximum number of retry attempts
-        base_delay: Base delay in seconds
-        max_delay: Maximum delay in seconds
-        backoff_factor: Multiplier for each attempt
-
-    Returns:
-        Decorated function with S3-optimized retry logic
-    """
-    retry_config = RetryConfig(
-        max_retries=max_retries,
-        base_delay=base_delay,
-        max_delay=max_delay,
-        backoff_factor=backoff_factor,
-        jitter=True,
-    )
-
-    return retry_with_backoff(retry_config=retry_config, operation_name=operation_name)
 
 
 def retry_cloud_storage_operation(

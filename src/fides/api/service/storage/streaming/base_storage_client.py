@@ -16,11 +16,12 @@ class BaseStorageClient(ABC):
     parameters, and presigned URL generation.
     """
 
-    def __init__(self, storage_secrets: dict[str, Any]):
+    def __init__(self, storage_secrets: Any):
         """Initialize the storage client with secrets.
 
         Args:
-            storage_secrets: Provider-specific storage credentials and configuration
+            storage_secrets: Provider-specific storage credentials and configuration.
+                           Derived classes will specify the exact type they expect.
         """
         self.storage_secrets = storage_secrets
 
