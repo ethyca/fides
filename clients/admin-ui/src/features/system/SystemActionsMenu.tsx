@@ -2,7 +2,10 @@ import { AntButton, AntDropdown, AntMessage, AntModal, Icons } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useBulkDeleteSystemsMutation } from "~/features/system/system.slice";
+import {
+  useBulkAssignStewardMutation,
+  useBulkDeleteSystemsMutation,
+} from "~/features/system/system.slice";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import { isErrorResult } from "~/types/errors";
 
@@ -13,6 +16,7 @@ interface SystemActionsMenuProps {
 const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
   const [messageApi, contextHolder] = AntMessage.useMessage();
   const [deleteModal, deleteModalIsOpen] = useState(false);
+  const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
   const { data: allUsers } = useGetAllUsersQuery({
     page: 1,
@@ -22,8 +26,21 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
 
   const [bulkDeleteSystems] = useBulkDeleteSystemsMutation();
 
-  const handleAssignSteward = (stewardId: string) => {
-    console.log("assign steward", stewardId, selectedRowKeys);
+  const handleAssignSteward = async (data_steward: string) => {
+    const result = await bulkAssignSteward({
+      data_steward,
+      system_keys: selectedRowKeys as string[],
+    });
+
+    if (isErrorResult(result)) {
+      messageApi.error(
+        getErrorMessage(result.error, "A problem occurred assigning stewards"),
+      );
+    } else {
+      messageApi.success(
+        `${selectedRowKeys.length} systems assigned to ${data_steward} successfully`,
+      );
+    }
   };
 
   const handleDelete = async () => {
@@ -62,9 +79,9 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
               key: "assign-data-steward",
               label: "Assign data steward",
               children: allUsers?.items?.map((user) => ({
-                key: user.id,
+                key: user.username,
                 label: user.username,
-                onClick: () => handleAssignSteward(user.id),
+                onClick: () => handleAssignSteward(user.username),
               })),
             },
             {

@@ -25,6 +25,11 @@ interface UpsertResponse {
   updated: number;
 }
 
+interface BulkAssignStewardRequest {
+  data_steward: string;
+  system_keys: string[];
+}
+
 export type ConnectionConfigSecretsRequest = {
   systemFidesKey: string;
   secrets: {
@@ -182,6 +187,14 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection", "System"],
     }),
+    bulkAssignSteward: build.mutation<void, BulkAssignStewardRequest>({
+      query: ({ data_steward, system_keys }) => ({
+        url: `/system/assign-steward`,
+        method: "POST",
+        body: { data_steward, system_keys },
+      }),
+      invalidatesTags: () => ["System"],
+    }),
   }),
 });
 
@@ -200,6 +213,7 @@ export const {
   useGetSystemConnectionConfigsQuery,
   usePatchSystemConnectionSecretsMutation,
   useLazyGetSystemByFidesKeyQuery,
+  useBulkAssignStewardMutation,
 } = systemApi;
 
 export interface State {
