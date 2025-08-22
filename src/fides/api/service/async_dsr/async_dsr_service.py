@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+from fides.api.models.worker_task import ExecutionLogStatus
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -22,6 +23,8 @@ from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.task.execute_request_tasks import (
     _build_upstream_access_data,
     create_graph_task,
+    log_task_queued,
+    queue_request_task,
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
@@ -35,14 +38,15 @@ def requeue_polling_request(
     """Re-queue a Privacy request that polling async tasks for a given privacy request"""
     # Check that the privacy request is approved or in processing
     privacy_request: PrivacyRequest = async_task.privacy_request
+    logger.info(f"Privacy request {privacy_request.id} status: {privacy_request.status.value}")
 
-    if privacy_request.status not in [
-        PrivacyRequestStatus.approved,
-        PrivacyRequestStatus.in_processing,
-    ]:
-        raise PrivacyRequestError(
-            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
-        )
+    #if privacy_request.status not in [
+    #    PrivacyRequestStatus.approved,
+    #    PrivacyRequestStatus.in_processing,
+    #]:
+    #    raise PrivacyRequestError(
+    #        f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+    #    )
 
     logger.info(
         "Polling starting for {} task {} {}",
@@ -63,11 +67,18 @@ def requeue_polling_request(
         graph_task: GraphTask = create_graph_task(db, async_task, resources)
 
         saas_connector: SaaSConnector = graph_task.connector  # type: ignore
+        saas_connector.set_privacy_request_state(
+            privacy_request,
+            graph_task.execution_node,
+            async_task,
+        )
         query_config: SaaSQueryConfig = saas_connector.query_config(
             graph_task.execution_node
         )  # type: ignore
         if async_task.action_type == ActionType.access:
+            logger.info(f"Executing read polling requests for {async_task.id}")
             upstream_tasks = async_task.upstream_tasks_objects(db)
+            # To Access Input Data. Not used for now, might be used on complex integrations
             upstream_access_data: List[List[Row]] = _build_upstream_access_data(
                 graph_task.execution_node.input_keys, upstream_tasks
             )
@@ -79,9 +90,7 @@ def requeue_polling_request(
                 db,
                 async_task,
                 query_config,
-                saas_connector,
-                graph_task.execution_node,
-                input_data,
+                saas_connector
             )
         elif async_task.action_type == ActionType.erasure:
             execute_erasure_polling_requests(db, async_task, query_config)
@@ -118,6 +127,7 @@ def execute_read_polling_requests(
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
     read_requests = query_config.get_read_requests_by_identity()
+    logger.info(f"Read requests: {read_requests}")
     for read_request in read_requests:
         if read_request.async_config:
             strategy: PollingAsyncDSRStrategy = AsyncDSRStrategy.get_strategy(  # type: ignore
@@ -130,16 +140,22 @@ def execute_read_polling_requests(
             privacy_request: PrivacyRequest = async_task.privacy_request
             policy: Policy = privacy_request.policy
             secrets: Dict[str, Any] = connector.secrets
+            identity_data = {
+                **privacy_request.get_persisted_identity().labeled_dict(),
+                **privacy_request.get_cached_identity_data(),
+            }
 
             status = strategy.get_status_request(
                 client,
                 secrets,
+                identity_data,
             )
 
             if status:
                 result = strategy.get_result_request(
                     client,
                     secrets,
+                    identity_data,
                 )
 
                 if result:
@@ -153,14 +169,18 @@ def execute_read_polling_requests(
                     else:
                         existing_data.append(result)
 
-                    # Save updated data back to the request task
+                    # Save updated data back to the request task.
                     async_task.access_data = existing_data
-                    db.add(async_task)
-                    db.commit()
-
+                    async_task.callback_succeeded = True # Setting this task as successful, so it wont loop anymore
+                    async_task.update_status(db, ExecutionLogStatus.pending)
+                    async_task.save(db)
                     logger.info(
                         f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
                     )
+
+                    log_task_queued(async_task, "callback")
+                    queue_request_task(async_task, privacy_request_proceed=True)
+
                 else:
                     logger.info(
                         f"Polling request - {async_task.id} is ready but returned no results"

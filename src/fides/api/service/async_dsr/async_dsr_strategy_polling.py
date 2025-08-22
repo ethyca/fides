@@ -34,14 +34,20 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         self,
         client: AuthenticatedClient,
         secrets: Dict[str, Any],
+        identity_data: Dict[str, Any],
     ) -> bool:
         """Executes the status requests, and move forward if its true"""
+        param_values = secrets.copy()
+        param_values.update(identity_data)
+        logger.info(f"param_values: {param_values}")
+        logger.info(f"self.status_request Path: {self.status_request.path}")
         prepared_status_request = map_param_values(
             "status",
-            "Polling",
+            "polling",
             self.status_request,
-            secrets,  # type: ignore
+            param_values
         )
+
         response: Response = client.send(prepared_status_request)
 
         logger.info(f"Status request response: {response}")
@@ -58,13 +64,16 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         self,
         client: AuthenticatedClient,
         secrets: Dict[str, Any],
+        identity_data: Dict[str, Any],
     ) -> List[Row]:
         """Build request to get the result of the async DSR process"""
+        param_values = secrets.copy()
+        param_values.update(identity_data)
         prepared_result_request = map_param_values(
             "result",
             "Polling",
             self.result_request,
-            secrets,  # type: ignore
+            param_values,  # type: ignore
         )
         response: Response = client.send(prepared_result_request)
         logger.info(f"Result request response: {response}")

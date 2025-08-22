@@ -17,12 +17,3 @@ class CallbackAsyncDSRStrategy(AsyncDSRStrategy):
 
     def __init__(self):
         pass
-
-    def start_request(
-        self,
-        request_params: SaaSRequestParams,
-        connector_params: Dict[str, Any],
-        response: Response,
-        data_path: Optional[str],
-    ) -> Optional[SaaSRequestParams]:
-        pass

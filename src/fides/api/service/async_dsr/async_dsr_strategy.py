@@ -13,13 +13,3 @@ from fides.api.service.strategy import Strategy
 
 class AsyncDSRStrategy(Strategy):
     """Abstract base class for async DSR strategies"""
-
-    @abstractmethod
-    def start_request(
-        self,
-        request_params: SaaSRequestParams,
-        connector_params: Dict[str, Any],
-        response: Response,
-        data_path: Optional[str],
-    ) -> Optional[SaaSRequestParams]:
-        """Build request to start the async DSR process"""
