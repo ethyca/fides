@@ -4,6 +4,7 @@ import {
   AntList as List,
   AntMessage as message,
   AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
   useDisclosure,
   WarningIcon,
@@ -267,14 +268,11 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
           >
             <List.Item.Meta
               title={
-                <Flex gap={8} align="center">
+                <Flex gap={8} align="center" className="font-normal">
                   <div className="max-w-[300px]">
-                    <Text
-                      ellipsis={{ tooltip: condition.field_address }}
-                      className="font-mono text-sm"
-                    >
-                      {condition.field_address}
-                    </Text>
+                    <Tooltip title={condition.field_address}>
+                      <Text>{condition.field_address.split(":").pop()}</Text>
+                    </Tooltip>
                   </div>
                   <Tag color="sandstone">
                     {operatorLabels[condition.operator]}
