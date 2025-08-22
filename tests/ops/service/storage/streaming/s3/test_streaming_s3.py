@@ -344,21 +344,6 @@ class TestUploadToS3Streaming:
             # Verify the upload was called
             mock_storage.upload_to_storage_streaming.assert_called_once()
 
-    def test_no_privacy_request(self, mock_storage_secrets, sample_data):
-        """Test that upload fails without privacy request."""
-        with pytest.raises(ValueError, match="Privacy request must be provided"):
-            upload_to_s3_streaming(
-                storage_secrets=mock_storage_secrets,
-                data=sample_data,
-                bucket_name="test-bucket",
-                file_key="test-file.zip",
-                resp_format="zip",
-                privacy_request=None,
-                document=None,
-                auth_method="secret_keys",
-                max_workers=3,
-            )
-
     def test_empty_bucket_name(
         self, mock_storage_secrets, sample_data, mock_privacy_request
     ):

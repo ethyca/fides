@@ -31,7 +31,7 @@ def upload_to_s3_streaming(
     bucket_name: str,
     file_key: str,
     resp_format: str,
-    privacy_request: Optional[PrivacyRequest],
+    privacy_request: PrivacyRequest,
     document: Optional[BytesIO],
     auth_method: str,
     max_workers: int = 5,
@@ -42,9 +42,6 @@ def upload_to_s3_streaming(
     our DSR-specific business logic for package splitting and attachment processing.
     """
     logger.debug("Starting smart-open streaming S3 Upload of {}", file_key)
-
-    if privacy_request is None:
-        raise ValueError("Privacy request must be provided")
 
     formatted_secrets = format_secrets(storage_secrets)
 
