@@ -75,6 +75,9 @@ def create_dsr_report_files_generator(
         f"Creating DSR report files generator with {len(all_attachments)} attachments"
     )
 
+    # Reset buffer position to ensure we can read from it
+    dsr_buffer.seek(0)
+
     # Extract and yield the DSR report files from the buffer
     # The dsr_buffer is already a ZIP file, so we need to extract and re-yield its contents
     with zipfile.ZipFile(dsr_buffer) as dsr_zip:

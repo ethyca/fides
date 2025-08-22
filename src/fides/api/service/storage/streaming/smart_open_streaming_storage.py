@@ -642,6 +642,8 @@ class SmartOpenStreamingStorage:
                 privacy_request=privacy_request,
                 dsr_data=data,
             ).generate()
+            # Reset buffer position to ensure it can be read multiple times
+            dsr_buffer.seek(0)
         except Exception as e:
             logger.error(f"Failed to generate DSR report: {e}")
             raise StorageUploadError(f"Failed to generate DSR report: {e}") from e
@@ -691,12 +693,12 @@ class SmartOpenStreamingStorage:
             config.file_key,
             content_type="application/zip",
         ) as upload_stream:
-            # First stream the DSR report files
-            for chunk in stream_zip(dsr_files_generator):
+            # First stream the attachment files
+            for chunk in stream_zip(attachment_files_generator):
                 upload_stream.write(chunk)
 
-            # Then stream the attachment files
-            for chunk in stream_zip(attachment_files_generator):
+            # Then stream the DSR report files (this ensures HTML files overwrite any conflicting attachment files)
+            for chunk in stream_zip(dsr_files_generator):
                 upload_stream.write(chunk)
 
         logger.debug(
@@ -833,12 +835,14 @@ class SmartOpenStreamingStorage:
         """
         logger.debug(f"Creating ZIP generator with {len(all_attachments)} attachments")
 
-        # First, yield data files (convert to stream_zip format and stream directly)
-        data_files_generator = self._create_data_files(
-            data, resp_format, all_attachments
-        )
-        logger.debug("Yielding data files for ZIP")
-        yield from self._convert_to_stream_zip_format(data_files_generator)
+        # For HTML format, data files are not needed as the DSR report contains the HTML content
+        if resp_format.lower() != "html":
+            # First, yield data files (convert to stream_zip format and stream directly)
+            data_files_generator = self._create_data_files(
+                data, resp_format, all_attachments
+            )
+            logger.debug("Yielding data files for ZIP")
+            yield from self._convert_to_stream_zip_format(data_files_generator)
 
         # Then, yield attachment files (already in stream_zip format, stream directly)
         attachment_files_generator = self._create_attachment_files(all_attachments)
