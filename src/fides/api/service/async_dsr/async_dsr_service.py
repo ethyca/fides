@@ -39,6 +39,7 @@ def requeue_polling_request(
     # Check that the privacy request is approved or in processing
     privacy_request: PrivacyRequest = async_task.privacy_request
     logger.info(f"Privacy request {privacy_request.id} status: {privacy_request.status.value}")
+    ## NOTE: Its starting with Error instead of pending. It shouldnt be.|
 
     #if privacy_request.status not in [
     #    PrivacyRequestStatus.approved,
@@ -152,44 +153,60 @@ def execute_read_polling_requests(
             )
 
             if status:
-                result = strategy.get_result_request(
+                execute_read_result_request(
+                    db,
+                    async_task,
+                    strategy,
                     client,
                     secrets,
                     identity_data,
                 )
-
-                if result:
-                    # Get existing access data from the request task
-                    existing_data = async_task.get_access_data()
-
-                    # Append async results to existing data
-                    # TODO: Check if this is the correct way to append the results
-                    if isinstance(result, list):
-                        existing_data.extend(result)
-                    else:
-                        existing_data.append(result)
-
-                    # Save updated data back to the request task.
-                    async_task.access_data = existing_data
-                    async_task.callback_succeeded = True # Setting this task as successful, so it wont loop anymore
-                    async_task.update_status(db, ExecutionLogStatus.pending)
-                    async_task.save(db)
-                    logger.info(
-                        f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
-                    )
-
-                    log_task_queued(async_task, "callback")
-                    queue_request_task(async_task, privacy_request_proceed=True)
-
-                else:
-                    logger.info(
-                        f"Polling request - {async_task.id} is ready but returned no results"
-                    )
-
             else:
                 logger.info(f"Polling request - {async_task.id} still not Ready. ")
                 continue
 
+def execute_read_result_request(
+    db: Session,
+    async_task: RequestTask,
+    strategy: PollingAsyncDSRStrategy,
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    identity_data: Dict[str, Any],
+) -> None:
+
+    result = strategy.get_result_request(
+        client,
+        secrets,
+        identity_data,
+    )
+
+    if result:
+        # Get existing access data from the request task
+        existing_data = async_task.get_access_data()
+
+        # Append async results to existing data
+        # TODO: Check if this is the correct way to append the results
+        if isinstance(result, list):
+            existing_data.extend(result)
+        else:
+            existing_data.append(result)
+
+        # Save updated data back to the request task.
+        async_task.access_data = existing_data
+        async_task.callback_succeeded = True # Setting this task as successful, so it wont loop anymore
+        async_task.update_status(db, ExecutionLogStatus.pending)
+        async_task.save(db)
+        logger.info(
+            f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
+        )
+
+        log_task_queued(async_task, "callback")
+        queue_request_task(async_task, privacy_request_proceed=True)
+
+    else:
+        logger.info(
+            f"Polling request - {async_task.id} is ready but returned no results"
+        )
 
 def execute_erasure_polling_requests(
     db: Session,
