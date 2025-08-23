@@ -5,11 +5,11 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ActionType
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import (
     filter_by_enabled_actions,
     get_cached_data_for_erasures,
 )
+from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.integration_tests.saas.connector_runner import dataset_config
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
@@ -45,7 +45,7 @@ class TestEnabledActions:
         integration_postgres_config.enabled_actions = [ActionType.erasure]
         integration_postgres_config.save(db)
 
-        access_runner(
+        access_runner_tester(
             privacy_request,
             policy,
             dataset_graph,
@@ -76,7 +76,7 @@ class TestEnabledActions:
         integration_postgres_config.enabled_actions = [ActionType.access]
         integration_postgres_config.save(db)
 
-        access_results = access_runner(
+        access_results = access_runner_tester(
             privacy_request_with_erasure_policy,
             policy,
             dataset_graph,
@@ -91,7 +91,7 @@ class TestEnabledActions:
             postgres_dataset,
         }
 
-        erasure_results = erasure_runner(
+        erasure_results = erasure_runner_tester(
             privacy_request_with_erasure_policy,
             erasure_policy,
             dataset_graph,
