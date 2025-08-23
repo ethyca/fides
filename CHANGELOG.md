@@ -37,6 +37,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new npm task for Admin UI that enables optimized Cypress testing with API server connectivity during local development [#6483](https://github.com/ethyca/fides/pull/6483)
 
 
+### Fixed
+- Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
+
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
 ### Added
