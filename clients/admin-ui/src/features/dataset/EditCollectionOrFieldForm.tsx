@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
+import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { COLLECTION, FIELD } from "./constants";

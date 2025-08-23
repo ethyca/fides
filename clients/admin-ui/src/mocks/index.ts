@@ -1,11 +1,9 @@
-if (typeof window !== "undefined") {
-  // eslint-disable-next-line global-require
-  const { worker } = require("./browser");
-  worker.start();
-} else {
-  // eslint-disable-next-line global-require
-  const { server } = require("./server");
-  server.listen();
+export async function initMocks() {
+  if (typeof window === "undefined") {
+    const { server } = await import("./server");
+    server.listen({ onUnhandledRequest: "bypass" });
+  } else {
+    const { worker } = await import("./browser");
+    await worker.start({ onUnhandledRequest: "bypass" });
+  }
 }
-
-export {};
