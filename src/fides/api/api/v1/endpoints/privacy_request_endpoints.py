@@ -138,6 +138,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
@@ -215,6 +216,7 @@ def get_privacy_request_or_error(
     PRIVACY_REQUESTS,
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
+    tags=[PUBLIC_INTERNET],
 )
 def create_privacy_request(
     *,
@@ -1278,6 +1280,7 @@ def restart_privacy_request_from_failure(
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
+    tags=[PUBLIC_INTERNET],
 )
 def verify_identification_code(
     privacy_request_id: str,
