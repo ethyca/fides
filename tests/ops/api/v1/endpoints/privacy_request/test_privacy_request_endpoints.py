@@ -4485,6 +4485,7 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert not mock_dispatch_message.called
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestDenyPrivacyRequest:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request):
@@ -5723,6 +5724,7 @@ class TestVerifyIdentity:
         assert queue == MESSAGING_QUEUE_NAME
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -6637,6 +6639,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         )
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestCreatePrivacyRequestEmailReceiptNotification:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
