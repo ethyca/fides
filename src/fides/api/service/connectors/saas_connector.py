@@ -3,6 +3,7 @@ import json
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
+from fides.api.models.worker_task import ExecutionLogStatus
 import pydash
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -20,6 +21,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -27,7 +29,6 @@ from fides.api.schemas.consentable_item import (
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
-    AsyncStrategy,
     ClientConfig,
     ConsentRequestMap,
     ParamValue,
@@ -267,14 +268,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         awaiting_async_callback: bool = False
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
+            logger.info(
+                "read_request.async_config.strategy: {}",
+                read_request.async_config.strategy,
+            )
             if (
-                read_request.async_config
-                and read_request.async_config.strategy == AsyncStrategy.callback
+                read_request.async_config is not None
                 and request_task.id  # Only supported in DSR 3.0
             ):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_callback = True
+                db = Session.object_session(privacy_request)
+                request_task.async_type = read_request.async_config.strategy
+                request_task.update_status(db, ExecutionLogStatus.awaiting_processing)
+                request_task.save(db)
+
+                logger.info(
+                    "Request Task async_type set to: {} for task ID: {}",
+                    request_task.async_type,
+                    request_task.id,
+                )
 
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
@@ -633,7 +647,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         awaiting_async_callback: bool = bool(
             masking_request.async_config
-            and masking_request.async_config.strategy == AsyncStrategy.callback
+            and masking_request.async_config.strategy == AsyncTaskType.callback.value
         ) and bool(
             request_task.id
         )  # Only supported in DSR 3.0
