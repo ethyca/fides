@@ -1,4 +1,8 @@
-import { Operator } from "~/types/api";
+import {
+  ManualFieldRequestType,
+  ManualTaskFieldType,
+  Operator,
+} from "~/types/api";
 
 // Mapping for operator display labels
 export const operatorLabels: Record<Operator, string> = {
@@ -12,4 +16,16 @@ export const operatorLabels: Record<Operator, string> = {
   [Operator.NOT_EXISTS]: "does not exist",
   [Operator.LIST_CONTAINS]: "list contains",
   [Operator.NOT_IN_LIST]: "not in list",
+};
+
+// Label mappings for field types and request types
+export const FIELD_TYPE_LABELS: Record<ManualTaskFieldType, string> = {
+  [ManualTaskFieldType.TEXT]: "Text",
+  [ManualTaskFieldType.CHECKBOX]: "Checkbox",
+  [ManualTaskFieldType.ATTACHMENT]: "Attachment",
+};
+
+export const REQUEST_TYPE_LABELS: Record<ManualFieldRequestType, string> = {
+  [ManualFieldRequestType.ACCESS]: "Access",
+  [ManualFieldRequestType.ERASURE]: "Erasure",
 };
