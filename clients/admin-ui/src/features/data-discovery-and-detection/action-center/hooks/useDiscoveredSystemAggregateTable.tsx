@@ -47,9 +47,6 @@ export const useDiscoveredSystemAggregateTable = ({
     useActionCenterTabs();
 
   const tableState = useTableState<DiscoveredSystemAggregateColumnKeys>({
-    pagination: {
-      defaultPageSize: 25,
-    },
     sorting: {
       validColumns: Object.values(DiscoveredSystemAggregateColumnKeys),
     },
