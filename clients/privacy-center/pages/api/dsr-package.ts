@@ -92,19 +92,28 @@ export default async function handler(
         .send(`Error ${response.status}: ${errorMessage}`);
     }
 
-    log.info(`Successfully fetched DSR package link`);
-
-    // Validate response has required fields
-    if (!data?.download_url) {
-      log.error("Invalid response from Fides API: missing download_url");
-      return res
-        .status(500)
-        .send("Internal Server Error: Invalid response from backend API");
+    // Check if this is a redirect response
+    if (response.status === 302 || response.status === 301) {
+      const redirectUrl = response.headers.get("location");
+      if (redirectUrl) {
+        log.info(`Redirecting user to DSR package download URL: ${redirectUrl}`);
+        return res.redirect(302, redirectUrl);
+      } else {
+        log.error("Redirect response missing location header");
+        return res.status(500).send("Internal Server Error: Invalid redirect response");
+      }
     }
 
-    // Redirect to the download URL
-    log.info(`Redirecting user to DSR package download URL`);
-    return res.redirect(302, data.download_url);
+    // If not a redirect, check for JSON response with download_url
+    if (data?.download_url) {
+      log.info(`Redirecting user to DSR package download URL: ${data.download_url}`);
+      return res.redirect(302, data.download_url);
+    }
+
+    log.error("Invalid response from Fides API: neither redirect nor download_url found");
+    return res
+      .status(500)
+      .send("Internal Server Error: Invalid response from backend API");
   } catch (error) {
     log.error("Unexpected error in dsr-package endpoint:", error);
     return res

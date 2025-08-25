@@ -20,15 +20,15 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
 )
-from fides.common.api.v1.urn_registry import PRIVACY_CENTER_ACCESS_RESULTS
+from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 from fides.config import CONFIG
 from tests.api.routes.privacy_requests.conftest import mock_storage_config
 
 
-class TestPrivacyCenterAccessResults:
+class TestPrivacyCenterDsrPackage:
     @pytest.fixture(scope="function")
     def url(self, privacy_request):
-        return f"/api/v1{PRIVACY_CENTER_ACCESS_RESULTS.format(privacy_request_id=privacy_request.id)}"
+        return f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
 
     @pytest.fixture(scope="function")
     def completed_privacy_request(self, db, privacy_request):
@@ -121,7 +121,7 @@ class TestPrivacyCenterAccessResults:
         yield storage_config
         storage_config.delete(db)
 
-    def test_get_access_results_unauthenticated_success(
+    def test_get_dsr_package_unauthenticated_success(
         self, url, completed_privacy_request, test_client, storage_config
     ):
         """Test that unauthenticated users can access the endpoint"""
@@ -145,7 +145,7 @@ class TestPrivacyCenterAccessResults:
                 "Expires=" in redirect_url
             )  # moto uses 'Expires' instead of 'X-Amz-Expires'
 
-    def test_get_access_results_with_auth_success(
+    def test_get_dsr_package_with_auth_success(
         self,
         url,
         completed_privacy_request,
@@ -178,7 +178,7 @@ class TestPrivacyCenterAccessResults:
         self, pending_privacy_request, test_client
     ):
         """Test that requests that are not complete return an error"""
-        url = f"/api/v1{PRIVACY_CENTER_ACCESS_RESULTS.format(privacy_request_id=pending_privacy_request.id)}"
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=pending_privacy_request.id)}"
         response = test_client.get(url)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert "not complete" in response.json()["detail"]
@@ -191,14 +191,14 @@ class TestPrivacyCenterAccessResults:
         privacy_request.access_result_urls = None
         db.commit()
 
-        url = f"/api/v1{PRIVACY_CENTER_ACCESS_RESULTS.format(privacy_request_id=privacy_request.id)}"
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
         assert "No access results found" in response.json()["detail"]
 
     def test_get_access_results_request_not_found(self, test_client, privacy_request):
         """Test that non-existent requests return 404"""
-        url = f"/api/v1{PRIVACY_CENTER_ACCESS_RESULTS.format(privacy_request_id='non-existent-id')}"
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id='non-existent_id')}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
 
@@ -210,7 +210,7 @@ class TestPrivacyCenterAccessResults:
         privacy_request.access_result_urls = {"access_result_urls": []}
         db.commit()
 
-        url = f"/api/v1{PRIVACY_CENTER_ACCESS_RESULTS.format(privacy_request_id=privacy_request.id)}"
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
         assert "No access result URLs found" in response.json()["detail"]

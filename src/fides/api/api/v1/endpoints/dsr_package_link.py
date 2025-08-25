@@ -7,6 +7,8 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from botocore.parameters import Params
+from botocore.exceptions import ParamValidationError
 
 from fides.api.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
@@ -110,7 +112,6 @@ def get_access_results_urls(
             result_url = s3_client.generate_presigned_url(
                 "get_object",
                 Params={"Bucket": bucket_name, "Key": file_name},
-                ExpiresIn=3600,  # 1 hour expiration
             )
         except Exception as e:
             raise HTTPException(
