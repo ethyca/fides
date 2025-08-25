@@ -3,11 +3,10 @@ import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
-  expandCollapseAllMenuItems,
   ListExpandableCell,
-  MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import {
   ConsentAlertInfo,
   PrivacyNoticeRegion,
@@ -72,22 +71,18 @@ export const useDiscoveredSystemAggregateColumns = ({
           ),
         },
         {
-          title: () => (
-            <MenuHeaderCell
-              title="Locations"
-              menu={{
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  if (e.key === "expand-all") {
-                    setIsLocationsExpanded(true);
-                  } else if (e.key === "collapse-all") {
-                    setIsLocationsExpanded(false);
-                  }
-                },
-              }}
-            />
-          ),
+          title: "Locations",
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsLocationsExpanded(true);
+              } else if (e.key === "collapse-all") {
+                setIsLocationsExpanded(false);
+              }
+            },
+          },
           dataIndex: "locations",
           key: "locations",
           width: 250,
@@ -110,22 +105,18 @@ export const useDiscoveredSystemAggregateColumns = ({
           ),
         },
         {
-          title: () => (
-            <MenuHeaderCell
-              title="Domains"
-              menu={{
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  if (e.key === "expand-all") {
-                    setIsDomainsExpanded(true);
-                  } else if (e.key === "collapse-all") {
-                    setIsDomainsExpanded(false);
-                  }
-                },
-              }}
-            />
-          ),
+          title: "Domains",
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsDomainsExpanded(true);
+              } else if (e.key === "collapse-all") {
+                setIsDomainsExpanded(false);
+              }
+            },
+          },
           dataIndex: "domains",
           key: "domains",
           render: (domains: string[]) => (

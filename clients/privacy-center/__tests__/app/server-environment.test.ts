@@ -1,6 +1,6 @@
 import { produce } from "immer";
 
-import { loadServerSettings, validateConfig } from "~/app/server-environment";
+import { validateConfig } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import customFields from "~/config/examples/customFields.json";
 import fullJson from "~/config/examples/full.json";

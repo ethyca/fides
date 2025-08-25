@@ -8,12 +8,13 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  PAGE_SIZES,
   Text,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-export { PAGE_SIZES };
+import { DEFAULT_PAGE_SIZES } from "../constants";
+
+export const PAGE_SIZES = DEFAULT_PAGE_SIZES;
 
 export const useClientSidePagination = <T,>(
   tableInstance: TableInstance<T>,

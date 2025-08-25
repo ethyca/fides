@@ -96,6 +96,12 @@ h6 {
       width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
     }
   }
+  &.ant-menu-horizontal .ant-menu-item:first-child {
+    padding-left: 0;
+    &::after {
+      inset-inline-start: 0;
+    }
+  }
 }
 
 .ant-input {

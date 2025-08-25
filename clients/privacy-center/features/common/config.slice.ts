@@ -67,11 +67,13 @@ const selectConfig = (state: RootState) => state.config;
 
 export const { reducer } = configSlice;
 export const { loadConfig, updateConsentOptionsFromApi } = configSlice.actions;
-export const useConfig = (): Config | PrivacyCenterConfig => {
+export const useConfig = () => {
   const { config } = useAppSelector(selectConfig);
+
   if (!config) {
     throw new Error("Unable to load Privacy Center configuration!");
   }
+
   return config;
 };
 export const useHasConfig = (): boolean => {

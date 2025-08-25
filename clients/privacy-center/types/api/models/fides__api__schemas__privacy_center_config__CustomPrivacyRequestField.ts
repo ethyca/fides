@@ -9,6 +9,6 @@ export type fides__api__schemas__privacy_center_config__CustomPrivacyRequestFiel
     default_value?: string | string[] | null;
     hidden?: boolean | null;
     query_param_key?: string | null;
-    field_type?: "text" | "multiselect" | "select" | null;
+    field_type?: "text" | "multiselect" | "select" | "location" | null;
     options?: string[] | null;
   };
