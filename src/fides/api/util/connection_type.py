@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Set, List, Optional
+from typing import Any, Dict, Optional, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
@@ -24,8 +24,6 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 from fides.api.util.saas_util import load_config_from_string
-from fides.api.schemas.enums.connection_category import ConnectionCategory
-from fides.api.schemas.enums.integration_feature import IntegrationFeature
 
 
 def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
@@ -238,7 +236,9 @@ def get_saas_connection_types(
             enabled_features = None
 
             try:
-                saas_config = SaaSConfig(**load_config_from_string(connector_template.config))
+                saas_config = SaaSConfig(
+                    **load_config_from_string(connector_template.config)
+                )
                 if saas_config.display_info:
                     category = saas_config.display_info.category
                     tags = saas_config.display_info.tags

@@ -3,9 +3,9 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict
 
 from fides.api.models.connectionconfig import ConnectionType
+from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.enums.connection_category import ConnectionCategory
 from fides.api.schemas.enums.integration_feature import IntegrationFeature
-from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import ActionType
 
 
