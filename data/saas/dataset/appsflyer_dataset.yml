@@ -1,0 +1,22 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: AppsFlyer Dataset
+    description: AppsFlyer GDPR data schema representing user data and attribution information
+    collections:
+      - name: user
+        description: User profile and attribution data from AppsFlyer GDPR access requests
+        fields:
+          - name: subject_request_id
+            description: UUID v4 string generated for the GDPR request
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: user_id
+            description: Customer user ID (CUID)
+            data_categories: [user.unique_id]
+          - name: appsflyer_id
+            description: AppsFlyer internal user identifier
+            data_categories: [user.unique_id]
+          - name: advertising_id
+            description: Device advertising identifier (IDFA/GAID)
+            data_categories: [user.device.device_id]
