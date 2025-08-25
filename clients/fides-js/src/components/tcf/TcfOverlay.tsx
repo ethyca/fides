@@ -36,6 +36,7 @@ import {
 } from "../../lib/events";
 import {
   FetchState,
+  useAutoResetFlag,
   useNoticesServed,
   useRetryableFetch,
 } from "../../lib/hooks";
@@ -106,6 +107,7 @@ const parseModalDefaultView = (
 };
 
 export const TcfOverlay = () => {
+  const { isActive: isSaved, activate: markSaved } = useAutoResetFlag(false);
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
   const {
     fidesRegionString,
@@ -710,6 +712,7 @@ export const TcfOverlay = () => {
       renderModalFooter={({ onClose }) => {
         const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
           handleUpdateAllPreferences(consentMethod, keys);
+          markSaved();
           onClose();
         };
         return (
@@ -746,6 +749,7 @@ export const TcfOverlay = () => {
                 loading={
                   !experienceFull && fullExperienceState === FetchState.Loading
                 }
+                complete={isSaved}
               />
             )}
             isInModal

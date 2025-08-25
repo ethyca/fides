@@ -1,0 +1,16 @@
+[
+  {
+    "id": "task1",
+    "label": "Customer Data Export",
+    "help_text": "Export customer data for GDPR requests",
+    "field_type": "attachment",
+    "request_type": "access"
+  },
+  {
+    "id": "task2",
+    "label": "Data Deletion Verification",
+    "help_text": "Verify all customer data has been deleted",
+    "field_type": "checkbox",
+    "request_type": "erasure"
+  }
+]

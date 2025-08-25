@@ -42,36 +42,72 @@ export function mapFiltersToSearchParams({
   verbose,
   sort_direction,
   sort_field,
-}: Partial<PrivacyRequestParams>): any {
-  let fromISO;
+}: Partial<PrivacyRequestParams>): URLSearchParams {
+  let fromISO: Date | undefined;
   if (from) {
     fromISO = new Date(from);
     fromISO.setUTCHours(0, 0, 0);
   }
 
-  let toISO;
+  let toISO: Date | undefined;
   if (to) {
     toISO = new Date(to);
     toISO.setUTCHours(23, 59, 59);
   }
 
-  return {
-    include_identities: "true",
-    include_custom_privacy_request_fields: "true",
-    ...(action_type && action_type.length > 0
-      ? { action_type: action_type.join("&action_type=") }
-      : {}),
-    ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
-    ...(id ? { request_id: id } : {}),
-    ...(fuzzy_search_str ? { fuzzy_search_str } : {}),
-    ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
-    ...(toISO ? { created_lt: toISO.toISOString() } : {}),
-    ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
-    ...(verbose ? { verbose } : {}),
-    ...(sort_direction ? { sort_direction } : {}),
-    ...(sort_field ? { sort_field } : {}),
-  };
+  const params = new URLSearchParams();
+
+  params.set("include_identities", "true");
+  params.set("include_custom_privacy_request_fields", "true");
+
+  if (Array.isArray(action_type) && action_type.length > 0) {
+    action_type.forEach((value) => {
+      params.append("action_type", String(value));
+    });
+  }
+
+  if (Array.isArray(status) && status.length > 0) {
+    status.forEach((value) => {
+      params.append("status", String(value));
+    });
+  }
+
+  if (id) {
+    params.set("request_id", id);
+  }
+
+  if (fuzzy_search_str) {
+    params.set("fuzzy_search_str", fuzzy_search_str);
+  }
+
+  if (fromISO && !Number.isNaN(fromISO.getTime())) {
+    params.set("created_gt", fromISO.toISOString());
+  }
+  if (toISO && !Number.isNaN(toISO.getTime())) {
+    params.set("created_lt", toISO.toISOString());
+  }
+
+  if (page) {
+    params.set("page", `${page}`);
+  }
+
+  if (typeof size !== "undefined") {
+    params.set("size", `${size}`);
+  }
+
+  if (typeof verbose !== "undefined") {
+    params.set("verbose", String(verbose));
+  }
+
+  if (sort_direction) {
+    params.set("sort_direction", sort_direction);
+  }
+
+  if (sort_field) {
+    params.set("sort_field", sort_field);
+  }
+
+  return params;
 }
 
 export const requestCSVDownload = async ({
@@ -86,25 +122,22 @@ export const requestCSVDownload = async ({
     return null;
   }
 
-  return fetch(
-    `${BASE_URL}/privacy-request?${new URLSearchParams({
-      ...mapFiltersToSearchParams({
-        id,
-        from,
-        to,
-        status,
-        action_type,
-      }),
-      download_csv: "true",
-    })}`,
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${token}`,
-        "X-Fides-Source": "fidesops-admin-ui",
-      },
+  const params = mapFiltersToSearchParams({
+    id,
+    from,
+    to,
+    status,
+    action_type,
+  });
+  params.set("download_csv", "true");
+
+  return fetch(`${BASE_URL}/privacy-request?${params.toString()}`, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      Authorization: `Bearer ${token}`,
+      "X-Fides-Source": "fidesops-admin-ui",
     },
-  )
+  })
     .then(async (response) => {
       if (!response.ok) {
         if (response.status === 400) {
@@ -182,7 +215,7 @@ export const subjectRequestsSlice = createSlice({
     clearAllFilters: () => ({
       ...initialState,
     }),
-    clearSortFields: (state) => ({
+    clearSortKeys: (state) => ({
       ...state,
       sort_direction: undefined,
       sort_field: undefined,
@@ -233,7 +266,7 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       sort_direction: action.payload,
     }),
-    setSortField: (state, action: PayloadAction<string>) => ({
+    setSortKey: (state, action: PayloadAction<string>) => ({
       ...state,
       sort_field: action.payload,
     }),
@@ -251,7 +284,7 @@ export const subjectRequestsSlice = createSlice({
 
 export const {
   clearAllFilters,
-  clearSortFields,
+  clearSortKeys,
   setPage,
   setRequestFrom,
   setRequestId,
@@ -261,7 +294,7 @@ export const {
   setRetryRequests,
   setFuzzySearchStr,
   setSortDirection,
-  setSortField,
+  setSortKey,
   setVerbose,
 } = subjectRequestsSlice.actions;
 
@@ -317,9 +350,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
-        url: `privacy-request?${decodeURIComponent(
-          new URLSearchParams(mapFiltersToSearchParams(filters)).toString(),
-        )}`,
+        url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
       }),
       providesTags: () => ["Request"],
       async onQueryStarted(_key, { dispatch, queryFulfilled }) {

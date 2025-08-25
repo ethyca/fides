@@ -150,7 +150,10 @@ export const CustomFieldModal = ({
   const initialValues = transformedCustomField || initialValuesTemplate;
 
   const handleDropdownChange = (value: FieldTypes) => {
-    if (value === FieldTypes.OPEN_TEXT) {
+    if (
+      value === FieldTypes.OPEN_TEXT ||
+      value === FieldTypes.LOCATION_SELECT
+    ) {
       setNewValidationSchema(optionalValidationSchema);
     } else {
       setNewValidationSchema(requiredValidationSchema);
@@ -195,15 +198,20 @@ export const CustomFieldModal = ({
       // Add error handling here
     }
 
-    if (values.field_type === FieldTypes.OPEN_TEXT) {
+    if (
+      values.field_type === FieldTypes.OPEN_TEXT ||
+      values.field_type === FieldTypes.LOCATION_SELECT
+    ) {
       // eslint-disable-next-line no-param-reassign
       values.allow_list_id = undefined;
     }
 
     if (
-      [FieldTypes.SINGLE_SELECT, FieldTypes.OPEN_TEXT].includes(
-        values.field_type,
-      )
+      [
+        FieldTypes.SINGLE_SELECT,
+        FieldTypes.OPEN_TEXT,
+        FieldTypes.LOCATION_SELECT,
+      ].includes(values.field_type)
     ) {
       // eslint-disable-next-line no-param-reassign
       values.field_type = AllowedTypes.STRING as unknown as FieldTypes;

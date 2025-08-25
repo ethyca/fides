@@ -2,7 +2,6 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.task.conditional_dependencies.schemas import (
-    Condition,
     ConditionGroup,
     ConditionLeaf,
     GroupOperator,

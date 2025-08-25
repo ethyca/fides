@@ -9,6 +9,7 @@ from loguru import logger
 from sqlalchemy import (
     ARRAY,
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     ForeignKey,
@@ -23,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
-from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship, validates
 from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
@@ -171,6 +172,12 @@ class MonitorConfig(Base):
     )
 
     shared_config = relationship(SharedMonitorConfig)
+
+    __table_args__ = (
+        CheckConstraint(  # type: ignore
+            "key NOT LIKE '%.%'", name="ck_monitorconfig_key_no_dots"
+        ),
+    )
 
     @property
     def classify_params(self) -> dict:
@@ -332,6 +339,12 @@ class MonitorConfig(Base):
                 cron_trigger_dict["month"] = execution_start_date.month
             data["monitor_execution_trigger"] = cron_trigger_dict
 
+    @validates("key")
+    def validate_key_no_dots(self, _key: str, value: str) -> str:
+        if value and "." in value:
+            raise ValueError('MonitorConfig.key cannot contain "." characters')
+        return value
+
 
 class StagedResourceAncestor(Base):
     """
@@ -419,11 +432,17 @@ class StagedResourceAncestor(Base):
 
                     # Execute batch when it reaches the desired size
                     if len(current_batch) >= batch_size:
+                        logger.debug(
+                            f"Inserting batch of {len(current_batch)} staged resource ancestor links"
+                        )
                         db.execute(stmt_text, current_batch)
                         current_batch = []
 
         # Execute any remaining items in the final batch
         if current_batch:
+            logger.debug(
+                f"Inserting batch of {len(current_batch)} staged resource ancestor links"
+            )
             db.execute(stmt_text, current_batch)
 
 
