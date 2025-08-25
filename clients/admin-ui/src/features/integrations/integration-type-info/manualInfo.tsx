@@ -36,6 +36,7 @@ const MANUAL_TYPE_INFO = {
   overview: <ManualOverview />,
   enabledFeatures: [
     IntegrationFeatureEnum.TASKS,
+    IntegrationFeatureEnum.CONDITIONS,
     IntegrationFeatureEnum.WITHOUT_CONNECTION,
   ],
 };

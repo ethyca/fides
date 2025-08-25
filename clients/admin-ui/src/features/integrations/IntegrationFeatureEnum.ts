@@ -12,6 +12,9 @@ export enum IntegrationFeatureEnum {
   /** Enables task/workflow management for manual processes - shows "Tasks" tab (currently hidden) */
   TASKS = "tasks",
 
+  /** Enables conditions configuration for manual task creation - shows "Conditions" tab */
+  CONDITIONS = "conditions",
+
   /** Indicates integration doesn't require connection testing - shows "Details" tab instead of "Connection" tab */
   WITHOUT_CONNECTION = "without_connection",
 }

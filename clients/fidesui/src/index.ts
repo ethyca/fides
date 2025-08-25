@@ -69,6 +69,7 @@ export {
   Steps as AntSteps,
   Switch as AntSwitch,
   Tabs as AntTabs,
+  TreeSelect as AntTreeSelect,
   Upload as AntUpload,
 } from "antd/lib";
 export type {
