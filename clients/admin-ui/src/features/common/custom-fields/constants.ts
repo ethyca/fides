@@ -8,6 +8,7 @@ export enum TabTypes {
 
 export const FIELD_TYPE_OPTIONS = [
   { label: "Single select", value: AllowedTypes.STRING },
+  { label: "Location select", value: AllowedTypes.STRING },
   // eslint-disable-next-line no-underscore-dangle
   { label: "Multiple select", value: AllowedTypes.STRING_ },
 ];
@@ -15,12 +16,14 @@ export const FIELD_TYPE_OPTIONS = [
 export enum FieldTypes {
   SINGLE_SELECT = "singleSelect",
   MULTIPLE_SELECT = "multipleSelect",
+  LOCATION_SELECT = "locationSelect",
   OPEN_TEXT = "openText",
 }
 
 export const FIELD_TYPE_OPTIONS_NEW = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
   { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
+  { label: "Location select", value: FieldTypes.LOCATION_SELECT },
   { label: "Open Text", value: FieldTypes.OPEN_TEXT },
 ];
 

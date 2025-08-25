@@ -215,7 +215,7 @@ export const subjectRequestsSlice = createSlice({
     clearAllFilters: () => ({
       ...initialState,
     }),
-    clearSortFields: (state) => ({
+    clearSortKeys: (state) => ({
       ...state,
       sort_direction: undefined,
       sort_field: undefined,
@@ -266,7 +266,7 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       sort_direction: action.payload,
     }),
-    setSortField: (state, action: PayloadAction<string>) => ({
+    setSortKey: (state, action: PayloadAction<string>) => ({
       ...state,
       sort_field: action.payload,
     }),
@@ -284,7 +284,7 @@ export const subjectRequestsSlice = createSlice({
 
 export const {
   clearAllFilters,
-  clearSortFields,
+  clearSortKeys,
   setPage,
   setRequestFrom,
   setRequestId,
@@ -294,7 +294,7 @@ export const {
   setRetryRequests,
   setFuzzySearchStr,
   setSortDirection,
-  setSortField,
+  setSortKey,
   setVerbose,
 } = subjectRequestsSlice.actions;
 
