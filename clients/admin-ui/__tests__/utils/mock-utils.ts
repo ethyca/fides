@@ -9,6 +9,7 @@ export const createMockTableState = <TSortKey extends string = string>(
   overrides: Partial<TableStateWithHelpers<TSortKey>> = {},
 ): TableStateWithHelpers<TSortKey> => {
   return {
+    tableId: "test-table",
     pageIndex: 1,
     pageSize: 25,
     sortKey: undefined,

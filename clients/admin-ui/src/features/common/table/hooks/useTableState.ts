@@ -226,6 +226,9 @@ export const useTableState = <TSortKey extends string = string>(
     // Current state
     state: currentState,
 
+    // Table configuration
+    tableId,
+
     // Pagination (delegated to pagination hook)
     pageIndex: currentState.pageIndex,
     pageSize: currentState.pageSize,

@@ -192,6 +192,7 @@ export const useAntTable = <TData, TSortKey extends string = string>(
       scroll: { x: "max-content", scrollToFirstRowOnChange: true },
       size: "small" as const,
       bordered: true,
+      "data-testid": tableState.tableId,
       ...customTableProps,
     }),
     [
@@ -201,6 +202,7 @@ export const useAntTable = <TData, TSortKey extends string = string>(
       paginationProps,
       handleTableChange,
       rowKeyFunction,
+      tableState.tableId,
       customTableProps,
     ],
   );
