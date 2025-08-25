@@ -8,9 +8,9 @@ from fides.api.util.text import normalize_location_code, to_snake_case
 class TestNormalizeLocationCode:
     """Test location code normalization functionality."""
 
-    def test_normalize_location_code_valid_cases(self):
-        """Test that valid location codes are properly normalized."""
-        test_cases = [
+    @pytest.mark.parametrize(
+        "input_location,expected_output",
+        [
             # Basic country codes
             ("us", "US"),
             ("US", "US"),
@@ -35,17 +35,16 @@ class TestNormalizeLocationCode:
             # Mixed case with underscores
             ("Us_Ca", "US-CA"),
             ("gb_sc", "GB-SC"),
-        ]
+        ],
+    )
+    def test_normalize_location_code_valid_cases(self, input_location, expected_output):
+        """Test that valid location codes are properly normalized."""
+        result = normalize_location_code(input_location)
+        assert result == expected_output
 
-        for input_location, expected_output in test_cases:
-            result = normalize_location_code(input_location)
-            assert (
-                result == expected_output
-            ), f"Expected {expected_output}, got {result} for input {input_location}"
-
-    def test_normalize_location_code_invalid_cases(self):
-        """Test that invalid location codes raise ValueError."""
-        invalid_cases = [
+    @pytest.mark.parametrize(
+        "invalid_location",
+        [
             "USA",  # Too many characters for country code
             "U",  # Too few characters for country code
             "US-CALIFORNIA",  # Region code too long
@@ -56,12 +55,13 @@ class TestNormalizeLocationCode:
             "US+CA",  # Invalid separator
             "1US",  # Invalid country code starting with number
             "US-1234",  # Region code too long
-        ]
-
-        for invalid_location in invalid_cases:
-            with pytest.raises(ValueError) as exc_info:
-                normalize_location_code(invalid_location)
-            assert "Invalid location format" in str(exc_info.value)
+        ],
+    )
+    def test_normalize_location_code_invalid_cases(self, invalid_location):
+        """Test that invalid location codes raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            normalize_location_code(invalid_location)
+        assert "Invalid location format" in str(exc_info.value)
 
     def test_normalize_location_code_empty_input(self):
         """Test that empty input raises appropriate error."""
@@ -78,16 +78,17 @@ class TestNormalizeLocationCode:
 class TestToSnakeCase:
     """Test the existing to_snake_case function to ensure it still works."""
 
-    def test_to_snake_case(self):
-        """Test that to_snake_case works as expected."""
-        test_cases = [
+    @pytest.mark.parametrize(
+        "input_text,expected_output",
+        [
             ("foo bar", "foo_bar"),
             ("foo\nbar", "foo_bar"),
             ("foo\tbar", "foo_bar"),
             ("foo-bar", "foo_bar"),
             ("foo*bar", "foobar"),
-        ]
-
-        for input_text, expected_output in test_cases:
-            result = to_snake_case(input_text)
-            assert result == expected_output
+        ],
+    )
+    def test_to_snake_case(self, input_text, expected_output):
+        """Test that to_snake_case works as expected."""
+        result = to_snake_case(input_text)
+        assert result == expected_output

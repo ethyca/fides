@@ -53,9 +53,9 @@ class TestPrivacyRequestCreate:
                 }
             )
 
-    def test_valid_location_formats(self):
-        """Test that various valid ISO 3166 location formats are accepted"""
-        valid_locations = [
+    @pytest.mark.parametrize(
+        "location",
+        [
             "US",
             "US-CA",
             "GB",
@@ -67,25 +67,26 @@ class TestPrivacyRequestCreate:
             "US_CA",
             "us_ny",
             "GB_SC",  # Underscores (should be normalized)
-        ]
+        ],
+    )
+    def test_valid_location_formats(self, location):
+        """Test that various valid ISO 3166 location formats are accepted"""
+        privacy_request = PrivacyRequestCreate(
+            **{
+                "identity": {"email": "user@example.com"},
+                "policy_key": DEFAULT_ACCESS_POLICY,
+                "location": location,
+            }
+        )
+        # Verify location is normalized to uppercase with hyphens
+        if location:
+            assert privacy_request.location is not None
+            assert privacy_request.location.isupper()
+            assert "_" not in privacy_request.location
 
-        for location in valid_locations:
-            privacy_request = PrivacyRequestCreate(
-                **{
-                    "identity": {"email": "user@example.com"},
-                    "policy_key": DEFAULT_ACCESS_POLICY,
-                    "location": location,
-                }
-            )
-            # Verify location is normalized to uppercase with hyphens
-            if location:
-                assert privacy_request.location is not None
-                assert privacy_request.location.isupper()
-                assert "_" not in privacy_request.location
-
-    def test_invalid_location_formats(self):
-        """Test that invalid location formats raise ValidationError"""
-        invalid_locations = [
+    @pytest.mark.parametrize(
+        "location",
+        [
             "USA",  # Too many characters for country code
             "U",  # Too few characters for country code
             "US-CALIFORNIA",  # Region code too long
@@ -93,17 +94,18 @@ class TestPrivacyRequestCreate:
             "12",  # Numeric country code
             "US CA",  # Space instead of hyphen/underscore
             "",  # Empty string
-        ]
-
-        for location in invalid_locations:
-            with pytest.raises(ValidationError):
-                PrivacyRequestCreate(
-                    **{
-                        "identity": {"email": "user@example.com"},
-                        "policy_key": DEFAULT_ACCESS_POLICY,
-                        "location": location,
-                    }
-                )
+        ],
+    )
+    def test_invalid_location_formats(self, location):
+        """Test that invalid location formats raise ValidationError"""
+        with pytest.raises(ValidationError):
+            PrivacyRequestCreate(
+                **{
+                    "identity": {"email": "user@example.com"},
+                    "policy_key": DEFAULT_ACCESS_POLICY,
+                    "location": location,
+                }
+            )
 
     def test_none_location(self):
         """Test that None location is accepted (optional field)"""
@@ -124,9 +126,9 @@ class TestPrivacyRequestCreate:
             }
         )
 
-    def test_location_normalization(self):
-        """Test that location codes are properly normalized"""
-        test_cases = [
+    @pytest.mark.parametrize(
+        "input_location,expected_output",
+        [
             # (input, expected_output)
             ("us", "US"),
             ("US", "US"),
@@ -138,16 +140,15 @@ class TestPrivacyRequestCreate:
             ("EEA", "EEA"),
             ("gb", "GB"),
             ("ca_on", "CA-ON"),  # Underscore with lowercase
-        ]
-
-        for input_location, expected_output in test_cases:
-            privacy_request = PrivacyRequestCreate(
-                **{
-                    "identity": {"email": "user@example.com"},
-                    "policy_key": DEFAULT_ACCESS_POLICY,
-                    "location": input_location,
-                }
-            )
-            assert (
-                privacy_request.location == expected_output
-            ), f"Expected {expected_output}, got {privacy_request.location} for input {input_location}"
+        ],
+    )
+    def test_location_normalization(self, input_location, expected_output):
+        """Test that location codes are properly normalized"""
+        privacy_request = PrivacyRequestCreate(
+            **{
+                "identity": {"email": "user@example.com"},
+                "policy_key": DEFAULT_ACCESS_POLICY,
+                "location": input_location,
+            }
+        )
+        assert privacy_request.location == expected_output
