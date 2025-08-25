@@ -6,6 +6,7 @@ import csv
 import json
 from datetime import datetime
 from io import BytesIO, StringIO
+from itertools import chain
 from typing import Any, Generator, Iterable, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -688,8 +689,6 @@ class SmartOpenStreamingStorage:
         attachment_files_generator = self._create_attachment_files(all_attachments)
 
         # Combine both generators and stream the complete ZIP to storage
-        from itertools import chain
-
         combined_entries = chain(attachment_files_generator, dsr_files_generator)
         with self.storage_client.stream_upload(
             config.bucket_name,

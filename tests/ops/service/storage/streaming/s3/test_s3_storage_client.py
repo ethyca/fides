@@ -68,6 +68,37 @@ class TestS3StorageClient:
         assert "secret_key" not in params
         # endpoint_url is no longer supported in the current implementation
 
+    def test_get_transport_params_with_assume_role_arn(self):
+        """Test transport params include assume_role_arn when present."""
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
+            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+        }
+        client = S3StorageClient(secrets)
+        params = client.get_transport_params()
+
+        assert params["access_key"] == "test_key"
+        assert params["secret_key"] == "test_secret"
+        assert params["region"] == "us-west-2"
+        assert params["assume_role_arn"] == "arn:aws:iam::123456789012:role/TestRole"
+
+    def test_get_transport_params_without_assume_role_arn(self):
+        """Test transport params don't include assume_role_arn when not present."""
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
+        }
+        client = S3StorageClient(secrets)
+        params = client.get_transport_params()
+
+        assert params["access_key"] == "test_key"
+        assert params["secret_key"] == "test_secret"
+        assert params["region"] == "us-west-2"
+        assert "assume_role_arn" not in params
+
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
         "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
@@ -129,7 +160,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with SECRET_KEYS auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets
+            AWSAuthMethod.SECRET_KEYS.value, secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -153,7 +184,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets
+            AWSAuthMethod.AUTOMATIC.value, secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -181,5 +212,121 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets
+            AWSAuthMethod.AUTOMATIC.value, secrets, None
+        )
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_with_assume_role_arn_secret_keys(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that assume_role_arn is passed when using SECRET_KEYS auth method."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
+            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+        }
+        client = S3StorageClient(secrets)
+
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with SECRET_KEYS auth method and assume_role_arn
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.SECRET_KEYS.value,
+            secrets,
+            "arn:aws:iam::123456789012:role/TestRole",
+        )
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_with_assume_role_arn_automatic(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that assume_role_arn is passed when using AUTOMATIC auth method."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        # No AWS credentials, but with assume_role_arn
+        secrets = {
+            StorageSecrets.REGION_NAME: "us-west-2",
+            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+        }
+        client = S3StorageClient(secrets)
+
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with AUTOMATIC auth method and assume_role_arn
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.AUTOMATIC.value,
+            secrets,
+            "arn:aws:iam::123456789012:role/TestRole",
+        )
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_without_assume_role_arn(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that None is passed for assume_role_arn when not present."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        # No assume_role_arn
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
+        }
+        client = S3StorageClient(secrets)
+
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with None for assume_role_arn
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.SECRET_KEYS.value, secrets, None
+        )
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_with_empty_assume_role_arn(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that empty assume_role_arn is treated as None."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        # Empty assume_role_arn
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
+            StorageSecrets.AWS_ASSUME_ROLE: "",
+        }
+        client = S3StorageClient(secrets)
+
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with empty string for assume_role_arn
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.SECRET_KEYS.value, secrets, ""
         )

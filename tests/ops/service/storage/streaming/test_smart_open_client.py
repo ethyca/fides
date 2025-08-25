@@ -475,7 +475,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service/storage/streaming/smart_open_client.smart_open.open"
+                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream

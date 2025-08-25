@@ -61,6 +61,10 @@ class S3StorageClient(BaseStorageClient):
             ]
         if StorageSecrets.REGION_NAME in self.storage_secrets:
             params["region"] = self.storage_secrets[StorageSecrets.REGION_NAME]
+        if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
+            params["assume_role_arn"] = self.storage_secrets[
+                StorageSecrets.AWS_ASSUME_ROLE
+            ]
 
         return params
 
@@ -97,7 +101,12 @@ class S3StorageClient(BaseStorageClient):
             else:
                 auth_method = AWSAuthMethod.AUTOMATIC.value
 
-            s3_client = get_s3_client(auth_method, s3_secrets)
+            # Extract assume_role_arn if present for role assumption
+            assume_role_arn = None
+            if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
+                assume_role_arn = self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
+
+            s3_client = get_s3_client(auth_method, s3_secrets, assume_role_arn)
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:
             logger.error(f"Failed to generate S3 presigned URL: {e}")
