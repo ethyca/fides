@@ -1,34 +1,23 @@
 import {
   AntButton as Button,
+  AntEmpty as Empty,
   AntFlex as Flex,
+  AntInput as Input,
+  AntPopover as Popover,
   AntRadio as Radio,
+  AntSkeleton as Skeleton,
+  AntSpace as Space,
+  AntText as Text,
   ChevronDownIcon,
   ConfirmationModal,
-  HStack,
-  Input,
-  InputGroup,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverFooter,
-  PopoverHeader,
-  PopoverTrigger,
-  Portal,
-  Skeleton,
-  Text,
-  theme,
+  Icons,
   useDisclosure,
   useToast,
-  VStack,
 } from "fidesui";
 import { Form, Formik, FormikState, useFormikContext } from "formik";
 import { useEffect, useMemo, useState } from "react";
 
-import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
 import { getErrorMessage } from "~/features/common/helpers";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
 import {
   CustomReportResponse,
@@ -225,160 +214,186 @@ export const CustomReportTemplates = ({
   const applyDisabled =
     (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
 
+  const popoverContent = (
+    <div data-testid="custom-reports-popover">
+      <Formik
+        initialValues={{}}
+        onSubmit={handleApplyTemplate}
+        onReset={handleReset}
+      >
+        <Form>
+          <div
+            className="relative p-3"
+            style={{
+              borderBottom: "var(--ant-popover-title-border-bottom)",
+            }}
+          >
+            <Button
+              size="small"
+              disabled={isEmpty}
+              htmlType="reset"
+              className="absolute left-3 top-3"
+              data-testid="custom-reports-reset-button"
+            >
+              Reset
+            </Button>
+            <Button
+              type="text"
+              size="small"
+              icon={<Icons.Close />}
+              className="absolute right-3 top-3"
+              onClick={handleCancel}
+              data-testid="custom-report-popover-cancel"
+            />
+            <div
+              className="text-center"
+              style={{
+                color: "var(--ant-color-text-heading)",
+                fontWeight: "var(--ant-font-weight-strong)",
+              }}
+            >
+              {CUSTOM_REPORTS_TITLE}
+            </div>
+            <div className="mt-3">
+              <Input
+                size="small"
+                placeholder="Search..."
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="px-5 pb-1 pt-3">
+            {isEmpty && (
+              <Empty
+                image={
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    size="small"
+                    aria-label={`add ${CUSTOM_REPORT_TITLE}`}
+                    icon={<Icons.Add />}
+                    onClick={modalOnOpen}
+                    data-testid="add-report-button"
+                  />
+                }
+                description={`No ${CUSTOM_REPORTS_TITLE.toLowerCase()} have been created. Start by applying your preferred filter and column settings, then create a ${CUSTOM_REPORT_TITLE.toLowerCase()} for easy access later.`}
+                styles={{
+                  image: {
+                    height: "24px",
+                  },
+                }}
+              />
+            )}
+            {!isEmpty &&
+              (isCustomReportsLoading ? (
+                <Skeleton
+                  active
+                  paragraph={{ rows: 3, width: "100%" }}
+                  title={false}
+                  className="pt-2"
+                />
+              ) : (
+                <Radio.Group
+                  onChange={(e) => handleSelection(e.target.value)}
+                  value={selectedReportId}
+                  style={{ width: "100%" }}
+                >
+                  <Space direction="vertical" className="w-full" size="small">
+                    {searchResults?.map((customReport) => (
+                      <Flex
+                        key={customReport.id}
+                        justify={
+                          userCanDeleteReports ? "space-between" : "flex-start"
+                        }
+                        align="center"
+                      >
+                        <Radio
+                          value={customReport.id}
+                          name="custom-report-id"
+                          data-testid="custom-report-item"
+                        >
+                          {customReport.name}
+                        </Radio>
+                        {userCanDeleteReports && (
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<Icons.TrashCan />}
+                            onClick={() => setReportToDelete(customReport)}
+                            data-testid="delete-report-button"
+                          />
+                        )}
+                      </Flex>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              ))}
+          </div>
+
+          <Flex className="px-5 py-4" gap="small">
+            {userCanCreateReports && tableStateToSave && (
+              <Button
+                size="small"
+                onClick={modalOnOpen}
+                className="flex-1 gap-1 pl-0"
+                data-testid="create-report-button"
+                htmlType="button"
+                icon={<Icons.Add />}
+                iconPosition="start"
+              >
+                Create {CUSTOM_REPORT_TITLE.toLowerCase()}
+              </Button>
+            )}
+            <Button
+              size="small"
+              type="primary"
+              loading={showSpinner}
+              disabled={applyDisabled}
+              className="flex-1"
+              data-testid="apply-report-button"
+              htmlType="submit"
+            >
+              Apply
+            </Button>
+          </Flex>
+        </Form>
+      </Formik>
+    </div>
+  );
+
   return (
     <>
       <Popover
-        placement="bottom-end"
-        isOpen={popoverIsOpen}
-        onClose={handleApplyTemplate}
-        id="custom-reports-selection"
+        content={popoverContent}
+        trigger="click"
+        placement="bottomRight"
+        open={popoverIsOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            popoverOnOpen();
+          } else {
+            handleApplyTemplate();
+          }
+        }}
+        styles={{
+          root: {
+            width: "320px",
+            // @ts-expect-error setting a custom css variable
+            "--ant-popover-inner-content-padding": "0",
+          },
+        }}
+        zIndex={1400} // below chakra modals
       >
-        <PopoverTrigger>
-          <Button
-            className="max-w-40"
-            icon={<ChevronDownIcon />}
-            iconPosition="end"
-            data-testid="custom-reports-trigger"
-            onClick={popoverOnToggle}
-          >
-            <Text noOfLines={1} display="inline-block">
-              {buttonLabel}
-            </Text>
-          </Button>
-        </PopoverTrigger>
-        <Portal>
-          <PopoverContent data-testid="custom-reports-popover">
-            <PopoverArrow />
-            <Formik
-              initialValues={{}}
-              onSubmit={handleApplyTemplate}
-              onReset={handleReset}
-            >
-              <Form>
-                <Button
-                  size="small"
-                  disabled={isEmpty}
-                  htmlType="reset"
-                  className="absolute left-2 top-2"
-                  data-testid="custom-reports-reset-button"
-                >
-                  Reset
-                </Button>
-                <PopoverHeader textAlign="center">
-                  <Text fontSize="sm">{CUSTOM_REPORTS_TITLE}</Text>
-                  <InputGroup size="sm" mt={3}>
-                    <Input
-                      type="text"
-                      borderRadius="md"
-                      placeholder="Search..."
-                      onChange={(e) => handleSearch(e.target.value)}
-                    />
-                  </InputGroup>
-                </PopoverHeader>
-                <PopoverCloseButton
-                  top={2}
-                  onClick={handleCancel}
-                  data-testid="custom-report-popover-cancel"
-                />
-                <PopoverBody px={6} pt={5} pb={1}>
-                  {isEmpty && (
-                    <VStack
-                      px={2}
-                      pt={6}
-                      pb={3}
-                      data-testid="custom-reports-empty-state"
-                    >
-                      <Button
-                        type="primary"
-                        size="small"
-                        aria-label={`add ${CUSTOM_REPORT_TITLE}`}
-                        icon={<AddIcon />}
-                        onClick={modalOnOpen}
-                        className="rounded-full"
-                        data-testid="add-report-button"
-                      />
-                      <Text fontSize="sm" textAlign="center" color="gray.500">
-                        No {CUSTOM_REPORTS_TITLE.toLowerCase()} have been
-                        created. Start by applying your preferred filter and
-                        column settings, then create a{" "}
-                        {CUSTOM_REPORT_TITLE.toLowerCase()} for easy access
-                        later.
-                      </Text>
-                    </VStack>
-                  )}
-                  {!isEmpty &&
-                    (isCustomReportsLoading ? (
-                      <VStack pb={2}>
-                        <Skeleton width="100%" height={theme.space[4]} />
-                        <Skeleton width="100%" height={theme.space[4]} />
-                        <Skeleton width="100%" height={theme.space[4]} />
-                      </VStack>
-                    ) : (
-                      <Radio.Group
-                        onChange={(e) => handleSelection(e.target.value)}
-                        value={selectedReportId}
-                        className="flex flex-col gap-2"
-                      >
-                        {searchResults?.map((customReport) => (
-                          <Flex
-                            key={customReport.id}
-                            className={
-                              userCanDeleteReports
-                                ? "justify-between"
-                                : "justify-start"
-                            }
-                          >
-                            <Radio
-                              value={customReport.id}
-                              name="custom-report-id"
-                              data-testid="custom-report-item"
-                            >
-                              <Text fontSize="sm">{customReport.name}</Text>
-                            </Radio>
-                            {userCanDeleteReports && (
-                              <Button
-                                type="text"
-                                size="small"
-                                icon={<TrashCanOutlineIcon fontSize={16} />}
-                                onClick={() => setReportToDelete(customReport)}
-                                data-testid="delete-report-button"
-                              />
-                            )}
-                          </Flex>
-                        ))}
-                      </Radio.Group>
-                    ))}
-                </PopoverBody>
-                <PopoverFooter border="none" px={6} pb={4} pt={4}>
-                  <HStack>
-                    {userCanCreateReports && tableStateToSave && (
-                      <Button
-                        size="small"
-                        onClick={modalOnOpen}
-                        className="w-full"
-                        data-testid="create-report-button"
-                        htmlType="button"
-                      >
-                        + Create {CUSTOM_REPORT_TITLE.toLowerCase()}
-                      </Button>
-                    )}
-                    <Button
-                      size="small"
-                      type="primary"
-                      loading={showSpinner}
-                      disabled={applyDisabled}
-                      className="w-full"
-                      data-testid="apply-report-button"
-                      htmlType="submit"
-                    >
-                      Apply
-                    </Button>
-                  </HStack>
-                </PopoverFooter>
-              </Form>
-            </Formik>
-          </PopoverContent>
-        </Portal>
+        <Button
+          className="max-w-40"
+          icon={<ChevronDownIcon />}
+          iconPosition="end"
+          data-testid="custom-reports-trigger"
+          onClick={popoverOnToggle}
+        >
+          <Text ellipsis>{buttonLabel}</Text>
+        </Button>
       </Popover>
       <CustomReportCreationModal
         isOpen={modalIsOpen}
