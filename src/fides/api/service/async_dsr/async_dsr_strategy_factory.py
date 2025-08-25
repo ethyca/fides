@@ -47,10 +47,10 @@ def get_strategy(
             f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"
         )
     strategy = SupportedAsyncDSRStrategies[strategy_name].value
+    if strategy.configuration_model is None:
+        return strategy()
     try:
-        strategy_config: StrategyConfiguration = strategy.get_configuration_model()(
-            **configuration
-        )
+        strategy_config: StrategyConfiguration = strategy.configuration_model(**configuration)
         return strategy(configuration=strategy_config)
     except ValidationError as e:
         raise FidesopsValidationError(message=str(e))
