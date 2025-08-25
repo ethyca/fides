@@ -67,20 +67,32 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
-        assert {
-            "identifier": first_saas_type,
-            "type": SystemType.saas.value,
-            "human_readable": first_saas_template.human_readable,
-            "encoded_icon": first_saas_template.icon,
-            "authorization_required": first_saas_template.authorization_required,
-            "user_guide": first_saas_template.user_guide,
-            "supported_actions": [
-                action.value for action in first_saas_template.supported_actions
-            ],
-        } in data
+        # For SaaS connections, find the actual item in data since category/enabled_features
+        # can have real values based on the connector configuration
+        saas_item = next(
+            (item for item in data if item["identifier"] == first_saas_type), None
+        )
+        assert saas_item is not None, f"SaaS type {first_saas_type} not found in data"
+
+        # Verify core fields match expected values
+        assert saas_item["identifier"] == first_saas_type
+        assert saas_item["type"] == SystemType.saas.value
+        assert saas_item["human_readable"] == first_saas_template.human_readable
+        assert saas_item["encoded_icon"] == first_saas_template.icon
+        assert (
+            saas_item["authorization_required"]
+            == first_saas_template.authorization_required
+        )
+        assert saas_item["user_guide"] == first_saas_template.user_guide
+        assert saas_item["supported_actions"] == [
+            action.value for action in first_saas_template.supported_actions
+        ]
         assert "saas" not in [item["identifier"] for item in data]
         assert "https" not in [item["identifier"] for item in data]
         assert "custom" not in [item["identifier"] for item in data]
