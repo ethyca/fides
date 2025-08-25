@@ -55,16 +55,33 @@ class TestPrivacyRequestCreate:
 
     def test_valid_location_formats(self):
         """Test that various valid ISO 3166 location formats are accepted"""
-        valid_locations = ["US", "US-CA", "GB", "CA-ON", "EEA", "us", "us-ca", "eea"]
+        valid_locations = [
+            "US",
+            "US-CA",
+            "GB",
+            "CA-ON",
+            "EEA",  # Standard formats
+            "us",
+            "us-ca",
+            "eea",  # Lowercase
+            "US_CA",
+            "us_ny",
+            "GB_SC",  # Underscores (should be normalized)
+        ]
 
         for location in valid_locations:
-            PrivacyRequestCreate(
+            privacy_request = PrivacyRequestCreate(
                 **{
                     "identity": {"email": "user@example.com"},
                     "policy_key": DEFAULT_ACCESS_POLICY,
                     "location": location,
                 }
             )
+            # Verify location is normalized to uppercase with hyphens
+            if location:
+                assert privacy_request.location is not None
+                assert privacy_request.location.isupper()
+                assert "_" not in privacy_request.location
 
     def test_invalid_location_formats(self):
         """Test that invalid location formats raise ValidationError"""
@@ -74,8 +91,7 @@ class TestPrivacyRequestCreate:
             "US-CALIFORNIA",  # Region code too long
             "US-",  # Empty region code
             "12",  # Numeric country code
-            "US CA",  # Space instead of hyphen
-            "US_CA",  # Underscore instead of hyphen
+            "US CA",  # Space instead of hyphen/underscore
             "",  # Empty string
         ]
 
@@ -107,3 +123,31 @@ class TestPrivacyRequestCreate:
                 "policy_key": DEFAULT_ACCESS_POLICY,
             }
         )
+
+    def test_location_normalization(self):
+        """Test that location codes are properly normalized"""
+        test_cases = [
+            # (input, expected_output)
+            ("us", "US"),
+            ("US", "US"),
+            ("us-ca", "US-CA"),
+            ("US-CA", "US-CA"),
+            ("us_ca", "US-CA"),  # Underscore converted to hyphen
+            ("US_NY", "US-NY"),  # Underscore converted to hyphen
+            ("eea", "EEA"),
+            ("EEA", "EEA"),
+            ("gb", "GB"),
+            ("ca_on", "CA-ON"),  # Underscore with lowercase
+        ]
+
+        for input_location, expected_output in test_cases:
+            privacy_request = PrivacyRequestCreate(
+                **{
+                    "identity": {"email": "user@example.com"},
+                    "policy_key": DEFAULT_ACCESS_POLICY,
+                    "location": input_location,
+                }
+            )
+            assert (
+                privacy_request.location == expected_output
+            ), f"Expected {expected_output}, got {privacy_request.location} for input {input_location}"

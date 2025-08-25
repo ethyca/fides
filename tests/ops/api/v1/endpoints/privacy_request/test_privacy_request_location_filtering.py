@@ -230,3 +230,56 @@ class TestPrivacyRequestLocationFiltering:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["location"] == "US-CA"
+
+    def test_underscore_location_filtering(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_requests_with_locations,
+    ):
+        """Test that location filtering supports underscore input."""
+        url = V1_URL_PREFIX + PRIVACY_REQUESTS
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # Test underscore country code
+        response = api_client.get(url + "?location=us", headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 3  # US, US-CA, US-NY
+
+        # Test underscore subdivision code
+        response = api_client.get(url + "?location=us_ca", headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["location"] == "US-CA"
+
+        # Test mixed case with underscore
+        response = api_client.get(url + "?location=Ca_On", headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["location"] == "CA-ON"
+
+    def test_invalid_location_filtering(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_requests_with_locations,
+    ):
+        """Test that invalid location filtering returns no results."""
+        url = V1_URL_PREFIX + PRIVACY_REQUESTS
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # Test completely invalid location format
+        response = api_client.get(url + "?location=INVALID123", headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 0  # No results for invalid format
+
+        # Test mixed case input
+        response = api_client.get(url + "?location=Us-Ca", headers=auth_header)
+        assert response.status_code == 200
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["location"] == "US-CA"

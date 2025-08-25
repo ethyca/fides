@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
@@ -19,18 +18,8 @@ from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.api.util.enums import ColumnSort
+from fides.api.util.text import normalize_location_code
 from fides.config import CONFIG
-
-# Regex to validate a ISO 3166-2 code:
-# 1. Starts with a 2 letter country code (e.g. "US", "GB") (see ISO 3166-1 alpha-2)
-# 2. (Optional) Ends with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X") (see ISO 3166-2)
-# 3. Country & region codes must be separated by a hyphen (e.g. "US-CA")
-#
-# Fides also supports a special `EEA` geolocation code to denote the European
-# Economic Area; this is not part of ISO 3166-2, but is supported for convenience.
-VALID_ISO_3166_LOCATION_REGEX = re.compile(
-    r"^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$", re.IGNORECASE
-)
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -132,13 +121,12 @@ class PrivacyRequestCreate(FidesSchema):
     def validate_location(
         cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
     ) -> Optional[str]:
-        """Validate location follows ISO 3166 format"""
-        if value is not None and not VALID_ISO_3166_LOCATION_REGEX.match(value):
-            raise ValueError(
-                f"Invalid location format '{value}'. Must follow ISO 3166 format "
-                "(e.g., 'US', 'US-CA', 'GB', 'CA-ON', 'EEA')"
-            )
-        return value
+        """Validate and normalize location to ISO 3166 format"""
+        if value is None:
+            return None
+
+        # nuance here is the validator will coalesce values from the less strict format to ISO 3166 (i.e. "us_ca" -> "US-CA")
+        return normalize_location_code(value)
 
 
 class PrivacyRequestResubmit(PrivacyRequestCreate):

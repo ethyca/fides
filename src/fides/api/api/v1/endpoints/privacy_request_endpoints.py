@@ -124,6 +124,7 @@ from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.storage_util import StorageJSONEncoder
+from fides.api.util.text import normalize_location_code
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -544,17 +545,25 @@ def _filter_privacy_request_queryset(
         # Support filtering by exact location match or country prefix
         # e.g., "US" matches both "US" and "US-CA", "US-NY", etc.
         # "US-CA" matches only "US-CA"
-        if "-" in location:
-            # Exact match for subdivision codes
-            query = query.filter(PrivacyRequest.location == location.upper())
+        # Also normalize input to handle underscores and case insensitivity
+
+        try:
+            normalized_location = normalize_location_code(location)
+        except ValueError:
+            # If normalization fails, treat as no results to prevent errors
+            query = query.filter(False)
         else:
-            # Country code - match country or any subdivision of that country
-            query = query.filter(
-                or_(
-                    PrivacyRequest.location == location.upper(),
-                    PrivacyRequest.location.ilike(f"{location.upper()}-%"),
+            if "-" in normalized_location:
+                # Exact match for subdivision codes
+                query = query.filter(PrivacyRequest.location == normalized_location)
+            else:
+                # Country code - match country or any subdivision of that country
+                query = query.filter(
+                    or_(
+                        PrivacyRequest.location == normalized_location,
+                        PrivacyRequest.location.ilike(f"{normalized_location}-%"),
+                    )
                 )
-            )
     if status:
         query = query.filter(PrivacyRequest.status.in_(status))
     if created_lt:
