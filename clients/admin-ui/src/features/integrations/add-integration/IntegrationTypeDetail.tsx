@@ -11,6 +11,7 @@ const IntegrationTypeDetail = ({
   <>
     <IntegrationBox
       integration={integrationType?.placeholder}
+      integrationTypeInfo={integrationType}
       onConfigureClick={onConfigure}
     />
     {integrationType?.overview}

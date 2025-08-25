@@ -6,9 +6,10 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import { AccessLevel, ConnectionType } from "~/types/api";
+import { AccessLevel } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const MYSQL_PLACEHOLDER = {
   name: "MySQL",
@@ -62,7 +63,7 @@ const MYSQL_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <MySQLOverview />,
   tags: MYSQL_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default MYSQL_TYPE_INFO;

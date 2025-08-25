@@ -8,18 +8,23 @@ import {
 } from "fidesui";
 import { ReactNode } from "react";
 
+import { useConnectionLogo } from "~/features/common/hooks";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
-import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
+import getIntegrationTypeInfo, {
+  IntegrationTypeInfo,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
+import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 const IntegrationBox = ({
   integration,
+  integrationTypeInfo,
   showTestNotice,
   otherButtons,
   showDeleteButton,
@@ -27,6 +32,7 @@ const IntegrationBox = ({
   onConfigureClick,
 }: {
   integration?: ConnectionConfigurationResponse;
+  integrationTypeInfo?: IntegrationTypeInfo;
   showTestNotice?: boolean;
   otherButtons?: ReactNode;
   showDeleteButton?: boolean;
@@ -36,10 +42,16 @@ const IntegrationBox = ({
   const { testConnection, isLoading, testData } =
     useTestConnection(integration);
 
-  const integrationTypeInfo = getIntegrationTypeInfo(
-    integration?.connection_type,
-    integration?.saas_config?.type,
-  );
+  // Get logo data using the custom hook
+  const logoData = useConnectionLogo(integration);
+
+  // Use provided integrationTypeInfo or fallback to generating it
+  const typeInfo =
+    integrationTypeInfo ||
+    getIntegrationTypeInfo(
+      integration?.connection_type,
+      integration?.saas_config?.type,
+    );
 
   // Only pass the saas type if it's a valid SaasConnectionTypes value
   const saasType = integration?.saas_config?.type;
@@ -68,7 +80,7 @@ const IntegrationBox = ({
       data-testid={`integration-info-${integration?.key}`}
     >
       <Flex>
-        <ConnectionTypeLogo data={integration ?? ""} boxSize="50px" />
+        <ConnectionTypeLogo data={logoData ?? ""} boxSize="50px" />
         <Flex direction="column" flexGrow={1} marginLeft="16px">
           <Text color="gray.700" fontWeight="semibold">
             {integration?.name || "(No name)"}
@@ -80,7 +92,7 @@ const IntegrationBox = ({
             />
           ) : (
             <Text color="gray.700" fontSize="sm" fontWeight="semibold" mt={1}>
-              {integrationTypeInfo.category}
+              {getCategoryLabel(typeInfo.category)}
             </Text>
           )}
         </Flex>
@@ -117,7 +129,7 @@ const IntegrationBox = ({
         </div>
       </Flex>
       <Wrap marginTop="16px">
-        {integrationTypeInfo.tags.map((item) => (
+        {typeInfo.tags.map((item: string) => (
           <Tag key={item}>{item}</Tag>
         ))}
       </Wrap>

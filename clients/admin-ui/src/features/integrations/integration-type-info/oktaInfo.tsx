@@ -1,7 +1,8 @@
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import { AccessLevel, ConnectionType } from "~/types/api";
+import { AccessLevel } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const OKTA_INTEGRATION_PLACEHOLDER = {
   name: "Okta",
@@ -40,7 +41,7 @@ const OKTA_INTEGRATION_TYPE_INFO = {
   tags: OKTA_TAGS,
   overview: <OktaIntegrationOverview />,
   description: OKTA_DESCRIPTION,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default OKTA_INTEGRATION_TYPE_INFO;

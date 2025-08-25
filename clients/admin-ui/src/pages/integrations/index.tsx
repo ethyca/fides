@@ -13,11 +13,14 @@ import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
+import { useConnectionLogo } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { formatDate } from "~/features/common/utils";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
@@ -25,7 +28,7 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -33,11 +36,25 @@ interface IntegrationTableData extends ConnectionConfigurationResponse {
   integrationTypeInfo: ReturnType<typeof getIntegrationTypeInfo>;
 }
 
+// Component to render logo for each integration row
+const IntegrationLogo = ({
+  integration,
+}: {
+  integration: ConnectionConfigurationResponse;
+}) => {
+  const logoData = useConnectionLogo(integration);
+  return <ConnectionTypeLogo data={logoData} boxSize="20px" />;
+};
+
 const IntegrationListView: NextPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+
+  const {
+    flags: { newIntegrationManagement },
+  } = useFlags();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -56,8 +73,27 @@ const IntegrationListView: NextPage = () => {
     [page, pageSize],
   );
 
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = useMemo(
+    () => connectionTypesData?.items || [],
+    [connectionTypesData],
+  );
+
+  // Filter connection types based on the new integration management flag
+  const connectionTypesToQuery = useMemo(() => {
+    if (newIntegrationManagement) {
+      // Show all integrations (including SaaS) when the flag is enabled
+      return SUPPORTED_INTEGRATIONS;
+    }
+    // Hide SaaS integrations when the flag is disabled
+    return SUPPORTED_INTEGRATIONS.filter(
+      (type) => type !== ConnectionType.SAAS,
+    );
+  }, [newIntegrationManagement]);
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: SUPPORTED_INTEGRATIONS,
+    connection_type: connectionTypesToQuery,
     size: pageSize,
     page,
     search: searchTerm.trim() || undefined,
@@ -73,9 +109,10 @@ const IntegrationListView: NextPage = () => {
         integrationTypeInfo: getIntegrationTypeInfo(
           integration.connection_type,
           integration.saas_config?.type,
+          connectionTypes,
         ),
       })) ?? [],
-    [items],
+    [items, connectionTypes],
   );
 
   const handleManageClick = (integration: ConnectionConfigurationResponse) => {
@@ -90,7 +127,7 @@ const IntegrationListView: NextPage = () => {
       width: 250,
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
-          <ConnectionTypeLogo data={record} boxSize="20px" />
+          <IntegrationLogo integration={record} />
           <Typography.Text
             ellipsis={{ tooltip: name || "(No name)" }}
             className="font-semibold"
@@ -105,11 +142,11 @@ const IntegrationListView: NextPage = () => {
       dataIndex: "connection_type",
       key: "connection_type",
       width: 150,
-      render: (connectionType) => {
+      render: (connectionType, record) => {
         const typeInfo = getIntegrationTypeInfo(
           connectionType,
-          items?.find((item) => item.connection_type === connectionType)
-            ?.saas_config?.type,
+          record.saas_config?.type,
+          connectionTypes,
         );
         return typeInfo.placeholder.name || connectionType;
       },

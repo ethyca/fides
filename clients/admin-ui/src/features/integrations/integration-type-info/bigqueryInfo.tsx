@@ -10,8 +10,10 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
+import {
+  ConnectionCategory,
+  IntegrationFeatureEnum,
+} from "~/features/integrations/types";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 const PROJECT_CREATION_GUIDE_URL =
