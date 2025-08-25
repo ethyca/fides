@@ -232,10 +232,14 @@ class TestGetConnections:
         } in data
 
         # Verify that all expected SaaS types are present in the data
-        expected_saas_identifiers = [template[0] for template in expected_saas_templates]
+        expected_saas_identifiers = [
+            template[0] for template in expected_saas_templates
+        ]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert saas_id in actual_identifiers, f"Expected SaaS type {saas_id} not found in response"
+            assert (
+                saas_id in actual_identifiers
+            ), f"Expected SaaS type {saas_id} not found in response"
 
     def test_search_connection_types_case_insensitive(
         self, api_client, generate_auth_header, url
@@ -275,7 +279,9 @@ class TestGetConnections:
         expected_saas_identifiers = [template[0] for template in expected_saas_types]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert saas_id in actual_identifiers, f"Expected SaaS type {saas_id} not found in response"
+            assert (
+                saas_id in actual_identifiers
+            ), f"Expected SaaS type {saas_id} not found in response"
 
         search = "Re"
         expected_saas_types = [
@@ -333,7 +339,9 @@ class TestGetConnections:
         expected_saas_identifiers = [template[0] for template in expected_saas_types]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert saas_id in actual_identifiers, f"Expected SaaS type {saas_id} not found in response"
+            assert (
+                saas_id in actual_identifiers
+            ), f"Expected SaaS type {saas_id} not found in response"
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])

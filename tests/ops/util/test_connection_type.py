@@ -35,14 +35,21 @@ def test_get_connection_types():
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
     # For SaaS connections, we need to find the actual data in the response
     # since category and enabled_features can have real values
-    saas_data_in_response = next((item for item in data if item["identifier"] == first_saas_type), None)
+    saas_data_in_response = next(
+        (item for item in data if item["identifier"] == first_saas_type), None
+    )
     assert saas_data_in_response is not None
     assert saas_data_in_response["type"] == SystemType.saas.value
     assert saas_data_in_response["human_readable"] == first_saas_template.human_readable
     assert saas_data_in_response["encoded_icon"] == first_saas_template.icon
-    assert saas_data_in_response["authorization_required"] == first_saas_template.authorization_required
+    assert (
+        saas_data_in_response["authorization_required"]
+        == first_saas_template.authorization_required
+    )
     assert saas_data_in_response["user_guide"] == first_saas_template.user_guide
-    assert saas_data_in_response["supported_actions"] == [action.value for action in first_saas_template.supported_actions]
+    assert saas_data_in_response["supported_actions"] == [
+        action.value for action in first_saas_template.supported_actions
+    ]
     # The new fields exist (might be None or have values)
     assert "category" in saas_data_in_response
     assert "tags" in saas_data_in_response
@@ -76,7 +83,9 @@ STRIPE = "stripe"
 def connection_type_objects():
     # Get actual connection types to build expected data dynamically
     # This ensures our tests match the actual output including category/enabled_features
-    actual_connection_types = {ct.identifier: ct.model_dump(mode="json") for ct in get_connection_types()}
+    actual_connection_types = {
+        ct.identifier: ct.model_dump(mode="json") for ct in get_connection_types()
+    }
 
     return {
         ConnectionType.postgres.value: {
