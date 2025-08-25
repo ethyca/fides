@@ -77,7 +77,6 @@ export const CustomReportTemplates = ({
   const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
   const {
     isOpen: popoverIsOpen,
-    onToggle: popoverOnToggle,
     onOpen: popoverOnOpen,
     onClose: popoverOnClose,
   } = useDisclosure();
@@ -390,7 +389,6 @@ export const CustomReportTemplates = ({
           icon={<ChevronDownIcon />}
           iconPosition="end"
           data-testid="custom-reports-trigger"
-          onClick={popoverOnToggle}
         >
           <Text ellipsis>{buttonLabel}</Text>
         </Button>
