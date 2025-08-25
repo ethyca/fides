@@ -13,6 +13,7 @@ export interface TableState<TSortKey extends string = string>
   sortOrder?: SortOrder;
   columnFilters?: Record<string, FilterValue | null>;
   searchQuery?: string;
+  columnWidths?: Record<string, number>;
   paginationConfig?: PaginationConfig;
 }
 
@@ -22,6 +23,8 @@ export interface TableStateWithHelpers<TSortKey extends string = string>
   updatePageSize: (pageSize: number) => void;
   updateSorting: (sortKey?: TSortKey, sortOrder?: SortOrder) => void;
   updateFilters: (filters: Record<string, FilterValue | null>) => void;
+  updateColumnWidth: (columnKey: string, width: number) => void;
+  resetColumnWidths: () => void;
   resetState: () => void;
   updateSearch: (searchQuery: string) => void;
 }
@@ -52,6 +55,7 @@ export interface TableStateWithHelpers<TSortKey extends string = string>
  * ```
  */
 export interface TableStateConfig<TSortKey extends string = string> {
+  tableId: string;
   /** Pagination configuration */
   pagination?: PaginationConfig;
   /** Sorting configuration with optional URL validation */

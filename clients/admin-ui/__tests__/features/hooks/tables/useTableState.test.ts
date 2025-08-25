@@ -5,6 +5,28 @@ import { act, renderHook } from "@testing-library/react";
 // eslint-disable-next-line global-require
 jest.mock("nuqs", () => require("../../../utils/nuqs-mock").nuqsMock);
 
+// Mock localStorage for useLocalStorage hook
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: jest.fn((key: string) => store[key] || null),
+    setItem: jest.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+  };
+})();
+
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+});
+
 // Import after mocks so the mocked nuqs is used by the hook
 // eslint-disable-next-line import/first
 import { useTableState } from "../../../../src/features/common/table/hooks";
@@ -21,12 +43,14 @@ type SortKey = "name" | "createdAt" | "title";
 describe("useTableState", () => {
   beforeEach(() => {
     nuqsTestHelpers.reset();
+    localStorageMock.clear();
   });
 
   it("manages table state with custom configuration", () => {
     const onStateChange = jest.fn();
     const { result } = renderHook(() =>
       useTableState<SortKey>({
+        tableId: "test-table",
         pagination: {
           defaultPageSize: 30,
           pageSizeOptions: [10, 20, 30],
@@ -47,6 +71,7 @@ describe("useTableState", () => {
     expect(result.current.sortOrder).toBe("ascend");
     expect(result.current.columnFilters).toEqual({});
     expect(result.current.searchQuery).toBeUndefined();
+    expect(result.current.columnWidths).toEqual({});
     expect(result.current.paginationConfig).toEqual({
       pageSizeOptions: [10, 20, 30],
       showSizeChanger: false,
@@ -58,6 +83,8 @@ describe("useTableState", () => {
     expect(typeof result.current.updateSearch).toBe("function");
     expect(typeof result.current.updatePageIndex).toBe("function");
     expect(typeof result.current.updatePageSize).toBe("function");
+    expect(typeof result.current.updateColumnWidth).toBe("function");
+    expect(typeof result.current.resetColumnWidths).toBe("function");
     expect(typeof result.current.resetState).toBe("function");
 
     // Test that functions execute without errors
@@ -71,6 +98,14 @@ describe("useTableState", () => {
 
     expect(() => {
       act(() => result.current.updateSearch("query"));
+    }).not.toThrow();
+
+    expect(() => {
+      act(() => result.current.updateColumnWidth("name", 150));
+    }).not.toThrow();
+
+    expect(() => {
+      act(() => result.current.resetColumnWidths());
     }).not.toThrow();
 
     expect(() => {
@@ -94,6 +129,7 @@ describe("useTableState", () => {
 
     const { result } = renderHook(() =>
       useTableState<SortKey>({
+        tableId: "test-table",
         pagination: { defaultPageSize: 25 },
         sorting: {
           defaultSortKey: "createdAt",
@@ -118,6 +154,8 @@ describe("useTableState", () => {
     expect(typeof result.current.updateSearch).toBe("function");
     expect(typeof result.current.updatePageIndex).toBe("function");
     expect(typeof result.current.updatePageSize).toBe("function");
+    expect(typeof result.current.updateColumnWidth).toBe("function");
+    expect(typeof result.current.resetColumnWidths).toBe("function");
     expect(typeof result.current.resetState).toBe("function");
 
     // Test some URL updates work (detailed behavior tested in individual hook tests)
@@ -147,6 +185,7 @@ describe("useTableState", () => {
 
     const { result } = renderHook(() =>
       useTableState<SortKey>({
+        tableId: "test-table",
         pagination: { defaultPageSize: 25 },
         sorting: {
           defaultSortKey: "createdAt",
@@ -162,5 +201,72 @@ describe("useTableState", () => {
     expect(result.current.sortOrder).toBe("descend"); // Falls back to default because null with ?? operator
     expect(result.current.columnFilters).toEqual({});
     expect(result.current.searchQuery).toBeUndefined(); // Empty string from URL is converted to undefined
+    expect(result.current.columnWidths).toEqual({}); // Column widths start empty from localStorage
+  });
+
+  it("manages column widths with localStorage", () => {
+    const { result } = renderHook(() =>
+      useTableState<SortKey>({
+        tableId: "test-table",
+      }),
+    );
+
+    // Initial column widths should be empty
+    expect(result.current.columnWidths).toEqual({});
+
+    // Update a column width
+    act(() => {
+      result.current.updateColumnWidth("name", 150);
+    });
+
+    // Column width should be updated
+    expect(result.current.columnWidths).toEqual({ name: 150 });
+
+    // Update another column width
+    act(() => {
+      result.current.updateColumnWidth("createdAt", 200);
+    });
+
+    // Both column widths should be present
+    expect(result.current.columnWidths).toEqual({ name: 150, createdAt: 200 });
+
+    // Reset column widths
+    act(() => {
+      result.current.resetColumnWidths();
+    });
+
+    // Column widths should be empty again
+    expect(result.current.columnWidths).toEqual({});
+
+    // Verify localStorage was called
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      "test-table:column-widths",
+      JSON.stringify({ name: 150 }),
+    );
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      "test-table:column-widths",
+      JSON.stringify({ name: 150, createdAt: 200 }),
+    );
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      "test-table:column-widths",
+      JSON.stringify({}),
+    );
+  });
+
+  it("persists column widths across hook instances", () => {
+    // Set up localStorage with existing column widths
+    localStorageMock.setItem(
+      "test-table:column-widths",
+      JSON.stringify({ name: 120, status: 80 }),
+    );
+
+    const { result } = renderHook(() =>
+      useTableState<SortKey>({
+        tableId: "test-table",
+      }),
+    );
+
+    // Column widths should be loaded from localStorage
+    expect(result.current.columnWidths).toEqual({ name: 120, status: 80 });
   });
 });

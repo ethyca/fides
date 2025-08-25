@@ -3,6 +3,7 @@ import { parseAsJson, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo } from "react";
 
 import { usePagination, useSearch, useSorting } from "../../hooks";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 import type { SortOrder } from "../../sorting";
 import type {
   QueryStateUpdates,
@@ -23,11 +24,18 @@ const createFilterParsers = () => {
 };
 
 /**
- * Custom hook for managing table state with URL synchronization
+ * Custom hook for managing table state with URL synchronization and localStorage persistence
  *
  * This hook manages all table features (pagination, sorting, filtering, search) and
- * synchronizes them with URL query parameters using NuQS. The URL query parameters
- * are the single source of truth for table state.
+ * synchronizes them with URL query parameters using NuQS. Column widths are stored
+ * in localStorage as user preferences. The URL query parameters are the single source
+ * of truth for table state, while localStorage handles user UI preferences.
+ *
+ * Features:
+ * - Pagination, sorting, filtering, search synced to URL
+ * - Column widths persisted to localStorage (per tableId)
+ * - Type-safe column constraints with TypeScript enums
+ * - Automatic reset functionality for all state
  *
  * @param config - Configuration for table state management
  * @returns Table state and update functions
@@ -35,10 +43,11 @@ const createFilterParsers = () => {
  * @example
  * ```tsx
  * // Basic usage with default settings
- * const tableState = useTableState();
+ * const tableState = useTableState({ tableId: "my-table" });
  *
  * // With custom default values
  * const tableState = useTableState({
+ *   tableId: "my-table",
  *   pagination: { defaultPageSize: 50 },
  *   sorting: { defaultSortKey: 'name', defaultSortOrder: 'ascend' }
  * });
@@ -51,6 +60,7 @@ const createFilterParsers = () => {
  * }
  *
  * const tableState = useTableState<MyTableColumns>({
+ *   tableId: "my-table",
  *   pagination: { defaultPageSize: 25 },
  *   sorting: {
  *     validColumns: Object.values(MyTableColumns), // Enforces URL validation
@@ -59,18 +69,37 @@ const createFilterParsers = () => {
  *   },
  *   onStateChange: (state) => console.log('Table state changed:', state)
  * });
- * // Now URL sorting is validated against the column enum
+ *
+ * // Using with CustomTable for column resizing
+ * const columns = [
+ *   {
+ *     title: 'Name',
+ *     dataIndex: 'name',
+ *     key: 'name',
+ *     width: tableState.columnWidths?.name || 150, // Use stored width or default
+ *   },
+ *   // ... other columns
+ * ];
+ *
+ * // The CustomTable component will call tableState.updateColumnWidth
+ * // when columns are resized, automatically persisting to localStorage
  * ```
  */
 export const useTableState = <TSortKey extends string = string>(
-  config: TableStateConfig<TSortKey> = {},
+  config: TableStateConfig<TSortKey>,
 ) => {
   const {
+    tableId,
     pagination: paginationConfig = {},
     sorting: sortingConfig = {},
     search: searchConfig = {},
     onStateChange,
   } = config;
+
+  // Use local storage for column widths (user preference, not URL state)
+  const [columnWidths, setColumnWidths] = useLocalStorage<
+    Record<string, number>
+  >(`${tableId}:column-widths`, {});
 
   // Use the standalone pagination hook
   const {
@@ -107,7 +136,7 @@ export const useTableState = <TSortKey extends string = string>(
     history: "push",
   });
 
-  // Create current state from query state, pagination hook, sorting hook, and search hook (URL is the single source of truth)
+  // Create current state from query state, pagination hook, sorting hook, search hook, and local storage
   const currentState: TableState<TSortKey> = useMemo(() => {
     const state = {
       pageIndex,
@@ -116,10 +145,19 @@ export const useTableState = <TSortKey extends string = string>(
       sortOrder,
       columnFilters: queryState.filters ?? {},
       searchQuery,
+      columnWidths,
     };
 
     return state;
-  }, [queryState, pageIndex, pageSize, sortKey, sortOrder, searchQuery]);
+  }, [
+    queryState,
+    pageIndex,
+    pageSize,
+    sortKey,
+    sortOrder,
+    searchQuery,
+    columnWidths,
+  ]);
 
   const updateSorting = useCallback(
     (sf?: TSortKey, so?: SortOrder) => {
@@ -150,6 +188,21 @@ export const useTableState = <TSortKey extends string = string>(
     },
     [updateSearchOnly, resetPagination],
   );
+
+  const updateColumnWidth = useCallback(
+    (columnKey: string, width: number) => {
+      const updatedWidths = {
+        ...columnWidths,
+        [columnKey]: width,
+      };
+      setColumnWidths(updatedWidths);
+    },
+    [columnWidths, setColumnWidths],
+  );
+
+  const resetColumnWidths = useCallback(() => {
+    setColumnWidths({});
+  }, [setColumnWidths]);
 
   const resetState = useCallback(() => {
     // Reset all URL state
@@ -191,6 +244,11 @@ export const useTableState = <TSortKey extends string = string>(
     // Search
     searchQuery: currentState.searchQuery,
     updateSearch,
+
+    // Column widths (stored in localStorage)
+    columnWidths: currentState.columnWidths,
+    updateColumnWidth,
+    resetColumnWidths,
 
     // Reset
     resetState,

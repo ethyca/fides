@@ -18,6 +18,7 @@ export type CustomTableProps<RecordType = any> = Omit<
   "columns"
 > & {
   columns: CustomColumnsType<RecordType>;
+  onColumnResize?: (columnKey: string, width: number) => void;
 };
 
 /**
@@ -36,14 +37,13 @@ export const CustomTable = <RecordType = any,>({
   dataSource,
   components,
   columns,
+  onColumnResize,
   scroll = { scrollToFirstRowOnChange: true, x: "max-content" },
   ...props
 }: CustomTableProps<RecordType>) => {
-  const [newColumns, setNewColumns] = React.useState(columns);
-
-  React.useEffect(() => {
-    setNewColumns(columns);
-  }, [columns]);
+  const [columnWidths, setColumnWidths] = React.useState<
+    Record<string, number>
+  >({});
 
   const paginationDefaults = React.useMemo(() => {
     if (pagination === false || !pagination) {
@@ -60,35 +60,45 @@ export const CustomTable = <RecordType = any,>({
   }, [pagination, dataSource]);
 
   const handleResize =
-    (index: number) =>
+    (columnKey: string) =>
     (_: React.SyntheticEvent<Element>, data: ResizeCallbackData) => {
-      setNewColumns((cols) => {
-        const nextColumns = [...cols];
-        if (nextColumns[index]) {
-          nextColumns[index].width = data.size.width;
-        }
-        return nextColumns;
-      });
+      // Update local width state for immediate UI feedback
+      setColumnWidths((prev) => ({
+        ...prev,
+        [columnKey]: data.size.width,
+      }));
+
+      // Call the onColumnResize callback if provided
+      if (onColumnResize) {
+        onColumnResize(columnKey, data.size.width);
+      }
     };
 
   const customColumns = React.useMemo(() => {
-    return newColumns.map((column, index: number) => ({
-      ...column,
-      onHeaderCell: (data: React.HTMLAttributes<HTMLTableCellElement>) => {
-        // Get existing onHeaderCell props if they exist
-        const existingProps = column.onHeaderCell?.(data) || {};
+    return columns.map((column) => {
+      const columnKey = String(column.key);
+      // Use local width if available, otherwise fall back to column width
+      const currentWidth = columnWidths[columnKey] ?? column.width;
 
-        // Merge with our menu prop
-        return {
-          ...existingProps,
-          menu: column.menu,
-          disableResize: column.disableResize,
-          width: column.width,
-          onResize: handleResize(index),
-        };
-      },
-    }));
-  }, [columns, newColumns]);
+      return {
+        ...column,
+        width: currentWidth,
+        onHeaderCell: (data: React.HTMLAttributes<HTMLTableCellElement>) => {
+          // Get existing onHeaderCell props if they exist
+          const existingProps = column.onHeaderCell?.(data) || {};
+
+          // Merge with our menu prop
+          return {
+            ...existingProps,
+            menu: column.menu,
+            disableResize: column.disableResize,
+            width: currentWidth,
+            onResize: handleResize(columnKey),
+          };
+        },
+      };
+    });
+  }, [columns, columnWidths, handleResize]);
 
   return (
     <Table

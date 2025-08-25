@@ -90,6 +90,7 @@ export const useDiscoveredAssetsTable = ({
     useActionCenterTabs(systemId);
 
   const tableState = useTableState<DiscoveredAssetsColumnKeys>({
+    tableId: "discovered-assets-table",
     sorting: {
       validColumns: Object.values(DiscoveredAssetsColumnKeys),
     },
@@ -108,6 +109,8 @@ export const useDiscoveredAssetsTable = ({
     updateSorting,
     updatePageIndex,
     updatePageSize,
+    columnWidths,
+    updateColumnWidth,
   } = tableState;
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
@@ -215,7 +218,7 @@ export const useDiscoveredAssetsTable = ({
         title: "System",
         dataIndex: DiscoveredAssetsColumnKeys.SYSTEM,
         key: DiscoveredAssetsColumnKeys.SYSTEM,
-        width: 200,
+        width: columnWidths?.[DiscoveredAssetsColumnKeys.SYSTEM] || 200,
         render: (_, record) =>
           !!record.monitor_config_id && (
             <SystemCell
@@ -228,7 +231,7 @@ export const useDiscoveredAssetsTable = ({
       {
         title: "Categories of consent",
         key: DiscoveredAssetsColumnKeys.DATA_USES,
-        width: 400,
+        width: columnWidths?.[DiscoveredAssetsColumnKeys.DATA_USES] || 400,
         filters: convertToAntFilters(
           filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
         ),
@@ -244,7 +247,7 @@ export const useDiscoveredAssetsTable = ({
         title: "Locations",
         dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
         key: DiscoveredAssetsColumnKeys.LOCATIONS,
-        width: 250,
+        width: columnWidths?.[DiscoveredAssetsColumnKeys.LOCATIONS] || 250,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -364,6 +367,7 @@ export const useDiscoveredAssetsTable = ({
       baseColumns.push({
         title: "Actions",
         key: DiscoveredAssetsColumnKeys.ACTIONS,
+        width: columnWidths?.[DiscoveredAssetsColumnKeys.ACTIONS] || 120,
         fixed: "right",
         render: (_, record) => (
           <DiscoveredAssetActionsCell
@@ -380,6 +384,7 @@ export const useDiscoveredAssetsTable = ({
     columnFilters,
     sortKey,
     sortOrder,
+    columnWidths,
     assetConsentStatusLabels,
     actionsDisabled,
     isLocationsExpanded,
@@ -623,6 +628,7 @@ export const useDiscoveredAssetsTable = ({
     updateSorting,
     updatePageIndex,
     updatePageSize,
+    updateColumnWidth,
     resetState,
 
     // Ant Design table integration

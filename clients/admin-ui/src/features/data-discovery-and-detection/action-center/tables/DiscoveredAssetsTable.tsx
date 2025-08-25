@@ -63,6 +63,7 @@ export const DiscoveredAssetsTable = ({
     columns,
     searchQuery,
     updateSearch,
+    updateColumnWidth,
     resetState,
 
     // Ant Design table integration
@@ -232,6 +233,7 @@ export const DiscoveredAssetsTable = ({
         {...tableProps}
         columns={columns}
         rowSelection={selectionProps}
+        onColumnResize={updateColumnWidth}
         locale={{
           emptyText: (
             <Empty
