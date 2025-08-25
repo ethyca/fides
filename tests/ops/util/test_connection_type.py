@@ -270,3 +270,195 @@ def test_get_connection_type_secret_schemas_test_website():
     assert test_website_schema == website_schema
     assert test_website_schema["required"] == ["url"]
     assert test_website_schema["properties"]["url"]["format"] == "uri"
+
+
+def test_get_saas_connection_types_with_display_info(monkeypatch):
+    """Test SaaS connection type extraction with display_info containing category, tags, and enabled_features."""
+    from unittest.mock import Mock, patch
+
+    from fides.api.schemas.enums.connection_category import ConnectionCategory
+    from fides.api.schemas.enums.integration_feature import IntegrationFeature
+    from fides.api.schemas.saas.display_info import SaaSDisplayInfo
+    from fides.api.schemas.saas.saas_config import SaaSConfig
+    from fides.api.util.connection_type import get_saas_connection_types
+
+    # Mock a connector template
+    mock_template = Mock()
+    mock_template.human_readable = "Test Connector"
+    mock_template.icon = "test-icon"
+    mock_template.authorization_required = True
+    mock_template.user_guide = "https://example.com"
+    mock_template.supported_actions = [ActionType.access, ActionType.erasure]
+    mock_template.config = '{"test": "config"}'
+
+    # Mock display info with values
+    mock_display_info = Mock()
+    mock_display_info.category = ConnectionCategory.ECOMMERCE
+    mock_display_info.tags = ["tag1", "tag2"]
+    mock_display_info.enabled_features = [IntegrationFeature.DSR_AUTOMATION]
+
+    # Mock SaaS config with display_info
+    mock_saas_config = Mock()
+    mock_saas_config.display_info = mock_display_info
+
+    with (
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+        ) as mock_connector_types,
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+        ) as mock_get_template,
+        patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
+        patch(
+            "fides.api.util.connection_type.load_config_from_string"
+        ) as mock_load_config,
+    ):
+
+        mock_connector_types.return_value = ["test_connector"]
+        mock_get_template.return_value = mock_template
+        mock_load_config.return_value = {"test": "config"}
+        mock_saas_config_class.return_value = mock_saas_config
+
+        result = get_saas_connection_types()
+
+        assert len(result) == 1
+        connection_type = result[0]
+
+        assert connection_type.identifier == "test_connector"
+        assert connection_type.category == ConnectionCategory.ECOMMERCE
+        assert connection_type.tags == ["tag1", "tag2"]
+        assert connection_type.enabled_features == [IntegrationFeature.DSR_AUTOMATION]
+
+
+def test_get_saas_connection_types_with_no_display_info(monkeypatch):
+    """Test SaaS connection type extraction when display_info is None."""
+    from unittest.mock import Mock, patch
+
+    from fides.api.util.connection_type import get_saas_connection_types
+
+    # Mock a connector template
+    mock_template = Mock()
+    mock_template.human_readable = "Test Connector"
+    mock_template.icon = "test-icon"
+    mock_template.authorization_required = False
+    mock_template.user_guide = None
+    mock_template.supported_actions = [ActionType.access]
+    mock_template.config = '{"test": "config"}'
+
+    # Mock SaaS config with no display_info
+    mock_saas_config = Mock()
+    mock_saas_config.display_info = None
+
+    with (
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+        ) as mock_connector_types,
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+        ) as mock_get_template,
+        patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
+        patch(
+            "fides.api.util.connection_type.load_config_from_string"
+        ) as mock_load_config,
+    ):
+
+        mock_connector_types.return_value = ["test_connector"]
+        mock_get_template.return_value = mock_template
+        mock_load_config.return_value = {"test": "config"}
+        mock_saas_config_class.return_value = mock_saas_config
+
+        result = get_saas_connection_types()
+
+        assert len(result) == 1
+        connection_type = result[0]
+
+        assert connection_type.identifier == "test_connector"
+        assert connection_type.category is None
+        assert connection_type.tags is None
+        assert connection_type.enabled_features is None
+
+
+def test_get_saas_connection_types_config_parsing_exception():
+    """Test SaaS connection type extraction when config parsing fails."""
+    from unittest.mock import Mock, patch
+
+    from fides.api.util.connection_type import get_saas_connection_types
+
+    # Mock a connector template
+    mock_template = Mock()
+    mock_template.human_readable = "Test Connector"
+    mock_template.icon = "test-icon"
+    mock_template.authorization_required = False
+    mock_template.user_guide = None
+    mock_template.supported_actions = [ActionType.erasure]
+    mock_template.config = "invalid json"
+
+    with (
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+        ) as mock_connector_types,
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+        ) as mock_get_template,
+        patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
+    ):
+
+        mock_connector_types.return_value = ["test_connector"]
+        mock_get_template.return_value = mock_template
+        # Make SaaSConfig constructor raise an exception
+        mock_saas_config_class.side_effect = Exception("Config parsing failed")
+
+        result = get_saas_connection_types()
+
+        assert len(result) == 1
+        connection_type = result[0]
+
+        assert connection_type.identifier == "test_connector"
+        # When config parsing fails, display info should default to None
+        assert connection_type.category is None
+        assert connection_type.tags is None
+        assert connection_type.enabled_features is None
+
+
+def test_get_saas_connection_types_load_config_exception():
+    """Test SaaS connection type extraction when load_config_from_string fails."""
+    from unittest.mock import Mock, patch
+
+    from fides.api.util.connection_type import get_saas_connection_types
+
+    # Mock a connector template
+    mock_template = Mock()
+    mock_template.human_readable = "Test Connector"
+    mock_template.icon = "test-icon"
+    mock_template.authorization_required = False
+    mock_template.user_guide = None
+    mock_template.supported_actions = [ActionType.consent]
+    mock_template.config = "invalid config"
+
+    with (
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+        ) as mock_connector_types,
+        patch(
+            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+        ) as mock_get_template,
+        patch(
+            "fides.api.util.connection_type.load_config_from_string"
+        ) as mock_load_config,
+    ):
+
+        mock_connector_types.return_value = ["test_connector"]
+        mock_get_template.return_value = mock_template
+        # Make load_config_from_string raise an exception
+        mock_load_config.side_effect = Exception("Config loading failed")
+
+        result = get_saas_connection_types()
+
+        assert len(result) == 1
+        connection_type = result[0]
+
+        assert connection_type.identifier == "test_connector"
+        # When config loading fails, display info should default to None
+        assert connection_type.category is None
+        assert connection_type.tags is None
+        assert connection_type.enabled_features is None
