@@ -282,6 +282,7 @@ export const CustomReportTemplates = ({
                     height: "24px",
                   },
                 }}
+                data-testid="custom-reports-empty-state"
               />
             )}
             {!isEmpty &&
