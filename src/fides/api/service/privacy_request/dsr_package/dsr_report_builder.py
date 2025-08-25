@@ -1,17 +1,22 @@
 import json
 import os
+import re
 import time as time_module
 import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
+from sqlalchemy.orm import object_session
 
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_patterns import (
+    PrivacyRequestRedactionPatterns,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.util.storage_util import StorageJSONEncoder, format_size
 
@@ -78,6 +83,14 @@ class DsrReportBuilder:
         # Track used filenames across all attachments
         self.used_filenames: set[str] = set()
 
+        # Load redaction patterns from database using the privacy request's session
+        self.redaction_patterns: List[str] = []
+        db = object_session(privacy_request)
+        if db is not None:
+            patterns = PrivacyRequestRedactionPatterns.get_patterns(db)
+            if patterns:
+                self.redaction_patterns = patterns
+
     def _populate_template(
         self,
         template_path: str,
@@ -119,7 +132,9 @@ class DsrReportBuilder:
         if filename and contents:
             self.out.writestr(f"{filename}", contents.encode("utf-8"))
 
-    def _add_dataset(self, dataset_name: str, collections: dict[str, Any]) -> None:
+    def _add_dataset(
+        self, dataset_name: str, collections: dict[str, Any], index: int
+    ) -> None:
         """
         Generates a page for each collection in the dataset and an index page for the dataset.
         Tracks the generated links to build a root level index after each collection has been processed.
@@ -127,20 +142,29 @@ class DsrReportBuilder:
         Args:
             dataset_name: the name of the dataset to add
             collections: the collections to add to the dataset
+            index: index of the dataset
         """
+        # compute final dataset name once (may be redacted)
+        dataset_display_name = self._redact_name("dataset", dataset_name, index)
+
         # track links to collection indexes
         collection_links = {}
-        for collection_name, rows in collections.items():
-            collection_url = f"{collection_name}/index.html"
-            self._add_collection(rows, dataset_name, collection_name)
-            collection_links[collection_name] = collection_url
+        for collection_index, (original_collection_name, rows) in enumerate(
+            collections.items(), start=1
+        ):
+            collection_display_name = self._redact_name(
+                "collection", original_collection_name, collection_index
+            )
+            collection_url = f"{collection_display_name}/index.html"
+            self._add_collection(rows, dataset_display_name, collection_display_name)
+            collection_links[collection_display_name] = collection_url
 
         # generate dataset index page
         self._add_file(
-            f"data/{dataset_name}/index.html",
+            f"data/{dataset_display_name}/index.html",
             self._populate_template(
                 "templates/dataset_index.html",
-                dataset_name,
+                dataset_display_name,
                 None,
                 collection_links,
             ),
@@ -220,19 +244,22 @@ class DsrReportBuilder:
         return dict(processed_attachments)
 
     def _add_collection(
-        self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
+        self,
+        rows: list[dict[str, Any]],
+        dataset_display_name: str,
+        collection_display_name: str,
     ) -> None:
         """
         Adds a collection to the zip file.
 
         Args:
             rows: the rows to add to the collection
-            dataset_name: the name of the dataset to add the collection to
-            collection_name: the name of the collection to add
+            dataset_display_name: the final dataset name to use for file paths
+            collection_display_name: the final collection name to use for file paths
         """
         items_content = []
 
-        for index, collection_item in enumerate(rows, 1):
+        for item_index, collection_item in enumerate(rows, 1):
             # Create a copy of the item data to avoid modifying the original
             item_data = collection_item.copy()
 
@@ -243,26 +270,35 @@ class DsrReportBuilder:
                 # Process attachments and get their URLs
                 attachment_links = self._write_attachment_content(
                     item_data["attachments"],
-                    f"data/{dataset_name}/{collection_name}",
+                    f"data/{dataset_display_name}/{collection_display_name}",
                 )
                 # Add the attachment URLs to the item data
                 item_data["attachments"] = attachment_links
 
-            # Add item content to the list
+            # Add indexing to field names
+            item_data_with_display_names = {}
+            for field_index, (field_name, field_value) in enumerate(
+                item_data.items(), start=1
+            ):
+                field_display_name = self._redact_name("field", field_name, field_index)
+                item_data_with_display_names[field_display_name] = field_value
+
+            # Add item content to the list with item heading
+            item_heading = f"{collection_display_name} (item #{item_index})"
             items_content.append(
                 {
-                    "index": index,
-                    "heading": f"{collection_name} (item #{index})",
-                    "data": item_data,
+                    "index": item_index,
+                    "heading": item_heading,
+                    "data": item_data_with_display_names,
                 }
             )
 
         # Generate the collection index page
         self._add_file(
-            f"data/{dataset_name}/{collection_name}/index.html",
+            f"data/{dataset_display_name}/{collection_display_name}/index.html",
             self._populate_template(
                 "templates/collection_index.html",
-                collection_name,
+                collection_display_name,
                 None,
                 {"collection_items": items_content},
             ),
@@ -321,6 +357,34 @@ class DsrReportBuilder:
 
         return datasets
 
+    def _redact_name(self, name_type: str, name: str, index: int) -> str:
+        """
+        Helper function to create indexed names for datasets, collections, and fields.
+        Only applies redaction if the name matches any of the configured regex patterns.
+
+        Args:
+            name_type: The type of name ("dataset", "collection", or "field")
+            name: The original name to be indexed
+            index: The index to use directly (should already be 1-based)
+
+        Returns:
+            Indexed name in the format "type_N" (e.g., "dataset_1", "collection_2", "field_3")
+            if the name matches a redaction pattern, otherwise returns the original name.
+        """
+        # Check if name matches any redaction patterns
+        if self.redaction_patterns:
+            for pattern in self.redaction_patterns:
+                try:
+                    if re.search(pattern, name, re.IGNORECASE):
+                        return f"{name_type}_{index}"
+                except re.error:
+                    # Skip invalid regex patterns
+                    logger.warning(f"Invalid regex pattern: {pattern}")
+                    continue
+
+        # Return original name if no patterns match or no patterns configured
+        return name
+
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -349,14 +413,25 @@ class DsrReportBuilder:
             ]  # pylint: disable=invalid-name
 
             # Add regular datasets in alphabetical order
-            for dataset_name in regular_datasets:
-                self._add_dataset(dataset_name, datasets[dataset_name])
-                self.main_links[dataset_name] = f"data/{dataset_name}/index.html"
+            for index, original_dataset_name in enumerate(regular_datasets, start=1):
+                dataset_display_name = self._redact_name(
+                    "dataset", original_dataset_name, index
+                )
+                self._add_dataset(
+                    original_dataset_name, datasets[original_dataset_name], index
+                )
+                self.main_links[dataset_display_name] = f"data/{dataset_display_name}/index.html"
 
             # Add Additional Data if it exists
             if "dataset" in datasets:
-                self._add_dataset("dataset", datasets["dataset"])
-                self.main_links["Additional Data"] = "data/dataset/index.html"
+                additional_data_index = (
+                    len(regular_datasets) + 1
+                )  # Index after all regular datasets
+                dataset_display_name = self._redact_name(
+                    "dataset", "dataset", additional_data_index
+                )
+                self._add_dataset("dataset", datasets["dataset"], additional_data_index)
+                self.main_links["Additional Data"] = f"data/{dataset_display_name}/index.html"
 
             # Add Additional Attachments last if it exists
             if "attachments" in self.dsr_data:

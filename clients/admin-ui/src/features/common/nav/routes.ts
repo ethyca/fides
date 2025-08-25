@@ -67,6 +67,7 @@ export const EMAIL_TEMPLATES_ROUTE = "/settings/email-templates";
 export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
+export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
 export const MESSAGING_ROUTE = "/messaging";
 export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
 export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";

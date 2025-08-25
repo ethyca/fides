@@ -30,6 +30,7 @@ DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
 DATASET = "dataset"
 DELETE = "delete"
+PRIVACY_REQUEST_REDACTION_PATTERNS = "privacy-request-redaction-patterns"
 ENCRYPTION = "encryption"
 MESSAGING_TEMPLATE = "messaging-template"
 EVALUATION = "evaluation"
@@ -134,6 +135,11 @@ DATA_USE_UPDATE = f"{DATA_USE}:{UPDATE}"
 DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
 
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
+
+PRIVACY_REQUEST_REDACTION_PATTERNS_READ = f"{PRIVACY_REQUEST_REDACTION_PATTERNS}:{READ}"
+PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE = (
+    f"{PRIVACY_REQUEST_REDACTION_PATTERNS}:{UPDATE}"
+)
 DATASET_DELETE = f"{DATASET}:{DELETE}"
 DATASET_READ = f"{DATASET}:{READ}"
 DATASET_TEST = f"{DATASET}:{TEST}"
@@ -288,6 +294,8 @@ SCOPE_DOCS = {
     DATA_USE_UPDATE: "Update data uses",
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
+    PRIVACY_REQUEST_REDACTION_PATTERNS_READ: "View privacy request redaction patterns",
+    PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE: "Update privacy request redaction patterns",
     DATASET_READ: "View datasets",
     DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
