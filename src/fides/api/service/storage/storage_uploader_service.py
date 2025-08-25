@@ -69,12 +69,15 @@ def upload(
     return uploader(db, config, data, privacy_request)
 
 
-def get_extension(resp_format: ResponseFormat) -> str:
+def get_extension(resp_format: ResponseFormat, enable_streaming: bool = False) -> str:
     """
     Determine file extension for various response formats.
 
     CSV's and HTML reports are zipped together before uploading to s3.
     """
+    if enable_streaming:
+        return "zip"
+
     if resp_format == ResponseFormat.csv:
         return "zip"
 
@@ -87,7 +90,9 @@ def get_extension(resp_format: ResponseFormat) -> str:
     raise NotImplementedError(f"No extension defined for {resp_format}")
 
 
-def _construct_file_key(request_id: str, config: StorageConfig) -> str:
+def _construct_file_key(
+    request_id: str, config: StorageConfig, enable_streaming: bool = False
+) -> str:
     """Constructs file key based on desired naming convention and request id, e.g. 23847234.json"""
     naming = config.details.get(
         StorageDetails.NAMING.value, FileNaming.request_id.value
@@ -95,7 +100,7 @@ def _construct_file_key(request_id: str, config: StorageConfig) -> str:
     if naming != FileNaming.request_id.value:
         raise ValueError(f"File naming of {naming} not supported")
 
-    return f"{request_id}.{get_extension(config.format)}"  # type: ignore
+    return f"{request_id}.{get_extension(config.format, enable_streaming)}"  # type: ignore
 
 
 def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
@@ -138,13 +143,13 @@ def _s3_uploader(
     else:
         logger.warning("Config secrets is None or empty!")
 
-    file_key: str = _construct_file_key(privacy_request.id, config)
+    enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
+    file_key: str = _construct_file_key(privacy_request.id, config, enable_streaming)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
     document = None
 
-    enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
     if enable_streaming:
         file_key = f"{privacy_request.id}.zip"
         # Use streaming upload for better memory efficiency

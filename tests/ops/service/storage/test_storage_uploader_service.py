@@ -220,7 +220,7 @@ def test_uploader_s3_streaming_success(
     storage_config = StorageConfig.create(db, data=mock_config)
 
     mock_upload_to_s3_streaming.return_value = (
-        f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
+        f"https://some-bucket.s3.amazonaws.com/{request_id}.zip"
     )
     upload_data = {"phone": "1231231234"}
 
@@ -235,7 +235,7 @@ def test_uploader_s3_streaming_success(
         mock_config["secrets"],
         upload_data,
         mock_config["details"][StorageDetails.BUCKET.value],
-        f"{request_id}.json",
+        f"{request_id}.zip",
         "json",
         privacy_request,
         None,
@@ -780,3 +780,6 @@ def test_get_extension():
     assert get_extension(ResponseFormat.json) == "json"
     assert get_extension(ResponseFormat.csv) == "zip"
     assert get_extension(ResponseFormat.html) == "zip"
+    assert get_extension(ResponseFormat.csv, enable_streaming=True) == "zip"
+    assert get_extension(ResponseFormat.html, enable_streaming=True) == "zip"
+    assert get_extension(ResponseFormat.json, enable_streaming=True) == "zip"
