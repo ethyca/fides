@@ -76,7 +76,6 @@ class SmartOpenStorageClient:
         key: str,
         body: Any,
         content_type: Optional[str] = None,
-        metadata: Optional[dict[str, str]] = None,
     ) -> dict[str, Any]:
         """Upload an object to storage using smart-open.
 
@@ -85,7 +84,6 @@ class SmartOpenStorageClient:
             key: Object key/path
             body: Object content (file-like object, bytes, or string)
             content_type: MIME type of the object
-            metadata: Optional object metadata
 
         Returns:
             Response dictionary with upload result
@@ -191,7 +189,6 @@ class SmartOpenStorageClient:
         upload_id: str,
         part_number: int,
         body: bytes,
-        metadata: Optional[dict[str, str]] = None,
     ) -> UploadPartResponse:
         """Upload a part (simplified for smart-open).
 
@@ -200,7 +197,7 @@ class SmartOpenStorageClient:
         """
         # For smart-open, we just upload the part directly
         part_key = f"{key}.part{part_number}"
-        self.put_object(bucket, part_key, body, metadata=metadata)
+        self.put_object(bucket, part_key, body)
 
         return UploadPartResponse(
             part_number=part_number,
@@ -220,7 +217,6 @@ class SmartOpenStorageClient:
         bucket: str,
         key: str,
         content_type: Optional[str] = None,
-        metadata: Optional[dict[str, str]] = None,
     ) -> Any:
         """Get a writable stream for uploading data.
 
@@ -230,7 +226,6 @@ class SmartOpenStorageClient:
             bucket: Storage bucket/container name
             key: Object key/path
             content_type: MIME type of the object
-            metadata: Optional object metadata
 
         Returns:
             Writable file-like object

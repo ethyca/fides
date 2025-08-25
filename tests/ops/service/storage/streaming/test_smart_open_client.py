@@ -186,7 +186,6 @@ class TestSmartOpenStorageClient:
         bucket = "test-bucket"
         key = "test/file.txt"
         content_type = "text/plain"
-        metadata = {"key1": "value1"}
         file_data = BytesIO(b"test file content")
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:
@@ -209,7 +208,7 @@ class TestSmartOpenStorageClient:
 
                 client = SmartOpenStorageClient("s3", storage_secrets)
                 result = client.put_object(
-                    bucket, key, file_data, content_type, metadata
+                    bucket, key, file_data, content_type
                 )
 
                 assert result["status"] == "success"
@@ -466,7 +465,6 @@ class TestSmartOpenStorageClient:
         bucket = "test-bucket"
         key = "test/file.txt"
         content_type = "text/plain"
-        metadata = {"key1": "value1"}
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:
             mock_provider_client = create_autospec(BaseStorageClient)
@@ -479,13 +477,13 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.api.service/storage/streaming/smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream
 
                 client = SmartOpenStorageClient("s3", storage_secrets)
-                result = client.stream_upload(bucket, key, content_type, metadata)
+                result = client.stream_upload(bucket, key, content_type)
 
                 assert result == mock_stream
                 mock_provider_client.build_uri.assert_called_once_with(bucket, key)
@@ -637,14 +635,13 @@ class TestSmartOpenStorageClient:
         bucket = "test-bucket"
         key = "test/file.txt"
         content_type = "text/plain"
-        metadata = {"key1": "value1"}
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:
             mock_provider_client = create_autospec(BaseStorageClient)
             mock_create.return_value = mock_provider_client
 
             client = SmartOpenStorageClient("s3", storage_secrets)
-            result = client.create_multipart_upload(bucket, key, content_type, metadata)
+            result = client.create_multipart_upload(bucket, key, content_type)
 
             # The SmartOpenStorageClient.create_multipart_upload returns a dummy response
             # and doesn't call the provider client
@@ -909,13 +906,12 @@ class TestSmartOpenStorageClient:
                 expected_bytes = "test unicode content: 🚀🌟✨".encode("utf-8")
                 mock_file.write.assert_called_once_with(expected_bytes)
 
-    def test_put_object_handles_none_metadata(self):
-        """Test put_object handles None metadata correctly."""
+    def test_put_object_basic_functionality(self):
+        """Test put_object basic functionality."""
         storage_secrets = {"test": "secret"}
         bucket = "test-bucket"
         key = "test/file.txt"
         data = b"test content"
-        metadata = None
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:
             mock_provider_client = create_autospec(BaseStorageClient)
@@ -936,10 +932,9 @@ class TestSmartOpenStorageClient:
                 mock_smart_open.return_value = mock_file
 
                 client = SmartOpenStorageClient("s3", storage_secrets)
-                result = client.put_object(bucket, key, data, metadata=metadata)
+                result = client.put_object(bucket, key, data)
 
                 assert result["status"] == "success"
-                # Should not include metadata in transport_params
                 mock_smart_open.assert_called_once_with(
                     "s3://test-bucket/test/file.txt",
                     "wb",

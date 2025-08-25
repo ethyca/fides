@@ -6,6 +6,7 @@ import pytest
 
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
+from fides.api.schemas.storage.storage import AWSAuthMethod
 
 
 class TestS3StorageClient:
@@ -106,11 +107,80 @@ class TestS3StorageClient:
         with pytest.raises(Exception, match="S3 client error"):
             client.generate_presigned_url("test-bucket", "test-key")
 
-    def test_generate_presigned_url_default_auth_method(self):
-        """Test that default auth method is used when not specified."""
-        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_with_credentials_uses_secret_keys(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that SECRET_KEYS auth method is used when AWS credentials are present."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+        }
         client = S3StorageClient(secrets)
 
-        # The client should work with just the basic secrets
-        # auth_method is now hardcoded to SECRET_KEYS in the implementation
-        assert StorageSecrets.AWS_ACCESS_KEY_ID in client.storage_secrets
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with SECRET_KEYS auth method
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.SECRET_KEYS.value, secrets
+        )
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_without_credentials_uses_automatic(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that AUTOMATIC auth method is used when AWS credentials are not present."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        # No AWS credentials provided
+        secrets = {StorageSecrets.REGION_NAME: "us-west-2"}
+        client = S3StorageClient(secrets)
+
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with AUTOMATIC auth method
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.AUTOMATIC.value, secrets
+        )
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch(
+        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+    )
+    def test_generate_presigned_url_with_empty_credentials_uses_automatic(
+        self, mock_create_presigned, mock_get_s3_client
+    ):
+        """Test that AUTOMATIC auth method is used when AWS credentials are empty strings."""
+        mock_s3_client = Mock()
+        mock_get_s3_client.return_value = mock_s3_client
+        mock_create_presigned.return_value = "https://test-url.com"
+
+        # Empty AWS credentials
+        secrets = {
+            StorageSecrets.AWS_ACCESS_KEY_ID: "",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "",
+            StorageSecrets.REGION_NAME: "us-west-2",
+        }
+        client = S3StorageClient(secrets)
+
+        result = client.generate_presigned_url("test-bucket", "test-key")
+
+        assert result == "https://test-url.com"
+        # Verify get_s3_client was called with AUTOMATIC auth method
+        mock_get_s3_client.assert_called_once_with(
+            AWSAuthMethod.AUTOMATIC.value, secrets
+        )

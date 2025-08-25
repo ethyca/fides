@@ -85,8 +85,17 @@ class S3StorageClient(BaseStorageClient):
             # get_s3_client expects dict[StorageSecrets, Any] with enum keys
             s3_secrets = self.storage_secrets
 
-            # Use a default auth method since we only have enum keys now
-            auth_method = AWSAuthMethod.SECRET_KEYS.value
+            # Determine auth method based on available credentials
+            # If AWS credentials are present, use SECRET_KEYS, otherwise use AUTOMATIC
+            if (
+                StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets
+                and StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets
+                and self.storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID]
+                and self.storage_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY]
+            ):
+                auth_method = AWSAuthMethod.SECRET_KEYS.value
+            else:
+                auth_method = AWSAuthMethod.AUTOMATIC.value
 
             s3_client = get_s3_client(auth_method, s3_secrets)
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
