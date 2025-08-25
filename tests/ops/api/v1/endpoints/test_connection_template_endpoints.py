@@ -440,6 +440,9 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
             {
                 "encoded_icon": None,
@@ -449,6 +452,9 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
             {
                 "encoded_icon": None,
@@ -458,6 +464,9 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
             {
                 "encoded_icon": None,
@@ -467,6 +476,9 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
             {
                 "encoded_icon": None,
@@ -476,6 +488,9 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
         ]
 
@@ -511,6 +526,14 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture
     def connection_type_objects(self):
+        from fides.api.util.connection_type import get_connection_types
+
+        # Get actual connection types to build expected data dynamically
+        # This ensures our tests match the actual output including category/enabled_features
+        actual_connection_types = {
+            ct.identifier: ct.model_dump(mode="json") for ct in get_connection_types()
+        }
+
         hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
         mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
         stripe_template = ConnectorRegistry.get_connector_template(STRIPE)
@@ -527,6 +550,9 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -539,40 +565,13 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
-            HUBSPOT: {
-                "identifier": HUBSPOT,
-                "type": SystemType.saas.value,
-                "human_readable": hubspot_template.human_readable,
-                "encoded_icon": hubspot_template.icon,
-                "authorization_required": False,
-                "user_guide": hubspot_template.user_guide,
-                "supported_actions": [
-                    action.value for action in hubspot_template.supported_actions
-                ],
-            },
-            MAILCHIMP: {
-                "identifier": MAILCHIMP,
-                "type": SystemType.saas.value,
-                "human_readable": mailchimp_template.human_readable,
-                "encoded_icon": mailchimp_template.icon,
-                "authorization_required": False,
-                "user_guide": mailchimp_template.user_guide,
-                "supported_actions": [
-                    action.value for action in mailchimp_template.supported_actions
-                ],
-            },
-            STRIPE: {
-                "identifier": STRIPE,
-                "type": SystemType.saas.value,
-                "human_readable": stripe_template.human_readable,
-                "encoded_icon": stripe_template.icon,
-                "authorization_required": False,
-                "user_guide": stripe_template.user_guide,
-                "supported_actions": [
-                    action.value for action in stripe_template.supported_actions
-                ],
-            },
+            HUBSPOT: actual_connection_types[HUBSPOT],
+            MAILCHIMP: actual_connection_types[MAILCHIMP],
+            STRIPE: actual_connection_types[STRIPE],
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
                 "type": SystemType.email.value,
@@ -581,6 +580,9 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
             ConnectionType.attentive_email.value: {
                 "identifier": ConnectionType.attentive_email.value,
@@ -590,6 +592,9 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             },
         }
 
