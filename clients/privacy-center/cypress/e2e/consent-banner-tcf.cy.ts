@@ -243,6 +243,17 @@ describe("Fides-js TCF", () => {
         cy.get("div#fides-banner").should("not.exist");
       });
     });
+
+    it("shows a loading error message when GVL is missing from full experience", () => {
+      stubTCFExperience({
+        experienceFullOverride: {
+          gvl: {} as never,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.getByTestId("tcf-loading-error-message").should("exist");
+      });
+    });
   });
 
   describe("Payload optimization", () => {
