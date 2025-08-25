@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -10,7 +8,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-import fides.api.deps as deps
+from fides.api.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
@@ -24,7 +22,7 @@ router = APIRouter(tags=["Privacy Center"], prefix=V1_URL_PREFIX)
 
 
 def get_privacy_request_from_path(
-    privacy_request_id: str, db: Session = Depends(deps.get_db)
+    privacy_request_id: str, db: Session = Depends(get_db)
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)

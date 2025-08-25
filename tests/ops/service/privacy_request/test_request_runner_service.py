@@ -45,6 +45,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
+    initiate_privacy_request_completion_email,
     needs_batch_email_send,
     run_webhooks_and_report_status,
 )
@@ -2211,3 +2212,329 @@ class TestSkipCollectionsWithOptionalIdentities:
         assert skipped_log.message == (
             'Skipping the "optional_identities:customer" collection, it is reachable by the "user_id" identity but only the "email" identity was provided'
         )
+
+
+class TestInitiatePrivacyRequestCompletionEmail:
+    """Test the initiate_privacy_request_completion_email function with enable_streaming functionality"""
+
+    @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
+    def test_initiate_privacy_request_completion_email_with_streaming_enabled(
+        self,
+        mock_dispatch_message,
+        db: Session,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that when enable_streaming=True, DSR package links are generated instead of direct storage URLs"""
+        from fides.api.models.storage import ResponseFormat, StorageConfig
+        from fides.api.schemas.storage.storage import (
+            FileNaming,
+            StorageDetails,
+            StorageType,
+        )
+        from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
+
+        # Create a storage config with enable_streaming=True
+        storage_config_data = {
+            "name": "test_s3_streaming",
+            "type": StorageType.s3,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.BUCKET.value: "test-bucket",
+                StorageDetails.AUTH_METHOD.value: "automatic",
+                StorageDetails.ENABLE_STREAMING.value: True,
+            },
+            "key": "test_s3_streaming",
+            "format": ResponseFormat.json,
+        }
+        storage_config = StorageConfig.create(db, data=storage_config_data)
+
+        # Create a rule with this storage destination
+        rule_data = {
+            "name": "test_access_rule",
+            "key": "test_access_rule",
+            "policy_id": policy.id,
+            "action_type": ActionType.access,
+            "storage_destination_id": storage_config.id,
+        }
+        rule = Rule.create(db, data=rule_data)
+
+        # Mock the privacy center URL in config
+        with mock.patch("fides.config.config_proxy.ConfigProxy") as mock_config_proxy:
+            mock_config_proxy.return_value.privacy_center.url = (
+                "https://privacy.example.com"
+            )
+            mock_config_proxy.return_value.notifications.notification_service_type = (
+                "mailgun"
+            )
+
+            # Call the function
+            access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]
+            identity_data = {"email": "test@example.com"}
+
+            initiate_privacy_request_completion_email(
+                session=db,
+                policy=policy,
+                access_result_urls=access_result_urls,
+                identity_data=identity_data,
+                property_id=privacy_request.property_id,
+                privacy_request_id=privacy_request.id,
+            )
+
+            # Verify dispatch_message was called with DSR package links
+            mock_dispatch_message.assert_called_once()
+            call_args = mock_dispatch_message.call_args
+            assert (
+                call_args[1]["action_type"]
+                == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+            )
+
+            # Check that download_links contains DSR package URL instead of direct storage URL
+            message_body_params = call_args[1]["message_body_params"]
+            assert isinstance(message_body_params, AccessRequestCompleteBodyParams)
+            expected_dsr_url = f"https://privacy.example.com{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
+            assert message_body_params.download_links == [expected_dsr_url]
+
+        # Cleanup
+        rule.delete(db)
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
+    def test_initiate_privacy_request_completion_email_with_streaming_disabled(
+        self,
+        mock_dispatch_message,
+        db: Session,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that when enable_streaming=False, original direct storage URLs are used"""
+        from fides.api.models.storage import ResponseFormat, StorageConfig
+        from fides.api.schemas.storage.storage import (
+            FileNaming,
+            StorageDetails,
+            StorageType,
+        )
+
+        # Create a storage config with enable_streaming=False (default)
+        storage_config_data = {
+            "name": "test_s3_no_streaming",
+            "type": StorageType.s3,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.BUCKET.value: "test-bucket",
+                StorageDetails.AUTH_METHOD.value: "automatic",
+                # enable_streaming not set, defaults to False
+            },
+            "key": "test_s3_no_streaming",
+            "format": ResponseFormat.json,
+        }
+        storage_config = StorageConfig.create(db, data=storage_config_data)
+
+        # Create a rule with this storage destination
+        rule_data = {
+            "name": "test_access_rule_no_streaming",
+            "key": "test_access_rule_no_streaming",
+            "policy_id": policy.id,
+            "action_type": ActionType.access,
+            "storage_destination_id": storage_config.id,
+        }
+        rule = Rule.create(db, data=rule_data)
+
+        # Mock the privacy center URL in config
+        with mock.patch("fides.config.config_proxy.ConfigProxy") as mock_config_proxy:
+            mock_config_proxy.return_value.privacy_center.url = (
+                "https://privacy.example.com"
+            )
+            mock_config_proxy.return_value.notifications.notification_service_type = (
+                "mailgun"
+            )
+
+            # Call the function
+            access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]
+            identity_data = {"email": "test@example.com"}
+
+            initiate_privacy_request_completion_email(
+                session=db,
+                policy=policy,
+                access_result_urls=access_result_urls,
+                identity_data=identity_data,
+                property_id=privacy_request.property_id,
+                privacy_request_id=privacy_request.id,
+            )
+
+            # Verify dispatch_message was called with original storage URLs
+            mock_dispatch_message.assert_called_once()
+            call_args = mock_dispatch_message.call_args
+            assert (
+                call_args[1]["action_type"]
+                == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+            )
+
+            # Check that download_links contains original storage URLs
+            message_body_params = call_args[1]["message_body_params"]
+            assert isinstance(message_body_params, AccessRequestCompleteBodyParams)
+            assert message_body_params.download_links == access_result_urls
+
+        # Cleanup
+        rule.delete(db)
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
+    def test_initiate_privacy_request_completion_email_with_non_s3_storage(
+        self,
+        mock_dispatch_message,
+        db: Session,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that non-S3 storage types always use original direct storage URLs regardless of enable_streaming"""
+        from fides.api.models.storage import ResponseFormat, StorageConfig
+        from fides.api.schemas.storage.storage import (
+            FileNaming,
+            StorageDetails,
+            StorageType,
+        )
+
+        # Create a GCS storage config (non-S3)
+        storage_config_data = {
+            "name": "test_gcs_storage",
+            "type": StorageType.gcs,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.BUCKET.value: "test-gcs-bucket",
+                StorageDetails.AUTH_METHOD.value: "adc",
+                # enable_streaming is S3-specific, so it won't be used for GCS
+            },
+            "key": "test_gcs_storage",
+            "format": ResponseFormat.json,
+        }
+        storage_config = StorageConfig.create(db, data=storage_config_data)
+
+        # Create a rule with this storage destination
+        rule_data = {
+            "name": "test_access_rule_gcs",
+            "key": "test_access_rule_gcs",
+            "policy_id": policy.id,
+            "action_type": ActionType.access,
+            "storage_destination_id": storage_config.id,
+        }
+        rule = Rule.create(db, data=rule_data)
+
+        # Mock the privacy center URL in config
+        with mock.patch("fides.config.config_proxy.ConfigProxy") as mock_config_proxy:
+            mock_config_proxy.return_value.privacy_center.url = (
+                "https://privacy.example.com"
+            )
+            mock_config_proxy.return_value.notifications.notification_service_type = (
+                "mailgun"
+            )
+
+            # Call the function
+            access_result_urls = [
+                "https://storage.googleapis.com/test-gcs-bucket/file1.json"
+            ]
+            identity_data = {"email": "test@example.com"}
+
+            initiate_privacy_request_completion_email(
+                session=db,
+                policy=policy,
+                access_result_urls=access_result_urls,
+                identity_data=identity_data,
+                property_id=privacy_request.property_id,
+                privacy_request_id=privacy_request.id,
+            )
+
+            # Verify dispatch_message was called with original storage URLs (GCS doesn't support streaming)
+            mock_dispatch_message.assert_called_once()
+            call_args = mock_dispatch_message.call_args
+            assert (
+                call_args[1]["action_type"]
+                == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+            )
+
+            # Check that download_links contains original storage URLs
+            message_body_params = call_args[1]["message_body_params"]
+            assert isinstance(message_body_params, AccessRequestCompleteBodyParams)
+            assert message_body_params.download_links == access_result_urls
+
+        # Cleanup
+        rule.delete(db)
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
+    def test_initiate_privacy_request_completion_email_no_privacy_center_url(
+        self,
+        mock_dispatch_message,
+        db: Session,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that when privacy_center.url is None, fallback to original storage URLs even if streaming is enabled"""
+        from fides.api.models.storage import ResponseFormat, StorageConfig
+        from fides.api.schemas.storage.storage import (
+            FileNaming,
+            StorageDetails,
+            StorageType,
+        )
+
+        # Create a storage config with enable_streaming=True
+        storage_config_data = {
+            "name": "test_s3_streaming_no_privacy_center",
+            "type": StorageType.s3,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.BUCKET.value: "test-bucket",
+                StorageDetails.AUTH_METHOD.value: "automatic",
+                StorageDetails.ENABLE_STREAMING.value: True,
+            },
+            "key": "test_s3_streaming_no_privacy_center",
+            "format": ResponseFormat.json,
+        }
+        storage_config = StorageConfig.create(db, data=storage_config_data)
+
+        # Create a rule with this storage destination
+        rule_data = {
+            "name": "test_access_rule_no_privacy_center",
+            "key": "test_access_rule_no_privacy_center",
+            "policy_id": policy.id,
+            "action_type": ActionType.access,
+            "storage_destination_id": storage_config.id,
+        }
+        rule = Rule.create(db, data=rule_data)
+
+        # Mock the privacy center URL as None in config
+        with mock.patch("fides.config.config_proxy.ConfigProxy") as mock_config_proxy:
+            mock_config_proxy.return_value.privacy_center.url = None
+            mock_config_proxy.return_value.notifications.notification_service_type = (
+                "mailgun"
+            )
+
+            # Call the function
+            access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]
+            identity_data = {"email": "test@example.com"}
+
+            initiate_privacy_request_completion_email(
+                session=db,
+                policy=policy,
+                access_result_urls=access_result_urls,
+                identity_data=identity_data,
+                property_id=privacy_request.property_id,
+                privacy_request_id=privacy_request.id,
+            )
+
+            # Verify dispatch_message was called with original storage URLs (fallback)
+            mock_dispatch_message.assert_called_once()
+            call_args = mock_dispatch_message.call_args
+            assert (
+                call_args[1]["action_type"]
+                == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+            )
+
+            # Check that download_links contains original storage URLs due to fallback
+            message_body_params = call_args[1]["message_body_params"]
+            assert isinstance(message_body_params, AccessRequestCompleteBodyParams)
+            assert message_body_params.download_links == access_result_urls
+
+        # Cleanup
+        rule.delete(db)
+        storage_config.delete(db)
