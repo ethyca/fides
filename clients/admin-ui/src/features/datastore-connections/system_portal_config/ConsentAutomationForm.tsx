@@ -165,7 +165,7 @@ export const ConsentAutomationForm = ({
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams("Failed to save consent automation"));
+      toast(errorToastParams("Failed to save bidirectional consent"));
     } else {
       toast({
         variant: "subtle",
@@ -175,7 +175,7 @@ export const ConsentAutomationForm = ({
         isClosable: true,
         description: (
           <Text data-testid="toast-success-msg">
-            Your consent automation settings have been successfully saved and
+            Your bidirectional consent settings have been successfully saved and
             applied.
           </Text>
         ),
@@ -248,7 +248,7 @@ export const ConsentAutomationForm = ({
           <AccordionButton>
             <Box as="span" flex="1" textAlign="left">
               <Text as="h2" fontWeight="semibold" fontSize="sm">
-                Consent automation
+                Bidirectional consent
               </Text>
             </Box>
             <AccordionIcon />

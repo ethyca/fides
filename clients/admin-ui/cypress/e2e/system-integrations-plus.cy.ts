@@ -77,7 +77,7 @@ describe("System integrations", () => {
     });
   });
 
-  describe("Consent automation", () => {
+  describe("Bidirectional consent", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/system/*", {
         fixture: "systems/system_active_integration.json",
@@ -96,14 +96,14 @@ describe("System integrations", () => {
       });
       cy.getAntTab("Integrations").click({ force: true });
     });
-    it("should render the consent automation accordion panel", () => {
+    it("should render the Bidirectional consent accordion panel", () => {
       cy.getByTestId("accordion-consent-automation").click();
       cy.getByTestId("accordion-panel-consent-automation").should("exist");
       cy.getByTestId("consentable-item-label").should("have.length", 5);
       cy.getByTestId("consentable-item-label-child").should("have.length", 6);
       cy.getByTestId("consentable-item-select").should("have.length", 11);
     });
-    it("should save the consent automation settings", () => {
+    it("should save the Bidirectional consent settings", () => {
       cy.getByTestId("accordion-consent-automation").click();
       cy.getByTestId("consentable-item-select").antSelect(0);
       cy.getByTestId("save-consent-automation").click();

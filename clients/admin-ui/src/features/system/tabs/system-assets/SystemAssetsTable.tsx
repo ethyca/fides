@@ -193,7 +193,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
               onClose={onCloseDeleteModal}
               onConfirm={handleBulkDelete}
               title="Remove assets"
-              message="Are you sure you want to remove the selected assets? This action cannot be undone and may impact consent automation."
+              message="Are you sure you want to remove the selected assets? This action cannot be undone and may impact Bidirectional consent."
               isCentered
             />
           </>

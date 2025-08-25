@@ -64,7 +64,7 @@ const SystemAssetActionsCell = ({
         onClose={onClose}
         onConfirm={handleDelete}
         title="Remove asset"
-        message="Are you sure you want to ignore the selected assets? This action cannot be undone and may impact consent automation."
+        message="Are you sure you want to ignore the selected assets? This action cannot be undone and may impact Bidirectional consent."
         isCentered
       />
     </Flex>
