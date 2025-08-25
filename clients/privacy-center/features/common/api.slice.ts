@@ -33,6 +33,6 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: dynamicBaseQuery,
-  tagTypes: ["Privacy Experience", "External Manual Tasks"],
+  tagTypes: ["Privacy Experience", "External Manual Tasks", "ProtectedData", "DSRPackage"],
   endpoints: () => ({}),
 });

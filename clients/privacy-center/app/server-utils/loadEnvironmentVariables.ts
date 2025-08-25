@@ -41,6 +41,7 @@ const loadEnvironmentVariables = () => {
       "http://localhost:8080/api/v1",
     SERVER_SIDE_FIDES_API_URL:
       process.env.FIDES_PRIVACY_CENTER__SERVER_SIDE_FIDES_API_URL || null,
+    FIDES_API_TOKEN: process.env.FIDES_PRIVACY_CENTER__FIDES_API_TOKEN || null,
     CONFIG_JSON_URL:
       process.env.FIDES_PRIVACY_CENTER__CONFIG_JSON_URL ||
       "file:///app/config/config.json",

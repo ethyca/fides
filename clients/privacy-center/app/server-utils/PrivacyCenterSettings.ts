@@ -32,6 +32,7 @@ export interface PrivacyCenterSettings {
   // Privacy center settings
   FIDES_API_URL: string; // e.g. http://localhost:8080/api/v1
   SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
+  FIDES_API_TOKEN: string | null; // API token for protected endpoints
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
   ROOT_PROPERTY_PATH: string | null; // (optional) force a property path to be fetched from the API. If "/foo" is set, it will attempt to return the property with "/foo" path.
