@@ -3,12 +3,15 @@ import re
 import zipfile
 from datetime import datetime
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_patterns import (
+    PrivacyRequestRedactionPatterns,
+)
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DSR_DIRECTORY,
     DsrReportBuilder,
 )
 
@@ -359,6 +362,186 @@ class TestDsrReportBuilderDataStructure:
                 "data/dataset2/collection1/index.html"
             ).decode("utf-8")
             assert "Item 4" in collection3_content
+
+    def test_generate_dsr_package_for_inspection(self, privacy_request: PrivacyRequest):
+        """Test DSR report builder and save package to disk for inspection"""
+        import os
+        import tempfile
+        from pathlib import Path
+
+        dsr_data = {
+            "customer_database:users": [
+                {"id": 1, "name": "John Doe", "email": "john@example.com", "age": 30},
+                {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "age": 25},
+            ],
+            "customer_database:orders": [
+                {"id": 101, "user_id": 1, "amount": 49.99, "product": "Widget A"},
+                {"id": 102, "user_id": 2, "amount": 29.99, "product": "Widget B"},
+            ],
+            "analytics_system:user_events": [
+                {"user_id": 1, "event": "login", "timestamp": "2024-01-01T10:00:00Z"},
+                {
+                    "user_id": 1,
+                    "event": "purchase",
+                    "timestamp": "2024-01-01T10:30:00Z",
+                },
+            ],
+            "attachments": [
+                {
+                    "file_name": "user_profile_photo.jpg",
+                    "download_url": "https://example.com/photos/user1.jpg",
+                    "file_size": 52428800,  # 50MB
+                },
+                {
+                    "file_name": "invoice_12345.pdf",
+                    "download_url": "https://example.com/invoices/12345.pdf",
+                    "file_size": 1048576,  # 1MB
+                },
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        # Save the DSR package to a file for inspection
+        output_file = Path("/tmp/dsr_package_sample.zip")
+        with open(output_file, "wb") as file:
+            file.write(report.getvalue())
+
+        print(f"\n🎉 DSR Package saved to: {output_file}")
+        print(f"📊 Package size: {len(report.getvalue()) / 1024:.1f} KB")
+        print("📂 To inspect the package:")
+        print(f"   - Unzip the file: unzip {output_file}")
+        print(f"   - Open welcome.html in a browser to view the report")
+
+        # Basic verification that the package was created correctly
+        assert output_file.exists()
+        assert output_file.stat().st_size > 0
+
+        # Verify the package structure without deleting it
+        with zipfile.ZipFile(output_file, "r") as zip_file:
+            # Verify dataset structure with indexed names
+            assert "data/analytics_system/index.html" in zip_file.namelist()
+            assert "data/customer_database/index.html" in zip_file.namelist()
+
+            # Verify collection structure with indexed names
+            assert "data/customer_database/users/index.html" in zip_file.namelist()
+            assert "data/customer_database/orders/index.html" in zip_file.namelist()
+            assert "data/analytics_system/user_events/index.html" in zip_file.namelist()
+
+            # Verify attachments
+            assert "attachments/index.html" in zip_file.namelist()
+
+            # Check welcome page content includes original dataset names (no redaction patterns configured)
+            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            assert "analytics_system" in welcome_content
+            assert "customer_database" in welcome_content
+            assert "Additional Attachments" in welcome_content
+
+    def test_selective_redaction_with_patterns(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test DSR report builder with selective redaction based on regex patterns"""
+
+        # Set up redaction patterns that will match some but not all names
+        redaction_patterns = [
+            r"customer.*",  # Matches "customer_database" but not "analytics_system"
+            r".*user.*",  # Matches "users" and "user_events" but not "orders"
+            r"^email$",  # Matches exact field name "email" but not "name" or "id"
+        ]
+
+        # Create or update redaction patterns in database
+        PrivacyRequestRedactionPatterns.create_or_update(
+            db=db, data={"patterns": redaction_patterns}
+        )
+
+        dsr_data = {
+            "customer_database:users": [
+                {"id": 1, "name": "John Doe", "email": "john@example.com", "age": 30},
+                {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "age": 25},
+            ],
+            "customer_database:orders": [
+                {"id": 101, "user_id": 1, "amount": 49.99, "product": "Widget A"},
+                {"id": 102, "user_id": 2, "amount": 29.99, "product": "Widget B"},
+            ],
+            "analytics_system:user_events": [
+                {"user_id": 1, "event": "login", "timestamp": "2024-01-01T10:00:00Z"},
+                {
+                    "user_id": 1,
+                    "event": "purchase",
+                    "timestamp": "2024-01-01T10:30:00Z",
+                },
+            ],
+            "public_data:articles": [
+                {"id": 1, "title": "Public Article", "content": "This is public"},
+                {"id": 2, "title": "Another Article", "content": "Also public"},
+            ],
+        }
+
+        # Build DSR report - redaction patterns are automatically loaded from privacy request's session
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        # Save the DSR package to a file for inspection
+        output_file = Path("/tmp/dsr_package_selective_redaction.zip")
+        with open(output_file, "wb") as file:
+            file.write(report.getvalue())
+
+        # Basic verification that the package was created correctly
+        assert output_file.exists()
+        assert output_file.stat().st_size > 0
+
+        # Verify the package structure
+        with zipfile.ZipFile(output_file, "r") as zip_file:
+            # Check welcome page content
+            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+
+            # Dataset-level redaction:
+            # "analytics_system" should NOT be redacted (doesn't match "customer.*")
+            # "customer_database" should be redacted to "dataset_2" (matches "customer.*", gets index 2)
+            # "public_data" should NOT be redacted (no pattern match)
+            assert (
+                "analytics_system" in welcome_content
+            )  # analytics_system NOT redacted
+            assert "dataset_2" in welcome_content  # customer_database redacted
+            assert "public_data" in welcome_content  # public_data NOT redacted
+
+            # Verify dataset directory structure exists (uses redacted names for file paths)
+            assert "data/dataset_2/index.html" in zip_file.namelist()
+            assert "data/analytics_system/index.html" in zip_file.namelist()
+            assert "data/public_data/index.html" in zip_file.namelist()
+
+            # Check dataset index pages for collection-level redaction
+            customer_dataset_content = zip_file.read(
+                "data/dataset_2/index.html"
+            ).decode("utf-8")
+            # "users" should be redacted to "collection_1" (matches ".*user.*")
+            # "orders" should NOT be redacted (no pattern match)
+            assert "collection_1" in customer_dataset_content  # users redacted
+            assert "orders" in customer_dataset_content  # orders NOT redacted
+
+            analytics_dataset_content = zip_file.read(
+                "data/analytics_system/index.html"
+            ).decode("utf-8")
+            # "user_events" should be redacted to "collection_1" (matches ".*user.*")
+            assert "collection_1" in analytics_dataset_content  # user_events redacted
+
+            public_dataset_content = zip_file.read(
+                "data/public_data/index.html"
+            ).decode("utf-8")
+            # "articles" should NOT be redacted (no pattern match)
+            assert "articles" in public_dataset_content  # articles NOT redacted
+
+            # Check collection pages for field-level redaction
+            users_collection_content = zip_file.read(
+                "data/dataset_2/collection_1/index.html"
+            ).decode("utf-8")
+            # "email" should be redacted to "field_N" (matches "^email$")
+            # "id", "name", "age" should NOT be redacted (no pattern match)
+            assert "field_" in users_collection_content  # email redacted
+            assert "id" in users_collection_content  # id NOT redacted
+            assert "name" in users_collection_content  # name NOT redacted
+            assert "age" in users_collection_content  # age NOT redacted
 
 
 class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
@@ -838,7 +1021,7 @@ class TestDsrReportBuilderDatasetHandling:
             "collection2": [{"id": 3}],
         }
 
-        builder._add_dataset("dataset1", collections)
+        builder._add_dataset("dataset1", collections, 1)
         builder.out.close()
 
         with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
@@ -856,7 +1039,7 @@ class TestDsrReportBuilderDatasetHandling:
         """Test adding a dataset with no collections"""
         builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
 
-        builder._add_dataset("dataset1", {})
+        builder._add_dataset("dataset1", {}, 1)
         builder.out.close()
 
         with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
