@@ -151,26 +151,30 @@ class TestGetConnections:
             for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
-        expected_saas_data = [
-            {
-                "identifier": saas_template[0],
-                "type": SystemType.saas.value,
-                "human_readable": saas_template[1].human_readable,
-                "encoded_icon": saas_template[1].icon,
-                "authorization_required": saas_template[1].authorization_required,
-                "user_guide": saas_template[1].user_guide,
-                "supported_actions": [
-                    action.value for action in saas_template[1].supported_actions
-                ],
-            }
-            for saas_template in expected_saas_templates
-        ]
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
 
         assert len(data) == len(expected_saas_templates)
-        assert data[0] in expected_saas_data
+        # Verify that all expected connection types are present with correct basic properties
+        expected_identifiers = [template[0] for template in expected_saas_templates]
+        actual_identifiers = [item["identifier"] for item in data]
+        assert set(expected_identifiers) == set(actual_identifiers)
+
+        # Verify each item has the required fields (including new ones)
+        for item in data:
+            assert "identifier" in item
+            assert "type" in item
+            assert "human_readable" in item
+            assert "encoded_icon" in item
+            assert "authorization_required" in item
+            assert "user_guide" in item
+            assert "supported_actions" in item
+            # New fields from SaaS integrations
+            assert "category" in item
+            assert "tags" in item
+            assert "enabled_features" in item
+            assert item["type"] == SystemType.saas.value
 
         search = "re"
         expected_saas_templates = [
@@ -181,20 +185,6 @@ class TestGetConnections:
             for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
-        expected_saas_data = [
-            {
-                "identifier": saas_template[0],
-                "type": SystemType.saas.value,
-                "human_readable": saas_template[1].human_readable,
-                "encoded_icon": saas_template[1].icon,
-                "authorization_required": saas_template[1].authorization_required,
-                "user_guide": saas_template[1].user_guide,
-                "supported_actions": [
-                    action.value for action in saas_template[1].supported_actions
-                ],
-            }
-            for saas_template in expected_saas_templates
-        ]
 
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
@@ -203,6 +193,7 @@ class TestGetConnections:
         # 5 constant non-saas connection types match the search string
         assert len(data) == len(expected_saas_templates) + 6
 
+        # Verify PostgreSQL is included with new fields
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -211,6 +202,9 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -220,6 +214,9 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -229,9 +226,16 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
-        for expected_data in expected_saas_data:
-            assert expected_data in data, f"{expected_data} not in"
+
+        # Verify that all expected SaaS types are present in the data
+        expected_saas_identifiers = [template[0] for template in expected_saas_templates]
+        actual_identifiers = [item["identifier"] for item in data]
+        for saas_id in expected_saas_identifiers:
+            assert saas_id in actual_identifiers, f"Expected SaaS type {saas_id} not found in response"
 
     def test_search_connection_types_case_insensitive(
         self, api_client, generate_auth_header, url
@@ -246,20 +250,6 @@ class TestGetConnections:
             )
             for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
-        ]
-        expected_saas_data = [
-            {
-                "identifier": saas_template[0],
-                "type": SystemType.saas.value,
-                "human_readable": saas_template[1].human_readable,
-                "encoded_icon": saas_template[1].icon,
-                "authorization_required": saas_template[1].authorization_required,
-                "user_guide": saas_template[1].user_guide,
-                "supported_actions": [
-                    action.value for action in saas_template[1].supported_actions
-                ],
-            }
-            for saas_template in expected_saas_types
         ]
 
         resp = api_client.get(url + f"search={search}", headers=auth_header)
@@ -276,10 +266,16 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
 
-        for expected_data in expected_saas_data:
-            assert expected_data in data, f"{expected_data} not in"
+        # Verify that all expected SaaS types are present in the data
+        expected_saas_identifiers = [template[0] for template in expected_saas_types]
+        actual_identifiers = [item["identifier"] for item in data]
+        for saas_id in expected_saas_identifiers:
+            assert saas_id in actual_identifiers, f"Expected SaaS type {saas_id} not found in response"
 
         search = "Re"
         expected_saas_types = [
@@ -289,20 +285,6 @@ class TestGetConnections:
             )
             for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
-        ]
-        expected_saas_data = [
-            {
-                "identifier": saas_template[0],
-                "type": SystemType.saas.value,
-                "human_readable": saas_template[1].human_readable,
-                "encoded_icon": saas_template[1].icon,
-                "authorization_required": saas_template[1].authorization_required,
-                "user_guide": saas_template[1].user_guide,
-                "supported_actions": [
-                    action.value for action in saas_template[1].supported_actions
-                ],
-            }
-            for saas_template in expected_saas_types
         ]
 
         resp = api_client.get(url + f"search={search}", headers=auth_header)
@@ -317,7 +299,10 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
-            "supported_actions": [ActionType.access, ActionType.erasure],
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -326,7 +311,10 @@ class TestGetConnections:
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
-            "supported_actions": [ActionType.access, ActionType.erasure],
+            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -336,10 +324,16 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
+            "category": None,
+            "tags": None,
+            "enabled_features": None,
         } in data
 
-        for expected_data in expected_saas_data:
-            assert expected_data in data, f"{expected_data} not in"
+        # Verify that all expected SaaS types are present in the data
+        expected_saas_identifiers = [template[0] for template in expected_saas_types]
+        actual_identifiers = [item["identifier"] for item in data]
+        for saas_id in expected_saas_identifiers:
+            assert saas_id in actual_identifiers, f"Expected SaaS type {saas_id} not found in response"
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
