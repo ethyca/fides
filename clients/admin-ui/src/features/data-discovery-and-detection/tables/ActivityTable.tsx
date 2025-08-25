@@ -22,7 +22,7 @@ import {
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import { IndicatorLegend } from "~/features/data-discovery-and-detection/IndicatorLegend";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusCell";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
@@ -192,7 +192,7 @@ const ActivityTable = ({
               onChange={setSearchQuery}
             />
           </Box>
-          <IconLegendTooltip />
+          <IndicatorLegend />
         </Flex>
       </TableActionBar>
       <FidesTableV2

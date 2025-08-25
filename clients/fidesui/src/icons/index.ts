@@ -13,7 +13,6 @@ export { default as GreenCheckCircleIcon } from "./GreenCheckCircle";
 export { default as HorizontalLineIcon } from "./HorizontalLine";
 export { default as LinkIcon } from "./LinkIcon";
 export { default as MoreIcon } from "./More";
-export { default as QuestionIcon } from "./Question";
 export { default as SearchLineIcon } from "./SearchLine";
 export { default as SortArrowIcon } from "./SortArrow";
 export { default as StepperCircleIcon } from "./StepperCircle";

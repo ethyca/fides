@@ -23,7 +23,7 @@ import useDetectionResultFilterTabs, {
   DetectionResultFilterTabs,
 } from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import { IndicatorLegend } from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
@@ -185,7 +185,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
                 onChange={setSearchQuery}
               />
             </Box>
-            <IconLegendTooltip />
+            <IndicatorLegend />
           </Flex>
         </Flex>
       </TableActionBar>

@@ -1,13 +1,9 @@
 import {
+  AntCol as Col,
+  AntPopover as Popover,
+  AntRow as Row,
   AntSpace as Space,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTrigger,
-  QuestionIcon,
-  SimpleGrid,
+  Icons,
 } from "fidesui";
 
 import {
@@ -19,52 +15,60 @@ import {
   RemovalIndicator,
 } from "~/features/data-discovery-and-detection/statusIndicators";
 
-const IconLegendTooltip = () => (
-  <Popover isLazy trigger="hover">
-    <PopoverTrigger>
-      <QuestionIcon color="gray.400" />
-    </PopoverTrigger>
-    <PopoverContent
-      bgColor="gray.800"
-      color="white"
-      fontSize="sm"
-      w="auto"
-      border="none"
-    >
-      <PopoverHeader fontWeight="semibold" border="none" pb={0}>
-        Activity legend:
-      </PopoverHeader>
-      <PopoverArrow bgColor="gray.800" />
-      <PopoverBody border="none">
-        <SimpleGrid columns={2} spacing={2}>
+export const IndicatorLegend = () => {
+  const content = (
+    <div style={{ maxWidth: 300 }}>
+      <Row gutter={[16, 8]}>
+        <Col span={12}>
           <Space>
             <ChangeIndicator />
             <div>Change detected</div>
           </Space>
+        </Col>
+        <Col span={12}>
           <Space>
             <ClassificationIndicator />
             <div>Data labeled</div>
           </Space>
+        </Col>
+        <Col span={12}>
           <Space>
             <MonitoredIndicator />
             <div>Monitoring</div>
           </Space>
+        </Col>
+        <Col span={12}>
           <Space>
             <AdditionIndicator />
             <div>Addition detected</div>
           </Space>
+        </Col>
+        <Col span={12}>
           <Space>
             <MutedIndicator />
             <div>Unmonitored</div>
           </Space>
+        </Col>
+        <Col span={12}>
           <Space>
             <RemovalIndicator />
             <div>Removal detected</div>
           </Space>
-        </SimpleGrid>
-      </PopoverBody>
-    </PopoverContent>
-  </Popover>
-);
+        </Col>
+      </Row>
+    </div>
+  );
 
-export default IconLegendTooltip;
+  return (
+    <Popover
+      content={content}
+      title="Activity legend:"
+      trigger={["hover", "focus"]}
+    >
+      <Icons.HelpFilled
+        style={{ color: "var(--fidesui-neutral-400)", cursor: "pointer" }}
+        tabIndex={0}
+      />
+    </Popover>
+  );
+};
