@@ -115,19 +115,6 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         );
       } else {
         // Add new condition
-        // Check if a condition with the same field_address and operator already exists
-        const isDuplicate = originalConditions.some(
-          (condition) =>
-            condition.field_address === newCondition.field_address &&
-            condition.operator === newCondition.operator,
-        );
-
-        if (isDuplicate) {
-          throw new Error(
-            `A condition for "${newCondition.field_address}" with operator "${newCondition.operator}" already exists.`,
-          );
-        }
-
         updatedConditions = [...originalConditions, newCondition];
       }
 
