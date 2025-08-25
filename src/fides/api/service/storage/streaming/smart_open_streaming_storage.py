@@ -688,15 +688,15 @@ class SmartOpenStreamingStorage:
         attachment_files_generator = self._create_attachment_files(all_attachments)
 
         # Combine both generators and stream the complete ZIP to storage
+        from itertools import chain
+
+        combined_entries = chain(attachment_files_generator, dsr_files_generator)
         with self.storage_client.stream_upload(
             config.bucket_name,
             config.file_key,
             content_type="application/zip",
         ) as upload_stream:
-            for chunk in stream_zip(attachment_files_generator):
-                upload_stream.write(chunk)
-
-            for chunk in stream_zip(dsr_files_generator):
+            for chunk in stream_zip(combined_entries):
                 upload_stream.write(chunk)
 
         logger.debug(
