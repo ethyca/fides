@@ -39,7 +39,6 @@ def requeue_polling_request(
     # Check that the privacy request is approved or in processing
     privacy_request: PrivacyRequest = async_task.privacy_request
     logger.info(f"Privacy request {privacy_request.id} status: {privacy_request.status.value}")
-    ## NOTE: Its starting with Error instead of pending. It shouldnt be.|
 
     if privacy_request.status not in [
         PrivacyRequestStatus.approved,
@@ -78,14 +77,6 @@ def requeue_polling_request(
         )  # type: ignore
         if async_task.action_type == ActionType.access:
             logger.info(f"Executing read polling requests for {async_task.id}")
-            upstream_tasks = async_task.upstream_tasks_objects(db)
-            # To Access Input Data. Not used for now, might be used on complex integrations
-            upstream_access_data: List[List[Row]] = _build_upstream_access_data(
-                graph_task.execution_node.input_keys, upstream_tasks
-            )
-            input_data: NodeInput = graph_task.pre_process_input_data(
-                *upstream_access_data, group_dependent_fields=True
-            )
 
             execute_read_polling_requests(
                 db,
