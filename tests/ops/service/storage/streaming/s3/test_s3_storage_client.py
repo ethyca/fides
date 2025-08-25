@@ -4,9 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from fides.api.schemas.storage.storage import StorageSecrets
+from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
-from fides.api.schemas.storage.storage import AWSAuthMethod
 
 
 class TestS3StorageClient:

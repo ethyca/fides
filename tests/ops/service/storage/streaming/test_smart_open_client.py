@@ -207,9 +207,7 @@ class TestSmartOpenStorageClient:
                 mock_smart_open.return_value = mock_file
 
                 client = SmartOpenStorageClient("s3", storage_secrets)
-                result = client.put_object(
-                    bucket, key, file_data, content_type
-                )
+                result = client.put_object(bucket, key, file_data, content_type)
 
                 assert result["status"] == "success"
                 assert result["uri"] == "s3://test-bucket/test/file.txt"
