@@ -165,7 +165,7 @@ export const ConsentAutomationForm = ({
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams("Failed to save Bidirectional consent"));
+      toast(errorToastParams("Failed to save bidirectional consent"));
     } else {
       toast({
         variant: "subtle",
@@ -175,7 +175,7 @@ export const ConsentAutomationForm = ({
         isClosable: true,
         description: (
           <Text data-testid="toast-success-msg">
-            Your Bidirectional consent settings have been successfully saved and
+            Your bidirectional consent settings have been successfully saved and
             applied.
           </Text>
         ),
