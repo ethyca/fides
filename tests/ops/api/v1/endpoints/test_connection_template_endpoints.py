@@ -418,6 +418,9 @@ class TestGetConnections:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
+                "category": None,
+                "tags": None,
+                "enabled_features": None,
             }
         ]
 
