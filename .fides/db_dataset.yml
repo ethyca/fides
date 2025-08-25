@@ -1598,6 +1598,8 @@ dataset:
       data_categories: [system.operations]
     - name: identity_verified_at
       data_categories: [system.operations]
+    - name: location
+      data_categories: [user.location]
     - name: origin
       data_categories: [system.operations]
     - name: paused_at
