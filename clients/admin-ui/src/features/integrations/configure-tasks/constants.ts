@@ -16,6 +16,8 @@ export const operatorLabels: Record<Operator, string> = {
   [Operator.NOT_EXISTS]: "does not exist",
   [Operator.LIST_CONTAINS]: "list contains",
   [Operator.NOT_IN_LIST]: "not in list",
+  [Operator.STARTS_WITH]: "starts with",
+  [Operator.CONTAINS]: "contains",
 };
 
 // Label mappings for field types and request types

@@ -10,6 +10,8 @@ import { useCallback, useEffect } from "react";
 import { DatasetReferencePicker } from "~/features/common/dataset";
 import { ConditionLeaf, Operator } from "~/types/api";
 
+import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
+
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
@@ -75,6 +77,8 @@ const AddConditionForm = ({
     { label: "Does not exist", value: Operator.NOT_EXISTS },
     { label: "List contains", value: Operator.LIST_CONTAINS },
     { label: "Not in list", value: Operator.NOT_IN_LIST },
+    { label: "Starts with", value: Operator.STARTS_WITH },
+    { label: "Contains", value: Operator.CONTAINS },
   ];
 
   // Set initial values if editing
@@ -138,6 +142,15 @@ const AddConditionForm = ({
       <Form.Item
         name="operator"
         label="Operator"
+        tooltip={{
+          placement: "right",
+          title: <OperatorReferenceGuide />,
+          styles: {
+            root: {
+              maxWidth: "500px",
+            },
+          },
+        }}
         rules={[{ required: true, message: "Operator is required" }]}
       >
         <Select placeholder="Select operator" options={operatorOptions} />

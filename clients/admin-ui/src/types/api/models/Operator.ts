@@ -13,4 +13,6 @@ export enum Operator {
   NOT_EXISTS = "not_exists",
   LIST_CONTAINS = "list_contains",
   NOT_IN_LIST = "not_in_list",
+  STARTS_WITH = "starts_with",
+  CONTAINS = "contains",
 }
