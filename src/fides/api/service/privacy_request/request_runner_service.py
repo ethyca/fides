@@ -741,14 +741,6 @@ def run_privacy_request(
                             else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
                         )
 
-                        logger.info(
-                            "Checking if email completion should be sent for privacy request {}: action_type={}, property_id={}, legacy_enabled={}",
-                            privacy_request.id,
-                            action_type,
-                            privacy_request.property_id,
-                            legacy_request_completion_enabled,
-                        )
-
                         message_send_result = message_send_enabled(
                             session,
                             privacy_request.property_id,
@@ -759,13 +751,6 @@ def run_privacy_request(
                             action_type=ActionType.consent
                         )
 
-                        logger.info(
-                            "Email completion conditions for privacy request {}: message_send_enabled={}, has_consent_rules={}, should_send={}",
-                            privacy_request.id,
-                            message_send_result,
-                            bool(has_consent_rules),
-                            message_send_result and not has_consent_rules,
-                        )
 
                         if message_send_result and not has_consent_rules:
                             if not access_result_urls:
