@@ -608,6 +608,386 @@ class TestPrivacyRequestService:
             # Cleanup
             privacy_center_config.delete(db)
 
+    def test_create_privacy_request_location_validation_no_config(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Test that validation is skipped when no Privacy Center config exists"""
+        # Ensure no Privacy Center config exists
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        PrivacyCenterConfig.delete_all(db)
+        db.commit()
+
+        identity = Identity(email="jane@example.com")
+
+        # Should not raise an error, validation is skipped
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                identity=identity,
+                policy_key=policy.key,
+                # No location provided, but validation skipped due to no config
+            ),
+            authenticated=True,
+        )
+
+        assert privacy_request.location is None
+        assert privacy_request.status == PrivacyRequestStatus.pending
+
+    def test_create_privacy_request_location_validation_invalid_config(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Test that validation is skipped when Privacy Center config fails to parse"""
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Create an invalid Privacy Center config that will fail parsing
+        invalid_config_data = {
+            "config": {
+                # Missing required fields like 'title', 'description', 'consent'
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        # Missing required fields like 'title', 'description'
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "field_type": "location",
+                                "required": True,
+                            }
+                        },
+                    }
+                ]
+            }
+        }
+
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=invalid_config_data
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            # Should not raise an error, validation is skipped due to parse failure
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,
+                    # No location provided, but validation skipped due to config parse error
+                ),
+                authenticated=True,
+            )
+
+            assert privacy_request.location is None
+            assert privacy_request.status == PrivacyRequestStatus.pending
+        finally:
+            privacy_center_config.delete(db)
+
+    def test_create_privacy_request_location_validation_no_matching_action(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Test that validation is skipped when no action matches the policy key"""
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Create Privacy Center config with action for a different policy
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": "different_policy_key",  # Different policy key
+                        "title": "Different Action",
+                        "description": "Action for different policy",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "label": "Your Location",
+                                "field_type": "location",
+                                "required": True,
+                                "ip_geolocation_hint": False,
+                            }
+                        },
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
+        }
+
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            # Should not raise an error, validation is skipped due to no matching action
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,  # Uses the test policy, not the one in config
+                    # No location provided, but validation skipped due to no matching action
+                ),
+                authenticated=True,
+            )
+
+            assert privacy_request.location is None
+            assert privacy_request.status == PrivacyRequestStatus.pending
+        finally:
+            privacy_center_config.delete(db)
+
+    def test_create_privacy_request_location_validation_no_custom_fields(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Test that validation is skipped when action has no custom_privacy_request_fields"""
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Create Privacy Center config with action that has no custom fields
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        "title": "Test Action",
+                        "description": "Test action for location validation",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        # No custom_privacy_request_fields defined
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
+        }
+
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            # Should not raise an error, validation is skipped due to no custom fields
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,
+                    # No location provided, but validation skipped due to no custom fields
+                ),
+                authenticated=True,
+            )
+
+            assert privacy_request.location is None
+            assert privacy_request.status == PrivacyRequestStatus.pending
+        finally:
+            privacy_center_config.delete(db)
+
+    def test_create_privacy_request_location_field_not_required(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Test that validation passes when location field exists but is not required"""
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Create Privacy Center config with optional location field
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        "title": "Test Action",
+                        "description": "Test action for location validation",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "label": "Your Location",
+                                "field_type": "location",
+                                "required": False,  # Not required
+                                "ip_geolocation_hint": False,
+                            }
+                        },
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
+        }
+
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            # Should not raise an error, location field is not required
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,
+                    # No location provided, but field is not required
+                ),
+                authenticated=True,
+            )
+
+            assert privacy_request.location is None
+            assert privacy_request.status == PrivacyRequestStatus.pending
+        finally:
+            privacy_center_config.delete(db)
+
+    def test_create_privacy_request_location_required_field_has_value_in_request_data(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Test that validation passes when required location field has value in custom_privacy_request_fields"""
+        from fides.api.common_exceptions import PrivacyRequestError
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Create Privacy Center config with required location field
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        "title": "Test Action",
+                        "description": "Test action for location validation",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "label": "Your Location",
+                                "field_type": "location",
+                                "required": True,
+                                "ip_geolocation_hint": False,
+                            }
+                        },
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
+        }
+
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            # Should not raise an error, location field has value in custom fields
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,
+                    custom_privacy_request_fields={
+                        "location": {
+                            "label": "Your Location",
+                            "value": "US-CA",
+                        }  # Location provided in custom fields
+                    },
+                    # No location parameter, but field has value in custom_privacy_request_fields
+                ),
+                authenticated=True,
+            )
+
+            assert (
+                privacy_request.location is None
+            )  # Location parameter wasn't provided
+            assert privacy_request.status == PrivacyRequestStatus.pending
+        finally:
+            privacy_center_config.delete(db)
+
     def test_create_privacy_request_location_optional_and_missing(
         self,
         db: Session,
