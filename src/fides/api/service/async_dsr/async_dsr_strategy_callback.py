@@ -8,6 +8,5 @@ class CallbackAsyncDSRStrategy(AsyncDSRStrategy):
 
     name = "callback"
 
-
     def __init__(self):
         pass

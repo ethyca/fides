@@ -4,11 +4,10 @@ from datetime import datetime, timedelta
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
-from fides.api.schemas.privacy_request import ActionType
 from fides.api.models.worker_task import ExecutionLogStatus
-
+from fides.api.schemas.privacy_request import ActionType, PrivacyRequestStatus
+from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
 
 
 @pytest.fixture
@@ -29,6 +28,7 @@ def pending_privacy_request(db, policy):
     yield privacy_request
     privacy_request.delete(db)
 
+
 @pytest.fixture
 def approved_privacy_request(db, policy):
     """Create a privacy request in the approved state"""
@@ -46,6 +46,7 @@ def approved_privacy_request(db, policy):
     )
     yield privacy_request
     privacy_request.delete(db)
+
 
 @pytest.fixture
 def in_processing_privacy_request(db, policy):
@@ -67,14 +68,14 @@ def in_processing_privacy_request(db, policy):
 
 
 @pytest.fixture
-def polling_request_task(db, pending_privacy_request):
+def polling_request_task(db, in_processing_privacy_request):
     """Create a request task that is awaiting processing and is a polling task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
             "status": ExecutionLogStatus.awaiting_processing,
-            "privacy_request_id": pending_privacy_request.id,
+            "privacy_request_id": in_processing_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
             "collection_name": "customer",
@@ -86,15 +87,16 @@ def polling_request_task(db, pending_privacy_request):
     yield request_task
     request_task.delete(db)
 
+
 @pytest.fixture
-def in_progress_polling_request_task(db, pending_privacy_request):
+def in_progress_polling_request_task(db, in_processing_privacy_request):
     """Create a request task that is in progress and is a polling task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
             "status": ExecutionLogStatus.in_processing,
-            "privacy_request_id": pending_privacy_request.id,
+            "privacy_request_id": in_processing_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
             "collection_name": "customer",
@@ -108,14 +110,14 @@ def in_progress_polling_request_task(db, pending_privacy_request):
 
 
 @pytest.fixture
-def callback_request_task(db, approved_privacy_request):
+def callback_request_task(db, in_processing_privacy_request):
     """Create a request task that is awaiting processing and is a callback task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
             "status": ExecutionLogStatus.awaiting_processing,
-            "privacy_request_id": approved_privacy_request.id,
+            "privacy_request_id": in_processing_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
             "collection_name": "customer",
@@ -126,7 +128,6 @@ def callback_request_task(db, approved_privacy_request):
     )
     yield request_task
     request_task.delete(db)
-
 
 
 @pytest.fixture
@@ -147,3 +148,19 @@ def non_async_request_task(db, pending_privacy_request):
     )
     yield request_task
     request_task.delete(db)
+
+
+@pytest.fixture(scope="function")
+def polling_async_dsr_configuration() -> PollingAsyncDSRConfiguration:
+    return {
+        "status_request": {
+            "method": "GET",
+            "path": "/status/<status_id>",
+        },
+        "status_path": "status",
+        "result_request": {
+            "method": "GET",
+            "path": "/result/<result_id>",
+        },
+        "result_path": "data",
+    }

@@ -12,7 +12,6 @@ from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.request_service import poll_async_tasks_status
 
 
-
 class TestPollAsyncTasksStatus:
     @pytest.mark.usefixtures("polling_request_task")
     @mock.patch("fides.api.service.async_dsr.async_dsr_service.requeue_polling_request")

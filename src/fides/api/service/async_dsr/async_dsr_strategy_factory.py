@@ -50,7 +50,9 @@ def get_strategy(
     if strategy.configuration_model is None:
         return strategy()
     try:
-        strategy_config: StrategyConfiguration = strategy.configuration_model(**configuration)
+        strategy_config: StrategyConfiguration = strategy.configuration_model(
+            **configuration
+        )
         return strategy(configuration=strategy_config)
     except ValidationError as e:
         raise FidesopsValidationError(message=str(e))

@@ -1,6 +1,5 @@
 from typing import Any, Dict, List
 
-from fides.api.models.worker_task import ExecutionLogStatus
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -11,6 +10,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
@@ -38,7 +38,9 @@ def requeue_polling_request(
     """Re-queue a Privacy request that polling async tasks for a given privacy request"""
     # Check that the privacy request is approved or in processing
     privacy_request: PrivacyRequest = async_task.privacy_request
-    logger.info(f"Privacy request {privacy_request.id} status: {privacy_request.status.value}")
+    logger.info(
+        f"Privacy request {privacy_request.id} status: {privacy_request.status.value}"
+    )
 
     if privacy_request.status not in [
         PrivacyRequestStatus.approved,
@@ -78,12 +80,7 @@ def requeue_polling_request(
         if async_task.action_type == ActionType.access:
             logger.info(f"Executing read polling requests for {async_task.id}")
 
-            execute_read_polling_requests(
-                db,
-                async_task,
-                query_config,
-                saas_connector
-            )
+            execute_read_polling_requests(db, async_task, query_config, saas_connector)
         elif async_task.action_type == ActionType.erasure:
             execute_erasure_polling_requests(db, async_task, query_config)
 
@@ -156,6 +153,7 @@ def execute_read_polling_requests(
                 logger.info(f"Polling request - {async_task.id} still not Ready. ")
                 continue
 
+
 def execute_read_result_request(
     db: Session,
     async_task: RequestTask,
@@ -184,7 +182,9 @@ def execute_read_result_request(
 
         # Save updated data back to the request task.
         async_task.access_data = existing_data
-        async_task.callback_succeeded = True # Setting this task as successful, so it wont loop anymore
+        async_task.callback_succeeded = (
+            True  # Setting this task as successful, so it wont loop anymore
+        )
         async_task.update_status(db, ExecutionLogStatus.pending)
         async_task.save(db)
         logger.info(
@@ -198,6 +198,7 @@ def execute_read_result_request(
         logger.info(
             f"Polling request - {async_task.id} is ready but returned no results"
         )
+
 
 def execute_erasure_polling_requests(
     db: Session,

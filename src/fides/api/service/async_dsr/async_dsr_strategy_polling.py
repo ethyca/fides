@@ -29,7 +29,6 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         self.result_request = configuration.result_request
         self.result_path = configuration.result_path
 
-
     def get_status_request(
         self,
         client: AuthenticatedClient,
@@ -42,10 +41,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         logger.info(f"param_values: {param_values}")
         logger.info(f"self.status_request Path: {self.status_request.path}")
         prepared_status_request = map_param_values(
-            "status",
-            "polling",
-            self.status_request,
-            param_values
+            "status", "polling", self.status_request, param_values
         )
 
         response: Response = client.send(prepared_status_request)

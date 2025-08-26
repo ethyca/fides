@@ -1,11 +1,11 @@
 import json
 from unittest.mock import Mock, patch
 
-from fides.api.common_exceptions import PrivacyRequestError
-import pytest
 import pydash
+import pytest
 from requests import Response
 
+from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
@@ -103,9 +103,13 @@ class TestPollingAsyncDSRStrategy:
         }
         return response
 
-
     def test_get_status_request_ready(
-        self, polling_strategy, mock_client, secrets, identity_data, status_response_ready
+        self,
+        polling_strategy,
+        mock_client,
+        secrets,
+        identity_data,
+        status_response_ready,
     ):
         """Test get_status_request when the request is ready"""
         mock_client.send.return_value = status_response_ready
@@ -119,7 +123,12 @@ class TestPollingAsyncDSRStrategy:
         mock_client.send.assert_called_once()
 
     def test_get_status_request_not_ready(
-        self, polling_strategy, mock_client, secrets, identity_data, status_response_not_ready
+        self,
+        polling_strategy,
+        mock_client,
+        secrets,
+        identity_data,
+        status_response_not_ready,
     ):
         """Test get_status_request when the request is not ready"""
         mock_client.send.return_value = status_response_not_ready
@@ -133,7 +142,12 @@ class TestPollingAsyncDSRStrategy:
         mock_client.send.assert_called_once()
 
     def test_get_status_request_error_response(
-        self, polling_strategy, mock_client, secrets, identity_data, status_response_error
+        self,
+        polling_strategy,
+        mock_client,
+        secrets,
+        identity_data,
+        status_response_error,
     ):
         """Test get_status_request when there's an error response"""
         mock_client.send.return_value = status_response_error
@@ -141,7 +155,6 @@ class TestPollingAsyncDSRStrategy:
             polling_strategy.get_status_request(
                 client=mock_client, secrets=secrets, identity_data=identity_data
             )
-
 
     def test_get_result_request_success(
         self, polling_strategy, mock_client, secrets, identity_data, result_response

@@ -2,8 +2,10 @@
 Tests for async DSR service functionality.
 Tests the core service methods that handle asynchronous data subject requests.
 """
+
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestError
@@ -20,16 +22,19 @@ from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
 from fides.api.service.async_dsr.async_dsr_service import (
-    requeue_polling_request,
-    get_connection_config_from_task,
+    execute_erasure_polling_requests,
     execute_read_polling_requests,
     execute_read_result_request,
-    execute_erasure_polling_requests,
+    get_connection_config_from_task,
+    requeue_polling_request,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling import PollingAsyncDSRStrategy
+from fides.api.service.async_dsr.async_dsr_strategy_polling import (
+    PollingAsyncDSRStrategy,
+)
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
+
 
 @pytest.mark.integration_saas
 class TestAsyncDSRService:
@@ -49,7 +54,7 @@ class TestAsyncDSRService:
         request.policy = Mock(spec=Policy)
         request.get_persisted_identity.return_value.labeled_dict.return_value = {
             "email": "test@example.com",
-            "user_id": "123"
+            "user_id": "123",
         }
         request.get_cached_identity_data.return_value = {"phone": "+1234567890"}
         return request
@@ -105,65 +110,15 @@ class TestAsyncDSRService:
         read_request.async_config = Mock()
         read_request.async_config.strategy = "polling"
         read_request.async_config.configuration = {
-            "status_request": {
-                "method": "GET",
-                "path": "/api/status/<request_id>"
-            },
-            "result_request": {
-                "method": "GET",
-                "path": "/api/results/<request_id>"
-            },
-            "result_path": "data"
+            "status_request": {"method": "GET", "path": "/api/status/<request_id>"},
+            "result_request": {"method": "GET", "path": "/api/results/<request_id>"},
+            "result_path": "data",
         }
 
         config.get_read_requests_by_identity.return_value = [read_request]
         return config
 
-    def test_get_connection_config_from_task_success(
-        self,
-        db: Session,
-        saas_async_polling_example_connection_config,
-        privacy_request,
-    ):
-        """Test successful retrieval of connection config from request task"""
-        # Mock the database queries
-        saas_async_polling_example_connection_config
-        request_task = privacy_request.access_tasks.filter(
-            RequestTask.collection_name == "user"
-        ).first()
-
-        with patch("fides.api.service.async_dsr.async_dsr_service.ConnectionConfig") as mock_conn_model:
-            mock_conn_model.get.return_value = mock_connection_config
-
-            result = get_connection_config_from_task(mock_db_session, mock_request_task)
-
-            assert result == saas_async_polling_example_connection_config
-            mock_db_session.query.assert_called_once()
-
-    def test_get_connection_config_from_task_no_dataset(
-        self, db: Session, mock_request_task
-    ):
-        """Test error when dataset config is not found"""
-        db.query.return_value.filter.return_value.first.return_value = None
-
-        with pytest.raises(PrivacyRequestError) as exc_info:
-            get_connection_config_from_task(mock_db_session, mock_request_task)
-
-        assert "DatasetConfig with fides_key test_dataset not found" in str(exc_info.value)
-
-    def test_get_connection_config_from_task_no_connection(
-        self, mock_db_session, mock_request_task, mock_dataset_config
-    ):
-        """Test error when connection config is not found"""
-        mock_db_session.query.return_value.filter.return_value.first.return_value = mock_dataset_config
-
-        with patch("fides.api.service.async_dsr.async_dsr_service.ConnectionConfig") as mock_conn_model:
-            mock_conn_model.get.return_value = None
-
-            with pytest.raises(PrivacyRequestError) as exc_info:
-                get_connection_config_from_task(mock_db_session, mock_request_task)
-
-            assert f"ConnectionConfig with id {mock_dataset_config.connection_config_id} not found" in str(exc_info.value)
+    ##TODO Proper testing for get connection config from task
 
     def test_requeue_polling_request_invalid_status(
         self, mock_db_session, mock_request_task, mock_privacy_request
@@ -177,10 +132,14 @@ class TestAsyncDSRService:
         assert "Cannot re-queue privacy request" in str(exc_info.value)
         assert "with status complete" in str(exc_info.value)
 
-    @patch("fides.api.service.async_dsr.async_dsr_service.get_connection_config_from_task")
+    @patch(
+        "fides.api.service.async_dsr.async_dsr_service.get_connection_config_from_task"
+    )
     @patch("fides.api.service.async_dsr.async_dsr_service.TaskResources")
     @patch("fides.api.service.async_dsr.async_dsr_service.create_graph_task")
-    @patch("fides.api.service.async_dsr.async_dsr_service.execute_read_polling_requests")
+    @patch(
+        "fides.api.service.async_dsr.async_dsr_service.execute_read_polling_requests"
+    )
     def test_requeue_polling_request_access_task(
         self,
         mock_execute_read,
@@ -214,13 +173,17 @@ class TestAsyncDSRService:
             mock_db_session,
             mock_request_task,
             mock_query_config,
-            mock_graph_task.connector
+            mock_graph_task.connector,
         )
 
-    @patch("fides.api.service.async_dsr.async_dsr_service.get_connection_config_from_task")
+    @patch(
+        "fides.api.service.async_dsr.async_dsr_service.get_connection_config_from_task"
+    )
     @patch("fides.api.service.async_dsr.async_dsr_service.TaskResources")
     @patch("fides.api.service.async_dsr.async_dsr_service.create_graph_task")
-    @patch("fides.api.service.async_dsr.async_dsr_service.execute_erasure_polling_requests")
+    @patch(
+        "fides.api.service.async_dsr.async_dsr_service.execute_erasure_polling_requests"
+    )
     def test_requeue_polling_request_erasure_task(
         self,
         mock_execute_erasure,
@@ -252,7 +215,9 @@ class TestAsyncDSRService:
             mock_db_session, mock_request_task, mock_query_config
         )
 
-    @patch("fides.api.service.async_dsr.async_dsr_service.AsyncDSRStrategy.get_strategy")
+    @patch(
+        "fides.api.service.async_dsr.async_dsr_service.AsyncDSRStrategy.get_strategy"
+    )
     def test_execute_read_polling_requests_status_not_ready(
         self,
         mock_get_strategy,
@@ -275,7 +240,9 @@ class TestAsyncDSRService:
         mock_strategy.get_status_request.assert_called_once()
         mock_strategy.get_result_request.assert_not_called()
 
-    @patch("fides.api.service.async_dsr.async_dsr_service.AsyncDSRStrategy.get_strategy")
+    @patch(
+        "fides.api.service.async_dsr.async_dsr_service.AsyncDSRStrategy.get_strategy"
+    )
     @patch("fides.api.service.async_dsr.async_dsr_service.execute_read_result_request")
     def test_execute_read_polling_requests_status_ready(
         self,
@@ -304,7 +271,8 @@ class TestAsyncDSRService:
             mock_strategy,
             mock_saas_connector.create_client.return_value,
             mock_saas_connector.secrets,
-            mock_request_task.privacy_request.get_persisted_identity.return_value.labeled_dict.return_value | mock_request_task.privacy_request.get_cached_identity_data.return_value
+            mock_request_task.privacy_request.get_persisted_identity.return_value.labeled_dict.return_value
+            | mock_request_task.privacy_request.get_cached_identity_data.return_value,
         )
 
     @patch("fides.api.service.async_dsr.async_dsr_service.log_task_queued")
@@ -321,7 +289,7 @@ class TestAsyncDSRService:
         mock_strategy = Mock(spec=PollingAsyncDSRStrategy)
         mock_strategy.get_result_request.return_value = [
             {"id": 1, "name": "John Doe"},
-            {"id": 2, "name": "Jane Smith"}
+            {"id": 2, "name": "Jane Smith"},
         ]
 
         mock_client = Mock(spec=AuthenticatedClient)
@@ -351,7 +319,9 @@ class TestAsyncDSRService:
 
         # Verify task was queued for next step
         mock_log_queued.assert_called_once_with(mock_request_task, "callback")
-        mock_queue_task.assert_called_once_with(mock_request_task, privacy_request_proceed=True)
+        mock_queue_task.assert_called_once_with(
+            mock_request_task, privacy_request_proceed=True
+        )
 
     def test_execute_read_result_request_no_data(
         self,

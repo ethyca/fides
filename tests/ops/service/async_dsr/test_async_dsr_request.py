@@ -6,28 +6,25 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from loguru import logger
 
-from fides.api.common_exceptions import (
-    AwaitingAsyncTask,
-)
+from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.api.models.privacy_request.request_task import AsyncTaskType
-
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
-
 
 
 class TestAsyncDsrRequest:
@@ -36,7 +33,9 @@ class TestAsyncDsrRequest:
     """
 
     @pytest.fixture(scope="function")
-    def async_graph(self, saas_async_polling_example_dataset_config, db, privacy_request):
+    def async_graph(
+        self, saas_async_polling_example_dataset_config, db, privacy_request
+    ):
         # Build proper async graph with persisted request tasks
         async_graph = saas_async_polling_example_dataset_config.get_graph()
         graph = DatasetGraph(async_graph)
@@ -49,6 +48,7 @@ class TestAsyncDsrRequest:
         persist_initial_erasure_request_tasks(
             db, privacy_request, traversal_nodes, end_nodes, graph
         )
+
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_read_request_expects_async_results(
         self,
@@ -65,7 +65,9 @@ class TestAsyncDsrRequest:
 
         """
         # Build graph to get legitimate access Request Task
-        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
         mock_send().json.return_value = {"results_pending": True}
 
         # Mock this request task with expected attributes if the callback endpoint was hit
@@ -92,10 +94,8 @@ class TestAsyncDsrRequest:
 
         # Check that we have saved the request task as a polling task
         db.refresh(request_task)
-
+        logger.info(f"Request Task: {request_task}")
         assert request_task.async_type == AsyncTaskType.polling
-
-
 
     def test_status_request_pending_queue_executes():
         """
@@ -103,7 +103,9 @@ class TestAsyncDsrRequest:
         we raise an AwaitingAsyncTask exception
         """
         # Build graph to get legitimate access Request Task
-        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
         mock_send().json.return_value = {"results_pending": True}
 
         # Mock this request task with expected attributes if the callback endpoint was hit
@@ -114,7 +116,9 @@ class TestAsyncDsrRequest:
         we raise an AwaitingAsyncTask exception
         """
         # Build graph to get legitimate access Request Task
-        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
         mock_send().json.return_value = {"results_pending": True}
 
         # Mock this request task with expected attributes if the callback endpoint was hit
@@ -125,7 +129,9 @@ class TestAsyncDsrRequest:
         we raise an AwaitingAsyncTask exception
         """
         # Build graph to get legitimate access Request Task
-        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
         mock_send().json.return_value = {"results_pending": True}
 
         # Mock this request task with expected attributes if the callback endpoint was hit

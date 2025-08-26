@@ -868,19 +868,16 @@ def saas_async_example_connection_config(
     connection_config.delete(db)
 
 
-
 @pytest.fixture
 def saas_async_polling_example_config() -> Dict:
-    return load_config(
-        "tests/fixtures/saas/test_data/saas_async_polling_config.yml"
-    )
+    return load_config("tests/fixtures/saas/test_data/saas_async_polling_config.yml")
 
 
 @pytest.fixture
 def saas_async_polling_example_dataset() -> Dict:
-    return load_dataset(
-        "tests/fixtures/saas/test_data/saas_async_polling_dataset.yml"
-    )[0]
+    return load_dataset("tests/fixtures/saas/test_data/saas_async_polling_dataset.yml")[
+        0
+    ]
 
 
 @pytest.fixture
@@ -916,7 +913,9 @@ def saas_async_polling_example_dataset_config(
     saas_async_polling_example_connection_config.key = fides_key
     saas_async_polling_example_connection_config.save(db=db)
 
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, saas_async_polling_example_dataset)
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db, saas_async_polling_example_dataset
+    )
 
     dataset = DatasetConfig.create(
         db=db,

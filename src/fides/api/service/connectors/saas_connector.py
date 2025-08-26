@@ -3,7 +3,6 @@ import json
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-from fides.api.models.worker_task import ExecutionLogStatus
 import pydash
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -22,6 +21,7 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -280,9 +280,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_callback = True
                 db = Session.object_session(privacy_request)
-                request_task.async_type = read_request.async_config.strategy
-                request_task.update_status(db, ExecutionLogStatus.awaiting_processing)
-                request_task.save(db)
+                request_task.async_type = AsyncTaskType(
+                    read_request.async_config.strategy
+                )
+                # I think we can skip this since on graph task we are grabbing it
+                # request_task.update_status(db, ExecutionLogStatus.awaiting_processing)
+                # request_task.save(db)
 
                 logger.info(
                     "Request Task async_type set to: {} for task ID: {}",
@@ -350,6 +353,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
+
+            ## Problems with AwaitingAsyncTask: Since we are raising the await task, we are rolling back the changes.
             raise AwaitingAsyncTask()
 
         return rows

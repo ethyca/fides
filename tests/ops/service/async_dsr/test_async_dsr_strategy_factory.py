@@ -1,13 +1,13 @@
 import pytest
 
 from fides.api.common_exceptions import NoSuchStrategyException, ValidationError
+from fides.api.service.async_dsr.async_dsr_strategy_callback import (
+    CallbackAsyncDSRStrategy,
+)
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
     SupportedAsyncDSRStrategies,
     get_strategy,
     get_strategy_names,
-)
-from fides.api.service.async_dsr.async_dsr_strategy_callback import (
-    CallbackAsyncDSRStrategy,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_polling import (
     PollingAsyncDSRStrategy,
@@ -17,7 +17,7 @@ from fides.api.service.async_dsr.async_dsr_strategy_polling import (
 class TestAsyncDSRStrategyFactory:
     def test_get_strategy_polling(self):
         """Test getting a polling strategy with valid configuration"""
-        config  = {
+        config = {
             "status_request": {
                 "method": "GET",
                 "path": "/status/<status_id>",
@@ -32,7 +32,6 @@ class TestAsyncDSRStrategyFactory:
         strategy = get_strategy(strategy_name="polling", configuration=config)
         assert isinstance(strategy, PollingAsyncDSRStrategy)
         assert strategy.name == "polling"
-
 
     def test_get_strategy_callback_minimal_config(self):
         """Test getting a callback strategy with minimal configuration"""
