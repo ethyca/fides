@@ -20,8 +20,6 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
 )
 from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
-from fides.config import CONFIG
-from tests.api.routes.privacy_requests.conftest import mock_storage_config
 
 
 class TestPrivacyCenterDsrPackage:
@@ -124,7 +122,7 @@ class TestPrivacyCenterDsrPackage:
         self, url, completed_privacy_request, test_client, storage_config
     ):
         """Test that unauthenticated users can access the endpoint"""
-        with mock_aws(), mock_storage_config(storage_config):
+        with mock_aws():
             # allow_redirects=False prevents the test client from automatically following the redirect,
             # allowing us to verify the 302 status and Location header without making the actual S3 request
             response = test_client.get(url, allow_redirects=False)
@@ -154,7 +152,7 @@ class TestPrivacyCenterDsrPackage:
         storage_config,
     ):
         """Test that authenticated users can also access the endpoint"""
-        with mock_aws(), mock_storage_config(storage_config):
+        with mock_aws():
             response = test_client.get(
                 url, headers=root_auth_header, allow_redirects=False
             )
@@ -260,7 +258,7 @@ class TestPrivacyCenterDsrPackage:
         self, url, completed_privacy_request, test_client, storage_config
     ):
         """Test that rate limiting is applied to the endpoint"""
-        with mock_aws(), mock_storage_config(storage_config):
+        with mock_aws():
             # Make multiple requests to trigger rate limiting
             # The exact number depends on the rate limit configuration
             responses = []
@@ -288,7 +286,7 @@ class TestPrivacyCenterDsrPackage:
             gcs_storage_config = StorageConfig.create(db=db, data=gcs_data)
 
             # The function should raise an error for GCS
-            with mock_storage_config(gcs_storage_config):
+            with mock_aws():
                 response = test_client.get(url, allow_redirects=False)
                 assert response.status_code == HTTP_400_BAD_REQUEST
                 assert (
@@ -307,7 +305,7 @@ class TestPrivacyCenterDsrPackage:
         """Test that S3 presigned URLs are generated correctly"""
         s3, test_content, file_name = mock_s3_with_file
 
-        with mock_storage_config(storage_config):
+        with mock_aws():
             # Test the endpoint
             # allow_redirects=False prevents the test client from automatically following the redirect,
             # allowing us to verify the 302 status and Location header without making the actual S3 request
@@ -349,7 +347,7 @@ class TestPrivacyCenterDsrPackage:
         """Test that S3 presigned URLs work with automatic authentication"""
         s3, test_content, file_name = mock_s3_auto_auth_with_file
 
-        with mock_storage_config(storage_config_auto_auth):
+        with mock_aws():
             # Test the endpoint
             # allow_redirects=False prevents the test client from automatically following the redirect,
             # allowing us to verify the 302 status and Location header without making the actual S3 request
@@ -386,7 +384,7 @@ class TestPrivacyCenterDsrPackage:
         """Test the complete redirect flow - endpoint redirects to presigned URL and URL is accessible"""
         s3, test_content, file_name = mock_s3_with_file
 
-        with mock_storage_config(storage_config):
+        with mock_aws():
             # Debug: log the setup
             print(f"Privacy request ID: {completed_privacy_request.id}")
             print(f"Privacy request status: {completed_privacy_request.status}")
