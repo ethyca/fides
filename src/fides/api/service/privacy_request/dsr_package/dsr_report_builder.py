@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 import jinja2
-from fideslang.models import Dataset
+from fideslang.models import Dataset, DatasetField
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 from sqlalchemy.orm import Session, object_session
@@ -552,7 +552,7 @@ def _map_privacy_request(privacy_request: PrivacyRequest) -> dict[str, Any]:
 
 
 def _traverse_fields_for_redaction(
-    fields, current_path: str, redaction_entities: set[str]
+    fields: List[DatasetField], current_path: str, redaction_entities: set[str]
 ) -> None:
     """
     Recursively traverse nested fields to find redaction entities.
@@ -562,23 +562,20 @@ def _traverse_fields_for_redaction(
         current_path: Current hierarchical path (e.g., "dataset.collection")
         redaction_entities: Set to add redacted field paths to
     """
-    for field_dict in fields:
-        field_name = field_dict.name
+    for field in fields:
+        field_name = field.name
         if not field_name:
             continue
 
         field_path = f"{current_path}.{field_name}"
-        field_fides_meta = field_dict.fides_meta
+        field_fides_meta = field.fides_meta
 
         if field_fides_meta and field_fides_meta.redact == "name":
             redaction_entities.add(field_path)
 
         # Recursively check nested fields
-        nested_fields = getattr(field_dict, "fields", None)
-        if nested_fields:
-            _traverse_fields_for_redaction(
-                nested_fields, field_path, redaction_entities
-            )
+        if field.fields:
+            _traverse_fields_for_redaction(field.fields, field_path, redaction_entities)
 
 
 def get_redaction_entities_map(db: Session) -> set[str]:
@@ -608,7 +605,8 @@ def get_redaction_entities_map(db: Session) -> set[str]:
                 continue
 
             dataset = Dataset.model_validate(dataset_config.ctl_dataset)
-            dataset_name = dataset.name
+            # Intentionally using the fides_key instead of name since it's always provided
+            dataset_name = dataset.fides_key
 
             # Check dataset level
             if dataset.fides_meta and dataset.fides_meta.redact == "name":
@@ -621,14 +619,13 @@ def get_redaction_entities_map(db: Session) -> set[str]:
                 if not collection_name:
                     continue
 
-                collection_key = f"{dataset_name}.{collection_name}"
+                collection_path = f"{dataset_name}.{collection_name}"
                 collection_fides_meta = collection_dict.fides_meta
 
                 if collection_fides_meta and collection_fides_meta.redact == "name":
-                    redaction_entities.add(collection_key)
+                    redaction_entities.add(collection_path)
 
                 # Check field level (with recursive nested field support)
-                collection_path = f"{dataset_name}.{collection_name}"
                 _traverse_fields_for_redaction(
                     collection_dict.fields, collection_path, redaction_entities
                 )
@@ -659,7 +656,7 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
     try:
         # Query for dataset-level redactions
         dataset_query = """
-        SELECT ctl.name as entity_path
+        SELECT ctl.fides_key as entity_path
         FROM datasetconfig dc
         JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
         WHERE ctl.fides_meta->>'redact' = 'name'
