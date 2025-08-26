@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
+import validator from "validator";
 import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
@@ -10,8 +11,11 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
  * @returns true if valid pri_uuid format, false otherwise
  */
 function isValidRequestId(requestId: string): boolean {
-  const priUuidRegex = /^pri_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return priUuidRegex.test(requestId);
+  if (!requestId.startsWith("pri_")) {
+    return false;
+  }
+  const uuidPart = requestId.substring(4); // Remove "pri_" prefix
+  return validator.isUUID(uuidPart, 4);
 }
 
 /**
@@ -49,7 +53,10 @@ export default async function handler(
 
   try {
     const settings = loadEnvironmentVariables();
-    const { request_id: requestId } = req.query;
+    const { request_id: requestIdRaw } = req.query;
+
+    // Extract and validate requestId parameter
+    const requestId = Array.isArray(requestIdRaw) ? requestIdRaw[0] : requestIdRaw;
 
     // Validate that requestId parameter is provided
     if (!requestId) {
