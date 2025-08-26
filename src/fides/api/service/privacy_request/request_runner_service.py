@@ -822,10 +822,16 @@ def initiate_privacy_request_completion_email(
         # Generate appropriate URLs based on streaming configuration
         if use_dsr_package_links and config_proxy.privacy_center.url:
             # Use DSR package links instead of direct storage URLs
+            from fides.api.models.privacy_request.webhook import (
+                generate_privacy_request_download_token,
+            )
             from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 
+            # Generate the download token for security
+            download_token = generate_privacy_request_download_token(privacy_request_id)
+
             # Generate DSR package URLs for the messaging template system
-            dsr_package_url = f"{config_proxy.privacy_center.url}/api{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}"
+            dsr_package_url = f"{config_proxy.privacy_center.url}/api{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}?token={download_token}"
             download_links = [dsr_package_url]
         else:
             # Use original direct storage URLs

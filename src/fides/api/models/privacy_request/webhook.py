@@ -13,12 +13,17 @@ from fides.api.models.policy import PolicyPreWebhook, WebhookDirection
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
+from fides.api.schemas.external_https import (
+    DownloadTokenJWE,
+    RequestTaskJWE,
+    WebhookJWE,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,
 )
 from fides.config import CONFIG
@@ -86,6 +91,22 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
     jwe = RequestTaskJWE(
         request_task_id=request_task.id,
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
+        iat=datetime.now().isoformat(),
+    )
+    return generate_jwe(
+        json.dumps(jwe.model_dump(mode="json")),
+        CONFIG.security.app_encryption_key,
+    )
+
+
+def generate_privacy_request_download_token(privacy_request_id: str) -> str:
+    """
+    Generate a JWE token for users to download their privacy request access package.
+    This token is reusable and remains valid for the lifetime of the privacy request.
+    """
+    jwe = DownloadTokenJWE(
+        privacy_request_id=privacy_request_id,
+        scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS],
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(

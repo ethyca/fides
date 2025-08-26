@@ -6,13 +6,17 @@ from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_302_FOUND,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fides.api.api.deps import get_db
+from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import get_active_default_storage_config
+from fides.api.oauth.utils import validate_download_token
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.storage.streaming.s3 import S3StorageClient
@@ -28,25 +32,7 @@ def get_privacy_request_or_error(
     privacy_request_id: str, db: Session
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
-    # Validate UUID format to prevent SSRF attacks
-    # Privacy request IDs are in format: pri_uuid where pri is prefix and uuid is UUID v4
-    if not privacy_request_id.startswith("pri_"):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
-        )
-
-    # Extract the UUID part after the prefix
-    uuid_part = privacy_request_id[4:]  # Remove "pri_" prefix
-
-    try:
-        uuid.UUID(uuid_part, version=4)
-    except ValueError:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
-        )
-
+    # Note: UUID format validation is now done earlier in the endpoint
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
     if not privacy_request:
@@ -71,6 +57,7 @@ def get_privacy_request_or_error(
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def get_access_results_urls(
     privacy_request_id: str,
+    token: str,
     db: Session = Depends(get_db),
     *,
     request: Request,  # required for rate limiting
@@ -80,10 +67,45 @@ def get_access_results_urls(
     Public endpoint for retrieving access results URLs for a privacy request.
     This endpoint generates fresh presigned URLs and redirects to the first available result.
     This endpoint is designed to be accessible via email links sent to end users.
-    No authentication is required, but rate limiting is applied for security.
+    No authentication is required, but a valid download token is required for security.
+    Rate limiting is applied for additional security.
 
     privacy_request_id parameter is required in the URL path.
+    token parameter is required as a query parameter for security.
     """
+    # First validate the privacy request ID format to prevent SSRF attacks
+    # This is a simple string check that doesn't require database access
+    if not privacy_request_id.startswith("pri_"):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
+        )
+
+    # Extract the UUID part after the prefix
+    uuid_part = privacy_request_id[4:]  # Remove "pri_" prefix
+
+    try:
+        uuid.UUID(uuid_part, version=4)
+    except ValueError:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
+        )
+
+    try:
+        # Validate the download token before proceeding
+        validate_download_token(token, privacy_request_id)
+    except AuthenticationError as e:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail=str(e.detail),
+        )
+    except AuthorizationError as e:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail=str(e.detail),
+        )
+
     privacy_request = get_privacy_request_or_error(privacy_request_id, db)
     storage_config = get_active_default_storage_config(db)
 

@@ -1,20 +1,23 @@
 import urllib.parse
 
-import boto3
 import pytest
 from moto import mock_aws
 from starlette.status import (
     HTTP_200_OK,
     HTTP_302_FOUND,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
 
+from fides.api.models.privacy_request.webhook import (
+    generate_privacy_request_download_token,
+)
 from fides.api.models.storage import StorageConfig, StorageType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
-    FileNaming,
     ResponseFormat,
     StorageDetails,
     StorageSecrets,
@@ -26,7 +29,17 @@ from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 @pytest.mark.usefixtures("set_active_storage_s3", "storage_config_default")
 class TestPrivacyCenterDsrPackage:
     @pytest.fixture(scope="function")
-    def url(self, privacy_request):
+    def valid_token(self, privacy_request):
+        """Generate a valid download token for the privacy request"""
+        return generate_privacy_request_download_token(privacy_request.id)
+
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request, valid_token):
+        return f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={valid_token}"
+
+    @pytest.fixture(scope="function")
+    def url_without_token(self, privacy_request):
+        """URL without token for testing authentication failures"""
         return f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
 
     @pytest.fixture(scope="function")
@@ -149,7 +162,8 @@ class TestPrivacyCenterDsrPackage:
         self, pending_privacy_request, test_client
     ):
         """Test that requests that are not complete return an error"""
-        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=pending_privacy_request.id)}"
+        token = generate_privacy_request_download_token(pending_privacy_request.id)
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=pending_privacy_request.id)}?token={token}"
         response = test_client.get(url)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert "not complete" in response.json()["detail"]
@@ -162,7 +176,8 @@ class TestPrivacyCenterDsrPackage:
         privacy_request.access_result_urls = None
         db.commit()
 
-        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
+        token = generate_privacy_request_download_token(privacy_request.id)
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={token}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
         assert "No access results found" in response.json()["detail"]
@@ -171,7 +186,9 @@ class TestPrivacyCenterDsrPackage:
         """Test that non-existent requests return 404"""
         # Use a valid pri_uuid format that doesn't exist in the database
         non_existent_id = "pri_12345678-1234-1234-1234-123456789012"
-        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=non_existent_id)}"
+        # Generate a token for the non-existent request (this will still fail at the privacy request lookup)
+        token = generate_privacy_request_download_token(non_existent_id)
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=non_existent_id)}?token={token}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
 
@@ -189,7 +206,10 @@ class TestPrivacyCenterDsrPackage:
 
         for invalid_id in invalid_ids:
             # Construct URL directly with invalid ID, don't use the url fixture
-            url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=invalid_id)}"
+            # For invalid formats, we need a properly formatted JWE token that will pass format validation
+            # but fail at UUID validation. We'll use a dummy token with the correct format.
+            dummy_token = "eyJhbGciOiJBMjU2R0NNS1ciLCJlbmMiOiJBMjU2R0NNS1ciLCJ6aXAiOiJERUYiLCJ0eXBlIjoiSldFIn0.eyJwcml2YWN5X3JlcXVlc3RfaWQiOiJwcmlfMTIzNDU2NzgtMTIzNC0xMjM0LTEyMzQtMTIzNDU2Nzg5MDEyIiwic2NvcGVzIjpbInByaXZhY3ktcmVxdWVzdC1hY2Nlc3MtcmVzdWx0czpyZWFkIl0sImlhdCI6IjIwMjMtMDEtMDFUMDA6MDA6MDAifQ.any.dummy.signature"
+            url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=invalid_id)}?token={dummy_token}"
             response = test_client.get(url)
 
             # We expect 400 for invalid format, not 404
@@ -206,7 +226,9 @@ class TestPrivacyCenterDsrPackage:
         """Test that valid pri_uuid format is accepted by the validation logic"""
         # Test with a valid pri_uuid format that doesn't exist in the database
         valid_id = "pri_123e4567-e89b-12d3-a456-426614174000"
-        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=valid_id)}"
+        # Generate a token for the valid format (this will still fail at the privacy request lookup)
+        token = generate_privacy_request_download_token(valid_id)
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=valid_id)}?token={token}"
         response = test_client.get(url)
 
         # Should get 404 for non-existent ID, not 400 for invalid format
@@ -223,7 +245,8 @@ class TestPrivacyCenterDsrPackage:
         privacy_request.access_result_urls = {"access_result_urls": []}
         db.commit()
 
-        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
+        token = generate_privacy_request_download_token(privacy_request.id)
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={token}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
         assert "No access result URLs found" in response.json()["detail"]
@@ -473,3 +496,105 @@ class TestPrivacyCenterDsrPackage:
 
         # Verify that we got some response (either file content or error from moto)
         assert response.content is not None
+
+    def test_get_access_results_missing_token(self, url_without_token, test_client):
+        """Test that requests without a token are rejected"""
+        response = test_client.get(url_without_token)
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert "Download token is required" in response.json()["detail"]
+
+    def test_get_access_results_invalid_token_format(
+        self, privacy_request, test_client
+    ):
+        """Test that requests with invalid token format are rejected"""
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token=invalid_token"
+        response = test_client.get(url)
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert "Invalid download token format" in response.json()["detail"]
+
+    def test_get_access_results_token_for_different_request(
+        self, privacy_request, test_client, db
+    ):
+        """Test that tokens for different privacy requests are rejected"""
+        # Create a different privacy request and generate a token for it
+        from fides.api.models.policy import Policy
+        from fides.api.models.privacy_request import PrivacyRequest
+
+        # Get the first available policy for the test
+        policy = Policy.get_by(db, field="id", value=privacy_request.policy_id)
+        if not policy:
+            # If no policy exists, skip this test
+            pytest.skip("No policy available for testing")
+
+        different_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "different_request",
+                "started_processing_at": None,
+                "finished_processing_at": None,
+                "requested_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": policy.id,  # Add the required policy_id
+            },
+        )
+        different_token = generate_privacy_request_download_token(different_request.id)
+
+        # Try to use the different token for the original request
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={different_token}"
+        response = test_client.get(url)
+        assert response.status_code == HTTP_403_FORBIDDEN
+        assert (
+            "Download token does not grant access to this privacy request"
+            in response.json()["detail"]
+        )
+
+    def test_get_access_results_token_without_required_scope(
+        self, privacy_request, test_client
+    ):
+        """Test that tokens without required scopes are rejected"""
+        # Create a token with insufficient scopes by mocking the generation
+        from unittest.mock import patch
+
+        from fides.api.oauth.jwt import generate_jwe
+        from fides.api.schemas.external_https import DownloadTokenJWE
+        from fides.config import CONFIG
+
+        # Create a token with insufficient scopes
+        insufficient_token = DownloadTokenJWE(
+            privacy_request_id=privacy_request.id,
+            scopes=["insufficient:scope"],
+            iat="2023-01-01T00:00:00",
+        )
+        token_string = generate_jwe(
+            insufficient_token.model_dump_json(), CONFIG.security.app_encryption_key
+        )
+
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={token_string}"
+        response = test_client.get(url)
+        assert response.status_code == HTTP_403_FORBIDDEN
+        assert "Download token lacks required permissions" in response.json()["detail"]
+
+    def test_get_access_results_valid_token_success(
+        self, url, completed_privacy_request, test_client, storage_config_default, db
+    ):
+        """Test that requests with valid tokens succeed"""
+        # Ensure the storage config has secret keys authentication
+        storage_config_default.details[StorageDetails.AUTH_METHOD.value] = (
+            AWSAuthMethod.SECRET_KEYS.value
+        )
+        storage_config_default.set_secrets(
+            db=db,
+            storage_secrets={
+                StorageSecrets.AWS_ACCESS_KEY_ID.value: "fake_access_key",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "fake_secret_key",
+            },
+        )
+        db.commit()
+
+        response = test_client.get(url, allow_redirects=False)
+        assert response.status_code == HTTP_302_FOUND
+
+        # Check that we're redirected to a presigned URL
+        redirect_url = response.headers.get("location")
+        assert redirect_url is not None
+        assert str(completed_privacy_request.id) in redirect_url

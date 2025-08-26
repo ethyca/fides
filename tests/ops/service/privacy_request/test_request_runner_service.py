@@ -25,7 +25,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.policy import Policy, PolicyPostWebhook, PolicyPreWebhook
+from fides.api.models.policy import Policy, PolicyPostWebhook, PolicyPreWebhook, Rule
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
@@ -35,7 +35,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
 )
-from fides.api.schemas.policy import ActionType, CurrentStep, Rule
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     Consent,
@@ -2217,13 +2217,20 @@ class TestSkipCollectionsWithOptionalIdentities:
 class TestInitiatePrivacyRequestCompletionEmail:
     """Test the initiate_privacy_request_completion_email function with enable_access_package_redirect functionality"""
 
-    @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._get_dispatcher_from_config_type"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
     def test_initiate_privacy_request_completion_email_with_access_package_redirect_enabled(
         self,
         mock_dispatch_message,
+        mock_get_dispatcher,
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        messaging_config,
     ):
         """Test that when enable_access_package_redirect=True, DSR package links are generated instead of direct storage URLs"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
@@ -2233,6 +2240,10 @@ class TestInitiatePrivacyRequestCompletionEmail:
             StorageType,
         )
         from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
+
+        # Mock the dispatcher to prevent actual email sending
+        mock_dispatcher = mock.MagicMock()
+        mock_get_dispatcher.return_value = mock_dispatcher
 
         # Create a storage config with enable_access_package_redirect=True
         storage_config_data = {
@@ -2272,6 +2283,13 @@ class TestInitiatePrivacyRequestCompletionEmail:
             access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]
             identity_data = {"email": "test@example.com"}
 
+            # Debug: Check what we're setting up
+            print(f"Storage config details: {storage_config.details}")
+            print(f"Rule storage destination: {rule.get_storage_destination(db)}")
+            print(
+                f"Policy rules for access: {policy.get_rules_for_action(action_type=ActionType.access)}"
+            )
+
             initiate_privacy_request_completion_email(
                 session=db,
                 policy=policy,
@@ -2284,6 +2302,9 @@ class TestInitiatePrivacyRequestCompletionEmail:
             # Verify dispatch_message was called with DSR package links
             mock_dispatch_message.assert_called_once()
             call_args = mock_dispatch_message.call_args
+            print(f"Actual call args: {call_args}")
+            print(f"Message body params: {call_args[1]['message_body_params']}")
+
             assert (
                 call_args[1]["action_type"]
                 == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
@@ -2292,8 +2313,13 @@ class TestInitiatePrivacyRequestCompletionEmail:
             # Check that download_links contains DSR package URL instead of direct storage URL
             message_body_params = call_args[1]["message_body_params"]
             assert isinstance(message_body_params, AccessRequestCompleteBodyParams)
-            expected_dsr_url = f"https://privacy.example.com{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}"
-            assert message_body_params.download_links == [expected_dsr_url]
+
+            # The URL should now include a token parameter
+            expected_dsr_url = f"https://privacy.example.com{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token="
+            assert message_body_params.download_links[0].startswith(expected_dsr_url)
+            # Verify the token is present (should be a JWE with 5 parts)
+            token_part = message_body_params.download_links[0].split("token=")[1]
+            assert token_part.count(".") == 4  # JWE format has 5 parts separated by dots
 
         # Cleanup
         rule.delete(db)
@@ -2306,6 +2332,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        messaging_config,
     ):
         """Test that when enable_access_package_redirect=False, original direct storage URLs are used"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
@@ -2386,6 +2413,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        messaging_config,
     ):
         """Test that non-S3 storage types always use original direct storage URLs regardless of enable_access_package_redirect"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
@@ -2468,6 +2496,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        messaging_config,
     ):
         """Test that when privacy_center.url is None, fallback to original storage URLs even if access package redirect is enabled"""
         from fides.api.models.storage import ResponseFormat, StorageConfig

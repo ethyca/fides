@@ -23,7 +23,7 @@ function isValidRequestId(requestId: string): boolean {
  * @swagger
  * /api/privacy-request/{id}/access-package:
  *   get:
- *     description: Redirects user to DSR package download URL from the Fides API. Includes security measures to prevent SSRF attacks.
+ *     description: Redirects user to DSR package download URL from the Fides API. Includes security measures to prevent SSRF attacks and requires a valid download token.
  *     parameters:
  *       - in: path
  *         name: id
@@ -32,11 +32,21 @@ function isValidRequestId(requestId: string): boolean {
  *         schema:
  *           type: string
  *           pattern: '^pri_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         description: Download token required for security. This token must be valid and grant access to the specified privacy request.
+ *         schema:
+ *           type: string
  *     responses:
  *       302:
  *         description: Redirect to the DSR package download URL
  *       400:
- *         description: Bad request - invalid request ID format
+ *         description: Bad request - invalid request ID format or missing token
+ *       401:
+ *         description: Unauthorized - invalid or missing download token
+ *       403:
+ *         description: Forbidden - token does not grant access to this privacy request
  *       404:
  *         description: DSR package not found
  *       500:
@@ -55,12 +65,17 @@ export default async function handler(
 
   try {
     const settings = loadEnvironmentVariables();
-    const { id: requestIdRaw } = req.query;
+    const { id: requestIdRaw, token: tokenRaw } = req.query;
 
     // Extract and validate requestId parameter
     const requestId = Array.isArray(requestIdRaw)
       ? requestIdRaw[0]
       : requestIdRaw;
+
+    // Extract and validate token parameter
+    const token = Array.isArray(tokenRaw)
+      ? tokenRaw[0]
+      : tokenRaw;
 
     // Validate that requestId parameter is provided
     if (!requestId) {
@@ -68,6 +83,14 @@ export default async function handler(
       return res
         .status(400)
         .send("Bad Request: requestId parameter is required");
+    }
+
+    // Validate that token parameter is provided
+    if (!token) {
+      log.warn("DSR package request missing required token parameter");
+      return res
+        .status(400)
+        .send("Bad Request: token parameter is required");
     }
 
     // Validate that requestId is a valid pri_uuid to prevent SSRF attacks
@@ -78,6 +101,16 @@ export default async function handler(
       return res
         .status(400)
         .send("Bad Request: requestId must be a valid pri_uuid format");
+    }
+
+    // Validate that token is a string
+    if (typeof token !== "string") {
+      log.warn("DSR package request with invalid token format", {
+        token,
+      });
+      return res
+        .status(400)
+        .send("Bad Request: token must be a valid string");
     }
 
     // Encode the UUID for safe URL construction
@@ -96,7 +129,7 @@ export default async function handler(
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL;
 
     // Build the URL with encoded UUID for safe path parameter
-    const url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package`;
+    const url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package?token=${encodeURIComponent(token)}`;
 
     log.debug(`Fetching DSR package link from: ${url}`);
 
