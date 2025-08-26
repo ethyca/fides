@@ -9,6 +9,7 @@ import {
 import { ReactNode } from "react";
 
 import { useConnectionLogo } from "~/features/common/hooks";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
@@ -45,12 +46,17 @@ const IntegrationBox = ({
   // Get logo data using the custom hook
   const logoData = useConnectionLogo(integration);
 
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = connectionTypesData?.items || [];
+
   // Use provided integrationTypeInfo or fallback to generating it
   const typeInfo =
     integrationTypeInfo ||
     getIntegrationTypeInfo(
       integration?.connection_type,
       integration?.saas_config?.type,
+      connectionTypes,
     );
 
   // Only pass the saas type if it's a valid SaasConnectionTypes value
