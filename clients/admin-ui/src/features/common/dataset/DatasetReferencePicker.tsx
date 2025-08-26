@@ -2,8 +2,7 @@ import {
   AntFlex as Flex,
   AntSelect as Select,
   AntTreeSelect as TreeSelect,
-  Box,
-  Text,
+  AntTypography as Typography,
 } from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -27,14 +26,6 @@ export interface DatasetReferencePickerProps {
   disabled?: boolean;
   excludeSaasDataset?: boolean;
 }
-
-// Empty state component
-const EmptyState = () => (
-  <Box textAlign="center" py={4} color="gray.500">
-    <Text>No datasets available</Text>
-    <Text fontSize="sm">Create a dataset to start using this feature</Text>
-  </Box>
-);
 
 export const DatasetReferencePicker = ({
   value,
@@ -159,7 +150,13 @@ export const DatasetReferencePicker = ({
 
   // Show empty state if no datasets available
   if (!datasetsLoading && datasets?.length === 0) {
-    return <EmptyState />;
+    return (
+      <div className="flex flex-col items-center justify-center py-4 ">
+        <Typography.Text>
+          No datasets available. Create a dataset to start using this feature
+        </Typography.Text>
+      </div>
+    );
   }
 
   return (
