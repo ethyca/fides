@@ -31,6 +31,7 @@ class TestStorageConfigModel:
             StorageDetails.NAMING.value: "some naming",
             StorageDetails.MAX_RETRIES.value: 0,
             StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
+            StorageDetails.ENABLE_STREAMING.value: False,
         }
 
     @pytest.fixture(scope="function")

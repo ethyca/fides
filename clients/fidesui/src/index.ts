@@ -7,8 +7,8 @@ export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
+export { LocationSelect } from "./components/select/LocationSelect";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
-export type { ColumnsType as AntColumnsType } from "antd/es/table";
 export type {
   FilterValue as AntFilterValue,
   SorterResult as AntSorterResult,
@@ -42,6 +42,7 @@ export {
   Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
+  Cascader as AntCascader,
   Checkbox as AntCheckbox,
   Col as AntCol,
   Collapse as AntCollapse,
@@ -51,6 +52,7 @@ export {
   Empty as AntEmpty,
   Flex as AntFlex,
   Form as AntForm,
+  Image as AntImage,
   Input as AntInput,
   InputNumber as AntInputNumber,
   Layout as AntLayout,
@@ -79,7 +81,6 @@ export type {
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
-
 // Higher-order components
 export {
   CustomDateRangePicker as AntDateRangePicker,
@@ -89,7 +90,12 @@ export {
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
+
+// Export utils
+export * from "./components/data-display/location.utils";
+export { isoCodesToOptions } from "./components/select/LocationSelect";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;

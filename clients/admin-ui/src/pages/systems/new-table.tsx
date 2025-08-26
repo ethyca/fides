@@ -8,6 +8,7 @@ import {
   AntModal,
   AntTable as Table,
   Icons,
+  AntMenuProps,
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 import { useRouter } from "next/router";
@@ -15,11 +16,8 @@ import { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import {
-  expandCollapseAllMenuItems,
-  MenuHeaderCell,
-} from "~/features/common/table/cells/MenuHeaderCell";
 import {
   TableSkeletonLoader,
   useServerSidePagination,
@@ -195,40 +193,32 @@ const NewTable = ({ loading = false }: NewTableProps) => {
           />
         ),
         width: 400,
-        title: () => (
-          <MenuHeaderCell
-            title="Groups"
-            menu={{
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                if (e.key === "expand-all") {
-                  setIsGroupsExpanded(true);
-                } else if (e.key === "collapse-all") {
-                  setIsGroupsExpanded(false);
-                }
-              },
-            }}
-          />
-        ),
+        title: "Groups",
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsGroupsExpanded(true);
+            } else if (e.key === "collapse-all") {
+              setIsGroupsExpanded(false);
+            }
+          },
+        },
       },
       {
-        title: () => (
-          <MenuHeaderCell
-            title="Data uses"
-            menu={{
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                if (e.key === "expand-all") {
-                  setIsDataUsesExpanded(true);
-                } else if (e.key === "collapse-all") {
-                  setIsDataUsesExpanded(false);
-                }
-              },
-            }}
-          />
-        ),
+        title: "Data uses",
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsDataUsesExpanded(true);
+            } else if (e.key === "collapse-all") {
+              setIsDataUsesExpanded(false);
+            }
+          },
+        },
         dataIndex: "privacy_declarations",
         key: "privacy_declarations",
         render: (privacyDeclarations: PrivacyDeclaration[]) => (
