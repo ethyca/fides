@@ -1,18 +1,30 @@
 import io
 import re
+import threading
+import time
 import zipfile
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.privacy_request_redaction_patterns import (
     PrivacyRequestRedactionPatterns,
 )
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
+    get_redaction_entities_map,
+    get_redaction_entities_map_db,
 )
 
 
@@ -365,9 +377,6 @@ class TestDsrReportBuilderDataStructure:
 
     def test_generate_dsr_package_for_inspection(self, privacy_request: PrivacyRequest):
         """Test DSR report builder and save package to disk for inspection"""
-        import os
-        import tempfile
-        from pathlib import Path
 
         dsr_data = {
             "customer_database:users": [
@@ -1355,7 +1364,6 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
 
     def test_concurrent_access(self, privacy_request: PrivacyRequest):
         """Test concurrent access to the zip file"""
-        import threading
 
         builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
         errors = []
@@ -1383,7 +1391,6 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
 
     def test_performance_large_dataset(self, privacy_request: PrivacyRequest):
         """Test performance with a large dataset"""
-        import time
 
         # Create a smaller dataset for performance testing
         # 100 collections with 100 items each instead of 1000x1000
@@ -1408,3 +1415,885 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
             assert "data/dataset1/index.html" in zip_file.namelist()
             assert len([f for f in zip_file.namelist() if "collection" in f]) == 100
+
+
+@pytest.mark.integration_postgres
+class TestGetRedactionEntitiesMap:
+    """Tests for both get_redaction_entities_map implementations (Python and DB-based)"""
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_empty_dataset(self, db, redaction_func):
+        """Test get_redaction_entities_map with no dataset configurations"""
+        result = redaction_func(db)
+        assert result == set()
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_no_redaction_meta(
+        self, db, postgres_example_test_dataset_config, redaction_func
+    ):
+        """Test get_redaction_entities_map with dataset config but no redaction meta"""
+        result = redaction_func(db)
+        assert result == set()
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_dataset_level_redaction(
+        self, db, redaction_func
+    ):
+        """Test get_redaction_entities_map with dataset-level redaction"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_redaction_connection",
+                "name": "Test Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with dataset-level redaction
+        dataset_dict = {
+            "fides_key": "test_dataset_redacted",
+            "name": "test_dataset_redacted",
+            "collections": [],
+            "fides_meta": {"redact": "name"},
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_dataset_redacted",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        result = redaction_func(db)
+        assert "test_dataset_redacted" in result
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_collection_level_redaction(
+        self, db, redaction_func
+    ):
+        """Test get_redaction_entities_map with collection-level redaction"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_collection_redaction_connection",
+                "name": "Test Collection Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with collection-level redaction
+        dataset_dict = {
+            "fides_key": "test_dataset",
+            "name": "test_dataset",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [],
+                    "fides_meta": {"redact": "name"},
+                },
+                {
+                    "name": "orders",
+                    "fields": [],
+                    # No redaction meta
+                },
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_dataset",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        result = redaction_func(db)
+        assert "test_dataset.users" in result
+        assert "test_dataset.orders" not in result
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_field_level_redaction(self, db, redaction_func):
+        """Test get_redaction_entities_map with field-level redaction"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_field_redaction_connection",
+                "name": "Test Field Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with field-level redaction
+        dataset_dict = {
+            "fides_key": "test_dataset",
+            "name": "test_dataset",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                            "fides_meta": {"redact": "name"},
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["user.name"],
+                            # No redaction meta
+                        },
+                    ],
+                }
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_dataset",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        result = redaction_func(db)
+        assert "test_dataset.users.email" in result
+        assert "test_dataset.users.name" not in result
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_hierarchical_redaction(
+        self, db, redaction_func
+    ):
+        """Test get_redaction_entities_map with redaction at multiple levels"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_hierarchical_redaction_connection",
+                "name": "Test Hierarchical Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with redaction at dataset, collection, and field levels
+        dataset_dict = {
+            "fides_key": "test_dataset",
+            "name": "test_dataset",
+            "fides_meta": {"redact": "name"},  # Dataset level
+            "collections": [
+                {
+                    "name": "users",
+                    "fides_meta": {"redact": "name"},  # Collection level
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                            "fides_meta": {"redact": "name"},  # Field level
+                        },
+                        {
+                            "name": "phone",
+                            "data_categories": ["user.contact.phone_number"],
+                            # No redaction meta
+                        },
+                    ],
+                },
+                {
+                    "name": "orders",
+                    "fields": [
+                        {
+                            "name": "order_id",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {"redact": "name"},  # Field level only
+                        },
+                    ],
+                },
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_dataset",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        result = redaction_func(db)
+        # Dataset level
+        assert "test_dataset" in result
+        # Collection level
+        assert "test_dataset.users" in result
+        assert "test_dataset.orders" not in result
+        # Field level
+        assert "test_dataset.users.email" in result
+        assert "test_dataset.users.phone" not in result
+        assert "test_dataset.orders.order_id" in result
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_multiple_datasets(self, db, redaction_func):
+        """Test get_redaction_entities_map with multiple datasets"""
+
+        connection_configs = []
+
+        # Create multiple datasets with different redaction configurations
+        for dataset_index in range(1, 4):
+            # Create a connection config for each dataset
+            connection_config = ConnectionConfig.create(
+                db=db,
+                data={
+                    "key": f"test_multiple_datasets_connection_{dataset_index}",
+                    "name": f"Test Multiple Datasets Connection {dataset_index}",
+                    "connection_type": ConnectionType.manual,
+                    "access": AccessLevel.read,
+                    "disabled": False,
+                },
+            )
+            connection_configs.append(connection_config)
+
+            dataset_dict = {
+                "fides_key": f"dataset_{dataset_index}",
+                "name": f"dataset_{dataset_index}",
+                "collections": [
+                    {
+                        "name": "users",
+                        "fields": [
+                            {
+                                "name": "email",
+                                "data_categories": ["user.contact.email"],
+                                "fides_meta": (
+                                    {"redact": "name"} if dataset_index % 2 == 1 else {}
+                                ),
+                            },
+                        ],
+                        "fides_meta": {"redact": "name"} if dataset_index == 2 else {},
+                    }
+                ],
+                "fides_meta": {"redact": "name"} if dataset_index == 3 else {},
+            }
+
+            ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+            DatasetConfig.create(
+                db=db,
+                data={
+                    "connection_config_id": connection_config.id,
+                    "fides_key": f"dataset_{dataset_index}",
+                    "ctl_dataset_id": ctl_dataset.id,
+                },
+            )
+
+        result = redaction_func(db)
+
+        # Dataset 1: field-level redaction only
+        assert "dataset_1.users.email" in result
+        assert "dataset_1.users" not in result
+        assert "dataset_1" not in result
+
+        # Dataset 2: collection-level redaction
+        assert "dataset_2.users" in result
+        assert "dataset_2" not in result
+
+        # Dataset 3: dataset-level redaction
+        assert "dataset_3" in result
+
+    @pytest.mark.parametrize(
+        "redaction_func",
+        [get_redaction_entities_map, get_redaction_entities_map_db],
+        ids=["python_implementation", "db_implementation"],
+    )
+    def test_get_redaction_entities_map_nested_fields(self, db, redaction_func):
+        """Test get_redaction_entities_map with deeply nested fields"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_nested_connection",
+                "name": "Test Nested Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with deeply nested fields
+        dataset_dict = {
+            "fides_key": "test_nested_dataset",
+            "name": "test_nested_dataset",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "profile",
+                            "fides_meta": {"redact": "name"},  # Level 1 redaction
+                            "fields": [
+                                {
+                                    "name": "personal_info",
+                                    "fides_meta": {
+                                        "redact": "name"
+                                    },  # Level 2 redaction
+                                    "fields": [
+                                        {
+                                            "name": "ssn",
+                                            "fides_meta": {
+                                                "redact": "name"
+                                            },  # Level 3 redaction
+                                            "fields": [],
+                                        },
+                                        {
+                                            "name": "passport_info",
+                                            "fides_meta": {},  # No redaction
+                                            "fields": [
+                                                {
+                                                    "name": "passport_number",
+                                                    "fides_meta": {
+                                                        "redact": "name"
+                                                    },  # Level 4 redaction
+                                                    "fields": [],
+                                                }
+                                            ],
+                                        },
+                                    ],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "email",
+                            "fides_meta": {},  # No redaction
+                            "fields": [],
+                        },
+                    ],
+                }
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_nested_dataset",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        result = redaction_func(db)
+
+        # Verify all nested redaction entities are found
+        assert "test_nested_dataset.users.profile" in result
+        assert "test_nested_dataset.users.profile.personal_info" in result
+        assert "test_nested_dataset.users.profile.personal_info.ssn" in result
+        assert (
+            "test_nested_dataset.users.profile.personal_info.passport_info.passport_number"
+            in result
+        )
+
+        # Verify non-redacted entities are not included
+        assert "test_nested_dataset.users.email" not in result
+        assert (
+            "test_nested_dataset.users.profile.personal_info.passport_info"
+            not in result
+        )
+
+    def test_both_implementations_return_same_results(self, db):
+        """Test that both implementations return identical results for complex dataset"""
+
+        # Create a connection config
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_comparison_connection",
+                "name": "Test Comparison Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a complex dataset with redaction at all levels
+        dataset_dict = {
+            "fides_key": "comparison_dataset",
+            "name": "comparison_dataset",
+            "fides_meta": {"redact": "name"},
+            "collections": [
+                {
+                    "name": "collection_one",
+                    "fields": [
+                        {
+                            "name": "field_one",
+                            "data_categories": ["user"],
+                            "fides_meta": {"redact": "name"},
+                        },
+                        {
+                            "name": "field_two",
+                            "data_categories": ["user"],
+                            "fields": [
+                                {
+                                    "name": "nested_field",
+                                    "data_categories": ["user"],
+                                    "fides_meta": {"redact": "name"},
+                                }
+                            ],
+                        },
+                    ],
+                    "fides_meta": {"redact": "name"},
+                },
+                {
+                    "name": "collection_two",
+                    "fields": [
+                        {
+                            "name": "another_field",
+                            "data_categories": ["user"],
+                        }
+                    ],
+                },
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "comparison_dataset",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        # Get results from both implementations
+        python_result = get_redaction_entities_map(db)
+        db_result = get_redaction_entities_map_db(db)
+
+        # Both should return the same entities
+        assert python_result == db_result
+
+        # Verify specific entities are present in both
+        expected_entities = {
+            "comparison_dataset",  # Dataset level
+            "comparison_dataset.collection_one",  # Collection level
+            "comparison_dataset.collection_one.field_one",  # Field level
+            "comparison_dataset.collection_one.field_two.nested_field",  # Nested field
+        }
+
+        for entity in expected_entities:
+            assert entity in python_result
+            assert entity in db_result
+
+
+@pytest.mark.integration_postgres
+class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase):
+    """Tests for DSR report builder integration with redaction entities map"""
+
+    def test_redaction_by_entities_map_dataset_level(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test dataset-level redaction using entities map"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_integration_dataset_redaction_connection",
+                "name": "Test Integration Dataset Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with dataset-level redaction
+        dataset_dict = {
+            "fides_key": "customer_database",
+            "name": "customer_database",
+            "collections": [],
+            "fides_meta": {"redact": "name"},
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "customer_database",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        dsr_data = {
+            "customer_database:users": [
+                {"id": 1, "name": "John Doe", "email": "john@example.com"},
+            ],
+            "public_data:articles": [
+                {"id": 1, "title": "Public Article"},
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+
+            # customer_database should be redacted to dataset_1
+            assert "dataset_1" in welcome_content
+            assert "customer_database" not in welcome_content
+
+            # public_data should not be redacted (no redaction configuration)
+            assert "public_data" in welcome_content
+
+            # Verify file structure uses redacted names
+            assert "data/dataset_1/index.html" in zip_file.namelist()
+            assert "data/public_data/index.html" in zip_file.namelist()
+
+    def test_redaction_by_entities_map_collection_level(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test collection-level redaction using entities map"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_integration_collection_redaction_connection",
+                "name": "Test Integration Collection Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with collection-level redaction
+        dataset_dict = {
+            "fides_key": "customer_data",
+            "name": "customer_data",
+            "collections": [
+                {
+                    "name": "user_profiles",
+                    "fields": [],
+                    "fides_meta": {"redact": "name"},
+                },
+                {
+                    "name": "orders",
+                    "fields": [],
+                    # No redaction meta
+                },
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "customer_data",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        dsr_data = {
+            "customer_data:user_profiles": [
+                {"id": 1, "name": "John Doe"},
+            ],
+            "customer_data:orders": [
+                {"id": 101, "amount": 49.99},
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            dataset_content = zip_file.read("data/customer_data/index.html").decode(
+                "utf-8"
+            )
+
+            # user_profiles should be redacted to collection_1
+            assert "collection_1" in dataset_content
+            assert "user_profiles" not in dataset_content
+
+            # orders should not be redacted
+            assert "orders" in dataset_content
+
+            # Verify file structure
+            assert "data/customer_data/collection_1/index.html" in zip_file.namelist()
+            assert "data/customer_data/orders/index.html" in zip_file.namelist()
+
+    def test_redaction_by_entities_map_field_level(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test field-level redaction using entities map"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_integration_field_redaction_connection",
+                "name": "Test Integration Field Redaction Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create a dataset with field-level redaction
+        dataset_dict = {
+            "fides_key": "user_data",
+            "name": "user_data",
+            "collections": [
+                {
+                    "name": "profiles",
+                    "fields": [
+                        {
+                            "name": "email_address",
+                            "data_categories": ["user.contact.email"],
+                            "fides_meta": {"redact": "name"},
+                        },
+                        {
+                            "name": "full_name",
+                            "data_categories": ["user.name"],
+                            # No redaction meta
+                        },
+                    ],
+                }
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "user_data",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        dsr_data = {
+            "user_data:profiles": [
+                {"id": 1, "email_address": "john@example.com", "full_name": "John Doe"},
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            collection_content = zip_file.read(
+                "data/user_data/profiles/index.html"
+            ).decode("utf-8")
+
+            # email_address should be redacted to field_N
+            assert "field_" in collection_content
+            assert "email_address" not in collection_content
+
+            # full_name should not be redacted
+            assert "full_name" in collection_content
+
+            # Verify the data values are still present
+            assert "john@example.com" in collection_content
+            assert "John Doe" in collection_content
+
+    def test_redaction_entities_map_priority_over_regex(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test that entities map redaction takes priority over regex patterns"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_integration_regex_priority_connection",
+                "name": "Test Integration Regex Priority Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create dataset config with specific redaction for one collection
+        dataset_dict = {
+            "fides_key": "test_data",
+            "name": "test_data",
+            "collections": [
+                {
+                    "name": "user_accounts",  # Would match regex .*user.* but has specific redaction
+                    "fields": [],
+                    "fides_meta": {"redact": "name"},
+                },
+                {
+                    "name": "user_sessions",  # Would match regex .*user.* but no specific redaction
+                    "fields": [],
+                },
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_data",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        # Set up regex patterns that would match both collections
+        PrivacyRequestRedactionPatterns.create_or_update(
+            db=db, data={"patterns": [r".*user.*"]}
+        )
+
+        dsr_data = {
+            "test_data:user_accounts": [{"id": 1}],
+            "test_data:user_sessions": [{"id": 2}],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            dataset_content = zip_file.read("data/test_data/index.html").decode("utf-8")
+
+            # user_accounts has specific redaction config, so uses collection_1
+            assert "collection_1" in dataset_content
+
+            # user_sessions has no specific config but matches regex, so uses collection_2
+            assert "collection_2" in dataset_content
+
+            # Neither original name should appear
+            assert "user_accounts" not in dataset_content
+            assert "user_sessions" not in dataset_content
+
+    def test_redaction_entities_map_with_mixed_hierarchical_levels(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test redaction with entities at different hierarchical levels"""
+
+        # Create a connection config first (ensure it's not disabled)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_integration_mixed_hierarchical_connection",
+                "name": "Test Integration Mixed Hierarchical Connection",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create dataset with redaction at multiple levels
+        dataset_dict = {
+            "fides_key": "mixed_data",
+            "name": "mixed_data",
+            "fides_meta": {"redact": "name"},  # Dataset level
+            "collections": [
+                {
+                    "name": "public_info",
+                    "fields": [
+                        {
+                            "name": "description",
+                            "data_categories": ["system.operations"],
+                        },
+                    ],
+                    # No collection-level redaction (should inherit from dataset)
+                },
+                {
+                    "name": "sensitive_data",
+                    "fields": [
+                        {
+                            "name": "ssn",
+                            "data_categories": ["user.government_id"],
+                            "fides_meta": {
+                                "redact": "name"
+                            },  # Field level (redundant with dataset)
+                        },
+                    ],
+                    "fides_meta": {
+                        "redact": "name"
+                    },  # Collection level (redundant with dataset)
+                },
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "mixed_data",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        dsr_data = {
+            "mixed_data:public_info": [{"description": "public data"}],
+            "mixed_data:sensitive_data": [{"ssn": "123-45-6789"}],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+
+            # Dataset is redacted due to dataset-level config
+            assert "dataset_1" in welcome_content
+            assert "mixed_data" not in welcome_content
+
+            # Check that file structure uses redacted dataset name
+            assert "data/dataset_1/index.html" in zip_file.namelist()

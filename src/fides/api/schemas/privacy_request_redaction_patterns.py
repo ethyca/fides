@@ -30,7 +30,9 @@ class PrivacyRequestRedactionPatternsRequest(BaseModel):
 
             # Reasonable length limit for regex patterns
             if len(pattern) > 500:
-                raise ValueError(f"Pattern at index {i} is too long (max 500 characters)")
+                raise ValueError(
+                    f"Pattern at index {i} is too long (max 500 characters)"
+                )
 
             # Pydantic's rust-regex engine provides ReDoS protection
             try:
