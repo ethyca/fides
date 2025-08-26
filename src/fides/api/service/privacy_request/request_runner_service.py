@@ -804,12 +804,12 @@ def initiate_privacy_request_completion_email(
         phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
     )
     if policy.get_rules_for_action(action_type=ActionType.access):
-        # Check if any rule has enable_streaming=True in storage config
+        # Check if any rule has enable_access_package_redirect=True in storage config
         use_dsr_package_links = False
         for rule in policy.get_rules_for_action(action_type=ActionType.access):
             storage_destination = rule.get_storage_destination(session)
             if storage_destination.type == "s3" and storage_destination.details.get(
-                "enable_streaming"
+                "enable_access_package_redirect"
             ):
                 use_dsr_package_links = True
                 break

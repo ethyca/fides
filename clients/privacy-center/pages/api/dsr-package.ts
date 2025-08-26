@@ -7,6 +7,7 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 
 /**
  * Validates if a string is a valid pri_uuid format (pri_ followed by UUID v4)
+ * This function helps prevent SSRF attacks by ensuring only valid UUIDs are processed.
  * @param requestId - The string to validate
  * @returns true if valid pri_uuid format, false otherwise
  */
@@ -22,19 +23,20 @@ function isValidRequestId(requestId: string): boolean {
  * @swagger
  * /dsr-package:
  *   get:
- *     description: Redirects user to DSR package download URL from the Fides API
+ *     description: Redirects user to DSR package download URL from the Fides API. Includes security measures to prevent SSRF attacks.
  *     parameters:
- *       - in: path
+ *       - in: query
  *         name: request_id
  *         required: true
- *         description: Privacy request ID to get package for specific request
+ *         description: Privacy request ID in pri_uuid format (e.g., pri_123e4567-e89b-12d3-a456-426614174000). Must start with 'pri_' followed by a valid UUID v4.
  *         schema:
  *           type: string
+ *           pattern: '^pri_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
  *     responses:
  *       302:
  *         description: Redirect to the DSR package download URL
  *       400:
- *         description: Bad request - missing required request_id parameter
+ *         description: Bad request - missing or invalid request_id parameter
  *       404:
  *         description: DSR package not found
  *       500:
@@ -74,12 +76,23 @@ export default async function handler(
         .send("Bad Request: requestId must be a valid pri_uuid format");
     }
 
+    // Encode the UUID for safe URL construction
+    const encodedRequestId = encodeURIComponent(requestId);
+
+    // Optional: Log if encoding changed the value (shouldn't happen with valid UUIDs)
+    if (encodedRequestId !== requestId) {
+      log.warn("RequestId was modified during encoding", {
+        original: requestId,
+        encoded: encodedRequestId
+      });
+    }
+
     // Use server-side URL if available, otherwise fall back to client URL
     const baseUrl =
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL;
 
-    // Build the URL with path parameter instead of query parameter
-    const url = `${baseUrl}/privacy-request/${requestId}/access-package`;
+    // Build the URL with encoded UUID for safe path parameter
+    const url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package`;
 
     log.debug(`Fetching DSR package link from: ${url}`);
 

@@ -2215,17 +2215,17 @@ class TestSkipCollectionsWithOptionalIdentities:
 
 
 class TestInitiatePrivacyRequestCompletionEmail:
-    """Test the initiate_privacy_request_completion_email function with enable_streaming functionality"""
+    """Test the initiate_privacy_request_completion_email function with enable_access_package_redirect functionality"""
 
     @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
-    def test_initiate_privacy_request_completion_email_with_streaming_enabled(
+    def test_initiate_privacy_request_completion_email_with_access_package_redirect_enabled(
         self,
         mock_dispatch_message,
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
     ):
-        """Test that when enable_streaming=True, DSR package links are generated instead of direct storage URLs"""
+        """Test that when enable_access_package_redirect=True, DSR package links are generated instead of direct storage URLs"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
         from fides.api.schemas.storage.storage import (
             FileNaming,
@@ -2234,17 +2234,17 @@ class TestInitiatePrivacyRequestCompletionEmail:
         )
         from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 
-        # Create a storage config with enable_streaming=True
+        # Create a storage config with enable_access_package_redirect=True
         storage_config_data = {
-            "name": "test_s3_streaming",
+            "name": "test_s3_redirect",
             "type": StorageType.s3,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test-bucket",
                 StorageDetails.AUTH_METHOD.value: "automatic",
-                StorageDetails.ENABLE_STREAMING.value: True,
+                StorageDetails.ENABLE_ACCESS_PACKAGE_REDIRECT.value: True,
             },
-            "key": "test_s3_streaming",
+            "key": "test_s3_redirect",
             "format": ResponseFormat.json,
         }
         storage_config = StorageConfig.create(db, data=storage_config_data)
@@ -2300,14 +2300,14 @@ class TestInitiatePrivacyRequestCompletionEmail:
         storage_config.delete(db)
 
     @mock.patch("fides.api.service.messaging.message_dispatch_service.dispatch_message")
-    def test_initiate_privacy_request_completion_email_with_streaming_disabled(
+    def test_initiate_privacy_request_completion_email_with_access_package_redirect_disabled(
         self,
         mock_dispatch_message,
         db: Session,
         policy: Policy,
         privacy_request: PrivacyRequest,
     ):
-        """Test that when enable_streaming=False, original direct storage URLs are used"""
+        """Test that when enable_access_package_redirect=False, original direct storage URLs are used"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
         from fides.api.schemas.storage.storage import (
             FileNaming,
@@ -2315,17 +2315,17 @@ class TestInitiatePrivacyRequestCompletionEmail:
             StorageType,
         )
 
-        # Create a storage config with enable_streaming=False (default)
+        # Create a storage config with enable_access_package_redirect=False (default)
         storage_config_data = {
-            "name": "test_s3_no_streaming",
+            "name": "test_s3_no_redirect",
             "type": StorageType.s3,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test-bucket",
                 StorageDetails.AUTH_METHOD.value: "automatic",
-                # enable_streaming not set, defaults to False
+                # enable_access_package_redirect not set, defaults to False
             },
-            "key": "test_s3_no_streaming",
+            "key": "test_s3_no_redirect",
             "format": ResponseFormat.json,
         }
         storage_config = StorageConfig.create(db, data=storage_config_data)
@@ -2387,7 +2387,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         policy: Policy,
         privacy_request: PrivacyRequest,
     ):
-        """Test that non-S3 storage types always use original direct storage URLs regardless of enable_streaming"""
+        """Test that non-S3 storage types always use original direct storage URLs regardless of enable_access_package_redirect"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
         from fides.api.schemas.storage.storage import (
             FileNaming,
@@ -2403,7 +2403,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test-gcs-bucket",
                 StorageDetails.AUTH_METHOD.value: "adc",
-                # enable_streaming is S3-specific, so it won't be used for GCS
+                # enable_access_package_redirect is S3-specific, so it won't be used for GCS
             },
             "key": "test_gcs_storage",
             "format": ResponseFormat.json,
@@ -2444,7 +2444,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
                 privacy_request_id=privacy_request.id,
             )
 
-            # Verify dispatch_message was called with original storage URLs (GCS doesn't support streaming)
+            # Verify dispatch_message was called with original storage URLs (GCS doesn't support access package redirect)
             mock_dispatch_message.assert_called_once()
             call_args = mock_dispatch_message.call_args
             assert (
@@ -2469,7 +2469,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         policy: Policy,
         privacy_request: PrivacyRequest,
     ):
-        """Test that when privacy_center.url is None, fallback to original storage URLs even if streaming is enabled"""
+        """Test that when privacy_center.url is None, fallback to original storage URLs even if access package redirect is enabled"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
         from fides.api.schemas.storage.storage import (
             FileNaming,
@@ -2477,17 +2477,17 @@ class TestInitiatePrivacyRequestCompletionEmail:
             StorageType,
         )
 
-        # Create a storage config with enable_streaming=True
+        # Create a storage config with enable_access_package_redirect=True
         storage_config_data = {
-            "name": "test_s3_streaming_no_privacy_center",
+            "name": "test_s3_redirect_no_privacy_center",
             "type": StorageType.s3,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test-bucket",
                 StorageDetails.AUTH_METHOD.value: "automatic",
-                StorageDetails.ENABLE_STREAMING.value: True,
+                StorageDetails.ENABLE_ACCESS_PACKAGE_REDIRECT.value: True,
             },
-            "key": "test_s3_streaming_no_privacy_center",
+            "key": "test_s3_redirect_no_privacy_center",
             "format": ResponseFormat.json,
         }
         storage_config = StorageConfig.create(db, data=storage_config_data)
@@ -2522,7 +2522,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
                 privacy_request_id=privacy_request.id,
             )
 
-            # Verify dispatch_message was called with original storage URLs (fallback)
+            # Verify dispatch_message was called with original storage URLs (fallback due to missing privacy center URL)
             mock_dispatch_message.assert_called_once()
             call_args = mock_dispatch_message.call_args
             assert (
