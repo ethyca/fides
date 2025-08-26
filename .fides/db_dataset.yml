@@ -2488,6 +2488,8 @@ dataset:
       data_categories: [system]
     - name: callback_succeeded
       data_categories: [system]
+    - name: async_type
+      data_categories: [system]
   - name: monitorconfig
     fields:
     - name: classify_params
@@ -2821,3 +2823,112 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: taxonomy
+    description: 'Fides Generated Description for Table: taxonomy'
+    fields:
+    - name: applies_to
+      description: 'Fides Generated Description for Column: applies_to'
+      data_categories: [system.operations]
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: description
+      description: 'Fides Generated Description for Column: description'
+      data_categories: [system.operations]
+    - name: fides_key
+      description: 'Fides Generated Description for Column: fides_key'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: name
+      description: 'Fides Generated Description for Column: name'
+      data_categories: [system.operations]
+    - name: organization_fides_key
+      description: 'Fides Generated Description for Column: organization_fides_key'
+      data_categories: [system.operations]
+    - name: tags
+      description: 'Fides Generated Description for Column: tags'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_element
+    description: 'Fides Generated Description for Table: taxonomy_element'
+    data_categories: [system.operations]
+    fields:
+    - name: active
+      description: 'Fides Generated Description for Column: active'
+      data_categories: [system.operations]
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: description
+      description: 'Fides Generated Description for Column: description'
+      data_categories: [system.operations]
+    - name: fides_key
+      description: 'Fides Generated Description for Column: fides_key'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: name
+      description: 'Fides Generated Description for Column: name'
+      data_categories: [system.operations]
+    - name: organization_fides_key
+      description: 'Fides Generated Description for Column: organization_fides_key'
+      data_categories: [system.operations]
+    - name: parent_key
+      description: 'Fides Generated Description for Column: parent_key'
+      data_categories: [system.operations]
+    - name: tags
+      description: 'Fides Generated Description for Column: tags'
+      data_categories: [system.operations]
+    - name: taxonomy_type
+      description: 'Fides Generated Description for Column: taxonomy_type'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_allowed_usage
+    description: 'Fides Generated Description for Table: taxonomy_allowed_usage'
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: source_taxonomy_key
+      description: 'Fides Generated Description for Column: source_taxonomy_key'
+      data_categories: [system.operations]
+    - name: target_type
+      description: 'Fides Generated Description for Column: target_type'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_usage
+    description: 'Fides Generated Description for Table: taxonomy_usage'
+    fields:
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: source_taxonomy
+      description: 'Fides Generated Description for Column: source_taxonomy'
+      data_categories: [system.operations]
+    - name: source_element_key
+      description: 'Fides Generated Description for Column: source_element_key'
+      data_categories: [system.operations]
+    - name: target_taxonomy
+      description: 'Fides Generated Description for Column: target_taxonomy'
+      data_categories: [system.operations]
+    - name: target_element_key
+      description: 'Fides Generated Description for Column: target_element_key'
+      data_categories: [system.operations]
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]

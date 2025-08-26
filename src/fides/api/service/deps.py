@@ -8,6 +8,7 @@ from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.user.user_service import UserService
 
 
@@ -41,3 +42,7 @@ def get_user_service(
     config_proxy: ConfigProxy = Depends(get_config_proxy),
 ) -> UserService:
     return UserService(db, config, config_proxy)
+
+
+def get_taxonomy_service(db: Session = Depends(get_db)) -> TaxonomyService:
+    return TaxonomyService(db)

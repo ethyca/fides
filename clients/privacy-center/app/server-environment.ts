@@ -1,4 +1,4 @@
-/* eslint-disable no-console,consistent-return */
+/* eslint-disable no-console */
 /**
  * Utility functions and logic that is designed to exclusively run server-side to configure the environment for the app, e.g.:
  * 1) Securely loading ENV variables for the client to use
@@ -17,12 +17,7 @@ import {
 } from "~/features/consent/helpers";
 import { Property } from "~/types/api";
 import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
-import {
-  Config,
-  ConsentConfig,
-  LegacyConfig,
-  LegacyConsentConfig,
-} from "~/types/config";
+import { Config, LegacyConfig } from "~/types/config";
 
 /**
  * Subset of PrivacyCenterSettings that are for use only on server-side and
@@ -96,6 +91,7 @@ export interface PrivacyCenterEnvironment {
 /**
  * Load a config file from the given list of URLs, trying them in order until one is successfully read.
  */
+/* eslint-disable consistent-return */
 const loadConfigFile = async (
   urls: (string | undefined)[],
 ): Promise<string | undefined> => {
@@ -153,12 +149,13 @@ const loadConfigFile = async (
  */
 export const transformConfig = (config: LegacyConfig): Config => {
   if (isV1ConsentConfig(config.consent)) {
-    const v1ConsentConfig: LegacyConsentConfig = config.consent;
-    const translatedConsent: ConsentConfig = translateV1ConfigToV2({
-      v1ConsentConfig,
+    const translatedConsent = translateV1ConfigToV2({
+      v1ConsentConfig: config.consent,
     });
+
     return { ...config, consent: translatedConsent };
   }
+
   return { ...config, consent: config.consent };
 };
 
@@ -242,12 +239,14 @@ export const loadConfigFromFile = async (
   ];
   const file = await loadConfigFile(urls);
   if (file) {
-    const config = transformConfig(JSON.parse(file));
-    const { isValid, message } = validateConfig(config);
+    const parsedConfig = JSON.parse(file);
+    const config = transformConfig(parsedConfig);
+    const { isValid, message } = validateConfig(parsedConfig);
     // DEFER: add more validations here, log helpful warnings, etc.
     // (see https://github.com/ethyca/fides/issues/3171)
     if (!isValid) {
       console.warn("WARN: Configuration file is invalid! Message:", message);
+
       return;
     }
     return config;

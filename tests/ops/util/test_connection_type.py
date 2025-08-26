@@ -260,3 +260,14 @@ def test_get_connection_type_secret_schemas_aws():
     s3_secret_schema = get_connection_type_secret_schema(connection_type="s3")
     s3_required = s3_secret_schema["required"]
     assert "auth_method" in s3_required
+
+
+def test_get_connection_type_secret_schemas_test_website():
+    test_website_schema = get_connection_type_secret_schema(
+        connection_type="test_website"
+    )
+    website_schema = get_connection_type_secret_schema(connection_type="website")
+
+    assert test_website_schema == website_schema
+    assert test_website_schema["required"] == ["url"]
+    assert test_website_schema["properties"]["url"]["format"] == "uri"
