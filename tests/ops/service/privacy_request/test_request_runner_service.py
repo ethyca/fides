@@ -2231,6 +2231,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         policy: Policy,
         privacy_request: PrivacyRequest,
         messaging_config,
+        set_notification_service_type_to_mailgun,
     ):
         """Test that when enable_access_package_redirect=True, DSR package links are generated instead of direct storage URLs"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
@@ -2335,6 +2336,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         policy: Policy,
         privacy_request: PrivacyRequest,
         messaging_config,
+        set_notification_service_type_to_mailgun,
     ):
         """Test that when enable_access_package_redirect=False, original direct storage URLs are used"""
         from fides.api.models.storage import ResponseFormat, StorageConfig

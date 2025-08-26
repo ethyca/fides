@@ -56,7 +56,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  // Ensure we have a request ID header for consistent logging
+  if (!req.headers["x-request-id"]) {
+    req.headers["x-request-id"] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
   const log = createRequestLogger(req);
+
+  // Set request ID header in response for client correlation
+  res.setHeader("x-request-id", req.headers["x-request-id"]);
 
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
