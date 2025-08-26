@@ -33,7 +33,13 @@ export const FormikTextInput = ({
       extra={extra}
       htmlFor={id ?? name}
     >
-      <Input id={id || name} data-testid={`input-${name}`} {...props} />
+      <Input
+        id={id || name}
+        name={name}
+        data-testid={`input-${name}`}
+        allowClear
+        {...props}
+      />
     </Form.Item>
   );
 };

@@ -33,8 +33,8 @@ export const FormikDateTimeInput = ({
       htmlFor={id ?? name}
     >
       <DatePicker
-        name={name}
         id={id ?? name}
+        name={name}
         data-testid={`input-${name}`}
         {...props}
       />
