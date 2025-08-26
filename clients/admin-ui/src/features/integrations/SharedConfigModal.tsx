@@ -50,7 +50,7 @@ const SharedConfigModal = () => {
       <Modal
         open={modalIsOpen}
         onCancel={handleCancel}
-        destroyOnClose
+        destroyOnHidden
         centered
         width={768}
         footer={null}

@@ -6,6 +6,7 @@ import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo, {
@@ -21,27 +22,28 @@ import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const router = useRouter();
-  const id = Array.isArray(router.query.id)
-    ? router.query.id[0]
-    : router.query.id;
+  const id = router.query.id as string;
 
-  const { data: connection, isLoading: integrationIsLoading } =
-    useGetDatastoreConnectionByKeyQuery(id ?? "");
+  const { data: connection, isLoading } = useGetDatastoreConnectionByKeyQuery(
+    id,
+    {
+      skip: !id,
+    },
+  );
 
-  // Only pass the saas type if it's a valid SaasConnectionTypes value
-  const saasType = connection?.saas_config?.type;
-  const isSaasType = (type: string): type is SaasConnectionTypes =>
-    Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = connectionTypesData?.items || [];
 
   const integrationOption = useIntegrationOption(
     connection?.connection_type,
-    saasType && isSaasType(saasType) ? saasType : undefined,
+    connection?.saas_config?.type as SaasConnectionTypes,
   );
 
   const {
-    testConnection,
-    isLoading: testIsLoading,
     testData,
+    testConnection,
+    isLoading: isTestLoading,
   } = useTestConnection(connection);
 
   const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
@@ -50,11 +52,14 @@ const IntegrationDetailView: NextPage = () => {
     testData,
   });
 
+  const integrationTypeInfo = getIntegrationTypeInfo(
+    connection?.connection_type,
+    connection?.saas_config?.type,
+    connectionTypes,
+  );
+
   const { overview, instructions, description, enabledFeatures } =
-    getIntegrationTypeInfo(
-      connection?.connection_type,
-      connection?.saas_config?.type,
-    );
+    integrationTypeInfo;
 
   if (
     !!connection &&
@@ -74,7 +79,7 @@ const IntegrationDetailView: NextPage = () => {
     needsAuthorization,
     handleAuthorize,
     testConnection,
-    testIsLoading,
+    testIsLoading: isTestLoading,
     description,
     overview,
     instructions,
@@ -102,9 +107,13 @@ const IntegrationDetailView: NextPage = () => {
         <AntFlex gap={24}>
           <div className="grow">
             <div className="mb-6">
-              <IntegrationBox integration={connection} showDeleteButton />
+              <IntegrationBox
+                integration={connection}
+                integrationTypeInfo={integrationTypeInfo}
+                showDeleteButton
+              />
             </div>
-            {integrationIsLoading ? (
+            {isLoading ? (
               <Spinner />
             ) : (
               !!connection && (
@@ -117,13 +126,13 @@ const IntegrationDetailView: NextPage = () => {
             )}
           </div>
           <div className="w-[350px] shrink-0">
-            {integrationIsLoading ? (
+            {isLoading ? (
               <Spinner />
             ) : (
               !!connection && (
                 <IntegrationSetupSteps
                   testData={testData}
-                  testIsLoading={testIsLoading}
+                  testIsLoading={isTestLoading}
                   connectionOption={integrationOption!}
                   connection={connection}
                 />
