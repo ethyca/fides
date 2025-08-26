@@ -69,6 +69,9 @@ export interface CustomInputProps {
 // if the value they receive is undefined.
 export type StringField = FieldHookConfig<string | undefined>;
 
+/**
+ * @deprecated in favor of Form.Input label prop
+ */
 export const Label = ({
   children,
   ...labelProps
@@ -135,6 +138,9 @@ export const TextInput = forwardRef(
 );
 TextInput.displayName = "TextInput";
 
+/**
+ * @deprecated in favor of Form.Input with the appropriate status and help props
+ */
 export const ErrorMessage = ({
   isInvalid,
   message,

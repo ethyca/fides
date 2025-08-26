@@ -4,14 +4,14 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   isoCodesToOptions,
-  LocationSelect,
   Text,
 } from "fidesui";
-import { Form as FormikForm, Formik } from "formik";
+import { getIn, useFormik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { FormikLocationSelect } from "~/features/common/form/FormikLocationSelect";
 import {
   CustomDateTimeInput,
   CustomTextInput,
@@ -122,6 +122,18 @@ const ConfigureWebsiteMonitorForm = ({
     onSubmit(payload);
   };
 
+  const {
+    values,
+    resetForm,
+    handleSubmit: formikSubmit,
+    errors,
+    ...formik
+  } = useFormik({
+    initialValues,
+    onSubmit: handleSubmit,
+    validationSchema,
+  });
+
   // Website monitors should only support
   // monthly, quarterly, yearly, and not scheduled frequencies
   const frequencyOptions = enumToOptions(MonitorFrequency).filter((option) =>
@@ -138,101 +150,86 @@ const ConfigureWebsiteMonitorForm = ({
       <FormInfoBox>
         <Text fontSize="sm">{FORM_COPY}</Text>
       </FormInfoBox>
-      <Formik
-        initialValues={initialValues}
-        enableReinitialize
-        onSubmit={handleSubmit}
-        validationSchema={validationSchema}
-      >
-        {({ values, resetForm }) => (
-          <FormikForm>
-            <Flex vertical gap="middle">
-              <CustomTextInput
-                name="name"
-                id="name"
-                label="Name"
-                isRequired
-                variant="stacked"
-              />
-              <CustomTextInput
-                name="datasource_params.sitemap_url"
-                id="sitemap_url"
-                label="Sitemap URL"
-                variant="stacked"
-              />
-              <ControlledSelect
-                mode="tags"
-                name="datasource_params.exclude_domains"
-                placeholder="Enter domains to exclude"
-                id="exclude_domains"
-                label="Exclude domains"
-                options={[]}
-                open={false}
-                layout="stacked"
-              />
-              <CustomTextInput
-                name="url"
-                id="url"
-                label="URL"
-                isRequired
-                disabled
-                variant="stacked"
-              />
-              <Form.Item
-                label="Locations"
-                required
-                layout="vertical"
-                tooltip={REGIONS_TOOLTIP_COPY}
-                htmlFor="datasource_params.locations"
-              >
-                <LocationSelect
-                  mode="multiple"
-                  id="locations"
-                  data-testid="controlled-select-datasource_params.locations"
-                  loading={locationsLoading}
-                  options={isoCodesToOptions(
-                    regionOptions.map((option) => option.value),
-                  )}
-                  optionFilterProp="label"
-                />
-              </Form.Item>
-              <SharedConfigSelect
-                name="shared_config_id"
-                id="shared_config_id"
-              />
-              <ControlledSelect
-                name="execution_frequency"
-                id="execution_frequency"
-                options={frequencyOptions}
-                label="Automatic execution frequency"
-                layout="stacked"
-              />
-              <CustomDateTimeInput
-                name="execution_start_date"
-                label="Automatic execution start time"
-                disabled={
-                  values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
-                }
-                id="execution_start_date"
-                tooltip={START_TIME_TOOLTIP_COPY}
-              />
-              <Flex className="mt-2 justify-between">
-                <Button
-                  onClick={() => {
-                    resetForm();
-                    onClose();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="primary" htmlType="submit" data-testid="save-btn">
-                  Save
-                </Button>
-              </Flex>
-            </Flex>
-          </FormikForm>
-        )}
-      </Formik>
+      <Form onFinish={formikSubmit} layout="vertical">
+        <Flex vertical gap="middle">
+          <CustomTextInput
+            name="name"
+            id="name"
+            label="Name"
+            isRequired
+            variant="stacked"
+          />
+          <CustomTextInput
+            name="datasource_params.sitemap_url"
+            id="sitemap_url"
+            label="Sitemap URL"
+            variant="stacked"
+          />
+          <ControlledSelect
+            mode="tags"
+            name="datasource_params.exclude_domains"
+            placeholder="Enter domains to exclude"
+            id="exclude_domains"
+            label="Exclude domains"
+            options={[]}
+            open={false}
+            layout="stacked"
+          />
+          <CustomTextInput
+            name="url"
+            id="url"
+            label="URL"
+            isRequired
+            disabled
+            variant="stacked"
+          />
+          <FormikLocationSelect
+            id="locations"
+            name="datasource_params.locations"
+            loading={locationsLoading}
+            options={isoCodesToOptions(
+              regionOptions.map((option) => option.value),
+            )}
+            required
+            tooltip={REGIONS_TOOLTIP_COPY}
+            mode="tags"
+            error={getIn(errors, "datasource_params.locations")}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={values.datasource_params?.locations}
+          />
+          <SharedConfigSelect name="shared_config_id" id="shared_config_id" />
+          <ControlledSelect
+            name="execution_frequency"
+            id="execution_frequency"
+            options={frequencyOptions}
+            label="Automatic execution frequency"
+            layout="stacked"
+          />
+          <CustomDateTimeInput
+            name="execution_start_date"
+            label="Automatic execution start time"
+            disabled={
+              values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
+            }
+            id="execution_start_date"
+            tooltip={START_TIME_TOOLTIP_COPY}
+          />
+          <Flex className="mt-2 justify-between">
+            <Button
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" data-testid="save-btn">
+              Save
+            </Button>
+          </Flex>
+        </Flex>
+      </Form>
     </Flex>
   );
 };
