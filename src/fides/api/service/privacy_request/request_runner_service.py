@@ -49,6 +49,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.connectors import FidesConnector, get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
@@ -740,14 +741,33 @@ def run_privacy_request(
                             else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
                         )
 
-                        if message_send_enabled(
+                        logger.info(
+                            "Checking if email completion should be sent for privacy request {}: action_type={}, property_id={}, legacy_enabled={}",
+                            privacy_request.id,
+                            action_type,
+                            privacy_request.property_id,
+                            legacy_request_completion_enabled,
+                        )
+
+                        message_send_result = message_send_enabled(
                             session,
                             privacy_request.property_id,
                             action_type,
                             legacy_request_completion_enabled,
-                        ) and not policy.get_rules_for_action(
+                        )
+                        has_consent_rules = policy.get_rules_for_action(
                             action_type=ActionType.consent
-                        ):
+                        )
+
+                        logger.info(
+                            "Email completion conditions for privacy request {}: message_send_enabled={}, has_consent_rules={}, should_send={}",
+                            privacy_request.id,
+                            message_send_result,
+                            bool(has_consent_rules),
+                            message_send_result and not has_consent_rules,
+                        )
+
+                        if message_send_result and not has_consent_rules:
                             if not access_result_urls:
                                 # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
                                 # from the database because the Privacy Request would have exited
@@ -808,24 +828,47 @@ def initiate_privacy_request_completion_email(
         use_dsr_package_links = False
         for rule in policy.get_rules_for_action(action_type=ActionType.access):
             storage_destination = rule.get_storage_destination(session)
-            if storage_destination.type == "s3" and storage_destination.details.get(
-                "enable_access_package_redirect"
+            logger.info(
+                f"storage_destination: {storage_destination.type}, enable_access_package_redirect: {storage_destination.details.get('enable_access_package_redirect')}"
+            )
+            if (
+                storage_destination.type == StorageType.s3
+                and storage_destination.details.get("enable_access_package_redirect")
             ):
                 use_dsr_package_links = True
                 break
 
+        logger.info(f"use_dsr_package_links: {use_dsr_package_links}")
+        logger.info(
+            f"config_proxy.privacy_center.url: {config_proxy.privacy_center.url}"
+        )
         # Generate appropriate URLs based on streaming configuration
         if use_dsr_package_links and config_proxy.privacy_center.url:
             # Use DSR package links instead of direct storage URLs
             from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 
-            dsr_package_urls = [
-                f"{config_proxy.privacy_center.url}{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}"
-            ]
-            download_links = dsr_package_urls
+            # Generate DSR package URLs for the messaging template system
+            dsr_package_url = f"{config_proxy.privacy_center.url}{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}"
+            download_links = [dsr_package_url]
+            logger.info(
+                "Generated DSR package links for privacy request {}: {}",
+                privacy_request_id,
+                download_links,
+            )
         else:
             # Use original direct storage URLs
             download_links = access_result_urls
+            logger.info(
+                "Using original storage URLs for privacy request {}: {}",
+                privacy_request_id,
+                download_links,
+            )
+
+        logger.info(
+            "Final download_links for email (privacy request {}): {}",
+            privacy_request_id,
+            download_links,
+        )
 
         # synchronous for now since failure to send complete emails is fatal to request
         dispatch_message(

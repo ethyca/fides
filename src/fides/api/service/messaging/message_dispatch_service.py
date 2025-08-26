@@ -347,9 +347,18 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
     if variables is None:
         variables = {}
 
-    for key, value in variables.items():
-        template_str = template_str.replace(f"__{key.upper()}__", str(value))
+    logger.debug("Rendering template string: {}", template_str)
+    logger.debug("Template variables: {}", variables)
 
+    for key, value in variables.items():
+        old_str = template_str
+        template_str = template_str.replace(f"__{key.upper()}__", str(value))
+        if old_str != template_str:
+            logger.debug("Replaced __{}__ with {}", key.upper(), value)
+        else:
+            logger.debug("No replacement found for __{}__", key.upper())
+
+    logger.debug("Final rendered template: {}", template_str)
     return template_str
 
 
@@ -416,6 +425,21 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "download_link": body_params.download_links[0],
             "days": body_params.subject_request_download_time_in_days,
         }
+        logger.info(
+            "Building email for PRIVACY_REQUEST_COMPLETE_ACCESS with variables: {}",
+            variables,
+        )
+        if messaging_template:
+            logger.info(
+                "Using messaging template: type={}, content={}",
+                messaging_template.type,
+                messaging_template.content,
+            )
+        else:
+            logger.warning(
+                "No messaging template found for PRIVACY_REQUEST_COMPLETE_ACCESS"
+            )
+
         return EmailForActionType(
             subject=_render(messaging_template.content["subject"], variables),  # type: ignore
             body=_render(messaging_template.content["body"], variables),  # type: ignore
