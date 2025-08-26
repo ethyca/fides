@@ -88,7 +88,7 @@ const generateSaasIntegrationInfo = (
     },
     // Use backend-provided display metadata with simple fallback
     category: connectionType.category || ConnectionCategory.CUSTOM,
-    tags: connectionType.tags || ["API", "Integration"], // Basic default tags if not provided
+    tags: connectionType.tags || ["API", "Custom"], // Basic default tags if not provided
     enabledFeatures: connectionType.enabled_features || [
       IntegrationFeature.DSR_AUTOMATION,
     ], // Default to DSR automation
