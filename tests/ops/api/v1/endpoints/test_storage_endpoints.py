@@ -216,6 +216,7 @@ class TestPatchStorageConfig:
                         "bucket": "some-bucket",
                         "naming": "some-filename-convention-enum",
                         "max_retries": 10,
+                        "enable_streaming": False,
                     },
                     "key": "my_s3_bucket",
                     "format": "csv",
