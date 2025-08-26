@@ -16,12 +16,11 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import { ConnectionSystemTypeMap } from "~/types/api";
+import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
   connection: any;
-  enabledFeatures?: IntegrationFeatureEnum[];
+  enabledFeatures?: IntegrationFeature[];
   integrationOption?: ConnectionSystemTypeMap;
   testData: ConnectionStatusData;
   needsAuthorization: boolean;
@@ -52,13 +51,13 @@ export const useFeatureBasedTabs = ({
 
   const tabs = useMemo(() => {
     // Don't show tabs until enabledFeatures is loaded
-    if (!enabledFeatures) {
+    if (!enabledFeatures || !enabledFeatures.length) {
       return [];
     }
     const tabItems: TabsProps["items"] = [];
 
     // Show Details tab for integrations without connection, Connection tab for others
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
+    if (enabledFeatures?.includes(IntegrationFeature.WITHOUT_CONNECTION)) {
       tabItems.push({
         label: "Details",
         key: "details",
@@ -140,7 +139,7 @@ export const useFeatureBasedTabs = ({
     }
 
     // Add conditional tabs based on enabled features
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
+    if (enabledFeatures?.includes(IntegrationFeature.DATA_SYNC)) {
       tabItems.push({
         label: "Data sync",
         key: "data-sync",
@@ -148,7 +147,7 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
+    if (enabledFeatures?.includes(IntegrationFeature.DATA_DISCOVERY)) {
       tabItems.push({
         label: "Data discovery",
         key: "data-discovery",
@@ -161,7 +160,7 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.TASKS)) {
+    if (enabledFeatures?.includes(IntegrationFeature.TASKS)) {
       tabItems.push({
         label: "Manual tasks",
         key: "manual-tasks",

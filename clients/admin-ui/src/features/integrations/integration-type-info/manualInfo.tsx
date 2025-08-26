@@ -1,7 +1,8 @@
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import { AccessLevel, ConnectionType } from "~/types/api";
+import { AccessLevel } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const MANUAL_PLACEHOLDER = {
   name: "Manual Tasks",
@@ -35,9 +36,9 @@ const MANUAL_TYPE_INFO = {
   tags: MANUAL_TAGS,
   overview: <ManualOverview />,
   enabledFeatures: [
-    IntegrationFeatureEnum.TASKS,
-    IntegrationFeatureEnum.CONDITIONS,
-    IntegrationFeatureEnum.WITHOUT_CONNECTION,
+    IntegrationFeature.TASKS,
+    IntegrationFeature.WITHOUT_CONNECTION,
+    IntegrationFeature.CONDITIONS,
   ],
 };
 
