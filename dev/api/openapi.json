@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.68.1b3.post0.dev3"
+    "version": "2.68.1b3.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8116,6 +8116,22 @@
                 }
               ],
               "title": "External Id"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Location"
             }
           },
           {
@@ -23030,6 +23046,17 @@
                 "type": "null"
               }
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           }
         },
         "type": "object",
@@ -23303,6 +23330,17 @@
               }
             ],
             "title": "External Id"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           },
           "action_type": {
             "anyOf": [
@@ -23628,6 +23666,17 @@
                 "type": "null"
               }
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           },
           "deleted_at": {
             "anyOf": [
@@ -24024,6 +24073,17 @@
                 "type": "null"
               }
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           },
           "deleted_at": {
             "anyOf": [
