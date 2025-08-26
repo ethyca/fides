@@ -1,7 +1,7 @@
 """adding redaction patterns
 
 Revision ID: f457a75bc0e1
-Revises: 90502bcda282
+Revises: b1a2c3d4e5f6
 Create Date: 2025-08-22 23:14:27.417434
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "f457a75bc0e1"
-down_revision = "90502bcda282"
+down_revision = "b1a2c3d4e5f6"
 branch_labels = None
 depends_on = None
 
