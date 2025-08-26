@@ -19,9 +19,10 @@ const nextConfig = {
     loader: "custom",
   },
   async rewrites() {
-    // The tests run without a server. Rewrites cause Next to continually try to connect,
-    // which spams the logs with "ECONNREFUSED".
-    if (process.env.NODE_ENV === "test") {
+    // The CI tests run without a server, so we leave this value out of .env.test.
+    // These rewrites then cause Next to continually try to connect, which spams the logs with "ECONNREFUSED".
+    // Use npm run cy:start:dev to run the tests with a server during local development.
+    if (!process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER) {
       return [];
     }
     // Proxy all requests to the API server during local development

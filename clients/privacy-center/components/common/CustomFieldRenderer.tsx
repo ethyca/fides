@@ -1,127 +1,166 @@
-import { AntSelect, FormErrorMessage, Input } from "fidesui";
+import {
+  AntInput as Input,
+  AntSelect as Select,
+  LocationSelect,
+} from "fidesui";
 import { ReactNode } from "react";
 
-import { MultiselectFieldValue } from "~/types/forms";
+import {
+  CustomLocationField,
+  CustomMultiSelectField,
+  CustomSelectField,
+  CustomTextField,
+  ICustomField,
+} from "~/types/config";
 
-// Use compatible interface for existing config types
-interface CustomPrivacyRequestField {
-  label: string;
-  field_type?: "text" | "select" | "multiselect" | "location" | null;
-  required?: boolean | null;
-  options?: string[] | null;
-  default_value?: string | string[] | null;
-  hidden?: boolean | null;
-  query_param_key?: string | null;
-  ip_geolocation_hint?: boolean | null;
-}
-
-interface CustomFieldRendererProps {
-  field: CustomPrivacyRequestField;
-  fieldKey: string;
-  value: string | MultiselectFieldValue;
-  onChange: (value: string | MultiselectFieldValue) => void;
+interface ICustomFieldProps extends ICustomField {
   onBlur: () => void;
+  fieldKey: string;
   error?: ReactNode;
 }
 
+interface ICustomTextFieldProps extends CustomTextField, ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+interface ICustomSelectFieldProps extends CustomSelectField, ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+interface ICustomMultiSelectFieldProps
+  extends CustomMultiSelectField,
+    ICustomFieldProps {
+  value: Array<string>;
+  onChange: (value: Array<string>) => void;
+}
+
+interface ICustomLocationFieldProps
+  extends CustomLocationField,
+    ICustomFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export type CustomFieldRendererProps =
+  | ICustomTextFieldProps
+  | ICustomSelectFieldProps
+  | ICustomMultiSelectFieldProps
+  | ICustomLocationFieldProps;
+
 const CustomFieldRenderer = ({
-  field,
   fieldKey,
-  value,
-  onChange,
+  label,
   onBlur,
-  error,
+  required,
+  ...props
 }: CustomFieldRendererProps) => {
-  if (field.field_type === "multiselect" && field.options) {
-    return (
-      <>
-        <AntSelect
+  switch (props.field_type) {
+    case "select":
+      return (
+        <Select
+          id={fieldKey}
+          data-testid={`select-${fieldKey}`}
+          placeholder={`Select ${label.toLowerCase()}`}
+          value={props.value}
+          onChange={(selectedValue) => {
+            props.onChange(selectedValue);
+          }}
+          onBlur={onBlur}
+          options={props.options?.map((option: string) => ({
+            label: option,
+            value: option,
+          }))}
+          getPopupContainer={() => document.body}
+          styles={{
+            popup: {
+              root: {
+                maxHeight: 400,
+                overflow: "auto",
+                zIndex: 1500,
+              },
+            },
+          }}
+          classNames={{
+            popup: {
+              root: "privacy-form-dropdown",
+            },
+          }}
+          allowClear
+          aria-label={label}
+          aria-describedby={`${fieldKey}-error`}
+          aria-required={required !== false}
+        />
+      );
+
+    case "multiselect":
+      return (
+        <Select
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
           mode="multiple"
-          placeholder={`Select ${field.label.toLowerCase()}`}
-          value={Array.isArray(value) ? value : []}
-          onChange={(selectedValues: string[]) => {
-            onChange(selectedValues);
-          }}
+          placeholder={`Select ${label.toLowerCase()}`}
+          value={props.value}
+          onChange={props.onChange}
           onBlur={onBlur}
-          options={field.options.map((option: string) => ({
+          options={props.options?.map((option) => ({
             label: option,
             value: option,
           }))}
-          style={{ width: "100%" }}
           getPopupContainer={() => document.body}
-          dropdownStyle={{
-            maxHeight: 400,
-            overflow: "auto",
-            zIndex: 1500,
+          styles={{
+            popup: {
+              root: {
+                maxHeight: 400,
+                overflow: "auto",
+                zIndex: 1500,
+              },
+            },
           }}
-          dropdownClassName="privacy-form-dropdown"
-          aria-label={field.label}
+          classNames={{
+            popup: {
+              root: "privacy-form-dropdown",
+            },
+          }}
+          aria-label={label}
           aria-describedby={`${fieldKey}-error`}
-          aria-required={field.required !== false}
+          aria-required={required !== false}
         />
-        {error && (
-          <FormErrorMessage id={`${fieldKey}-error`}>{error}</FormErrorMessage>
-        )}
-      </>
-    );
-  }
+      );
 
-  if (field.field_type === "select" && field.options) {
-    return (
-      <>
-        <AntSelect
+    case "location":
+      return (
+        <LocationSelect
           id={fieldKey}
-          data-testid={`select-${fieldKey}`}
-          placeholder={`Select ${field.label.toLowerCase()}`}
-          value={typeof value === "string" ? value : ""}
-          onChange={(selectedValue: string) => {
-            onChange(selectedValue);
-          }}
+          data-testid={`location-select-${fieldKey}`}
+          placeholder={`Select ${label.toLowerCase()}`}
+          value={props.value !== "" ? props.value : undefined}
+          onChange={props.onChange}
           onBlur={onBlur}
-          options={field.options.map((option: string) => ({
-            label: option,
-            value: option,
-          }))}
-          style={{ width: "100%" }}
           getPopupContainer={() => document.body}
-          dropdownStyle={{
-            maxHeight: 400,
-            overflow: "auto",
-            zIndex: 1500,
-          }}
-          dropdownClassName="privacy-form-dropdown"
-          allowClear
-          aria-label={field.label}
+          aria-label={label}
           aria-describedby={`${fieldKey}-error`}
-          aria-required={field.required !== false}
+          aria-required={required !== false}
         />
-        {error && (
-          <FormErrorMessage id={`${fieldKey}-error`}>{error}</FormErrorMessage>
-        )}
-      </>
-    );
-  }
+      );
 
-  return (
-    <>
-      <Input
-        id={fieldKey}
-        name={fieldKey}
-        placeholder={field.label}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        value={typeof value === "string" ? value : ""}
-        aria-label={field.label}
-        aria-describedby={`${fieldKey}-error`}
-        aria-required={field.required !== false}
-      />
-      {error && (
-        <FormErrorMessage id={`${fieldKey}-error`}>{error}</FormErrorMessage>
-      )}
-    </>
-  );
+    case "text":
+    default:
+      return (
+        <Input
+          id={fieldKey}
+          name={fieldKey}
+          placeholder={label}
+          onChange={(e) => props.onChange(e.target.value)}
+          onBlur={onBlur}
+          value={props.value}
+          aria-label={label}
+          aria-describedby={`${fieldKey}-error`}
+          aria-required={required !== false}
+        />
+      );
+  }
 };
 
 export default CustomFieldRenderer;

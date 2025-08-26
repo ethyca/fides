@@ -25,7 +25,7 @@ interface DiscoveredSystemActionsCellProps {
   monitorId: string;
   system: SystemStagedResourcesAggregateRecord;
   allowIgnore?: boolean;
-  onTabChange: (tab: ActionCenterTabHash) => void;
+  onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
 }
 
 export const DiscoveredSystemActionsCell = ({
@@ -87,7 +87,9 @@ export const DiscoveredSystemActionsCell = ({
             systemName
               ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
               : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
-            () => onTabChange(ActionCenterTabHash.IGNORED),
+            async () => {
+              await onTabChange(ActionCenterTabHash.IGNORED);
+            },
           ),
         ),
       );
