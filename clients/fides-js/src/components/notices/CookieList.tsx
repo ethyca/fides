@@ -1,7 +1,8 @@
 import { ComponentChildren } from "preact";
+
+import { Cookies } from "../../lib/consent-types";
 import DataUseToggle from "../DataUseToggle";
 import Divider from "../Divider";
-import { Cookies } from "../../lib/consent-types";
 
 export type CookieRecord = {
   title: string;
@@ -27,29 +28,54 @@ const CookieList = ({
         onClick={onBack}
         aria-label="Back"
       >
-        {"< Back"}
+        <span
+          className="fides-flex-center fides-back-link"
+          style={{ marginBottom: "12px" }}
+        >
+          Back
+        </span>
       </button>
+      {cookiesByNotice.length >= 1 ? (
+        <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+          <strong>{cookiesByNotice[0].title} Cookies</strong>
+        </div>
+      ) : null}
       <div className="fides-modal-notices" style={{ marginTop: "12px" }}>
-        {cookiesByNotice.map((item, idx) => {
-          const isLast = idx === cookiesByNotice.length - 1;
+        {cookiesByNotice.map((group, groupIdx) => {
+          const isLastGroup = groupIdx === cookiesByNotice.length - 1;
+          const groupCookies = group.cookies || [];
+          if (groupCookies.length === 0) {
+            return null;
+          }
           return (
-            <div key={item.noticeKey}>
-              <DataUseToggle
-                noticeKey={item.noticeKey}
-                title={item.title}
-                checked={false}
-                onToggle={() => {}}
-                includeToggle={false}
-              >
-                {item.cookies && item.cookies.length > 0 ? (
-                  <ul className="fides-cookie-list">
-                    {item.cookies.map((c, i) => (
-                      <li key={`${item.noticeKey}-${c.name}-${i}`}>{c.name}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </DataUseToggle>
-              {!isLast ? <Divider /> : null}
+            <div key={group.noticeKey}>
+              {groupCookies.map((c, i) => {
+                const isLastCookieInGroup = i === groupCookies.length - 1;
+                const showDivider = !(isLastCookieInGroup && isLastGroup);
+                return (
+                  <div key={`${group.noticeKey}-${c.name}-${i}`}>
+                    <DataUseToggle
+                      noticeKey={`${group.noticeKey}-${c.name}-${i}`}
+                      title={c.name}
+                      checked={false}
+                      onToggle={() => {}}
+                      includeToggle={false}
+                    >
+                      <div className="fides-cookie-details">
+                        <div style={{ marginBottom: "8px" }}>
+                          <strong>Duration:</strong> A few hours
+                        </div>
+                        {c.description ? (
+                          <div>
+                            <strong>Description:</strong> {c.description}
+                          </div>
+                        ) : null}
+                      </div>
+                    </DataUseToggle>
+                    {showDivider ? <Divider /> : null}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
