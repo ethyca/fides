@@ -664,6 +664,14 @@ export type Cookies = {
   name: string;
   path?: string;
   domain?: string;
+  /**
+   * The storage duration for this cookie, if available (e.g., "A few seconds", "4 hours").
+   */
+  duration?: string;
+  /**
+   * A human-readable description of what this cookie does.
+   */
+  description?: string;
 };
 
 export enum PrivacyNoticeFramework {

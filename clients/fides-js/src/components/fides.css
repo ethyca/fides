@@ -958,6 +958,20 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   cursor: pointer;
 }
 
+/* Back link icon using the same border/rotate technique as notice drawer caret */
+.fides-back-link::before {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-right: 3px;
+  content: "";
+  transition: transform 0.12s ease-in-out;
+  /* Rotate to point the caret to the left */
+  transform: translateY(-1px) rotate(225deg);
+  border-style: solid;
+  border-width: 1.5px 1.5px 0 0;
+}
+
 .fides-primary-text-color {
   color: var(--fides-overlay-primary-color);
 }

@@ -90,11 +90,7 @@ const DataUseToggle = ({
           ) : null}
         </span>
       </div>
-      {children ? (
-        <div {...getDisclosureProps()} className="fides-tcf-toggle-content">
-          {children}
-        </div>
-      ) : null}
+      {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>
   );
 };

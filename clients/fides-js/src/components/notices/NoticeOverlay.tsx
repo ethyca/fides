@@ -191,6 +191,9 @@ const NoticeOverlay = () => {
   });
 
   const [isCookieListView, setIsCookieListView] = useState(false);
+  const [selectedNoticeKey, setSelectedNoticeKey] = useState<string | null>(
+    null,
+  );
 
   const noticesWithCookies = privacyNoticeItems
     .map((item) => ({
@@ -199,6 +202,9 @@ const NoticeOverlay = () => {
       cookies: item.notice.cookies || [],
     }))
     .filter((n) => n.cookies && n.cookies.length > 0);
+  const cookiesBySelectedNotice = selectedNoticeKey
+    ? noticesWithCookies.filter((n) => n.noticeKey === selectedNoticeKey)
+    : noticesWithCookies;
 
   useNoticesServed({
     privacyExperienceConfigHistoryId,
@@ -435,8 +441,11 @@ const NoticeOverlay = () => {
         <div>
           {isCookieListView ? (
             <CookieList
-              cookiesByNotice={noticesWithCookies}
-              onBack={() => setIsCookieListView(false)}
+              cookiesByNotice={cookiesBySelectedNotice}
+              onBack={() => {
+                setIsCookieListView(false);
+                setSelectedNoticeKey(null);
+              }}
             />
           ) : (
             <div className="fides-modal-notices">
@@ -454,7 +463,10 @@ const NoticeOverlay = () => {
                           <button
                             type="button"
                             className="fides-link-button"
-                            onClick={() => setIsCookieListView(true)}
+                            onClick={() => {
+                              setSelectedNoticeKey(props.noticeKey);
+                              setIsCookieListView(true);
+                            }}
                           >
                             View Cookie List
                           </button>
