@@ -80,6 +80,7 @@ describe("Dataset Reference Utils", () => {
       expect(result[0]).toEqual({
         key: "dataset1:users:id",
         title: "id",
+        fullTitle: "users:id",
         value: "dataset1:users:id",
         isLeaf: true,
         selectable: true,
@@ -101,6 +102,7 @@ describe("Dataset Reference Utils", () => {
       expect(profileNode.children![0]).toEqual({
         key: "dataset1:users:profile.email",
         title: "email",
+        fullTitle: "users:profile.email",
         value: "dataset1:users:profile.email",
         isLeaf: true,
         selectable: true,

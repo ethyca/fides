@@ -81,6 +81,7 @@ export const transformFieldsToTreeNodes = (
 export interface DatasetTreeNode {
   key: string;
   title: string;
+  fullTitle: string;
   value: string;
   isLeaf: boolean;
   selectable: boolean;

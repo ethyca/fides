@@ -6,11 +6,31 @@ import { makeStore } from "~/app/store";
 
 import { DatasetReferencePicker } from "../DatasetReferencePicker";
 
-// Mock the dataset API slice
-jest.mock("~/features/dataset/dataset.slice", () => ({
-  useGetAllFilteredDatasetsQuery: jest.fn(),
-  useLazyGetDatasetByKeyQuery: jest.fn(),
+// Mock query-string to avoid ES module issues in Jest
+jest.mock("query-string", () => ({
+  __esModule: true,
+  default: {
+    stringify: jest.fn(),
+    parse: jest.fn(),
+  },
 }));
+
+// Mock react-dnd to avoid ES module issues in Jest
+jest.mock("react-dnd", () => ({
+  useDrag: jest.fn(() => [{}, jest.fn()]),
+  useDrop: jest.fn(() => [{}, jest.fn()]),
+  DndProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock the dataset API slice
+jest.mock("~/features/dataset/dataset.slice", () => {
+  const originalModule = jest.requireActual("~/features/dataset/dataset.slice");
+  return {
+    ...originalModule,
+    useGetAllFilteredDatasetsQuery: jest.fn(),
+    useLazyGetDatasetByKeyQuery: jest.fn(),
+  };
+});
 
 // Mock the alert hook
 jest.mock("~/features/common/hooks/useAlert", () => ({
@@ -92,9 +112,10 @@ describe("DatasetReferencePicker", () => {
       <DatasetReferencePicker value={undefined} onChange={onChange} />,
     );
 
-    expect(screen.getByText("No datasets available")).toBeInTheDocument();
     expect(
-      screen.getByText("Create a dataset to start using this feature"),
+      screen.getByText(
+        "No datasets available. Create a dataset to start using this feature"
+      )
     ).toBeInTheDocument();
   });
 
