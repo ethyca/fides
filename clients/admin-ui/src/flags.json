@@ -60,12 +60,6 @@
     "test": true,
     "production": false
   },
-  "alphaManualTaskConditions": {
-    "description": "Enables UI to specify conditions for manual task creation",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "newIntegrationManagement": {
     "description": "Shows all integrations (including SaaS) in the integrations page",
     "development": true,
