@@ -2276,10 +2276,6 @@ class TestInitiatePrivacyRequestCompletionEmail:
             mock_config_proxy.return_value.privacy_center.url = (
                 "https://privacy.example.com"
             )
-            mock_config_proxy.return_value.notifications.notification_service_type = (
-                "mailgun"
-            )
-
             # Call the function
             access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]
             identity_data = {"email": "test@example.com"}
@@ -2376,9 +2372,6 @@ class TestInitiatePrivacyRequestCompletionEmail:
             mock_config_proxy.return_value.privacy_center.url = (
                 "https://privacy.example.com"
             )
-            mock_config_proxy.return_value.notifications.notification_service_type = (
-                "mailgun"
-            )
 
             # Call the function
             access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]
@@ -2418,6 +2411,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         policy: Policy,
         privacy_request: PrivacyRequest,
         messaging_config,
+        set_notification_service_type_to_mailgun,
     ):
         """Test that non-S3 storage types always use original direct storage URLs regardless of enable_access_package_redirect"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
@@ -2456,9 +2450,6 @@ class TestInitiatePrivacyRequestCompletionEmail:
         with mock.patch("fides.config.config_proxy.ConfigProxy") as mock_config_proxy:
             mock_config_proxy.return_value.privacy_center.url = (
                 "https://privacy.example.com"
-            )
-            mock_config_proxy.return_value.notifications.notification_service_type = (
-                "mailgun"
             )
 
             # Call the function
@@ -2501,6 +2492,7 @@ class TestInitiatePrivacyRequestCompletionEmail:
         policy: Policy,
         privacy_request: PrivacyRequest,
         messaging_config,
+        set_notification_service_type_to_mailgun,
     ):
         """Test that when privacy_center.url is None, fallback to original storage URLs even if access package redirect is enabled"""
         from fides.api.models.storage import ResponseFormat, StorageConfig
@@ -2538,9 +2530,6 @@ class TestInitiatePrivacyRequestCompletionEmail:
         # Mock the privacy center URL as None in config
         with mock.patch("fides.config.config_proxy.ConfigProxy") as mock_config_proxy:
             mock_config_proxy.return_value.privacy_center.url = None
-            mock_config_proxy.return_value.notifications.notification_service_type = (
-                "mailgun"
-            )
 
             # Call the function
             access_result_urls = ["https://s3.amazonaws.com/test-bucket/file1.json"]

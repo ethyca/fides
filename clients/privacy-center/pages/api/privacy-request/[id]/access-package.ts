@@ -58,7 +58,9 @@ export default async function handler(
 ) {
   // Ensure we have a request ID header for consistent logging
   if (!req.headers["x-request-id"]) {
-    req.headers["x-request-id"] = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // eslint-disable-next-line no-param-reassign
+    req.headers["x-request-id"] =
+      `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   const log = createRequestLogger(req);
@@ -81,9 +83,7 @@ export default async function handler(
       : requestIdRaw;
 
     // Extract and validate token parameter
-    const token = Array.isArray(tokenRaw)
-      ? tokenRaw[0]
-      : tokenRaw;
+    const token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw;
 
     // Validate that requestId parameter is provided
     if (!requestId) {
@@ -96,9 +96,7 @@ export default async function handler(
     // Validate that token parameter is provided
     if (!token) {
       log.warn("DSR package request missing required token parameter");
-      return res
-        .status(400)
-        .send("Bad Request: token parameter is required");
+      return res.status(400).send("Bad Request: token parameter is required");
     }
 
     // Validate that requestId is a valid pri_uuid to prevent SSRF attacks
@@ -116,9 +114,7 @@ export default async function handler(
       log.warn("DSR package request with invalid token format", {
         token,
       });
-      return res
-        .status(400)
-        .send("Bad Request: token must be a valid string");
+      return res.status(400).send("Bad Request: token must be a valid string");
     }
 
     // Encode the UUID for safe URL construction
