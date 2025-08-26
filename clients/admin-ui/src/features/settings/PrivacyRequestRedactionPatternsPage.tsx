@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  Box,
-  DeleteIcon,
-  Flex,
-  Text,
-} from "fidesui";
+import { AntButton as Button, Box, DeleteIcon, Flex, Text } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import * as Yup from "yup";
 
@@ -12,43 +6,54 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-
 import {
   useGetPrivacyRequestRedactionPatternsQuery,
   useUpdatePrivacyRequestRedactionPatternsMutation,
 } from "~/features/privacy-requests/privacy-request-redaction-patterns.slice";
 
+interface PatternItem {
+  id: string;
+  value: string;
+}
+
 interface PrivacyRequestRedactionPatternsFormValues {
-  patterns: string[];
+  patterns: PatternItem[];
 }
 
 const ValidationSchema = Yup.object().shape({
   patterns: Yup.array()
     .nullable()
     .of(
-      Yup.string()
-        .required()
-        .trim()
-        .test(
-          "is-valid-pattern",
-          "Pattern cannot be empty",
-          (value) => !!(value && value.trim().length > 0),
-        )
-        .label("Pattern"),
+      Yup.object().shape({
+        id: Yup.string().required(),
+        value: Yup.string()
+          .required()
+          .trim()
+          .test(
+            "is-valid-pattern",
+            "Pattern cannot be empty",
+            (value) => !!(value && value.trim().length > 0),
+          )
+          .label("Pattern"),
+      }),
     ),
 });
 
 const PrivacyRequestRedactionPatternsPage = () => {
   const { errorAlert, successAlert } = useAlert();
 
-  const { data: currentPatterns } = useGetPrivacyRequestRedactionPatternsQuery(undefined);
-  const [updatePatterns, { isLoading: isUpdating }] = useUpdatePrivacyRequestRedactionPatternsMutation();
+  const { data: currentPatterns } =
+    useGetPrivacyRequestRedactionPatternsQuery(undefined);
+  const [updatePatterns, { isLoading: isUpdating }] =
+    useUpdatePrivacyRequestRedactionPatternsMutation();
 
-  const handleSubmit = async (values: PrivacyRequestRedactionPatternsFormValues) => {
+  const handleSubmit = async (
+    values: PrivacyRequestRedactionPatternsFormValues,
+  ) => {
     // Filter out empty patterns and trim whitespace
     const cleanedPatterns = values.patterns
-      .filter((pattern) => pattern && pattern.trim().length > 0)
-      .map((pattern) => pattern.trim());
+      .filter((pattern) => pattern.value && pattern.value.trim().length > 0)
+      .map((pattern) => pattern.value.trim());
 
     const payload = await updatePatterns({ patterns: cleanedPatterns });
 
@@ -63,14 +68,20 @@ const PrivacyRequestRedactionPatternsPage = () => {
   };
 
   const initialValues: PrivacyRequestRedactionPatternsFormValues = {
-    patterns: currentPatterns?.patterns || [],
+    patterns: (currentPatterns?.patterns || []).map((pattern, index) => ({
+      id: `pattern-${index}-${Date.now()}`,
+      value: pattern,
+    })),
   };
 
   return (
     <Box data-testid="privacy-request-redaction-patterns">
       <Box maxW="600px">
         <Text fontSize="sm" pb={6}>
-          List of regex patterns used to mask dataset, collection, and field names in DSR package reports. Names matching these patterns will be replaced with position-based identifiers (e.g. dataset_1, collection_2, field_3).
+          List of regex patterns used to mask dataset, collection, and field
+          names in DSR package reports. Names matching these patterns will be
+          replaced with position-based identifiers (e.g. dataset_1,
+          collection_2, field_3).
         </Text>
         <FormSection
           data-testid="privacy-request-redaction-patterns-form"
@@ -89,11 +100,11 @@ const PrivacyRequestRedactionPatternsPage = () => {
                   name="patterns"
                   render={(arrayHelpers) => (
                     <Flex flexDir="column">
-                      {values.patterns.map((_, index) => (
-                        <Flex flexDir="row" key={index} my={3}>
+                      {values.patterns.map((patternItem, index) => (
+                        <Flex flexDir="row" key={patternItem.id} my={3}>
                           <CustomTextInput
                             variant="stacked"
-                            name={`patterns[${index}]`}
+                            name={`patterns[${index}].value`}
                             placeholder="Enter regex pattern (e.g., sensitive_.*)"
                           />
 
@@ -113,7 +124,10 @@ const PrivacyRequestRedactionPatternsPage = () => {
                           aria-label="add-pattern"
                           className="w-full"
                           onClick={() => {
-                            arrayHelpers.push("");
+                            arrayHelpers.push({
+                              id: `pattern-${Date.now()}-${Math.random()}`,
+                              value: "",
+                            });
                           }}
                         >
                           Add regex pattern +

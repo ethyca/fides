@@ -10,7 +10,10 @@ export interface PrivacyRequestRedactionPatternsResponse {
 
 export const privacyRequestRedactionPatternsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getPrivacyRequestRedactionPatterns: build.query<PrivacyRequestRedactionPatternsResponse, void>({
+    getPrivacyRequestRedactionPatterns: build.query<
+      PrivacyRequestRedactionPatternsResponse,
+      void
+    >({
       query: () => ({
         url: "privacy-request/redaction-patterns",
         method: "GET",

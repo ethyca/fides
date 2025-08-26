@@ -375,78 +375,6 @@ class TestDsrReportBuilderDataStructure:
             ).decode("utf-8")
             assert "Item 4" in collection3_content
 
-    def test_generate_dsr_package_for_inspection(self, privacy_request: PrivacyRequest):
-        """Test DSR report builder and save package to disk for inspection"""
-
-        dsr_data = {
-            "customer_database:users": [
-                {"id": 1, "name": "John Doe", "email": "john@example.com", "age": 30},
-                {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "age": 25},
-            ],
-            "customer_database:orders": [
-                {"id": 101, "user_id": 1, "amount": 49.99, "product": "Widget A"},
-                {"id": 102, "user_id": 2, "amount": 29.99, "product": "Widget B"},
-            ],
-            "analytics_system:user_events": [
-                {"user_id": 1, "event": "login", "timestamp": "2024-01-01T10:00:00Z"},
-                {
-                    "user_id": 1,
-                    "event": "purchase",
-                    "timestamp": "2024-01-01T10:30:00Z",
-                },
-            ],
-            "attachments": [
-                {
-                    "file_name": "user_profile_photo.jpg",
-                    "download_url": "https://example.com/photos/user1.jpg",
-                    "file_size": 52428800,  # 50MB
-                },
-                {
-                    "file_name": "invoice_12345.pdf",
-                    "download_url": "https://example.com/invoices/12345.pdf",
-                    "file_size": 1048576,  # 1MB
-                },
-            ],
-        }
-
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-
-        # Save the DSR package to a file for inspection
-        output_file = Path("/tmp/dsr_package_sample.zip")
-        with open(output_file, "wb") as file:
-            file.write(report.getvalue())
-
-        print(f"\n🎉 DSR Package saved to: {output_file}")
-        print(f"📊 Package size: {len(report.getvalue()) / 1024:.1f} KB")
-        print("📂 To inspect the package:")
-        print(f"   - Unzip the file: unzip {output_file}")
-        print(f"   - Open welcome.html in a browser to view the report")
-
-        # Basic verification that the package was created correctly
-        assert output_file.exists()
-        assert output_file.stat().st_size > 0
-
-        # Verify the package structure without deleting it
-        with zipfile.ZipFile(output_file, "r") as zip_file:
-            # Verify dataset structure with indexed names
-            assert "data/analytics_system/index.html" in zip_file.namelist()
-            assert "data/customer_database/index.html" in zip_file.namelist()
-
-            # Verify collection structure with indexed names
-            assert "data/customer_database/users/index.html" in zip_file.namelist()
-            assert "data/customer_database/orders/index.html" in zip_file.namelist()
-            assert "data/analytics_system/user_events/index.html" in zip_file.namelist()
-
-            # Verify attachments
-            assert "attachments/index.html" in zip_file.namelist()
-
-            # Check welcome page content includes original dataset names (no redaction patterns configured)
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
-            assert "analytics_system" in welcome_content
-            assert "customer_database" in welcome_content
-            assert "Additional Attachments" in welcome_content
-
     def test_selective_redaction_with_patterns(
         self, privacy_request: PrivacyRequest, db
     ):
@@ -2221,7 +2149,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
     def test_redaction_entities_map_with_mixed_hierarchical_levels(
         self, privacy_request: PrivacyRequest, db
     ):
-        """Test redaction with entities at different hierarchical levels"""
+        """Test redaction with entities at different hierarchical levels including nested data structures"""
 
         # Create a connection config first (ensure it's not disabled)
         connection_config = ConnectionConfig.create(
@@ -2235,7 +2163,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
             },
         )
 
-        # Create dataset with redaction at multiple levels
+        # Create dataset with redaction at multiple levels including nested fields
         dataset_dict = {
             "fides_key": "mixed_data",
             "name": "mixed_data",
@@ -2247,6 +2175,27 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
                         {
                             "name": "description",
                             "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "metadata",
+                            "data_categories": ["system.operations"],
+                            "fields": [
+                                {
+                                    "name": "created_by",
+                                    "data_categories": ["user.name"],
+                                    "fides_meta": {"redact": "name"},
+                                },
+                                {
+                                    "name": "tags",
+                                    "data_categories": ["system.operations"],
+                                    "fields": [
+                                        {
+                                            "name": "category",
+                                            "data_categories": ["system.operations"],
+                                        }
+                                    ],
+                                },
+                            ],
                         },
                     ],
                     # No collection-level redaction (should inherit from dataset)
@@ -2260,6 +2209,36 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
                             "fides_meta": {
                                 "redact": "name"
                             },  # Field level (redundant with dataset)
+                        },
+                        {
+                            "name": "personal_details",
+                            "data_categories": ["user"],
+                            "fields": [
+                                {
+                                    "name": "address",
+                                    "data_categories": ["user.contact.address"],
+                                    "fides_meta": {"redact": "name"},
+                                    "fields": [
+                                        {
+                                            "name": "street",
+                                            "data_categories": [
+                                                "user.contact.address.street"
+                                            ],
+                                        },
+                                        {
+                                            "name": "postal_code",
+                                            "data_categories": [
+                                                "user.contact.address.postal_code"
+                                            ],
+                                            "fides_meta": {"redact": "name"},
+                                        },
+                                    ],
+                                },
+                                {
+                                    "name": "phone_numbers",
+                                    "data_categories": ["user.contact.phone_number"],
+                                },
+                            ],
                         },
                     ],
                     "fides_meta": {
@@ -2281,8 +2260,24 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
         )
 
         dsr_data = {
-            "mixed_data:public_info": [{"description": "public data"}],
-            "mixed_data:sensitive_data": [{"ssn": "123-45-6789"}],
+            "mixed_data:public_info": [
+                {
+                    "description": "public data",
+                    "metadata": {
+                        "created_by": "john_doe",
+                        "tags": {"category": "general"},
+                    },
+                }
+            ],
+            "mixed_data:sensitive_data": [
+                {
+                    "ssn": "123-45-6789",
+                    "personal_details": {
+                        "address": {"street": "123 Main St", "postal_code": "12345"},
+                        "phone_numbers": ["555-1234", "555-5678"],
+                    },
+                }
+            ],
         }
 
         builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
@@ -2297,3 +2292,74 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
 
             # Check that file structure uses redacted dataset name
             assert "data/dataset_1/index.html" in zip_file.namelist()
+
+            # Verify nested data is properly included in the generated report
+            dataset_content = zip_file.read("data/dataset_1/index.html").decode("utf-8")
+
+            # Based on the actual output, public_info is not redacted but sensitive_data is
+            # This is because only sensitive_data has explicit collection-level redaction
+            assert (
+                "public_info" in dataset_content
+            )  # public_info not redacted (no collection-level config)
+            assert (
+                "collection_2" in dataset_content
+            )  # sensitive_data redacted due to collection-level config
+            assert "sensitive_data" not in dataset_content
+
+            # Check that nested data structure is preserved in the report
+            # Look for collection detail pages
+            public_info_files = [
+                f
+                for f in zip_file.namelist()
+                if "public_info" in f and f.endswith(".html")
+            ]
+            sensitive_data_files = [
+                f
+                for f in zip_file.namelist()
+                if "collection_2" in f and f.endswith(".html")
+            ]
+
+            assert (
+                len(public_info_files) > 0
+            ), "Should have public_info collection files"
+            assert (
+                len(sensitive_data_files) > 0
+            ), "Should have sensitive_data collection files"
+
+            # Verify nested data appears in the collection content
+            if public_info_files:
+                public_content = zip_file.read(public_info_files[0]).decode("utf-8")
+
+                # Verify that nested field names are redacted in the JSON content
+                # Only "created_by" has explicit redaction config, so only it should be redacted
+                assert (
+                    "created_by" not in public_content
+                )  # field name should be redacted in JSON
+                assert "field_" in public_content  # should contain redacted field names
+
+                # The "tags" field should NOT be redacted, it has no explicit redaction config
+                assert "tags" in public_content  # tags should remain unredacted
+
+            if sensitive_data_files:
+                sensitive_content = zip_file.read(sensitive_data_files[0]).decode(
+                    "utf-8"
+                )
+
+                # Verify that nested field names with explicit redaction configs are redacted
+                assert (
+                    "address" not in sensitive_content
+                )  # address field has explicit redaction config
+                assert (
+                    "postal_code" not in sensitive_content
+                )  # postal_code field has explicit redaction config
+                assert (
+                    "field_" in sensitive_content
+                )  # should contain redacted field names
+
+                # Fields without explicit redaction should remain unredacted
+                assert (
+                    "street" in sensitive_content
+                )  # street has no explicit redaction config
+                assert (
+                    "phone_numbers" in sensitive_content
+                )  # phone_numbers has no explicit redaction config

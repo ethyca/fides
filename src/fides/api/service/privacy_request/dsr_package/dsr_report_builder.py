@@ -6,7 +6,7 @@ import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import Any, List, Optional
 
 import jinja2
 from fideslang.models import Dataset, DatasetField
@@ -27,9 +27,6 @@ DSR_DIRECTORY = Path(__file__).parent.resolve()
 TEXT_COLOR = "#4A5568"
 HEADER_COLOR = "#FAFAFA"
 BORDER_COLOR = "#E2E8F0"
-
-if TYPE_CHECKING:
-    from fides.api.models.privacy_request import PrivacyRequest  # pragma: no cover
 
 
 # pylint: disable=too-many-instance-attributes
@@ -293,7 +290,7 @@ class DsrReportBuilder:
                 # Add the attachment URLs to the item data
                 item_data["attachments"] = attachment_links
 
-            # Add indexing to field names
+            # Add indexing to field names and redact nested field names
             item_data_with_display_names = {}
             for field_index, (field_name, field_value) in enumerate(
                 item_data.items(), start=1
@@ -301,7 +298,11 @@ class DsrReportBuilder:
                 field_display_name = self._redact_name(
                     "field", field_name, field_index, dataset_name, collection_name
                 )
-                item_data_with_display_names[field_display_name] = field_value
+                # Apply nested field redaction with proper context
+                redacted_field_value = self._redact_nested_field_names(
+                    field_value, f"{dataset_name}.{collection_name}.{field_name}"
+                )
+                item_data_with_display_names[field_display_name] = redacted_field_value
 
             # Add item content to the list with item heading
             item_heading = f"{collection_display_name} (item #{item_index})"
@@ -421,6 +422,61 @@ class DsrReportBuilder:
 
         # Return original name if no patterns match or no configurations found
         return name
+
+    def _redact_nested_field_names(
+        self,
+        value: Any,
+        current_path: str = "",
+        field_index_counter: Optional[dict] = None,
+    ) -> Any:
+        """
+        Recursively redact field names within nested JSON structures based on redaction configurations.
+        """
+        if field_index_counter is None:
+            field_index_counter = {}
+
+        if isinstance(value, dict):
+            redacted_dict = {}
+            level_key = f"{current_path}_fields" if current_path else "root_fields"
+
+            # Ensure level exists in counter
+            if level_key not in field_index_counter:
+                field_index_counter[level_key] = {}
+
+            for field_name, field_value in value.items():
+                # Build the full path for this field
+                full_path = (
+                    f"{current_path}.{field_name}" if current_path else field_name
+                )
+
+                # Get or create field index
+                if field_name not in field_index_counter[level_key]:
+                    field_index_counter[level_key][field_name] = (
+                        len(field_index_counter[level_key]) + 1
+                    )
+
+                # Determine the field name to use
+                if full_path in self.entities_to_redact:
+                    redacted_name = (
+                        f"field_{field_index_counter[level_key][field_name]}"
+                    )
+                else:
+                    redacted_name = field_name
+
+                # Recursively process the value
+                redacted_dict[redacted_name] = self._redact_nested_field_names(
+                    field_value, full_path, field_index_counter
+                )
+
+            return redacted_dict
+
+        if isinstance(value, list):
+            return [
+                self._redact_nested_field_names(item, current_path, field_index_counter)
+                for item in value
+            ]
+
+        return value
 
     def _build_hierarchical_key(
         self,
@@ -671,12 +727,12 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
 
         # Query for collection-level redactions
         collection_query = """
-        SELECT ctl.name || '.' || (collection_elem->>'name') as entity_path
+        SELECT ctl.name || '.' || (collection->>'name') as entity_path
         FROM datasetconfig dc
         JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-        CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection_elem
-        WHERE collection_elem->'fides_meta'->>'redact' = 'name'
-            AND collection_elem->>'name' IS NOT NULL
+        CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
+        WHERE collection->'fides_meta'->>'redact' = 'name'
+            AND collection->>'name' IS NOT NULL
         """
 
         collection_results = db.execute(collection_query).fetchall()
@@ -689,35 +745,28 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
         WITH RECURSIVE field_hierarchy AS (
             -- Base case: top-level fields in collections
             SELECT
-                ctl.name as dataset_name,
-                collection_elem->>'name' as collection_name,
-                field_elem->>'name' as field_name,
                 ctl.name || '.' ||
-                    (collection_elem->>'name') || '.' ||
-                    (field_elem->>'name') as entity_path,
-                field_elem->'fields' as nested_fields,
-                field_elem->'fides_meta'->>'redact' as redact_value
+                    (collection->>'name') || '.' ||
+                    (field->>'name') as entity_path,
+                field->'fields' as nested_fields,
+                field->'fides_meta'->>'redact' as redact_value
             FROM datasetconfig dc
             JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-            CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection_elem
-            CROSS JOIN LATERAL jsonb_array_elements(collection_elem->'fields') AS field_elem
-            WHERE collection_elem->>'name' IS NOT NULL
-                AND field_elem->>'name' IS NOT NULL
+            CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
+            CROSS JOIN LATERAL jsonb_array_elements(collection->'fields') AS field
+            WHERE collection->>'name' IS NOT NULL
+                AND field->>'name' IS NOT NULL
 
             UNION ALL
 
             -- Recursive case: nested fields
             SELECT
-                fh.dataset_name,
-                fh.collection_name,
-                nested_field->>'name' as field_name,
                 fh.entity_path || '.' || (nested_field->>'name') as entity_path,
                 nested_field->'fields' as nested_fields,
                 nested_field->'fides_meta'->>'redact' as redact_value
             FROM field_hierarchy fh
             CROSS JOIN LATERAL jsonb_array_elements(fh.nested_fields) AS nested_field
-            WHERE fh.nested_fields IS NOT NULL
-                AND jsonb_typeof(fh.nested_fields) = 'array'
+            WHERE jsonb_typeof(fh.nested_fields) = 'array'
                 AND nested_field->>'name' IS NOT NULL
         )
         SELECT DISTINCT entity_path
