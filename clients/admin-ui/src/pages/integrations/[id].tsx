@@ -52,12 +52,14 @@ const IntegrationDetailView: NextPage = () => {
     testData,
   });
 
+  const integrationTypeInfo = getIntegrationTypeInfo(
+    connection?.connection_type,
+    connection?.saas_config?.type,
+    connectionTypes,
+  );
+
   const { overview, instructions, description, enabledFeatures } =
-    getIntegrationTypeInfo(
-      connection?.connection_type,
-      connection?.saas_config?.type,
-      connectionTypes,
-    );
+    integrationTypeInfo;
 
   if (
     !!connection &&
@@ -105,7 +107,11 @@ const IntegrationDetailView: NextPage = () => {
         <AntFlex gap={24}>
           <div className="grow">
             <div className="mb-6">
-              <IntegrationBox integration={connection} showDeleteButton />
+              <IntegrationBox
+                integration={connection}
+                integrationTypeInfo={integrationTypeInfo}
+                showDeleteButton
+              />
             </div>
             {isLoading ? (
               <Spinner />
