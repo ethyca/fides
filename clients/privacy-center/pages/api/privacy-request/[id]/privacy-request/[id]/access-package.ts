@@ -21,12 +21,12 @@ function isValidRequestId(requestId: string): boolean {
 
 /**
  * @swagger
- * /dsr-package:
+ * /api/privacy-request/{id}/access-package:
  *   get:
  *     description: Redirects user to DSR package download URL from the Fides API. Includes security measures to prevent SSRF attacks.
  *     parameters:
- *       - in: query
- *         name: request_id
+ *       - in: path
+ *         name: id
  *         required: true
  *         description: Privacy request ID in pri_uuid format (e.g., pri_123e4567-e89b-12d3-a456-426614174000). Must start with 'pri_' followed by a valid UUID v4.
  *         schema:
@@ -36,7 +36,7 @@ function isValidRequestId(requestId: string): boolean {
  *       302:
  *         description: Redirect to the DSR package download URL
  *       400:
- *         description: Bad request - missing or invalid request_id parameter
+ *         description: Bad request - invalid request ID format
  *       404:
  *         description: DSR package not found
  *       500:
@@ -55,7 +55,7 @@ export default async function handler(
 
   try {
     const settings = loadEnvironmentVariables();
-    const { request_id: requestIdRaw } = req.query;
+    const { id: requestIdRaw } = req.query;
 
     // Extract and validate requestId parameter
     const requestId = Array.isArray(requestIdRaw) ? requestIdRaw[0] : requestIdRaw;
