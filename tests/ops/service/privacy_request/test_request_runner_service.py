@@ -25,7 +25,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
+from fides.api.models.policy import Policy, PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.masking.masking_configuration import MaskingConfiguration

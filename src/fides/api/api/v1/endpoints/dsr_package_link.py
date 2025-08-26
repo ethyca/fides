@@ -9,7 +9,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from loguru import logger
 
 from fides.api.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
@@ -85,8 +84,6 @@ def get_access_results_urls(
 
     privacy_request_id parameter is required in the URL path.
     """
-    logger.info(f"privacy_request_id: {privacy_request_id}")
-    logger.info(f"REQUEST RECEIVED")
     privacy_request = get_privacy_request_or_error(privacy_request_id, db)
     storage_config = get_active_default_storage_config(db)
 
