@@ -41,6 +41,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.models.privacy_request.webhook import (
+    generate_privacy_request_download_token,
+)
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
@@ -83,6 +86,7 @@ from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
 from fides.common.api.v1.urn_registry import (
+    PRIVACY_CENTER_DSR_PACKAGE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
 )
@@ -822,11 +826,6 @@ def initiate_privacy_request_completion_email(
         # Generate appropriate URLs based on streaming configuration
         if use_dsr_package_links and config_proxy.privacy_center.url:
             # Use DSR package links instead of direct storage URLs
-            from fides.api.models.privacy_request.webhook import (
-                generate_privacy_request_download_token,
-            )
-            from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
-
             # Generate the download token for security
             download_token = generate_privacy_request_download_token(privacy_request_id)
 
