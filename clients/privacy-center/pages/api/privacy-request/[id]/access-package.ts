@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import validator from "validator";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
-import validator from "validator";
 import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
@@ -58,7 +58,9 @@ export default async function handler(
     const { id: requestIdRaw } = req.query;
 
     // Extract and validate requestId parameter
-    const requestId = Array.isArray(requestIdRaw) ? requestIdRaw[0] : requestIdRaw;
+    const requestId = Array.isArray(requestIdRaw)
+      ? requestIdRaw[0]
+      : requestIdRaw;
 
     // Validate that requestId parameter is provided
     if (!requestId) {
@@ -70,7 +72,9 @@ export default async function handler(
 
     // Validate that requestId is a valid pri_uuid to prevent SSRF attacks
     if (typeof requestId !== "string" || !isValidRequestId(requestId)) {
-      log.warn("DSR package request with invalid requestId format", { requestId });
+      log.warn("DSR package request with invalid requestId format", {
+        requestId,
+      });
       return res
         .status(400)
         .send("Bad Request: requestId must be a valid pri_uuid format");
@@ -83,7 +87,7 @@ export default async function handler(
     if (encodedRequestId !== requestId) {
       log.warn("RequestId was modified during encoding", {
         original: requestId,
-        encoded: encodedRequestId
+        encoded: encodedRequestId,
       });
     }
 
@@ -147,32 +151,50 @@ export default async function handler(
       });
 
       if (redirectUrl) {
-        log.info(`Redirecting user to DSR package download URL: ${redirectUrl}`);
+        log.info(
+          `Redirecting user to DSR package download URL: ${redirectUrl}`,
+        );
         return res.redirect(302, redirectUrl);
-      } else {
-        log.error("Redirect response missing location header", {
-          status: response.status,
-          headers: Object.fromEntries(response.headers.entries()),
-        });
-        return res.status(500).send("Internal Server Error: Invalid redirect response");
       }
+      log.error("Redirect response missing location header", {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
+      return res
+        .status(500)
+        .send("Internal Server Error: Invalid redirect response");
     }
 
     // Check if the backend returned the actual file content instead of a redirect
-    if (response.ok && isBinary && responseData instanceof ArrayBuffer && responseData.byteLength > 0) {
-      log.info(`Backend returned binary file content directly, serving file to user`);
+    if (
+      response.ok &&
+      isBinary &&
+      responseData instanceof ArrayBuffer &&
+      responseData.byteLength > 0
+    ) {
+      log.info(
+        `Backend returned binary file content directly, serving file to user`,
+      );
 
       // Set appropriate headers for file download
       res.setHeader("Content-Type", contentType || "application/octet-stream");
       res.setHeader("Content-Length", responseData.byteLength.toString());
-      res.setHeader("Content-Disposition", `attachment; filename="privacy-request-${requestId}.zip"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="privacy-request-${requestId}.zip"`,
+      );
 
       // Return the binary data
       return res.status(200).send(Buffer.from(responseData));
     }
 
     // Handle JSON responses
-    if (contentType && contentType.includes("application/json") && !isBinary && typeof responseData === "string") {
+    if (
+      contentType &&
+      contentType.includes("application/json") &&
+      !isBinary &&
+      typeof responseData === "string"
+    ) {
       try {
         data = JSON.parse(responseData);
         log.debug(`Successfully parsed JSON response:`, {
@@ -195,7 +217,9 @@ export default async function handler(
 
     // If not a redirect, check for JSON response with download_url
     if (data?.download_url) {
-      log.info(`Redirecting user to DSR package download URL: ${data.download_url}`);
+      log.info(
+        `Redirecting user to DSR package download URL: ${data.download_url}`,
+      );
       return res.redirect(302, data.download_url);
     }
 
@@ -219,16 +243,19 @@ export default async function handler(
     }
 
     // Enhanced logging for the invalid response case
-    log.error("Invalid response from Fides API: neither redirect nor download_url found", {
-      responseStatus: response.status,
-      responseStatusText: response.statusText,
-      contentType: contentType,
-      hasData: !!data,
-      dataKeys: data ? Object.keys(data) : null,
-      data: data,
-      headers: Object.fromEntries(response.headers.entries()),
-      url: url,
-    });
+    log.error(
+      "Invalid response from Fides API: neither redirect nor download_url found",
+      {
+        responseStatus: response.status,
+        responseStatusText: response.statusText,
+        contentType,
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : null,
+        data,
+        headers: Object.fromEntries(response.headers.entries()),
+        url,
+      },
+    );
 
     return res
       .status(500)
