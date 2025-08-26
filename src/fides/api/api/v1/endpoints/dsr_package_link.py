@@ -14,7 +14,8 @@ from fides.api.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.storage.s3 import maybe_get_s3_client
+from fides.api.schemas.storage.storage import StorageType
+from fides.api.service.storage.streaming.s3 import S3StorageClient
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import fides_limiter
 from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE, V1_URL_PREFIX
@@ -23,8 +24,8 @@ from fides.config import CONFIG
 router = APIRouter(tags=["Privacy Center"], prefix=V1_URL_PREFIX)
 
 
-def get_privacy_request_from_path(
-    privacy_request_id: str, db: Session = Depends(get_db)
+def get_privacy_request_or_error(
+    privacy_request_id: str, db: Session
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
     # Validate UUID format to prevent SSRF attacks
@@ -69,8 +70,8 @@ def get_privacy_request_from_path(
 )
 @fides_limiter.limit(CONFIG.security.public_request_rate_limit)
 def get_access_results_urls(
-    privacy_request: PrivacyRequest = Depends(get_privacy_request_from_path),
-    storage_config: StorageConfig = Depends(get_active_default_storage_config),
+    privacy_request_id: str,
+    db: Session = Depends(get_db),
     *,
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
@@ -83,6 +84,14 @@ def get_access_results_urls(
 
     privacy_request_id parameter is required in the URL path.
     """
+    privacy_request = get_privacy_request_or_error(privacy_request_id, db)
+    storage_config = get_active_default_storage_config(db)
+
+    if not storage_config:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="No active default storage configuration found.",
+        )
 
     if privacy_request.status != PrivacyRequestStatus.complete:
         raise HTTPException(
@@ -108,18 +117,8 @@ def get_access_results_urls(
 
     # Get the first access result URL from the existing URLs
     file_name = f"{privacy_request.id}.zip"
-    if storage_config.type == "s3":
-        s3_client = maybe_get_s3_client(
-            auth_method=storage_config.details.get("auth_method"),
-            storage_secrets=storage_config.details.get("storage_secrets"),
-        )
-        if not s3_client:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="Failed to get S3 client.",
-            )
-
-        # Generate presigned URL directly using boto3
+    if storage_config.type == StorageType.s3:
+        # Get bucket name from storage config
         bucket_name = storage_config.details.get("bucket")
         if not bucket_name:
             raise HTTPException(
@@ -128,9 +127,11 @@ def get_access_results_urls(
             )
 
         try:
-            result_url = s3_client.generate_presigned_url(
-                "get_object",
-                Params={"Bucket": bucket_name, "Key": file_name},
+            # Use S3StorageClient for cleaner presigned URL generation
+            s3_storage_client = S3StorageClient(storage_config.secrets)
+            result_url = s3_storage_client.generate_presigned_url(
+                bucket=bucket_name,
+                key=file_name,
             )
         except Exception as e:
             raise HTTPException(
@@ -139,7 +140,7 @@ def get_access_results_urls(
             )
 
         return RedirectResponse(url=result_url, status_code=HTTP_302_FOUND)
-    if storage_config.type == "gcs":
+    if storage_config.type == StorageType.gcs:
         # GCS is not supported for this endpoint
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
