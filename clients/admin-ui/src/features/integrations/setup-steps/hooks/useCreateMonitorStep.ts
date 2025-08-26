@@ -1,6 +1,6 @@
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
-import { IntegrationFeatureEnum } from "~/features/integrations/types";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 import { BaseStepHookParams, Step } from "./types";
 
@@ -14,7 +14,7 @@ export const useCreateMonitorStep = (
   );
 
   const hasDataDiscoverySupport = enabledFeatures?.includes(
-    IntegrationFeatureEnum.DATA_DISCOVERY,
+    IntegrationFeature.DATA_DISCOVERY,
   );
 
   // Use the monitors query to check if any monitors exist for this integration

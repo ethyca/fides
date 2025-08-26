@@ -13,21 +13,7 @@ import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionType } from "~/types/api";
 import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
 
-enum IntegrationCategoryFilter {
-  ALL = "All",
-  DATA_CATALOG = "DATA_CATALOG",
-  DATA_WAREHOUSE = "DATA_WAREHOUSE",
-  DATABASE = "DATABASE",
-  IDENTITY_PROVIDER = "IDENTITY_PROVIDER",
-  WEBSITE = "WEBSITE",
-  CRM = "CRM",
-  MANUAL = "MANUAL",
-  MARKETING = "MARKETING",
-  ANALYTICS = "ANALYTICS",
-  ECOMMERCE = "ECOMMERCE",
-  COMMUNICATION = "COMMUNICATION",
-  CUSTOM = "CUSTOM",
-}
+type IntegrationCategoryFilter = ConnectionCategory | "ALL";
 
 type Props = {
   selectedIntegration?: IntegrationTypeInfo;
@@ -42,7 +28,7 @@ const SelectIntegrationType = ({
 }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
-    useState<IntegrationCategoryFilter>(IntegrationCategoryFilter.ALL);
+    useState<IntegrationCategoryFilter>("ALL");
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
@@ -98,24 +84,25 @@ const SelectIntegrationType = ({
 
   // Get available categories based on flags and whether they have any integrations
   const availableCategories = useMemo(() => {
-    const allCategories = Object.values(IntegrationCategoryFilter).filter(
-      (tab) =>
-        tab !== IntegrationCategoryFilter.IDENTITY_PROVIDER || oktaMonitor,
-    );
+    const allCategories: IntegrationCategoryFilter[] = [
+      "ALL",
+      ...Object.values(ConnectionCategory).filter(
+        (category) =>
+          category !== ConnectionCategory.IDENTITY_PROVIDER || oktaMonitor,
+      ),
+    ];
 
     // If new integration management is disabled, filter out categories that have no integrations
     if (!newIntegrationManagement) {
       return allCategories.filter((category) => {
-        if (category === IntegrationCategoryFilter.ALL) {
+        if (category === "ALL") {
           // Always show "All" if there are any integrations
           return allIntegrationTypes.length > 0;
         }
 
         // Check if this category has any integrations
         return allIntegrationTypes.some(
-          (integration) =>
-            integration.category ===
-            (category as unknown as ConnectionCategory),
+          (integration) => integration.category === category,
         );
       });
     }
@@ -128,12 +115,8 @@ const SelectIntegrationType = ({
     let filtered = allIntegrationTypes;
 
     // Filter by category
-    if (selectedCategory !== IntegrationCategoryFilter.ALL) {
-      filtered = filtered.filter(
-        // @ts-ignore -- all non-ALL values of IntegrationCategoryFilter are
-        // valid values for ConnectionCategory
-        (i) => i.category === (selectedCategory as ConnectionCategory),
-      );
+    if (selectedCategory !== "ALL") {
+      filtered = filtered.filter((i) => i.category === selectedCategory);
     }
 
     // Filter by search term (name only)
@@ -168,13 +151,11 @@ const SelectIntegrationType = ({
 
   const categoryOptions = availableCategories
     .map((category) => {
-      if (category === IntegrationCategoryFilter.ALL) {
-        return { label: category, value: category };
+      if (category === "ALL") {
+        return { label: "All", value: category };
       }
-      // Map filter enum values to ConnectionCategory enum values
-      const connectionCategory = category as unknown as ConnectionCategory;
       return {
-        label: getCategoryLabel(connectionCategory),
+        label: getCategoryLabel(category),
         value: category,
       };
     })

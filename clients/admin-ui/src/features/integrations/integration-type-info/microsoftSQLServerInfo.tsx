@@ -6,11 +6,9 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import {
-  ConnectionCategory,
-  IntegrationFeatureEnum,
-} from "~/features/integrations/types";
 import { AccessLevel, ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const MICROSOFT_SQL_SERVER_PLACEHOLDER = {
   name: "Microsoft SQL Server",
@@ -64,7 +62,7 @@ const MICROSOFT_SQL_SERVER_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <MicrosoftSQLServerOverview />,
   tags: MICROSOFT_SQL_SERVER_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default MICROSOFT_SQL_SERVER_TYPE_INFO;

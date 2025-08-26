@@ -6,11 +6,9 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import {
-  ConnectionCategory,
-  IntegrationFeatureEnum,
-} from "~/features/integrations/types";
 import { AccessLevel, ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const RDS_MYSQL_PLACEHOLDER = {
   name: "Amazon RDS MySQL",
@@ -75,7 +73,7 @@ const RDS_MYSQL_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <RDSMySQLOverview />,
   tags: RDS_MYSQL_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default RDS_MYSQL_TYPE_INFO;

@@ -10,11 +10,9 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import {
-  ConnectionCategory,
-  IntegrationFeatureEnum,
-} from "~/features/integrations/types";
 import { AccessLevel, ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 const PROJECT_CREATION_GUIDE_URL =
   "https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project";
@@ -217,7 +215,7 @@ const BIGQUERY_TYPE_INFO = {
   overview: <BigQueryOverview />,
   instructions: <BigQueryInstructions />,
   tags: BIGQUERY_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default BIGQUERY_TYPE_INFO;

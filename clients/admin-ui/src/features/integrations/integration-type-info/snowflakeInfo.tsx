@@ -6,11 +6,9 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import {
-  ConnectionCategory,
-  IntegrationFeatureEnum,
-} from "~/features/integrations/types";
 import { AccessLevel, ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const SNOWFLAKE_PLACEHOLDER = {
   name: "Snowflake",
@@ -65,7 +63,7 @@ const SNOWFLAKE_TYPE_INFO = {
   category: ConnectionCategory.DATA_WAREHOUSE,
   overview: <SnowflakeOverview />,
   tags: SNOWFLAKE_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default SNOWFLAKE_TYPE_INFO;

@@ -6,11 +6,9 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import {
-  ConnectionCategory,
-  IntegrationFeatureEnum,
-} from "~/features/integrations/types";
 import { AccessLevel, ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const DATAHUB_PLACEHOLDER = {
   name: "Datahub",
@@ -64,7 +62,7 @@ const DATAHUB_TYPE_INFO = {
   overview: <DatahubOverview />,
   tags: DATAHUB_TAGS,
   description: DATAHUB_DESCRIPTION,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_SYNC],
+  enabledFeatures: [IntegrationFeature.DATA_SYNC],
 };
 
 export default DATAHUB_TYPE_INFO;
