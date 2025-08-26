@@ -59,6 +59,7 @@ rich-click==1.6.1
 sendgrid==6.9.7
 scylla-driver==3.26.8
 slowapi==0.1.9
+smart-open[s3,gcs]==7.3.0.post1
 snowflake-sqlalchemy==1.5.1
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-citext==1.8.0
@@ -67,6 +68,7 @@ sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
 sshtunnel==0.4.0
+stream-zip==0.0.83
 tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0

@@ -6,7 +6,7 @@ import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import jinja2
 from fideslang.models import Dataset, DatasetField
@@ -27,6 +27,9 @@ DSR_DIRECTORY = Path(__file__).parent.resolve()
 TEXT_COLOR = "#4A5568"
 HEADER_COLOR = "#FAFAFA"
 BORDER_COLOR = "#E2E8F0"
+
+if TYPE_CHECKING:
+    from fides.api.models.privacy_request import PrivacyRequest  # pragma: no cover
 
 
 # pylint: disable=too-many-instance-attributes
@@ -49,7 +52,7 @@ class DsrReportBuilder:
 
     def __init__(
         self,
-        privacy_request: PrivacyRequest,
+        privacy_request: "PrivacyRequest",
         dsr_data: dict[str, Any],
     ):
         """
@@ -527,7 +530,7 @@ class DsrReportBuilder:
         return self.baos
 
 
-def _map_privacy_request(privacy_request: PrivacyRequest) -> dict[str, Any]:
+def _map_privacy_request(privacy_request: "PrivacyRequest") -> dict[str, Any]:
     """Creates a map with a subset of values from the privacy request"""
     request_data: dict[str, Any] = {}
     request_data["id"] = privacy_request.id
