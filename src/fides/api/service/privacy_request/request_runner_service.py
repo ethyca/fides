@@ -751,7 +751,6 @@ def run_privacy_request(
                             action_type=ActionType.consent
                         )
 
-
                         if message_send_result and not has_consent_rules:
                             if not access_result_urls:
                                 # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
