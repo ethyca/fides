@@ -138,7 +138,8 @@ class TestPrivacyCenterDsrPackage:
             # The URL should contain the privacy request ID and be a presigned URL
             assert str(completed_privacy_request.id) in redirect_url
             # moto generates URLs in format: https://s3.amazonaws.com/bucket/key
-            assert "s3.amazonaws.com" in redirect_url
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            assert parsed_url.hostname == "s3.amazonaws.com"
             assert "test_bucket" in redirect_url
             # moto uses different parameter names than real AWS
             assert (
@@ -167,7 +168,8 @@ class TestPrivacyCenterDsrPackage:
             # The URL should contain the privacy request ID and be a presigned URL
             assert str(completed_privacy_request.id) in redirect_url
             # moto generates URLs in format: https://s3.amazonaws.com/bucket/key
-            assert "s3.amazonaws.com" in redirect_url
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            assert parsed_url.hostname == "s3.amazonaws.com"
             assert "test_bucket" in redirect_url
             # moto uses different parameter names than real AWS
             assert (
@@ -201,6 +203,46 @@ class TestPrivacyCenterDsrPackage:
         url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id='non-existent_id')}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_get_access_results_invalid_uuid_format(self, test_client):
+        """Test that invalid UUID formats are rejected to prevent SSRF attacks"""
+        # Test various invalid UUID formats that could be used in SSRF attacks
+        invalid_ids = [
+            "not-a-uuid",
+            "12345",
+            "../../../etc/passwd",
+            "javascript:alert(1)",
+            "http://evil.com",
+            "file:///etc/passwd",
+            "data:text/html,<script>alert(1)</script>",
+            "00000000-0000-0000-0000-000000000000",  # Invalid UUID v4
+            "pri_not-a-uuid",  # Invalid format: pri_ prefix but not followed by UUID
+            "pri_12345",  # Invalid format: pri_ prefix but not followed by UUID
+            "pri_00000000-0000-0000-0000-000000000000",  # Invalid format: pri_ prefix but invalid UUID v4
+            "other_123e4567-e89b-12d3-a456-426614174000",  # Wrong prefix
+            "pri",  # Just the prefix
+            "",  # Empty string
+        ]
+
+        for invalid_id in invalid_ids:
+            url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=invalid_id)}"
+            response = test_client.get(url)
+            assert response.status_code == HTTP_400_BAD_REQUEST
+            assert "Invalid privacy request ID format" in response.json()["detail"]
+            assert (
+                "Must start with 'pri_' followed by a valid UUID v4"
+                in response.json()["detail"]
+            )
+
+    def test_get_access_results_valid_uuid_format(self, test_client):
+        """Test that valid pri_uuid format is accepted"""
+        # Test with a valid pri_uuid format
+        valid_id = "pri_123e4567-e89b-12d3-a456-426614174000"
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=valid_id)}"
+        response = test_client.get(url)
+        # Should get 404 for non-existent ID, not 400 for invalid format
+        assert response.status_code == HTTP_404_NOT_FOUND
+        assert "No privacy request found" in response.json()["detail"]
 
     def test_get_access_results_empty_access_result_urls(
         self, db, privacy_request, test_client
@@ -277,7 +319,8 @@ class TestPrivacyCenterDsrPackage:
             redirect_url = response.headers.get("location")
             assert redirect_url is not None
             # moto generates URLs in format: https://s3.amazonaws.com/bucket/key
-            assert "s3.amazonaws.com" in redirect_url
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            assert parsed_url.hostname == "s3.amazonaws.com"
             assert "test_bucket" in redirect_url
             assert file_name in redirect_url
             # moto uses different parameter names than real AWS
@@ -318,7 +361,8 @@ class TestPrivacyCenterDsrPackage:
             redirect_url = response.headers.get("location")
             assert redirect_url is not None
             # moto generates URLs in format: https://s3.amazonaws.com/bucket/key
-            assert "s3.amazonaws.com" in redirect_url
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            assert parsed_url.hostname == "s3.amazonaws.com"
             assert "test-bucket-auto" in redirect_url
             assert file_name in redirect_url
             # moto uses different parameter names than real AWS

@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -7,8 +9,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from botocore.parameters import Params
-from botocore.exceptions import ParamValidationError
 
 from fides.api.api.deps import get_db
 from fides.api.models.privacy_request import PrivacyRequest
@@ -27,6 +27,25 @@ def get_privacy_request_from_path(
     privacy_request_id: str, db: Session = Depends(get_db)
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
+    # Validate UUID format to prevent SSRF attacks
+    # Privacy request IDs are in format: pri_uuid where pri is prefix and uuid is UUID v4
+    if not privacy_request_id.startswith("pri_"):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
+        )
+
+    # Extract the UUID part after the prefix
+    uuid_part = privacy_request_id[4:]  # Remove "pri_" prefix
+
+    try:
+        uuid.UUID(uuid_part, version=4)
+    except ValueError:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
+        )
+
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
     if not privacy_request:
