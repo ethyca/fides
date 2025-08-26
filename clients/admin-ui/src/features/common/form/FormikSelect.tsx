@@ -1,45 +1,32 @@
 import {
   AntForm as Form,
+  AntFormItemProps as FormItemProps,
   AntSelect as Select,
-  AntSelectProps as SelectProps,
-  FormLabelProps,
 } from "fidesui";
-import { useField } from "formik";
-import { useState } from "react";
+import { ComponentProps, useState } from "react";
 
-export interface FormikSelectProps extends SelectProps {
-  name: string;
-  label?: string;
-  labelProps?: FormLabelProps;
-  tooltip?: string | null;
-  isRequired?: boolean;
-  layout?: "inline" | "stacked";
-  helperText?: string | null;
-}
-
+export type FormikSelectProps = ComponentProps<typeof Select> &
+  Pick<
+    FormItemProps,
+    "required" | "name" | "label" | "tooltip" | "help" | "extra"
+  > & {
+    error?: string;
+    touched?: boolean;
+  };
 /*
  * @description: Transitory component that migrates away from chakra while retaining formik
  */
 export const FormikSelect = ({
-  name,
-  label,
-  labelProps,
+  error,
+  required,
   tooltip,
-  isRequired,
-  layout = "inline",
-  helperText,
+  label,
+  extra,
+  name,
+  id,
   ...props
 }: FormikSelectProps) => {
-  const [field, meta, { setValue }] = useField(name);
-  const isInvalid = !!(meta.touched && meta.error);
   const [searchValue, setSearchValue] = useState("");
-
-  if (!field.value && (props.mode === "tags" || props.mode === "multiple")) {
-    field.value = [];
-  }
-  if (props.mode === "tags" && typeof field.value === "string") {
-    field.value = [field.value];
-  }
 
   // Tags mode requires a custom option, everything else should just pass along the props or undefined
   const optionRender =
@@ -50,7 +37,7 @@ export const FormikSelect = ({
           }
           if (
             option.value === searchValue &&
-            !field.value.includes(searchValue)
+            !props.value?.includes(searchValue)
           ) {
             return `Create "${searchValue}"`;
           }
@@ -69,37 +56,22 @@ export const FormikSelect = ({
     }
   };
 
-  // Pass the value to the formik field
-  const handleChange = (newValue: any, option: any) => {
-    setValue(newValue);
-    if (props.onChange) {
-      props.onChange(newValue, option);
-    }
-  };
-
   return (
     <Form.Item
-      status={isInvalid ? "error" : undefined}
-      help={isInvalid && meta.error}
-      required={isRequired}
+      validateStatus={error ? "error" : undefined}
+      help={error}
+      required={required}
       tooltip={tooltip}
       label={label}
-      extra={helperText}
-      htmlFor={props.id ?? name}
-      layout={
-        layout === "inline" ? "horizontal" : "vertical"
-      } /* Legacy layout prop names */
+      extra={extra}
+      htmlFor={id ?? name}
     >
       <Select
-        {...field}
-        id={props.id ?? name}
-        data-testid={`controlled-select-${field.name}`}
+        id={id ?? name}
+        data-testid={`controlled-select-${name}`}
         {...props}
         optionRender={optionRender}
         onSearch={props.mode === "tags" ? handleSearch : undefined}
-        onChange={handleChange}
-        value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
-        status={isInvalid ? "error" : undefined}
       />
     </Form.Item>
   );

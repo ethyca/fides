@@ -1,4 +1,5 @@
 import { format, parseISO } from "date-fns";
+import dayjs from "dayjs";
 import {
   AntButton as Button,
   AntFlex as Flex,
@@ -10,16 +11,13 @@ import { getIn, useFormik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { FormikDateTimeInput } from "~/features/common/form/FormikDateTimeInput";
 import { FormikLocationSelect } from "~/features/common/form/FormikLocationSelect";
-import {
-  CustomDateTimeInput,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { FormikSelect } from "~/features/common/form/FormikSelect";
+import { FormikTextInput } from "~/features/common/form/FormikTextInput";
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
@@ -27,6 +25,8 @@ import {
   MonitorFrequency,
   WebsiteMonitorParams,
 } from "~/types/api";
+
+import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
 
 interface WebsiteMonitorConfig
   extends Omit<MonitorConfig, "datasource_params"> {
@@ -151,83 +151,117 @@ const ConfigureWebsiteMonitorForm = ({
         <Text fontSize="sm">{FORM_COPY}</Text>
       </FormInfoBox>
       <Form onFinish={formikSubmit} layout="vertical">
-        <Flex vertical gap="middle">
-          <CustomTextInput
-            name="name"
-            id="name"
-            label="Name"
-            isRequired
-            variant="stacked"
-          />
-          <CustomTextInput
-            name="datasource_params.sitemap_url"
-            id="sitemap_url"
-            label="Sitemap URL"
-            variant="stacked"
-          />
-          <ControlledSelect
-            mode="tags"
-            name="datasource_params.exclude_domains"
-            placeholder="Enter domains to exclude"
-            id="exclude_domains"
-            label="Exclude domains"
-            options={[]}
-            open={false}
-            layout="stacked"
-          />
-          <CustomTextInput
-            name="url"
-            id="url"
-            label="URL"
-            isRequired
-            disabled
-            variant="stacked"
-          />
-          <FormikLocationSelect
-            id="locations"
-            name="datasource_params.locations"
-            loading={locationsLoading}
-            options={isoCodesToOptions(
-              regionOptions.map((option) => option.value),
-            )}
-            required
-            tooltip={REGIONS_TOOLTIP_COPY}
-            mode="tags"
-            error={getIn(errors, "datasource_params.locations")}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={values.datasource_params?.locations}
-          />
-          <SharedConfigSelect name="shared_config_id" id="shared_config_id" />
-          <ControlledSelect
-            name="execution_frequency"
-            id="execution_frequency"
-            options={frequencyOptions}
-            label="Automatic execution frequency"
-            layout="stacked"
-          />
-          <CustomDateTimeInput
-            name="execution_start_date"
-            label="Automatic execution start time"
-            disabled={
-              values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
-            }
-            id="execution_start_date"
-            tooltip={START_TIME_TOOLTIP_COPY}
-          />
-          <Flex className="mt-2 justify-between">
-            <Button
-              onClick={() => {
-                resetForm();
-                onClose();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" data-testid="save-btn">
-              Save
-            </Button>
-          </Flex>
+        <FormikTextInput
+          name="name"
+          id="name"
+          label="Name"
+          required
+          error={errors.name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={values.name}
+        />
+        <FormikTextInput
+          name="datasource_params.sitemap_url"
+          id="sitemap_url"
+          label="Sitemap URL"
+          error={getIn(errors, "datasource_params.sitemap_url")}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={values.datasource_params?.sitemap_url || ""}
+        />
+        <FormikSelect
+          name="datasource_params.exclude_domains"
+          placeholder="Enter domains to exclude"
+          id="exclude_domains"
+          label="Exclude domains"
+          options={[]}
+          open={false}
+          disabled
+          error={errors.execution_frequency}
+          onChange={(value) =>
+            formik.setFieldValue("datasource_params.exclude_domains", value)
+          }
+          onBlur={formik.handleBlur}
+          value={values.execution_frequency || []}
+        />
+        <FormikTextInput
+          name="url"
+          id="url"
+          label="URL"
+          required
+          disabled
+          error={errors.url}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={values.url || ""}
+        />
+        <FormikLocationSelect
+          id="locations"
+          name="datasource_params.locations"
+          label="Locations"
+          loading={locationsLoading}
+          options={isoCodesToOptions(
+            regionOptions.map((option) => option.value),
+          )}
+          required
+          tooltip={REGIONS_TOOLTIP_COPY}
+          mode="tags"
+          error={getIn(errors, "datasource_params.locations")}
+          onChange={(value) =>
+            formik.setFieldValue("datasource_params.locations", value)
+          }
+          onBlur={formik.handleBlur}
+          value={values.datasource_params?.locations}
+        />
+        <FormikSharedConfigSelect
+          name="shared_config_id"
+          id="shared_config_id"
+          error={errors.shared_config_id}
+          onChange={(value) => formik.setFieldValue("shared_config_id", value)}
+          onBlur={formik.handleBlur}
+          value={values.shared_config_id}
+        />
+        <FormikSelect
+          name="execution_frequency"
+          id="execution_frequency"
+          options={frequencyOptions}
+          label="Automatic execution frequency"
+          error={errors.execution_frequency}
+          onChange={(value) =>
+            formik.setFieldValue("execution_frequency", value)
+          }
+          onBlur={formik.handleBlur}
+          value={values.execution_frequency}
+        />
+        <FormikDateTimeInput
+          name="execution_start_date"
+          label="Automatic execution start time"
+          disabled={
+            values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
+          }
+          id="execution_start_date"
+          tooltip={START_TIME_TOOLTIP_COPY}
+          error={errors.execution_start_date}
+          onChange={(value) =>
+            value &&
+            formik.setFieldValue("execution_start_date", value.toISOString())
+          }
+          onBlur={formik.handleBlur}
+          value={dayjs(values.execution_start_date)}
+        />
+        <Flex className="mt-2 justify-between">
+          <Button
+            onClick={() => {
+              resetForm();
+              onClose();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" data-testid="save-btn">
+            Save
+          </Button>
         </Flex>
       </Form>
     </Flex>

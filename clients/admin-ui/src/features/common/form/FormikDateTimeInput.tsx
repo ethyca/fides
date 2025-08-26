@@ -1,20 +1,11 @@
 import {
+  AntDatePicker as DatePicker,
+  AntDatePickerProps as DatePickerProps,
   AntForm as Form,
   AntFormItemProps as FormItemProps,
-  LocationSelect,
-  LocationSelectProps,
 } from "fidesui";
 
-export type FormikLocationSelectProps = LocationSelectProps &
-  Pick<
-    FormItemProps,
-    "required" | "name" | "label" | "tooltip" | "help" | "extra"
-  > & {
-    touched?: boolean;
-    error?: string;
-  };
-
-export const FormikLocationSelect = ({
+export const FormikDateTimeInput = ({
   error,
   required,
   tooltip,
@@ -23,7 +14,14 @@ export const FormikLocationSelect = ({
   name,
   id,
   ...props
-}: FormikLocationSelectProps) => {
+}: DatePickerProps &
+  Pick<
+    FormItemProps,
+    "required" | "name" | "label" | "tooltip" | "help" | "extra"
+  > & {
+    touched?: boolean;
+    error?: string;
+  }) => {
   return (
     <Form.Item
       validateStatus={error ? "error" : undefined}
@@ -34,9 +32,10 @@ export const FormikLocationSelect = ({
       extra={extra}
       htmlFor={id ?? name}
     >
-      <LocationSelect
+      <DatePicker
+        name={name}
         id={id ?? name}
-        data-testid={`controlled-select-${name}`}
+        data-testid={`input-${name}`}
         {...props}
       />
     </Form.Item>
