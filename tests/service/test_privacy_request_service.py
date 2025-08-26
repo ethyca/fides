@@ -462,30 +462,76 @@ class TestPrivacyRequestService:
     ):
         """Test that a PrivacyRequestError is raised when a location field is required but location is not provided"""
         from fides.api.common_exceptions import PrivacyRequestError
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
 
-        identity = Identity(email="jane@example.com")
-        custom_privacy_request_fields = {
-            "required_location": {
-                "label": "Required Location",
-                "value": "",
-            }  # Empty value
+        # Create Privacy Center configuration with a required location field for this policy
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        "title": "Test Action",
+                        "description": "Test action for location validation",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "label": "Your Location",
+                                "field_type": "location",
+                                "required": True,
+                                "ip_geolocation_hint": False,
+                            }
+                        },
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
         }
 
-        with pytest.raises(PrivacyRequestError) as exc_info:
-            privacy_request_service.create_privacy_request(
-                PrivacyRequestCreate(
-                    identity=identity,
-                    custom_privacy_request_fields=custom_privacy_request_fields,
-                    policy_key=policy.key,
-                    # location is missing here intentionally
-                ),
-                authenticated=True,
-            )
-
-        assert (
-            "Location is required for field 'required_location' but was not provided"
-            in str(exc_info.value)
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
         )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            with pytest.raises(PrivacyRequestError) as exc_info:
+                privacy_request_service.create_privacy_request(
+                    PrivacyRequestCreate(
+                        identity=identity,
+                        policy_key=policy.key,
+                        # location is missing here intentionally
+                    ),
+                    authenticated=True,
+                )
+
+            assert (
+                "Location is required for field 'location' but was not provided"
+                in str(exc_info.value)
+            )
+        finally:
+            # Cleanup
+            privacy_center_config.delete(db)
 
     def test_create_privacy_request_location_required_and_provided(
         self,
@@ -494,23 +540,73 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that privacy request creation succeeds when required location is provided"""
-        identity = Identity(email="jane@example.com")
-        custom_privacy_request_fields = {
-            "user_location": {"label": "User Location", "value": "US-CA"}
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Create Privacy Center configuration with a required location field for this policy
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        "title": "Test Action",
+                        "description": "Test action for location validation",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "label": "Your Location",
+                                "field_type": "location",
+                                "required": True,
+                                "ip_geolocation_hint": False,
+                            }
+                        },
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
         }
 
-        privacy_request = privacy_request_service.create_privacy_request(
-            PrivacyRequestCreate(
-                identity=identity,
-                custom_privacy_request_fields=custom_privacy_request_fields,
-                policy_key=policy.key,
-                location="US-CA",  # location provided
-            ),
-            authenticated=True,
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
         )
 
-        assert privacy_request.location == "US-CA"
-        assert privacy_request.status == PrivacyRequestStatus.pending
+        identity = Identity(email="jane@example.com")
+
+        try:
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,
+                    location="US-CA",  # location provided
+                ),
+                authenticated=True,
+            )
+
+            assert privacy_request.location == "US-CA"
+            assert privacy_request.status == PrivacyRequestStatus.pending
+        finally:
+            # Cleanup
+            privacy_center_config.delete(db)
 
     def test_create_privacy_request_location_optional_and_missing(
         self,
