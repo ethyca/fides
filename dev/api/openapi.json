@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.68.1b3.post0.dev4"
+    "version": "2.68.1b3.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15385,6 +15385,25 @@
         ],
         "title": "ColumnSort"
       },
+      "ConnectionCategory": {
+        "type": "string",
+        "enum": [
+          "DATA_CATALOG",
+          "DATA_WAREHOUSE",
+          "DATABASE",
+          "IDENTITY_PROVIDER",
+          "WEBSITE",
+          "CRM",
+          "MANUAL",
+          "MARKETING",
+          "ANALYTICS",
+          "ECOMMERCE",
+          "COMMUNICATION",
+          "CUSTOM"
+        ],
+        "title": "ConnectionCategory",
+        "description": "Categories for connection types, matching frontend ConnectionCategory enum"
+      },
       "ConnectionConfigurationResponse": {
         "properties": {
           "connection_type": {
@@ -15744,6 +15763,44 @@
             },
             "type": "array",
             "title": "Supported Actions"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "enabled_features": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/IntegrationFeature"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled Features"
           }
         },
         "type": "object",
@@ -19465,6 +19522,18 @@
         ],
         "title": "IncludeExcludeEnum",
         "description": "Determine whether or not defined rights are\nbeing included or excluded."
+      },
+      "IntegrationFeature": {
+        "type": "string",
+        "enum": [
+          "DATA_DISCOVERY",
+          "DATA_SYNC",
+          "TASKS",
+          "WITHOUT_CONNECTION",
+          "DSR_AUTOMATION"
+        ],
+        "title": "IntegrationFeature",
+        "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
       },
       "LegalBasisForProcessingEnum": {
         "type": "string",
@@ -25212,6 +25281,16 @@
               }
             ],
             "title": "User Guide"
+          },
+          "display_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSDisplayInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -25270,6 +25349,51 @@
         "type": "object",
         "title": "SaaSConfigValidationDetails",
         "description": "Message with any validation issues with the SaaS config"
+      },
+      "SaaSDisplayInfo": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "enabled_features": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/IntegrationFeature"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled Features"
+          }
+        },
+        "type": "object",
+        "title": "SaaSDisplayInfo",
+        "description": "Optional display information for SAAS integrations to enhance frontend presentation.\nWhen not provided, smart defaults will be inferred based on the integration type."
       },
       "SaaSRequest": {
         "properties": {
