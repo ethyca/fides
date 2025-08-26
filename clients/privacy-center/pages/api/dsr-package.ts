@@ -5,6 +5,16 @@ import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
 /**
+ * Validates if a string is a valid pri_uuid format (pri_ followed by UUID v4)
+ * @param requestId - The string to validate
+ * @returns true if valid pri_uuid format, false otherwise
+ */
+function isValidRequestId(requestId: string): boolean {
+  const priUuidRegex = /^pri_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return priUuidRegex.test(requestId);
+}
+
+/**
  * @swagger
  * /dsr-package:
  *   get:
@@ -47,6 +57,14 @@ export default async function handler(
       return res
         .status(400)
         .send("Bad Request: requestId parameter is required");
+    }
+
+    // Validate that requestId is a valid pri_uuid to prevent SSRF attacks
+    if (typeof requestId !== "string" || !isValidRequestId(requestId)) {
+      log.warn("DSR package request with invalid requestId format", { requestId });
+      return res
+        .status(400)
+        .send("Bad Request: requestId must be a valid pri_uuid format");
     }
 
     // Use server-side URL if available, otherwise fall back to client URL

@@ -1,5 +1,4 @@
 import urllib.parse
-from unittest.mock import patch
 
 import boto3
 import pytest
