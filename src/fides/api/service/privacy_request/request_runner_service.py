@@ -813,9 +813,6 @@ def initiate_privacy_request_completion_email(
         use_dsr_package_links = False
         for rule in policy.get_rules_for_action(action_type=ActionType.access):
             storage_destination = rule.get_storage_destination(session)
-            logger.info(
-                f"storage_destination: {storage_destination.type}, enable_access_package_redirect: {storage_destination.details.get('enable_access_package_redirect')}"
-            )
             if (
                 storage_destination.type == StorageType.s3
                 and storage_destination.details.get("enable_access_package_redirect")
@@ -823,10 +820,6 @@ def initiate_privacy_request_completion_email(
                 use_dsr_package_links = True
                 break
 
-        logger.info(f"use_dsr_package_links: {use_dsr_package_links}")
-        logger.info(
-            f"config_proxy.privacy_center.url: {config_proxy.privacy_center.url}"
-        )
         # Generate appropriate URLs based on streaming configuration
         if use_dsr_package_links and config_proxy.privacy_center.url:
             # Use DSR package links instead of direct storage URLs
@@ -835,25 +828,9 @@ def initiate_privacy_request_completion_email(
             # Generate DSR package URLs for the messaging template system
             dsr_package_url = f"{config_proxy.privacy_center.url}/api{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}"
             download_links = [dsr_package_url]
-            logger.info(
-                "Generated DSR package links for privacy request {}: {}",
-                privacy_request_id,
-                download_links,
-            )
         else:
             # Use original direct storage URLs
             download_links = access_result_urls
-            logger.info(
-                "Using original storage URLs for privacy request {}: {}",
-                privacy_request_id,
-                download_links,
-            )
-
-        logger.info(
-            "Final download_links for email (privacy request {}): {}",
-            privacy_request_id,
-            download_links,
-        )
 
         # synchronous for now since failure to send complete emails is fatal to request
         dispatch_message(
