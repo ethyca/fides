@@ -848,7 +848,7 @@ def initiate_privacy_request_completion_email(
             from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 
             # Generate DSR package URLs for the messaging template system
-            dsr_package_url = f"{config_proxy.privacy_center.url}{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}"
+            dsr_package_url = f"{config_proxy.privacy_center.url}/api{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}"
             download_links = [dsr_package_url]
             logger.info(
                 "Generated DSR package links for privacy request {}: {}",

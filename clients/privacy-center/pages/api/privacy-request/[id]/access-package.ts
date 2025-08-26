@@ -100,6 +100,12 @@ export default async function handler(
     const headers = new Headers();
     addCommonHeaders(headers); // No token = public endpoint
 
+    log.debug(`Making request to backend API with headers:`, {
+      url,
+      method: "GET",
+      headers: Object.fromEntries(headers.entries()),
+    });
+
     const response = await fetch(url, {
       method: "GET",
       headers,
@@ -108,38 +114,83 @@ export default async function handler(
     let data = null;
     const contentType = response.headers.get("content-type");
 
+    // Capture response data - use arrayBuffer for binary data, text for JSON
+    let responseData: ArrayBuffer | string;
+    let isBinary = false;
+
     if (contentType && contentType.includes("application/json")) {
+      // For JSON responses, use text
       try {
-        data = await response.json();
+        responseData = await response.text();
       } catch (e) {
-        log.warn("Failed to parse JSON response", e);
+        responseData = "";
+        log.warn("Failed to read response body as text", e);
+      }
+    } else {
+      // For binary responses (like ZIP files), use arrayBuffer
+      try {
+        responseData = await response.arrayBuffer();
+        isBinary = true;
+      } catch (e) {
+        responseData = new ArrayBuffer(0);
+        log.warn("Failed to read response body as arrayBuffer", e);
       }
     }
 
-    if (!response.ok) {
-      const errorMessage =
-        data?.detail || data?.message || `HTTP ${response.status}`;
-      log.error(`Failed to fetch DSR package link: ${errorMessage}`, {
-        url,
-        status: response.status,
-      });
-
-      // Return appropriate error status with HTML response
-      return res
-        .status(response.status)
-        .send(`Error ${response.status}: ${errorMessage}`);
-    }
-
-    // Check if this is a redirect response
+    // Check if this is a redirect response FIRST (before checking response.ok)
     if (response.status === 302 || response.status === 301) {
       const redirectUrl = response.headers.get("location");
+      log.debug(`Processing redirect response:`, {
+        status: response.status,
+        locationHeader: redirectUrl,
+        allHeaders: Object.fromEntries(response.headers.entries()),
+      });
+
       if (redirectUrl) {
         log.info(`Redirecting user to DSR package download URL: ${redirectUrl}`);
         return res.redirect(302, redirectUrl);
       } else {
-        log.error("Redirect response missing location header");
+        log.error("Redirect response missing location header", {
+          status: response.status,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
         return res.status(500).send("Internal Server Error: Invalid redirect response");
       }
+    }
+
+    // Check if the backend returned the actual file content instead of a redirect
+    if (response.ok && isBinary && responseData instanceof ArrayBuffer && responseData.byteLength > 0) {
+      log.info(`Backend returned binary file content directly, serving file to user`);
+
+      // Set appropriate headers for file download
+      res.setHeader("Content-Type", contentType || "application/octet-stream");
+      res.setHeader("Content-Length", responseData.byteLength.toString());
+      res.setHeader("Content-Disposition", `attachment; filename="privacy-request-${requestId}.zip"`);
+
+      // Return the binary data
+      return res.status(200).send(Buffer.from(responseData));
+    }
+
+    // Handle JSON responses
+    if (contentType && contentType.includes("application/json") && !isBinary && typeof responseData === "string") {
+      try {
+        data = JSON.parse(responseData);
+        log.debug(`Successfully parsed JSON response:`, {
+          dataKeys: Object.keys(data),
+          hasDownloadUrl: !!data?.download_url,
+          downloadUrl: data?.download_url,
+        });
+      } catch (e) {
+        log.warn("Failed to parse JSON response", e);
+        log.debug(`Response text that failed to parse:`, {
+          responseText: responseData,
+        });
+      }
+    } else if (!isBinary && typeof responseData === "string") {
+      log.debug(`Non-JSON text response received:`, {
+        contentType,
+        responseText: responseData,
+      });
     }
 
     // If not a redirect, check for JSON response with download_url
@@ -148,7 +199,37 @@ export default async function handler(
       return res.redirect(302, data.download_url);
     }
 
-    log.error("Invalid response from Fides API: neither redirect nor download_url found");
+    // Now check if the response is not ok (this will catch actual errors, not redirects)
+    if (!response.ok) {
+      const errorMessage =
+        data?.detail || data?.message || `HTTP ${response.status}`;
+      log.error(`Failed to fetch DSR package link: ${errorMessage}`, {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        responseData: data,
+        responseHeaders: Object.fromEntries(response.headers.entries()),
+        responseText: responseData,
+      });
+
+      // Return appropriate error status with HTML response
+      return res
+        .status(response.status)
+        .send(`Error ${response.status}: ${errorMessage}`);
+    }
+
+    // Enhanced logging for the invalid response case
+    log.error("Invalid response from Fides API: neither redirect nor download_url found", {
+      responseStatus: response.status,
+      responseStatusText: response.statusText,
+      contentType: contentType,
+      hasData: !!data,
+      dataKeys: data ? Object.keys(data) : null,
+      data: data,
+      headers: Object.fromEntries(response.headers.entries()),
+      url: url,
+    });
+
     return res
       .status(500)
       .send("Internal Server Error: Invalid response from backend API");
