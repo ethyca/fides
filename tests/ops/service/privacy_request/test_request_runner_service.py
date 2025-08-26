@@ -2319,7 +2319,9 @@ class TestInitiatePrivacyRequestCompletionEmail:
             assert message_body_params.download_links[0].startswith(expected_dsr_url)
             # Verify the token is present (should be a JWE with 5 parts)
             token_part = message_body_params.download_links[0].split("token=")[1]
-            assert token_part.count(".") == 4  # JWE format has 5 parts separated by dots
+            assert (
+                token_part.count(".") == 4
+            )  # JWE format has 5 parts separated by dots
 
         # Cleanup
         rule.delete(db)
