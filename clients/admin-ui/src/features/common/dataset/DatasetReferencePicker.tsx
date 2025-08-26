@@ -12,7 +12,6 @@ import {
 } from "~/features/dataset/dataset.slice";
 import { DatasetCollection } from "~/types/api";
 
-import TreeNodeTitle from "./TreeNodeTitle";
 import {
   DATASET_REFERENCE_SEPARATOR,
   DatasetTreeNode,
@@ -143,11 +142,6 @@ export const DatasetReferencePicker = ({
     [onChange],
   );
 
-  // Custom title renderer for tree nodes using treeTitleRender prop
-  const treeTitleRender = useCallback((nodeData: any) => {
-    return <TreeNodeTitle nodeData={nodeData} />;
-  }, []);
-
   // Show empty state if no datasets available
   if (!datasetsLoading && datasets?.length === 0) {
     return (
@@ -184,7 +178,7 @@ export const DatasetReferencePicker = ({
         showSearch
         style={{ width: "50%" }}
         treeNodeFilterProp="title"
-        treeTitleRender={treeTitleRender}
+        treeNodeLabelProp="fullTitle"
         data-testid="field-tree-select"
       />
     </Flex>

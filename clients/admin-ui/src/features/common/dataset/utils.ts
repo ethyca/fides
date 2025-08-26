@@ -61,6 +61,7 @@ export const transformFieldsToTreeNodes = (
     return {
       key: fullReference,
       title: field.name,
+      fullTitle: `${collectionName}${DATASET_REFERENCE_SEPARATOR}${currentPath}`,
       value: fullReference,
       isLeaf: !hasNestedFields,
       selectable: true, // Fields are always selectable
