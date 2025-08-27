@@ -47,3 +47,4 @@ class DownloadTokenJWE(BaseModel):
     privacy_request_id: str
     scopes: List[str]
     iat: str
+    exp: str

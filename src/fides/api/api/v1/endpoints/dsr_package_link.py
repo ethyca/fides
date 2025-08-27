@@ -50,6 +50,14 @@ def get_privacy_request_or_error(
     return privacy_request
 
 
+def raise_error(status_code: int, detail: str) -> None:
+    """Raise an HTTPException with the given status code and detail"""
+    raise HTTPException(
+        status_code=status_code,
+        detail=detail,
+    )
+
+
 @router.get(
     PRIVACY_CENTER_DSR_PACKAGE,
     status_code=HTTP_302_FOUND,
@@ -73,12 +81,13 @@ def get_access_results_urls(
     privacy_request_id parameter is required in the URL path.
     token parameter is required as a query parameter for security.
     """
+    # --------------Security checks--------------
     # First validate the privacy request ID format to prevent SSRF attacks
     # This is a simple string check that doesn't require database access
     if not privacy_request_id.startswith("pri_"):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
+        raise_error(
+            HTTP_400_BAD_REQUEST,
+            f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
         )
 
     # Extract the UUID part after the prefix
@@ -87,65 +96,58 @@ def get_access_results_urls(
     try:
         uuid.UUID(uuid_part, version=4)
     except ValueError:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
+        raise_error(
+            HTTP_400_BAD_REQUEST,
+            f"Invalid privacy request ID format: '{privacy_request_id}'. Must start with 'pri_' followed by a valid UUID v4.",
         )
 
     try:
         # Validate the download token before proceeding
         validate_download_token(token, privacy_request_id)
     except AuthenticationError as e:
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail=str(e.detail),
-        )
+        raise_error(HTTP_401_UNAUTHORIZED, str(e.detail))
     except AuthorizationError as e:
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail=str(e.detail),
-        )
+        raise_error(HTTP_403_FORBIDDEN, str(e.detail))
 
-    privacy_request = get_privacy_request_or_error(privacy_request_id, db)
+    # --------------Data checks--------------
     storage_config = get_active_default_storage_config(db)
+    privacy_request = get_privacy_request_or_error(privacy_request_id, db)
 
     if not storage_config:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="No active default storage configuration found.",
+        raise_error(
+            HTTP_400_BAD_REQUEST, "No active default storage configuration found."
         )
 
     if privacy_request.status != PrivacyRequestStatus.complete:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Access results for privacy request '{privacy_request.id}' are not available because the request is not complete.",
+        raise_error(
+            HTTP_400_BAD_REQUEST,
+            f"Access results for privacy request '{privacy_request.id}' are not available because the request is not complete.",
         )
 
-    if not privacy_request.access_result_urls:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="No access results found for this privacy request.",
+    if (
+        not privacy_request.access_result_urls
+        or not privacy_request.access_result_urls.get("access_result_urls")
+    ):
+        raise_error(
+            HTTP_404_NOT_FOUND,
+            f"No access results found for privacy request '{privacy_request.id}'.",
         )
 
-    # Get the first access result URL from the existing URLs
-    access_result_urls = privacy_request.access_result_urls.get(
-        "access_result_urls", []
-    )
-    if not access_result_urls:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="No access result URLs found for this privacy request.",
-        )
-
-    # Get the first access result URL from the existing URLs
+    # --------------Processing--------------
     file_name = f"{privacy_request.id}.zip"
-    if storage_config.type == StorageType.s3:
+    if storage_config and storage_config.type != StorageType.s3:
+        # Handle all other storage types (transcend, ethyca, local, etc.)
+        raise_error(
+            HTTP_400_BAD_REQUEST,
+            f"Storage type '{storage_config.type}' is not supported for download redirects. "
+            "Only S3 storage is supported for this endpoint.",
+        )
+    if storage_config:
         # Get bucket name from storage config
         bucket_name = storage_config.details.get("bucket")
         if not bucket_name:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="S3 bucket name not found in storage config.",
+            raise_error(
+                HTTP_400_BAD_REQUEST, "S3 bucket name not found in storage config."
             )
 
         try:
@@ -156,23 +158,8 @@ def get_access_results_urls(
                 key=file_name,
             )
         except Exception as e:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Failed to generate presigned URL: {str(e)}",
+            raise_error(
+                HTTP_400_BAD_REQUEST, f"Failed to generate presigned URL: {str(e)}"
             )
 
         return RedirectResponse(url=result_url, status_code=HTTP_302_FOUND)
-    if storage_config.type == StorageType.gcs:
-        # GCS is not supported for this endpoint
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=(
-                "Only S3 storage is supported for download redirects. "
-                "Please contact support if you need to download access results from a different storage provider."
-            ),
-        )
-    # Unsupported storage type
-    raise HTTPException(
-        status_code=HTTP_400_BAD_REQUEST,
-        detail=f"Storage type '{storage_config.type}' is not supported for download redirects.",
-    )

@@ -61,8 +61,12 @@ def extract_payload(jwe_string: str, encryption_key: str) -> str:
         raise e
 
 
-def is_token_expired(issued_at: datetime, token_duration_minutes: int) -> bool:
+def is_token_expired(
+    issued_at: Optional[datetime], token_duration_minutes: int
+) -> bool:
     """Check if a token has expired based on its issued_at timestamp and duration."""
+    if issued_at is None:
+        return True
     expiration_time = issued_at + timedelta(minutes=token_duration_minutes)
     return datetime.now() > expiration_time
 
@@ -173,6 +177,14 @@ def validate_download_token(token: str, privacy_request_id: str) -> DownloadToke
     required_scope = "privacy-request-access-results:read"
     if required_scope not in download_token.scopes:
         raise AuthorizationError(detail="Download token lacks required permissions")
+
+    # Check if the token has expired
+    try:
+        expiration_time = datetime.fromisoformat(download_token.exp)
+        if datetime.now() > expiration_time:
+            raise AuthenticationError(detail="Download token has expired")
+    except (ValueError, TypeError):
+        raise AuthenticationError(detail="Invalid token expiration format")
 
     return download_token
 

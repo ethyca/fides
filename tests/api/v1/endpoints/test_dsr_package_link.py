@@ -209,7 +209,8 @@ class TestPrivacyCenterDsrPackage:
             # Construct URL directly with invalid ID, don't use the url fixture
             # For invalid formats, we need a properly formatted JWE token that will pass format validation
             # but fail at UUID validation. We'll use a dummy token with the correct format.
-            dummy_token = "eyJhbGciOiJBMjU2R0NNS1ciLCJlbmMiOiJBMjU2R0NNS1ciLCJ6aXAiOiJERUYiLCJ0eXBlIjoiSldFIn0.eyJwcml2YWN5X3JlcXVlc3RfaWQiOiJwcmlfMTIzNDU2NzgtMTIzNC0xMjM0LTEyMzQtMTIzNDU2Nzg5MDEyIiwic2NvcGVzIjpbInByaXZhY3ktcmVxdWVzdC1hY2Nlc3MtcmVzdWx0czpyZWFkIl0sImlhdCI6IjIwMjMtMDEtMDFUMDA6MDA6MDAifQ.any.dummy.signature"
+            # Note: This token includes the new exp field to match the updated schema
+            dummy_token = "eyJhbGciOiJBMjU2R0NNS1ciLCJlbmMiOiJBMjU2R0NNS1ciLCJ6aXAiOiJERUYiLCJ0eXBlIjoiSldFIn0.eyJwcml2YWN5X3JlcXVlc3RfaWQiOiJwcmlfMTIzNDU2NzgtMTIzNC0xMjM0LTEyMzQtMTIzNDU2Nzg5MDEyIiwic2NvcGVzIjpbInByaXZhY3ktcmVxdWVzdC1hY2Nlc3MtcmVzdWx0czpyZWFkIl0sImlhdCI6IjIwMjMtMDEtMDFUMDA6MDA6MDAiLCJleHAiOiIyMDI0LTAxLTAxVDAwOjAwOjAwIn0.any.dummy.signature"
             url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=invalid_id)}?token={dummy_token}"
             response = test_client.get(url)
 
@@ -250,7 +251,7 @@ class TestPrivacyCenterDsrPackage:
         url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={token}"
         response = test_client.get(url)
         assert response.status_code == HTTP_404_NOT_FOUND
-        assert "No access result URLs found" in response.json()["detail"]
+        assert "No access results found" in response.json()["detail"]
 
     def test_get_access_results_rate_limiting(
         self, url, completed_privacy_request, test_client, storage_config_default, db
@@ -320,7 +321,7 @@ class TestPrivacyCenterDsrPackage:
         response = test_client.get(url, allow_redirects=False)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            "Only S3 storage is supported for download redirects"
+            "Only S3 storage is supported for this endpoint."
             in response.json()["detail"]
         )
 
@@ -566,6 +567,7 @@ class TestPrivacyCenterDsrPackage:
             privacy_request_id=privacy_request.id,
             scopes=["insufficient:scope"],
             iat="2023-01-01T00:00:00",
+            exp="2024-01-01T00:00:00",  # Future expiration
         )
         token_string = generate_jwe(
             insufficient_token.model_dump_json(), CONFIG.security.app_encryption_key
@@ -575,6 +577,28 @@ class TestPrivacyCenterDsrPackage:
         response = test_client.get(url)
         assert response.status_code == HTTP_403_FORBIDDEN
         assert "Download token lacks required permissions" in response.json()["detail"]
+
+    def test_get_access_results_expired_token(self, privacy_request, test_client):
+        """Test that expired tokens are rejected"""
+        from fides.api.oauth.jwt import generate_jwe
+        from fides.api.schemas.external_https import DownloadTokenJWE
+        from fides.config import CONFIG
+
+        # Create a token with past expiration
+        expired_token = DownloadTokenJWE(
+            privacy_request_id=privacy_request.id,
+            scopes=["privacy-request-access-results:read"],
+            iat="2023-01-01T00:00:00",
+            exp="2023-01-01T01:00:00",  # Past expiration
+        )
+        token_string = generate_jwe(
+            expired_token.model_dump_json(), CONFIG.security.app_encryption_key
+        )
+
+        url = f"/api/v1{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request.id)}?token={token_string}"
+        response = test_client.get(url)
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert "Download token has expired" in response.json()["detail"]
 
     def test_get_access_results_valid_token_success(
         self, url, completed_privacy_request, test_client, storage_config_default, db

@@ -102,12 +102,23 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 def generate_privacy_request_download_token(privacy_request_id: str) -> str:
     """
     Generate a JWE token for users to download their privacy request access package.
-    This token is reusable and remains valid for the lifetime of the privacy request.
+    This is currently used for the DSR package link endpoint which provides a redirect
+    to a presigned URL for the access results.
+    This token expires based on the configured TTL for security.
     """
+    from datetime import timedelta
+
+    now = datetime.now()
+    # Use the configured TTL from security settings
+    expiration = now + timedelta(
+        seconds=CONFIG.security.subject_request_download_link_ttl_seconds
+    )
+
     jwe = DownloadTokenJWE(
         privacy_request_id=privacy_request_id,
         scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS],
-        iat=datetime.now().isoformat(),
+        iat=now.isoformat(),
+        exp=expiration.isoformat(),
     )
     return generate_jwe(
         json.dumps(jwe.model_dump(mode="json")),
