@@ -33,6 +33,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Test Website Monitors now show the brand image and a "test monitor" tag [#6476](https://github.com/ethyca/fides/pull/6476)
 - Privacy Request runner will now also check for awaiting input tags as part of `poll_for_exited_privacy_request_tasks` [#6471](https://github.com/ethyca/fides/pull/6471)
 - Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
+- Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
+
+### Fixed
+- Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
