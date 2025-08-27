@@ -126,6 +126,99 @@ class TestPrivacyCenterConfig:
             )
         assert "Custom location fields cannot be hidden" in str(exc_info.value)
 
+    def test_privacy_center_config_with_location_custom_field(self):
+        """Test that PrivacyCenterConfig correctly handles location fields in custom_privacy_request_fields"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        # Add location field to the first action's custom_privacy_request_fields
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "user_location": {
+                "label": "Your Location",
+                "field_type": "location",
+                "required": True,
+                "ip_geolocation_hint": True,
+            }
+        }
+
+        config = PrivacyCenterConfig(**config_data)
+        location_field = config.actions[0].custom_privacy_request_fields[
+            "user_location"
+        ]
+
+        # Verify the field was parsed as LocationCustomPrivacyRequestField
+        assert isinstance(location_field, LocationCustomPrivacyRequestField)
+        assert location_field.field_type == "location"
+        assert location_field.label == "Your Location"
+        assert location_field.required is True
+        assert location_field.ip_geolocation_hint is True
+
+    def test_privacy_center_config_mixed_custom_fields_with_location(self):
+        """Test PrivacyCenterConfig with a mix of regular and location custom fields"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        # Add mixed custom fields including location to the first action
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "preferred_format": {
+                "label": "Preferred Format",
+                "field_type": "select",
+                "options": ["JSON", "CSV", "HTML"],
+            },
+            "user_location": {
+                "label": "Your Location",
+                "field_type": "location",
+                "required": False,
+                "ip_geolocation_hint": False,
+            },
+            "comments": {
+                "label": "Additional Comments",
+                "field_type": "text",
+            },
+        }
+
+        config = PrivacyCenterConfig(**config_data)
+        custom_fields = config.actions[0].custom_privacy_request_fields
+
+        # Test regular custom field
+        format_field = custom_fields["preferred_format"]
+        assert isinstance(format_field, CustomPrivacyRequestField)
+        assert format_field.field_type == "select"
+        assert format_field.options == ["JSON", "CSV", "HTML"]
+
+        # Test location custom field
+        location_field = custom_fields["user_location"]
+        assert isinstance(location_field, LocationCustomPrivacyRequestField)
+        assert location_field.field_type == "location"
+        assert location_field.required is False
+        assert location_field.ip_geolocation_hint is False
+
+        # Test text custom field (defaults to regular CustomPrivacyRequestField)
+        comments_field = custom_fields["comments"]
+        assert isinstance(comments_field, CustomPrivacyRequestField)
+        assert comments_field.field_type == "text"
+
+    def test_privacy_center_config_location_field_validation_in_config(self):
+        """Test that location field validation works within PrivacyCenterConfig"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+
+        # Test that location field rejects options when defined in config
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "invalid_location": {
+                "label": "Invalid Location",
+                "field_type": "location",
+                "options": ["US", "CA", "UK"],  # This should be rejected
+            }
+        }
+
+        with pytest.raises(ValidationError) as exc_info:
+            PrivacyCenterConfig(**config_data)
+        assert "LocationCustomPrivacyRequestField does not support options" in str(
+            exc_info.value
+        )
+
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig
     ):

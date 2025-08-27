@@ -25,30 +25,56 @@ const optionDescriptionRender = (
   );
 };
 
+export interface ICustomSelectProps<
+  SelectValue,
+  OptionType extends DefaultOptionType | BaseOptionType = DefaultOptionType,
+> extends SelectProps<SelectValue, OptionType> {
+  mode?: undefined;
+  defaultValue?: SelectValue | null;
+}
+
+export interface ICustomMultiSelectProps<
+  SelectValue,
+  OptionType extends DefaultOptionType | BaseOptionType = DefaultOptionType,
+> extends SelectProps<SelectValue[], OptionType> {
+  mode: "tags" | "multiple";
+  defaultValue?: SelectValue[] | null;
+}
+
+/**
+ * @description using discriminated unions to explicitly handle single vs multi select values
+ */
+export type CustomSelectProps<
+  SelectValue,
+  OptionType extends DefaultOptionType | BaseOptionType = DefaultOptionType,
+> =
+  | ICustomMultiSelectProps<SelectValue, OptionType>
+  | ICustomSelectProps<SelectValue, OptionType>;
+
 const withCustomProps = (WrappedComponent: typeof Select) => {
   const WrappedSelect = <
-    ValueType = any,
+    SelectValue,
     OptionType extends DefaultOptionType | BaseOptionType = DefaultOptionType,
-  >({
-    placeholder = "Select...",
-    optionRender = optionDescriptionRender,
-    className = "w-full",
-    showSearch = true,
-    suffixIcon,
-    menuItemSelectedIcon = <Checkmark />,
-    ...props
-  }: SelectProps<ValueType, OptionType>) => {
+  >(
+    props: CustomSelectProps<SelectValue, OptionType>,
+  ) => {
+    const { loading, suffixIcon, id } = props;
     const customProps = {
-      placeholder,
-      optionRender,
-      className,
-      showSearch,
-      suffixIcon: props.loading ? undefined : suffixIcon || <ChevronDown />,
-      menuItemSelectedIcon,
-      "data-testid": `select${props.id ? `-${props.id}` : ""}`,
+      placeholder: "Select...",
+      optionRender: optionDescriptionRender,
+      showSearch: true,
+      menuItemSelectedIcon: <Checkmark />,
+      className: "w-full",
+      suffixIcon: loading ? undefined : suffixIcon || <ChevronDown />,
+      "data-testid": `select${id ? `-${id}` : ""}`,
       ...props,
     };
-    return <WrappedComponent {...customProps} />;
+
+    return customProps.mode ? (
+      <WrappedComponent {...customProps} /> /* multi-select props */
+    ) : (
+      <WrappedComponent {...customProps} />
+    ); /* mono-select props */
   };
   return WrappedSelect;
 };
