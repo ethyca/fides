@@ -32,6 +32,7 @@ class TestStorageConfigModel:
             StorageDetails.MAX_RETRIES.value: 0,
             StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
             StorageDetails.ENABLE_STREAMING.value: False,
+            StorageDetails.ENABLE_ACCESS_PACKAGE_REDIRECT.value: False,
         }
 
     @pytest.fixture(scope="function")
