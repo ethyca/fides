@@ -41,6 +41,10 @@ export const FormikDateTimeInput = ({
         id={id ?? name}
         name={name}
         data-testid={`input-${name}`}
+        style={{
+          width: "100%",
+          ...props.style,
+        }}
         {...props}
       />
     </Form.Item>
