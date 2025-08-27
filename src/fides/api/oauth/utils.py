@@ -152,7 +152,7 @@ def validate_download_token(token: str, privacy_request_id: str) -> DownloadToke
         raise AuthenticationError(detail="Download token is required")
 
     # Check if token looks like a JWE (should have 5 parts separated by dots)
-    if not token or token.count(".") != 4:
+    if token.count(".") != 4:
         raise AuthenticationError(detail="Invalid download token format")
 
     try:
