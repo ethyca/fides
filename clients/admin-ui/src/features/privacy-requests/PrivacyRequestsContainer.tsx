@@ -36,13 +36,15 @@ const PrivacyRequestsContainer = () => {
   }, [processing]);
 
   const tabItems: TabsProps["items"] = useMemo(() => {
-    const items: NonNullable<TabsProps["items"]> = [
-      {
+    const items: NonNullable<TabsProps["items"]> = [];
+
+    if (availableTabs.request) {
+      items.push({
         key: PRIVACY_REQUEST_TABS.REQUEST,
         label: "Request",
         children: <RequestTable />,
-      },
-    ];
+      });
+    }
 
     if (availableTabs.manualTask) {
       items.push({
@@ -53,7 +55,7 @@ const PrivacyRequestsContainer = () => {
     }
 
     return items;
-  }, [availableTabs.manualTask]);
+  }, [availableTabs.manualTask, availableTabs.request]);
 
   return (
     <>

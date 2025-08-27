@@ -78,17 +78,17 @@ export const allNoticesAreDefaultOptIn = (
 
 /**
  * Construct user location str to be ingested by Fides API
- * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
+ * Returns undefined if geolocation cannot be constructed by provided params, e.g. us_ca
  */
 export const constructFidesRegionString = (
-  geoLocation?: UserGeolocation | null,
-): string | null => {
+  geoLocation: UserGeolocation | undefined | null,
+): string | undefined => {
   fidesDebugger("constructing geolocation...");
   if (!geoLocation) {
     fidesDebugger(
       "cannot construct user location since geoLocation is undefined or null",
     );
-    return null;
+    return undefined;
   }
   if (
     geoLocation.location &&
@@ -107,7 +107,7 @@ export const constructFidesRegionString = (
   fidesDebugger(
     "cannot construct user location from provided geoLocation params...",
   );
-  return null;
+  return undefined;
 };
 
 /**
@@ -230,6 +230,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * - Experience is modal-only or headless component type
  * - No privacy notices exist in the experience
  * - Consent was previously set via override
+ * - Modal is set to open via fides_default_show_modal option
  *
  * The banner WILL be shown if:
  * - No prior consent exists
@@ -258,6 +259,10 @@ export const shouldResurfaceBanner = (
   }
   // Never surface banner if there's no experience
   if (!isPrivacyExperience(experience)) {
+    return false;
+  }
+  // Never surface banner if modal is set to show immediately
+  if (options.fidesModalDisplay === "immediate") {
     return false;
   }
   // Always resurface banner for TCF unless consent was set by override
@@ -572,6 +577,7 @@ export const applyOverridesToConsent = (
   privacyNotices: PrivacyNoticeWithPreference[] | undefined = [],
   flagTypeOverride?: ConsentFlagType,
   nonApplicableFlagModeOverride?: ConsentNonApplicableFlagMode,
+  cookieNonApplicableNoticeKeys?: string[],
 ): NoticeConsent => {
   const consent = { ...fidesConsent };
   // Get options from either the provided options or the Fides config, with
@@ -608,10 +614,22 @@ export const applyOverridesToConsent = (
     {},
   );
 
+  // Filter out consent values for notices that were non-applicable when saved
+  const filteredConsent: NoticeConsent = {};
+  Object.entries(consent).forEach(([key, value]) => {
+    if (
+      cookieNonApplicableNoticeKeys?.includes(key) &&
+      !nonApplicablePrivacyNotices?.includes(key)
+    ) {
+      return;
+    }
+    filteredConsent[key] = value;
+  });
+
   Object.assign(
     consentValues,
     normalizeConsentValues({
-      consent,
+      consent: filteredConsent,
       consentMechanisms,
       flagType,
     }),
@@ -629,4 +647,41 @@ export const isValidAcString = (acString: string) => {
         acVersion === "1" ? /\d~[0-9.]*$/ : /\d~[0-9.]*~dv.[0-9.]*$/,
       ),
   );
+};
+
+/**
+ * Creates a Proxy wrapper for consent objects that provides default values for unknown properties.
+ *
+ * The Proxy handles:
+ * - Returns appropriate default values for unknown consent properties
+ * - Handles the special "essential" case when no privacy notices exist
+ * - Returns ConsentMechanism values when flagType is CONSENT_MECHANISM, boolean otherwise
+ *
+ * @param consentObject - The base consent object to wrap
+ * @param options - Fides initialization options containing flag type configuration
+ * @param hasPrivacyNotices - Whether privacy notices exist in the experience
+ * @returns Proxied consent object with default value handling
+ */
+export const createConsentProxy = (
+  consentObject: NoticeConsent,
+  options: Pick<FidesInitOptions, "fidesConsentFlagType">,
+  hasPrivacyNotices: boolean,
+): NoticeConsent => {
+  return new Proxy(consentObject, {
+    get(target, prop) {
+      if (target[prop.toString()] === undefined) {
+        // This consent property is unknown, so we want to return a default value
+        const flagTypeConsentMechanism =
+          options.fidesConsentFlagType === ConsentFlagType.CONSENT_MECHANISM;
+        // handle essential
+        if (!hasPrivacyNotices && prop.toString() === "essential") {
+          return flagTypeConsentMechanism ? ConsentMechanism.NOTICE_ONLY : true;
+        }
+        // handle any other unknown consent values.
+        // (eg. `Fides.consent.some_unknown_consent_value` should return falsy)
+        return flagTypeConsentMechanism ? ConsentMechanism.OPT_OUT : false;
+      }
+      return target[prop.toString()];
+    },
+  });
 };

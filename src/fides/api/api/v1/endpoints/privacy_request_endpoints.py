@@ -4,7 +4,7 @@ import csv
 import io
 import json
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import (
     Annotated,
     Any,
@@ -19,7 +19,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import Body, Depends, HTTPException, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -50,6 +50,7 @@ from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
+    PrivacyRequestError,
     TraversalError,
     ValidationError,
 )
@@ -82,9 +83,10 @@ from fides.api.oauth.utils import (
     verify_oauth_client,
     verify_request_task_callback,
 )
+from fides.api.schemas.api import ResponseWithMessage
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -110,6 +112,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.service.deps import get_messaging_service, get_privacy_request_service
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
+from fides.api.service.privacy_request.email_batch_service import send_email_batch
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -121,10 +124,12 @@ from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.storage_util import StorageJSONEncoder
+from fides.api.util.text import normalize_location_code
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -138,10 +143,12 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
+    PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
+    PRIVACY_REQUEST_FINALIZE,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -170,7 +177,6 @@ from fides.service.dataset.dataset_config_service import (
 )
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
-    PrivacyRequestError,
     PrivacyRequestService,
     _process_privacy_request_restart,
     _requeue_privacy_request,
@@ -398,6 +404,7 @@ def _filter_privacy_request_queryset(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     include_consent_webhook_requests: Optional[bool] = False,
     include_deleted_requests: Optional[bool] = False,
@@ -534,6 +541,29 @@ def _filter_privacy_request_queryset(
         query = query.filter(PrivacyRequest.id.ilike(f"%{request_id}%"))
     if external_id:
         query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
+    if location:
+        # Support filtering by exact location match or country prefix
+        # e.g., "US" matches both "US" and "US-CA", "US-NY", etc.
+        # "US-CA" matches only "US-CA"
+        # Also normalize input to handle underscores and case insensitivity
+
+        try:
+            normalized_location = normalize_location_code(location)
+        except ValueError:
+            # If normalization fails, treat as no results to prevent errors
+            query = query.filter(False)
+        else:
+            if "-" in normalized_location:
+                # Exact match for subdivision codes
+                query = query.filter(PrivacyRequest.location == normalized_location)
+            else:
+                # Country code - match country or any subdivision of that country
+                query = query.filter(
+                    or_(
+                        PrivacyRequest.location == normalized_location,
+                        PrivacyRequest.location.ilike(f"{normalized_location}-%"),
+                    )
+                )
     if status:
         query = query.filter(PrivacyRequest.status.in_(status))
     if created_lt:
@@ -680,6 +710,7 @@ def _shared_privacy_request_search(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -718,6 +749,7 @@ def _shared_privacy_request_search(
         errored_lt,
         errored_gt,
         external_id,
+        location,
         action_type,
         None,
         include_deleted_requests,
@@ -791,6 +823,7 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -831,6 +864,7 @@ def get_request_status(
         errored_lt=errored_lt,
         errored_gt=errored_gt,
         external_id=external_id,
+        location=location,
         action_type=action_type,
         verbose=verbose,
         include_identities=include_identities,
@@ -885,6 +919,7 @@ def privacy_request_search(
         errored_lt=privacy_request_filter.errored_lt,
         errored_gt=privacy_request_filter.errored_gt,
         external_id=privacy_request_filter.external_id,
+        location=privacy_request_filter.location,
         action_type=privacy_request_filter.action_type,
         verbose=privacy_request_filter.verbose,
         include_identities=privacy_request_filter.include_identities,
@@ -1858,6 +1893,49 @@ def resume_privacy_request_from_requires_input(
     return privacy_request  # type: ignore[return-value]
 
 
+@router.post(
+    PRIVACY_REQUEST_FINALIZE,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_REVIEW])],
+)
+def finalize_privacy_request(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+) -> PrivacyRequestResponse:
+    """
+    Finalizes a privacy request, moving it from the 'requires_finalization' state to 'complete'.
+    This is done by re-queueing the request, which will then hit the finalization logic in the
+    request runner service. This logic marks the privacy request as complete
+    and sends out any configured messaging to the user.
+    """
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+
+    if privacy_request.status != PrivacyRequestStatus.requires_manual_finalization:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot manually finalize privacy request '{privacy_request_id}': status is {privacy_request.status}, not requires_manual_finalization.",
+        )
+
+    # Set finalized_by and finalized_at here, so the request runner service knows not to
+    # put the request back into the requires_finalization state.
+    privacy_request.finalized_at = datetime.now(timezone.utc)
+    privacy_request.finalized_by = client.user_id
+    privacy_request.save(db=db)
+
+    queue_privacy_request(
+        privacy_request_id=privacy_request_id,
+        from_step=CurrentStep.finalize_erasure.value,
+    )
+
+    return privacy_request  # type: ignore[return-value]
+
+
 @router.get(
     REQUEST_TASKS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
@@ -2277,3 +2355,22 @@ def get_test_privacy_request_logs(
     # Get logs from Redis
     cache = get_cache()
     return cache.get_decoded_list(f"log_{privacy_request_id}") or []
+
+
+@router.post(
+    PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=ResponseWithMessage,
+)
+def send_batch_email_integrations(
+    background_tasks: BackgroundTasks,
+) -> ResponseWithMessage:
+    """Send batch email integrations for a privacy request."""
+    background_tasks.add_task(send_email_batch)
+
+    return ResponseWithMessage(
+        message="Email batch job started. This may take a few minutes to complete."
+    )

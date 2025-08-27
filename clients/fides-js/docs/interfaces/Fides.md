@@ -339,7 +339,9 @@ With options to default "sale of data" to opt-in:
   <script src="path/to/fides.js"></script>
   <script>
     if (typeof Fides !== 'undefined' && typeof Fides.shopify === 'function') {
-      Fides.shopify({ sale_of_data_default: true });
+      Fides.shopify({
+         sale_of_data_default: true
+      });
     }
   </script>
 </head>

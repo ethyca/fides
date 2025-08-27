@@ -44,7 +44,7 @@ type ShopifyConsent = {
   sale_of_data: boolean;
 };
 
-function createShopifyConsent(
+export function createShopifyConsent(
   fidesConsent: NoticeConsent,
   options?: ShopifyOptions,
 ): ShopifyConsent {
@@ -54,22 +54,25 @@ function createShopifyConsent(
       processExternalConsentValue(v),
     ]),
   );
-  const consent = Object.fromEntries(
-    Object.entries(CONSENT_MAP).map(([key, values]) => {
-      const hasTrue = values.some((value) => processedConsent[value] === true);
-      const hasFalse = values.some(
-        (value) => processedConsent[value] === false,
-      );
+  const result: Partial<ShopifyConsent> = {};
 
-      return [key, hasTrue || (hasFalse ? false : undefined)];
-    }),
-  ) as Partial<ShopifyConsent>;
+  Object.entries(CONSENT_MAP).forEach(([key, values]) => {
+    const hasTrue = values.some((value) => processedConsent[value] === true);
+    const hasFalse = values.some((value) => processedConsent[value] === false);
 
-  // Ensure sale_of_data is always boolean
-  consent.sale_of_data =
-    consent.sale_of_data ?? options?.sale_of_data_default ?? false;
+    if (hasTrue) {
+      result[key as keyof ShopifyConsent] = true;
+    } else if (hasFalse) {
+      result[key as keyof ShopifyConsent] = false;
+    }
+  });
 
-  return consent as ShopifyConsent;
+  // Ensure sale_of_data is always set
+  if (result.sale_of_data === undefined) {
+    result.sale_of_data = options?.sale_of_data_default ?? false;
+  }
+
+  return result as ShopifyConsent;
 }
 
 // Helper function to push consent to Shopify from a Fides Consent object

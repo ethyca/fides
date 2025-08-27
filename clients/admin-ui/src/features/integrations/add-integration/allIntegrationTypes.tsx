@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
 import DATAHUB_TYPE_INFO from "~/features/integrations/integration-type-info/datahubInfo";
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
@@ -18,21 +17,20 @@ import SALESFORCE_TYPE_INFO from "~/features/integrations/integration-type-info/
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import {
-  AccessLevel,
-  ConnectionConfigurationResponse,
-  ConnectionType,
-} from "~/types/api";
+import { AccessLevel, ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export type IntegrationTypeInfo = {
   placeholder: ConnectionConfigurationResponse;
   category: ConnectionCategory;
+  instructions?: ReactNode;
   overview?: ReactNode;
   description?: ReactNode;
-  instructions?: ReactNode;
   tags: string[];
-  enabledFeatures: IntegrationFeatureEnum[];
+  enabledFeatures: IntegrationFeature[];
 };
 
 // Define SaaS integrations
@@ -55,7 +53,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
-  [ConnectionType.MANUAL_WEBHOOK]: MANUAL_TYPE_INFO,
+  [ConnectionType.MANUAL_TASK]: MANUAL_TYPE_INFO,
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
@@ -65,8 +63,37 @@ export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
 
 export const SUPPORTED_INTEGRATIONS = [
   ...Object.keys(INTEGRATION_TYPE_MAP),
-  // ConnectionType.SAAS, // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
+  ConnectionType.SAAS, // Enable SAAS integrations for Phase 1
 ];
+
+/**
+ * Generate IntegrationTypeInfo from ConnectionSystemTypeMap data
+ * Now leverages enhanced display metadata from backend SAAS configs
+ */
+const generateSaasIntegrationInfo = (
+  connectionType: ConnectionSystemTypeMap,
+): IntegrationTypeInfo => {
+  return {
+    placeholder: {
+      name: connectionType.human_readable,
+      key: `${connectionType.identifier}_placeholder`,
+      connection_type: ConnectionType.SAAS,
+      saas_config: {
+        fides_key: connectionType.identifier,
+        name: connectionType.human_readable,
+        type: connectionType.identifier,
+      },
+      access: AccessLevel.WRITE,
+      created_at: "",
+    },
+    // Use backend-provided display metadata with simple fallback
+    category: connectionType.category || ConnectionCategory.CUSTOM,
+    tags: connectionType.tags || ["API", "Custom"], // Basic default tags if not provided
+    enabledFeatures: connectionType.enabled_features || [
+      IntegrationFeature.DSR_AUTOMATION,
+    ], // Default to DSR automation
+  };
+};
 
 const EMPTY_TYPE = {
   placeholder: {
@@ -78,18 +105,45 @@ const EMPTY_TYPE = {
   },
   category: ConnectionCategory.DATA_WAREHOUSE,
   tags: [],
-  enabledFeatures: [] as IntegrationFeatureEnum[],
+  enabledFeatures: [] as IntegrationFeature[],
 };
 
 const getIntegrationTypeInfo = (
   type: ConnectionType | undefined,
   saasType?: string,
+  connectionTypes?: ConnectionSystemTypeMap[],
 ): IntegrationTypeInfo => {
   if (!type) {
     return EMPTY_TYPE;
   }
 
   if (type === ConnectionType.SAAS && saasType) {
+    // First, check if backend provides enhanced config-based data
+    if (connectionTypes) {
+      const connectionType = connectionTypes.find(
+        (ct) => ct.identifier === saasType,
+      );
+      if (connectionType) {
+        const configBasedInfo = generateSaasIntegrationInfo(connectionType);
+
+        // If there's a hardcoded integration (like Salesforce), merge in the overview component
+        // but prefer backend config data for category, tags, and features
+        const saasIntegration = SAAS_INTEGRATIONS.find(
+          (integration) =>
+            integration.placeholder.saas_config?.type === saasType,
+        );
+        if (saasIntegration && saasIntegration.overview) {
+          return {
+            ...configBasedInfo,
+            overview: saasIntegration.overview, // Keep rich React content for complex integrations
+          };
+        }
+
+        return configBasedInfo;
+      }
+    }
+
+    // Fallback to hardcoded integrations if backend data is not available
     const saasIntegration = SAAS_INTEGRATIONS.find(
       (integration) => integration.placeholder.saas_config?.type === saasType,
     );

@@ -61,7 +61,7 @@ from fides.api.tasks import celery_app
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
@@ -1310,6 +1310,37 @@ def contributor_user(db):
 
 
 @pytest.fixture
+def respondent(db):
+    """Create a respondent user with USER_READ_OWN scope"""
+    from fides.api.oauth.roles import RESPONDENT
+
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_respondent_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "respondent.user@ethyca.com",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[USER_READ_OWN],
+        roles=[RESPONDENT],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [RESPONDENT]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    db.refresh(user)  # Refresh user to load the client relationship
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
 def viewer_and_approver_user(db):
     user = FidesUser.create(
         db=db,
@@ -2091,6 +2122,38 @@ def base_gcs_client_mock():
     )
 
     return mock_client
+
+
+@pytest.fixture(scope="function")
+def privacy_request_erasure_pending(db: Session, erasure_policy: Policy) -> Generator:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_id": erasure_policy.id,
+            "status": "pending",
+            "external_id": "b5d78237-f831-4add-8a88-883a4843b016",
+        },
+    )
+    yield pr
+    pr.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_requires_manual_finalization(
+    db: Session, erasure_policy: Policy
+) -> Generator:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_id": erasure_policy.id,
+            "status": "requires_manual_finalization",
+            "external_id": "b5d78237-f831-4add-8a88-883a4843b016",
+        },
+    )
+    yield pr
+    pr.delete(db=db)
 
 
 @pytest.fixture

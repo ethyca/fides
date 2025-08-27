@@ -5,13 +5,21 @@ import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
-import ManualProcessingList from "./manual-processing/ManualProcessingList";
+import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
 
 type PrivacyRequestProps = {
   data: PrivacyRequestEntity;
 };
+
+const TERMINAL_STATES = [
+  PrivacyRequestStatus.COMPLETE,
+  PrivacyRequestStatus.CANCELED,
+  PrivacyRequestStatus.DENIED,
+  PrivacyRequestStatus.ERROR,
+  PrivacyRequestStatus.PAUSED,
+];
 
 const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const queryOptions = useMemo(
@@ -24,23 +32,19 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
 
   // Poll for the latest privacy request data while the status is approved or in processing
   const { data: latestData } = useGetAllPrivacyRequestsQuery(queryOptions, {
-    pollingInterval:
-      initialData.status === PrivacyRequestStatus.APPROVED ||
-      initialData.status === PrivacyRequestStatus.IN_PROCESSING
-        ? 2000
-        : 0,
+    pollingInterval: !TERMINAL_STATES.includes(initialData.status) ? 2000 : 0,
     skip: !initialData.id,
   });
 
   // Use latest data if available, otherwise use initial data
   const subjectRequest = latestData?.items[0] ?? initialData;
 
-  const isManualStepsRequired =
+  const isRequiringInputStatus =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
+  const showManualTasks = isRequiringInputStatus;
 
-  const [activeTabKey, setActiveTabKey] = useState(
-    isManualStepsRequired ? "manual-steps" : "activity",
-  );
+  const [activeTabKey, setActiveTabKey] = useState("activity");
+
   const items: TabsProps["items"] = useMemo(
     () => [
       {
@@ -49,23 +53,23 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         children: <ActivityTab subjectRequest={subjectRequest} />,
       },
       {
-        key: "manual-steps",
-        label: "Manual steps",
+        key: "manual-tasks",
+        label: "Manual tasks",
         children: (
-          <ManualProcessingList
+          <PrivacyRequestDetailsManualTaskTab
             subjectRequest={subjectRequest}
             onComplete={() => setActiveTabKey("activity")}
           />
         ),
-        disabled: !isManualStepsRequired,
+        disabled: !showManualTasks,
       },
     ],
-    [isManualStepsRequired, subjectRequest],
+    [showManualTasks, subjectRequest],
   );
 
   return (
     <div className="flex gap-8">
-      <div className="flex-1">
+      <div className="w-0 grow">
         <Tabs
           items={items}
           activeKey={activeTabKey}

@@ -1,4 +1,4 @@
-import { ComponentChildren, Fragment, h, VNode } from "preact";
+import { ComponentChildren, Fragment, VNode } from "preact";
 import type { HTMLAttributes } from "preact/compat";
 
 import { getConsentContext } from "../lib/consent-context";
@@ -38,7 +38,7 @@ const ConsentContent = ({
         <div className="fides-modal-body">
           <div
             data-testid="fides-modal-title"
-            {...titleProps}
+            {...titleProps} // adds role, aria-level, id
             className="fides-modal-title"
           >
             {title}

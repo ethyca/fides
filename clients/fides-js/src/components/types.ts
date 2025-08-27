@@ -1,11 +1,7 @@
-import type {
-  FidesCookie,
-  FidesExperienceTranslationOverrides,
-  FidesInitOptions,
-  NoticeConsent,
-  PrivacyExperience,
-} from "../lib/consent-types";
+import { ContainerNode } from "preact";
+
 import type { I18n } from "../lib/i18n";
+import { InitializedFidesGlobal } from "../lib/providers/fides-global-context";
 
 /**
  * The type of the parent component for the preact app
@@ -14,13 +10,10 @@ import type { I18n } from "../lib/i18n";
  * Similarly, when creating different overlay "types", they should all take
  * this type as a prop.
  */
-export interface OverlayProps {
-  options: FidesInitOptions;
-  experience: PrivacyExperience;
-  i18n: I18n;
-  cookie: FidesCookie;
-  fidesRegionString: string;
-  savedConsent: NoticeConsent;
-  propertyId?: string;
-  translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
-}
+export type RenderOverlayType = (
+  props: {
+    i18n: I18n;
+    initializedFides: InitializedFidesGlobal;
+  },
+  parent: ContainerNode,
+) => void;

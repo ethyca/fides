@@ -14,6 +14,8 @@ export type NavConfigRoute = {
   requiresOss?: boolean;
   requiresFlag?: FlagNames;
   requiresFidesCloud?: boolean;
+  /** Hide this route from the navigation UI but still allow access */
+  hidden?: boolean;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
@@ -46,32 +48,32 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "webMonitor",
         requiresPlus: true,
       },
       {
         title: "Activity",
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
       },
       {
         title: "Data detection",
         path: routes.DATA_DETECTION_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
       },
       {
         title: "Data discovery",
         path: routes.DATA_DISCOVERY_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
       },
       {
         title: "Data catalog",
         path: routes.DATA_CATALOG_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
@@ -123,6 +125,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [
           ScopeRegistryEnum.PRIVACY_REQUEST_READ,
           ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
       },
       {
@@ -193,6 +197,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.USER_PERMISSION_UPDATE,
           ScopeRegistryEnum.USER_READ,
         ],
+      },
+      {
+        title: "User Detail",
+        path: routes.USER_DETAIL_ROUTE,
+        hidden: true, // Don't show in nav but allow access
+        scopes: [], // Any authenticated user can access their own profile
       },
       {
         title: "Integrations",
@@ -324,6 +334,7 @@ export type NavGroupChild = {
   title: string;
   path: string;
   exact?: boolean;
+  hidden?: boolean;
   children: Array<NavGroupChild>;
 };
 
@@ -462,6 +473,7 @@ const configureNavRoute = ({
     title: route.title ?? navGroupTitle,
     path: route.path,
     exact: route.exact,
+    hidden: route.hidden,
     children,
   };
 

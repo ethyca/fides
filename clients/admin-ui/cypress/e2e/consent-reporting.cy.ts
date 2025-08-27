@@ -195,11 +195,7 @@ describe("Consent reporting", () => {
         .find("tr")
         .each(($row) => {
           if ($row.find("td").eq(3).text() === "TCF") {
-            cy.wrap($row)
-              .find("button")
-              .should("exist")
-              .and("be.visible")
-              .and("have.text", "TCF");
+            cy.wrap($row).find("button").should("exist").and("be.visible");
             return false;
           }
         });

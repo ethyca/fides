@@ -8,25 +8,24 @@ from typing import Any, Dict, List, Optional, Set
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import TextClause
 
-from fides.api.common_exceptions import PrivacyRequestNotFound
-from fides.api.models.policy import Policy
+from fides.api.common_exceptions import PrivacyRequestError, PrivacyRequestNotFound
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
     RequestTask,
 )
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     PrivacyRequestResponse,
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
@@ -34,6 +33,9 @@ from fides.api.util.cache import (
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,
+    get_privacy_request_retry_count,
+    increment_privacy_request_retry_count,
+    reset_privacy_request_retry_count,
 )
 from fides.api.util.lock import redis_lock
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
@@ -42,6 +44,7 @@ from fides.config import CONFIG
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
 INTERRUPTED_TASK_REQUEUE_POLL = "interrupted_task_requeue_poll"
+ASYNC_TASKS_STATUS_POLLING = "async_tasks_status_polling"
 
 
 def build_required_privacy_request_kwargs(
@@ -69,7 +72,6 @@ def build_required_privacy_request_kwargs(
 
 def cache_data(
     privacy_request: PrivacyRequest,
-    policy: Policy,
     identity: Identity,
     encryption_key: Optional[str],
     drp_request_body: Optional[DrpPrivacyRequestCreate],
@@ -82,23 +84,6 @@ def cache_data(
     privacy_request.cache_custom_privacy_request_fields(custom_privacy_request_fields)
     privacy_request.cache_encryption(encryption_key)  # handles None already
 
-    # Store masking secrets in the cache
-    logger.info("Caching masking secrets for privacy request {}", privacy_request.id)
-    erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
-    unique_masking_strategies_by_name: Set[str] = set()
-    for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]  # type: ignore
-        configuration = rule.masking_strategy["configuration"]  # type: ignore
-        if strategy_name in unique_masking_strategies_by_name:
-            continue
-        unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
-        if masking_strategy.secrets_required():
-            masking_secrets: List[MaskingSecretCache] = (
-                masking_strategy.generate_secrets_for_cache()
-            )
-            for masking_secret in masking_secrets:
-                privacy_request.cache_masking_secret(masking_secret)
     if drp_request_body:
         privacy_request.cache_drp_request_body(drp_request_body)
 
@@ -208,7 +193,11 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
             db.query(PrivacyRequest)
             .filter(
                 PrivacyRequest.status.in_(
-                    [PrivacyRequestStatus.in_processing, PrivacyRequestStatus.approved]
+                    [
+                        PrivacyRequestStatus.in_processing,
+                        PrivacyRequestStatus.approved,
+                        PrivacyRequestStatus.requires_input,
+                    ]
                 )
             )
             # Only look at Privacy Requests that haven't been deleted
@@ -370,11 +359,39 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
+def initiate_async_tasks_status_polling() -> None:
+    """Initiates scheduler to check for and requeue pending polling async tasks"""
+    if CONFIG.test_mode:
+        return
+
+    assert (
+        scheduler.running
+    ), "Scheduler is not running! Cannot add async tasks status polling job."
+
+    logger.info("Initiating scheduler for async tasks status polling")
+    scheduler.add_job(
+        func=poll_async_tasks_status,
+        trigger="interval",
+        kwargs={},
+        id=ASYNC_TASKS_STATUS_POLLING,
+        coalesce=True,
+        replace_existing=True,
+        seconds=CONFIG.execution.async_tasks_status_polling_interval_seconds,
+    )
+
+
 def get_cached_task_id(entity_id: str) -> Optional[str]:
-    """Gets the cached task ID for a privacy request or request task by ID."""
+    """Gets the cached task ID for a privacy request or request task by ID.
+
+    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    """
     cache: FidesopsRedis = get_cache()
-    task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
-    return task_id
+    try:
+        task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
+        return task_id
+    except Exception as exc:
+        logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
+        raise
 
 
 REQUEUE_INTERRUPTED_TASKS_LOCK = "requeue_interrupted_tasks_lock"
@@ -414,6 +431,114 @@ def _get_task_ids_from_dsr_queue(
     return queued_tasks_ids
 
 
+def _cancel_interrupted_tasks_and_error_privacy_request(
+    db: Session, privacy_request: PrivacyRequest, error_message: Optional[str] = None
+) -> None:
+    """
+    Cancel all tasks associated with an interrupted privacy request and set the privacy request to error state.
+
+    This function:
+    1. Logs the error message (either provided or default)
+    2. Revokes the main privacy request task and all associated request tasks
+    3. Sets the privacy request status to error
+    4. Creates an error log entry
+
+    Args:
+        db: Database session
+        privacy_request: The privacy request to cancel and error
+        error_message: Optional error message to log. If not provided, uses default message.
+    """
+    if error_message:
+        logger.error(error_message)
+    else:
+        logger.error(
+            f"Canceling interrupted tasks and marking privacy request {privacy_request.id} as error"
+        )
+
+    # Cancel all associated Celery tasks
+    privacy_request.cancel_celery_tasks()
+
+    # Set privacy request to error state using the existing method
+    try:
+        privacy_request.error_processing(db)
+        logger.info(
+            f"Privacy request {privacy_request.id} marked as error due to task interruption"
+        )
+    except Exception as exc:
+        logger.error(
+            f"Failed to mark privacy request {privacy_request.id} as error: {exc}"
+        )
+
+
+def _handle_privacy_request_requeue(
+    db: Session, privacy_request: PrivacyRequest
+) -> None:
+    """Handle retry logic for a privacy request - either requeue or cancel based on retry count."""
+    try:
+        # Check retry count and either requeue or cancel based on limit
+        current_retry_count = get_privacy_request_retry_count(privacy_request.id)
+        max_retries = CONFIG.execution.privacy_request_requeue_retry_count
+
+        if current_retry_count < max_retries:
+            # Increment retry count and attempt requeue
+            new_retry_count = increment_privacy_request_retry_count(privacy_request.id)
+            logger.info(
+                f"Requeuing privacy request {privacy_request.id} "
+                f"(attempt {new_retry_count}/{max_retries})"
+            )
+
+            from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
+                _requeue_privacy_request,
+            )
+
+            try:
+                _requeue_privacy_request(db, privacy_request)
+            except PrivacyRequestError as exc:
+                # If requeue fails, cancel tasks and set to error state
+                _cancel_interrupted_tasks_and_error_privacy_request(
+                    db, privacy_request, exc.message
+                )
+        else:
+            # Exceeded retry limit, cancel tasks and set to error state
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db,
+                privacy_request,
+                f"Privacy request {privacy_request.id} exceeded max retry attempts "
+                f"({max_retries}), canceling tasks and setting to error state",
+            )
+            # Reset retry count since we're giving up
+            reset_privacy_request_retry_count(privacy_request.id)
+
+    except Exception as cache_exc:
+        # If cache operations fail (Redis down, network issues, etc.), fail safe by canceling
+        _cancel_interrupted_tasks_and_error_privacy_request(
+            db,
+            privacy_request,
+            f"Cache operation failed for privacy request {privacy_request.id}, "
+            f"failing safe by canceling tasks: {cache_exc}",
+        )
+
+
+def _get_request_task_ids_in_progress(
+    db: Session, privacy_request_id: str
+) -> List[str]:
+    """Get the IDs of request tasks that are currently in progress for a privacy request."""
+    request_tasks_in_progress = (
+        db.query(RequestTask.id)
+        .filter(RequestTask.privacy_request_id == privacy_request_id)
+        .filter(
+            RequestTask.status.in_(
+                [
+                    ExecutionLogStatus.in_processing,
+                    ExecutionLogStatus.pending,
+                ]
+            )
+        )
+        .all()
+    )
+    return [task[0] for task in request_tasks_in_progress]
+
+
 # pylint: disable=too-many-branches
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
@@ -447,6 +572,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         [
                             PrivacyRequestStatus.in_processing,
                             PrivacyRequestStatus.approved,
+                            PrivacyRequestStatus.requires_input,
                         ]
                     )
                 )
@@ -463,17 +589,40 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
             )
 
             # Get task IDs from the queue in a memory-efficient way
-            queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
+            try:
+                queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
+            except Exception as queue_exc:
+                logger.warning(
+                    f"Failed to get task IDs from queue, skipping queue state checks: {queue_exc}"
+                )
+                return
 
             # Check each privacy request
             for privacy_request in in_progress_requests:
                 should_requeue = False
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
 
-                task_id = get_cached_task_id(privacy_request.id)
+                try:
+                    task_id = get_cached_task_id(privacy_request.id)
+                except Exception as cache_exc:
+                    # If we can't get the task ID due to cache failure, fail safe by canceling
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db,
+                        privacy_request,
+                        f"Cache failure when getting task ID for privacy request {privacy_request.id}, "
+                        f"failing safe by canceling tasks: {cache_exc}",
+                    )
+                    continue
 
                 # If the task ID is not cached, we can't check if it's running
+                # This means the request is stuck - cancel it
                 if not task_id:
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db,
+                        privacy_request,
+                        f"No task ID found for privacy request {privacy_request.id}, "
+                        f"request is stuck without a running task - canceling",
+                    )
                     continue
 
                 # Check if the main privacy request task is active
@@ -491,30 +640,36 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         )
                         should_requeue = True
 
-                    request_tasks_in_progress = (
-                        db.query(RequestTask.id)
-                        .filter(RequestTask.privacy_request_id == privacy_request.id)
-                        .filter(
-                            RequestTask.status.in_(
-                                [
-                                    ExecutionLogStatus.in_processing,
-                                    ExecutionLogStatus.pending,
-                                ]
-                            )
-                        )
-                        .all()
+                    request_task_ids_in_progress = _get_request_task_ids_in_progress(
+                        db, privacy_request.id
                     )
-                    request_task_ids_in_progress = [
-                        task[0] for task in request_tasks_in_progress
-                    ]
 
                     # Check each individual request task
                     for request_task_id in request_task_ids_in_progress:
-                        subtask_id = get_cached_task_id(request_task_id)
+                        try:
+                            subtask_id = get_cached_task_id(request_task_id)
+                        except Exception as cache_exc:
+                            # If we can't get the subtask ID due to cache failure, fail safe by canceling
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db,
+                                privacy_request,
+                                f"Cache failure when getting subtask ID for request task {request_task_id} "
+                                f"(privacy request {privacy_request.id}), failing safe by canceling tasks: {cache_exc}",
+                            )
+                            should_requeue = False
+                            break
 
                         # If the task ID is not cached, we can't check if it's running
+                        # This means the subtask is stuck - cancel the entire privacy request
                         if not subtask_id:
-                            continue
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db,
+                                privacy_request,
+                                f"No task ID found for request task {request_task_id} "
+                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
+                            )
+                            should_requeue = False
+                            break
 
                         if (
                             subtask_id not in queued_tasks_ids
@@ -528,12 +683,30 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
                 # Requeue the privacy request if needed
                 if should_requeue:
-                    from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
-                        PrivacyRequestError,
-                        _requeue_privacy_request,
-                    )
+                    _handle_privacy_request_requeue(db, privacy_request)
 
-                    try:
-                        _requeue_privacy_request(db, privacy_request)
-                    except PrivacyRequestError as exc:
-                        logger.error(exc.message)
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def poll_async_tasks_status(self: DatabaseTask) -> None:
+    """
+    Poll the status of async tasks that are awaiting processing.
+    """
+
+    with self.get_new_session() as db:
+        logger.debug("Polling for async tasks status")
+
+        # Get all tasks that are awaiting processing and are from polling async tasks
+        async_tasks = (
+            db.query(RequestTask)
+            .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+            .filter(RequestTask.async_type == AsyncTaskType.polling)
+            .all()
+        )
+        if async_tasks:
+            logger.debug(f"Found {len(async_tasks)} async tasks to poll")
+            from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
+                requeue_polling_request,
+            )
+
+            for async_task in async_tasks:
+                requeue_polling_request(db, async_task)

@@ -62,6 +62,7 @@ class TestPatchApplicationConfig:
             "execution": {
                 "subject_identity_verification_required": True,
                 "require_manual_request_approval": True,
+                "sql_dry_run": "none",
             },
             "security": {
                 "cors_origins": [
@@ -319,6 +320,63 @@ class TestPatchApplicationConfig:
         )
         assert db_settings.api_set["security"] == security_payload
 
+    def test_patch_application_config_sql_dry_run(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """Test that sql_dry_run can be updated with enum values"""
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+
+        # Test setting sql_dry_run to access
+        updated_payload = {"execution": {"sql_dry_run": SqlDryRunMode.access.value}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["sql_dry_run"] == "access"
+
+        # Verify it was saved to the database
+        db_settings = db.query(ApplicationConfig).first()
+        assert db_settings.api_set["execution"]["sql_dry_run"] == "access"
+
+        # Test setting sql_dry_run to erasure
+        updated_payload = {"execution": {"sql_dry_run": SqlDryRunMode.erasure.value}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["sql_dry_run"] == "erasure"
+
+        # Verify it was updated in the database
+        db.refresh(db_settings)
+        assert db_settings.api_set["execution"]["sql_dry_run"] == "erasure"
+
+        # Test setting sql_dry_run to none
+        updated_payload = {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["sql_dry_run"] == "none"
+
+        # Verify it was updated in the database
+        db.refresh(db_settings)
+        assert db_settings.api_set["execution"]["sql_dry_run"] == "none"
+
     def test_patch_application_config_notifications_properties(
         self,
         api_client: TestClient,
@@ -526,6 +584,85 @@ class TestPatchApplicationConfig:
             db_settings.api_set["notifications"]["send_request_review_notification"]
             is True
         )
+
+    def test_patch_application_config_memory_watchdog_enabled(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """Test that memory_watchdog_enabled can be updated individually"""
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+
+        # Test setting memory_watchdog_enabled to False
+        updated_payload = {"execution": {"memory_watchdog_enabled": False}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["memory_watchdog_enabled"] is False
+
+        # Verify it was saved to the database
+        db_settings = db.query(ApplicationConfig).first()
+        assert db_settings.api_set["execution"]["memory_watchdog_enabled"] is False
+
+        # Test setting memory_watchdog_enabled to True
+        updated_payload = {"execution": {"memory_watchdog_enabled": True}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["memory_watchdog_enabled"] is True
+
+        # Verify it was updated in the database
+        db.refresh(db_settings)
+        assert db_settings.api_set["execution"]["memory_watchdog_enabled"] is True
+
+    def test_patch_application_config_with_legacy_and_new_field(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ) -> None:
+        """Regression test:
+
+        1. Start with an existing ApplicationConfig in the DB that contains the *legacy* field `execution.safe_mode`.
+        2. Issue a PATCH that supplies a *new* supported field (`execution.sql_dry_run`).
+        3. Verify:
+           - The request succeeds (no ValidationError)
+           - The legacy field is silently dropped
+           - The new field is saved.
+        """
+
+        # Step 1 ‑ seed DB with legacy value
+        ApplicationConfig.update_api_set(
+            db,
+            {"execution": {"safe_mode": True}},
+            merge_updates=False,
+        )
+
+        # Sanity check that legacy value is present prior to patch
+        assert ApplicationConfig.get_api_set(db)["execution"]["safe_mode"] is True
+
+        # Step 2 ‑ PATCH with new supported value
+        patch_payload = {"execution": {"sql_dry_run": "access"}}
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=patch_payload)
+
+        # Step 3a ‑ request succeeded
+        assert response.status_code == 200
+
+        # Step 3b ‑ new field persists and no validation errors occurred even with legacy field present
+        execution_config = ApplicationConfig.get_api_set(db).get("execution", {})
+        assert execution_config.get("sql_dry_run") == "access"
 
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
@@ -1226,6 +1363,7 @@ class TestGetConfig:
             "execution",
             "storage",
             "consent",
+            "privacy_center",
         }
 
         for key in config.keys():
@@ -1313,6 +1451,7 @@ class TestGetConfig:
                             "task_retry_backoff",
                             "require_manual_request_approval",
                             "subject_identity_verification_required",
+                            "memory_watchdog_enabled",
                         ]
                     )
                 )
@@ -1348,4 +1487,9 @@ class TestGetConfig:
                 )
             )
             == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        privacy_center_keys = set(config["privacy_center"].keys())
+        assert (
+            len(privacy_center_keys.difference(set(["url"]))) == 0
         ), "Unexpected config API change, please review with Ethyca security team"

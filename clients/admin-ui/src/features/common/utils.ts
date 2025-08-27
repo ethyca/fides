@@ -1,5 +1,7 @@
 import { format } from "date-fns-tz";
 
+import { User } from "../user-management/types";
+
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
@@ -139,15 +141,69 @@ export const stripHashFromUrl = (url: string) => {
 };
 
 /**
- * Formats a user object for display by combining first name, last name, and email
- * @param user - A partial user object with optional first_name, last_name, and email_address
+ * Formats a user object for display by combining first name, last name, email, and optionally username
+ * @param user - A partial user object with optional first_name, last_name, email_address, username, and id
+ * @param options - Optional configuration object
+ * @param options.fallbackToId - If true, will fallback to user.id if no other display value is found
  * @returns A formatted display name string
  */
-export const formatUser = (user: {
-  first_name?: string | null;
-  last_name?: string | null;
-  email_address?: string | null;
-}): string => {
+export const formatUser = (
+  user: Partial<User>,
+  options: { fallbackToId?: boolean } = {},
+): string => {
+  const { fallbackToId = false } = options;
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
-  return fullName || user.email_address || "Unknown User";
+
+  if (fullName) {
+    return fullName;
+  }
+  if (user.username) {
+    return user.username;
+  }
+  if (user.email_address) {
+    return user.email_address;
+  }
+  if (fallbackToId && user.id) {
+    return user.id;
+  }
+
+  return "Unknown User";
+};
+
+/**
+ * Converts an array of values to an array of Ant Design filter objects.
+ * @param values - The `values` parameter is an array of strings that contains the values to be converted.
+ * @param getDisplayName - The `getDisplayName` parameter is an optional function that can be used to customize the display name of the values.
+ * @returns an array of Ant Design filter objects.
+ */
+export const convertToAntFilters = (
+  values?: string[] | null,
+  getDisplayName?: (value: string) => string,
+) => {
+  if (!values || values.length === 0) {
+    return [];
+  }
+  return values.map((value) => ({
+    text: getDisplayName ? getDisplayName(value) : value,
+    value,
+  }));
+};
+
+/**
+ * Builds URLSearchParams from an object containing array-based query parameters.
+ * @param arrayParams - Object where keys are parameter names and values are arrays of strings
+ * @returns URLSearchParams instance with all array values properly appended
+ */
+export const buildArrayQueryParams = (
+  arrayParams: Record<string, string[] | undefined>,
+): URLSearchParams => {
+  const urlParams = new URLSearchParams();
+
+  Object.entries(arrayParams).forEach(([key, values]) => {
+    if (values && values.length > 0) {
+      values.forEach((value) => urlParams.append(key, value));
+    }
+  });
+
+  return urlParams;
 };

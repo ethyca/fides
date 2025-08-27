@@ -384,7 +384,7 @@ describe("Consent i18n", () => {
       cy.get("#fides-banner").within(() => {
         cy.getByTestId(`fides-i18n-option-${locale}`).should(
           "have.attr",
-          "aria-pressed",
+          "aria-checked",
         );
       });
     };
@@ -710,11 +710,12 @@ describe("Consent i18n", () => {
           globalPrivacyControl: true,
           fixture: "experience_banner_modal.json",
         });
-        cy.get("#fides-banner").should("be.visible");
-        cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`,
-        ).focus();
-        cy.get(`.fides-i18n-menu`).focused().click();
+        cy.get("#fides-banner")
+          .should("be.visible")
+          .within(() => {
+            cy.get(`.fides-i18n-button`).click();
+            cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).click();
+          });
         testBannerLanguageMenu(SPANISH_LOCALE);
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
@@ -728,11 +729,12 @@ describe("Consent i18n", () => {
           fixture: "experience_banner_modal.json",
           queryParams: { fides_locale: SPANISH_LOCALE },
         });
-        cy.get("#fides-banner").should("be.visible");
-        cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${ENGLISH_LOCALE}']`,
-        ).focus();
-        cy.get(`.fides-i18n-menu`).focused().click();
+        cy.get("#fides-banner")
+          .should("be.visible")
+          .within(() => {
+            cy.get(`.fides-i18n-button`).click();
+            cy.getByTestId(`fides-i18n-option-${ENGLISH_LOCALE}`).click();
+          });
         testBannerLanguageMenu(ENGLISH_LOCALE);
         testBannerLocalization(ENGLISH_BANNER);
         openAndTestModalLocalization(ENGLISH_MODAL);
@@ -1406,30 +1408,32 @@ describe("Consent i18n", () => {
         cy.get(".fides-radio-button-group button").contains(t.legint).click();
 
         // Check the list of Other vendors and toggle open a single example
-        cy.getByTestId("records-list-vendors").within(() => {
-          cy.get(".fides-record-header").contains(t.vendors_other);
-          cy.get(".fides-notice-badge").should("not.exist");
-          cy.get(".fides-notice-toggle")
-            .contains(t.vendor_other_example)
-            .click();
-          cy.get(".fides-disclosure-visible").within(() => {
-            cy.get("p").contains(t.vendor_other_example_description);
-            cy.get(".fides-vendor-details-table").then((tables) => {
-              cy.wrap(tables[0]).within(() => {
-                cy.get("thead").contains(t.purposes);
-                cy.get("thead").contains(t.retention);
-              });
-              cy.wrap(tables[1]).within(() => {
-                cy.get("thead").contains(t.special_purposes);
-                cy.get("thead").contains(t.retention);
-                cy.get("tr").contains(t.special_purpose_example);
-              });
-              cy.wrap(tables[2]).within(() => {
-                cy.get("thead").contains(t.features);
+        cy.getByTestId("records-list-vendors")
+          .eq(1)
+          .within(() => {
+            cy.get(".fides-record-header").contains(t.vendors_other);
+            cy.get(".fides-notice-badge").should("not.exist");
+            cy.get(".fides-notice-toggle")
+              .contains(t.vendor_other_example)
+              .click();
+            cy.get(".fides-disclosure-visible").within(() => {
+              cy.get("p").contains(t.vendor_other_example_description);
+              cy.get(".fides-vendor-details-table").then((tables) => {
+                cy.wrap(tables[0]).within(() => {
+                  cy.get("thead").contains(t.purposes);
+                  cy.get("thead").contains(t.retention);
+                });
+                cy.wrap(tables[1]).within(() => {
+                  cy.get("thead").contains(t.special_purposes);
+                  cy.get("thead").contains(t.retention);
+                  cy.get("tr").contains(t.special_purpose_example);
+                });
+                cy.wrap(tables[2]).within(() => {
+                  cy.get("thead").contains(t.features);
+                });
               });
             });
           });
-        });
       });
     };
 
@@ -1512,11 +1516,12 @@ describe("Consent i18n", () => {
           navigatorLanguage: ENGLISH_LOCALE,
           options: { tcfEnabled: true },
         });
-        cy.get("#fides-banner").should("be.visible");
-        cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`,
-        ).focus();
-        cy.get(`.fides-i18n-menu`).focused().click();
+        cy.get("#fides-banner")
+          .should("be.visible")
+          .within(() => {
+            cy.get(`.fides-i18n-button`).click();
+            cy.getByTestId(`fides-i18n-option-${SPANISH_LOCALE}`).click();
+          });
         cy.wait("@getGvlTranslations").then((interception) => {
           const { url } = interception.request;
           expect(url.split("?")[1]).to.eq(`language=${SPANISH_LOCALE}`);

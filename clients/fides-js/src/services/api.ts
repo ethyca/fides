@@ -86,7 +86,6 @@ export const fetchExperience = async <T = PrivacyExperience>({
     // ComponentType.OVERLAY is deprecated but “overlay” is still a backwards compatible filter.
     // Backend will filter to component that matches modal, banner_and_modal, or tcf_overlay
     component: ComponentType.OVERLAY,
-    has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
@@ -271,13 +270,18 @@ export const patchNoticesServed = async ({
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(request),
   };
-  const response = await fetch(
-    `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
-    fetchOptions,
-  );
-  if (!response.ok) {
-    fidesDebugger("Error patching notices served. Response:", response);
+  try {
+    const response = await fetch(
+      `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
+      fetchOptions,
+    );
+    if (!response.ok) {
+      fidesDebugger("Error patching notices served. Response:", response);
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    fidesDebugger("Error patching notices served. Error:", error);
     return null;
   }
-  return response.json();
 };

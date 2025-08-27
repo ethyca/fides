@@ -1,19 +1,22 @@
-import { SettingsAdjust } from "@carbon/icons-react";
-import { TableProps } from "antd/es/table";
-import { Table } from "antd/lib";
+import { ColumnsType } from "antd/es/table";
+import { MenuProps, Table, TableProps } from "antd/lib";
 import React from "react";
 
-import palette from "../palette/palette.module.scss";
+import { CustomTableHeaderCell } from "./CustomTableHeaderCell";
 
-// Filter icon component for consistent styling
-const FilterIcon = (filtered: boolean) => (
-  <SettingsAdjust
-    style={{
-      color: filtered ? palette.FIDESUI_MINOS : palette.FIDESUI_NEUTRAL_500,
-      width: "14px",
-    }}
-  />
-);
+type CustomColumnType<RecordType = any> = ColumnsType<RecordType>[number] & {
+  menu?: MenuProps;
+};
+
+export type CustomColumnsType<RecordType = any> =
+  CustomColumnType<RecordType>[];
+
+export type CustomTableProps<RecordType = any> = Omit<
+  TableProps<RecordType>,
+  "columns"
+> & {
+  columns: CustomColumnsType<RecordType>;
+};
 
 /**
  * Higher-order component that adds consistent styling and enhanced functionality to Ant Design's Table component.
@@ -21,39 +24,65 @@ const FilterIcon = (filtered: boolean) => (
  * Default customizations:
  * - Uses "small" size for more compact rows
  * - Enables bordered styling for better visual separation
- * - Uses Carbon SettingsAdjust icon for table column filters
+ * - Automatically hides pagination when there's only one page
  *
  */
 export const CustomTable = <RecordType = any,>({
   size = "small",
   bordered = true,
+  pagination,
+  dataSource,
+  components,
   columns,
+  scroll = { scrollToFirstRowOnChange: true, x: "max-content" },
   ...props
-}: TableProps<RecordType>) => {
-  // Enhance columns with custom filter icon if they have filters
-  const enhancedColumns = React.useMemo(() => {
-    if (!columns) {
-      return columns;
+}: CustomTableProps<RecordType>) => {
+  const paginationDefaults = React.useMemo(() => {
+    if (pagination === false || !pagination) {
+      return pagination;
     }
 
-    return columns.map((column) => {
-      // If column has filters but no custom filterIcon, add our Carbon filter icon
-      if (column.filters && !column.filterIcon) {
+    return {
+      showSizeChanger: true,
+      hideOnSinglePage:
+        pagination.pageSize?.toString() ===
+        pagination.pageSizeOptions?.[0]?.toString(), // Hide pagination if there's only one page
+      ...pagination,
+    };
+  }, [pagination, dataSource]);
+
+  const customColumns = React.useMemo(() => {
+    return columns.map((column) => ({
+      ...column,
+      onHeaderCell: (data: any, index: number) => {
+        // Get existing onHeaderCell props if they exist
+        const existingProps = column.onHeaderCell?.(data, index) || {};
+
+        // Merge with our menu prop
         return {
-          ...column,
-          filterIcon: FilterIcon,
+          ...existingProps,
+          menu: column.menu,
         };
-      }
-      return column;
-    });
+      },
+    }));
   }, [columns]);
 
   return (
     <Table
       size={size}
       bordered={bordered}
-      columns={enhancedColumns}
+      pagination={paginationDefaults}
+      dataSource={dataSource}
+      scroll={scroll}
       {...props}
+      components={{
+        header: {
+          ...components?.header,
+          cell: CustomTableHeaderCell,
+        },
+        ...components,
+      }}
+      columns={customColumns as ColumnsType<RecordType>}
     />
   );
 };

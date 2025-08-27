@@ -1,6 +1,6 @@
 import { produce } from "immer";
 
-import { loadServerSettings, validateConfig } from "~/app/server-environment";
+import { validateConfig } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import customFields from "~/config/examples/customFields.json";
 import fullJson from "~/config/examples/full.json";
@@ -18,14 +18,14 @@ describe("validateConfig", () => {
     },
     {
       name: "valid consent options",
-      config: fullJson,
+      config: fullJson as any,
       expected: {
         isValid: true,
       },
     },
     {
       name: "multiple executable consent options",
-      config: produce(fullJson, (draftConfig) => {
+      config: produce(fullJson, (draftConfig: any) => {
         draftConfig.consent.consentOptions[0].executable = true;
         draftConfig.consent.consentOptions[1].executable = true;
       }),

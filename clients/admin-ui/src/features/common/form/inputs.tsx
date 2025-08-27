@@ -24,11 +24,6 @@ import {
   InputGroup,
   InputProps,
   InputRightElement,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
   Text,
   Textarea,
   TextareaProps,
@@ -74,6 +69,9 @@ export interface CustomInputProps {
 // if the value they receive is undefined.
 export type StringField = FieldHookConfig<string | undefined>;
 
+/**
+ * @deprecated in favor of Form.Input label prop
+ */
 export const Label = ({
   children,
   ...labelProps
@@ -140,6 +138,9 @@ export const TextInput = forwardRef(
 );
 TextInput.displayName = "TextInput";
 
+/**
+ * @deprecated in favor of Form.Input with the appropriate status and help props
+ */
 export const ErrorMessage = ({
   isInvalid,
   message,
@@ -361,85 +362,6 @@ export const CustomTextArea = ({
           message={meta.error}
           fieldName={field.name}
         />
-      </VStack>
-    </FormControl>
-  );
-};
-
-interface CustomNumberInputProps {
-  label: string;
-  tooltip?: string;
-  variant?: "inline" | "condensed" | "stacked";
-  isDisabled?: boolean;
-  isRequired?: boolean;
-  minValue?: number;
-}
-export const CustomNumberInput = ({
-  label,
-  tooltip,
-  variant = "inline",
-  isDisabled,
-  isRequired = false,
-  minValue,
-  ...props
-}: CustomNumberInputProps & FieldHookConfig<number>) => {
-  const [field, meta] = useField({ ...props, type: "number" });
-  const { setFieldValue } = useFormikContext();
-  const isInvalid = !!(meta.touched && meta.error);
-
-  if (variant === "inline") {
-    return (
-      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-        <Grid templateColumns="1fr 3fr">
-          <Label htmlFor={props.id || props.name}>{label}</Label>
-          <Flex alignItems="center">
-            <Flex flexDir="column" flexGrow={1} mr="2">
-              <NumberInput focusBorderColor="primary.600">
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            </Flex>
-            <InfoTooltip label={tooltip} />
-          </Flex>
-        </Grid>
-      </FormControl>
-    );
-  }
-  return (
-    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-      <VStack alignItems="start" w="100%">
-        <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
-            {label}
-          </Label>
-          <InfoTooltip label={tooltip} />
-        </Flex>
-        <NumberInput
-          {...field}
-          onChange={(e) => {
-            if (
-              minValue !== undefined &&
-              (e as unknown as number) >= minValue
-            ) {
-              setFieldValue(props.name, e);
-            }
-          }}
-          size="sm"
-          w="100%"
-          isDisabled={isDisabled}
-          data-testid={`input-${field.name}`}
-          min={minValue || undefined}
-          focusBorderColor="primary.600"
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
       </VStack>
     </FormControl>
   );
@@ -716,6 +638,9 @@ export const CustomDatePicker = ({
   );
 };
 
+/**
+ * @deprecated in favor of FormikDateTimeInput
+ */
 export const CustomDateTimeInput = ({
   label,
   name,

@@ -1,11 +1,13 @@
 from typing import Any, Dict, Optional
 
 from boto3 import Session
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
+from fides.config import CONFIG
 
 
 def get_aws_session(
@@ -93,10 +95,24 @@ def get_s3_client(
 
     If an `assume_role_arn` is provided, the secrets will be used to
     assume that role and return a Session instantiated with that role.
+
+    If no `assume_role_arn` is provided, and `aws_s3_assume_role_arn` is
+    configured in the global `credentials.storage` config, then the secrets
+    will be used to assume that role and return a Session instantiated with
+    that role.
     """
+
+    configured_assume_role_arn = CONFIG.credentials.get(  # pylint: disable=no-member
+        "storage", {}
+    ).get(  # pylint: disable=no-member
+        "aws_s3_assume_role_arn"
+    )
     session = get_aws_session(
         auth_method=auth_method,
         storage_secrets=storage_secrets,
-        assume_role_arn=assume_role_arn,
+        assume_role_arn=assume_role_arn or configured_assume_role_arn,
     )
-    return session.client("s3")
+
+    # Configure S3 client to use signature version 4 for KMS compatibility
+    s3_config = Config(signature_version="s3v4")
+    return session.client("s3", config=s3_config)

@@ -6,13 +6,16 @@ import {
   FidesCookie,
   FidesEndpointPaths,
   Layer1ButtonOption,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   RejectAllMechanism,
 } from "fides-js";
-import { NoticeConsent } from "fides-js/src/lib/consent-types";
-import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 
+import {
+  FIDES_SEPARATOR,
+  TCF_FULL_MAX_ATTEMPTS,
+} from "../../../fides-js/src/lib/tcf/constants";
 import {
   API_URL,
   TCF_VERSION_HASH,
@@ -238,6 +241,17 @@ describe("Fides-js TCF", () => {
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.get("div#fides-banner").should("not.exist");
+      });
+    });
+
+    it("shows a loading error message when GVL is missing from full experience", () => {
+      stubTCFExperience({
+        experienceFullOverride: {
+          gvl: {} as never,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.getByTestId("tcf-loading-error-message").should("exist");
       });
     });
   });
@@ -513,7 +527,7 @@ describe("Fides-js TCF", () => {
                 fides_string: undefined,
               },
             });
-          // Second call should be from deprecated FidesInitialized
+          // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
@@ -840,13 +854,15 @@ describe("Fides-js TCF", () => {
           cy.get("span").contains(SYSTEM_1.name).should("not.exist");
 
           cy.get("button").contains("Legitimate interest").click();
-          cy.getByTestId("records-list-vendors").within(() => {
-            cy.get("span")
-              .contains(SYSTEM_1.name)
-              .within(() => {
-                cy.get("span").should("not.exist");
-              });
-          });
+          cy.getByTestId("records-list-vendors")
+            .eq(1)
+            .within(() => {
+              cy.get("span")
+                .contains(SYSTEM_1.name)
+                .within(() => {
+                  cy.get("span").should("not.exist");
+                });
+            });
         });
 
         // Check that the vendor ids persisted to the TC string
@@ -1096,6 +1112,87 @@ describe("Fides-js TCF", () => {
           });
         });
       });
+
+      it("can render the loading state and error message when full tcf fails to load", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubTCFExperience({});
+
+        // Intercept and fail the full experience API call to simulate network error
+        cy.intercept(
+          "GET",
+          `${API_URL}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
+          (req) => {
+            // Only fail the non-minimal TCF request (full experience)
+            if (!req.url.includes("minimal_tcf=true")) {
+              req.reply({
+                statusCode: 500,
+                body: "Internal Server Error",
+              });
+            } else {
+              req.reply({ fixture: "consent/experience_tcf_minimal.json" });
+            }
+          },
+        ).as("getPrivacyExperienceError");
+
+        cy.waitUntilFidesInitialized();
+
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Manage preferences").click();
+          });
+        });
+        cy.getByTestId("records-list-skeletons").should("exist");
+        cy.get("#fides-tab-features").click();
+        cy.getByTestId("records-list-skeletons").should("exist");
+
+        // Check the vendors tab also shows skeletons
+        cy.get("#fides-tab-vendors").click();
+        cy.getByTestId("records-list-skeletons").should("exist");
+
+        // Check that the Save button is disabled and shows loading state
+        cy.get("#fides-save-button").should("be.disabled");
+        cy.get("#fides-save-button .fides-spinner").should("be.visible");
+
+        // Wait for multiple retries to occur and then check for error state
+        Array.from({ length: TCF_FULL_MAX_ATTEMPTS }).forEach(() => {
+          cy.wait("@getPrivacyExperienceError");
+        });
+
+        // Check that error messages are displayed in each tab
+        cy.get("#fides-tab-purposes").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(0)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
+        cy.getByTestId("tcf-loading-error-message").should(
+          "contain",
+          "purposes and special features",
+        );
+
+        cy.get("#fides-tab-features").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(1)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
+        cy.getByTestId("tcf-loading-error-message").should(
+          "contain",
+          "features for which your data",
+        );
+
+        cy.get("#fides-tab-vendors").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(2)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
+        cy.getByTestId("tcf-loading-error-message").should(
+          "contain",
+          "vendors who can process your data",
+        );
+
+        cy.get("#fides-save-button").should("be.disabled");
+        cy.get("button").contains("Opt in to all").should("be.visible");
+        cy.get("button").contains("Opt out of all").should("be.visible");
+      });
     });
 
     describe("saving preferences", () => {
@@ -1257,7 +1354,7 @@ describe("Fides-js TCF", () => {
                   fides_string: undefined,
                 },
               });
-            // Second call should be from deprecated FidesInitialized
+            // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
@@ -1688,6 +1785,27 @@ describe("Fides-js TCF", () => {
                 vendorsDisclosed,
               );
             });
+          });
+
+          it("remembers consent when re-opening the modal", () => {
+            cy.getByTestId("consent-modal").within(() => {
+              // opt in to purpose 4
+              cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+              if (includeCustomPurposes) {
+                cy.getByTestId(`toggle-Advertising English`).click();
+              }
+              cy.get("button").contains("Save").click();
+            });
+            cy.wait("@patchPrivacyPreference");
+            cy.get("#fides-modal-link").click();
+            cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+              cy.get("input").should("be.checked");
+            });
+            if (includeCustomPurposes) {
+              cy.getByTestId(`toggle-Advertising English`).within(() => {
+                cy.get("input").should("be.checked");
+              });
+            }
           });
 
           it("can opt out of some custom consent and some tcf consent", () => {
@@ -3178,8 +3296,8 @@ describe("Fides-js TCF", () => {
           // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           expect(spyObject).to.be.called;
           // confirm cookie reflects version_hash from custom preferences API
-          cy.get("@FidesInitialized")
-            .should("have.been.calledTwice")
+          cy.get("@FidesConsentLoaded")
+            .should("have.been.calledOnce")
             .its("firstCall.args.0.detail.tcf_version_hash")
             .should("deep.equal", versionHash);
         });
@@ -3824,8 +3942,8 @@ describe("Fides-js TCF", () => {
         },
       });
 
-      cy.get("@FidesInitialized")
-        .should("have.been.calledTwice")
+      cy.get("@FidesConsentLoaded")
+        .should("have.been.calledOnce")
         .its("lastCall.args.0.detail")
         .then((updatedCookie: FidesCookie) => {
           // TC string setting worked
@@ -3851,8 +3969,8 @@ describe("Fides-js TCF", () => {
         },
       });
 
-      cy.get("@FidesInitialized")
-        .should("have.been.calledTwice")
+      cy.get("@FidesConsentLoaded")
+        .should("have.been.calledOnce")
         .its("lastCall.args.0.detail")
         .then((updatedCookie: FidesCookie) => {
           // TC string setting worked
@@ -4020,12 +4138,14 @@ describe("Fides-js TCF", () => {
           .should("not.exist");
 
         // And spot check legitimate interest
-        const legintIds = VENDOR_IDS.filter((id, idx) => idx % 2 !== 0);
+        const legintIds = VENDOR_IDS.filter(
+          (id, idx) => idx < 10 && idx % 2 !== 0,
+        );
         cy.get("button").contains("Legitimate interest").click();
         legintIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-notice-toggle-title").contains(id);
         });
-        cy.get(".fides-paging-info").contains("1-10 / 51");
+        cy.get(".fides-paging-info").contains("1-10 / 102");
       });
     });
   });
@@ -4221,6 +4341,150 @@ describe("Fides-js TCF", () => {
             });
           });
         });
+      });
+    });
+  });
+
+  describe("Legacy event support", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+    });
+
+    it("dispatches FidesInitialized at FidesConsentLoaded time when fides_initialized_event_mode is 'multiple'", () => {
+      // Set up a cookie so that FidesConsentLoaded will be dispatched
+      const cookie = mockCookie({
+        tcf_version_hash: TCF_VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+      // Enable legacy event support
+      stubTCFExperience({
+        stubOptions: { fidesInitializedEventMode: "multiple" },
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Verify that FidesInitialized was dispatched twice:
+        // 1. At FidesConsentLoaded time (legacy behavior)
+        // 2. At FidesReady time (normal behavior)
+        cy.get("@dataLayerPush")
+          .should("have.been.callCount", 4) // FidesConsentLoaded + FidesInitialized (legacy) + FidesReady + FidesInitialized (normal)
+          .its("args")
+          .then((args) => {
+            // First call should be FidesConsentLoaded
+            const firstCall = args[0][0];
+            expect(firstCall.event).to.equal("FidesConsentLoaded");
+
+            // Second call should be FidesInitialized (legacy)
+            const secondCall = args[1][0];
+            expect(secondCall.event).to.equal("FidesInitialized");
+
+            // Third call should be FidesReady
+            const thirdCall = args[2][0];
+            expect(thirdCall.event).to.equal("FidesReady");
+
+            // Fourth call should be FidesInitialized (normal)
+            const fourthCall = args[3][0];
+            expect(fourthCall.event).to.equal("FidesInitialized");
+          });
+      });
+    });
+
+    it("does not dispatch FidesInitialized at FidesConsentLoaded time when fides_initialized_event_mode is 'once'", () => {
+      // Set up a cookie so that FidesConsentLoaded will be dispatched
+      const cookie = mockCookie({
+        tcf_version_hash: TCF_VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+      // Do not enable legacy event support
+      stubTCFExperience({});
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Verify that FidesInitialized was only dispatched once at FidesReady time
+        cy.get("@dataLayerPush")
+          .should("have.been.callCount", 3) // FidesConsentLoaded + FidesReady + FidesInitialized (normal)
+          .its("args")
+          .then((args) => {
+            // First call should be FidesConsentLoaded
+            const firstCall = args[0][0];
+            expect(firstCall.event).to.equal("FidesConsentLoaded");
+
+            // Second call should be FidesReady
+            const secondCall = args[1][0];
+            expect(secondCall.event).to.equal("FidesReady");
+
+            // Third call should be FidesInitialized (normal)
+            const thirdCall = args[2][0];
+            expect(thirdCall.event).to.equal("FidesInitialized");
+
+            // Should only have one FidesInitialized event (no legacy one)
+            const fidesInitializedEvents = args.filter(
+              ([event]) => event.event === "FidesInitialized",
+            );
+            expect(fidesInitializedEvents).to.have.length(1);
+          });
+      });
+    });
+
+    it("supports fides_initialized_event_mode via query param", () => {
+      // Set up a cookie so that FidesConsentLoaded will be dispatched
+      const cookie = mockCookie({
+        tcf_version_hash: TCF_VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+      // Enable legacy event support via query param
+      stubTCFExperience({
+        demoPageQueryParams: { fides_initialized_event_mode: "multiple" },
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Verify that FidesInitialized was dispatched at FidesConsentLoaded time (legacy) and FidesReady time (normal)
+        cy.get("@dataLayerPush")
+          .its("args")
+          .then((args) => {
+            const fidesInitializedEvents = args.filter(
+              ([event]) => event.event === "FidesInitialized",
+            );
+            expect(fidesInitializedEvents).to.have.length(2);
+
+            // The first FidesInitialized event should come after FidesConsentLoaded (legacy)
+            const firstCall = args[0][0];
+            const secondCall = args[1][0];
+            expect(firstCall.event).to.equal("FidesConsentLoaded");
+            expect(secondCall.event).to.equal("FidesInitialized");
+          });
+      });
+    });
+
+    it("supports fides_initialized_event_mode via window object", () => {
+      // Set up a cookie so that FidesConsentLoaded will be dispatched
+      const cookie = mockCookie({
+        tcf_version_hash: TCF_VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+
+      // Enable legacy event support via window object
+      stubTCFExperience({
+        demoPageWindowParams: { fides_initialized_event_mode: "multiple" },
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Verify that FidesInitialized was dispatched at FidesConsentLoaded time (legacy) and FidesReady time (normal)
+        cy.get("@dataLayerPush")
+          .its("args")
+          .then((args) => {
+            const fidesInitializedEvents = args.filter(
+              ([event]) => event.event === "FidesInitialized",
+            );
+            expect(fidesInitializedEvents).to.have.length(2);
+
+            // The first FidesInitialized event should come after FidesConsentLoaded (legacy)
+            const firstCall = args[0][0];
+            const secondCall = args[1][0];
+            expect(firstCall.event).to.equal("FidesConsentLoaded");
+            expect(secondCall.event).to.equal("FidesInitialized");
+          });
       });
     });
   });

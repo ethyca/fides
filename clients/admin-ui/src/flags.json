@@ -30,6 +30,12 @@
     "test": true,
     "production": false
   },
+  "assetConsentStatusLabels": {
+    "description": "Consent status labels for assets discovered by the web monitor",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "oktaMonitor": {
     "description": "Monitor Okta for activity",
     "development": true,
@@ -54,8 +60,8 @@
     "test": true,
     "production": false
   },
-  "alphaNewManualDSR": {
-    "description": "New DSR Workflow Manual Tasks",
+  "newIntegrationManagement": {
+    "description": "Shows all integrations (including SaaS) in the integrations page",
     "development": true,
     "test": true,
     "production": false

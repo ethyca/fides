@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status
 from starlette.status import (
@@ -151,6 +151,10 @@ class NotSupportedForCollection(BaseException):
     """The given action is not supported for this type of collection"""
 
 
+class TableNotFound(BaseException):
+    """Table or collection does not exist in the database/system"""
+
+
 class PrivacyRequestExit(BaseException):
     """Privacy request exiting processing waiting on subtasks to complete"""
 
@@ -171,8 +175,8 @@ class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
 
 
-class AwaitingAsyncTaskCallback(BaseException):
-    """Request Task is Awaiting Processing - Awaiting Async Task Callback"""
+class AwaitingAsyncTask(BaseException):
+    """Request Task is Awaiting Processing - Awaiting Async Task"""
 
 
 class UpstreamTasksNotReady(BaseException):
@@ -283,6 +287,10 @@ class MalisciousUrlException(Exception):
     """Fides has detected a potentially maliscious URL."""
 
 
+class MaskingSecretsExpired(BaseException):
+    """The cached masking secrets have expired for the given privacy request."""
+
+
 class AuthenticationError(HTTPException):
     """To be raised when attempting to fetch an access token using
     invalid credentials.
@@ -363,6 +371,15 @@ class InvalidScopeError(HTTPException):
                 "valid_scopes": SCOPES,
             },
         )
+
+
+class PrivacyRequestError(Exception):
+    """Base exception for privacy request operations."""
+
+    def __init__(self, message: str, data: Optional[Dict] = None):
+        self.message = message
+        self.data = data
+        super().__init__(message)
 
 
 class KeyOrNameAlreadyExists(Exception):

@@ -1,12 +1,13 @@
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import { AccessLevel, ConnectionType } from "~/types/api";
+import { AccessLevel } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const MANUAL_PLACEHOLDER = {
-  name: "Manual",
+  name: "Manual Tasks",
   key: "manual_placeholder",
-  connection_type: ConnectionType.MANUAL_WEBHOOK,
+  connection_type: ConnectionType.MANUAL_TASK,
   access: AccessLevel.READ,
   created_at: "",
 };
@@ -15,15 +16,14 @@ const ManualOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      A Manual Integration provides a simple way for data to be manually
-      uploaded for access and erasure requests.
+      Manual Integrations enable you to create and assign tasks for data that
+      requires manual handling during access and erasure requests. Tasks can be
+      assigned to internal users within Fides or external users who complete
+      them securely through the external task portal.
     </InfoText>
     <InfoText>
-      If you have manual integrations defined, privacy request execution will
-      exit early and remain in a state of <em>Requires input</em>. Once data has
-      been manually uploaded for all the manual integrations, then the privacy
-      request can be resumed. Data uploaded for manual integrations is passed on
-      directly to the data subject alongside the data package.
+      When privacy requests involve manual integrations, execution will pause in
+      a <em>Requires input</em> state until all assigned tasks are completed.
     </InfoText>
   </>
 );
@@ -36,8 +36,8 @@ const MANUAL_TYPE_INFO = {
   tags: MANUAL_TAGS,
   overview: <ManualOverview />,
   enabledFeatures: [
-    IntegrationFeatureEnum.TASKS,
-    IntegrationFeatureEnum.WITHOUT_CONNECTION,
+    IntegrationFeature.TASKS,
+    IntegrationFeature.WITHOUT_CONNECTION,
   ],
 };
 

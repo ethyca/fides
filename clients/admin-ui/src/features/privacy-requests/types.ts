@@ -17,6 +17,7 @@ export enum ExecutionLogStatus {
   COMPLETE = "complete",
   ERROR = "error",
   PAUSED = "paused",
+  AWAITING_PROCESSING = "awaiting_processing",
   RETRYING = "retrying",
   SKIPPED = "skipped",
 }
@@ -27,6 +28,7 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.COMPLETE]: "Complete",
   [ExecutionLogStatus.ERROR]: "Error",
   [ExecutionLogStatus.PAUSED]: "Paused",
+  [ExecutionLogStatus.AWAITING_PROCESSING]: "Awaiting input",
   [ExecutionLogStatus.RETRYING]: "Retrying",
   [ExecutionLogStatus.SKIPPED]: "Skipped",
 };
@@ -37,6 +39,7 @@ export const ExecutionLogStatusColors: Record<
 > = {
   [ExecutionLogStatus.ERROR]: "error",
   [ExecutionLogStatus.SKIPPED]: "warning",
+  [ExecutionLogStatus.AWAITING_PROCESSING]: "minos",
   [ExecutionLogStatus.IN_PROCESSING]: undefined,
   [ExecutionLogStatus.PENDING]: undefined,
   [ExecutionLogStatus.COMPLETE]: undefined,
@@ -97,6 +100,8 @@ export interface PrivacyRequestEntity {
   };
   created_at: string;
   reviewed_by: string;
+  finalized_at?: string;
+  finalized_by?: string;
   id: string;
   days_left?: number;
   source?: string;
@@ -211,6 +216,7 @@ export interface ConfigMessagingSecretsRequest {
 export enum ActivityTimelineItemTypeEnum {
   REQUEST_UPDATE = "Request update",
   INTERNAL_COMMENT = "Internal comment",
+  MANUAL_TASK = "Manual task",
 }
 
 export const TimelineItemColorMap: Record<
@@ -219,6 +225,7 @@ export const TimelineItemColorMap: Record<
 > = {
   [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: "sandstone",
   [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: "marble",
+  [ActivityTimelineItemTypeEnum.MANUAL_TASK]: "nectar",
 };
 
 export interface ActivityTimelineItem {
@@ -231,5 +238,7 @@ export interface ActivityTimelineItem {
   description?: string;
   isError: boolean;
   isSkipped: boolean;
+  isAwaitingInput: boolean;
   id: string;
+  attachments?: { id: string; file_name: string }[];
 }

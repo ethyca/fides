@@ -12,7 +12,9 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-export const PAGE_SIZES = [25, 50, 100];
+import { DEFAULT_PAGE_SIZES } from "../constants";
+
+export const PAGE_SIZES = DEFAULT_PAGE_SIZES;
 
 export const useClientSidePagination = <T,>(
   tableInstance: TableInstance<T>,

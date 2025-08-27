@@ -2,6 +2,7 @@ import {
   ExperienceConfigTranslation,
   FidesEndpointPaths,
   FidesInitOptions,
+  getCoreFides,
   LegacyConsentConfig,
   PrivacyExperience,
   PrivacyExperienceMinimal,
@@ -73,13 +74,20 @@ export const stubConfig = (
   demoPageWindowParams?: any,
   skipVisit?: boolean,
 ) => {
+  cy.intercept("GET", "https://cdn-api.ethyca.com/location", {
+    statusCode: 200, // in case dev env has location service enabled during testing
+  }).as("getLocation");
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+    const defaultOptions = getCoreFides({
+      tcfEnabled: config.options?.tcfEnabled,
+    });
+    const coreOptions = setNewConfig(defaultOptions.options, config.options);
     const updatedConfig = {
       consent: setNewConfig(config.consent, consent),
       // this mocks the pre-fetched experience
       experience: setNewConfig(config.experience, experience),
       geolocation: setNewConfig(config.geolocation, geolocation),
-      options: setNewConfig(config.options, options),
+      options: setNewConfig(coreOptions, options),
     };
     // We conditionally stub these APIs because we need the exact API urls, which can change or not even exist
     // depending on the specific test case.

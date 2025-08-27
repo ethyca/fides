@@ -190,7 +190,7 @@ def _determine_redis_db_index(
     return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
 
 
-def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
+def get_cache() -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
 
     if not CONFIG.redis.enabled:
@@ -200,7 +200,6 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
 
     global _connection  # pylint: disable=W0603
     if _connection is None:
-        logger.debug("Creating new Redis connection...")
         _connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
@@ -213,21 +212,13 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
             ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
-        if should_log:
-            logger.debug("New Redis connection created.")
 
-    if should_log:
-        logger.debug("Testing Redis connection...")
     try:
         connected = _connection.ping()
     except ConnectionErrorFromRedis:
         connected = False
-    else:
-        if should_log:
-            logger.debug("Redis connection succeeded.")
 
     if not connected:
-        logger.debug("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
             "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
         )
@@ -242,14 +233,10 @@ def get_read_only_cache() -> FidesopsRedis:
     """
     # If read-only is not enabled, return the regular cache
     if not CONFIG.redis.read_only_enabled:
-        logger.debug(
-            "Read-only Redis is not enabled. Returning writeable cache connection instead."
-        )
         return get_cache()
 
     global _read_only_connection  # pylint: disable=W0603
     if _read_only_connection is None:
-        logger.debug("Creating new read-only Redis connection...")
         _read_only_connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
@@ -266,15 +253,10 @@ def get_read_only_cache() -> FidesopsRedis:
     try:
         # Test the connection by attempting to ping the Redis server
         connected = _read_only_connection.ping()
-        logger.debug("Read-only Redis connection established successfully.")
-    except Exception as e:
-        logger.error(f"Failed to connect to read-only Redis: {e}")
+    except Exception:
         connected = False
 
     if not connected:
-        logger.error(
-            "Unable to establish read-only Redis connection. Returning writeable cache connection instead."
-        )
         # If we can't connect to the read-only cache, fall back to the regular cache
         return get_cache()
 
@@ -352,6 +334,62 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
         )
 
 
+def get_privacy_request_retry_cache_key(privacy_request_id: str) -> str:
+    """Get cache key for tracking privacy request requeue retry attempts."""
+    return f"id-{privacy_request_id}-privacy-request-retry-count"
+
+
+def get_privacy_request_retry_count(privacy_request_id: str) -> int:
+    """Get the current retry count for a privacy request requeue attempts.
+
+    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    """
+    cache: FidesopsRedis = get_cache()
+    try:
+        retry_count = cache.get(get_privacy_request_retry_cache_key(privacy_request_id))
+        return int(retry_count) if retry_count else 0
+    except Exception as exc:
+        logger.error(
+            f"Failed to get retry count for privacy request {privacy_request_id}: {exc}"
+        )
+        raise
+
+
+def increment_privacy_request_retry_count(privacy_request_id: str) -> int:
+    """Increment and return the retry count for a privacy request requeue attempts.
+
+    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
+    """
+    cache: FidesopsRedis = get_cache()
+    cache_key = get_privacy_request_retry_cache_key(privacy_request_id)
+
+    try:
+        # Increment the counter, will be 1 if key doesn't exist
+        new_count = cache.incr(cache_key)
+        # Set expiry to prevent cache buildup (24 hours)
+        cache.expire(cache_key, 86400)
+        return new_count
+    except Exception as exc:
+        logger.error(
+            f"Failed to increment retry count for privacy request {privacy_request_id}: {exc}"
+        )
+        raise
+
+
+def reset_privacy_request_retry_count(privacy_request_id: str) -> None:
+    """Reset the retry count for a privacy request requeue attempts.
+
+    Silently fails if cache operations fail since this is cleanup.
+    """
+    cache: FidesopsRedis = get_cache()
+    try:
+        cache.delete(get_privacy_request_retry_cache_key(privacy_request_id))
+    except Exception as exc:
+        logger.warning(
+            f"Failed to reset retry count for privacy request {privacy_request_id}: {exc}"
+        )
+
+
 def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
     """Returns True if supplied Celery Tasks appear to be in-flight"""
     if not celery_task_ids:
@@ -405,3 +443,8 @@ def get_queue_counts() -> Dict[str, int]:
         logger.critical(exception)
         queue_counts = {}
     return queue_counts
+
+
+def get_all_masking_secret_keys(privacy_request_id: str) -> List[str]:
+    cache: FidesopsRedis = get_cache()
+    return cache.keys(f"id-{privacy_request_id}-masking-secret-*")

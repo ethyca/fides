@@ -140,9 +140,15 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
     "getDatasets",
   );
+  cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+    fixture: "connectors/minimal_datasets.json",
+  }).as("getMinimalDatasets");
   cy.intercept("GET", "/api/v1/dataset?page*", {
     fixture: "datasets_paginated.json",
   }).as("getFilteredDatasets");
+  cy.intercept("GET", "/api/v1/dataset?page*&minimal=true", {
+    fixture: "datasets_paginated_minimal.json",
+  }).as("getFilteredMinimalDatasets");
 
   cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
     "getDataset",
@@ -151,6 +157,11 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=false", []).as(
     "getUnlinkedDatasets",
   );
+  cy.intercept(
+    "GET",
+    "/api/v1/dataset?only_unlinked_datasets=false&minimal=true",
+    { fixture: "connectors/minimal_datasets.json" },
+  ).as("getMinimalUnlinkedDatasets");
 
   // Update
   cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
@@ -427,10 +438,10 @@ export const stubSystemIntegrations = () => {
   cy.intercept("GET", "/api/v1/connection_type/*/secret", {
     fixture: "connectors/postgres_secret.json",
   }).as("getPostgresConnectorSecret");
-  cy.intercept("GET", "/api/v1/connection/datasetconfig", {
+  cy.intercept("GET", "/api/v1/connection/datasetconfig?size=1000", {
     fixture: "connectors/datasetconfig.json",
   }).as("getConnectionDatasetConfig");
-  cy.intercept("GET", "/api/v1/connection/*/datasetconfig", {
+  cy.intercept("GET", "/api/v1/connection/*/datasetconfig?size=1000", {
     fixture: "connectors/datasetconfig.json",
   }).as("getConnectionDatasetConfig");
   cy.intercept("GET", "/api/v1/plus/dictionary/system?size=2000", {
@@ -550,7 +561,7 @@ export const stubWebsiteMonitor = () => {
   }).as("getSystemAssetResults");
   cy.intercept(
     "GET",
-    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
+    "/api/v1/plus/discovery-monitor/*/results?*resolved_system_id=%5Bundefined%5D*",
     {
       fixture: "detection-discovery/activity-center/system-asset-uncategorized",
     },
@@ -573,6 +584,16 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
     response: 200,
   }).as("restoreAssets");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/staged_resource/*/consent*",
+    {
+      fixture: "detection-discovery/activity-center/consent-breakdown",
+    },
+  ).as("getConsentBreakdown");
+  cy.intercept("GET", "/api/v1/plus/filters/website_monitor_resources*", {
+    response: 200,
+  }).as("getWebsiteMonitorResourcesFilters");
 };
 
 export const stubSystemAssets = () => {
@@ -741,6 +762,43 @@ export const stubIntegrationManagement = (
   }).as("getSystems");
 };
 
+export const stubManualTaskConfig = () => {
+  // Mock manual task related endpoints
+  cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields*", {
+    fixture: "integration-management/manual-tasks/manual-fields.json",
+  }).as("getManualFields");
+
+  cy.intercept("POST", "/api/v1/plus/connection/*/manual-field", {
+    body: {},
+  }).as("createManualField");
+
+  cy.intercept("PUT", "/api/v1/plus/connection/*/manual-field/*", {
+    body: {},
+  }).as("updateManualField");
+
+  cy.intercept("DELETE", "/api/v1/plus/connection/*/manual-field/*", {
+    statusCode: 204,
+  }).as("deleteManualField");
+
+  cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
+    fixture: "integration-management/manual-tasks/manual-task-connection.json",
+  }).as("getConnection");
+
+  // Mock user assignment endpoints
+  cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
+    fixture: "integration-management/manual-tasks/task-config.json",
+  }).as("getManualTask");
+
+  cy.intercept("PUT", "/api/v1/plus/connection/*/manual-task/assign-users", {
+    body: {},
+  }).as("assignUsersToManualTask");
+
+  // Mock external user creation
+  cy.intercept("POST", "/api/v1/plus/external-user", {
+    body: {},
+  }).as("createExternalUser");
+};
+
 export const stubSharedMonitorConfig = () => {
   cy.intercept("GET", "/api/v1/plus/shared-monitor-config*", {
     fixture: "detection-discovery/monitors/shared_config_response.json",
@@ -751,26 +809,51 @@ export const stubSharedMonitorConfig = () => {
 };
 
 export const stubManualTasks = () => {
+  // Intercept this call that is made to get the full list of filters available
+  cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=1", {
+    fixture: "manual-tasks/manual-tasks-response.json",
+  }).as("getManualTasksFullFilters");
+
   // Intercept the manual tasks API endpoints
-  cy.intercept("GET", "/api/v1/manual-tasks*", {
+  cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=25*", {
     fixture: "manual-tasks/manual-tasks-response.json",
   }).as("getManualTasks");
 
-  cy.intercept("POST", "/api/v1/manual-tasks/*/complete", {
+  cy.intercept("POST", "/api/v1/privacy-request/*/manual-field/*/complete", {
     body: {
-      task_id: "task_001",
+      manual_field_id: "task_001",
       status: "completed",
     },
   }).as("completeTask");
 
-  cy.intercept("POST", "/api/v1/manual-tasks/*/skip", {
+  cy.intercept("POST", "/api/v1/privacy-request/*/manual-field/*/skip", {
     body: {
-      task_id: "task_001",
+      manual_field_id: "task_001",
       status: "skipped",
     },
   }).as("skipTask");
 
-  cy.intercept("GET", "/api/v1/manual-tasks/*", {
+  cy.intercept("GET", "/api/v1/plus/manual-fields/*", {
     fixture: "manual-tasks/manual-task-detail.json",
   }).as("getTaskById");
+};
+
+export const stubFeatureFlags = () => {
+  // Intercept the manual tasks API endpoints
+  cy.intercept("GET", "/api/v1/config*", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createConfigurationSettings");
+};
+
+export const stubLogout = () => {
+  cy.intercept("POST", "/api/v1/logout", {
+    statusCode: 204,
+  }).as("logoutRequest");
+};
+
+export const stubPlusAuth = () => {
+  cy.intercept("GET", "/api/v1/plus/authentication-methods", {
+    statusCode: 200,
+    body: {},
+  }).as("logoutRequest");
 };

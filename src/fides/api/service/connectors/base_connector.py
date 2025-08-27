@@ -82,6 +82,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated
 
@@ -143,3 +144,17 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         # Defaulting to true for now so we can keep the default behavior and
         # incrementally determine the need for primary keys across all connectors
         return True
+
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """
+        Get the fully qualified table name for the given execution node.
+        """
+        raise NotImplementedError(
+            "get_qualified_table_name is not implemented by this connector"
+        )
+
+    def table_exists(self, qualified_table_name: str) -> bool:
+        """
+        Check if a table exists in the datastore.
+        """
+        raise NotImplementedError("table_exists is not implemented by this connector")

@@ -73,9 +73,15 @@ MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
+# Privacy Center URLs
+PRIVACY_CENTER_DSR_PACKAGE = "/privacy-request/{privacy_request_id}/access-package"
+
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
+PRIVACY_REQUEST_BATCH_EMAIL_SEND = (
+    "/privacy-request/administrate/process-awaiting-email-send"
+)
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_BULK_SOFT_DELETE = "/privacy-request/bulk/soft-delete"
@@ -90,7 +96,7 @@ PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-r
 PRIVACY_REQUEST_FILTERED_RESULTS = (
     "/privacy-request/{privacy_request_id}/filtered-results"
 )
-
+PRIVACY_REQUEST_FINALIZE = "/privacy-request/{privacy_request_id}/finalize"
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"

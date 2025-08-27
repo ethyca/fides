@@ -20,6 +20,7 @@ import {
   selectPurposes,
   useGetPurposesQuery,
 } from "~/features/common/purpose.slice";
+import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementModal,
@@ -312,9 +313,8 @@ export const TableMigrationPOC = () => {
         pagination={{
           current: pageIndex,
           pageSize,
+          pageSizeOptions: DEFAULT_PAGE_SIZES,
           total: totalRows,
-          showSizeChanger: true,
-          pageSizeOptions: [25, 50, 100],
         }}
         onChange={handleTableChange}
         onRow={(record) => ({

@@ -1,0 +1,488 @@
+{
+  "items": [
+    {
+      "fides_key": "test_dataset_config_1",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_1",
+        "name": "Test Dataset 1",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_2",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_2",
+        "name": "Test Dataset 2",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_3",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_3",
+        "name": "Test Dataset 3",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_4",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_4",
+        "name": "Test Dataset 4",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_5",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_5",
+        "name": "Test Dataset 5",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_6",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_6",
+        "name": "Test Dataset 6",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_7",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_7",
+        "name": "Test Dataset 7",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_8",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_8",
+        "name": "Test Dataset 8",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_9",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_9",
+        "name": "Test Dataset 9",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_10",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_10",
+        "name": "Test Dataset 10",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_11",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_11",
+        "name": "Test Dataset 11",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_12",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_12",
+        "name": "Test Dataset 12",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_13",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_13",
+        "name": "Test Dataset 13",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_14",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_14",
+        "name": "Test Dataset 14",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_15",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_15",
+        "name": "Test Dataset 15",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_16",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_16",
+        "name": "Test Dataset 16",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_17",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_17",
+        "name": "Test Dataset 17",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_18",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_18",
+        "name": "Test Dataset 18",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_19",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_19",
+        "name": "Test Dataset 19",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_20",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_20",
+        "name": "Test Dataset 20",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_21",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_21",
+        "name": "Test Dataset 21",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_22",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_22",
+        "name": "Test Dataset 22",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_23",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_23",
+        "name": "Test Dataset 23",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_24",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_24",
+        "name": "Test Dataset 24",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_25",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_25",
+        "name": "Test Dataset 25",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_26",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_26",
+        "name": "Test Dataset 26",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_27",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_27",
+        "name": "Test Dataset 27",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_28",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_28",
+        "name": "Test Dataset 28",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_29",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_29",
+        "name": "Test Dataset 29",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_30",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_30",
+        "name": "Test Dataset 30",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_31",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_31",
+        "name": "Test Dataset 31",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_32",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_32",
+        "name": "Test Dataset 32",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_33",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_33",
+        "name": "Test Dataset 33",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_34",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_34",
+        "name": "Test Dataset 34",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_35",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_35",
+        "name": "Test Dataset 35",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_36",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_36",
+        "name": "Test Dataset 36",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_37",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_37",
+        "name": "Test Dataset 37",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_38",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_38",
+        "name": "Test Dataset 38",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_39",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_39",
+        "name": "Test Dataset 39",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_40",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_40",
+        "name": "Test Dataset 40",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_41",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_41",
+        "name": "Test Dataset 41",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_42",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_42",
+        "name": "Test Dataset 42",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_43",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_43",
+        "name": "Test Dataset 43",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_44",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_44",
+        "name": "Test Dataset 44",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_45",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_45",
+        "name": "Test Dataset 45",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_46",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_46",
+        "name": "Test Dataset 46",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_47",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_47",
+        "name": "Test Dataset 47",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_48",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_48",
+        "name": "Test Dataset 48",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_49",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_49",
+        "name": "Test Dataset 49",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_50",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_50",
+        "name": "Test Dataset 50",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_51",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_51",
+        "name": "Test Dataset 51",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_52",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_52",
+        "name": "Test Dataset 52",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_53",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_53",
+        "name": "Test Dataset 53",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_54",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_54",
+        "name": "Test Dataset 54",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_55",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_55",
+        "name": "Test Dataset 55",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_56",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_56",
+        "name": "Test Dataset 56",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_57",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_57",
+        "name": "Test Dataset 57",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_58",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_58",
+        "name": "Test Dataset 58",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_59",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_59",
+        "name": "Test Dataset 59",
+        "description": "Test dataset for pagination testing"
+      }
+    },
+    {
+      "fides_key": "test_dataset_config_60",
+      "ctl_dataset": {
+        "fides_key": "test_dataset_60",
+        "name": "Test Dataset 60",
+        "description": "Test dataset for pagination testing"
+      }
+    }
+  ],
+  "page": 1,
+  "pages": 1,
+  "size": 60,
+  "total": 60
+}

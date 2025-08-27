@@ -25,6 +25,7 @@ $horizontal-padding: 20px;
 
   &--error,
   &--comment,
+  &--awaiting-input,
   &:hover {
     border-color: var(--fidesui-neutral-100);
   }
@@ -38,14 +39,25 @@ $horizontal-padding: 20px;
   &--error:focus {
     border-left: 8px solid var(--fidesui-error);
   }
+
+  &--awaiting-input,
+  &--awaiting-input:hover,
+  &--awaiting-input:focus {
+    border-left: 8px solid var(--fidesui-minos);
+  }
 }
 
 .header {
   width: 100%;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+
+  & > * {
+    flex-shrink: 0;
+  }
 }
 
 .author {
@@ -53,10 +65,17 @@ $horizontal-padding: 20px;
 
 .title {
   font-weight: 600;
+  flex-shrink: 1;
 
   &--error {
     color: var(--fidesui-error);
   }
+
+  &--awaiting-input {
+    color: var(--fidesui-minos);
+  }
+
+  width: auto;
 }
 
 .timestamp {

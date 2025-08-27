@@ -47,9 +47,18 @@ from fides.api.models.attachment import (
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.field_types import EncryptedLargeDataDescriptor
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigurationType,
+    ManualTaskEntityType,
+    ManualTaskInstance,
+)
 from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.api.models.masking_secret import MaskingSecret
 from fides.api.models.policy import (
     Policy,
     PolicyPreWebhook,
@@ -98,7 +107,6 @@ from fides.api.util.cache import (
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
-    get_masking_secret_cache_key,
 )
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
@@ -141,6 +149,12 @@ class PrivacyRequest(
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
     # Who approved/denied the request
     reviewed_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
+    finalized_at = Column(DateTime(timezone=True), nullable=True)
+    finalized_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
@@ -194,12 +208,21 @@ class PrivacyRequest(
         viewonly=True,
         uselist=True,
     )
+    manual_task_instances = relationship(
+        "ManualTaskInstance",
+        lazy="select",
+        passive_deletes="all",
+        primaryjoin="and_(ManualTaskInstance.entity_id==foreign(PrivacyRequest.id), "
+        "ManualTaskInstance.entity_type=='privacy_request')",
+        uselist=True,
+    )
     property_id = Column(String, nullable=True)
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
     source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
+    location = Column(String, nullable=True)
 
     # A PrivacyRequest can be soft deleted, so we store when it was deleted
     deleted_at = Column(DateTime(timezone=True), nullable=True)
@@ -287,6 +310,13 @@ class PrivacyRequest(
         back_populates="privacy_request",
         lazy="dynamic",
         order_by="RequestTask.created_at",
+    )
+
+    masking_secrets: "RelationshipProperty[List[MaskingSecret]]" = relationship(
+        "MaskingSecret",
+        back_populates="privacy_request",
+        uselist=True,
+        passive_deletes="all",
     )
 
     @property
@@ -566,19 +596,24 @@ class PrivacyRequest(
             encryption_key,
         )
 
-    def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
-        """Sets masking encryption secrets in the Fides app cache if provided"""
-        if not masking_secret:
+    def persist_masking_secrets(
+        self, masking_secrets: List[MaskingSecretCache]
+    ) -> None:
+        """Persists masking encryption secrets to database."""
+        if not masking_secrets:
             return
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            get_masking_secret_cache_key(
-                self.id,
-                masking_strategy=masking_secret.masking_strategy,
-                secret_type=masking_secret.secret_type,
-            ),
-            FidesopsRedis.encode_obj(masking_secret.secret),
-        )
+
+        session = Session.object_session(self)
+        for masking_secret in masking_secrets:
+            MaskingSecret.create(
+                db=session,
+                data={
+                    "privacy_request_id": self.id,
+                    "secret": masking_secret.secret,
+                    "masking_strategy": masking_secret.masking_strategy,
+                    "secret_type": masking_secret.secret_type,
+                },
+            )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
@@ -975,6 +1010,21 @@ class PrivacyRequest(
         """Put the privacy request in a state of awaiting_email_send"""
         if self.awaiting_email_send_at is None:
             self.awaiting_email_send_at = datetime.utcnow()
+            # Add execution log to inform user that processing is paused for email send
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "privacy_request_id": self.id,
+                    "connection_key": None,
+                    "dataset_name": "Pending batch email send",
+                    "collection_name": None,
+                    "status": ExecutionLogStatus.pending,
+                    "message": "Privacy request paused pending batch email send job",
+                    "action_type": (
+                        self.policy.get_action_type() if self.policy else None
+                    ),
+                },
+            )
         self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
@@ -991,6 +1041,38 @@ class PrivacyRequest(
                 request_task_celery_ids.append(request_task_id)
         return request_task_celery_ids
 
+    def cancel_celery_tasks(self) -> None:
+        """Cancel all Celery tasks associated with this privacy request.
+
+        This includes both the main privacy request task and any sub-tasks (Request Tasks).
+        """
+        task_ids: List[str] = []
+
+        # Add the main privacy request task ID
+        parent_task_id = self.get_cached_task_id()
+        if parent_task_id:
+            task_ids.append(parent_task_id)
+
+        # Add all request task IDs
+        request_task_celery_ids = self.get_request_task_celery_task_ids()
+        task_ids.extend(request_task_celery_ids)
+
+        if not task_ids:
+            return
+
+        # Revoke all Celery tasks in batch
+        logger.info(f"Revoking {len(task_ids)} tasks for privacy request {self.id}")
+        try:
+            # Use terminate=False to allow graceful shutdown if already running
+            celery_app.control.revoke(task_ids, terminate=False)
+            logger.info(
+                f"Successfully revoked {len(task_ids)} tasks for privacy request {self.id}"
+            )
+        except Exception as exc:
+            logger.warning(
+                f"Failed to revoke {len(task_ids)} tasks for privacy request {self.id}: {exc}"
+            )
+
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
         """Cancels a privacy request.  Currently should only cancel 'pending' tasks
 
@@ -1003,19 +1085,7 @@ class PrivacyRequest(
             self.canceled_at = datetime.utcnow()
             self.save(db)
 
-            task_ids: List[str] = (
-                self.get_request_task_celery_task_ids()
-            )  # Celery tasks for sub tasks (DSR 3.0 Request Tasks)
-            parent_task_id = (
-                self.get_cached_task_id()
-            )  # Celery task for current Privacy Request
-            if parent_task_id:
-                task_ids.append(parent_task_id)
-
-            for celery_task_id in task_ids:
-                logger.info("Revoking task {} for request {}", celery_task_id, self.id)
-                # Only revokes if execution is not already in progress.
-                celery_app.control.revoke(celery_task_id, terminate=False)
+            self.cancel_celery_tasks()
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
@@ -1136,6 +1206,68 @@ class PrivacyRequest(
         return self._get_manual_webhook_attachments(
             db, manual_webhook_id, "erasure_manual_webhook"
         )
+
+    def create_manual_task_instances(
+        self, db: Session, connection_configs_with_manual_tasks: list[ConnectionConfig]
+    ) -> list[ManualTaskInstance]:
+        """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
+        # Early return if no relevant policy rules
+        policy_rules = {
+            ActionType.access: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.access)
+            ),
+            ActionType.erasure: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.erasure)
+            ),
+        }
+
+        if not any(policy_rules.values()):
+            return []
+
+        # Build configuration types using list comprehension
+        config_types = [
+            (
+                ManualTaskConfigurationType.access_privacy_request
+                if action_type == ActionType.access
+                else ManualTaskConfigurationType.erasure_privacy_request
+            )
+            for action_type, has_rules in policy_rules.items()
+            if has_rules
+        ]
+
+        # Get all relevant manual tasks and configs in one query
+        connection_config_ids = [cc.id for cc in connection_configs_with_manual_tasks]
+        manual_tasks_with_configs = (
+            db.query(ManualTask, ManualTaskConfig)
+            .join(ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id)
+            .filter(
+                ManualTask.parent_entity_id.in_(connection_config_ids),
+                ManualTask.parent_entity_type == "connection_config",
+                ManualTaskConfig.is_current.is_(True),
+                ManualTaskConfig.config_type.in_(config_types),
+            )
+            .all()
+        )
+
+        # Get existing config IDs to avoid duplicates
+        existing_config_ids = {
+            instance.config_id for instance in self.manual_task_instances
+        }
+
+        # Create instances using list comprehension and filter out existing ones
+        return [
+            ManualTaskInstance.create(
+                db=db,
+                data={
+                    "entity_id": self.id,
+                    "entity_type": ManualTaskEntityType.privacy_request,
+                    "task_id": manual_task.id,
+                    "config_id": config.id,
+                },
+            )
+            for manual_task, config in manual_tasks_with_configs
+            if config.id not in existing_config_ids
+        ]
 
     def get_existing_request_task(
         self,

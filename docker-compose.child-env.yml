@@ -30,11 +30,10 @@ services:
       FIDES__REDIS__HOST: "redis-child"
       FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-      VAULT_ADDR: ${VAULT_ADDR:-}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
-      VAULT_TOKEN: ${VAULT_TOKEN:-}
       FIDES__SECURITY__PARENT_SERVER_USERNAME: parent
       FIDES__SECURITY__PARENT_SERVER_PASSWORD: parentpassword1!
+      SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${SAAS_OP_SERVICE_ACCOUNT_TOKEN-}
+      SAAS_SECRETS_OP_VAULT_ID: ${SAAS_SECRETS_OP_VAULT_ID-}
     volumes:
       - type: bind
         source: .
@@ -42,7 +41,7 @@ services:
         read_only: False
 
   fides-db:
-    image: postgres:12
+    image: postgres:16
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 15s
@@ -64,7 +63,7 @@ services:
           - node.labels.fides.app-db-data == true
 
   redis-child:
-    image: "redis:6.2-alpine"
+    image: "redis:8.0-alpine"
     command: redis-server --requirepass redispassword
     expose:
       - 6379

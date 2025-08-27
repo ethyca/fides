@@ -12,7 +12,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
-} from "fides-js";
+} from "fides-js"; // NOTE: these import from the mjs file
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import pRetry from "p-retry";
@@ -33,7 +33,7 @@ let cachedCustomFidesCss: string = "";
 // used to determine when to refresh the contents
 let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
-let autoRefresh: boolean = true;
+let autoRefresh: boolean = process.env.NODE_ENV === "production";
 
 const missingExperienceBehaviors: Record<
   MissingExperienceBehaviors,
@@ -50,6 +50,9 @@ const missingExperienceBehaviors: Record<
 const PREFETCH_RETRY_MIN_TIMEOUT_MS = 100;
 const PREFETCH_MAX_RETRIES = 10;
 const PREFETCH_BACKOFF_FACTOR = 1.125;
+const CUSTOM_CSS_RETRY_MIN_TIMEOUT_MS = 100;
+const CUSTOM_CSS_MAX_RETRIES = 10;
+const CUSTOM_CSS_BACKOFF_FACTOR = 1.125;
 
 /**
  * @swagger
@@ -188,7 +191,7 @@ export default async function handler(
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
-  let fidesRegionString: string | null = null;
+  let fidesRegionString: string | undefined;
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
@@ -226,8 +229,9 @@ export default async function handler(
       try {
         /*
          * Since we don't know what the experience will be when the initial call is made,
-         * we supply the minimal request to the api endpoint with the understanding that if
-         * TCF is being returned, we want the minimal version. It will be ignored otherwise.
+         * we supply the minimal request (requestMinimalTCF) to the api endpoint with the
+         * understanding that if TCF is being returned, we want the minimal version. It will
+         * be ignored otherwise.
          */
         experience = await pRetry(
           () =>
@@ -246,7 +250,7 @@ export default async function handler(
             onFailedAttempt: (error) => {
               log.debug(
                 error,
-                `Attempt to get privacy experience failed, ${error.retriesLeft} remain.`,
+                `Attempt to get privacy experience failed, ${error.retriesLeft} retries remain.`,
               );
             },
           },
@@ -340,6 +344,10 @@ export default async function handler(
       fidesConsentNonApplicableFlagMode:
         environment.settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
+      fidesInitializedEventMode:
+        environment.settings.FIDES_INITIALIZED_EVENT_MODE,
+      fidesUnsupportedRepeatedScriptLoading:
+        environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -347,9 +355,12 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
+  const forcedHeadless = req.query.headless === "true";
+
   log.debug("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
-    experience?.experience_config?.component === ComponentType.HEADLESS;
+    experience?.experience_config?.component === ComponentType.HEADLESS ||
+    forcedHeadless;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
     log.debug("TCF extension enabled, bundling fides-tcf.js...");
@@ -387,7 +398,7 @@ export default async function handler(
   const skipInitialization = initializeQuery === "false";
 
   // keep fidesJS on the first line to avoid sourcemap issues!
-  const script = `(function () {${fidesJS}
+  const script = `(function(){${fidesJS}
   ${fidesGPP}
   ${
     customFidesCss
@@ -458,37 +469,64 @@ async function fetchCustomFidesCss(
   if (shouldRefresh) {
     try {
       const fidesUrl = getFidesApiUrl();
-      const response = await fetch(
-        `${fidesUrl}/plus/custom-asset/custom-fides.css`,
+      const css = await pRetry(
+        async () => {
+          const assetResponse = await fetch(
+            `${fidesUrl}/plus/custom-asset/custom-fides.css`,
+          );
+          if (assetResponse.status === 404) {
+            log.debug(
+              "No custom-fides.css found, disabling Custom CSS polling.",
+            );
+            autoRefresh = false;
+            return null;
+          }
+
+          const data = await assetResponse.text();
+          if (!data) {
+            throw new Error("No data returned by the server");
+          }
+          if (!assetResponse.ok) {
+            log.debug(
+              "Error fetching custom-fides.css:",
+              assetResponse.status,
+              assetResponse.statusText,
+              data,
+            );
+            throw new Error(
+              `HTTP error occurred. Status: ${assetResponse.status}`,
+            );
+          }
+
+          return data;
+        },
+        {
+          retries: CUSTOM_CSS_MAX_RETRIES,
+          factor: CUSTOM_CSS_BACKOFF_FACTOR,
+          minTimeout: CUSTOM_CSS_RETRY_MIN_TIMEOUT_MS,
+          onFailedAttempt: (error) => {
+            log.debug(
+              error,
+              `Attempt to get Custom CSS failed, ${error.retriesLeft} retries remain.`,
+            );
+          },
+        },
       );
-      const data = await response.text();
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          log.debug("No custom-fides.css found, skipping...");
-          autoRefresh = false;
-          return null;
-        }
-        log.error(
-          "Error fetching custom-fides.css:",
-          response.status,
-          response.statusText,
-          data,
-        );
-        throw new Error(`HTTP error occurred. Status: ${response.status}`);
-      }
-
-      if (!data) {
-        throw new Error("No data returned by the server");
+      if (!css) {
+        log.debug("No custom-fides.css returned.");
+        return null;
       }
 
       log.debug("Successfully retrieved custom-fides.css");
       autoRefresh = true;
-      cachedCustomFidesCss = data;
+      cachedCustomFidesCss = css;
       lastFetched = currentTime;
     } catch (error) {
-      autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
-      log.error(error, `Error during fetch operation`);
+      log.error(
+        error,
+        `Encountered an error while trying to fetch Custom CSS. Relying on cached copy.`,
+      );
     }
   }
   return cachedCustomFidesCss;

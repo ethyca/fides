@@ -1,5 +1,5 @@
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
+import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
@@ -16,7 +16,7 @@ const DiscoveredSystemDataUseCell = ({
     key: use,
   }));
 
-  return <BadgeCellExpandable values={cellValues} />;
+  return <TagExpandableCell values={cellValues} />;
 };
 
 export default DiscoveredSystemDataUseCell;

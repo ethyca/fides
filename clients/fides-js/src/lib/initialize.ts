@@ -1,6 +1,4 @@
-import { ContainerNode } from "preact";
-
-import { OverlayProps } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { automaticallyApplyPreferences } from "./automated-consent";
@@ -21,6 +19,7 @@ import {
 import {
   applyOverridesToConsent,
   constructFidesRegionString,
+  createConsentProxy,
   experienceIsValid,
   getOverrideValidatorMapByType,
   getWindowObjFromPath,
@@ -41,6 +40,8 @@ import {
   setupI18n,
 } from "./i18n";
 import { UpdateExperienceProps } from "./init-utils";
+import { InitOverlayProps } from "./initOverlay";
+import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { searchForElement } from "./ui-utils";
 
 const retrieveEffectiveRegionString = async (
@@ -180,6 +181,16 @@ export const getInitialFidesFromConsentCookie = ({
   };
 };
 
+export interface InitializeProps {
+  fides: FidesGlobal;
+  initOverlay?: (props: InitOverlayProps) => Promise<void>;
+  renderOverlay?: RenderOverlayType;
+  updateExperience: (
+    props: UpdateExperienceProps,
+  ) => Partial<PrivacyExperience>;
+  overrides?: Partial<FidesOverrides>;
+}
+
 /**
  * The bulk of the initialization logic
  * 1. Validates options
@@ -191,32 +202,18 @@ export const getInitialFidesFromConsentCookie = ({
  */
 export const initialize = async ({
   fides,
-  options,
-  geolocation,
   initOverlay,
   renderOverlay,
   updateExperience,
   overrides,
-  propertyId,
-}: {
-  fides: FidesGlobal;
-  initOverlay?: (
-    props: OverlayProps & {
-      renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
-    },
-  ) => Promise<void>;
-  renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
-  /**
-   * Once we for sure have a valid experience, this is another chance to update values
-   * before the overlay renders.
-   */
-  updateExperience: (
-    props: UpdateExperienceProps,
-  ) => Partial<PrivacyExperience>;
-  overrides?: Partial<FidesOverrides>;
-} & FidesConfig): Promise<Partial<FidesGlobal>> => {
+}: InitializeProps): Promise<Partial<FidesGlobal>> => {
+  const { config } = fides;
+  if (!config) {
+    throw new Error("Fides config should be initialized");
+  }
+  const { options, geolocation } = config;
   let shouldContinueInitOverlay: boolean = true;
-  let fidesRegionString: string | null = null;
+  let fidesRegionString: string | undefined;
   let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
     DEFAULT_MODAL_LINK_LABEL;
 
@@ -264,7 +261,7 @@ export const initialize = async ({
         fidesApiUrl: options.fidesApiUrl,
         apiOptions: options.apiOptions,
         requestMinimalTCF: false,
-        propertyId,
+        propertyId: fides.config?.propertyId,
       });
     }
 
@@ -294,7 +291,15 @@ export const initialize = async ({
       }
 
       /**
-       * Finally, update the "cookie" state to track the user's *current*
+       * If the config has a property_id, we add it to the experience to indicate
+       */
+      if (fides.config?.propertyId) {
+        // eslint-disable-next-line no-param-reassign
+        fides.experience.property_id = fides.config.propertyId;
+      }
+
+      /**
+       * Update the "cookie" state to track the user's *current*
        * consent preferences as determined by the updatedExperience above. This
        * "cookie" state is then published to external listeners via the
        * Fides.consent object and Fides events like FidesReady below, so
@@ -368,17 +373,19 @@ export const initialize = async ({
       }
 
       if (!!initOverlay && shouldContinueInitOverlay) {
-        // OK, we're (finally) ready to initialize & render the overlay!
-        initOverlay({
+        const initializedFides: InitializedFidesGlobal = {
+          ...fides,
+          cookie: fides.cookie,
+          config,
           options,
           experience: fides.experience,
-          i18n,
           fidesRegionString: fidesRegionString as string,
-          cookie: fides.cookie,
-          savedConsent: fides.saved_consent,
+        };
+        // OK, we're (finally) ready to initialize & render the overlay!
+        initOverlay({
+          initializedFides,
+          i18n,
           renderOverlay,
-          propertyId,
-          translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
           fidesDebugger(e);
         });
@@ -392,16 +399,7 @@ export const initialize = async ({
        * don't block the rest of the code from executing, we use setTimeout with
        * no delay which simply moves it to the end of the JavaScript event queue.
        */
-      setTimeout(
-        automaticallyApplyPreferences.bind(null, {
-          savedConsent: fides.saved_consent,
-          effectiveExperience: fides.experience as PrivacyExperience,
-          cookie: fides.cookie,
-          fidesRegionString,
-          fidesOptions: options,
-          i18n,
-        }),
-      );
+      setTimeout(automaticallyApplyPreferences.bind(null, fides));
     } else {
       fidesDebugger("Skipping overlay initialization.", fides.experience);
     }
@@ -411,13 +409,21 @@ export const initialize = async ({
   const { fides_meta, identity, fides_string, tcf_consent } = fides.cookie;
 
   // used to set Fides.consent
-  const consent = applyOverridesToConsent(
+  const consentObject = applyOverridesToConsent(
     fides.cookie.consent,
     fides.experience?.non_applicable_privacy_notices,
     fides.experience?.privacy_notices,
     options.fidesConsentFlagType ?? undefined,
     options.fidesConsentNonApplicableFlagMode ?? undefined,
+    fides.cookie.non_applicable_notice_keys,
   );
+
+  const hasPrivacyNotices =
+    !!fides.experience?.non_applicable_privacy_notices ||
+    !!fides.experience?.privacy_notices;
+
+  // Any unknown consent values should return falsy values automatically
+  const consent = createConsentProxy(consentObject, options, hasPrivacyNotices);
 
   // return an object with the updated Fides values
   return {

@@ -155,6 +155,41 @@ export interface FidesInitOptions {
 
   // The type of value to use for consent (boolean or consent_mechanism)
   fidesConsentFlagType: ConsentFlagType | null;
+
+  /**
+   * Controls when the deprecated FidesInitialized event should be dispatched.
+   * "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+   * "once" = fires alongside FidesReady only
+   * "disable" = never fires
+   * Defaults to "once".
+   */
+  fidesInitializedEventMode: "multiple" | "once" | "disable";
+
+  /**
+   * A URL-like route that determines which view is shown by default when the consent modal is opened.
+   * Currently only affects TCF.
+   *
+   * - "/tcf/purposes" ("purposes" tab will be shown if not set)
+   * - "/tcf/features"
+   * - "/tcf/vendors"
+   *
+   * Defaults to `undefined`.
+   */
+  fidesModalDefaultView?: FidesModalDefaultView;
+
+  /**
+   * Whether to show the modal immediately on page load.
+   *
+   * - "immediate" = skips banner and shows the modal immediately on page load
+   * - "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+   *
+   */
+  fidesModalDisplay?: "immediate" | "default";
+
+  // Controls handling of unsupported repeated script loading
+  fidesUnsupportedRepeatedScriptLoading?:
+    | "enabled_acknowledge_not_supported"
+    | "disabled";
 }
 
 /**
@@ -189,6 +224,7 @@ export interface FidesGlobal
   options: FidesInitOptions;
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
+  version: string;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
@@ -282,6 +318,7 @@ export interface FidesCookie {
   fides_string?: string;
   tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];
+  non_applicable_notice_keys?: string[];
 }
 
 export type GetPreferencesFnResp = {
@@ -506,6 +543,11 @@ export type PrivacyExperience = {
   vendor_count?: number;
   minimal_tcf?: boolean;
   non_applicable_privacy_notices?: Array<PrivacyNotice["notice_key"]>;
+  /**
+   * If valid experience and property_id is provided, the experience will be
+   * associated with the property
+   */
+  property_id?: string;
 };
 
 interface ExperienceConfigTranslationMinimal
@@ -532,6 +574,7 @@ export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
     | "id"
+    | "property_id"
     | "privacy_notices"
     | "available_locales"
     | "gpp_settings"
@@ -756,6 +799,12 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
+export enum FidesModalDefaultView {
+  PURPOSES = "/tcf/purposes",
+  FEATURES = "/tcf/features",
+  VENDORS = "/tcf/vendors",
+}
+
 /**
  * Re-export the FidesOptions interface from src/docs; mostly for convenience as
  * a lot of code wants to import from this consent-types.ts file!
@@ -792,6 +841,10 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesDisabledNotices"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
+  | "fidesInitializedEventMode"
+  | "fidesModalDefaultView"
+  | "fidesModalDisplay"
+  | "fidesUnsupportedRepeatedScriptLoading"
 >;
 
 export type FidesExperienceTranslationOverrides = {

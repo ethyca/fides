@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
-    AwaitingAsyncTaskCallback,
+    AwaitingAsyncTask,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
@@ -229,7 +229,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
-
         # An endpoint can be defined with multiple 'read' requests if the data for a single
         # collection can be accessed in multiple ways for example:
         #
@@ -336,8 +335,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if awaiting_async_callback:
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
-            # Raising an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state
-            raise AwaitingAsyncTaskCallback()
+            # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
+            raise AwaitingAsyncTask()
 
         return rows
 
@@ -423,6 +422,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             response_data,
             identity_data,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
+            response,
         )
 
         logger.info(
@@ -456,6 +456,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
+        response: Optional[Response] = None,
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -481,7 +482,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     processed_data,
                     identity_data,
                     privacy_request,
+                    response,
                 )
+
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
@@ -513,6 +516,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node, request_task)
@@ -567,6 +571,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows,
             privacy_request.get_cached_identity_data(),
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+            None,
         )
 
         client = self.create_client()
@@ -584,8 +589,45 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     continue
                 raise exc
-            client.send(prepared_request, masking_request.ignore_errors)
+            response = client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
+
+            # Run post-processors against the response from the masking request so that
+            # processors such as `extract_for_execution_log` can inspect the API
+            # response body (e.g. confirmation, ticket IDs, etc.).  We ignore the
+            # returned rows because masking responses are not used downstream.
+            try:
+                handled_response = self._handle_errored_response(
+                    masking_request, response
+                )
+                response_data = self._unwrap_response_data(
+                    masking_request, handled_response
+                )
+
+                # Only attempt post-processing if we have post-processors and the response body
+                # is JSON-serializable (dict or list of dicts).
+                if masking_request.postprocessors and isinstance(
+                    response_data, (dict, list)
+                ):
+                    self.process_response_data(
+                        response_data,
+                        privacy_request.get_cached_identity_data(),
+                        cast(
+                            Optional[List[PostProcessorStrategy]],
+                            masking_request.postprocessors,
+                        ),
+                        handled_response,
+                    )
+            except (
+                PostProcessingException,
+                Exception,
+            ) as exc:  # pylint: disable=broad-except
+                # We do not want a post-processing failure to prevent the masking
+                # operation itself from succeeding.
+                logger.warning(
+                    "Post-processing of masking request response failed: {}",
+                    exc,
+                )
 
         self.unset_connector_state()
 
@@ -598,8 +640,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if awaiting_async_callback:
             # Asynchronous masking request detected in saas config.
             # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state.
-            raise AwaitingAsyncTaskCallback()
+            # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
+            raise AwaitingAsyncTask()
         return rows_updated
 
     @staticmethod

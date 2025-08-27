@@ -10,9 +10,20 @@
       "username": "testuser",
       "user_first_name": "Test",
       "user_last_name": "User"
+    },
+    {
+      "id": "comment_001",
+      "privacy_request_id": "pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
+      "comment_text": "Identity verification completed successfully with provided documentation",
+      "comment_type": "NOTE",
+      "created_at": "2023-01-02T14:30:00Z",
+      "user_id": "user_001",
+      "username": "John Doe",
+      "user_first_name": "John",
+      "user_last_name": "Doe"
     }
   ],
-  "total": 1,
+  "total": 2,
   "page": 1,
   "size": 10
 }

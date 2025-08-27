@@ -1,5 +1,5 @@
 import { Vendor } from "@iabtechlabtcf/core";
-import { Fragment, h } from "preact";
+import { Fragment } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
@@ -8,6 +8,7 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
   EmbeddedPurpose,
+  EnabledIds,
   GvlDataCategories,
   GvlDataDeclarations,
   LegalBasisEnum,
@@ -258,13 +259,20 @@ const PagedVendorData = ({
 
   const {
     gvlVendors,
+    specialPurposeOnlyGvlVendors,
     otherVendors,
   }: {
     gvlVendors: VendorRecord[];
+    specialPurposeOnlyGvlVendors: VendorRecord[];
     otherVendors: VendorRecord[];
   } = useMemo(
     () => ({
-      gvlVendors: activeChunk?.filter((v) => v.isGvl),
+      gvlVendors: activeChunk?.filter(
+        (v) => v.isGvl && (v.isConsent || v.isLegint),
+      ),
+      specialPurposeOnlyGvlVendors: activeChunk?.filter(
+        (v) => v.isGvl && v.isSpecial && !v.isConsent && !v.isLegint,
+      ),
       otherVendors: activeChunk?.filter((v) => !v.isGvl),
     }),
     [activeChunk],
@@ -276,31 +284,52 @@ const PagedVendorData = ({
 
   return (
     <Fragment>
-      <RecordsList<VendorRecord>
-        type="vendors"
-        title={i18n.t("static.tcf.vendors.iab")}
-        items={gvlVendors}
-        enabledIds={enabledIds}
-        onToggle={onChange}
-        renderBadgeLabel={(vendor) =>
-          vendorGvlEntry(vendor.id, experience.gvl)
-            ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
-            : undefined
-        }
-        renderToggleChild={(vendor) => (
-          <ToggleChild vendor={vendor} experience={experience} />
-        )}
-      />
-      <RecordsList<VendorRecord>
-        type="vendors"
-        title={i18n.t("static.tcf.vendors.other")}
-        items={otherVendors}
-        enabledIds={enabledIds}
-        onToggle={onChange}
-        renderToggleChild={(vendor) => (
-          <ToggleChild vendor={vendor} experience={experience} />
-        )}
-      />
+      {gvlVendors.length > 0 && (
+        <RecordsList<VendorRecord>
+          type="vendors"
+          title={i18n.t("static.tcf.vendors.iab")}
+          items={gvlVendors}
+          enabledIds={enabledIds}
+          onToggle={onChange}
+          renderBadgeLabel={(vendor) =>
+            vendorGvlEntry(vendor.id, experience.gvl)
+              ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
+              : undefined
+          }
+          renderDropdownChild={(vendor) => (
+            <ToggleChild vendor={vendor} experience={experience} />
+          )}
+        />
+      )}
+      {specialPurposeOnlyGvlVendors.length > 0 && (
+        <RecordsList<VendorRecord>
+          type="vendors"
+          title={i18n.t("static.tcf.special_purposes")}
+          items={specialPurposeOnlyGvlVendors}
+          enabledIds={[]}
+          renderBadgeLabel={(vendor) =>
+            vendorGvlEntry(vendor.id, experience.gvl)
+              ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
+              : undefined
+          }
+          renderDropdownChild={(vendor) => (
+            <ToggleChild vendor={vendor} experience={experience} />
+          )}
+          hideToggles
+        />
+      )}
+      {otherVendors.length > 0 && (
+        <RecordsList<VendorRecord>
+          type="vendors"
+          title={i18n.t("static.tcf.vendors.other")}
+          items={otherVendors}
+          enabledIds={enabledIds}
+          onToggle={onChange}
+          renderDropdownChild={(vendor) => (
+            <ToggleChild vendor={vendor} experience={experience} />
+          )}
+        />
+      )}
       <PagingButtons {...paging} />
     </Fragment>
   );
@@ -308,18 +337,20 @@ const PagedVendorData = ({
 
 const TcfVendors = ({
   experience,
-  enabledVendorConsentIds,
-  enabledVendorLegintIds,
+  enabledIds,
   onChange,
 }: {
   experience: PrivacyExperience;
-  enabledVendorConsentIds: string[];
-  enabledVendorLegintIds: string[];
+  enabledIds: EnabledIds;
   onChange: (
     payload: UpdateEnabledIds,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
+  const {
+    vendorsConsent: enabledVendorConsentIds,
+    vendorsLegint: enabledVendorLegintIds,
+  } = enabledIds;
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
     () => transformExperienceToVendorRecords(experience),
@@ -334,7 +365,7 @@ const TcfVendors = ({
     const legalBasisFiltered =
       activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
         ? vendors.filter((v) => v.isConsent)
-        : vendors.filter((v) => v.isLegint);
+        : vendors.filter((v) => v.isLegint || v.isSpecial);
     // Put "other vendors" last in the list
     return [
       ...legalBasisFiltered.filter((v) => v.isGvl),

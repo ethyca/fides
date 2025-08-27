@@ -1,5 +1,4 @@
-import { Fragment, h, VNode } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { Fragment, VNode } from "preact";
 
 import {
   ButtonType,
@@ -9,6 +8,7 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import { FidesEventTargetType } from "../lib/events";
+import { useAutoResetFlag } from "../lib/hooks";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
@@ -21,7 +21,7 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 interface ConsentButtonsProps {
   availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
-  renderFirstButton?: () => VNode | null;
+  renderFirstButton?: () => VNode | null | false;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   options: FidesInitOptions;
@@ -29,7 +29,6 @@ interface ConsentButtonsProps {
   hideRejectAll?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
-  isMinimalTCF?: boolean;
   isGVLLoading?: boolean;
 }
 export const ConsentButtons = ({
@@ -43,32 +42,20 @@ export const ConsentButtons = ({
   options,
   isInModal,
   isTCF,
-  isMinimalTCF,
   isGVLLoading,
 }: ConsentButtonsProps) => {
-  const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
   const { i18n } = useI18n();
   const { setTrigger } = useEvent();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { isActive: acceptComplete, activate: markAcceptComplete } =
+    useAutoResetFlag(false);
+  const { isActive: rejectComplete, activate: markRejectComplete } =
+    useAutoResetFlag(false);
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
     messageExists(i18n, "exp.privacy_policy_url");
-  const handleTCFManagePreferencesClick = () => {
-    const isReady = !isTCF || !isMinimalTCF;
-    setIsLoadingModal(!isReady);
-    if (onManagePreferencesClick && isReady) {
-      onManagePreferencesClick();
-    }
-  };
   const includeBrandLink = isInModal && options.showFidesBrandLink;
-
-  useEffect(() => {
-    if (isLoadingModal && !isMinimalTCF) {
-      handleTCFManagePreferencesClick();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoadingModal, isMinimalTCF]);
 
   return (
     <div id="fides-button-group">
@@ -91,10 +78,10 @@ export const ConsentButtons = ({
                     type: FidesEventTargetType.BUTTON,
                     label: i18n.t("exp.privacy_preferences_link_label"),
                   });
-                  handleTCFManagePreferencesClick();
+                  onManagePreferencesClick();
                 }}
                 className="fides-manage-preferences-button"
-                loading={isLoadingModal}
+                id="fides-manage-preferences-button"
               />
             )}
             {!hideRejectAll && (
@@ -107,9 +94,12 @@ export const ConsentButtons = ({
                     label: i18n.t("exp.reject_button_label"),
                   });
                   onRejectAll();
+                  markRejectComplete();
                 }}
                 className="fides-reject-all-button"
+                id="fides-reject-all-button"
                 loading={isGVLLoading}
+                complete={rejectComplete}
               />
             )}
             <Button
@@ -121,9 +111,12 @@ export const ConsentButtons = ({
                   label: i18n.t("exp.accept_button_label"),
                 });
                 onAcceptAll();
+                markAcceptComplete();
               }}
               className="fides-accept-all-button"
+              id="fides-accept-all-button"
               loading={isGVLLoading}
+              complete={acceptComplete}
             />
           </Fragment>
         )}
@@ -156,6 +149,7 @@ export const ConsentButtons = ({
               onManagePreferencesClick();
             }}
             className="fides-manage-preferences-button"
+            id="fides-manage-preferences-button"
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
@@ -192,6 +186,10 @@ export const NoticeConsentButtons = ({
   hideOptInOut = false,
   options,
 }: NoticeConsentButtonProps) => {
+  const { isActive: acknowledgeComplete, activate: markAcknowledgeComplete } =
+    useAutoResetFlag(false);
+  const { isActive: saveComplete, activate: markSaveComplete } =
+    useAutoResetFlag(false);
   const { i18n } = useI18n();
   const { setTrigger } = useEvent();
   if (!experience.experience_config || !experience.privacy_notices) {
@@ -222,8 +220,10 @@ export const NoticeConsentButtons = ({
               label: i18n.t("exp.acknowledge_button_label"),
             });
             handleAcknowledgeNotices();
+            markAcknowledgeComplete();
           }}
           className="fides-acknowledge-button"
+          complete={acknowledgeComplete}
         />
       );
     }
@@ -238,8 +238,11 @@ export const NoticeConsentButtons = ({
               label: i18n.t("exp.save_button_label"),
             });
             handleSave();
+            markSaveComplete();
           }}
           className="fides-save-button"
+          id="fides-save-button"
+          complete={saveComplete}
         />
       );
     }

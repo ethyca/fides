@@ -274,4 +274,53 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_disabled_notices: string;
+
+  /**
+   * Controls when the deprecated FidesInitialized event should be dispatched.
+   *
+   * - "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+   * - "once" = fires alongside FidesReady only
+   * - "disable" = never fires
+   *
+   * Defaults to `"once"`.
+   */
+  fides_initialized_event_mode: "multiple" | "once" | "disable";
+
+  /**
+   * A URL-like route that determines which view is shown by default when the consent modal is opened.
+   * Currently only affects TCF.
+   *
+   * - "/tcf/purposes" ("purposes" tab will be shown if not set)
+   * - "/tcf/features"
+   * - "/tcf/vendors"
+   *
+   * Defaults to `undefined`.
+   */
+  fides_modal_default_view?: string;
+
+  /**
+   * Whether to show the modal immediately on page load.
+   *
+   * - "immediate" = skips banner and shows the modal immediately on page load
+   * - "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+   *
+   */
+  fides_modal_display?: "immediate" | "default";
+
+  /**
+   * Controls handling of unsupported repeated script loading scenarios. When
+   * FidesJS is loaded multiple times on the same page, this setting determines
+   * the behavior.
+   *
+   * - "enabled_acknowledge_not_supported" = allows repeated loading but acknowledges
+   *   this is not a supported configuration
+   * - "disabled" = prevents repeated script loading entirely
+   *
+   * See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
+   *
+   * Defaults to `"disabled"`.
+   */
+  fides_unsupported_repeated_script_loading?:
+    | "enabled_acknowledge_not_supported"
+    | "disabled";
 }

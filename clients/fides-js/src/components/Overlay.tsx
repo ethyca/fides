@@ -1,10 +1,10 @@
 /* eslint-disable no-nested-ternary */
 import "./fides.css";
 
-import { FunctionComponent, h, VNode } from "preact";
+import { FunctionComponent, VNode } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
-import { useA11yDialog } from "../lib/a11y-dialog";
+import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   FidesCookie,
@@ -16,13 +16,14 @@ import {
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
 import { FidesEventOrigin } from "../lib/events";
 import { useElementById, useHasMounted } from "../lib/hooks";
-import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
+import { LiveRegion } from "./LiveRegion";
 
 interface RenderBannerProps {
+  attributes: A11yDialogAttributes;
   isOpen: boolean;
   isEmbedded: boolean;
   onClose: () => void;
@@ -61,7 +62,6 @@ const Overlay: FunctionComponent<Props> = ({
   onVendorPageClick,
   isUiBlocking,
 }) => {
-  const { i18n } = useI18n();
   const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
@@ -114,12 +114,31 @@ const Overlay: FunctionComponent<Props> = ({
     [dispatchFidesEventAndClearTrigger, cookie, onDismiss, setServingComponent],
   );
 
-  const { instance, attributes } = useA11yDialog({
-    id: "fides-modal",
-    role: "alertdialog",
-    title: i18n.t("exp.title"),
+  const { instance: modalDialogInstance, attributes: modalDialogAttributes } =
+    useA11yDialog({
+      id: "fides-modal",
+      onClose: () => {
+        dispatchCloseEvent({ saved: false });
+      },
+    });
+
+  useEffect(() => {
+    if (modalDialogInstance) {
+      modalDialogInstance
+        .on("show", () => {
+          document.documentElement.style.overflowY = "hidden";
+        })
+        .on("hide", () => {
+          document.documentElement.style.overflowY = "";
+        });
+    }
+  }, [modalDialogInstance]);
+
+  const { attributes: bannerDialogAttributes } = useA11yDialog({
+    id: "fides-banner",
+    ariaHidden: !bannerIsOpen && !options.fidesEmbed,
     onClose: () => {
-      dispatchCloseEvent({ saved: false });
+      setBannerIsOpen(false);
     },
   });
 
@@ -127,21 +146,21 @@ const Overlay: FunctionComponent<Props> = ({
     (origin = FidesEventOrigin.FIDES) => {
       if (options.fidesEmbed) {
         setBannerIsOpen(false);
-      } else if (instance) {
+      } else if (modalDialogInstance) {
         setBannerIsOpen(false);
-        instance.show();
+        modalDialogInstance.show();
         onOpen(origin);
       }
     },
-    [instance, onOpen, options],
+    [modalDialogInstance, onOpen, options],
   );
 
   const handleCloseModalAfterSave = useCallback(() => {
-    if (instance && !options.fidesEmbed) {
-      instance.hide();
+    if (modalDialogInstance && !options.fidesEmbed) {
+      modalDialogInstance.hide();
       dispatchCloseEvent({ saved: true });
     }
-  }, [instance, dispatchCloseEvent, options.fidesEmbed]);
+  }, [modalDialogInstance, dispatchCloseEvent, options.fidesEmbed]);
 
   useEffect(() => {
     if (options.fidesEmbed && !bannerIsOpen) {
@@ -169,6 +188,12 @@ const Overlay: FunctionComponent<Props> = ({
       window.Fides.showModal = defaultShowModal;
     };
   }, [experience, handleOpenModal, options.fidesEmbed]);
+
+  useEffect(() => {
+    if (options.fidesModalDisplay === "immediate") {
+      handleOpenModal();
+    }
+  }, [options.fidesModalDisplay, handleOpenModal]);
 
   useEffect(() => {
     document.body.classList.add("fides-overlay-modal-link-shown");
@@ -220,7 +245,7 @@ const Overlay: FunctionComponent<Props> = ({
       {options.fidesEmbed ? (
         bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
           <ConsentContent
-            titleProps={attributes.title}
+            titleProps={modalDialogAttributes.title}
             renderModalFooter={() =>
               renderModalFooter({
                 onClose: handleCloseModalAfterSave,
@@ -241,7 +266,7 @@ const Overlay: FunctionComponent<Props> = ({
          * full experience (and therefore the modal) is ready.
          */
         <ConsentModal
-          attributes={attributes}
+          attributes={modalDialogAttributes}
           dismissable={experience.experience_config.dismissable}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
@@ -258,6 +283,7 @@ const Overlay: FunctionComponent<Props> = ({
       )}
       {!disableBanner &&
         renderBanner({
+          attributes: bannerDialogAttributes,
           isOpen: bannerIsOpen,
           isEmbedded: options.fidesEmbed,
           onClose: () => {
@@ -265,6 +291,7 @@ const Overlay: FunctionComponent<Props> = ({
           },
           onManagePreferencesClick: handleManagePreferencesClick,
         })}
+      <LiveRegion />
     </div>
   );
 };

@@ -111,6 +111,30 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_consent_flag_type",
       validationRegex: /^(boolean|consent_mechanism)$/,
     },
+    {
+      overrideName: "fidesInitializedEventMode",
+      overrideType: "string",
+      overrideKey: "fides_initialized_event_mode",
+      validationRegex: /^(multiple|once|disable)$/,
+    },
+    {
+      overrideName: "fidesModalDefaultView",
+      overrideType: "string",
+      overrideKey: "fides_modal_default_view",
+      validationRegex: /^\/tcf\/(purposes|features|vendors)$/,
+    },
+    {
+      overrideName: "fidesModalDisplay",
+      overrideType: "string",
+      overrideKey: "fides_modal_display",
+      validationRegex: /^(immediate|default)$/,
+    },
+    {
+      overrideName: "fidesUnsupportedRepeatedScriptLoading",
+      overrideType: "string",
+      overrideKey: "fides_unsupported_repeated_script_loading",
+      validationRegex: /^(enabled_acknowledge_not_supported|disabled)$/,
+    },
   ];
 
 /**

@@ -1,8 +1,5 @@
-import {
-  ConsentFlagType,
-  ConsentNonApplicableFlagMode,
-} from "fides-js/src/lib/consent-types";
-import type { FidesEventDetail, FidesEventType } from "fides-js/src/lib/events";
+import type { FidesEventDetail, FidesEventType } from "fides-js";
+import { ConsentFlagType, ConsentNonApplicableFlagMode } from "fides-js";
 
 import { stubConfig, stubTCFExperience } from "../support/stubs";
 
@@ -178,7 +175,7 @@ describe("Consent FidesEvents", () => {
       });
 
       // Save current preference selections
-      cy.get("#fides-modal .fides-save-button").click();
+      cy.get("#fides-modal #fides-save-button").click();
       expectedEvents.push(
         { type: "FidesModalClosed", detail: {} },
         {
@@ -827,7 +824,7 @@ describe("Consent FidesEvents", () => {
       });
 
       // Save preferences - this should trigger FidesUpdating and FidesUpdated events
-      cy.get("#fides-modal .fides-save-button").click();
+      cy.get("#fides-modal #fides-save-button").click();
       expectedEvents.push(
         { type: "FidesModalClosed", detail: {} },
         {

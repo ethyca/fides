@@ -54,6 +54,7 @@ export const usePrivacyRequestComments = (privacyRequestId: string) => {
           description: comment.comment_text,
           isError: false,
           isSkipped: false,
+          isAwaitingInput: false,
           id: `comment-${comment.id}`,
         };
       });

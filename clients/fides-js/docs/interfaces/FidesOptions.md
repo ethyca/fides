@@ -306,3 +306,61 @@ A comma-separated list of notice_keys to disable their respective Toggle element
 For example: "data_sales,data_sharing,analytics"
 
 Defaults to `undefined`.
+
+***
+
+### fides\_initialized\_event\_mode
+
+> **fides\_initialized\_event\_mode**: `"multiple"` \| `"once"` \| `"disable"`
+
+Controls when the deprecated FidesInitialized event should be dispatched.
+
+- "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+- "once" = fires alongside FidesReady only
+- "disable" = never fires
+
+Defaults to `"once"`.
+
+***
+
+### fides\_modal\_default\_view?
+
+> `optional` **fides\_modal\_default\_view**: `string`
+
+A URL-like route that determines which view is shown by default when the consent modal is opened.
+Currently only affects TCF.
+
+- "/tcf/purposes" ("purposes" tab will be shown if not set)
+- "/tcf/features"
+- "/tcf/vendors"
+
+Defaults to `undefined`.
+
+***
+
+### fides\_modal\_display?
+
+> `optional` **fides\_modal\_display**: `"immediate"` \| `"default"`
+
+Whether to show the modal immediately on page load.
+
+- "immediate" = skips banner and shows the modal immediately on page load
+- "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+
+***
+
+### fides\_unsupported\_repeated\_script\_loading?
+
+> `optional` **fides\_unsupported\_repeated\_script\_loading**: `"enabled_acknowledge_not_supported"` \| `"disabled"`
+
+Controls handling of unsupported repeated script loading scenarios. When
+FidesJS is loaded multiple times on the same page, this setting determines
+the behavior.
+
+- "enabled_acknowledge_not_supported" = allows repeated loading but acknowledges
+  this is not a supported configuration
+- "disabled" = prevents repeated script loading entirely
+
+See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
+
+Defaults to `"disabled"`.

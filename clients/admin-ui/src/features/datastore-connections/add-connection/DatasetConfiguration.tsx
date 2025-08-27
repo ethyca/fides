@@ -24,7 +24,7 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import {
-  useGetAllDatasetsQuery,
+  useGetAllFilteredDatasetsQuery,
   useUpsertDatasetsMutation,
 } from "~/features/dataset";
 import { Dataset, DatasetConfigCtlDataset } from "~/types/api";
@@ -51,7 +51,9 @@ const DatasetConfiguration = () => {
     data: allDatasets,
     isLoading: isLoadingAllDatasets,
     error: loadAllDatasetsError,
-  } = useGetAllDatasetsQuery();
+  } = useGetAllFilteredDatasetsQuery({
+    minimal: true,
+  });
 
   const [selectedDatasetKey, setSelectedDatasetKey] = useState<
     string | undefined

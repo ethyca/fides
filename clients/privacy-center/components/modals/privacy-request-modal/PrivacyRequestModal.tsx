@@ -1,23 +1,22 @@
+import { AntButton as Button, AntModal as Modal } from "fidesui";
 import React, { useCallback, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
-import { PrivacyRequestOption } from "~/types/api";
 
-import RequestModal from "../RequestModal";
 import { ModalViews, VerificationType } from "../types";
-import VerificationForm from "../VerificationForm";
+import VerificationForm from "../verification-request/VerificationForm";
 import PrivacyRequestForm from "./PrivacyRequestForm";
 import RequestSubmitted from "./RequestSubmitted";
 
 export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [openAction, setOpenAction] = useState<string | null>(null);
+  const [openAction, setOpenAction] = useState<number | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(
     ModalViews.PrivacyRequest,
   );
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
-  const onOpen = (action: string) => {
+  const onOpen = (action: number) => {
     setOpenAction(action);
     setIsOpen(true);
   };
@@ -49,7 +48,7 @@ export const usePrivacyRequestModal = () => {
 export type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
+  openAction: number | null;
   currentView: ModalViews;
   setCurrentView: (view: ModalViews) => void;
   privacyRequestId: string;
@@ -70,52 +69,56 @@ export const PrivacyRequestModal = ({
   successHandler,
 }: RequestModalProps) => {
   const config = useConfig();
-  const action = openAction
-    ? (config.actions as Array<PrivacyRequestOption>).find(
-        ({ policy_key }) => policy_key === openAction,
-      )
-    : null;
+  const action =
+    typeof openAction === "number" ? config.actions[openAction] : null;
 
-  if (!action) {
-    return null;
-  }
-
-  let form = null;
-
-  if (currentView === ModalViews.PrivacyRequest) {
-    form = (
-      <PrivacyRequestForm
-        isOpen={isOpen}
-        onClose={onClose}
-        openAction={openAction}
-        setCurrentView={setCurrentView}
-        setPrivacyRequestId={setPrivacyRequestId}
-        isVerificationRequired={isVerificationRequired}
-      />
-    );
-  }
-
-  if (currentView === ModalViews.IdentityVerification) {
-    form = (
-      <VerificationForm
-        isOpen={isOpen}
-        onClose={onClose}
-        requestId={privacyRequestId}
-        setCurrentView={setCurrentView}
-        resetView={ModalViews.PrivacyRequest}
-        verificationType={VerificationType.PrivacyRequest}
-        successHandler={successHandler}
-      />
-    );
-  }
-
-  if (currentView === ModalViews.RequestSubmitted) {
-    form = <RequestSubmitted onClose={onClose} />;
-  }
+  const modalProps: Record<ModalViews, React.ComponentProps<typeof Modal>> = {
+    identityVerification: {
+      title: "Enter verification code",
+      children: (
+        <VerificationForm
+          isOpen={isOpen}
+          onClose={onClose}
+          requestId={privacyRequestId}
+          setCurrentView={setCurrentView}
+          resetView={ModalViews.PrivacyRequest}
+          verificationType={VerificationType.PrivacyRequest}
+          successHandler={successHandler}
+        />
+      ),
+    },
+    privacyRequest: {
+      title: action?.title,
+      children: (
+        <PrivacyRequestForm
+          onClose={onClose}
+          openAction={openAction}
+          setCurrentView={setCurrentView}
+          setPrivacyRequestId={setPrivacyRequestId}
+          isVerificationRequired={isVerificationRequired}
+        />
+      ),
+    },
+    requestSubmitted: {
+      title: "Request submitted",
+      children: <RequestSubmitted />,
+      footer: (
+        <Button type="primary" size="small" onClick={onClose}>
+          Continue
+        </Button>
+      ),
+    },
+    consentRequest: {
+      open: false,
+    },
+  };
 
   return (
-    <RequestModal isOpen={isOpen} onClose={onClose}>
-      {form}
-    </RequestModal>
+    <Modal
+      open={isOpen}
+      footer={null}
+      {...modalProps[currentView]}
+      onCancel={onClose}
+    />
   );
 };

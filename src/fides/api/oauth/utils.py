@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -31,7 +31,12 @@ from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
 from fides.api.oauth.roles import get_scopes_from_roles
-from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
+from fides.api.request_context import set_user_id
+from fides.api.schemas.external_https import (
+    DownloadTokenJWE,
+    RequestTaskJWE,
+    WebhookJWE,
+)
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig
@@ -48,63 +53,28 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 
 def extract_payload(jwe_string: str, encryption_key: str) -> str:
     """Given a jwe, extracts the payload and returns it in string form."""
-    return jwe.decrypt(jwe_string, encryption_key)
+    try:
+        decrypted_payload = jwe.decrypt(jwe_string, encryption_key)
+        return decrypted_payload.decode("utf-8")
+    except exceptions.JWEError as e:
+        logger.debug("Failed to decrypt JWE: {}", e)
+        raise e
 
 
-def is_token_expired(issued_at: datetime | None, token_duration_min: int) -> bool:
-    """Returns True if the datetime is earlier than token_duration_min ago."""
-    if not issued_at:
+def is_token_expired(
+    issued_at: Optional[datetime], token_duration_minutes: int
+) -> bool:
+    """Check if a token has expired based on its issued_at timestamp and duration."""
+    if issued_at is None:
         return True
-
-    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_min
-
-
-def copy_func(source_function: Callable) -> Callable:
-    """Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)"""
-    target_function = FunctionType(
-        source_function.__code__,
-        source_function.__globals__,
-        name=source_function.__name__,
-        argdefs=source_function.__defaults__,
-        closure=source_function.__closure__,
-    )
-    updated_target_function: Callable = update_wrapper(target_function, source_function)
-    updated_target_function.__kwdefaults__ = source_function.__kwdefaults__
-    return updated_target_function
+    expiration_time = issued_at + timedelta(minutes=token_duration_minutes)
+    return datetime.now() > expiration_time
 
 
-async def get_current_user(
-    security_scopes: SecurityScopes,
-    authorization: str = Security(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> FidesUser:
-    """A wrapper around verify_oauth_client that returns that client's user if one exists."""
-    client = await verify_oauth_client(
-        security_scopes=security_scopes,
-        authorization=authorization,
-        db=db,
-    )
-
-    if client.id == CONFIG.security.oauth_root_client_id:
-        return FidesUser(
-            id=CONFIG.security.oauth_root_client_id,
-            username=CONFIG.security.root_username,
-            created_at=datetime.utcnow(),
-        )
-
-    return client.user  # type: ignore[attr-defined]
-
-
-def is_callback_token_expired(issued_at: datetime | None) -> bool:
-    """Returns True if the token is older than the expiration of the redis cache.  We
-    can't resume executing the privacy request if the identity data is gone.
-    """
-    if not issued_at:
-        return True
-
-    return (
-        datetime.now() - issued_at
-    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
+def is_callback_token_expired(issued_at: datetime) -> bool:
+    """Check if a callback token has expired (24 hours)."""
+    expiration_time = issued_at + timedelta(hours=24)
+    return datetime.now() > expiration_time
 
 
 def _get_webhook_jwe_or_error(
@@ -113,9 +83,13 @@ def _get_webhook_jwe_or_error(
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
-    token_data = json.loads(
-        extract_payload(authorization, CONFIG.security.app_encryption_key)
-    )
+    try:
+        token_data = json.loads(
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEError:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
     try:
         token = WebhookJWE(**token_data)
     except ValidationError:
@@ -157,6 +131,98 @@ def _get_request_task_jwe_or_error(
         raise AuthorizationError(detail="Request Task token expired")
 
     return token
+
+
+def validate_download_token(token: str, privacy_request_id: str) -> DownloadTokenJWE:
+    """
+    Validate a download token for accessing privacy request packages.
+
+    Args:
+        token: The JWE token to validate
+        privacy_request_id: The privacy request ID the token should grant access to
+
+    Returns:
+        The validated DownloadTokenJWE object
+
+    Raises:
+        AuthenticationError: If token is invalid or expired
+        AuthorizationError: If token doesn't grant access to the requested privacy request
+    """
+    if not token:
+        raise AuthenticationError(detail="Download token is required")
+
+    # Check if token looks like a JWE (should have 5 parts separated by dots)
+    if token.count(".") != 4:
+        raise AuthenticationError(detail="Invalid download token format")
+
+    try:
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEError:
+        raise AuthenticationError(detail="Invalid download token format")
+
+    try:
+        download_token = DownloadTokenJWE(**token_data)
+    except ValidationError:
+        raise AuthenticationError(detail="Invalid download token structure")
+
+    # Verify the token grants access to the requested privacy request
+    if download_token.privacy_request_id != privacy_request_id:
+        raise AuthorizationError(
+            detail="Download token does not grant access to this privacy request"
+        )
+
+    # Verify the token has the required scope
+    required_scope = "privacy-request-access-results:read"
+    if required_scope not in download_token.scopes:
+        raise AuthorizationError(detail="Download token lacks required permissions")
+
+    # Check if the token has expired
+    try:
+        expiration_time = datetime.fromisoformat(download_token.exp)
+        if datetime.now() > expiration_time:
+            raise AuthenticationError(detail="Download token has expired")
+    except (ValueError, TypeError):
+        raise AuthenticationError(detail="Invalid token expiration format")
+
+    return download_token
+
+
+def copy_func(source_function: Callable) -> Callable:
+    """Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)"""
+    target_function = FunctionType(
+        source_function.__code__,
+        source_function.__globals__,
+        name=source_function.__name__,
+        argdefs=source_function.__defaults__,
+        closure=source_function.__closure__,
+    )
+    updated_target_function: Callable = update_wrapper(target_function, source_function)
+    updated_target_function.__kwdefaults__ = source_function.__kwdefaults__
+    return updated_target_function
+
+
+async def get_current_user(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> FidesUser:
+    """A wrapper around verify_oauth_client that returns that client's user if one exists."""
+    client = await verify_oauth_client(
+        security_scopes=security_scopes,
+        authorization=authorization,
+        db=db,
+    )
+
+    if client.id == CONFIG.security.oauth_root_client_id:
+        return FidesUser(
+            id=CONFIG.security.oauth_root_client_id,
+            username=CONFIG.security.root_username,
+            created_at=datetime.utcnow(),
+        )
+
+    return client.user  # type: ignore[attr-defined]
 
 
 def verify_callback_oauth_policy_pre_webhook(
@@ -324,6 +390,16 @@ def extract_token_and_load_client(
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
+
+    # Populate request-scoped context with the authenticated user identifier.
+    # Prefer the linked user_id; fall back to the client id when this is the
+    # special root client (which has no associated FidesUser row).
+    ctx_user_id = client.user_id
+    if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
+        ctx_user_id = CONFIG.security.oauth_root_client_id
+
+    if ctx_user_id:
+        set_user_id(ctx_user_id)
 
     return token_data, client
 

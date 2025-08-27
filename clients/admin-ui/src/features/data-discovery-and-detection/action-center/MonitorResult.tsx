@@ -1,17 +1,18 @@
-import { formatDistance } from "date-fns";
+import { formatDistanceStrict } from "date-fns";
 import {
   AntAvatar as Avatar,
   AntCol as Col,
+  AntFlex as Flex,
   AntList as List,
   AntListItemProps as ListItemProps,
   AntRow as Row,
   AntSkeleton as Skeleton,
-  AntTooltip as Tooltip,
+  AntTag as Tag,
   AntTypography as Typography,
   Icons,
 } from "fidesui";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import {
@@ -19,7 +20,9 @@ import {
   getDomain,
   getWebsiteIconUrl,
 } from "~/features/common/utils";
+import { ConnectionType } from "~/types/api";
 
+import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import { MonitorAggregatedResults } from "./types";
 
 const { Text } = Typography;
@@ -34,18 +37,24 @@ export const MonitorResult = ({
   showSkeleton,
   ...props
 }: MonitorResultProps) => {
-  const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
-
   const {
     name,
-    property,
+    consent_status: consentStatus,
     total_updates: totalUpdates,
     updates,
     last_monitored: lastMonitored,
-    warning,
     secrets,
     key,
+    connection_type: connectionType,
   } = monitorSummary;
+
+  const property = useMemo(() => {
+    return secrets?.url ? getDomain(secrets.url) : undefined;
+  }, [secrets?.url]);
+
+  const iconUrl = useMemo(() => {
+    return property ? getWebsiteIconUrl(property, 60) : undefined;
+  }, [property]);
 
   const assetCountString = Object.entries(updates)
     .map((update) => {
@@ -58,54 +67,44 @@ export const MonitorResult = ({
     : undefined;
 
   const lastMonitoredDistance = lastMonitored
-    ? formatDistance(new Date(lastMonitored), new Date(), {
+    ? formatDistanceStrict(new Date(lastMonitored), new Date(), {
         addSuffix: true,
       })
     : undefined;
-
-  useEffect(() => {
-    if (property) {
-      setIconUrl(getWebsiteIconUrl(property, 60));
-    }
-    if (secrets?.url) {
-      setIconUrl(getWebsiteIconUrl(getDomain(secrets.url), 60));
-    }
-  }, [property, secrets?.url]);
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <Row gutter={12} className="w-full">
-          <Col span={18} className="align-middle">
+          <Col span={17} className="align-middle">
             <List.Item.Meta
               avatar={
                 <Avatar
                   src={iconUrl}
                   size={30}
-                  icon={<Icons.Wikis />}
+                  icon={<Icons.Wikis size={30} />}
                   style={{
                     backgroundColor: "transparent",
                     color: "var(--ant-color-text)",
                   }}
+                  alt={`${property} icon`}
                 />
               }
               title={
-                <NextLink
-                  href={`${ACTION_CENTER_ROUTE}/${key}`}
-                  className="whitespace-nowrap"
-                >
-                  {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
-                  {!!warning && (
-                    <Tooltip
-                      title={typeof warning === "string" ? warning : undefined}
-                    >
-                      <Icons.WarningAltFilled
-                        className="ml-1 inline-block align-middle"
-                        style={{ color: "var(--fidesui-error)" }}
-                      />
-                    </Tooltip>
+                <Flex align="center" gap={4}>
+                  <NextLink
+                    href={`${ACTION_CENTER_ROUTE}/${key}`}
+                    className="whitespace-nowrap"
+                  >
+                    {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
+                  </NextLink>
+                  <DiscoveryStatusIcon consentStatus={consentStatus} />
+                  {connectionType === ConnectionType.TEST_WEBSITE && (
+                    <Tag color="nectar" style={{ fontWeight: "normal" }}>
+                      test monitor
+                    </Tag>
                   )}
-                </NextLink>
+                </Flex>
               }
               description={`${assetCountString} detected.`}
             />
@@ -113,16 +112,14 @@ export const MonitorResult = ({
           <Col span={4} className="flex items-center justify-end">
             <Text ellipsis={{ tooltip: name }}>{name}</Text>
           </Col>
-          <Col span={2} className="flex items-center justify-end">
+          <Col span={3} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
-              <Tooltip title={formattedLastMonitored}>
-                <Text
-                  data-testid="monitor-date"
-                  ellipsis={{ tooltip: formattedLastMonitored }}
-                >
-                  {lastMonitoredDistance}
-                </Text>
-              </Tooltip>
+              <Text
+                data-testid="monitor-date"
+                ellipsis={{ tooltip: formattedLastMonitored }}
+              >
+                {lastMonitoredDistance}
+              </Text>
             )}
           </Col>
         </Row>

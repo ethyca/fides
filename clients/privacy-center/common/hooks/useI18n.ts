@@ -32,7 +32,8 @@ const useI18n = () => {
 
       const experienceConfigTransalation =
         selectBestExperienceConfigTranslation(
-          i18n,
+          i18n.locale,
+          i18n.getDefaultLocale(),
           // DEFER (PROD-2737) remove type casting
           experienceConfig as ExperienceConfig,
         );
@@ -50,7 +51,8 @@ const useI18n = () => {
   const selectNoticeTranslation = useCallback(
     (notice: PrivacyNotice) => {
       const selectedNotice = selectBestNoticeTranslation(
-        i18n,
+        i18n.locale,
+        i18n.getDefaultLocale(),
         notice as PrivacyNotice,
       );
       if (!selectedNotice) {

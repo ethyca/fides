@@ -1,4 +1,4 @@
-import { h, VNode } from "preact";
+import { VNode } from "preact";
 
 import { PrivacyNoticeTranslation } from "../../lib/consent-types";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
@@ -25,8 +25,8 @@ interface Props<T extends RecordListItem> {
   type: RecordListType;
   title: string;
   enabledIds: string[];
-  renderToggleChild?: (item: T, isCustomPurpose?: boolean) => VNode;
-  onToggle: (payload: string[], item: T) => void;
+  renderDropdownChild?: (item: T, isCustomPurpose?: boolean) => VNode;
+  onToggle?: (payload: string[], item: T) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   renderGpcBadge?: (item: T) => VNode | undefined;
   hideToggles?: boolean;
@@ -37,7 +37,7 @@ const RecordsList = <T extends RecordListItem>({
   type,
   title,
   enabledIds,
-  renderToggleChild,
+  renderDropdownChild,
   renderBadgeLabel,
   renderGpcBadge,
   onToggle,
@@ -48,14 +48,18 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
+  if (!hideToggles && !onToggle) {
+    fidesDebugger("ERROR: onToggle is required when hideToggles is not true");
+  }
+
   const handleToggle = (item: T) => {
     const purposeId = `${item.id}`;
-    if (enabledIds.indexOf(purposeId) !== -1) {
+    if (enabledIds.indexOf(purposeId) !== -1 && onToggle) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
       );
-    } else {
+    } else if (onToggle) {
       onToggle([...enabledIds, purposeId], item);
     }
   };
@@ -96,9 +100,8 @@ const RecordsList = <T extends RecordListItem>({
           offLabel={toggleOffLabel}
           disabled={item.disabled}
         >
-          {renderToggleChild
-            ? renderToggleChild(item, Boolean(item.bestTranslation))
-            : ""}
+          {!!renderDropdownChild &&
+            renderDropdownChild(item, Boolean(item.bestTranslation))}
         </DataUseToggle>
       ))}
     </div>

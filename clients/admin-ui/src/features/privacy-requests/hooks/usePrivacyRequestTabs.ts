@@ -1,7 +1,8 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useFlags } from "~/features/common/features";
+import { useHasPermission } from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
 
 export const PRIVACY_REQUEST_TABS = {
   REQUEST: "request",
@@ -13,70 +14,79 @@ export type PrivacyRequestTabKey =
 
 export const usePrivacyRequestTabs = () => {
   const router = useRouter();
-  const { flags } = useFlags();
-  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
-    PRIVACY_REQUEST_TABS.REQUEST,
-  );
 
+  const hasPrivacyRequestReadScope = useHasPermission([
+    ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+  ]);
+  const hasManualTaskReadScope = useHasPermission([
+    ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+    ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
+  ]);
   const availableTabs = useMemo(
     () => ({
-      request: true,
-      manualTask: flags.alphaNewManualDSR,
+      request: hasPrivacyRequestReadScope,
+      manualTask: hasManualTaskReadScope,
     }),
-    [flags.alphaNewManualDSR],
+    [hasPrivacyRequestReadScope, hasManualTaskReadScope],
+  );
+  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
+    availableTabs.request
+      ? PRIVACY_REQUEST_TABS.REQUEST
+      : PRIVACY_REQUEST_TABS.MANUAL_TASK,
   );
 
-  const parseHashFromUrl = useCallback(
-    (url: string): PrivacyRequestTabKey | null => {
-      const hashParts = url.split("#");
-      if (hashParts.length < 2) {
-        return null;
-      }
+  const parseTabFromQuery = useCallback((): PrivacyRequestTabKey | null => {
+    const { tab } = router.query;
+    if (!tab || typeof tab !== "string") {
+      return null;
+    }
 
-      const hash = hashParts[1];
-      const validTabs = Object.values(PRIVACY_REQUEST_TABS) as string[];
+    const validTabs = Object.values(PRIVACY_REQUEST_TABS) as string[];
+    return validTabs.includes(tab) ? (tab as PrivacyRequestTabKey) : null;
+  }, [router.query]);
 
-      return validTabs.includes(hash) ? (hash as PrivacyRequestTabKey) : null;
-    },
-    [],
-  );
-
-  const updateUrlHash = useCallback(
+  const updateUrlTab = useCallback(
     (tabKey: PrivacyRequestTabKey) => {
-      const newUrl = `${router.pathname}#${tabKey}`;
-      router.replace(newUrl, undefined, { shallow: true });
+      router.replace(
+        {
+          pathname: router.pathname,
+          query: {
+            tab: tabKey,
+          },
+        },
+        undefined,
+        {
+          shallow: true,
+        },
+      );
     },
     [router],
   );
 
   useEffect(() => {
+    // Ensure the router is ready before reading query params to avoid initial undefined values
     if (!router.isReady) {
       return;
     }
 
-    const hashTab = parseHashFromUrl(router.asPath);
+    const queryTab = parseTabFromQuery();
 
-    if (hashTab) {
+    if (queryTab) {
       const isTabAvailable =
-        hashTab === PRIVACY_REQUEST_TABS.REQUEST ||
-        (hashTab === PRIVACY_REQUEST_TABS.MANUAL_TASK &&
+        queryTab === PRIVACY_REQUEST_TABS.REQUEST ||
+        (queryTab === PRIVACY_REQUEST_TABS.MANUAL_TASK &&
           availableTabs.manualTask);
 
       if (isTabAvailable) {
-        setActiveTab(hashTab);
-        return;
+        setActiveTab(queryTab);
       }
     }
-
-    setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
-    updateUrlHash(PRIVACY_REQUEST_TABS.REQUEST);
   }, [
     router.isReady,
-    router.asPath,
-    router.pathname,
+    router.query,
     availableTabs,
-    parseHashFromUrl,
-    updateUrlHash,
+    parseTabFromQuery,
+    updateUrlTab,
   ]);
 
   const handleTabChange = useCallback(
@@ -88,9 +98,9 @@ export const usePrivacyRequestTabs = () => {
 
       const typedTabKey = tabKey as PrivacyRequestTabKey;
       setActiveTab(typedTabKey);
-      updateUrlHash(typedTabKey);
+      updateUrlTab(typedTabKey);
     },
-    [updateUrlHash],
+    [updateUrlTab],
   );
 
   return {

@@ -10,8 +10,7 @@ import {
   GenerateResponse,
   Page_Dataset_,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
-import { SearchQueryParams } from "~/types/common/SearchQueryParams";
+import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
 
 export interface State {
   activeDatasetFidesKey?: string;
@@ -198,6 +197,7 @@ export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
       (RootState) => RootState,
       datasetApi.endpoints.getAllFilteredDatasets.select({
         onlyUnlinkedDatasets: false,
+        minimal: true,
       }),
     ],
     (RootState, { data }) => data ?? emptyDatasets,

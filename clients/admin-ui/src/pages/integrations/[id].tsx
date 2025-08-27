@@ -1,56 +1,49 @@
-import {
-  AntButton as Button,
-  AntFlex,
-  Box,
-  Flex,
-  Spacer,
-  Spinner,
-  useDisclosure,
-} from "fidesui";
+import { AntFlex, AntTabs as Tabs, Spinner } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import DataTabs, { TabData } from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
-import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
-import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
-import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
+import { useFeatureBasedTabs } from "~/features/integrations/hooks/useFeatureBasedTabs";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
-  const { query } = useRouter();
-  const id = Array.isArray(query.id) ? query.id[0] : query.id;
-  const { data: connection, isLoading: integrationIsLoading } =
-    useGetDatastoreConnectionByKeyQuery(id ?? "");
+  const router = useRouter();
+  const id = router.query.id as string;
 
-  // Only pass the saas type if it's a valid SaasConnectionTypes value
-  const saasType = connection?.saas_config?.type;
-  const isSaasType = (type: string): type is SaasConnectionTypes =>
-    Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
+  const { data: connection, isLoading } = useGetDatastoreConnectionByKeyQuery(
+    id,
+    {
+      skip: !id,
+    },
+  );
+
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = connectionTypesData?.items || [];
 
   const integrationOption = useIntegrationOption(
     connection?.connection_type,
-    saasType && isSaasType(saasType) ? saasType : undefined,
+    connection?.saas_config?.type as SaasConnectionTypes,
   );
 
   const {
-    testConnection,
-    isLoading: testIsLoading,
     testData,
+    testConnection,
+    isLoading: isTestLoading,
   } = useTestConnection(connection);
 
   const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
@@ -59,15 +52,15 @@ const IntegrationDetailView: NextPage = () => {
     testData,
   });
 
-  const { onOpen, isOpen, onClose } = useDisclosure();
+  const integrationTypeInfo = getIntegrationTypeInfo(
+    connection?.connection_type,
+    connection?.saas_config?.type,
+    connectionTypes,
+  );
 
   const { overview, instructions, description, enabledFeatures } =
-    getIntegrationTypeInfo(
-      connection?.connection_type,
-      connection?.saas_config?.type,
-    );
+    integrationTypeInfo;
 
-  const router = useRouter();
   if (
     !!connection &&
     !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
@@ -76,109 +69,26 @@ const IntegrationDetailView: NextPage = () => {
   }
 
   const supportsConnectionTest =
-    connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
+    connection?.connection_type !== ConnectionType.MANUAL_TASK;
 
-  const tabs: TabData[] = [];
+  const tabs = useFeatureBasedTabs({
+    connection,
+    enabledFeatures,
+    integrationOption,
+    testData,
+    needsAuthorization,
+    handleAuthorize,
+    testConnection,
+    testIsLoading: isTestLoading,
+    description,
+    overview,
+    instructions,
+    supportsConnectionTest,
+  });
 
-  // Show Details tab for integrations without connection, Connection tab for others
-  if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
-    tabs.push({
-      label: "Details",
-      content: (
-        <Box>
-          <Flex>
-            <Button onClick={onOpen} data-testid="manage-btn">
-              Edit integration
-            </Button>
-          </Flex>
-
-          <ConfigureIntegrationModal
-            isOpen={isOpen}
-            onClose={onClose}
-            connection={connection!}
-            description={description}
-          />
-          {overview}
-          {instructions}
-        </Box>
-      ),
-    });
-  } else {
-    tabs.push({
-      label: "Connection",
-      content: (
-        <Box>
-          {supportsConnectionTest && (
-            <Flex
-              borderRadius="md"
-              outline="1px solid"
-              outlineColor="gray.100"
-              align="center"
-              p={3}
-            >
-              <Flex flexDirection="column">
-                <ConnectionStatusNotice
-                  testData={testData}
-                  connectionOption={integrationOption}
-                />
-              </Flex>
-              <Spacer />
-              <div className="flex gap-4">
-                {needsAuthorization && (
-                  <Button
-                    onClick={handleAuthorize}
-                    data-testid="authorize-integration-btn"
-                  >
-                    Authorize integration
-                  </Button>
-                )}
-                {!needsAuthorization && (
-                  <Button
-                    onClick={testConnection}
-                    loading={testIsLoading}
-                    data-testid="test-connection-btn"
-                  >
-                    Test connection
-                  </Button>
-                )}
-                <Button onClick={onOpen} data-testid="manage-btn">
-                  Manage
-                </Button>
-              </div>
-            </Flex>
-          )}
-          <ConfigureIntegrationModal
-            isOpen={isOpen}
-            onClose={onClose}
-            connection={connection!}
-            description={description}
-          />
-          {overview}
-          {instructions}
-        </Box>
-      ),
-    });
-  }
-
-  // Add conditional tabs based on enabled features
-  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
-    tabs.push({
-      label: "Data sync",
-      content: <DatahubDataSyncTab integration={connection!} />,
-    });
-  }
-
-  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
-    tabs.push({
-      label: "Data discovery",
-      content: (
-        <MonitorConfigTab
-          integration={connection!}
-          integrationOption={integrationOption}
-        />
-      ),
-    });
-  }
+  const { activeTab, onTabChange } = useURLHashedTabs({
+    tabKeys: tabs.map((tab) => tab.key),
+  });
 
   return (
     <Layout title="Integrations">
@@ -197,24 +107,32 @@ const IntegrationDetailView: NextPage = () => {
         <AntFlex gap={24}>
           <div className="grow">
             <div className="mb-6">
-              <IntegrationBox integration={connection} showDeleteButton />
+              <IntegrationBox
+                integration={connection}
+                integrationTypeInfo={integrationTypeInfo}
+                showDeleteButton
+              />
             </div>
-            {integrationIsLoading ? (
+            {isLoading ? (
               <Spinner />
             ) : (
               !!connection && (
-                <DataTabs data={tabs} border="full-width" isLazy />
+                <Tabs
+                  items={tabs}
+                  activeKey={activeTab}
+                  onChange={onTabChange}
+                />
               )
             )}
           </div>
           <div className="w-[350px] shrink-0">
-            {integrationIsLoading ? (
+            {isLoading ? (
               <Spinner />
             ) : (
               !!connection && (
                 <IntegrationSetupSteps
                   testData={testData}
-                  testIsLoading={testIsLoading}
+                  testIsLoading={isTestLoading}
                   connectionOption={integrationOption!}
                   connection={connection}
                 />

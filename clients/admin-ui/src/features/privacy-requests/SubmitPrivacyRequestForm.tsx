@@ -1,6 +1,13 @@
-import { AntButton as Button, Stack } from "fidesui";
+import {
+  AntButton as Button,
+  LinkIcon,
+  Stack,
+  useClipboard,
+  useToast,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
+import * as Yup from "yup";
 
 import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
 import {
@@ -166,6 +173,60 @@ const SubmitPrivacyRequestForm = ({
                   data-testid="submit-btn"
                 >
                   Create
+                </Button>
+              </div>
+            </Stack>
+          </Form>
+        );
+      }}
+    </Formik>
+  );
+};
+
+export const CopyPrivacyRequestLinkForm = ({
+  onSubmit,
+  onCancel,
+  privacyCenterUrl,
+}: {
+  onSubmit: (values: { identity: { email: string } }) => void;
+  onCancel: () => void;
+  privacyCenterUrl: string;
+}) => {
+  const { onCopy } = useClipboard("");
+  const toast = useToast();
+  return (
+    <Formik
+      initialValues={{ identity: { email: "" } }}
+      onSubmit={(values) => {
+        onCopy(
+          `${privacyCenterUrl}?email=${encodeURIComponent(values.identity.email)}`,
+        );
+        onSubmit(values);
+        toast({ status: "success", description: "DSR Link Copied!" });
+      }}
+      validationSchema={() => {
+        return Yup.object().shape({
+          identity: Yup.object().shape({
+            email: Yup.string().email().required().label("Email Address"),
+          }),
+        });
+      }}
+    >
+      {({ dirty, isValid }) => {
+        return (
+          <Form>
+            <Stack spacing={6} mb={2}>
+              <IdentityFields identityInputs={{ email: "required" }} />
+              <div className="flex gap-4 self-end">
+                <Button onClick={onCancel}>Cancel</Button>
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  data-testid="submit-btn"
+                  icon={<LinkIcon />}
+                >
+                  Copy
                 </Button>
               </div>
             </Stack>

@@ -6,6 +6,7 @@ from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row
 
 
@@ -35,6 +36,11 @@ def filter_data_categories(
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for node_address, results in access_request_results.items():
         if not results:
+            continue
+
+        # Skip manual task data - it doesn't need filtering since it's controlled by field definitions
+        if ManualTaskAddress.is_manual_task_address(node_address):
+            filtered_access_results[node_address].extend(results)
             continue
 
         # Results from fides connectors are a special case:
@@ -115,6 +121,10 @@ def select_and_save_field(saved: Any, row: Row, target_path: FieldPath) -> Dict:
     def _defaultdict_or_array(resource: Any) -> Any:
         """Helper for building new nested resource - can return an empty dict, empty array or resource itself"""
         return type(resource)() if isinstance(resource, (list, dict)) else resource
+
+    # If we've reached the end of the field path, return the entire current object/array
+    if not target_path.levels:
+        return row
 
     if isinstance(row, list):
         for i, elem in enumerate(row):

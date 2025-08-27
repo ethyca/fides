@@ -25,8 +25,8 @@ describe("System integrations", () => {
     cy.getByTestId("system-fidesctl_system").within(() => {
       cy.getByTestId("edit-btn").click();
     });
-    cy.getByTestId("tab-Integrations").click();
-    cy.getByTestId("tab-panel-Integrations").should("exist");
+    cy.getAntTab("Integrations").click({ force: true });
+    cy.get("#rc-tabs-0-panel-integrations").should("be.visible");
   });
 
   describe("Integration search", () => {
@@ -34,7 +34,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
     });
 
@@ -58,7 +58,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
@@ -84,7 +84,7 @@ describe("System integrations", () => {
       stubDisabledIntegrationSystemCrud();
 
       cy.visit(EDIT_SYSTEM_ROUTE.replace("[id]", "disabled_postgres_system"));
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
     });
 
     it("should format dataset references as objects", () => {
@@ -92,7 +92,7 @@ describe("System integrations", () => {
       cy.getByTestId("input-secrets.dataset_reference").type(
         "test_dataset.test_collection.test_field",
       );
-      cy.getByTestId("save-btn").click();
+      cy.getByTestId("save-integration-btn").click();
       cy.wait("@patchConnectionSecret").then(({ request }) => {
         expect(request.body.dataset_reference).to.deep.equal({
           dataset: "test_dataset",
@@ -103,7 +103,7 @@ describe("System integrations", () => {
     });
 
     it("when saving the form it shouldn't re-enable the integration", () => {
-      cy.getByTestId("save-btn").click();
+      cy.getByTestId("save-integration-btn").click();
       cy.wait("@patchConnection").then(({ request }) => {
         expect(request.body[0]).to.deep.equal({
           access: "write",
@@ -114,6 +114,25 @@ describe("System integrations", () => {
         });
         expect(request.body[0].disabled).to.be.undefined;
       });
+    });
+
+    it("should render more than 50 dataset configs when available", () => {
+      // Mock response with 60 dataset configs to test that more than 50 can be rendered
+      cy.intercept("GET", "/api/v1/connection/*/datasetconfig?size=1000", {
+        fixture: "dataset-configs/many-dataset-configs.json",
+      }).as("getDatasetConfigs");
+
+      // Reload to trigger the API call with our mock
+      cy.reload();
+      cy.getAntTab("Integrations").click({ force: true });
+
+      // Wait for the API call to complete
+      cy.wait("@getDatasetConfigs");
+
+      // Verify that we have more than 50 datasets selected
+      cy.get('[data-testid="controlled-select-dataset"]')
+        .find(".ant-select-selection-item")
+        .should("have.length.greaterThan", 50);
     });
   });
 });

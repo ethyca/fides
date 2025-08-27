@@ -27,6 +27,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_NOTICE_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
     PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,
     PRIVACY_REQUEST_MANUAL_STEPS_REVIEW,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
@@ -46,6 +47,7 @@ from fides.common.api.scope_registry import (
     SYSTEM_READ,
     USER_PERMISSION_ASSIGN_OWNERS,
     USER_READ,
+    USER_READ_OWN,
     WEBHOOK_READ,
 )
 
@@ -125,6 +127,7 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ and PRIVACY_REQU
 
 respondent_scopes = [
     PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,  # allows respondents to respond to assigned manual steps
+    USER_READ_OWN,
 ]
 
 external_respondent_scopes = [
@@ -138,6 +141,7 @@ not_contributor_scopes = [
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
     USER_PERMISSION_ASSIGN_OWNERS,
 ]
 

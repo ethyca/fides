@@ -1,6 +1,7 @@
 import { useHasPermission } from "common/Restrict";
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   Flex,
   Spinner,
   Stack,
@@ -69,6 +70,11 @@ const PermissionsForm = () => {
 
   const [updateUserPermissionMutationTrigger] =
     useUpdateUserPermissionsMutation();
+
+  // Check if the current user is an external respondent
+  const isExternalRespondent = Boolean(
+    userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
+  );
 
   const updatePermissions = async (values: FormValues) => {
     if (chooseApproverIsOpen) {
@@ -152,6 +158,23 @@ const PermissionsForm = () => {
     ? { roles: userPermissions.roles }
     : defaultInitialValues;
 
+  // Filter roles based on whether the user is external respondent
+  const availableRoles = ROLES.filter((role) => {
+    // For external respondents, only show their current role
+    if (isExternalRespondent) {
+      return role.roleKey === RoleRegistryEnum.EXTERNAL_RESPONDENT;
+    }
+    // For regular users, exclude external respondent role
+    return role.roleKey !== RoleRegistryEnum.EXTERNAL_RESPONDENT;
+  });
+
+  const externalRespondentTooltip =
+    "To invite a new External respondent user, create a manual task integration and then click on the 'Manage secure access' button";
+
+  const saveButtonTooltip = isExternalRespondent
+    ? "External respondent role cannot be changed"
+    : undefined;
+
   return (
     <Formik
       onSubmit={handleSubmit}
@@ -168,37 +191,55 @@ const PermissionsForm = () => {
                 </Text>
                 <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
-              {ROLES.map((role) => {
+              {availableRoles.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;
+                const isOwnerRole = role.roleKey === RoleRegistryEnum.OWNER;
+                const isRoleDisabled = isOwnerRole
+                  ? !canAssignOwner
+                  : isExternalRespondent;
+
                 return (
                   <RoleOption
                     key={role.roleKey}
                     isSelected={isSelected}
-                    isDisabled={
-                      role.roleKey === RoleRegistryEnum.OWNER
-                        ? !canAssignOwner
-                        : false
-                    }
+                    isDisabled={isRoleDisabled}
                     assignedSystems={assignedSystems}
                     onAssignedSystemChange={setAssignedSystems}
                     {...role}
                   />
                 );
               })}
+              {/* Show disabled external respondent option for regular users */}
+              {!isExternalRespondent && (
+                <Tooltip title={externalRespondentTooltip}>
+                  <Button
+                    disabled
+                    data-testid="role-option-External respondent"
+                  >
+                    External respondent
+                  </Button>
+                </Tooltip>
+              )}
             </Stack>
             <div>
               <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
                 Cancel
               </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={isSubmitting}
-                disabled={!dirty && assignedSystems === initialManagedSystems}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
+              <Tooltip title={saveButtonTooltip}>
+                <Button
+                  className="ml-2"
+                  type="primary"
+                  htmlType="submit"
+                  loading={isSubmitting}
+                  disabled={
+                    (!dirty && assignedSystems === initialManagedSystems) ||
+                    isExternalRespondent
+                  }
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+              </Tooltip>
             </div>
           </Stack>
           <ConfirmationModal

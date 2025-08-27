@@ -11,6 +11,8 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesEndpointPaths,
+  FidesGlobal,
+  FidesOptions,
   PrivacyExperience,
 } from "fides-js";
 
@@ -116,6 +118,51 @@ describe("Fides-js GPP extension", () => {
     });
   });
 
+  describe("GPP extension multiple initialization protection", () => {
+    it("does not initialize GPP extension multiple times when Fides is already initialized", () => {
+      visitDemoWithGPP({});
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          expect(win.__gpp).to.not.eql(undefined);
+
+          // Spy on addEventListener to track if duplicate listeners are added
+          const addEventListenerSpy = cy
+            .spy(win, "addEventListener")
+            .as("addEventListenerSpy");
+
+          // Dispatch another FidesInitializing event to simulate multiple initialization attempts
+          const initializingEvent = new CustomEvent("FidesInitializing", {
+            detail: {
+              extraDetails: { gppEnabled: true },
+            },
+          });
+          win.dispatchEvent(initializingEvent);
+
+          // Verify that addEventListener was NOT called for GPP-related events
+          // since Fides.initialized should prevent re-initialization
+          const gppEventTypes = [
+            "FidesReady",
+            "FidesUIShown",
+            "FidesModalClosed",
+            "FidesUpdated",
+          ];
+          gppEventTypes.forEach((eventType) => {
+            expect(addEventListenerSpy).to.not.have.been.calledWith(eventType);
+          });
+
+          // Additional verification: check that we can still call GPP functions normally
+          win.__gpp("ping", cy.stub().as("gppPingAfterSecondInit"));
+          cy.get("@gppPingAfterSecondInit")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([, success]) => {
+              expect(success).to.eql(true);
+            });
+        });
+      });
+    });
+  });
+
   describe("with TCF and GPP enabled", () => {
     const tcfGppSettings = { enabled: true, enable_tcfeu_string: true };
     beforeEach(() => {
@@ -202,7 +249,7 @@ describe("Fides-js GPP extension", () => {
             // date-based and changes each day. The first 6 characters are the
             // "Created" date, the next 6 are the "Last Updated" date.
             expect(args[3][0].pingData.gppString).to.match(
-              /DBABMA~[a-zA-Z0-9_]{6}[a-zA-Z0-9_]{6}AGXABBENArEoABaAAEAAAAAAABEAAiAA/,
+              /DBABMA~.{6}.{6}AGXABBENArEoABaAAEAAAAAAABEAAiAA/,
             );
             // the `PurposeConsents` should match the gpp string
             expect(
@@ -472,7 +519,7 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledOnce");
+        cy.get("@FidesReady").should("have.been.calledOnce");
 
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));

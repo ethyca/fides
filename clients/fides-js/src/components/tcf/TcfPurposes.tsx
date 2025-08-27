@@ -1,4 +1,3 @@
-import { h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
@@ -75,34 +74,35 @@ const TcfPurposes = ({
   allPurposesConsent = [],
   allCustomPurposesConsent = [],
   allPurposesLegint = [],
-  allSpecialPurposes,
-  enabledPurposeConsentIds,
-  enabledCustomPurposeConsentIds,
-  enabledPurposeLegintIds,
-  enabledSpecialPurposeIds,
+  allSpecialPurposes = [],
+  enabledIds,
   onChange,
 }: {
-  allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
-  allCustomPurposesConsent: Array<PrivacyNoticeWithBestTranslation> | undefined;
-  enabledPurposeConsentIds: string[];
-  allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
-  allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
-  enabledPurposeLegintIds: string[];
-  enabledCustomPurposeConsentIds: string[];
-  enabledSpecialPurposeIds: string[];
+  allPurposesConsent?: TCFPurposeConsentRecord[];
+  allCustomPurposesConsent?: Array<PrivacyNoticeWithBestTranslation>;
+  allSpecialPurposes?: PrivacyExperience["tcf_special_purposes"];
+  allPurposesLegint?: TCFPurposeLegitimateInterestsRecord[];
+  enabledIds: EnabledIds;
   onChange: (
     payload: UpdateEnabledIds,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
+  const {
+    purposesConsent: enabledPurposeConsentIds,
+    customPurposesConsent: enabledCustomPurposeConsentIds,
+    purposesLegint: enabledPurposeLegintIds,
+    specialPurposes: enabledSpecialPurposeIds,
+  } = enabledIds;
   const { i18n } = useI18n();
   const { uniquePurposes } = useMemo(
     () =>
       getUniquePurposeRecords({
         consentPurposes: allPurposesConsent,
         legintPurposes: allPurposesLegint,
+        specialPurposes: allSpecialPurposes,
       }),
-    [allPurposesConsent, allPurposesLegint],
+    [allPurposesConsent, allPurposesLegint, allSpecialPurposes],
   );
 
   const consentContext = getConsentContext();
@@ -120,7 +120,6 @@ const TcfPurposes = ({
     specialPurposes: TCFSpecialPurposeRecord[];
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
-    const specialPurposes = allSpecialPurposes ?? [];
     const consentPurposes: PurposeRecord[] = uniquePurposes
       .filter((p) => p.isConsent)
       .map((p) => ({
@@ -143,7 +142,7 @@ const TcfPurposes = ({
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
         enabledCustomPurposeIds: enabledCustomPurposeConsentIds,
-        specialPurposes: specialPurposes.filter((sp) =>
+        specialPurposes: allSpecialPurposes.filter((sp) =>
           hasLegalBasis(sp, LegalBasisEnum.CONSENT),
         ),
         enabledSpecialPurposeIds,
@@ -153,7 +152,7 @@ const TcfPurposes = ({
       purposes: legintPurposes,
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
-      specialPurposes: specialPurposes.filter((sp) =>
+      specialPurposes: allSpecialPurposes.filter((sp) =>
         hasLegalBasis(sp, LegalBasisEnum.LEGITIMATE_INTERESTS),
       ),
       enabledSpecialPurposeIds,
@@ -267,7 +266,7 @@ const TcfPurposes = ({
 
           handleToggle(modelType, filteredEnabledIds, item);
         }}
-        renderToggleChild={(p, isCustomPurpose) => (
+        renderDropdownChild={(p, isCustomPurpose) => (
           <PurposeDetails
             type="purposes"
             purpose={p}
@@ -310,7 +309,7 @@ const TcfPurposes = ({
         onToggle={(newEnabledIds, item) =>
           handleToggle("specialPurposes", newEnabledIds, item)
         }
-        renderToggleChild={(p) => (
+        renderDropdownChild={(p) => (
           <PurposeDetails type="specialPurposes" purpose={p} />
         )}
         hideToggles

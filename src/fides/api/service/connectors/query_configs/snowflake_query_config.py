@@ -30,7 +30,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
         return f'"{string_path}" {operator} (:{operand})'
 
-    def _generate_table_name(self) -> str:
+    def generate_table_name(self) -> str:
         """
         Prepends the dataset name and schema to the base table name
         if the Snowflake namespace meta is provided.
@@ -57,7 +57,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM {self._generate_table_name()} WHERE ({" OR ".join(clauses)})'
+        return f'SELECT {field_list} FROM {self.generate_table_name()} WHERE ({" OR ".join(clauses)})'
 
     def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -69,4 +69,4 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         where_clauses: List[str],
     ) -> str:
         """Returns a parameterized update statement in Snowflake dialect."""
-        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(where_clauses)}'
+        return f'UPDATE {self.generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(where_clauses)}'

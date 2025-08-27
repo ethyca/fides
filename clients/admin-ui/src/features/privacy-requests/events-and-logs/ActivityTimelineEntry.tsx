@@ -1,5 +1,10 @@
 import classNames from "classnames";
-import { AntTag as Tag, AntTypography as Typography } from "fidesui";
+import {
+  AntTag as Tag,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
+  Icons,
+} from "fidesui";
 import React from "react";
 
 import { formatDate } from "~/features/common/utils";
@@ -10,6 +15,7 @@ import {
   TimelineItemColorMap,
 } from "../types";
 import styles from "./ActivityTimelineEntry.module.scss";
+import { AttachmentDisplay } from "./AttachmentDisplay";
 
 interface ActivityTimelineEntryProps {
   item: ActivityTimelineItem;
@@ -23,14 +29,18 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     type,
     onClick,
     isError,
-    isSkipped,
+    isAwaitingInput,
     description,
+    attachments,
+    showViewLog,
   } = item;
 
   // Format the date for display
   const formattedDate = formatDate(date);
 
   const isClickable = !!onClick;
+
+  const hasAttachments = attachments && attachments.length > 0;
 
   const content = (
     <>
@@ -39,22 +49,32 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           {author}:
         </span>
         {title && (
-          <span
+          <Typography.Text
             className={classNames(styles.title, {
               [styles["title--error"]]: isError,
+              [styles["title--awaiting-input"]]: isAwaitingInput,
             })}
+            ellipsis={{ tooltip: true }}
             data-testid="activity-timeline-title"
           >
             {title}
+
             {isError && " failed"}
-          </span>
+          </Typography.Text>
         )}
-        <span
-          className={styles.timestamp}
-          data-testid="activity-timeline-timestamp"
-        >
-          {formattedDate}
-        </span>
+        <div className="hidden xl:block">
+          <Typography.Text
+            className={styles.timestamp}
+            data-testid="activity-timeline-timestamp"
+          >
+            {formattedDate}
+          </Typography.Text>
+        </div>
+        <div className="xl:hidden">
+          <Tooltip title={formattedDate}>
+            <Icons.Time data-testid="activity-timeline-timestamp-icon" />
+          </Tooltip>
+        </div>
         <Tag
           className={styles.type}
           color={TimelineItemColorMap[type]}
@@ -62,7 +82,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         >
           {type}
         </Tag>
-        {(isError || isSkipped) && (
+        {showViewLog && (
           <span
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
@@ -71,11 +91,15 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           </span>
         )}
       </div>
-      {description && (
-        <div className="mt-2 pl-2.5">
-          <Typography.Paragraph className="!mb-0 whitespace-pre-wrap">
-            {description}
+      {(description || hasAttachments) && (
+        <div className="mt-2 flex justify-between pl-2.5 align-top">
+          <Typography.Paragraph
+            className="!mb-0 whitespace-pre-wrap"
+            data-testid="activity-timeline-description"
+          >
+            {description || ""}
           </Typography.Paragraph>
+          {hasAttachments && <AttachmentDisplay attachments={attachments} />}
         </div>
       )}
     </>
@@ -84,9 +108,12 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
   const commonProps = {
     className: classNames(styles.itemButton, {
       [styles["itemButton--error"]]: isError,
+      [styles["itemButton--awaiting-input"]]: isAwaitingInput,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
         type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+      [styles["itemButton--manual-task"]]:
+        type === ActivityTimelineItemTypeEnum.MANUAL_TASK,
     }),
     "data-testid": "activity-timeline-item",
   };

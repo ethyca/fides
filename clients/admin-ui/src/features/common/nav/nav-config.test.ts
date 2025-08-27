@@ -5,31 +5,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
 import * as routes from "./routes";
 
-const ALL_SCOPES = [
-  ScopeRegistryEnum.PRIVACY_REQUEST_READ,
-  ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
-  ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
-  ScopeRegistryEnum.DATAMAP_READ,
-  ScopeRegistryEnum.SYSTEM_CREATE,
-  ScopeRegistryEnum.SYSTEM_READ,
-  ScopeRegistryEnum.SYSTEM_UPDATE,
-  ScopeRegistryEnum.CTL_DATASET_CREATE,
-  ScopeRegistryEnum.USER_UPDATE,
-  ScopeRegistryEnum.USER_READ,
-  ScopeRegistryEnum.DATA_CATEGORY_CREATE,
-  ScopeRegistryEnum.ORGANIZATION_READ,
-  ScopeRegistryEnum.ORGANIZATION_UPDATE,
-  ScopeRegistryEnum.PRIVACY_NOTICE_READ,
-  ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ,
-  ScopeRegistryEnum.PROPERTY_READ,
-  ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ,
-  ScopeRegistryEnum.CONFIG_READ,
-  ScopeRegistryEnum.CONFIG_UPDATE,
-  ScopeRegistryEnum.CUSTOM_ASSET_UPDATE,
-  ScopeRegistryEnum.DATA_USE_READ,
-  ScopeRegistryEnum.DATA_CATEGORY_READ,
-  ScopeRegistryEnum.DATA_SUBJECT_READ,
-];
+const ALL_SCOPES = Object.values(ScopeRegistryEnum);
 
 describe("configureNavGroups", () => {
   it("includes all navigation groups for users with all scopes", () => {
@@ -205,7 +181,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[2].children
+        navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual({
@@ -267,6 +243,11 @@ describe("configureNavGroups", () => {
         title: "Settings",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
+          {
+            title: "User Detail",
+            path: routes.USER_DETAIL_ROUTE,
+            hidden: true,
+          },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
           { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
@@ -287,6 +268,11 @@ describe("configureNavGroups", () => {
         title: "Settings",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
+          {
+            title: "User Detail",
+            path: routes.USER_DETAIL_ROUTE,
+            hidden: true,
+          },
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
           {

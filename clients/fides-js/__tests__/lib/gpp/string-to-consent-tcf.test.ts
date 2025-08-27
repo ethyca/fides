@@ -1,26 +1,26 @@
 import { CmpApi } from "@iabgpp/cmpapi";
 
+import { InitializedFidesGlobal } from "~/lib/providers/fides-global-context";
+
 import {
   ComponentType,
-  ConsentMethod,
   ExperienceConfig,
   FidesCookie,
-  FidesInitOptions,
   PrivacyExperienceMinimal,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
 import { fidesStringToConsent } from "../../../src/lib/gpp/string-to-consent";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
-  UpdateConsentPreferences,
-  updateConsentPreferences,
+  updateConsent,
+  UpdateConsentOptions,
 } from "../../../src/lib/preferences";
 
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
 
-jest.mock("~/lib/preferences", () => ({
-  updateConsentPreferences: jest.fn(),
+jest.mock("../../../src/lib/preferences", () => ({
+  updateConsent: jest.fn(),
 }));
 
 const mockExperienceConfig = (override?: Partial<ExperienceConfig>) => {
@@ -111,22 +111,25 @@ const mockWindowFides = (override?: Partial<Window["Fides"]>) => {
   };
 };
 
-const expectUpdateConsentPreferences = (
-  override?: Partial<UpdateConsentPreferences>,
+const expectUpdateConsent = (
+  overrideFidesGlobal?: Partial<InitializedFidesGlobal>,
 ) => {
-  const base: Partial<UpdateConsentPreferences> = {
-    consentMethod: ConsentMethod.SCRIPT,
-    options: {
-      tcfEnabled: true,
-      gppEnabled: true,
-    } as FidesInitOptions,
-    propertyId: undefined,
+  const baseFidesGlobal: Partial<InitializedFidesGlobal> = {
     cookie: mockFidesCookie(),
     experience: mockPrivacyExperience(),
-    privacyExperienceConfigHistoryId: "321",
-    userLocationString: "eea",
-    consentPreferencesToSave: [],
-    tcf: {},
+  };
+  if (!overrideFidesGlobal) {
+    return baseFidesGlobal;
+  }
+  return { ...baseFidesGlobal, ...overrideFidesGlobal };
+};
+
+const expectUpdateConsentOptions = (
+  override?: Partial<UpdateConsentOptions>,
+) => {
+  const base: Partial<UpdateConsentOptions> = {
+    noticeConsent: {},
+    updateCookie: jest.fn(),
   };
   if (!override) {
     return base;
@@ -148,9 +151,10 @@ describe("fidesStringToConsent", () => {
         "CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA",
       cmpApi,
     });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
+    expect(updateConsent).toHaveBeenCalledWith(
+      expect.objectContaining(expectUpdateConsent()),
       expect.objectContaining(
-        expectUpdateConsentPreferences({
+        expectUpdateConsentOptions({
           tcf: {
             purpose_consent_preferences: [
               { id: 1, preference: UserConsentPreference.OPT_IN },
@@ -173,6 +177,7 @@ describe("fidesStringToConsent", () => {
               { id: "gvl.740", preference: UserConsentPreference.OPT_IN },
             ],
           },
+          updateCookie: expect.any(Function),
         }),
       ),
     );
@@ -186,9 +191,10 @@ describe("fidesStringToConsent", () => {
         "CQNvpkAQNvpkAGXABBENBfFgAAAAAAAAAAAAAAAAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgAAAAAAAAAAAAAAAAAAAA",
       cmpApi,
     });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
+    expect(updateConsent).toHaveBeenCalledWith(
+      expect.objectContaining(expectUpdateConsent()),
       expect.objectContaining(
-        expectUpdateConsentPreferences({
+        expectUpdateConsentOptions({
           tcf: {
             purpose_consent_preferences: [],
             purpose_legitimate_interests_preferences: [],
@@ -198,6 +204,7 @@ describe("fidesStringToConsent", () => {
             vendor_consent_preferences: [],
             vendor_legitimate_interests_preferences: [],
           },
+          updateCookie: expect.any(Function),
         }),
       ),
     );
@@ -211,9 +218,10 @@ describe("fidesStringToConsent", () => {
         "CQNvpkAQNvpkAGXABBENBfFgAJAAAAIAAAAAAAAAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgAJAAAAIAAAAAAAAAAAAA",
       cmpApi,
     });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
+    expect(updateConsent).toHaveBeenCalledWith(
+      expect.objectContaining(expectUpdateConsent()),
       expect.objectContaining(
-        expectUpdateConsentPreferences({
+        expectUpdateConsentOptions({
           tcf: {
             purpose_consent_preferences: [
               { id: 1, preference: UserConsentPreference.OPT_IN },
@@ -228,6 +236,7 @@ describe("fidesStringToConsent", () => {
             vendor_consent_preferences: [],
             vendor_legitimate_interests_preferences: [],
           },
+          updateCookie: expect.any(Function),
         }),
       ),
     );

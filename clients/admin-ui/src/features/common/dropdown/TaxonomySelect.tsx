@@ -1,7 +1,8 @@
 import {
   AntFlex as Flex,
   AntSelect as Select,
-  AntSelectProps as SelectProps,
+  ICustomMultiSelectProps,
+  ICustomSelectProps,
 } from "fidesui";
 
 import styles from "./TaxonomySelect.module.scss";
@@ -14,43 +15,66 @@ export interface TaxonomySelectOption {
   className?: string;
 }
 
-export const TaxonomyOption = ({ data }: { data: TaxonomySelectOption }) => {
+interface ExtendedTaxonomySelectOption extends TaxonomySelectOption {
+  // The visual title of the select element
+  formattedTitle: string;
+}
+
+export const TaxonomyOption = ({
+  data: { formattedTitle, description, name, primaryName },
+}: {
+  data: ExtendedTaxonomySelectOption;
+}) => {
   return (
-    <Flex
-      gap={12}
-      title={`${data.primaryName || ""}${data.primaryName ? ": " : ""}${data.name} - ${data.description}`}
-    >
+    <Flex gap={12} title={`${formattedTitle} - ${description}`}>
       <div>
-        <strong>{data.primaryName || data.name}</strong>
-        {data.primaryName && `: ${data.name}`}
+        <strong>{primaryName || name}</strong>
+        {primaryName && `: ${name}`}
       </div>
-      <em>{data.description}</em>
+      <em>{description}</em>
     </Flex>
   );
 };
 
-export interface TaxonomySelectProps
-  extends Omit<SelectProps<string, TaxonomySelectOption>, "options"> {
-  selectedTaxonomies: string[];
-  showDisabled?: boolean;
-}
+interface ITaxonomySelectProps
+  extends ICustomSelectProps<string, TaxonomySelectOption> {}
+interface ITaxonomyMultiSelectProps
+  extends ICustomMultiSelectProps<string, TaxonomySelectOption> {}
 
-export const TaxonomySelect = ({
-  options,
-  ...props
-}: SelectProps<string, TaxonomySelectOption>) => {
+export type TaxonomySelectProps = (
+  | ITaxonomySelectProps
+  | ITaxonomyMultiSelectProps
+) & {
+  showDisabled?: boolean;
+  selectedTaxonomies?: string[];
+};
+
+export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
   const selectOptions = options?.map((opt) => ({
     ...opt,
     className: styles.option,
+    formattedTitle: [opt.primaryName, opt.name]
+      .filter((maybeString) => maybeString)
+      .join(": "),
   }));
 
+  /*
+   * @description Matches options where the displayed value or the underlying value includes the input text
+   */
+  const filterOption = (input: string, option?: ExtendedTaxonomySelectOption) =>
+    option?.formattedTitle.toLowerCase().includes(input.toLowerCase()) ||
+    option?.value.toLowerCase().includes(input.toLowerCase()) ||
+    false;
+
   return (
-    <Select<string, TaxonomySelectOption>
+    <Select<string, ExtendedTaxonomySelectOption>
       options={selectOptions}
+      filterOption={filterOption}
+      optionFilterProp="label"
       autoFocus
       variant="borderless"
       optionRender={TaxonomyOption}
-      dropdownStyle={{ minWidth: "500px" }}
+      styles={{ popup: { root: { minWidth: "500px" } } }}
       className="w-full p-0"
       data-testid="taxonomy-select"
       {...props}

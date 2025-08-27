@@ -50,8 +50,12 @@ export const statusPropMap: {
     colorScheme: "marble",
   },
   requires_input: {
-    colorScheme: "alert",
+    colorScheme: "minos",
     label: "Requires Input",
+  },
+  requires_manual_finalization: {
+    colorScheme: "minos",
+    label: "Requires Finalization",
   },
 };
 

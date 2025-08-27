@@ -11,6 +11,14 @@ from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.config.admin_ui_settings import ErrorNotificationMode
 
 
+class SqlDryRunMode(str, Enum):
+    """SQL dry run mode for controlling execution of SQL statements in privacy requests"""
+
+    none = "none"
+    access = "access"
+    erasure = "erasure"
+
+
 class StorageTypeApiAccepted(Enum):
     """Enum for storage destination types accepted in API updates"""
 
@@ -62,7 +70,11 @@ class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool] = None
     disable_consent_identity_verification: Optional[bool] = None
     require_manual_request_approval: Optional[bool] = None
-    model_config = ConfigDict(extra="forbid")
+    memory_watchdog_enabled: Optional[bool] = None
+    sql_dry_run: Optional[SqlDryRunMode] = None
+
+    # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through
+    model_config = ConfigDict(use_enum_values=True, extra="ignore")
 
 
 class AdminUIConfig(FidesSchema):
@@ -71,6 +83,12 @@ class AdminUIConfig(FidesSchema):
     error_notification_mode: Optional[ErrorNotificationMode] = (
         ErrorNotificationMode.CONSOLE_ONLY
     )
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class PrivacyCenterConfig(FidesSchema):
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
 
     model_config = ConfigDict(extra="forbid")
 
@@ -107,6 +125,7 @@ class ApplicationConfig(FidesSchema):
     security: Optional[SecurityApplicationConfig] = None
     consent: Optional[ConsentConfig] = None
     admin_ui: Optional[AdminUIConfig] = None
+    privacy_center: Optional[PrivacyCenterConfig] = None
 
     @model_validator(mode="before")
     @classmethod

@@ -497,13 +497,14 @@ describe("Privacy experiences", () => {
 
       it("can add new translations with all required fields", () => {
         const components = [
-          { type: ComponentType.PRIVACY_CENTER, displayName: "Privacy center" },
-          { type: ComponentType.HEADLESS, displayName: "Headless" },
           { type: ComponentType.MODAL, displayName: "Modal" },
           {
             type: ComponentType.BANNER_AND_MODAL,
             displayName: "Banner and modal",
           },
+          { type: ComponentType.PRIVACY_CENTER, displayName: "Privacy center" },
+          { type: ComponentType.HEADLESS, displayName: "Headless" },
+          { type: ComponentType.TCF_OVERLAY, displayName: "TCF overlay" },
         ];
 
         components.forEach(({ type, displayName }) => {
@@ -530,8 +531,21 @@ describe("Privacy experiences", () => {
               cy.getByTestId("privacy-experience-detail-page")
                 .find("input[required], textarea[required]")
                 .each(($input) => {
-                  cy.wrap($input).type("Test", typeOptions);
+                  cy.wrap($input).type(`Test ${language}`, typeOptions);
                 });
+
+              // Verify preview displays the new translation
+              if (
+                [
+                  ComponentType.BANNER_AND_MODAL,
+                  ComponentType.MODAL,
+                  ComponentType.TCF_OVERLAY,
+                ].includes(type)
+              ) {
+                cy.getByTestId("fides-modal-title")
+                  .contains(`Test ${language}`)
+                  .should("exist");
+              }
 
               // Verify save button is enabled
               cy.getByTestId("save-btn").should("not.be.disabled");

@@ -40,3 +40,9 @@ export const FIDES_US_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {
   us_tn: { name: UsTn.NAME, id: UsTn.ID },
   us_tx: { name: UsTx.NAME, id: UsTx.ID },
 };
+
+export enum GPPUSApproach {
+  NATIONAL = "national",
+  STATE = "state",
+  ALL = "all",
+}

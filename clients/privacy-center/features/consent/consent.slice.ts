@@ -4,6 +4,7 @@ import {
   RecordsServedResponse,
   UserGeolocation,
 } from "fides-js";
+import { iso31661, ISO31661Entry, ISO31662Entry, iso31662 } from "iso-3166";
 
 import type { RootState } from "~/app/store";
 import { VerificationType } from "~/components/modals/types";
@@ -81,7 +82,6 @@ export const consentApi = baseApi.injectEndpoints({
         url: "privacy-experience/",
         params: {
           component: ComponentType.PRIVACY_CENTER,
-          has_notices: true,
           show_disabled: false,
           has_config: true,
           systems_applicable: true,
@@ -229,6 +229,7 @@ export const selectUserRegion = createSelector(
   [(RootState) => RootState, selectConsentState, selectSettings],
   (RootState, consentState, settingsState) => {
     const { settings } = settingsState;
+
     if (settings?.IS_GEOLOCATION_ENABLED && settings?.GEOLOCATION_API_URL) {
       let geolocation: UserGeolocation | undefined = {
         location: consentState.location,
@@ -243,6 +244,17 @@ export const selectUserRegion = createSelector(
       return geolocation.location as PrivacyNoticeRegion;
     }
     return undefined;
+  },
+);
+
+export const selectUserLocation = createSelector(
+  [(RootState) => RootState, selectUserRegion],
+  (RootState, userRegion) => {
+    return iso31662.find(
+      (entry) =>
+        entry.code.toLowerCase() ===
+        userRegion?.toLowerCase()?.replace("_", "-"),
+    );
   },
 );
 

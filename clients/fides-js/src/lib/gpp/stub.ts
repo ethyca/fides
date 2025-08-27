@@ -18,7 +18,7 @@ import { GppCallback, GppFunction } from "./types";
 interface GppEvent {
   id: number;
   callback: GppCallback;
-  parameter: any;
+  parameter: unknown;
 }
 
 interface MessageData {
@@ -34,7 +34,7 @@ const isMessageData = (data: unknown): data is MessageData =>
   typeof data === "object" && data != null && "__gppCall" in data;
 
 export const makeStub = () => {
-  const queue: any[] = [];
+  const queue: unknown[] = [];
   const events: GppEvent[] = [];
   let lastId: number | undefined;
 

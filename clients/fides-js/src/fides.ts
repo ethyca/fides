@@ -114,6 +114,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
+  this.config = config;
   this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
@@ -174,13 +175,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   }
 
   const updatedFides = await initialize({
-    ...config,
     fides: this,
     initOverlay,
     renderOverlay,
     updateExperience,
     overrides,
-    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);

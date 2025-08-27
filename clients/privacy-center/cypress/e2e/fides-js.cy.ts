@@ -1,3 +1,5 @@
+import { stubConfig } from "support/stubs";
+
 import { DEFAULT_FIDES_JS_MAX_AGE_SECONDS } from "~/app/server-utils/loadEnvironmentVariables";
 
 describe("fides.js API route", () => {
@@ -104,6 +106,7 @@ describe("fides.js API route", () => {
   });
 
   it("caches in the browser", () => {
+    stubConfig({});
     cy.intercept("/fides.js").as("fidesJS");
 
     // Load the demo page 3 times, and check /fides.js is called *at most* once

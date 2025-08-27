@@ -9,10 +9,12 @@ import {
   DATA_DISCOVERY_ROUTE,
   DETECTION_DISCOVERY_ACTIVITY_ROUTE,
 } from "~/features/common/nav/routes";
+import { RoleRegistryEnum } from "~/types/api/models/RoleRegistryEnum";
 
 describe("discovery and detection", () => {
   beforeEach(() => {
     cy.login();
+    cy.assumeRole(RoleRegistryEnum.OWNER);
     stubPlus(true);
     stubStagedResourceActions();
     stubTaxonomyEntities();
@@ -23,6 +25,44 @@ describe("discovery and detection", () => {
           website_monitor_enabled: true,
         },
       },
+    });
+  });
+
+  describe("default tab behavior without hash", () => {
+    it("should default to action-required tab for detection results", () => {
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/discovery-monitor/results?*diff_status=addition&diff_status=removal*",
+        {
+          fixture: "detection-discovery/results/detection/dataset-list.json",
+        },
+      ).as("getDetectionResultsWithActionRequiredFilters");
+
+      cy.visit(DATA_DETECTION_ROUTE);
+      cy.wait("@getDetectionResultsWithActionRequiredFilters");
+
+      // Verify the action-required tab is active (check parent div)
+      cy.getAntTab("Action Required")
+        .parent()
+        .should("have.class", "ant-tabs-tab-active");
+    });
+
+    it("should default to action-required tab for discovery results", () => {
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/discovery-monitor/results?*diff_status=classification_addition&diff_status=classification_update*",
+        {
+          fixture: "detection-discovery/results/discovery/dataset-list.json",
+        },
+      ).as("getDiscoveryResultsWithActionRequiredFilters");
+
+      cy.visit(DATA_DISCOVERY_ROUTE);
+      cy.wait("@getDiscoveryResultsWithActionRequiredFilters");
+
+      // Verify the action-required tab is active (check parent div)
+      cy.getAntTab("Action Required")
+        .parent()
+        .should("have.class", "ant-tabs-tab-active");
     });
   });
 
@@ -258,7 +298,7 @@ describe("discovery and detection", () => {
 
       describe("Tab filter views", () => {
         it("should be able to switch to monitored tab", () => {
-          cy.getByTestId("tab-Monitored").click();
+          cy.getAntTab("Monitored").click({ force: true });
           cy.wait("@getAllMonitoredTables");
 
           cy.getByTestId(
@@ -267,7 +307,7 @@ describe("discovery and detection", () => {
         });
 
         it("should allow monitored tables to be muted", () => {
-          cy.getByTestId("tab-Monitored").click();
+          cy.getAntTab("Monitored").click({ force: true });
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20-col-actions",
           ).within(() => {
@@ -277,7 +317,7 @@ describe("discovery and detection", () => {
         });
 
         it("should be able to switch to unmonitored tab", () => {
-          cy.getByTestId("tab-Unmonitored").click();
+          cy.getAntTab("Unmonitored").click({ force: true });
           cy.wait("@getAllMutedTables");
 
           cy.getByTestId(
@@ -286,7 +326,7 @@ describe("discovery and detection", () => {
         });
 
         it("should allow muted tables to be monitored", () => {
-          cy.getByTestId("tab-Unmonitored").click();
+          cy.getAntTab("Unmonitored").click({ force: true });
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-21-col-actions",
           ).within(() => {

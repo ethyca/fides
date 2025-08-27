@@ -14,6 +14,25 @@ from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 
 
+def format_size(size_bytes: float) -> str:
+    """
+    Format size in bytes to human readable format.
+
+    Args:
+        size_bytes: Size in bytes
+
+    Returns:
+        Formatted string with appropriate unit (B, KB, MB, GB, TB, PB)
+    """
+    units = ["B", "KB", "MB", "GB", "TB"]
+    size = float(size_bytes)
+    for unit in units:
+        if size < 1024.0:
+            return f"{size:.1f} {unit}"
+        size /= 1024.0
+    return f"{size:.1f} PB"
+
+
 def get_schema_for_secrets(
     storage_type: Union[StorageType, str],
     secrets: possible_storage_secrets,
