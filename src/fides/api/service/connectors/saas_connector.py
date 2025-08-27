@@ -265,13 +265,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
-        awaiting_async_callback: bool = False
+        #awaiting_async_callback: bool = False
+        db = Session.object_session(privacy_request)
+
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
-            logger.info(
-                "read_request.async_config.strategy: {}",
-                read_request.async_config.strategy,
-            )
             if (
                 read_request.async_config is not None
                 and request_task.id  # Only supported in DSR 3.0
@@ -279,18 +277,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_callback = True
-                db = Session.object_session(privacy_request)
                 request_task.async_type = AsyncTaskType(
                     read_request.async_config.strategy
-                )
-                # I think we can skip this since on graph task we are grabbing it
-                # request_task.update_status(db, ExecutionLogStatus.awaiting_processing)
-                # request_task.save(db)
-
-                logger.info(
-                    "Request Task async_type set to: {} for task ID: {}",
-                    request_task.async_type,
-                    request_task.id,
                 )
 
             # check all the values specified by param_values are provided in input_data
@@ -352,9 +340,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if awaiting_async_callback:
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
+            # However for polling async request we want to save the request data for ids that we will use on the pollings status
+            if request_task.async_type == AsyncTaskType.polling:
+                # Saving the request task access data to use it on the polling status request
+                # TODO: Consider if we want to clean up the rows. Currently this is the concern of the GraphTask.
+                request_task.access_data = rows
+                request_task.save(db)
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
-
-            ## Problems with AwaitingAsyncTask: Since we are raising the await task, we are rolling back the changes.
             raise AwaitingAsyncTask()
 
         return rows
