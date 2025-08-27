@@ -13,11 +13,13 @@ export type FormikSelectProps = ComponentProps<typeof Select> &
     error?: string;
     touched?: boolean;
   };
+
 /*
  * @description: Transitory component that migrates away from chakra while retaining formik
  */
 export const FormikSelect = ({
   error,
+  touched,
   required,
   tooltip,
   label,
@@ -58,8 +60,9 @@ export const FormikSelect = ({
 
   return (
     <Form.Item
-      validateStatus={error ? "error" : undefined}
-      help={error}
+      validateStatus={touched && !!error ? "error" : undefined}
+      help={touched && error}
+      hasFeedback={touched && !!error}
       required={required}
       tooltip={tooltip}
       label={label}

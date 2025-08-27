@@ -127,6 +127,7 @@ const ConfigureWebsiteMonitorForm = ({
     resetForm,
     handleSubmit: formikSubmit,
     errors,
+    touched,
     ...formik
   } = useFormik({
     initialValues,
@@ -157,6 +158,7 @@ const ConfigureWebsiteMonitorForm = ({
           label="Name"
           required
           error={errors.name}
+          touched={touched.name}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           value={values.name}
@@ -166,6 +168,7 @@ const ConfigureWebsiteMonitorForm = ({
           id="sitemap_url"
           label="Sitemap URL"
           error={getIn(errors, "datasource_params.sitemap_url")}
+          touched={getIn(touched, "datasource_params.sitemap_url")}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           value={values.datasource_params?.sitemap_url || ""}
@@ -179,6 +182,7 @@ const ConfigureWebsiteMonitorForm = ({
           open={false}
           disabled
           error={errors.execution_frequency}
+          touched={touched.execution_frequency}
           onChange={(value) =>
             formik.setFieldValue("datasource_params.exclude_domains", value)
           }
@@ -192,6 +196,7 @@ const ConfigureWebsiteMonitorForm = ({
           required
           disabled
           error={errors.url}
+          touched={touched.url}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           value={values.url || ""}
@@ -208,6 +213,7 @@ const ConfigureWebsiteMonitorForm = ({
           tooltip={REGIONS_TOOLTIP_COPY}
           mode="tags"
           error={getIn(errors, "datasource_params.locations")}
+          touched={getIn(touched, "datasource_params.locations")}
           onChange={(value) =>
             formik.setFieldValue("datasource_params.locations", value)
           }
@@ -218,6 +224,7 @@ const ConfigureWebsiteMonitorForm = ({
           name="shared_config_id"
           id="shared_config_id"
           error={errors.shared_config_id}
+          touched={touched.shared_config_id}
           onChange={(value) => formik.setFieldValue("shared_config_id", value)}
           onBlur={formik.handleBlur}
           value={values.shared_config_id}
@@ -228,6 +235,7 @@ const ConfigureWebsiteMonitorForm = ({
           options={frequencyOptions}
           label="Automatic execution frequency"
           error={errors.execution_frequency}
+          touched={touched.execution_frequency}
           onChange={(value) =>
             formik.setFieldValue("execution_frequency", value)
           }
@@ -243,6 +251,7 @@ const ConfigureWebsiteMonitorForm = ({
           id="execution_start_date"
           tooltip={START_TIME_TOOLTIP_COPY}
           error={errors.execution_start_date}
+          touched={touched.execution_start_date}
           onChange={(value) =>
             value &&
             formik.setFieldValue("execution_start_date", value.toISOString())

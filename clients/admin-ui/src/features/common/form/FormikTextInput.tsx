@@ -8,6 +8,7 @@ import React from "react";
 
 export const FormikTextInput = ({
   error,
+  touched,
   required,
   tooltip,
   label,
@@ -21,15 +22,16 @@ export const FormikTextInput = ({
     "required" | "name" | "label" | "tooltip" | "help" | "extra"
   > & {
     error?: string;
+    touched?: boolean;
   }) => {
   return (
     <Form.Item
-      validateStatus={error ? "error" : undefined}
-      help={error}
+      validateStatus={touched && !!error ? "error" : undefined}
+      help={touched && error}
+      hasFeedback={touched && !!error}
       required={required}
       tooltip={tooltip}
       label={label}
-      hasFeedback={!!error}
       extra={extra}
       htmlFor={id ?? name}
     >

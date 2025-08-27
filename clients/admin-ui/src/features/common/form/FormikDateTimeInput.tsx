@@ -5,8 +5,12 @@ import {
   AntFormItemProps as FormItemProps,
 } from "fidesui";
 
+/*
+ * @description: Transitory component that migrates away from chakra while retaining formik
+ */
 export const FormikDateTimeInput = ({
   error,
+  touched,
   required,
   tooltip,
   label,
@@ -24,8 +28,9 @@ export const FormikDateTimeInput = ({
   }) => {
   return (
     <Form.Item
-      validateStatus={error ? "error" : undefined}
-      help={error}
+      validateStatus={touched && !!error ? "error" : undefined}
+      help={touched && error}
+      hasFeedback={touched && !!error}
       required={required}
       tooltip={tooltip}
       label={label}

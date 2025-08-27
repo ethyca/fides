@@ -638,6 +638,9 @@ export const CustomDatePicker = ({
   );
 };
 
+/**
+ * @deprecated in favor of FormikDateTimeInput
+ */
 export const CustomDateTimeInput = ({
   label,
   name,

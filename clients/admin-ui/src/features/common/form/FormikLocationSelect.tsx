@@ -16,6 +16,7 @@ export type FormikLocationSelectProps = LocationSelectProps &
 
 export const FormikLocationSelect = ({
   error,
+  touched,
   required,
   tooltip,
   label,
@@ -26,8 +27,9 @@ export const FormikLocationSelect = ({
 }: FormikLocationSelectProps) => {
   return (
     <Form.Item
-      validateStatus={error ? "error" : undefined}
-      help={error}
+      validateStatus={touched && !!error ? "error" : undefined}
+      help={touched && error}
+      hasFeedback={touched && !!error}
       required={required}
       tooltip={tooltip}
       label={label}
