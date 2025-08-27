@@ -18,7 +18,7 @@ from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DsrReportBuilder,
+    DSRReportBuilder,
 )
 from fides.api.service.storage.streaming.dsr_storage import (
     create_dsr_report_files_generator,
@@ -639,7 +639,7 @@ class SmartOpenStreamingStorage:
         """
         # Generate the DSR report first
         try:
-            dsr_buffer = DsrReportBuilder(
+            dsr_buffer = DSRReportBuilder(
                 privacy_request=privacy_request,
                 dsr_data=data,
             ).generate()

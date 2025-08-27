@@ -20,6 +20,11 @@ interface PrivacyRequestRedactionPatternsFormValues {
   patterns: PatternItem[];
 }
 
+// Centralized validation function for pattern values
+const validatePatternNonEmpty = (value: string | undefined | null): boolean => {
+  return !!(value && value.trim().length > 0);
+};
+
 const ValidationSchema = Yup.object().shape({
   patterns: Yup.array()
     .nullable()
@@ -28,11 +33,10 @@ const ValidationSchema = Yup.object().shape({
         id: Yup.string().required(),
         value: Yup.string()
           .required()
-          .trim()
           .test(
             "is-valid-pattern",
             "Pattern cannot be empty",
-            (value) => !!(value && value.trim().length > 0),
+            validatePatternNonEmpty,
           )
           .label("Pattern"),
       }),
@@ -52,7 +56,7 @@ const PrivacyRequestRedactionPatternsPage = () => {
   ) => {
     // Filter out empty patterns and trim whitespace
     const cleanedPatterns = values.patterns
-      .filter((pattern) => pattern.value && pattern.value.trim().length > 0)
+      .filter((pattern) => validatePatternNonEmpty(pattern.value))
       .map((pattern) => pattern.value.trim());
 
     const payload = await updatePatterns({ patterns: cleanedPatterns });
@@ -69,7 +73,7 @@ const PrivacyRequestRedactionPatternsPage = () => {
 
   const initialValues: PrivacyRequestRedactionPatternsFormValues = {
     patterns: (currentPatterns?.patterns || []).map((pattern, index) => ({
-      id: `pattern-${index}-${Date.now()}`,
+      id: `pattern-${index}`,
       value: pattern,
     })),
   };
@@ -125,7 +129,7 @@ const PrivacyRequestRedactionPatternsPage = () => {
                           className="w-full"
                           onClick={() => {
                             arrayHelpers.push({
-                              id: `pattern-${Date.now()}-${Math.random()}`,
+                              id: `pattern-new-${values.patterns.length}`,
                               value: "",
                             });
                           }}

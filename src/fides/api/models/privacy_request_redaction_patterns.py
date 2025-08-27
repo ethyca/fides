@@ -30,14 +30,15 @@ class PrivacyRequestRedactionPatterns(Base):
         Boolean,
         default=True,
         nullable=False,
-        unique=True,
     )  # used to constrain table to one row
 
-    CheckConstraint(
-        "single_row", name="privacy_request_redaction_patterns_single_row_check"
-    )
-    UniqueConstraint(
-        "single_row", name="privacy_request_redaction_patterns_single_row_unique"
+    __table_args__ = (
+        CheckConstraint(
+            "single_row", name="privacy_request_redaction_patterns_single_row_check"
+        ),
+        UniqueConstraint(
+            "single_row", name="privacy_request_redaction_patterns_single_row_unique"
+        ),
     )
 
     @classmethod

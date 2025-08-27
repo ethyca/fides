@@ -35,7 +35,12 @@ def upgrade():
         sa.Column("patterns", sa.ARRAY(sa.String()), nullable=False),
         sa.Column("single_row", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("single_row"),
+        sa.CheckConstraint(
+            "single_row", name="privacy_request_redaction_patterns_single_row_check"
+        ),
+        sa.UniqueConstraint(
+            "single_row", name="privacy_request_redaction_patterns_single_row_unique"
+        ),
     )
     op.create_index(
         op.f("ix_privacy_request_redaction_patterns_id"),

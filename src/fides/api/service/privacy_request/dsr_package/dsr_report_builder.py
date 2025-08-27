@@ -1,26 +1,22 @@
-# pylint: disable=too-many-nested-blocks,too-many-branches
 import json
 import os
-import re
 import time as time_module
 import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import jinja2
-from fideslang.models import Dataset, DatasetField
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
-from sqlalchemy.orm import Session, object_session
+from sqlalchemy.orm import object_session
 
-from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.privacy_request_redaction_patterns import (
-    PrivacyRequestRedactionPatterns,
+from fides.api.service.privacy_request.dsr_package.dsr_data_preprocessor import (
+    DSRDataPreprocessor,
 )
-from fides.api.schemas.policy import ActionType
+from fides.api.service.privacy_request.dsr_package.utils import map_privacy_request
 from fides.api.util.storage_util import StorageJSONEncoder, format_size
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -31,7 +27,7 @@ BORDER_COLOR = "#E2E8F0"
 
 
 # pylint: disable=too-many-instance-attributes
-class DsrReportBuilder:
+class DSRReportBuilder:
     """
     Manages populating HTML templates from the given data and adding the generated
     pages to a zip file in a way that the pages can be navigated between.
@@ -43,7 +39,7 @@ class DsrReportBuilder:
     - data/dataset_name/collection_name/item_index.html: the detail page for the item
     - attachments/index.html: the index page for the attachments
 
-    Args:
+        Args:
         privacy_request: the privacy request object
         dsr_data: the DSR data
     """
@@ -79,25 +75,21 @@ class DsrReportBuilder:
         }
         self.main_links: dict[str, Any] = {}  # used to track the generated pages
 
+        # Process the DSR data for redaction
+        db = object_session(privacy_request)
+        if db is not None:
+            processor = DSRDataPreprocessor(db)
+            processed_dsr_data = processor.process_dsr_data(dsr_data)
+        else:
+            # Fallback if no database session available
+            processed_dsr_data = dsr_data
+
         # report data to populate the templates
-        self.request_data = _map_privacy_request(privacy_request)
-        self.dsr_data = dsr_data
+        self.request_data = map_privacy_request(privacy_request)
+        self.dsr_data = processed_dsr_data
 
         # Track used filenames across all attachments
         self.used_filenames: set[str] = set()
-
-        self.redaction_patterns: List[str] = []
-
-        # Set of entity names that should be redacted
-        self.entities_to_redact = set()
-
-        # Load redaction patterns and entities to redact from database
-        db = object_session(privacy_request)
-        if db is not None:
-            # Load redaction patterns from database using the privacy request's session
-            if patterns := PrivacyRequestRedactionPatterns.get_patterns(db):
-                self.redaction_patterns = patterns
-            self.entities_to_redact = get_redaction_entities_map(db)
 
     def _populate_template(
         self,
@@ -140,45 +132,24 @@ class DsrReportBuilder:
         if filename and contents:
             self.out.writestr(f"{filename}", contents.encode("utf-8"))
 
-    def _add_dataset(
-        self, dataset_name: str, collections: dict[str, Any], index: int
-    ) -> None:
+    def _add_dataset(self, dataset_name: str, collections: dict[str, Any]) -> None:
         """
         Generates a page for each collection in the dataset and an index page for the dataset.
         Tracks the generated links to build a root level index after each collection has been processed.
-
-        Args:
-            dataset_name: the name of the dataset to add
-            collections: the collections to add to the dataset
-            index: index of the dataset
         """
-        # compute final dataset name once (may be redacted)
-        dataset_display_name = self._redact_name("dataset", dataset_name, index)
-
         # track links to collection indexes
         collection_links = {}
-        for collection_index, (original_collection_name, rows) in enumerate(
-            collections.items(), start=1
-        ):
-            collection_display_name = self._redact_name(
-                "collection", original_collection_name, collection_index, dataset_name
-            )
-            collection_url = f"{collection_display_name}/index.html"
-            self._add_collection(
-                rows,
-                dataset_display_name,
-                collection_display_name,
-                dataset_name,
-                original_collection_name,
-            )
-            collection_links[collection_display_name] = collection_url
+        for collection_name, rows in collections.items():
+            collection_url = f"{collection_name}/index.html"
+            self._add_collection(rows, dataset_name, collection_name)
+            collection_links[collection_name] = collection_url
 
         # generate dataset index page
         self._add_file(
-            f"data/{dataset_display_name}/index.html",
+            f"data/{dataset_name}/index.html",
             self._populate_template(
                 "templates/dataset_index.html",
-                dataset_display_name,
+                dataset_name,
                 None,
                 collection_links,
             ),
@@ -260,18 +231,11 @@ class DsrReportBuilder:
     def _add_collection(
         self,
         rows: list[dict[str, Any]],
-        dataset_display_name: str,
-        collection_display_name: str,
         dataset_name: str,
         collection_name: str,
     ) -> None:
         """
         Adds a collection to the zip file.
-
-        Args:
-            rows: the rows to add to the collection
-            dataset_display_name: the final dataset name to use for file paths
-            collection_display_name: the final collection name to use for file paths
         """
         items_content = []
 
@@ -286,41 +250,28 @@ class DsrReportBuilder:
                 # Process attachments and get their URLs
                 attachment_links = self._write_attachment_content(
                     item_data["attachments"],
-                    f"data/{dataset_display_name}/{collection_display_name}",
+                    f"data/{dataset_name}/{collection_name}",
                 )
                 # Add the attachment URLs to the item data
                 item_data["attachments"] = attachment_links
 
-            # Add indexing to field names and redact nested field names
-            item_data_with_display_names = {}
-            for field_index, (field_name, field_value) in enumerate(
-                item_data.items(), start=1
-            ):
-                field_display_name = self._redact_name(
-                    "field", field_name, field_index, dataset_name, collection_name
-                )
-                # Apply nested field redaction with proper context
-                redacted_field_value = self._redact_nested_field_names(
-                    field_value, f"{dataset_name}.{collection_name}.{field_name}"
-                )
-                item_data_with_display_names[field_display_name] = redacted_field_value
-
             # Add item content to the list with item heading
-            item_heading = f"{collection_display_name} (item #{item_index})"
+            # Field names are already redacted in the processed data
+            item_heading = f"{collection_name} (item #{item_index})"
             items_content.append(
                 {
                     "index": item_index,
                     "heading": item_heading,
-                    "data": item_data_with_display_names,
+                    "data": item_data,
                 }
             )
 
         # Generate the collection index page
         self._add_file(
-            f"data/{dataset_display_name}/{collection_display_name}/index.html",
+            f"data/{dataset_name}/{collection_name}/index.html",
             self._populate_template(
                 "templates/collection_index.html",
-                collection_display_name,
+                collection_name,
                 None,
                 {"collection_items": items_content},
             ),
@@ -379,151 +330,6 @@ class DsrReportBuilder:
 
         return datasets
 
-    def _redact_name(
-        self,
-        name_type: str,
-        name: str,
-        index: int,
-        dataset_name: Optional[str] = None,
-        collection_name: Optional[str] = None,
-    ) -> str:
-        """
-        Helper function to create indexed names for datasets, collections, and fields.
-        Applies redaction if the name matches any of the configured regex patterns OR
-        if there's a fides_meta.redact: name configuration for this entity.
-
-        Args:
-            name_type: The type of name ("dataset", "collection", or "field")
-            name: The original name to be indexed
-            index: The index to use directly (should already be 1-based)
-            dataset_name: The dataset name (for context in hierarchical keys)
-            collection_name: The collection name (for context in hierarchical keys)
-
-        Returns:
-            Indexed name in the format "type_N" (e.g., "dataset_1", "collection_2", "field_3")
-            if the name should be redacted, otherwise returns the original name.
-        """
-        # First check for fides_meta.redact: name configurations using hierarchical keys
-        hierarchical_key = self._build_hierarchical_key(
-            name_type, name, dataset_name, collection_name
-        )
-        if hierarchical_key in self.entities_to_redact:
-            return f"{name_type}_{index}"
-
-        # Fall back to global regex pattern matching
-        if self.redaction_patterns:
-            for pattern in self.redaction_patterns:
-                try:
-                    if re.search(pattern, name, re.IGNORECASE):
-                        return f"{name_type}_{index}"
-                except re.error:
-                    # Skip invalid regex patterns
-                    logger.warning(f"Invalid regex pattern: {pattern}")
-                    continue
-
-        # Return original name if no patterns match or no configurations found
-        return name
-
-    def _redact_nested_field_names(
-        self,
-        value: Any,
-        current_path: str = "",
-        field_index_counter: Optional[dict] = None,
-    ) -> Any:
-        """
-        Recursively redact field names within nested JSON structures based on redaction configurations.
-        """
-        if field_index_counter is None:
-            field_index_counter = {}
-
-        if isinstance(value, dict):
-            redacted_dict = {}
-            level_key = f"{current_path}_fields" if current_path else "root_fields"
-
-            # Ensure level exists in counter
-            if level_key not in field_index_counter:
-                field_index_counter[level_key] = {}
-
-            for field_name, field_value in value.items():
-                # Build the full path for this field
-                full_path = (
-                    f"{current_path}.{field_name}" if current_path else field_name
-                )
-
-                # Get or create field index
-                if field_name not in field_index_counter[level_key]:
-                    field_index_counter[level_key][field_name] = (
-                        len(field_index_counter[level_key]) + 1
-                    )
-
-                # Determine the field name to use
-                should_redact = False
-
-                # First check for fides_meta.redact: name configurations
-                if full_path in self.entities_to_redact:
-                    should_redact = True
-
-                # Fall back to global regex pattern matching
-                elif self.redaction_patterns:
-                    for pattern in self.redaction_patterns:
-                        try:
-                            if re.search(pattern, field_name, re.IGNORECASE):
-                                should_redact = True
-                                break
-                        except re.error:
-                            # Skip invalid regex patterns
-                            logger.warning(f"Invalid regex pattern: {pattern}")
-                            continue
-
-                if should_redact:
-                    redacted_name = (
-                        f"field_{field_index_counter[level_key][field_name]}"
-                    )
-                else:
-                    redacted_name = field_name
-
-                # Recursively process the value
-                redacted_dict[redacted_name] = self._redact_nested_field_names(
-                    field_value, full_path, field_index_counter
-                )
-
-            return redacted_dict
-
-        if isinstance(value, list):
-            return [
-                self._redact_nested_field_names(item, current_path, field_index_counter)
-                for item in value
-            ]
-
-        return value
-
-    def _build_hierarchical_key(
-        self,
-        name_type: str,
-        name: str,
-        dataset_name: Optional[str] = None,
-        collection_name: Optional[str] = None,
-    ) -> str:
-        """
-        Build hierarchical key for entity lookup.
-
-        Args:
-            name_type: The type of name ("dataset", "collection", or "field")
-            name: The original name
-            dataset_name: The dataset name
-            collection_name: The collection name
-
-        Returns:
-            Hierarchical key for entity lookup
-        """
-        if name_type == "dataset":
-            return name
-        if name_type == "collection" and dataset_name:
-            return f"{dataset_name}.{name}"
-        if name_type == "field" and dataset_name and collection_name:
-            return f"{dataset_name}.{collection_name}.{name}"
-        return name
-
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -552,29 +358,15 @@ class DsrReportBuilder:
             ]  # pylint: disable=invalid-name
 
             # Add regular datasets in alphabetical order
-            for index, original_dataset_name in enumerate(regular_datasets, start=1):
-                dataset_display_name = self._redact_name(
-                    "dataset", original_dataset_name, index
-                )
-                self._add_dataset(
-                    original_dataset_name, datasets[original_dataset_name], index
-                )
-                self.main_links[dataset_display_name] = (
-                    f"data/{dataset_display_name}/index.html"
-                )
+            for dataset_name in regular_datasets:
+                self._add_dataset(dataset_name, datasets[dataset_name])
+                self.main_links[dataset_name] = f"data/{dataset_name}/index.html"
 
             # Add Additional Data if it exists
             if "dataset" in datasets:
-                additional_data_index = (
-                    len(regular_datasets) + 1
-                )  # Index after all regular datasets
-                dataset_display_name = self._redact_name(
-                    "dataset", "dataset", additional_data_index
-                )
-                self._add_dataset("dataset", datasets["dataset"], additional_data_index)
-                self.main_links["Additional Data"] = (
-                    f"data/{dataset_display_name}/index.html"
-                )
+                self._add_dataset("dataset", datasets["dataset"])
+                # Use a more friendly name for the link but keep the dataset name for the path
+                self.main_links["Additional Data"] = "data/dataset/index.html"
 
             # Add Additional Attachments last if it exists
             if "attachments" in self.dsr_data:
@@ -603,204 +395,3 @@ class DsrReportBuilder:
             "DSR report generation complete."
         )
         return self.baos
-
-
-def _map_privacy_request(privacy_request: "PrivacyRequest") -> dict[str, Any]:
-    """Creates a map with a subset of values from the privacy request"""
-    request_data: dict[str, Any] = {}
-    request_data["id"] = privacy_request.id
-
-    action_type: Optional[ActionType] = privacy_request.policy.get_action_type()
-    if action_type:
-        request_data["type"] = action_type.value
-
-    request_data["identity"] = {
-        key: value
-        for key, value in privacy_request.get_persisted_identity()
-        .labeled_dict(include_default_labels=True)
-        .items()
-        if value["value"] is not None
-    }
-
-    if privacy_request.requested_at:
-        request_data["requested_at"] = privacy_request.requested_at.strftime(
-            "%m/%d/%Y %H:%M %Z"
-        )
-    return request_data
-
-
-def _traverse_fields_for_redaction(
-    fields: List[DatasetField], current_path: str, redaction_entities: set[str]
-) -> None:
-    """
-    Recursively traverse nested fields to find redaction entities.
-
-    Args:
-        fields: List of field dictionaries to traverse
-        current_path: Current hierarchical path (e.g., "dataset.collection")
-        redaction_entities: Set to add redacted field paths to
-    """
-    for field in fields:
-        field_name = field.name
-        if not field_name:
-            continue
-
-        field_path = f"{current_path}.{field_name}"
-        field_fides_meta = field.fides_meta
-
-        if field_fides_meta and field_fides_meta.redact == "name":
-            redaction_entities.add(field_path)
-
-        # Recursively check nested fields
-        if field.fields:
-            _traverse_fields_for_redaction(field.fields, field_path, redaction_entities)
-
-
-def get_redaction_entities_map(db: Session) -> set[str]:
-    """
-    Create a set of hierarchical entity keys that should be redacted based on fides_meta.redact: name.
-
-    This utility function reads all enabled dataset configurations from the database
-    and builds a set of hierarchical entity keys (dataset_name, dataset_name.collection_name,
-    dataset_name.collection_name.field_name) that have fides_meta.redact set to "name".
-
-    Supports deeply nested field structures with unlimited nesting depth.
-
-    Args:
-        db: Database session
-
-    Returns:
-        Set of hierarchical entity keys that should be redacted
-    """
-    redaction_entities = set()
-
-    try:
-        dataset_configs = DatasetConfig.all(db=db)
-
-        for dataset_config in dataset_configs:
-            ctl_dataset = dataset_config.ctl_dataset
-            if not ctl_dataset:
-                continue
-
-            dataset = Dataset.model_validate(dataset_config.ctl_dataset)
-            # Intentionally using the fides_key instead of name since it's always provided
-            dataset_name = dataset.fides_key
-
-            # Check dataset level
-            if dataset.fides_meta and dataset.fides_meta.redact == "name":
-                redaction_entities.add(dataset_name)
-
-            # Check collection level
-            for collection_dict in dataset.collections:
-                # Collections are stored as dictionaries in the database
-                collection_name = collection_dict.name
-                if not collection_name:
-                    continue
-
-                collection_path = f"{dataset_name}.{collection_name}"
-                collection_fides_meta = collection_dict.fides_meta
-
-                if collection_fides_meta and collection_fides_meta.redact == "name":
-                    redaction_entities.add(collection_path)
-
-                # Check field level (with recursive nested field support)
-                _traverse_fields_for_redaction(
-                    collection_dict.fields, collection_path, redaction_entities
-                )
-
-    except Exception as exc:
-        # Log error but don't fail, just return empty set
-        logger.warning(f"Error extracting redaction configurations: {exc}")
-
-    return redaction_entities
-
-
-def get_redaction_entities_map_db(db: Session) -> set[str]:
-    """
-    Create a set of hierarchical entity keys that should be redacted based on fides_meta.redact: name.
-
-    This function uses PostgreSQL's JSON processing capabilities directly in the database
-    for better performance. It extracts datasets, collections, and fields (including nested fields)
-    that have fides_meta->>'redact' = 'name'.
-
-    Args:
-        db: Database session
-
-    Returns:
-        Set of hierarchical entity keys that should be redacted
-    """
-    redaction_entities = set()
-
-    try:
-        # Query for dataset-level redactions
-        dataset_query = """
-        SELECT ctl.fides_key as entity_path
-        FROM datasetconfig dc
-        JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-        WHERE ctl.fides_meta->>'redact' = 'name'
-        """
-
-        dataset_results = db.execute(dataset_query).fetchall()
-        for row in dataset_results:
-            redaction_entities.add(row[0])
-
-        # Query for collection-level redactions
-        collection_query = """
-        SELECT ctl.name || '.' || (collection->>'name') as entity_path
-        FROM datasetconfig dc
-        JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-        CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
-        WHERE collection->'fides_meta'->>'redact' = 'name'
-            AND collection->>'name' IS NOT NULL
-        """
-
-        collection_results = db.execute(collection_query).fetchall()
-        for row in collection_results:
-            redaction_entities.add(row[0])
-
-        # Query for field-level redactions (including nested fields)
-        # This uses a recursive CTE to handle arbitrary nesting levels
-        field_query = """
-        WITH RECURSIVE field_hierarchy AS (
-            -- Base case: top-level fields in collections
-            SELECT
-                ctl.name || '.' ||
-                    (collection->>'name') || '.' ||
-                    (field->>'name') as entity_path,
-                field->'fields' as nested_fields,
-                field->'fides_meta'->>'redact' as redact_value
-            FROM datasetconfig dc
-            JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-            CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
-            CROSS JOIN LATERAL jsonb_array_elements(collection->'fields') AS field
-            WHERE collection->>'name' IS NOT NULL
-                AND field->>'name' IS NOT NULL
-
-            UNION ALL
-
-            -- Recursive case: nested fields
-            SELECT
-                fh.entity_path || '.' || (nested_field->>'name') as entity_path,
-                nested_field->'fields' as nested_fields,
-                nested_field->'fides_meta'->>'redact' as redact_value
-            FROM field_hierarchy fh
-            CROSS JOIN LATERAL jsonb_array_elements(fh.nested_fields) AS nested_field
-            WHERE jsonb_typeof(fh.nested_fields) = 'array'
-                AND nested_field->>'name' IS NOT NULL
-        )
-        SELECT DISTINCT entity_path
-        FROM field_hierarchy
-        WHERE redact_value = 'name'
-        """
-
-        field_results = db.execute(field_query).fetchall()
-        for row in field_results:
-            redaction_entities.add(row[0])
-
-    except Exception as exc:
-        # Log error but don't fail, just return empty set
-        logger.warning(
-            f"Error extracting redaction configurations from database: {exc}"
-        )
-
-    return redaction_entities
