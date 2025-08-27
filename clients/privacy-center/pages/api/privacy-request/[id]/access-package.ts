@@ -5,6 +5,8 @@ import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariable
 import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
+const REQUEST_ID_HEADER = "x-request-id";
+
 /**
  * Validates if a string is a valid pri_uuid format (pri_ followed by UUID v4)
  * This function helps prevent SSRF attacks by ensuring only valid UUIDs are processed.
@@ -57,16 +59,16 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   // Ensure we have a request ID header for consistent logging
-  if (!req.headers["x-request-id"]) {
+  if (!req.headers[REQUEST_ID_HEADER]) {
     // eslint-disable-next-line no-param-reassign
-    req.headers["x-request-id"] =
+    req.headers[REQUEST_ID_HEADER] =
       `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   const log = createRequestLogger(req);
 
   // Set request ID header in response for client correlation
-  res.setHeader("x-request-id", req.headers["x-request-id"]);
+  res.setHeader(REQUEST_ID_HEADER, req.headers[REQUEST_ID_HEADER]);
 
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
