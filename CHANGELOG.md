@@ -41,6 +41,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added reusable table system with URL synchronization and Ant Design integration for standardized table behavior and deep linking support [#6447](https://github.com/ethyca/fides/pull/6447)
 - Refactored Action Center tables to use new standardized table state management hooks [#6349](https://github.com/ethyca/fides/pull/6349)
 
+### Fixed
+- Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
+
 
 ### Fixed
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
