@@ -6,7 +6,11 @@ import {
 } from "fidesui";
 import { useCallback, useContext, useEffect } from "react";
 
-import { CoreTaxonomiesEnum, TAXONOMY_ROOT_NODE_ID } from "../constants";
+import {
+  TAXONOMY_ROOT_NODE_ID,
+  TaxonomyTypeEnum,
+} from "~/features/taxonomy/constants";
+
 import {
   TaxonomyTreeHoverContext,
   TreeNodeHoverStatus,
@@ -20,7 +24,7 @@ export type TaxonomyTreeNodeType = Node<
   {
     label: string;
     taxonomyItem?: TaxonomyEntity;
-    taxonomyType: CoreTaxonomiesEnum;
+    taxonomyType: string;
     onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
     onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
     hasChildren: boolean;
@@ -93,7 +97,7 @@ const TaxonomyTreeNode = ({
   }, [nodeHoverStatus]);
 
   const isRootNode = taxonomyItem?.fides_key === TAXONOMY_ROOT_NODE_ID;
-  const isDataSubjectNode = taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS;
+  const isDataSubjectNode = taxonomyType === TaxonomyTypeEnum.DATA_SUBJECT;
 
   // Data subjects don't support child nodes, so we only show the add button for root node
   const shouldDisplayAddChildButton =

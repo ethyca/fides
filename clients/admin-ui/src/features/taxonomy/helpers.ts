@@ -1,6 +1,6 @@
 import { ResourceTypes } from "~/types/api";
 
-import { CoreTaxonomiesEnum } from "./constants";
+import { TaxonomyTypeEnum } from "./constants";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
 export const transformTaxonomyEntityToNodes = (
@@ -44,15 +44,13 @@ export const parentKeyFromFidesKey = (fidesKey: string) => {
   return split.slice(0, split.length - 1).join(".");
 };
 
-export const taxonomyTypeToResourceType = (
-  taxonomyType: CoreTaxonomiesEnum,
-) => {
+export const taxonomyTypeToResourceType = (taxonomyType: string) => {
   switch (taxonomyType) {
-    case CoreTaxonomiesEnum.DATA_CATEGORIES:
+    case TaxonomyTypeEnum.DATA_CATEGORY:
       return ResourceTypes.DATA_CATEGORY;
-    case CoreTaxonomiesEnum.DATA_SUBJECTS:
+    case TaxonomyTypeEnum.DATA_SUBJECT:
       return ResourceTypes.DATA_SUBJECT;
-    case CoreTaxonomiesEnum.DATA_USES:
+    case TaxonomyTypeEnum.DATA_USE:
       return ResourceTypes.DATA_USE;
 
     default:
