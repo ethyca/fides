@@ -24,7 +24,7 @@ import useDiscoveryResultsFilterTabs, {
   DiscoveryResultFilterTabs,
 } from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
-import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import { IndicatorLegend } from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -190,7 +190,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
               onChange={setSearchQuery}
             />
           </Box>
-          <IconLegendTooltip />
+          <IndicatorLegend />
         </Flex>
         {resourceType === StagedResourceTypeValue.TABLE &&
           !!selectedUrns.length && (
