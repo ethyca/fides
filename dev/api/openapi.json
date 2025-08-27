@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.68.1b4.post0.dev2"
+    "version": "2.68.1b4.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19590,7 +19590,8 @@
           "DATA_SYNC",
           "TASKS",
           "WITHOUT_CONNECTION",
-          "DSR_AUTOMATION"
+          "DSR_AUTOMATION",
+          "CONDITIONS"
         ],
         "title": "IntegrationFeature",
         "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
