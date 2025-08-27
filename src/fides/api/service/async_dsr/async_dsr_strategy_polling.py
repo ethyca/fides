@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from requests import Response
+import pydash
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
@@ -41,7 +42,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
 
         if response.ok:
 
-            status_path_value = response.json().get(self.status_path)
+            status_path_value = pydash.get(response.json(), self.status_path)
             return status_path_value
 
         raise PrivacyRequestError(
@@ -65,7 +66,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         )
         response: Response = client.send(prepared_result_request)
         if response.ok:
-            result = response.json().get(self.result_path)
+            result = pydash.get(response.json(), self.result_path)
             return result
 
         raise PrivacyRequestError(
