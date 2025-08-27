@@ -61,6 +61,7 @@ export {
   message as AntMessage,
   Modal as AntModal,
   Pagination as AntPagination,
+  Popover as AntPopover,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
@@ -110,7 +111,7 @@ export const AntLink = CustomTypography.Link;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, QuestionIcon, WarningIcon } from "./icons";
+export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 /* eslint-enable import/export */
 
