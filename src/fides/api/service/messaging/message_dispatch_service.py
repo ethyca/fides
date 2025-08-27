@@ -44,7 +44,6 @@ from fides.api.service.messaging.messaging_crud_service import (
     get_enabled_messaging_template_by_type_and_property,
 )
 from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.aws_ses_service import AWS_SES_Service
@@ -771,7 +770,9 @@ def _aws_ses_dispatcher(
         aws_ses_serivce.send_email(to, message.subject, message.body)
     except Exception as exc:
         logger.error("Email failed to send: {}", str(exc))
-        raise MessageDispatchException(f"AWS SES email failed to send due to: {str(exc)}")
+        raise MessageDispatchException(
+            f"AWS SES email failed to send due to: {str(exc)}"
+        )
 
 
 def _get_template_id_if_exists(

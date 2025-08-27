@@ -161,7 +161,7 @@ def post_config(
         )
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Config with key {failed_key} failed to be added: {e}",
+            detail=f"Config with key {failed_key} failed to be added: {exc}",
         )
     except Exception as exc:
         failed_key = messaging_config_request.key
@@ -596,7 +596,8 @@ def send_test_message(
             test_status=MessagingConnectionTestStatus.failed, db=db
         )
         raise HTTPException(
-            status_code=400, detail=f"There was an error sending the test message: {exc}"
+            status_code=400,
+            detail=f"There was an error sending the test message: {exc}",
         )
     config.update_test_status(
         test_status=MessagingConnectionTestStatus.succeeded, db=db
@@ -638,7 +639,8 @@ def send_test_message_deprecated(
         )
     except MessageDispatchException as exc:
         raise HTTPException(
-            status_code=400, detail=f"There was an error sending the test message: {exc}"
+            status_code=400,
+            detail=f"There was an error sending the test message: {exc}",
         )
     return {"details": "Test message successfully sent"}
 
