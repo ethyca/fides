@@ -181,8 +181,8 @@ const ConfigureWebsiteMonitorForm = ({
           options={[]}
           open={false}
           disabled
-          error={errors.execution_frequency}
-          touched={touched.execution_frequency}
+          error={getIn(errors, "datasource_params.exclude_domains")}
+          touched={getIn(touched, "datasource_params.exclude_domains")}
           onChange={(value) =>
             formik.setFieldValue("datasource_params.exclude_domains", value)
           }
