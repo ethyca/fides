@@ -9,34 +9,8 @@ const systemGroupApi = baseApi.injectEndpoints({
     getAllSystemGroups: build.query<SystemGroup[], void>({
       query: () => ({ url: `system_group` }),
       providesTags: () => ["System Groups"],
-      transformResponse: (items: SystemGroup[]) => {
-        const result: SystemGroup[] = [];
-        const remaining = [...items];
-
-        // Add all root items first (no parent)
-        const root = remaining.filter((i) => i.parent_key == null);
-        root.sort((a, b) => a.fides_key.localeCompare(b.fides_key));
-        result.push(...root);
-
-        let pending = remaining.filter((i) => i.parent_key != null);
-        while (pending.length) {
-          const toAdd = pending.filter((i) =>
-            result.some((r) => r.fides_key === i.parent_key),
-          );
-          if (toAdd.length === 0) {
-            // break potential cycles – just append alphabetically
-            result.push(
-              ...pending.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
-            );
-            break;
-          }
-          toAdd.sort((a, b) => a.fides_key.localeCompare(b.fides_key));
-          result.push(...toAdd);
-          pending = pending.filter((i) => !toAdd.includes(i));
-        }
-
-        return result;
-      },
+      transformResponse: (systemGroups: SystemGroup[]) =>
+        systemGroups.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateSystemGroup: build.mutation<
       SystemGroup,

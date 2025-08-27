@@ -26,6 +26,7 @@ import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInte
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
+  TaxonomyTypeEnum,
   taxonomyKeyToScopeRegistryEnum,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
@@ -34,7 +35,7 @@ import { TaxonomyEntity } from "~/features/taxonomy/types";
 
 const TaxonomyPage: NextPage = () => {
   // taxonomyType now stores the fides_key string (e.g. "data_category")
-  const [taxonomyType, setTaxonomyType] = useState<string>("data_category");
+  const [taxonomyType, setTaxonomyType] = useState<string>(TaxonomyTypeEnum.DATA_CATEGORY);
   // const features = useFeatures();
   // const isPlusEnabled = features.plus;
   const isPlusEnabled = true;
@@ -133,10 +134,10 @@ const TaxonomyPage: NextPage = () => {
               items={(() => {
                 // Core taxonomies, excluding system groups if plus is not enabled
                 const coreMapping: Record<CoreTaxonomiesEnum, string> = {
-                  [CoreTaxonomiesEnum.DATA_CATEGORIES]: "data_category",
-                  [CoreTaxonomiesEnum.DATA_USES]: "data_use",
-                  [CoreTaxonomiesEnum.DATA_SUBJECTS]: "data_subject",
-                  [CoreTaxonomiesEnum.SYSTEM_GROUPS]: "system_group",
+                  [CoreTaxonomiesEnum.DATA_CATEGORIES]: TaxonomyTypeEnum.DATA_CATEGORY,
+                  [CoreTaxonomiesEnum.DATA_USES]: TaxonomyTypeEnum.DATA_USE,
+                  [CoreTaxonomiesEnum.DATA_SUBJECTS]: TaxonomyTypeEnum.DATA_SUBJECT,
+                  [CoreTaxonomiesEnum.SYSTEM_GROUPS]: TaxonomyTypeEnum.SYSTEM_GROUP,
                 };
 
                 const items = enumToOptions(CoreTaxonomiesEnum)

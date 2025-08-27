@@ -24,6 +24,7 @@ import {
   useLazyGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "~/features/taxonomy/data-category.slice";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import {
   useCreateTaxonomyMutation,
   useDeleteTaxonomyMutation,
@@ -115,7 +116,7 @@ const useTaxonomySlices = ({
   );
 
   // Legacy core taxonomies using dedicated endpoints
-  if (taxonomyType === "data_category") {
+  if (taxonomyType === TaxonomyTypeEnum.DATA_CATEGORY) {
     return {
       getAllTrigger: getAllDataCategoriesQueryTrigger,
       taxonomyItems: dataCategoriesResult.data || [],
@@ -128,7 +129,7 @@ const useTaxonomySlices = ({
   }
 
   // Data Uses
-  if (taxonomyType === "data_use") {
+  if (taxonomyType === TaxonomyTypeEnum.DATA_USE) {
     return {
       getAllTrigger: getAllDataUsesQueryTrigger,
       taxonomyItems: dataUsesResult.data || [],
@@ -141,7 +142,7 @@ const useTaxonomySlices = ({
   }
 
   // Data Subjects
-  if (taxonomyType === "data_subject") {
+  if (taxonomyType === TaxonomyTypeEnum.DATA_SUBJECT) {
     return {
       getAllTrigger: getAllDataSubjectsQueryTrigger,
       taxonomyItems: dataSubjectsResult.data || [],
@@ -154,7 +155,7 @@ const useTaxonomySlices = ({
   }
 
   // System Groups
-  if (taxonomyType === "system_group") {
+  if (taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP) {
     return {
       getAllTrigger: getAllSystemGroupsQueryTrigger,
       taxonomyItems: systemGroupsResult.data || [],
