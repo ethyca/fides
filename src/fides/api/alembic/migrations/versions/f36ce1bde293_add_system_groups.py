@@ -1,7 +1,7 @@
 """add system groups
 
 Revision ID: f36ce1bde293
-Revises: 90502bcda282
+Revises: b1a2c3d4e5f6
 Create Date: 2025-08-18 21:36:19.279969
 
 """
@@ -12,7 +12,7 @@ from citext import CIText
 
 # revision identifiers, used by Alembic.
 revision = "f36ce1bde293"
-down_revision = "90502bcda282"
+down_revision = "b1a2c3d4e5f6"
 branch_labels = None
 depends_on = None
 
