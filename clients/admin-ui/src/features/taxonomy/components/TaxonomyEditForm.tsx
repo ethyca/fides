@@ -5,8 +5,9 @@ import {
 } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
-import { CoreTaxonomiesEnum } from "../constants";
-import { FormValues, TaxonomyEntity } from "../types";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
+import { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
+
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
 
 interface TaxonomyEditFormProps {
@@ -14,7 +15,7 @@ interface TaxonomyEditFormProps {
   onSubmit: (updatedTaxonomy: TaxonomyEntity) => void;
   formId: string;
   form: FormInstance;
-  taxonomyType: CoreTaxonomiesEnum;
+  taxonomyType: string;
   isDisabled?: boolean;
 }
 
@@ -40,7 +41,7 @@ const TaxonomyEditForm = ({
     onSubmit(updatedTaxonomy);
   };
 
-  const isDataSubjectType = taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS;
+  const isDataSubjectType = taxonomyType === TaxonomyTypeEnum.DATA_SUBJECT;
 
   return (
     <Form

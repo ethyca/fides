@@ -26,8 +26,8 @@ import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInte
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
-  TaxonomyTypeEnum,
   taxonomyKeyToScopeRegistryEnum,
+  TaxonomyTypeEnum,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
@@ -35,7 +35,9 @@ import { TaxonomyEntity } from "~/features/taxonomy/types";
 
 const TaxonomyPage: NextPage = () => {
   // taxonomyType now stores the fides_key string (e.g. "data_category")
-  const [taxonomyType, setTaxonomyType] = useState<string>(TaxonomyTypeEnum.DATA_CATEGORY);
+  const [taxonomyType, setTaxonomyType] = useState<string>(
+    TaxonomyTypeEnum.DATA_CATEGORY,
+  );
   // const features = useFeatures();
   // const isPlusEnabled = features.plus;
   const isPlusEnabled = true;
@@ -134,10 +136,13 @@ const TaxonomyPage: NextPage = () => {
               items={(() => {
                 // Core taxonomies, excluding system groups if plus is not enabled
                 const coreMapping: Record<CoreTaxonomiesEnum, string> = {
-                  [CoreTaxonomiesEnum.DATA_CATEGORIES]: TaxonomyTypeEnum.DATA_CATEGORY,
+                  [CoreTaxonomiesEnum.DATA_CATEGORIES]:
+                    TaxonomyTypeEnum.DATA_CATEGORY,
                   [CoreTaxonomiesEnum.DATA_USES]: TaxonomyTypeEnum.DATA_USE,
-                  [CoreTaxonomiesEnum.DATA_SUBJECTS]: TaxonomyTypeEnum.DATA_SUBJECT,
-                  [CoreTaxonomiesEnum.SYSTEM_GROUPS]: TaxonomyTypeEnum.SYSTEM_GROUP,
+                  [CoreTaxonomiesEnum.DATA_SUBJECTS]:
+                    TaxonomyTypeEnum.DATA_SUBJECT,
+                  [CoreTaxonomiesEnum.SYSTEM_GROUPS]:
+                    TaxonomyTypeEnum.SYSTEM_GROUP,
                 };
 
                 const items = enumToOptions(CoreTaxonomiesEnum)
@@ -146,7 +151,10 @@ const TaxonomyPage: NextPage = () => {
                       isPlusEnabled ||
                       opt.value !== CoreTaxonomiesEnum.SYSTEM_GROUPS,
                   )
-                  .map((e) => ({ label: e.label, key: coreMapping[e.value] }));
+                  .map((e) => ({
+                    label: e.label,
+                    key: coreMapping[e.value as CoreTaxonomiesEnum],
+                  }));
 
                 // Custom taxonomies, if available
                 if (customTaxonomies?.length) {

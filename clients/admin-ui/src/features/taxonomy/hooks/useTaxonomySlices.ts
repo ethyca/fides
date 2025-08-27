@@ -18,13 +18,13 @@ import {
   useLazyGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
 } from "~/features/system-groups/system-group.slice";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import {
   useCreateDataCategoryMutation,
   useDeleteDataCategoryMutation,
   useLazyGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "~/features/taxonomy/data-category.slice";
-import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import {
   useCreateTaxonomyMutation,
   useDeleteTaxonomyMutation,
