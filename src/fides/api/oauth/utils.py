@@ -58,7 +58,7 @@ def extract_payload(jwe_string: str, encryption_key: str) -> str:
         return decrypted_payload.decode("utf-8")
     except exceptions.JWEError as e:
         logger.debug("Failed to decrypt JWE: {}", e)
-        raise AuthorizationError(detail="Invalid token format")
+        raise e
 
 
 def is_token_expired(issued_at: datetime, token_duration_minutes: int) -> bool:
