@@ -46,7 +46,7 @@ export const OperatorReferenceGuide = () => (
     </ul>
 
     <Text strong className="mb-2 mt-4 block" style={{ color: "inherit" }}>
-      Numbers/Dates:
+      Numbers:
     </Text>
     <ul className="ml-2 space-y-1">
       <li>
