@@ -129,14 +129,12 @@ const TaskAssignedUsersSection = ({
 
       <div className="mt-4">
         <Table
-          dataSource={(manualTaskConfig?.assigned_users || []).map(
-            (u, idx) => ({
-              key: u.email_address ?? idx,
-              name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
-              email: u.email_address ?? "",
-              role: "—",
-            }),
-          )}
+          dataSource={(manualTaskConfig?.assigned_users || []).map((u) => ({
+            key: u.id,
+            name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
+            email: u.email_address ?? "",
+            role: "—",
+          }))}
           pagination={false}
           size="small"
           columns={[
