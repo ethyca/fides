@@ -1598,6 +1598,8 @@ dataset:
       data_categories: [system.operations]
     - name: identity_verified_at
       data_categories: [system.operations]
+    - name: location
+      data_categories: [user.location]
     - name: origin
       data_categories: [system.operations]
     - name: paused_at
@@ -2483,6 +2485,8 @@ dataset:
     - name: upstream_tasks
       data_categories: [system]
     - name: callback_succeeded
+      data_categories: [system]
+    - name: async_type
       data_categories: [system]
   - name: monitorconfig
     fields:

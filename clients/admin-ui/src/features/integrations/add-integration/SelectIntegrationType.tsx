@@ -3,23 +3,17 @@ import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
-import {
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
+import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
+import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
+import { ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
 
-enum IntegrationCategoryFilter {
-  ALL = "All",
-  DATA_CATALOG = "Data Catalog",
-  DATA_WAREHOUSE = "Data Warehouse",
-  DATABASE = "Database",
-  IDENTITY_PROVIDER = "Identity Provider",
-  WEBSITE = "Website",
-  CRM = "CRM",
-  MANUAL = "Manual",
-}
+type IntegrationCategoryFilter = ConnectionCategory | "ALL";
 
 type Props = {
   selectedIntegration?: IntegrationTypeInfo;
@@ -34,32 +28,95 @@ const SelectIntegrationType = ({
 }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
-    useState<IntegrationCategoryFilter>(IntegrationCategoryFilter.ALL);
+    useState<IntegrationCategoryFilter>("ALL");
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { oktaMonitor },
+    flags: { oktaMonitor, newIntegrationManagement },
   } = useFlags();
 
-  // Get available categories based on flags
-  const availableCategories = useMemo(() => {
-    return Object.values(IntegrationCategoryFilter).filter(
-      (tab) =>
-        tab !== IntegrationCategoryFilter.IDENTITY_PROVIDER || oktaMonitor,
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = useMemo(
+    () => connectionTypesData?.items || [],
+    [connectionTypesData],
+  );
+
+  // Generate dynamic integration list including all SAAS integrations
+  const allIntegrationTypes = useMemo(() => {
+    let staticIntegrations = INTEGRATION_TYPE_LIST;
+
+    // Filter out SaaS integrations if the new integration management flag is disabled
+    if (!newIntegrationManagement) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !== ConnectionType.SAAS,
+      );
+    }
+
+    // Generate SAAS integrations from connection types (excluding those already in static list)
+    const existingSaasTypes = new Set(
+      staticIntegrations
+        .filter(
+          (integration) =>
+            integration.placeholder.connection_type === ConnectionType.SAAS,
+        )
+        .map((integration) => integration.placeholder.saas_config?.type),
     );
-  }, [oktaMonitor]);
+
+    // Only add dynamic SaaS integrations if the flag is enabled
+    const dynamicSaasIntegrations = newIntegrationManagement
+      ? connectionTypes
+          .filter(
+            (ct) => ct.type === "saas" && !existingSaasTypes.has(ct.identifier),
+          )
+          .map((ct) =>
+            getIntegrationTypeInfo(
+              ConnectionType.SAAS,
+              ct.identifier,
+              connectionTypes,
+            ),
+          )
+      : [];
+
+    return [...staticIntegrations, ...dynamicSaasIntegrations];
+  }, [connectionTypes, newIntegrationManagement]);
+
+  // Get available categories based on flags and whether they have any integrations
+  const availableCategories = useMemo(() => {
+    const allCategories: IntegrationCategoryFilter[] = [
+      "ALL",
+      ...Object.values(ConnectionCategory).filter(
+        (category) =>
+          category !== ConnectionCategory.IDENTITY_PROVIDER || oktaMonitor,
+      ),
+    ];
+
+    // If new integration management is disabled, filter out categories that have no integrations
+    if (!newIntegrationManagement) {
+      return allCategories.filter((category) => {
+        if (category === "ALL") {
+          // Always show "All" if there are any integrations
+          return allIntegrationTypes.length > 0;
+        }
+
+        // Check if this category has any integrations
+        return allIntegrationTypes.some(
+          (integration) => integration.category === category,
+        );
+      });
+    }
+
+    return allCategories;
+  }, [oktaMonitor, newIntegrationManagement, allIntegrationTypes]);
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {
-    let filtered = INTEGRATION_TYPE_LIST;
+    let filtered = allIntegrationTypes;
 
     // Filter by category
-    if (selectedCategory !== IntegrationCategoryFilter.ALL) {
-      filtered = filtered.filter(
-        // @ts-ignore -- all non-ALL values of IntegrationCategoryFilter are
-        // valid values for ConnectionCategory
-        (i) => i.category === (selectedCategory as ConnectionCategory),
-      );
+    if (selectedCategory !== "ALL") {
+      filtered = filtered.filter((i) => i.category === selectedCategory);
     }
 
     // Filter by search term (name only)
@@ -71,13 +128,20 @@ const SelectIntegrationType = ({
     }
 
     // Apply flag-based filtering
-    return filtered.filter((i) => {
+    filtered = filtered.filter((i) => {
       if (!oktaMonitor && i.placeholder.connection_type === "okta") {
         return false;
       }
       return true;
     });
-  }, [searchTerm, selectedCategory, oktaMonitor]);
+
+    // Sort integrations alphabetically by display name
+    return filtered.sort((a, b) => {
+      const nameA = a.placeholder.name || "";
+      const nameB = b.placeholder.name || "";
+      return nameA.localeCompare(nameB);
+    });
+  }, [searchTerm, selectedCategory, oktaMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
@@ -85,10 +149,26 @@ const SelectIntegrationType = ({
     setTimeout(() => setIsFiltering(false), 100);
   };
 
-  const categoryOptions = availableCategories.map((category) => ({
-    label: category,
-    value: category,
-  }));
+  const categoryOptions = availableCategories
+    .map((category) => {
+      if (category === "ALL") {
+        return { label: "All", value: category };
+      }
+      return {
+        label: getCategoryLabel(category),
+        value: category,
+      };
+    })
+    .sort((a, b) => {
+      // Keep "All" at the top, then sort alphabetically
+      if (a.label === "All") {
+        return -1;
+      }
+      if (b.label === "All") {
+        return 1;
+      }
+      return a.label.localeCompare(b.label);
+    });
 
   return (
     <>
@@ -118,6 +198,7 @@ const SelectIntegrationType = ({
             <div key={i.placeholder.key}>
               <SelectableIntegrationBox
                 integration={i.placeholder}
+                integrationTypeInfo={i}
                 selected={
                   selectedIntegration?.placeholder.key === i.placeholder.key
                 }

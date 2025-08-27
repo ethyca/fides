@@ -1,6 +1,13 @@
 import { format, parseISO } from "date-fns";
-import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
-import { Form, Formik } from "formik";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntForm as Form,
+  isoCodesToOptions,
+  LocationSelect,
+  Text,
+} from "fidesui";
+import { Form as FormikForm, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
@@ -138,7 +145,7 @@ const ConfigureWebsiteMonitorForm = ({
         validationSchema={validationSchema}
       >
         {({ values, resetForm }) => (
-          <Form>
+          <FormikForm>
             <Flex vertical gap="middle">
               <CustomTextInput
                 name="name"
@@ -171,18 +178,24 @@ const ConfigureWebsiteMonitorForm = ({
                 disabled
                 variant="stacked"
               />
-              <ControlledSelect
-                mode="multiple"
-                isRequired
-                name="datasource_params.locations"
-                id="locations"
+              <Form.Item
                 label="Locations"
-                loading={locationsLoading}
-                options={regionOptions}
-                optionFilterProp="label"
+                required
+                layout="vertical"
                 tooltip={REGIONS_TOOLTIP_COPY}
-                layout="stacked"
-              />
+                htmlFor="datasource_params.locations"
+              >
+                <LocationSelect
+                  mode="multiple"
+                  id="locations"
+                  data-testid="controlled-select-datasource_params.locations"
+                  loading={locationsLoading}
+                  options={isoCodesToOptions(
+                    regionOptions.map((option) => option.value),
+                  )}
+                  optionFilterProp="label"
+                />
+              </Form.Item>
               <SharedConfigSelect
                 name="shared_config_id"
                 id="shared_config_id"
@@ -217,7 +230,7 @@ const ConfigureWebsiteMonitorForm = ({
                 </Button>
               </Flex>
             </Flex>
-          </Form>
+          </FormikForm>
         )}
       </Formik>
     </Flex>

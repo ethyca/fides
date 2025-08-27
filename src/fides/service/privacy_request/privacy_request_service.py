@@ -7,11 +7,15 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import (
     FidesopsException,
     MessageDispatchException,
+    PrivacyRequestError,
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
+from fides.api.models.privacy_center_config import (
+    PrivacyCenterConfig as PrivacyCenterConfigModel,
+)
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -24,6 +28,10 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
+from fides.api.schemas.privacy_center_config import (
+    PrivacyCenterConfig as PrivacyCenterConfigSchema,
+)
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -51,15 +59,6 @@ from fides.service.messaging.messaging_service import (
 )
 
 
-class PrivacyRequestError(Exception):
-    """Base exception for privacy request operations."""
-
-    def __init__(self, message: str, data: Optional[Dict] = None):
-        self.message = message
-        self.data = data
-        super().__init__(message)
-
-
 class PrivacyRequestService:
     def __init__(
         self,
@@ -78,6 +77,78 @@ class PrivacyRequestService:
         if not privacy_request:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
+
+    def _validate_required_location_fields(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> None:
+        """Validate that location is provided for required location fields.
+
+        Looks up the actual Privacy Center configuration to check if any location
+        fields are marked as required for the specified policy.
+        """
+        # If location is already provided, no validation needed
+        if privacy_request_data.location:
+            return
+
+        # Get the Privacy Center configuration from the database
+        privacy_center_config_record = PrivacyCenterConfigModel.filter(
+            db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
+        ).first()
+
+        if not privacy_center_config_record:
+            # No Privacy Center config found, skip validation
+            return
+
+        try:
+            # Parse the config using the Pydantic schema
+            privacy_center_config = PrivacyCenterConfigSchema.model_validate(
+                privacy_center_config_record.config
+            )
+        except Exception as exc:
+            logger.warning(
+                f"Could not parse Privacy Center config for location validation: {exc}"
+            )
+            return
+
+        # Find the action that matches the policy key
+        matching_action = None
+        for action in privacy_center_config.actions:
+            if action.policy_key == privacy_request_data.policy_key:
+                matching_action = action
+                break
+
+        if not matching_action or not matching_action.custom_privacy_request_fields:
+            # No matching action or no custom fields defined
+            return
+
+        # Check if any location fields are required
+        for (
+            field_name,
+            field_config,
+        ) in matching_action.custom_privacy_request_fields.items():
+            if isinstance(field_config, LocationCustomPrivacyRequestField):
+                # This is a location field - check if it's required
+                if field_config.required:
+                    # Check if this field has a value in the request
+                    field_has_value = False
+                    if privacy_request_data.custom_privacy_request_fields:
+                        field_data = (
+                            privacy_request_data.custom_privacy_request_fields.get(
+                                field_name
+                            )
+                        )
+                        if (
+                            field_data
+                            and hasattr(field_data, "value")
+                            and field_data.value
+                        ):
+                            field_has_value = True
+
+                    if not field_has_value:
+                        raise PrivacyRequestError(
+                            f"Location is required for field '{field_name}' but was not provided",
+                            privacy_request_data.model_dump(mode="json"),
+                        )
 
     # pylint: disable=too-many-branches
     def create_privacy_request(
@@ -119,6 +190,9 @@ class PrivacyRequestService:
                     privacy_request_data.model_dump(mode="json"),
                 )
 
+        # Validate location is provided for required location fields
+        self._validate_required_location_fields(privacy_request_data)
+
         policy = Policy.get_by(
             db=self.db,
             field="key",
@@ -159,6 +233,7 @@ class PrivacyRequestService:
             "consent_preferences",
             "property_id",
             "source",
+            "location",
         ]
 
         for field in OPTIONAL_FIELDS:

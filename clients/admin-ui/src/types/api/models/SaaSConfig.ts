@@ -8,6 +8,7 @@ import type { ConsentRequestMap } from "./ConsentRequestMap";
 import type { Endpoint } from "./Endpoint";
 import type { ExternalDatasetReference } from "./ExternalDatasetReference";
 import type { RateLimitConfig } from "./RateLimitConfig";
+import type { SaaSDisplayInfo } from "./SaaSDisplayInfo";
 import type { SaaSRequest } from "./SaaSRequest";
 
 /**
@@ -35,4 +36,5 @@ export type SaaSConfig = {
   rate_limit_config?: RateLimitConfig | null;
   consent_requests?: ConsentRequestMap | null;
   user_guide?: string | null;
+  display_info?: SaaSDisplayInfo | null;
 };

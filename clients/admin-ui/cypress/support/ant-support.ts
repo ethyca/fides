@@ -42,6 +42,11 @@ declare global {
        * @example cy.getAntTab("Some tab").should("have.attr", "aria-disabled", "true");
        */
       getAntTab: (tab: string) => Chainable;
+      /**
+       * Click an option from an Ant Design Tabs component by label
+       * @param tab The label of the tab to click
+       */
+      clickAntTab: (tab: string) => Chainable;
 
       /**
        * Get a panel from an Ant Design Tabs component by label
@@ -65,6 +70,21 @@ declare global {
        * @example cy.getAntTableRow("some-row-key").should("be.visible");
        */
       getAntTableRow: (rowKey: string) => Chainable;
+
+      /**
+       * Get the pagination component from an Ant Design Table component
+       */
+      getAntPagination: () => Chainable;
+
+      /**
+       * Click the previous page button in the pagination component
+       */
+      antPaginatePrevious: () => void;
+
+      /**
+       * Click the next page button in the pagination component
+       */
+      antPaginateNext: () => void;
     }
   }
 }
@@ -159,8 +179,15 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("getAntTab", (tab: string) =>
-  cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
+  cy
+    .get("[role='tab'], .ant-menu-horizontal  [role='menuitem']")
+    .filter(`:contains("${tab}")`),
 );
+Cypress.Commands.add("clickAntTab", (tab: string) => {
+  cy.getAntTab(tab).click({ force: true });
+  // eslint-disable-next-line cypress/no-unnecessary-waiting
+  cy.wait(500); // Wait for the animation/router to complete
+});
 Cypress.Commands.add("getAntTabPanel", (tab: string) =>
   cy.get(`#rc-tabs-0-panel-${tab}`),
 );
@@ -200,9 +227,17 @@ Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   // Wait for the dropdown to disappear
   cy.get(".ant-table-filter-dropdown:visible").should("not.exist");
 });
-
 Cypress.Commands.add("getAntTableRow", (rowKey: string) =>
   cy.get(`[data-row-key='${rowKey}']`),
+);
+Cypress.Commands.add("getAntPagination", () =>
+  cy.get(".ant-pagination").first(),
+);
+Cypress.Commands.add("antPaginatePrevious", () =>
+  cy.getAntPagination().find("li.ant-pagination-prev button").click(),
+);
+Cypress.Commands.add("antPaginateNext", () =>
+  cy.getAntPagination().find("li.ant-pagination-next button").click(),
 );
 
 export {};
