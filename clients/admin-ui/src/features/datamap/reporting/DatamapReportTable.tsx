@@ -283,7 +283,6 @@ export const DatamapReportTable = () => {
     });
   };
 
-  console.log(data);
   const tableInstance = useReactTable<DatamapReport>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),

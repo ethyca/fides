@@ -9,6 +9,7 @@ import {
 import { useField } from "formik";
 import { uniq } from "lodash";
 import { useMemo } from "react";
+
 import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
 import { ErrorMessage, Label } from "~/features/common/form/inputs";
 
@@ -90,9 +91,6 @@ const DataUseSelectWithSuggestions = ({
           loading={loading}
           value={field.value}
           onChange={onChange}
-          popupRender={(menu) => {
-            return <div>{menu}</div>;
-          }}
           status={isInvalid ? "error" : undefined}
           virtual={false}
           {...props}

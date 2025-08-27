@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntDefaultOptionType,
-  AntFlex as Flex,
-} from "fidesui";
+import { AntButton as Button, AntFlex as Flex } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc/CustomTypography";
 import { Form, Formik } from "formik";
 import { uniq } from "lodash";
@@ -15,7 +11,6 @@ import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 import ColorSelect from "~/features/system/system-groups/components/ColorSelect";
 import DataUseSelectWithSuggestions from "~/features/system/system-groups/components/DataUseSelectWithSuggestions";
-import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import {
   CustomTaxonomyColor,
   DataUse,
@@ -46,17 +41,8 @@ const CreateSystemGroupForm = ({
   const { data: dataUses = [], isLoading: isLoadingDataUses } =
     useGetAllDataUsesQuery();
 
-  const { data: usersResponse, isLoading: isLoadingUsers } =
-    useGetAllUsersQuery({
-      page: 1,
-      size: 100,
-      username: "",
-    });
-
   const { data: allSystems, isLoading: isLoadingSystems } =
     useGetAllSystemsQuery();
-
-  const users = usersResponse?.items ?? [];
 
   const dataUseOptions = useMemo(
     () =>
@@ -78,12 +64,6 @@ const CreateSystemGroupForm = ({
       ),
     );
   }, [allSystems, selectedSystemKeys]);
-
-  const userOptions = users.map((user) => ({
-    label:
-      `${user.first_name || ""} ${user.last_name || ""} (${user.email_address || user.username})`.trim(),
-    value: user.id,
-  }));
 
   const systemOptions = useMemo(
     () =>
@@ -151,16 +131,6 @@ const CreateSystemGroupForm = ({
                 options={dataUseOptions}
                 loading={isLoadingDataUses}
                 suggestedDataUses={suggestedDataUses}
-              />
-
-              <ControlledSelect
-                name="data_steward"
-                label="Data Steward"
-                placeholder="Select a data steward"
-                options={userOptions}
-                layout="stacked"
-                allowClear
-                loading={isLoadingUsers}
               />
 
               <Flex gap="small" justify="space-between" className="pt-4">

@@ -80,9 +80,6 @@ const SystemsTable = () => {
   const [dataStewardFilter, setDataStewardFilter] = useState<string>();
   const [systemGroupFilter, setSystemGroupFilter] = useState<string>();
 
-  console.log("dataStewardFilter", dataStewardFilter);
-  console.log("systemGroupFilter", systemGroupFilter);
-
   const [selectedSystemForDelete, setSelectedSystemForDelete] =
     useState<BasicSystemResponseExtended | null>(null);
 
@@ -327,10 +324,12 @@ const SystemsTable = () => {
       },
     ];
   }, [
-    isGroupsExpanded,
-    isDataUsesExpanded,
-    systemGroupMap,
+    isAlphaSystemGroupsEnabled,
     allSystemGroups,
+    allUsers?.items,
+    isGroupsExpanded,
+    systemGroupMap,
+    isDataUsesExpanded,
     router,
   ]);
 
@@ -425,7 +424,7 @@ const SystemsTable = () => {
         rowSelection={rowSelection}
         tableLayout="fixed"
         pagination={{
-          pageSize: pageSize,
+          pageSize,
           total: systemsResponse?.total ?? 0,
         }}
         onChange={(_, filters) => {
