@@ -86,7 +86,7 @@ from fides.api.oauth.utils import (
 from fides.api.schemas.api import ResponseWithMessage
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -1930,6 +1930,7 @@ def finalize_privacy_request(
 
     queue_privacy_request(
         privacy_request_id=privacy_request_id,
+        from_step=CurrentStep.finalize_erasure.value,
     )
 
     return privacy_request  # type: ignore[return-value]
