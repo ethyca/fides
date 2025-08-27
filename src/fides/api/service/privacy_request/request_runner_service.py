@@ -820,7 +820,7 @@ def initiate_privacy_request_completion_email(
             if (
                 storage_destination.type == StorageType.s3
                 and storage_destination.details.get("enable_access_package_redirect")
-                and storage_destination.details.get("enable_streaming") == True
+                and storage_destination.details.get("enable_streaming")
             ):
                 use_dsr_package_links = True
                 break

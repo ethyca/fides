@@ -135,31 +135,33 @@ def get_access_results_urls(
 
     # --------------Processing--------------
     file_name = f"{privacy_request.id}.zip"
-    if storage_config and storage_config.type != StorageType.s3:
+
+    # At this point, storage_config is guaranteed to exist due to earlier validation
+    # and we've already checked that it's not None above
+    assert storage_config is not None
+
+    if storage_config.type != StorageType.s3:
         # Handle all other storage types (transcend, ethyca, local, etc.)
         raise_error(
             HTTP_400_BAD_REQUEST,
             f"Storage type '{storage_config.type}' is not supported for download redirects. "
             "Only S3 storage is supported for this endpoint.",
         )
-    if storage_config:
-        # Get bucket name from storage config
-        bucket_name = storage_config.details.get("bucket")
-        if not bucket_name:
-            raise_error(
-                HTTP_400_BAD_REQUEST, "S3 bucket name not found in storage config."
-            )
 
-        try:
-            # Use S3StorageClient for cleaner presigned URL generation
-            s3_storage_client = S3StorageClient(storage_config.secrets)
-            result_url = s3_storage_client.generate_presigned_url(
-                bucket=bucket_name,
-                key=file_name,
-            )
-        except Exception as e:
-            raise_error(
-                HTTP_400_BAD_REQUEST, f"Failed to generate presigned URL: {str(e)}"
-            )
+    # Get bucket name from storage config
+    bucket_name = storage_config.details.get("bucket")
+    if not bucket_name:
+        raise_error(HTTP_400_BAD_REQUEST, "S3 bucket name not found in storage config.")
 
-        return RedirectResponse(url=result_url, status_code=HTTP_302_FOUND)
+    try:
+        # Use S3StorageClient for cleaner presigned URL generation
+        s3_storage_client = S3StorageClient(storage_config.secrets)
+        result_url = s3_storage_client.generate_presigned_url(
+            bucket=bucket_name,
+            key=file_name,
+        )
+    except Exception as e:
+        raise_error(HTTP_400_BAD_REQUEST, f"Failed to generate presigned URL: {str(e)}")
+
+    # Convert the URL to string for RedirectResponse
+    return RedirectResponse(url=str(result_url), status_code=HTTP_302_FOUND)
