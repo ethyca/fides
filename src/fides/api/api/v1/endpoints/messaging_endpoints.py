@@ -152,12 +152,12 @@ def post_config(
             service_type=messaging_config.service_type.value,  # type: ignore
             details=messaging_config.details,
         )
-    except ValueError as e:
+    except ValueError as exc:
         failed_key = messaging_config_request.key
         logger.warning(
             "Create failed for messaging config {}: {}",
             failed_key,
-            Pii(str(e)),
+            str(exc),
         )
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -168,7 +168,7 @@ def post_config(
         logger.warning(
             "Create failed for messaging config {}: {}",
             failed_key,
-            Pii(str(exc)),
+            str(exc),
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
@@ -591,12 +591,12 @@ def send_test_message(
             ),
             service_type=service_type.value,
         )
-    except MessageDispatchException as e:
+    except MessageDispatchException as exc:
         config.update_test_status(
             test_status=MessagingConnectionTestStatus.failed, db=db
         )
         raise HTTPException(
-            status_code=400, detail=f"There was an error sending the test message: {e}"
+            status_code=400, detail=f"There was an error sending the test message: {exc}"
         )
     config.update_test_status(
         test_status=MessagingConnectionTestStatus.succeeded, db=db
@@ -636,9 +636,9 @@ def send_test_message_deprecated(
             to_identity=message_info,
             service_type=config_proxy.notifications.notification_service_type,
         )
-    except MessageDispatchException as e:
+    except MessageDispatchException as exc:
         raise HTTPException(
-            status_code=400, detail=f"There was an error sending the test message: {e}"
+            status_code=400, detail=f"There was an error sending the test message: {exc}"
         )
     return {"details": "Test message successfully sent"}
 

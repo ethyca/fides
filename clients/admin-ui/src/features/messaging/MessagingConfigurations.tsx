@@ -34,6 +34,7 @@ import {
 
 import { useHasPermission } from "../common/Restrict";
 import { TableSkeletonLoader } from "../common/table/v2";
+import AwsIcon from "./AwsIcon";
 import MailgunIcon from "./MailgunIcon";
 import {
   useDeleteMessagingConfigurationByKeyMutation,
@@ -182,16 +183,28 @@ export const MessagingConfigurations = () => {
         title: "Provider type",
         dataIndex: "name",
         key: "name",
-        render: (name: string, record: MessagingConfigResponse) => (
-          <HStack>
-            {record.service_type === "mailgun" ? (
-              <MailgunIcon />
-            ) : (
-              <TwilioIcon />
-            )}
-            <Text>{name}</Text>
-          </HStack>
-        ),
+        render: (name: string, record: MessagingConfigResponse) => {
+          const getProviderIcon = () => {
+            switch (record.service_type) {
+              case "mailgun":
+                return <MailgunIcon />;
+              case "twilio_text":
+              case "twilio_email":
+                return <TwilioIcon />;
+              case "aws_ses":
+                return <AwsIcon />;
+              default:
+                return <TwilioIcon />; // fallback
+            }
+          };
+
+          return (
+            <HStack>
+              {getProviderIcon()}
+              <Text>{name}</Text>
+            </HStack>
+          );
+        },
       },
       {
         title: "Verification status",

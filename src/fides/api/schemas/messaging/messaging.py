@@ -54,6 +54,7 @@ class MessagingServiceType(Enum):
             MessagingServiceType.twilio_text.value: "Twilio SMS",
             MessagingServiceType.twilio_email.value: "Twilio Email",
             MessagingServiceType.mailchimp_transactional.value: "Mailchimp Transactional",
+            MessagingServiceType.aws_ses.value: "AWS SES",
         }
         try:
             return readable_mapping[self.value]

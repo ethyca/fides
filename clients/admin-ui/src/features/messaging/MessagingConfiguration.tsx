@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
 
+import AwsSesMessagingForm from "./AwsSesMessagingForm";
 import { messagingProviderLabels, messagingProviders } from "./constants";
 import MailgunMessagingForm from "./MailgunMessagingForm";
 import {
@@ -75,6 +76,8 @@ const MessagingConfiguration = ({
     const isTwilioTextUsed =
       !isEditMode &&
       usedServiceTypes.has(messagingProviders.twilio_text as any);
+    const isAwsSesUsed =
+      !isEditMode && usedServiceTypes.has(messagingProviders.aws_ses as any);
 
     return [
       {
@@ -98,6 +101,14 @@ const MessagingConfiguration = ({
         label: messagingProviderLabels.twilio_text,
         disabled: isTwilioTextUsed,
         title: isTwilioTextUsed
+          ? "Only one messaging provider of each type can be created"
+          : undefined,
+      },
+      {
+        value: messagingProviders.aws_ses,
+        label: messagingProviderLabels.aws_ses,
+        disabled: isAwsSesUsed,
+        title: isAwsSesUsed
           ? "Only one messaging provider of each type can be created"
           : undefined,
       },
@@ -137,6 +148,8 @@ const MessagingConfiguration = ({
         return <TwilioEmailMessagingForm configKey={configKey} />;
       case messagingProviders.twilio_text:
         return <TwilioSMSMessagingForm configKey={configKey} />;
+      case messagingProviders.aws_ses:
+        return <AwsSesMessagingForm configKey={configKey} />;
       default:
         return null;
     }

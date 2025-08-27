@@ -663,9 +663,9 @@ def _mailgun_dispatcher(
                 raise MessageDispatchException(
                     f"Email failed to send with status code {response.status_code}"
                 )
-    except Exception as e:
-        logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+    except Exception as exc:
+        logger.error("Email failed to send: {}", str(exc))
+        raise MessageDispatchException(f"Email failed to send due to: {str(exc)}")
 
 
 def _twilio_email_dispatcher(
@@ -707,14 +707,14 @@ def _twilio_email_dispatcher(
             logger.error(
                 "Email failed to send: %s: %s",
                 response.status_code,
-                Pii(str(response.body)),
+                str(response.body),
             )
             raise MessageDispatchException(
-                f"Email failed to send: {response.status_code}, {Pii(str(response.body))}"
+                f"Email failed to send: {response.status_code}, {str(response.body)}"
             )
-    except Exception as e:
-        logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+    except Exception as exc:
+        logger.error("Email failed to send: {}", str(exc))
+        raise MessageDispatchException(f"Email failed to send due to: {str(exc)}")
 
 
 def _twilio_sms_dispatcher(
@@ -753,9 +753,9 @@ def _twilio_sms_dispatcher(
             raise MessageDispatchException(
                 "Message failed to send. Either sender phone number or messaging service sid must be provided."
             )
-    except TwilioRestException as e:
-        logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+    except TwilioRestException as exc:
+        logger.error("Twilio SMS failed to send: {}", str(exc))
+        raise MessageDispatchException(f"Twilio SMS failed to send due to: {str(exc)}")
 
 
 def _aws_ses_dispatcher(
@@ -769,9 +769,9 @@ def _aws_ses_dispatcher(
 
     try:
         aws_ses_serivce.send_email(to, message.subject, message.body)
-    except Exception as e:
-        logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"AWS SES email failed to send due to: {Pii(e)}")
+    except Exception as exc:
+        logger.error("Email failed to send: {}", str(exc))
+        raise MessageDispatchException(f"AWS SES email failed to send due to: {str(exc)}")
 
 
 def _get_template_id_if_exists(
