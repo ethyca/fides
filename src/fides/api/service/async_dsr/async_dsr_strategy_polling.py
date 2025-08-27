@@ -38,15 +38,12 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         """Executes the status requests, and move forward if its true"""
         param_values = secrets.copy()
         param_values.update(identity_data)
-        logger.info(f"param_values: {param_values}")
-        logger.info(f"self.status_request Path: {self.status_request.path}")
         prepared_status_request = map_param_values(
             "status", "polling", self.status_request, param_values
         )
 
         response: Response = client.send(prepared_status_request)
 
-        logger.info(f"Status request response: {response}")
         if response.ok:
 
             status_path_value = response.json().get(self.status_path)
@@ -72,7 +69,6 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
             param_values,  # type: ignore
         )
         response: Response = client.send(prepared_result_request)
-        logger.info(f"Result request response: {response}")
         if response.ok:
             result = response.json().get(self.result_path)
             return result

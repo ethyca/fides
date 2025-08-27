@@ -127,7 +127,6 @@ def execute_read_polling_requests(
 
             # Get missing parameters from available context
             privacy_request: PrivacyRequest = async_task.privacy_request
-            policy: Policy = privacy_request.policy
             secrets: Dict[str, Any] = connector.secrets
             identity_data = {
                 **privacy_request.get_persisted_identity().labeled_dict(),
@@ -173,8 +172,6 @@ def execute_read_result_request(
         # Get existing access data from the request task
         existing_data = async_task.get_access_data()
 
-        # Append async results to existing data
-        # TODO: Check if this is the correct way to append the results
         if isinstance(result, list):
             existing_data.extend(result)
         else:
