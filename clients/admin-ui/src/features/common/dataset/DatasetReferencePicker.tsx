@@ -61,6 +61,7 @@ export const DatasetReferencePicker = ({
       selectedDatasetData.collections?.map((collection: DatasetCollection) => ({
         key: `${selectedDataset}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
         title: collection.name,
+        fullTitle: collection.name,
         value: `${selectedDataset}${DATASET_REFERENCE_SEPARATOR}${collection.name}`,
         isLeaf: false,
         selectable: false, // Collections are not selectable

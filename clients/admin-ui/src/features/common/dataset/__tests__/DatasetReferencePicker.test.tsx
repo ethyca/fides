@@ -69,11 +69,7 @@ describe("DatasetReferencePicker", () => {
 
     const onChange = jest.fn();
     renderWithProvider(
-      <DatasetReferencePicker
-        value={undefined}
-        onChange={onChange}
-        placeholder="Select a field"
-      />,
+      <DatasetReferencePicker value={undefined} onChange={onChange} />,
     );
 
     expect(screen.getByTestId("dataset-reference-picker")).toBeInTheDocument();
@@ -114,8 +110,8 @@ describe("DatasetReferencePicker", () => {
 
     expect(
       screen.getByText(
-        "No datasets available. Create a dataset to start using this feature"
-      )
+        "No datasets available. Create a dataset to start using this feature",
+      ),
     ).toBeInTheDocument();
   });
 

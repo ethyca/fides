@@ -168,7 +168,7 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.CONDITIONS)) {
+    if (enabledFeatures?.includes(IntegrationFeature.CONDITIONS)) {
       tabItems.push({
         label: "Conditions",
         key: "conditions",

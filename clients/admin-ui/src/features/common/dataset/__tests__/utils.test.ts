@@ -116,6 +116,7 @@ describe("Dataset Reference Utils", () => {
       {
         key: "node1",
         title: "Node 1",
+        fullTitle: "collection:node1",
         value: "node1",
         isLeaf: false,
         selectable: false,
@@ -124,6 +125,7 @@ describe("Dataset Reference Utils", () => {
       {
         key: "node2",
         title: "Node 2",
+        fullTitle: "collection:node2",
         value: "node2",
         isLeaf: true,
         selectable: true,
@@ -136,6 +138,7 @@ describe("Dataset Reference Utils", () => {
         {
           key: "child1",
           title: "Child 1",
+          fullTitle: "collection:child1",
           value: "child1",
           isLeaf: true,
           selectable: true,
@@ -153,6 +156,7 @@ describe("Dataset Reference Utils", () => {
         {
           key: "parent",
           title: "Parent",
+          fullTitle: "collection:parent",
           value: "parent",
           isLeaf: false,
           selectable: false,
@@ -160,6 +164,7 @@ describe("Dataset Reference Utils", () => {
             {
               key: "child",
               title: "Child",
+              fullTitle: "collection:child",
               value: "child",
               isLeaf: false,
               selectable: false,
@@ -173,6 +178,7 @@ describe("Dataset Reference Utils", () => {
         {
           key: "grandchild",
           title: "Grandchild",
+          fullTitle: "collection:grandchild",
           value: "grandchild",
           isLeaf: true,
           selectable: true,
