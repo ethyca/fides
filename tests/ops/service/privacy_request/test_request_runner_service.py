@@ -2235,7 +2235,10 @@ class TestDSRPackageURLGeneration:
         """Mock S3 storage destination with access package redirect enabled"""
         mock_dest = mock.MagicMock()
         mock_dest.type = StorageType.s3
-        mock_dest.details = {"enable_access_package_redirect": True}
+        mock_dest.details = {
+            "enable_access_package_redirect": True,
+            "enable_streaming": True,
+        }
         return mock_dest
 
     @pytest.fixture
@@ -2243,7 +2246,10 @@ class TestDSRPackageURLGeneration:
         """Mock S3 storage destination without access package redirect"""
         mock_dest = mock.MagicMock()
         mock_dest.type = StorageType.s3
-        mock_dest.details = {"enable_access_package_redirect": False}
+        mock_dest.details = {
+            "enable_access_package_redirect": False,
+            "enable_streaming": False,
+        }
         return mock_dest
 
     @pytest.fixture
