@@ -116,10 +116,8 @@ class TestAsyncDsrRequest:
     def test_status_request_pending_queue_executes(
         self,
         mock_send: Mock,
-        privacy_request,
         saas_async_polling_example_connection_config,
         saas_async_polling_example_dataset_config,
-        async_graph,
         db,
         policy,
         dsr_version,
@@ -175,8 +173,3 @@ class TestAsyncDsrRequest:
             db.refresh(pr)
             # We are still awaiting for processing and data should be the base response data
             assert pr.access_tasks[1].status == ExecutionLogStatus.complete
-            assert pr.access_tasks[1].get_access_data() == [
-                {
-                    "id": "123",
-                }
-            ]

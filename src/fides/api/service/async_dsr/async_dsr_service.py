@@ -182,23 +182,23 @@ def execute_read_result_request(
 
         # Save updated data back to the request task.
         async_task.access_data = existing_data
-        async_task.callback_succeeded = (
-            True  # Setting this task as successful, so it wont loop anymore
-        )
-        async_task.update_status(db, ExecutionLogStatus.pending)
-        async_task.save(db)
         logger.info(
             f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
         )
 
-        log_task_queued(async_task, "callback")
-        queue_request_task(async_task, privacy_request_proceed=True)
 
     else:
         logger.info(
             f"Polling request - {async_task.id} is ready but returned no results"
         )
 
+    async_task.callback_succeeded = (
+        True  # Setting this task as successful, so it wont loop anymore
+    )
+    async_task.update_status(db, ExecutionLogStatus.pending)
+    async_task.save(db)
+    log_task_queued(async_task, "callback")
+    queue_request_task(async_task, privacy_request_proceed=True)
 
 def execute_erasure_polling_requests(
     db: Session,
