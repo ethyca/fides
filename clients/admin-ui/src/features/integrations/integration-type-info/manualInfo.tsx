@@ -38,6 +38,7 @@ const MANUAL_TYPE_INFO = {
   enabledFeatures: [
     IntegrationFeature.TASKS,
     IntegrationFeature.WITHOUT_CONNECTION,
+    IntegrationFeature.CONDITIONS,
   ],
 };
 

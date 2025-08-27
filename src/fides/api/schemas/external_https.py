@@ -39,3 +39,12 @@ class RequestTaskJWE(BaseModel):
     request_task_id: str
     scopes: List[str]
     iat: str
+
+
+class DownloadTokenJWE(BaseModel):
+    """Describes JWE that is given to users to access their privacy request download package"""
+
+    privacy_request_id: str
+    scopes: List[str]
+    iat: str
+    exp: str

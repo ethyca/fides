@@ -577,6 +577,7 @@ export const applyOverridesToConsent = (
   privacyNotices: PrivacyNoticeWithPreference[] | undefined = [],
   flagTypeOverride?: ConsentFlagType,
   nonApplicableFlagModeOverride?: ConsentNonApplicableFlagMode,
+  cookieNonApplicableNoticeKeys?: string[],
 ): NoticeConsent => {
   const consent = { ...fidesConsent };
   // Get options from either the provided options or the Fides config, with
@@ -613,10 +614,22 @@ export const applyOverridesToConsent = (
     {},
   );
 
+  // Filter out consent values for notices that were non-applicable when saved
+  const filteredConsent: NoticeConsent = {};
+  Object.entries(consent).forEach(([key, value]) => {
+    if (
+      cookieNonApplicableNoticeKeys?.includes(key) &&
+      !nonApplicablePrivacyNotices?.includes(key)
+    ) {
+      return;
+    }
+    filteredConsent[key] = value;
+  });
+
   Object.assign(
     consentValues,
     normalizeConsentValues({
-      consent,
+      consent: filteredConsent,
       consentMechanisms,
       flagType,
     }),

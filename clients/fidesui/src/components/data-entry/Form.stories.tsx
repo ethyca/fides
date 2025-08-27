@@ -69,6 +69,7 @@ export const Validation: Story = {
         label="Name"
         validateStatus="error"
         help="Name is a required field"
+        extra="Extra Text"
         required
       >
         <Input placeholder="Name" />
