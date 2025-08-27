@@ -39,6 +39,7 @@ export const useDiscoveredSystemAggregateColumns = ({
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isDomainsExpanded, setIsDomainsExpanded] = useState(false);
+  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
       const baseColumns: ColumnsType<SystemStagedResourcesAggregateRecord> = [
@@ -67,8 +68,24 @@ export const useDiscoveredSystemAggregateColumns = ({
         {
           title: "Categories of consent",
           key: DiscoveredSystemAggregateColumnKeys.DATA_USE,
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsDataUsesExpanded(true);
+              } else if (e.key === "collapse-all") {
+                setIsDataUsesExpanded(false);
+              }
+            },
+          },
           render: (_, record) => (
-            <DiscoveredSystemDataUseCell system={record} />
+            <DiscoveredSystemDataUseCell
+              system={record}
+              columnState={{
+                isExpanded: isDataUsesExpanded,
+              }}
+            />
           ),
         },
         {
@@ -86,7 +103,6 @@ export const useDiscoveredSystemAggregateColumns = ({
           },
           dataIndex: "locations",
           key: DiscoveredSystemAggregateColumnKeys.LOCATIONS,
-          width: 250,
           render: (locations: string[]) => (
             <TagExpandableCell
               values={
@@ -152,6 +168,7 @@ export const useDiscoveredSystemAggregateColumns = ({
       readonly,
       consentStatus,
       rowClickUrl,
+      isDataUsesExpanded,
       isLocationsExpanded,
       isDomainsExpanded,
       monitorId,

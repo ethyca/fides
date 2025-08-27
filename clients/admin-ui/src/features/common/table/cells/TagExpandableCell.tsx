@@ -3,6 +3,7 @@ import {
   AntFlex as Flex,
   AntTag as Tag,
   AntTagProps as TagProps,
+  AntText as Text,
 } from "fidesui";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -11,9 +12,10 @@ import { ColumnState } from "./types";
 
 type TagExpandableCellValues = { label: string | ReactNode; key: string }[];
 
-interface TagExpandableCellProps extends TagProps {
+interface TagExpandableCellProps extends Omit<TagProps, "onClose"> {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
+  onClose?: (key: string) => void;
 }
 
 /**
@@ -26,6 +28,7 @@ interface TagExpandableCellProps extends TagProps {
 export const TagExpandableCell = ({
   values,
   columnState,
+  onClose,
   ...tagProps
 }: TagExpandableCellProps) => {
   const { isExpanded, isWrapped, version } = columnState || {};
@@ -79,8 +82,9 @@ export const TagExpandableCell = ({
     }
     return (
       <Flex
-        align="center"
+        align={isCollapsed ? "center" : "start"}
         wrap={isWrappedState ? "wrap" : "nowrap"}
+        vertical={!isCollapsed}
         gap="small"
         data-testid="tag-expandable-cell"
       >
@@ -89,9 +93,15 @@ export const TagExpandableCell = ({
             color="white"
             key={value.key}
             data-testid={value.key}
+            onClose={() => onClose?.(value.key)}
             {...tagProps}
           >
-            {value.label}
+            <Text
+              ellipsis={isCollapsed ? { tooltip: true } : false}
+              style={isCollapsed ? { maxWidth: "150px" } : {}}
+            >
+              {value.label}
+            </Text>
           </Tag>
         ))}
         {values && values.length > displayThreshold && (
@@ -119,7 +129,8 @@ export const TagExpandableCell = ({
     isCollapsed,
     isWrappedState,
     values,
-    handleToggle,
     tagProps,
+    onClose,
+    handleToggle,
   ]);
 };

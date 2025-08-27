@@ -82,7 +82,7 @@ export const useDiscoveredAssetsTable = ({
   >();
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
-
+  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
 
@@ -215,7 +215,6 @@ export const useDiscoveredAssetsTable = ({
         title: "System",
         dataIndex: DiscoveredAssetsColumnKeys.SYSTEM,
         key: DiscoveredAssetsColumnKeys.SYSTEM,
-        width: 200,
         render: (_, record) =>
           !!record.monitor_config_id && (
             <SystemCell
@@ -230,7 +229,17 @@ export const useDiscoveredAssetsTable = ({
       {
         title: "Categories of consent",
         key: DiscoveredAssetsColumnKeys.DATA_USES,
-        width: 400,
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsDataUsesExpanded(true);
+            } else if (e.key === "collapse-all") {
+              setIsDataUsesExpanded(false);
+            }
+          },
+        },
         filters: convertToAntFilters(
           filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
         ),
@@ -241,6 +250,9 @@ export const useDiscoveredAssetsTable = ({
             readonly={
               actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
             }
+            columnState={{
+              isExpanded: isDataUsesExpanded,
+            }}
           />
         ),
       },
@@ -248,7 +260,6 @@ export const useDiscoveredAssetsTable = ({
         title: "Locations",
         dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
         key: DiscoveredAssetsColumnKeys.LOCATIONS,
-        width: 250,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -277,7 +288,6 @@ export const useDiscoveredAssetsTable = ({
             }
             columnState={{
               isExpanded: isLocationsExpanded,
-              isWrapped: true,
             }}
           />
         ),
@@ -387,6 +397,7 @@ export const useDiscoveredAssetsTable = ({
     assetConsentStatusLabels,
     actionsDisabled,
     activeTab,
+    isDataUsesExpanded,
     isLocationsExpanded,
     isPagesExpanded,
     firstItemConsentStatus,
