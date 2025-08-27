@@ -67,7 +67,7 @@ class Strategy(ABC, Generic[C]):
             if strategy_class.configuration_model:
                 strategy_config = strategy_class.configuration_model(**configuration)
             else:
-                return strategy_class()
+                return strategy_class()  # type: ignore
         except ValidationError as e:
             raise FidesopsValidationError(message=str(e))
         return strategy_class(strategy_config)  # type: ignore

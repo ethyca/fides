@@ -1,13 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from loguru import logger
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.graph.execution import ExecutionNode
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient

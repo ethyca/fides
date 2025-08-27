@@ -6,9 +6,6 @@ from unittest import mock
 from unittest.mock import Mock
 from uuid import uuid4
 
-from fides.api.models.worker_task import ExecutionLogStatus
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.async_dsr.async_dsr_service import requeue_polling_request
 import pytest
 from loguru import logger
 
@@ -20,8 +17,11 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.service.async_dsr.async_dsr_service import requeue_polling_request
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.task.create_request_tasks import (
@@ -29,7 +29,9 @@ from fides.api.task.create_request_tasks import (
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
-from tests.ops.service.privacy_request.test_request_runner_service import get_privacy_request_results
+from tests.ops.service.privacy_request.test_request_runner_service import (
+    get_privacy_request_results,
+)
 
 
 class TestAsyncDsrRequest:
@@ -151,11 +153,12 @@ class TestAsyncDsrRequest:
             # Task was put in a paused state
             assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
             assert (
-                pr.access_tasks[1].collection_address == "saas_async_polling_config:user"
+                pr.access_tasks[1].collection_address
+                == "saas_async_polling_config:user"
             )
 
             mock_send().json.return_value = {"request_complete": False}
-            #Requeue the polling task
+            # Requeue the polling task
             requeue_polling_request(db, pr.access_tasks[1])
             db.refresh(pr)
             # We are still awaiting for processing and data should be the base response data
@@ -167,7 +170,7 @@ class TestAsyncDsrRequest:
             ]
 
             mock_send().json.return_value = {"request_complete": True}
-            #Requeue the polling task
+            # Requeue the polling task
             requeue_polling_request(db, pr.access_tasks[1])
             time.sleep(10)
             db.refresh(pr)

@@ -1,14 +1,11 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from loguru import logger
-from requests import Response
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
@@ -21,14 +18,12 @@ from fides.api.service.connectors.query_configs.saas_query_config import SaaSQue
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.task.execute_request_tasks import (
-    _build_upstream_access_data,
     create_graph_task,
     log_task_queued,
     queue_request_task,
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.collection_util import NodeInput, Row
 
 
 def requeue_polling_request(
@@ -183,7 +178,6 @@ def execute_read_result_request(
             f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
         )
 
-
     else:
         logger.info(
             f"Polling request - {async_task.id} is ready but returned no results"
@@ -197,10 +191,10 @@ def execute_read_result_request(
     log_task_queued(async_task, "callback")
     queue_request_task(async_task, privacy_request_proceed=True)
 
+
 def execute_erasure_polling_requests(
     db: Session,
     async_task: RequestTask,
     query_config: SaaSQueryConfig,
 ) -> None:
     """Execute the erasure polling requests for a given privacy request"""
-    pass
