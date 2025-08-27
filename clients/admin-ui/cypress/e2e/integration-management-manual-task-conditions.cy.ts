@@ -247,5 +247,29 @@ describe("Integration Management - Manual Task Conditions", () => {
       // Verify success message
       cy.contains("Condition deleted successfully!").should("be.visible");
     });
+
+    it("should send empty array when deleting the last condition", () => {
+      // Delete first condition
+      cy.getByTestId("delete-condition-0-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@updateDependencyConditions");
+
+      // Delete second condition (last remaining)
+      cy.getByTestId("delete-condition-0-btn").click();
+      cy.getByTestId("continue-btn").click();
+
+      // Verify API call was made with empty array (not empty group)
+      cy.wait("@updateDependencyConditions").then((interception) => {
+        expect(interception.request.body).to.deep.equal([]);
+      });
+
+      // Verify success message
+      cy.contains("Condition deleted successfully!").should("be.visible");
+
+      // Verify empty state is shown
+      cy.contains(
+        "No conditions configured. Manual tasks will be created for all privacy requests.",
+      ).should("be.visible");
+    });
   });
 });

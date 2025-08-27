@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { useUpdateDependencyConditionsMutation } from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { ConditionGroup, ConditionLeaf, GroupOperator } from "~/types/api";
+import { ConditionLeaf, GroupOperator } from "~/types/api";
 
 /**
  * Custom hook for saving task creation conditions
@@ -13,14 +13,20 @@ export const useSaveConditions = (
 ) => {
   const saveConditions = useCallback(
     async (updatedConditions: ConditionLeaf[]) => {
-      const conditionGroup: ConditionGroup = {
-        logical_operator: GroupOperator.AND,
-        conditions: updatedConditions,
-      };
+      // If no conditions, send empty array instead of empty group
+      const conditions =
+        updatedConditions.length === 0
+          ? []
+          : [
+              {
+                logical_operator: GroupOperator.AND,
+                conditions: updatedConditions,
+              },
+            ];
 
       await updateConditions({
         connectionKey,
-        conditions: [conditionGroup],
+        conditions,
       }).unwrap();
 
       await refetch();
