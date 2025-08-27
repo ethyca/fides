@@ -18,6 +18,11 @@ export const operatorLabels: Record<Operator, string> = {
   [Operator.NOT_IN_LIST]: "not in list",
   [Operator.STARTS_WITH]: "starts with",
   [Operator.CONTAINS]: "contains",
+  [Operator.LIST_INTERSECTS]: "list intersects",
+  [Operator.LIST_SUBSET]: "list subset",
+  [Operator.LIST_SUPERSET]: "list superset",
+  [Operator.LIST_DISJOINT]: "list disjoint",
+  [Operator.ENDS_WITH]: "ends with",
 };
 
 // Label mappings for field types and request types
