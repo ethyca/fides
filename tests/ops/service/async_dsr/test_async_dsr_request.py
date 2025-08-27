@@ -173,3 +173,4 @@ class TestAsyncDsrRequest:
             db.refresh(pr)
             # We are still awaiting for processing and data should be the base response data
             assert pr.access_tasks[1].status == ExecutionLogStatus.complete
+            # Access Data tests require a MockAuthenticatedClient thats on Fidesplus to chain return values.
