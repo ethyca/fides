@@ -504,10 +504,20 @@ class TestSmartOpenStreamingStorage:
     @patch(
         "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
+    @patch(
+        "fides.api.service.privacy_request.dsr_package.dsr_report_builder.object_session"
+    )
     def test_upload_to_storage_streaming_html(
-        self, mock_html_report, mock_smart_open_client, mock_privacy_request
+        self,
+        mock_object_session,
+        mock_html_report,
+        mock_smart_open_client,
+        mock_privacy_request,
     ):
         """Test uploading HTML data to storage."""
+        # Mock object_session to return None to avoid database lookups
+        mock_object_session.return_value = None
+
         # Mock the stream_dsr_buffer_to_storage to return a presigned URL
         mock_html_report.return_value = "https://example.com/test.zip"
 

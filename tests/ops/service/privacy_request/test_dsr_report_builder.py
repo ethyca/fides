@@ -1604,6 +1604,85 @@ class TestGetRedactionEntitiesMap:
         assert "test_dataset.users.phone" not in result
         assert "test_dataset.orders.order_id" in result
 
+    def test_nested_field_regex_pattern_redaction(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test that nested JSON fields get redacted when regex pattern is configured."""
+        # Set up redaction patterns
+        PrivacyRequestRedactionPatterns.create_or_update(
+            db=db, data={"patterns": ["full_name", "email.*"]}
+        )
+
+        # Create connection config
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_nested_redaction",
+                "name": "Test Nested Redaction",
+                "connection_type": ConnectionType.manual,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create dataset with JSON field
+        dataset_dict = {
+            "fides_key": "nested_test",
+            "name": "nested_test",
+            "collections": [
+                {
+                    "name": "profiles",
+                    "fields": [
+                        {"name": "id", "data_categories": ["system.operations"]},
+                        {"name": "user_info", "data_categories": ["user"]},
+                    ],
+                }
+            ],
+        }
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset_dict)
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "nested_test",
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        # Create DSR data with nested JSON
+        dsr_data = {
+            "nested_test:profiles": [
+                {
+                    "id": 1,
+                    "user_info": {
+                        "full_name": "John Doe",
+                        "email_address": "john@example.com",
+                        "phone": "555-1234",
+                    },
+                },
+            ],
+        }
+
+        # Generate report
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        # Check redaction
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            content = zip_file.read("data/nested_test/profiles/index.html").decode(
+                "utf-8"
+            )
+
+            # Nested fields matching regex patterns should be redacted
+            assert "full_name" not in content
+            assert "email_address" not in content
+            # Non-matching fields should remain
+            assert "phone" in content
+            # Data values should be preserved
+            assert "John Doe" in content
+            assert "john@example.com" in content
+
     @pytest.mark.parametrize(
         "redaction_func",
         [get_redaction_entities_map, get_redaction_entities_map_db],

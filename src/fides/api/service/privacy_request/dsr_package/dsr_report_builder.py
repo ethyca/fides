@@ -1,3 +1,4 @@
+# pylint: disable=too-many-nested-blocks,too-many-branches
 import json
 import os
 import re
@@ -456,7 +457,25 @@ class DsrReportBuilder:
                     )
 
                 # Determine the field name to use
+                should_redact = False
+
+                # First check for fides_meta.redact: name configurations
                 if full_path in self.entities_to_redact:
+                    should_redact = True
+
+                # Fall back to global regex pattern matching
+                elif self.redaction_patterns:
+                    for pattern in self.redaction_patterns:
+                        try:
+                            if re.search(pattern, field_name, re.IGNORECASE):
+                                should_redact = True
+                                break
+                        except re.error:
+                            # Skip invalid regex patterns
+                            logger.warning(f"Invalid regex pattern: {pattern}")
+                            continue
+
+                if should_redact:
                     redacted_name = (
                         f"field_{field_index_counter[level_key][field_name]}"
                     )
