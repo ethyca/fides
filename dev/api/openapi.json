@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.68.1b3.post0.dev9"
+    "version": "2.68.1b3.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5638,6 +5638,56 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/access-package": {
+      "get": {
+        "tags": [
+          "Privacy Center"
+        ],
+        "summary": "Get Access Results Urls",
+        "description": "Public endpoint for retrieving access results URLs for a privacy request.\nThis endpoint generates fresh presigned URLs and redirects to the first available result.\nThis endpoint is designed to be accessible via email links sent to end users.\nNo authentication is required, but a valid download token is required for security.\nRate limiting is applied for additional security.\n\nprivacy_request_id parameter is required in the URL path.\ntoken parameter is required as a query parameter for security.",
+        "operationId": "get_access_results_urls_api_v1_privacy_request__privacy_request_id__access_package_get",
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/cryptography/encryption/key": {
@@ -14316,6 +14366,16 @@
                 "type": "null"
               }
             ]
+          },
+          "privacy_center": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyCenterConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -22604,6 +22664,26 @@
         "title": "PreApprovalWebhookUpdate",
         "description": "Request schema for updating a single webhook - fields are optional"
       },
+      "PrivacyCenterConfig": {
+        "properties": {
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PrivacyCenterConfig"
+      },
       "PrivacyDeclaration": {
         "properties": {
           "name": {
@@ -26367,6 +26447,7 @@
           "max_retries",
           "auth_method",
           "enable_streaming",
+          "enable_access_package_redirect",
           {
             "extra": "forbid"
           }
@@ -26459,6 +26540,18 @@
               }
             ],
             "title": "Enable Streaming",
+            "default": false
+          },
+          "enable_access_package_redirect": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Access Package Redirect",
             "default": false
           }
         },
