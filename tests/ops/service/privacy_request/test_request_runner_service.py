@@ -2526,7 +2526,8 @@ class TestDSRPackageURLGeneration:
 
         mock_rule2 = mock.MagicMock()
         mock_rule2.get_storage_destination.return_value = mock.MagicMock(
-            type=StorageType.s3, details={"enable_access_package_redirect": True}
+            type=StorageType.s3,
+            details={"enable_access_package_redirect": True, "enable_streaming": True},
         )
 
         mock_policy = mock.MagicMock()
