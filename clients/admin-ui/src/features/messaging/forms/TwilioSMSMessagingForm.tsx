@@ -4,7 +4,6 @@ import {
   AntForm as Form,
   AntInput as Input,
   AntMessage as message,
-  AntSelect as Select,
   Box,
   GreenCheckCircleIcon,
   Heading,
@@ -14,31 +13,37 @@ import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import { isErrorResult } from "~/features/common/helpers";
-import { useAPIHelper } from "~/features/common/hooks";
+import {
+  isErrorResult,
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import AwsIcon from "~/features/messaging/AwsIcon";
+import TwilioIcon from "~/features/messaging/icons/TwilioIcon";
 
-import { messagingProviders } from "./constants";
+import { messagingProviders } from "../constants";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
-  useUpdateMessagingConfigurationByKeyMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
-} from "./messaging.slice";
-import { SendTestMessageModal } from "./SendTestMessageModal";
-import { useVerifyConfiguration } from "./useVerifyConfiguration";
+} from "../messaging.slice";
+import { SendTestMessageModal } from "../SendTestMessageModal";
+import { useVerifyConfiguration } from "../useVerifyConfiguration";
 
-interface AwsSesMessagingFormProps {
+interface TwilioSMSMessagingFormProps {
   configKey?: string; // If provided, we're in edit mode
 }
 
-const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
+// NOTE: All Twilio SMS fields (Account SID, Message service SID, phone number, and auth token)
+// are stored as secrets in the backend. Since the API doesn't return secret values for security,
+// all fields are treated as password inputs for consistency. Ideally, Account SID, Message service SID,
+// and phone number should be non-sensitive and stored in the details section instead of secrets.
+
+const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
   const router = useRouter();
-  const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
   const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
@@ -47,8 +52,6 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
 
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [updateMessagingConfiguration] =
-    useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
 
@@ -61,28 +64,25 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
       { skip: !configKey },
     );
 
-  // Memoized initial values to prevent unnecessary re-renders
+  // Memoized initial values
   const initialValues = {
-    email_from: existingConfig?.details?.email_from || "",
-    domain: existingConfig?.details?.domain || "",
-    aws_region: existingConfig?.details?.aws_region || "",
-    auth_method: isEditMode ? "**********" : "secret_keys",
-    aws_access_key_id: isEditMode ? "**********" : "",
-    aws_secret_access_key: isEditMode ? "**********" : "",
-    aws_assume_role_arn: isEditMode ? "**********" : "",
+    // NOTE: All Twilio SMS fields are stored as secrets in the backend,
+    // and the API doesn't return secret values. All fields use placeholder
+    // values in edit mode and are treated consistently as password inputs.
+    account_sid: isEditMode ? "**********" : "",
+    auth_token: isEditMode ? "**********" : "",
+    messaging_service_sid: isEditMode ? "**********" : "",
+    phone: isEditMode ? "**********" : "",
   };
 
   // Update form when existingConfig changes
   useEffect(() => {
     if (existingConfig) {
       const newValues = {
-        email_from: existingConfig.details?.email_from || "",
-        domain: existingConfig.details?.domain || "",
-        aws_region: existingConfig.details?.aws_region || "",
-        auth_method: "**********", // Always show placeholder in edit mode
-        aws_access_key_id: "**********",
-        aws_secret_access_key: "**********",
-        aws_assume_role_arn: "**********",
+        account_sid: "**********", // Always show placeholder in edit mode
+        auth_token: "**********",
+        messaging_service_sid: "**********",
+        phone: "**********",
       };
       form.setFieldsValue(newValues);
       setIsDirty(false); // Reset dirty state when loading existing config
@@ -92,7 +92,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   // Check verification status using actual config data like the table does
   const getVerificationStatus = () => {
     // First preference: local verification data
-    const localData = getVerificationData(messagingProviders.aws_ses);
+    const localData = getVerificationData(messagingProviders.twilio_text);
     if (localData) {
       if (!localData.success) {
         return { isVerified: false, status: "Verify configuration" } as const;
@@ -114,7 +114,6 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
         last_test_succeeded: lastTestSucceeded,
         last_test_timestamp: lastTestTimestamp,
       } = existingConfig;
-
       if (lastTestTimestamp) {
         const testTime = new Date(lastTestTimestamp);
         const formattedDistance = formatDistance(testTime, new Date(), {
@@ -168,101 +167,75 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
       isUndefined,
     );
 
-  // Custom validator to ensure either email_from or domain is provided
-  const validateAwsSesConfig = useCallback(() => {
-    const formValues = form.getFieldsValue();
-    const emailFrom = formValues.email_from;
-    const domain = formValues.domain;
+  // Helper function to extract error message using the same logic as useAPIHelper
+  const getErrorMessage = (error: any) => {
+    let errorMsg = "An unexpected error occurred. Please try again.";
+    if (isErrorWithDetail(error)) {
+      errorMsg = error.data.detail;
+    } else if (isErrorWithDetailArray(error)) {
+      errorMsg = error.data.detail[0].msg;
+    }
+    return errorMsg;
+  };
 
-    // Check if values are provided and not empty
-    const hasEmailFrom = emailFrom && emailFrom.trim() !== "";
-    const hasDomain = domain && domain.trim() !== "";
+  // Custom validator to ensure either messaging service SID or phone number is provided
+  const validateTwilioConfig = useCallback(() => {
+    const formValues = form.getFieldsValue();
+    const messagingServiceSid = formValues.messaging_service_sid;
+    const phoneNumber = formValues.phone;
+
+    // Check if values are provided and not just placeholders
+    const hasMessagingService =
+      messagingServiceSid &&
+      messagingServiceSid.trim() !== "" &&
+      messagingServiceSid !== "**********";
+    const hasPhoneNumber =
+      phoneNumber && phoneNumber.trim() !== "" && phoneNumber !== "**********";
 
     // At least one must be provided
-    if (!hasEmailFrom && !hasDomain) {
+    if (!hasMessagingService && !hasPhoneNumber) {
       return Promise.reject(
-        new Error("Either email from or domain must be provided"),
+        new Error(
+          "Either messaging service SID or phone number must be provided",
+        ),
       );
     }
 
     return Promise.resolve();
   }, [form]);
 
-  const handleAwsSesConfiguration = async (values: {
-    email_from: string;
-    domain: string;
-    aws_region: string;
-    auth_method: string;
-    aws_access_key_id: string;
-    aws_secret_access_key: string;
-    aws_assume_role_arn: string;
+  const handleTwilioSMSConfiguration = async (values: {
+    account_sid: string;
+    auth_token: string;
+    messaging_service_sid: string;
+    phone: string;
   }) => {
     try {
       if (isEditMode && configKey) {
-        // Edit mode: split updates between details and secrets
-        const promises = [];
-
-        // Update details if changed
-        const currentEmailFrom = existingConfig?.details?.email_from || "";
-        const currentDomain = existingConfig?.details?.domain || "";
-        const currentAwsRegion = existingConfig?.details?.aws_region || "";
-
-        const detailsChanged =
-          values.email_from !== currentEmailFrom ||
-          values.domain !== currentDomain ||
-          values.aws_region !== currentAwsRegion;
-
-        if (detailsChanged) {
-          promises.push(
-            updateMessagingConfiguration({
-              key: configKey,
-              config: {
-                key: existingConfig?.key || configKey,
-                name: existingConfig?.name,
-                service_type:
-                  existingConfig?.service_type || messagingProviders.aws_ses,
-                details: {
-                  ...existingConfig?.details,
-                  email_from: values.email_from || null,
-                  domain: values.domain || null,
-                  aws_region: values.aws_region,
-                },
-              },
-            }),
-          );
-        }
-
-        // Only update secrets that aren't placeholders
+        // Edit mode: only update secrets that aren't placeholders
         const secretsToUpdate = {
-          auth_method: values.auth_method,
-          aws_access_key_id: values.aws_access_key_id,
-          aws_secret_access_key: values.aws_secret_access_key,
-          aws_assume_role_arn: values.aws_assume_role_arn,
+          twilio_account_sid: values.account_sid,
+          twilio_auth_token: values.auth_token,
+          twilio_messaging_service_sid: values.messaging_service_sid,
+          twilio_sender_phone_number: values.phone,
         };
 
         const newSecrets = excludeUnchangedSecrets(secretsToUpdate);
-        if (!isEmpty(newSecrets)) {
-          promises.push(
-            updateMessagingSecrets({
-              key: configKey,
-              secrets: newSecrets,
-            }),
-          );
-        }
 
-        if (promises.length === 0) {
+        if (isEmpty(newSecrets)) {
           message.info("No changes to save.");
           return;
         }
 
-        const results = await Promise.all(promises);
-        const hasError = results.some((result) => isErrorResult(result));
+        const result = await updateMessagingSecrets({
+          key: configKey,
+          secrets: newSecrets,
+        });
 
-        if (hasError) {
-          const errorResult = results.find((result) => isErrorResult(result));
-          handleError(errorResult?.error);
+        if (isErrorResult(result)) {
+          message.error(getErrorMessage(result.error));
         } else {
-          message.success("AWS SES configuration successfully updated.");
+          message.success("Twilio SMS configuration successfully updated.");
           setIsDirty(false);
           // Refetch to get updated data
           if (refetchConfig) {
@@ -272,26 +245,21 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
       } else {
         // Create mode
         const config = {
-          service_type: messagingProviders.aws_ses,
-          details: {
-            email_from: values.email_from || null,
-            domain: values.domain || null,
-            aws_region: values.aws_region,
-          },
+          service_type: messagingProviders.twilio_text,
           secrets: {
-            auth_method: values.auth_method,
-            aws_access_key_id: values.aws_access_key_id,
-            aws_secret_access_key: values.aws_secret_access_key,
-            aws_assume_role_arn: values.aws_assume_role_arn,
+            twilio_account_sid: values.account_sid,
+            twilio_auth_token: values.auth_token,
+            twilio_messaging_service_sid: values.messaging_service_sid,
+            twilio_sender_phone_number: values.phone,
           },
         };
 
         const result = await createMessagingConfiguration(config);
 
         if (isErrorResult(result)) {
-          handleError(result.error);
+          message.error(getErrorMessage(result.error));
         } else {
-          message.success("AWS SES configuration successfully created.");
+          message.success("Twilio SMS configuration successfully created.");
           setIsDirty(false);
           // Redirect to edit page with the created config key
           const createdConfigKey = result.data?.key;
@@ -307,14 +275,14 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
         }
       }
     } catch (error) {
-      console.error("Error in handleAwsSesConfiguration:", error);
-      handleError(error);
+      console.error("Error in handleTwilioSMSConfiguration:", error);
+      message.error("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleVerifyConfiguration = async () => {
     try {
-      const success = await verifyConfiguration(messagingProviders.aws_ses);
+      const success = await verifyConfiguration(messagingProviders.twilio_text);
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
@@ -323,8 +291,8 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
         }, 500);
       }
     } catch (error) {
-      console.error("Error verifying configuration:", error);
-      handleError(error);
+      console.error("Error Verifying:", error);
+      message.error("An unexpected error occurred during verification.");
     }
   };
 
@@ -333,7 +301,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
     const currentValues = { ...allValues };
     const compareValues = { ...initialValues };
 
-    // If in edit mode and secret fields haven't changed from placeholder, consider them unchanged
+    // If in edit mode and any field hasn't changed from placeholder, consider it unchanged
     if (isEditMode) {
       Object.keys(currentValues).forEach((key) => {
         if (currentValues[key] === "**********") {
@@ -346,9 +314,9 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   };
 
   const handleFieldChange = () => {
-    // Trigger validation on both email_from and domain fields
+    // Trigger validation on both messaging_service_sid and phone fields
     // when either one changes, since they have interdependent validation
-    form.validateFields(["email_from", "domain"]).catch(() => {
+    form.validateFields(["messaging_service_sid", "phone"]).catch(() => {
       // Ignore validation errors here as they'll be shown in the UI
     });
   };
@@ -359,7 +327,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
         form={form}
         layout="vertical"
         initialValues={initialValues}
-        onFinish={handleAwsSesConfiguration}
+        onFinish={handleTwilioSMSConfiguration}
         onValuesChange={handleFormValuesChange}
       >
         <Box
@@ -382,108 +350,80 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <AwsIcon />
+              <TwilioIcon />
               <Heading as="h3" size="xs">
-                AWS SES email messaging configuration
+                Twilio SMS messaging configuration
               </Heading>
             </HStack>
           </Box>
 
           <Box px={6} py={6}>
             <Form.Item
-              name="email_from"
-              label="Email from"
-              rules={[{ validator: validateAwsSesConfig }]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input
-                placeholder={
-                  isEditMode ? "Enter new email from" : "Enter email from"
-                }
-                onChange={() => handleFieldChange()}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="domain"
-              label="Domain"
-              rules={[{ validator: validateAwsSesConfig }]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input
-                placeholder={isEditMode ? "Enter new domain" : "Enter domain"}
-                onChange={() => handleFieldChange()}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="aws_region"
-              label="AWS region"
-              rules={[{ required: true, message: "AWS region is required" }]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input
-                placeholder={
-                  isEditMode ? "Enter new AWS region" : "Enter AWS region (e.g., us-east-1)"
-                }
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="auth_method"
-              label="Authentication method"
+              name="account_sid"
+              label="Account SID"
               rules={[
-                { required: true, message: "Authentication method is required" },
+                { required: true, message: "Account SID is required" },
+                {
+                  type: "string",
+                  min: 1,
+                  message: "Account SID cannot be empty",
+                },
               ]}
               style={{ marginBottom: 24 }}
             >
-              <Select
-                placeholder="Select authentication method"
-                options={[
-                  { label: "Secret keys", value: "secret_keys" },
-                  { label: "Automatic", value: "automatic" },
-                ]}
+              <Input.Password
+                placeholder={
+                  isEditMode ? "Enter new account SID" : "Enter account SID"
+                }
               />
             </Form.Item>
 
             <Form.Item
-              name="aws_access_key_id"
-              label="AWS access key ID"
+              name="auth_token"
+              label="Auth token"
+              rules={[
+                { required: true, message: "Auth token is required" },
+                {
+                  type: "string",
+                  min: 1,
+                  message: "Auth token cannot be empty",
+                },
+              ]}
+              style={{ marginBottom: 24 }}
+            >
+              <Input.Password
+                placeholder={
+                  isEditMode ? "Enter new auth token" : "Enter auth token"
+                }
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="messaging_service_sid"
+              label="Messaging service SID"
+              rules={[{ validator: validateTwilioConfig }]}
               style={{ marginBottom: 24 }}
             >
               <Input.Password
                 placeholder={
                   isEditMode
-                    ? "Enter new AWS access key ID"
-                    : "Enter AWS access key ID"
+                    ? "Enter new messaging service SID"
+                    : "Enter messaging service SID"
                 }
+                onChange={() => handleFieldChange()}
               />
             </Form.Item>
 
             <Form.Item
-              name="aws_secret_access_key"
-              label="AWS secret access key"
-              style={{ marginBottom: 24 }}
+              name="phone"
+              label="Phone number"
+              rules={[{ validator: validateTwilioConfig }]}
             >
               <Input.Password
                 placeholder={
-                  isEditMode
-                    ? "Enter new AWS secret access key"
-                    : "Enter AWS secret access key"
+                  isEditMode ? "Enter new phone number" : "Enter phone number"
                 }
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="aws_assume_role_arn"
-              label="AWS assume role ARN"
-            >
-              <Input.Password
-                placeholder={
-                  isEditMode
-                    ? "Enter new AWS assume role ARN"
-                    : "Enter AWS assume role ARN (optional)"
-                }
+                onChange={() => handleFieldChange()}
               />
             </Form.Item>
 
@@ -495,7 +435,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
                     onClick={() => setIsTestMessageModalOpen(true)}
                     data-testid="send-test-message-btn"
                   >
-                    Send test email
+                    Send test SMS
                   </Button>
                 )}
               </Box>
@@ -514,7 +454,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
                   >
                     {(() => {
                       if (isVerifying) {
-                        return "Verifying configuration";
+                        return "Verifying";
                       }
                       if (verificationStatus.isVerified) {
                         return "Verified";
@@ -546,7 +486,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
 
       {/* Send test message modal */}
       <SendTestMessageModal
-        serviceType={messagingProviders.aws_ses}
+        serviceType={messagingProviders.twilio_text}
         isOpen={isTestMessageModalOpen}
         onClose={() => setIsTestMessageModalOpen(false)}
       />
@@ -554,4 +494,4 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   );
 };
 
-export default AwsSesMessagingForm;
+export default TwilioSMSMessagingForm;

@@ -24,6 +24,7 @@ const messagingApi = baseApi.injectEndpoints({
         method: "POST",
         body: params,
       }),
+      invalidatesTags: ["Messaging Config"],
     }),
     getActiveMessagingProvider: build.query<any, void>({
       query: () => ({
@@ -39,6 +40,7 @@ const messagingApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params.details,
       }),
+      invalidatesTags: ["Messaging Config"],
     }),
     getMessagingConfigurationDetails: build.query<any, ConfigMessagingRequest>({
       query: (params) => ({

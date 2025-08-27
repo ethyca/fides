@@ -19,17 +19,17 @@ import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import MailgunIcon from "~/features/messaging/MailgunIcon";
+import MailgunIcon from "~/features/messaging/icons/MailgunIcon";
 
-import { messagingProviders } from "./constants";
+import { messagingProviders } from "../constants";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
   useUpdateMessagingConfigurationByKeyMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
-} from "./messaging.slice";
-import { SendTestMessageModal } from "./SendTestMessageModal";
-import { useVerifyConfiguration } from "./useVerifyConfiguration";
+} from "../messaging.slice";
+import { SendTestMessageModal } from "../SendTestMessageModal";
+import { useVerifyConfiguration } from "../useVerifyConfiguration";
 
 interface MailgunMessagingFormProps {
   configKey?: string; // If provided, we're in edit mode
@@ -267,7 +267,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
         }, 500);
       }
     } catch (error) {
-      console.error("Error verifying configuration:", error);
+      console.error("Error Verifying:", error);
       handleError(error);
     }
   };
@@ -376,7 +376,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
                   >
                     {(() => {
                       if (isVerifying) {
-                        return "Verifying configuration";
+                        return "Verifying";
                       }
                       if (verificationStatus.isVerified) {
                         return "Verified";

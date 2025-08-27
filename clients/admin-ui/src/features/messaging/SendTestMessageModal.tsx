@@ -4,7 +4,6 @@ import {
   AntInput as Input,
   AntMessage as message,
   AntModal as Modal,
-  AntSpin as Spin,
   VStack,
 } from "fidesui";
 import { useState } from "react";
@@ -33,6 +32,8 @@ export const SendTestMessageModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [form] = Form.useForm();
 
+  const isSMSProvider = serviceType === messagingProviders.twilio_text;
+
   // Helper function to extract error message using the same logic as useAPIHelper
   const getErrorMessage = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
@@ -47,8 +48,6 @@ export const SendTestMessageModal = ({
   const handleSendTestMessage = async (values: any) => {
     setIsLoading(true);
     try {
-      const isSMSProvider = serviceType === messagingProviders.twilio_text;
-
       const result = await createTestMessage({
         service_type: serviceType,
         details: {
@@ -62,7 +61,6 @@ export const SendTestMessageModal = ({
         message.error(getErrorMessage(result.error));
       } else {
         message.success("Test message sent successfully!");
-        form.resetFields();
         onClose();
       }
     } catch (error) {
@@ -72,11 +70,9 @@ export const SendTestMessageModal = ({
     }
   };
 
-  const isSMSProvider = serviceType === messagingProviders.twilio_text;
   const messageType = isSMSProvider ? "SMS" : "email";
 
   const handleClose = () => {
-    form.resetFields();
     onClose();
   };
 
@@ -141,14 +137,7 @@ export const SendTestMessageModal = ({
                 loading={isLoading}
                 data-testid="send-test-message-btn"
               >
-                {isLoading ? (
-                  <>
-                    <Spin size="small" style={{ marginRight: 8 }} />
-                    Sending...
-                  </>
-                ) : (
-                  `Send test ${messageType}`
-                )}
+                {isLoading ? "Sending..." : `Send test ${messageType}`}
               </Button>
             </div>
           </Form.Item>

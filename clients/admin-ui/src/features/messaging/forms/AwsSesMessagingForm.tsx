@@ -4,6 +4,7 @@ import {
   AntForm as Form,
   AntInput as Input,
   AntMessage as message,
+  AntSelect as Select,
   Box,
   GreenCheckCircleIcon,
   Heading,
@@ -11,7 +12,7 @@ import {
 } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
@@ -19,31 +20,35 @@ import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import TwilioIcon from "~/features/messaging/TwilioIcon";
+import AwsIcon from "~/features/messaging/icons/AwsIcon";
 
-import { messagingProviders } from "./constants";
+import { messagingProviders } from "../constants";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
   useUpdateMessagingConfigurationByKeyMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
-} from "./messaging.slice";
-import { SendTestMessageModal } from "./SendTestMessageModal";
-import { useVerifyConfiguration } from "./useVerifyConfiguration";
+} from "../messaging.slice";
+import { SendTestMessageModal } from "../SendTestMessageModal";
+import { useVerifyConfiguration } from "../useVerifyConfiguration";
 
-interface TwilioEmailMessagingFormProps {
+interface AwsSesMessagingFormProps {
   configKey?: string; // If provided, we're in edit mode
 }
 
-const TwilioEmailMessagingForm = ({
-  configKey,
-}: TwilioEmailMessagingFormProps) => {
+const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
+
+  const isEditMode = !!configKey;
+
   const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [authMethod, setAuthMethod] = useState<string>(
+    isEditMode ? "**********" : "secret_keys",
+  );
   const [form] = Form.useForm();
 
   const [createMessagingConfiguration] =
@@ -52,8 +57,6 @@ const TwilioEmailMessagingForm = ({
     useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
-
-  const isEditMode = !!configKey;
 
   // Fetch existing config data in edit mode
   const { data: existingConfig, refetch: refetchConfig } =
@@ -64,18 +67,29 @@ const TwilioEmailMessagingForm = ({
 
   // Memoized initial values to prevent unnecessary re-renders
   const initialValues = {
-    email: existingConfig?.details?.twilio_email_from || "",
-    twilio_api_key: isEditMode ? "**********" : "",
+    email_from: existingConfig?.details?.email_from || "",
+    domain: existingConfig?.details?.domain || "",
+    aws_region: existingConfig?.details?.aws_region || "",
+    auth_method: isEditMode ? "**********" : "secret_keys",
+    aws_access_key_id: isEditMode ? "**********" : "",
+    aws_secret_access_key: isEditMode ? "**********" : "",
+    aws_assume_role_arn: isEditMode ? "**********" : "",
   };
 
   // Update form when existingConfig changes
   useEffect(() => {
     if (existingConfig) {
       const newValues = {
-        email: existingConfig.details?.twilio_email_from || "",
-        twilio_api_key: "**********", // Always show placeholder in edit mode
+        email_from: existingConfig.details?.email_from || "",
+        domain: existingConfig.details?.domain || "",
+        aws_region: existingConfig.details?.aws_region || "",
+        auth_method: "**********", // Always show placeholder in edit mode
+        aws_access_key_id: "**********",
+        aws_secret_access_key: "**********",
+        aws_assume_role_arn: "**********",
       };
       form.setFieldsValue(newValues);
+      setAuthMethod("**********"); // Set auth method state for edit mode
       setIsDirty(false); // Reset dirty state when loading existing config
     }
   }, [existingConfig, form]);
@@ -83,7 +97,7 @@ const TwilioEmailMessagingForm = ({
   // Check verification status using actual config data like the table does
   const getVerificationStatus = () => {
     // First preference: local verification data
-    const localData = getVerificationData(messagingProviders.twilio_email);
+    const localData = getVerificationData(messagingProviders.aws_ses);
     if (localData) {
       if (!localData.success) {
         return { isVerified: false, status: "Verify configuration" } as const;
@@ -159,18 +173,51 @@ const TwilioEmailMessagingForm = ({
       isUndefined,
     );
 
-  const handleTwilioEmailConfiguration = async (values: {
-    email: string;
-    twilio_api_key: string;
+  // Custom validator to ensure either email_from or domain is provided
+  const validateAwsSesConfig = useCallback(() => {
+    const formValues = form.getFieldsValue();
+    const emailFrom = formValues.email_from;
+    const { domain } = formValues;
+
+    // Check if values are provided and not empty
+    const hasEmailFrom = emailFrom && emailFrom.trim() !== "";
+    const hasDomain = domain && domain.trim() !== "";
+
+    // At least one must be provided
+    if (!hasEmailFrom && !hasDomain) {
+      return Promise.reject(
+        new Error("Either email from or domain must be provided"),
+      );
+    }
+
+    return Promise.resolve();
+  }, [form]);
+
+  const handleAwsSesConfiguration = async (values: {
+    email_from: string;
+    domain: string;
+    aws_region: string;
+    auth_method: string;
+    aws_access_key_id: string;
+    aws_secret_access_key: string;
+    aws_assume_role_arn: string;
   }) => {
     try {
       if (isEditMode && configKey) {
         // Edit mode: split updates between details and secrets
         const promises = [];
 
-        // Update email if changed
-        const currentEmail = existingConfig?.details?.twilio_email_from || "";
-        if (values.email !== currentEmail && values.email.trim() !== "") {
+        // Update details if changed
+        const currentEmailFrom = existingConfig?.details?.email_from || "";
+        const currentDomain = existingConfig?.details?.domain || "";
+        const currentAwsRegion = existingConfig?.details?.aws_region || "";
+
+        const detailsChanged =
+          values.email_from !== currentEmailFrom ||
+          values.domain !== currentDomain ||
+          values.aws_region !== currentAwsRegion;
+
+        if (detailsChanged) {
           promises.push(
             updateMessagingConfiguration({
               key: configKey,
@@ -178,11 +225,12 @@ const TwilioEmailMessagingForm = ({
                 key: existingConfig?.key || configKey,
                 name: existingConfig?.name,
                 service_type:
-                  existingConfig?.service_type ||
-                  messagingProviders.twilio_email,
+                  existingConfig?.service_type || messagingProviders.aws_ses,
                 details: {
                   ...existingConfig?.details,
-                  twilio_email_from: values.email,
+                  email_from: values.email_from || null,
+                  domain: values.domain || null,
+                  aws_region: values.aws_region,
                 },
               },
             }),
@@ -190,9 +238,14 @@ const TwilioEmailMessagingForm = ({
         }
 
         // Only update secrets that aren't placeholders
-        const newSecrets = excludeUnchangedSecrets({
-          api_key: values.twilio_api_key,
-        });
+        const secretsToUpdate = {
+          auth_method: values.auth_method,
+          aws_access_key_id: values.aws_access_key_id,
+          aws_secret_access_key: values.aws_secret_access_key,
+          aws_assume_role_arn: values.aws_assume_role_arn,
+        };
+
+        const newSecrets = excludeUnchangedSecrets(secretsToUpdate);
         if (!isEmpty(newSecrets)) {
           promises.push(
             updateMessagingSecrets({
@@ -214,7 +267,7 @@ const TwilioEmailMessagingForm = ({
           const errorResult = results.find((result) => isErrorResult(result));
           handleError(errorResult?.error);
         } else {
-          message.success("Twilio email configuration successfully updated.");
+          message.success("AWS SES configuration successfully updated.");
           setIsDirty(false);
           // Refetch to get updated data
           if (refetchConfig) {
@@ -224,12 +277,17 @@ const TwilioEmailMessagingForm = ({
       } else {
         // Create mode
         const config = {
-          service_type: messagingProviders.twilio_email,
+          service_type: messagingProviders.aws_ses,
           details: {
-            twilio_email_from: values.email,
+            email_from: values.email_from || null,
+            domain: values.domain || null,
+            aws_region: values.aws_region,
           },
           secrets: {
-            api_key: values.twilio_api_key,
+            auth_method: values.auth_method,
+            aws_access_key_id: values.aws_access_key_id,
+            aws_secret_access_key: values.aws_secret_access_key,
+            aws_assume_role_arn: values.aws_assume_role_arn,
           },
         };
 
@@ -238,7 +296,7 @@ const TwilioEmailMessagingForm = ({
         if (isErrorResult(result)) {
           handleError(result.error);
         } else {
-          message.success("Twilio email configuration successfully created.");
+          message.success("AWS SES configuration successfully created.");
           setIsDirty(false);
           // Redirect to edit page with the created config key
           const createdConfigKey = result.data?.key;
@@ -254,16 +312,14 @@ const TwilioEmailMessagingForm = ({
         }
       }
     } catch (error) {
-      console.error("Error in handleTwilioEmailConfiguration:", error);
+      console.error("Error in handleAwsSesConfiguration:", error);
       handleError(error);
     }
   };
 
   const handleVerifyConfiguration = async () => {
     try {
-      const success = await verifyConfiguration(
-        messagingProviders.twilio_email,
-      );
+      const success = await verifyConfiguration(messagingProviders.aws_ses);
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
@@ -272,22 +328,47 @@ const TwilioEmailMessagingForm = ({
         }, 500);
       }
     } catch (error) {
-      console.error("Error verifying configuration:", error);
+      console.error("Error Verifying:", error);
       handleError(error);
     }
   };
 
   const handleFormValuesChange = (changedValues: any, allValues: any) => {
-    // Compare current values with initial values, accounting for placeholder
+    // Compare current values with initial values, accounting for placeholders
     const currentValues = { ...allValues };
     const compareValues = { ...initialValues };
 
-    // If in edit mode and API key hasn't changed from placeholder, consider it unchanged
-    if (isEditMode && currentValues.twilio_api_key === "**********") {
-      currentValues.twilio_api_key = compareValues.twilio_api_key;
+    // If in edit mode and secret fields haven't changed from placeholder, consider them unchanged
+    if (isEditMode) {
+      Object.keys(currentValues).forEach((key) => {
+        if (currentValues[key] === "**********") {
+          currentValues[key] = compareValues[key as keyof typeof compareValues];
+        }
+      });
+    }
+
+    // Track auth method changes
+    if (changedValues.auth_method !== undefined) {
+      setAuthMethod(changedValues.auth_method);
+
+      // If auth method changed to automatic, clear secret key fields
+      if (changedValues.auth_method === "automatic") {
+        form.setFieldsValue({
+          aws_access_key_id: "",
+          aws_secret_access_key: "",
+        });
+      }
     }
 
     setIsDirty(!isEqual(currentValues, compareValues));
+  };
+
+  const handleFieldChange = () => {
+    // Trigger validation on both email_from and domain fields
+    // when either one changes, since they have interdependent validation
+    form.validateFields(["email_from", "domain"]).catch(() => {
+      // Ignore validation errors here as they'll be shown in the UI
+    });
   };
 
   return (
@@ -296,7 +377,7 @@ const TwilioEmailMessagingForm = ({
         form={form}
         layout="vertical"
         initialValues={initialValues}
-        onFinish={handleTwilioEmailConfiguration}
+        onFinish={handleAwsSesConfiguration}
         onValuesChange={handleFormValuesChange}
       >
         <Box
@@ -319,38 +400,146 @@ const TwilioEmailMessagingForm = ({
             borderTopRadius={6}
           >
             <HStack>
-              <TwilioIcon />
+              <AwsIcon />
               <Heading as="h3" size="xs">
-                Twilio email messaging configuration
+                AWS SES email messaging configuration
               </Heading>
             </HStack>
           </Box>
 
           <Box px={6} py={6}>
             <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Email is required" },
-                { type: "email", message: "Please enter a valid email" },
-              ]}
+              name="email_from"
+              label="Email from"
+              rules={[{ validator: validateAwsSesConfig }]}
               style={{ marginBottom: 24 }}
             >
               <Input
-                placeholder={isEditMode ? "Enter new email" : "Enter email"}
+                placeholder={
+                  isEditMode ? "Enter new email from" : "Enter email from"
+                }
+                onChange={() => handleFieldChange()}
               />
             </Form.Item>
 
             <Form.Item
-              name="twilio_api_key"
-              label="API key"
-              rules={[
-                { required: true, message: "API key is required" },
-                { type: "string", min: 1, message: "API key cannot be empty" },
-              ]}
+              name="domain"
+              label="Domain"
+              rules={[{ validator: validateAwsSesConfig }]}
+              style={{ marginBottom: 24 }}
             >
+              <Input
+                placeholder={isEditMode ? "Enter new domain" : "Enter domain"}
+                onChange={() => handleFieldChange()}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="aws_region"
+              label="AWS region"
+              rules={[{ required: true, message: "AWS region is required" }]}
+              style={{ marginBottom: 24 }}
+            >
+              <Input
+                placeholder={
+                  isEditMode
+                    ? "Enter new AWS region"
+                    : "Enter AWS region (e.g., us-east-1)"
+                }
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="auth_method"
+              label="Authentication method"
+              rules={[
+                {
+                  required: true,
+                  message: "Authentication method is required",
+                },
+              ]}
+              style={{ marginBottom: 24 }}
+            >
+              <Select
+                placeholder="Select authentication method"
+                options={[
+                  {
+                    label: "Secret keys",
+                    value: "secret_keys",
+                  },
+                  {
+                    label: "Automatic",
+                    value: "automatic",
+                  },
+                ]}
+              />
+            </Form.Item>
+
+            {/* Only show AWS credentials fields for secret_keys auth method */}
+            {(authMethod === "secret_keys" ||
+              (isEditMode && authMethod === "**********")) && (
+              <>
+                <Form.Item
+                  name="aws_access_key_id"
+                  label="AWS access key ID"
+                  rules={
+                    authMethod === "secret_keys" ||
+                    (isEditMode && authMethod === "**********")
+                      ? [
+                          {
+                            required: true,
+                            message:
+                              "AWS access key ID is required for secret keys authentication",
+                          },
+                        ]
+                      : []
+                  }
+                  style={{ marginBottom: 24 }}
+                >
+                  <Input.Password
+                    placeholder={
+                      isEditMode
+                        ? "Enter new AWS access key ID"
+                        : "Enter AWS access key ID"
+                    }
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="aws_secret_access_key"
+                  label="AWS secret access key"
+                  rules={
+                    authMethod === "secret_keys" ||
+                    (isEditMode && authMethod === "**********")
+                      ? [
+                          {
+                            required: true,
+                            message:
+                              "AWS secret access key is required for secret keys authentication",
+                          },
+                        ]
+                      : []
+                  }
+                  style={{ marginBottom: 24 }}
+                >
+                  <Input.Password
+                    placeholder={
+                      isEditMode
+                        ? "Enter new AWS secret access key"
+                        : "Enter AWS secret access key"
+                    }
+                  />
+                </Form.Item>
+              </>
+            )}
+
+            <Form.Item name="aws_assume_role_arn" label="AWS assume role ARN">
               <Input.Password
-                placeholder={isEditMode ? "Enter new API key" : "Enter API key"}
+                placeholder={
+                  isEditMode
+                    ? "Enter new AWS assume role ARN"
+                    : "Enter AWS assume role ARN (optional)"
+                }
               />
             </Form.Item>
 
@@ -381,7 +570,7 @@ const TwilioEmailMessagingForm = ({
                   >
                     {(() => {
                       if (isVerifying) {
-                        return "Verifying configuration";
+                        return "Verifying";
                       }
                       if (verificationStatus.isVerified) {
                         return "Verified";
@@ -413,7 +602,7 @@ const TwilioEmailMessagingForm = ({
 
       {/* Send test message modal */}
       <SendTestMessageModal
-        serviceType={messagingProviders.twilio_email}
+        serviceType={messagingProviders.aws_ses}
         isOpen={isTestMessageModalOpen}
         onClose={() => setIsTestMessageModalOpen(false)}
       />
@@ -421,4 +610,4 @@ const TwilioEmailMessagingForm = ({
   );
 };
 
-export default TwilioEmailMessagingForm;
+export default AwsSesMessagingForm;

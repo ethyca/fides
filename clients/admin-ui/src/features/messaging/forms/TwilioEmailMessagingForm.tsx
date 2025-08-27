@@ -11,39 +11,35 @@ import {
 } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import TwilioIcon from "~/features/messaging/TwilioIcon";
+import TwilioIcon from "~/features/messaging/icons/TwilioIcon";
 
-import { messagingProviders } from "./constants";
+import { messagingProviders } from "../constants";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
+  useUpdateMessagingConfigurationByKeyMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
-} from "./messaging.slice";
-import { SendTestMessageModal } from "./SendTestMessageModal";
-import { useVerifyConfiguration } from "./useVerifyConfiguration";
+} from "../messaging.slice";
+import { SendTestMessageModal } from "../SendTestMessageModal";
+import { useVerifyConfiguration } from "../useVerifyConfiguration";
 
-interface TwilioSMSMessagingFormProps {
+interface TwilioEmailMessagingFormProps {
   configKey?: string; // If provided, we're in edit mode
 }
 
-// NOTE: All Twilio SMS fields (Account SID, Message service SID, phone number, and auth token)
-// are stored as secrets in the backend. Since the API doesn't return secret values for security,
-// all fields are treated as password inputs for consistency. Ideally, Account SID, Message service SID,
-// and phone number should be non-sensitive and stored in the details section instead of secrets.
-
-const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
+const TwilioEmailMessagingForm = ({
+  configKey,
+}: TwilioEmailMessagingFormProps) => {
   const router = useRouter();
+  const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
   const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
@@ -52,6 +48,8 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
 
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
+  const [updateMessagingConfiguration] =
+    useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
 
@@ -64,25 +62,18 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
       { skip: !configKey },
     );
 
-  // Memoized initial values
+  // Memoized initial values to prevent unnecessary re-renders
   const initialValues = {
-    // NOTE: All Twilio SMS fields are stored as secrets in the backend,
-    // and the API doesn't return secret values. All fields use placeholder
-    // values in edit mode and are treated consistently as password inputs.
-    account_sid: isEditMode ? "**********" : "",
-    auth_token: isEditMode ? "**********" : "",
-    messaging_service_sid: isEditMode ? "**********" : "",
-    phone: isEditMode ? "**********" : "",
+    email: existingConfig?.details?.twilio_email_from || "",
+    twilio_api_key: isEditMode ? "**********" : "",
   };
 
   // Update form when existingConfig changes
   useEffect(() => {
     if (existingConfig) {
       const newValues = {
-        account_sid: "**********", // Always show placeholder in edit mode
-        auth_token: "**********",
-        messaging_service_sid: "**********",
-        phone: "**********",
+        email: existingConfig.details?.twilio_email_from || "",
+        twilio_api_key: "**********", // Always show placeholder in edit mode
       };
       form.setFieldsValue(newValues);
       setIsDirty(false); // Reset dirty state when loading existing config
@@ -92,7 +83,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
   // Check verification status using actual config data like the table does
   const getVerificationStatus = () => {
     // First preference: local verification data
-    const localData = getVerificationData(messagingProviders.twilio_text);
+    const localData = getVerificationData(messagingProviders.twilio_email);
     if (localData) {
       if (!localData.success) {
         return { isVerified: false, status: "Verify configuration" } as const;
@@ -114,6 +105,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         last_test_succeeded: lastTestSucceeded,
         last_test_timestamp: lastTestTimestamp,
       } = existingConfig;
+
       if (lastTestTimestamp) {
         const testTime = new Date(lastTestTimestamp);
         const formattedDistance = formatDistance(testTime, new Date(), {
@@ -167,75 +159,62 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
       isUndefined,
     );
 
-  // Helper function to extract error message using the same logic as useAPIHelper
-  const getErrorMessage = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    return errorMsg;
-  };
-
-  // Custom validator to ensure either messaging service SID or phone number is provided
-  const validateTwilioConfig = useCallback(() => {
-    const formValues = form.getFieldsValue();
-    const messagingServiceSid = formValues.messaging_service_sid;
-    const phoneNumber = formValues.phone;
-
-    // Check if values are provided and not just placeholders
-    const hasMessagingService =
-      messagingServiceSid &&
-      messagingServiceSid.trim() !== "" &&
-      messagingServiceSid !== "**********";
-    const hasPhoneNumber =
-      phoneNumber && phoneNumber.trim() !== "" && phoneNumber !== "**********";
-
-    // At least one must be provided
-    if (!hasMessagingService && !hasPhoneNumber) {
-      return Promise.reject(
-        new Error(
-          "Either messaging service SID or phone number must be provided",
-        ),
-      );
-    }
-
-    return Promise.resolve();
-  }, [form]);
-
-  const handleTwilioSMSConfiguration = async (values: {
-    account_sid: string;
-    auth_token: string;
-    messaging_service_sid: string;
-    phone: string;
+  const handleTwilioEmailConfiguration = async (values: {
+    email: string;
+    twilio_api_key: string;
   }) => {
     try {
       if (isEditMode && configKey) {
-        // Edit mode: only update secrets that aren't placeholders
-        const secretsToUpdate = {
-          twilio_account_sid: values.account_sid,
-          twilio_auth_token: values.auth_token,
-          twilio_messaging_service_sid: values.messaging_service_sid,
-          twilio_sender_phone_number: values.phone,
-        };
+        // Edit mode: split updates between details and secrets
+        const promises = [];
 
-        const newSecrets = excludeUnchangedSecrets(secretsToUpdate);
+        // Update email if changed
+        const currentEmail = existingConfig?.details?.twilio_email_from || "";
+        if (values.email !== currentEmail && values.email.trim() !== "") {
+          promises.push(
+            updateMessagingConfiguration({
+              key: configKey,
+              config: {
+                key: existingConfig?.key || configKey,
+                name: existingConfig?.name,
+                service_type:
+                  existingConfig?.service_type ||
+                  messagingProviders.twilio_email,
+                details: {
+                  ...existingConfig?.details,
+                  twilio_email_from: values.email,
+                },
+              },
+            }),
+          );
+        }
 
-        if (isEmpty(newSecrets)) {
+        // Only update secrets that aren't placeholders
+        const newSecrets = excludeUnchangedSecrets({
+          twilio_api_key: values.twilio_api_key,
+        });
+        if (!isEmpty(newSecrets)) {
+          promises.push(
+            updateMessagingSecrets({
+              key: configKey,
+              secrets: newSecrets,
+            }),
+          );
+        }
+
+        if (promises.length === 0) {
           message.info("No changes to save.");
           return;
         }
 
-        const result = await updateMessagingSecrets({
-          key: configKey,
-          secrets: newSecrets,
-        });
+        const results = await Promise.all(promises);
+        const hasError = results.some((result) => isErrorResult(result));
 
-        if (isErrorResult(result)) {
-          message.error(getErrorMessage(result.error));
+        if (hasError) {
+          const errorResult = results.find((result) => isErrorResult(result));
+          handleError(errorResult?.error);
         } else {
-          message.success("Twilio SMS configuration successfully updated.");
+          message.success("Twilio email configuration successfully updated.");
           setIsDirty(false);
           // Refetch to get updated data
           if (refetchConfig) {
@@ -245,21 +224,21 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
       } else {
         // Create mode
         const config = {
-          service_type: messagingProviders.twilio_text,
+          service_type: messagingProviders.twilio_email,
+          details: {
+            twilio_email_from: values.email,
+          },
           secrets: {
-            twilio_account_sid: values.account_sid,
-            twilio_auth_token: values.auth_token,
-            twilio_messaging_service_sid: values.messaging_service_sid,
-            twilio_sender_phone_number: values.phone,
+            twilio_api_key: values.twilio_api_key,
           },
         };
 
         const result = await createMessagingConfiguration(config);
 
         if (isErrorResult(result)) {
-          message.error(getErrorMessage(result.error));
+          handleError(result.error);
         } else {
-          message.success("Twilio SMS configuration successfully created.");
+          message.success("Twilio email configuration successfully created.");
           setIsDirty(false);
           // Redirect to edit page with the created config key
           const createdConfigKey = result.data?.key;
@@ -275,14 +254,16 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         }
       }
     } catch (error) {
-      console.error("Error in handleTwilioSMSConfiguration:", error);
-      message.error("An unexpected error occurred. Please try again.");
+      console.error("Error in handleTwilioEmailConfiguration:", error);
+      handleError(error);
     }
   };
 
   const handleVerifyConfiguration = async () => {
     try {
-      const success = await verifyConfiguration(messagingProviders.twilio_text);
+      const success = await verifyConfiguration(
+        messagingProviders.twilio_email,
+      );
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
@@ -291,34 +272,22 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         }, 500);
       }
     } catch (error) {
-      console.error("Error verifying configuration:", error);
-      message.error("An unexpected error occurred during verification.");
+      console.error("Error Verifying:", error);
+      handleError(error);
     }
   };
 
   const handleFormValuesChange = (changedValues: any, allValues: any) => {
-    // Compare current values with initial values, accounting for placeholders
+    // Compare current values with initial values, accounting for placeholder
     const currentValues = { ...allValues };
     const compareValues = { ...initialValues };
 
-    // If in edit mode and any field hasn't changed from placeholder, consider it unchanged
-    if (isEditMode) {
-      Object.keys(currentValues).forEach((key) => {
-        if (currentValues[key] === "**********") {
-          currentValues[key] = compareValues[key as keyof typeof compareValues];
-        }
-      });
+    // If in edit mode and API key hasn't changed from placeholder, consider it unchanged
+    if (isEditMode && currentValues.twilio_api_key === "**********") {
+      currentValues.twilio_api_key = compareValues.twilio_api_key;
     }
 
     setIsDirty(!isEqual(currentValues, compareValues));
-  };
-
-  const handleFieldChange = () => {
-    // Trigger validation on both messaging_service_sid and phone fields
-    // when either one changes, since they have interdependent validation
-    form.validateFields(["messaging_service_sid", "phone"]).catch(() => {
-      // Ignore validation errors here as they'll be shown in the UI
-    });
   };
 
   return (
@@ -327,7 +296,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         form={form}
         layout="vertical"
         initialValues={initialValues}
-        onFinish={handleTwilioSMSConfiguration}
+        onFinish={handleTwilioEmailConfiguration}
         onValuesChange={handleFormValuesChange}
       >
         <Box
@@ -352,78 +321,36 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
             <HStack>
               <TwilioIcon />
               <Heading as="h3" size="xs">
-                Twilio SMS messaging configuration
+                Twilio email messaging configuration
               </Heading>
             </HStack>
           </Box>
 
           <Box px={6} py={6}>
             <Form.Item
-              name="account_sid"
-              label="Account SID"
+              name="email"
+              label="Email"
               rules={[
-                { required: true, message: "Account SID is required" },
-                {
-                  type: "string",
-                  min: 1,
-                  message: "Account SID cannot be empty",
-                },
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Please enter a valid email" },
               ]}
               style={{ marginBottom: 24 }}
             >
-              <Input.Password
-                placeholder={
-                  isEditMode ? "Enter new account SID" : "Enter account SID"
-                }
+              <Input
+                placeholder={isEditMode ? "Enter new email" : "Enter email"}
               />
             </Form.Item>
 
             <Form.Item
-              name="auth_token"
-              label="Auth token"
+              name="twilio_api_key"
+              label="API key"
               rules={[
-                { required: true, message: "Auth token is required" },
-                {
-                  type: "string",
-                  min: 1,
-                  message: "Auth token cannot be empty",
-                },
+                { required: true, message: "API key is required" },
+                { type: "string", min: 1, message: "API key cannot be empty" },
               ]}
-              style={{ marginBottom: 24 }}
             >
               <Input.Password
-                placeholder={
-                  isEditMode ? "Enter new auth token" : "Enter auth token"
-                }
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="messaging_service_sid"
-              label="Messaging service SID"
-              rules={[{ validator: validateTwilioConfig }]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input.Password
-                placeholder={
-                  isEditMode
-                    ? "Enter new messaging service SID"
-                    : "Enter messaging service SID"
-                }
-                onChange={() => handleFieldChange()}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="phone"
-              label="Phone number"
-              rules={[{ validator: validateTwilioConfig }]}
-            >
-              <Input.Password
-                placeholder={
-                  isEditMode ? "Enter new phone number" : "Enter phone number"
-                }
-                onChange={() => handleFieldChange()}
+                placeholder={isEditMode ? "Enter new API key" : "Enter API key"}
               />
             </Form.Item>
 
@@ -435,7 +362,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                     onClick={() => setIsTestMessageModalOpen(true)}
                     data-testid="send-test-message-btn"
                   >
-                    Send test SMS
+                    Send test email
                   </Button>
                 )}
               </Box>
@@ -454,7 +381,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                   >
                     {(() => {
                       if (isVerifying) {
-                        return "Verifying configuration";
+                        return "Verifying";
                       }
                       if (verificationStatus.isVerified) {
                         return "Verified";
@@ -486,7 +413,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
 
       {/* Send test message modal */}
       <SendTestMessageModal
-        serviceType={messagingProviders.twilio_text}
+        serviceType={messagingProviders.twilio_email}
         isOpen={isTestMessageModalOpen}
         onClose={() => setIsTestMessageModalOpen(false)}
       />
@@ -494,4 +421,4 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
   );
 };
 
-export default TwilioSMSMessagingForm;
+export default TwilioEmailMessagingForm;
