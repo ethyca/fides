@@ -614,6 +614,9 @@ def run_privacy_request(
                 # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
                 # Request Tasks have been built.  The Privacy Request will be requeued from
                 # the appropriate checkpoint when all the Request Tasks have run.
+                logger.info(
+                    "Privacy Request exited awaiting sub task processing (Request Tasks)"
+                )
                 return
 
             except ValidationError as exc:
