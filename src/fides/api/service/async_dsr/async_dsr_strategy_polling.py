@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
-from requests import Response
 import pydash
+from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
