@@ -37,11 +37,16 @@ export type ConnectionConfigSecretsRequest = {
   };
 };
 
+export type GetSystemsQueryParams = {
+  data_steward?: string;
+  system_group?: string;
+};
+
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
       Page_BasicSystemResponseExtended_,
-      PaginationQueryParams & SearchQueryParams
+      PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
     >({
       query: (params) => ({
         method: "GET",

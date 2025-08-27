@@ -1,6 +1,11 @@
-import { AntButton as Button, AntFlex as Flex } from "fidesui";
+import {
+  AntButton as Button,
+  AntDefaultOptionType,
+  AntFlex as Flex,
+} from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc/CustomTypography";
 import { Form, Formik } from "formik";
+import { uniq } from "lodash";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
@@ -9,6 +14,7 @@ import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 import ColorSelect from "~/features/system/system-groups/components/ColorSelect";
+import DataUseSelectWithSuggestions from "~/features/system/system-groups/components/DataUseSelectWithSuggestions";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import {
   CustomTaxonomyColor,
@@ -18,7 +24,7 @@ import {
 } from "~/types/api";
 
 interface CreateSystemGroupFormProps {
-  selectedSystems?: string[];
+  selectedSystemKeys?: string[];
   onSubmit: (values: SystemGroupCreate) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -32,7 +38,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const CreateSystemGroupForm = ({
-  selectedSystems = [],
+  selectedSystemKeys = [],
   onSubmit,
   onCancel,
   isSubmitting = false,
@@ -61,6 +67,18 @@ const CreateSystemGroupForm = ({
     [dataUses],
   );
 
+  const suggestedDataUses: string[] = useMemo(() => {
+    const selectedSystems: SystemResponse[] =
+      allSystems?.filter((system) =>
+        selectedSystemKeys.includes(system.fides_key),
+      ) ?? [];
+    return uniq(
+      selectedSystems?.flatMap((system) =>
+        system.privacy_declarations.map((d) => d.data_use),
+      ),
+    );
+  }, [allSystems, selectedSystemKeys]);
+
   const userOptions = users.map((user) => ({
     label:
       `${user.first_name || ""} ${user.last_name || ""} (${user.email_address || user.username})`.trim(),
@@ -80,7 +98,7 @@ const CreateSystemGroupForm = ({
     name: "",
     description: "",
     label_color: CustomTaxonomyColor.TAXONOMY_WHITE,
-    systems: selectedSystems,
+    systems: selectedSystemKeys,
     data_uses: [],
     active: true,
   };
@@ -128,15 +146,11 @@ const CreateSystemGroupForm = ({
 
               <ColorSelect name="label_color" label="Color" />
 
-              <ControlledSelect
+              <DataUseSelectWithSuggestions
                 name="data_uses"
-                label="Data Uses"
-                mode="multiple"
-                placeholder="Select data uses"
                 options={dataUseOptions}
-                layout="stacked"
-                allowClear
                 loading={isLoadingDataUses}
+                suggestedDataUses={suggestedDataUses}
               />
 
               <ControlledSelect

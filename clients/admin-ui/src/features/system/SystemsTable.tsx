@@ -2,19 +2,20 @@
 import {
   AntButton,
   AntButton as Button,
+  AntColumnsType,
   AntDropdown,
   AntFlex,
   AntMessage as message,
   AntModal,
   AntTable as Table,
   Icons,
-  AntMenuProps,
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFlags } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
@@ -22,6 +23,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { convertToAntFilters } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useDeleteSystemMutation, useGetSystemsQuery } from "~/features/system";
 import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
@@ -32,17 +34,15 @@ import {
   useGetAllSystemGroupsQuery,
 } from "~/features/system/system-groups/system-groups.slice";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
+import { useGetAllUsersQuery } from "~/features/user-management";
 import { useMockBulkUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
   BasicSystemResponseExtended,
   PrivacyDeclaration,
   SystemGroup,
   SystemGroupCreate,
+  UserResponse,
 } from "~/types/api";
-
-interface NewTableProps {
-  loading?: boolean;
-}
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -52,13 +52,22 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const NewTable = ({ loading = false }: NewTableProps) => {
+const SystemsTable = () => {
   const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
+  const { data: allUsers } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    username: "",
+  });
   const [createSystemGroup] = useCreateSystemGroupMutation();
   const [deleteSystem] = useDeleteSystemMutation();
   const [bulkUpdate] = useMockBulkUpdateSystemWithGroupsMutation();
 
   const [messageApi, messageContext] = message.useMessage();
+
+  const {
+    flags: { alphaSystemGroups: isAlphaSystemGroupsEnabled },
+  } = useFlags();
 
   const router = useRouter();
 
@@ -67,6 +76,12 @@ const NewTable = ({ loading = false }: NewTableProps) => {
 
   const [isGroupsExpanded, setIsGroupsExpanded] = useState(false);
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+
+  const [dataStewardFilter, setDataStewardFilter] = useState<string>();
+  const [systemGroupFilter, setSystemGroupFilter] = useState<string>();
+
+  console.log("dataStewardFilter", dataStewardFilter);
+  console.log("systemGroupFilter", systemGroupFilter);
 
   const [selectedSystemForDelete, setSelectedSystemForDelete] =
     useState<BasicSystemResponseExtended | null>(null);
@@ -79,6 +94,8 @@ const NewTable = ({ loading = false }: NewTableProps) => {
     page: pageIndex,
     size: pageSize,
     search: globalFilter,
+    data_steward: dataStewardFilter,
+    system_group: systemGroupFilter,
   });
 
   const { items: data } = useMemo(
@@ -156,7 +173,16 @@ const NewTable = ({ loading = false }: NewTableProps) => {
     setCreateModalIsOpen(false);
   };
 
-  const columns = useMemo(() => {
+  const handleFilterChange = (filters: Record<string, any>) => {
+    if (filters.data_steward) {
+      setDataStewardFilter(filters.data_steward[0]);
+    }
+    if (filters.system_groups) {
+      setSystemGroupFilter(filters.system_groups[0]);
+    }
+  };
+
+  const columns: AntColumnsType<BasicSystemResponseExtended> = useMemo(() => {
     return [
       {
         title: "Name",
@@ -169,6 +195,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
         ),
         width: 300,
         ellipsis: true,
+        fixed: "left",
       },
       {
         dataIndex: "system_groups",
@@ -194,6 +221,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
         ),
         width: 400,
         title: "Groups",
+        hidden: !isAlphaSystemGroupsEnabled,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -205,6 +233,11 @@ const NewTable = ({ loading = false }: NewTableProps) => {
             }
           },
         },
+        filters: convertToAntFilters(
+          allSystemGroups?.map((group) => group.fides_key),
+          (groupKey) => systemGroupMap[groupKey]?.name ?? groupKey,
+        ),
+        filterMultiple: false,
       },
       {
         title: "Data uses",
@@ -238,6 +271,11 @@ const NewTable = ({ loading = false }: NewTableProps) => {
         key: "data_steward",
         render: (dataSteward: string | null) => dataSteward,
         width: 200,
+        filters: convertToAntFilters(
+          allUsers?.items?.map((user: UserResponse) => user.username) ?? [],
+          (username) => username,
+        ),
+        filterMultiple: false,
       },
       {
         title: "Description",
@@ -285,6 +323,7 @@ const NewTable = ({ loading = false }: NewTableProps) => {
           </AntFlex>
         ),
         width: 10,
+        fixed: "right",
       },
     ];
   }, [
@@ -315,76 +354,86 @@ const NewTable = ({ loading = false }: NewTableProps) => {
       <AntFlex justify="space-between" className="mb-4">
         <DebouncedSearchInput value={globalFilter} onChange={setGlobalFilter} />
         <AntFlex gap="small">
-          <AntDropdown
-            trigger={["click"]}
-            menu={{
-              items: [
-                {
-                  key: "new-group",
-                  label: "Create new group +",
-                  onClick: () => setCreateModalIsOpen(true),
-                },
-                {
-                  type: "divider",
-                },
-                ...groupMenuItems,
-              ],
-            }}
-          >
-            <AntButton
-              disabled={selectedRowKeys.length === 0}
-              icon={<Icons.ChevronDown />}
-            >
-              Add to group
-            </AntButton>
-          </AntDropdown>
+          {isAlphaSystemGroupsEnabled && (
+            <>
+              <AntDropdown
+                trigger={["click"]}
+                menu={{
+                  items: [
+                    {
+                      key: "new-group",
+                      label: "Create new group +",
+                      onClick: () => setCreateModalIsOpen(true),
+                    },
+                    {
+                      type: "divider",
+                    },
+                    ...groupMenuItems,
+                  ],
+                }}
+              >
+                <AntButton
+                  disabled={selectedRowKeys.length === 0}
+                  icon={<Icons.ChevronDown />}
+                >
+                  Add to group
+                </AntButton>
+              </AntDropdown>
+              <AntModal
+                open={createModalIsOpen}
+                destroyOnHidden
+                onCancel={() => setCreateModalIsOpen(false)}
+                centered
+                width={768}
+                footer={null}
+              >
+                <CreateSystemGroupForm
+                  selectedSystemKeys={selectedRowKeys.map((key) =>
+                    key.toString(),
+                  )}
+                  onSubmit={handleCreateSystemGroup}
+                  onCancel={() => setCreateModalIsOpen(false)}
+                />
+              </AntModal>
+            </>
+          )}
           <SystemActionsMenu selectedRowKeys={selectedRowKeys} />
+          <AntModal
+            open={deleteModalIsOpen}
+            onCancel={() => setDeleteModalIsOpen(false)}
+            onOk={() => handleDelete(selectedSystemForDelete!)}
+            okText="Delete"
+            okType="danger"
+            cancelText="Cancel"
+            centered
+          >
+            <CustomTypography.Paragraph>
+              Are you sure you want to delete{" "}
+              {selectedSystemForDelete?.name ??
+                selectedSystemForDelete?.fides_key}
+              ? This action cannot be undone.
+            </CustomTypography.Paragraph>
+          </AntModal>
         </AntFlex>
       </AntFlex>
-      <AntModal
-        open={createModalIsOpen}
-        destroyOnHidden
-        onCancel={() => setCreateModalIsOpen(false)}
-        centered
-        width={768}
-        footer={null}
-      >
-        <CreateSystemGroupForm
-          selectedSystems={selectedRowKeys.map((key) => key.toString())}
-          onSubmit={handleCreateSystemGroup}
-          onCancel={() => setCreateModalIsOpen(false)}
-        />
-      </AntModal>
-      <AntModal
-        open={deleteModalIsOpen}
-        onCancel={() => setDeleteModalIsOpen(false)}
-        onOk={() => handleDelete(selectedSystemForDelete!)}
-        okText="Delete"
-        okType="danger"
-        cancelText="Cancel"
-        centered
-      >
-        <CustomTypography.Paragraph>
-          Are you sure you want to delete{" "}
-          {selectedSystemForDelete?.name ?? selectedSystemForDelete?.fides_key}?
-          This action cannot be undone.
-        </CustomTypography.Paragraph>
-      </AntModal>
       <Table
         dataSource={data}
         columns={columns}
-        loading={loading}
+        loading={isLoading}
         rowKey="fides_key"
         size="small"
         rowSelection={rowSelection}
         tableLayout="fixed"
         pagination={{
-          pageSize: 25,
-          total: data.length,
+          pageSize: pageSize,
+          total: systemsResponse?.total ?? 0,
+        }}
+        onChange={(_, filters) => {
+          handleFilterChange(filters);
         }}
       />
     </>
   );
 };
 
-export default NewTable;
+export default SystemsTable;
