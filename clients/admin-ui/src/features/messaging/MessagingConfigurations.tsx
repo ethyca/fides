@@ -36,13 +36,13 @@ import { useHasPermission } from "../common/Restrict";
 import { TableSkeletonLoader } from "../common/table/v2";
 import AwsIcon from "./icons/AwsIcon";
 import MailgunIcon from "./icons/MailgunIcon";
+import TwilioIcon from "./icons/TwilioIcon";
 import {
   useDeleteMessagingConfigurationByKeyMutation,
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
 } from "./messaging.slice";
 import MessagingVerificationStatusCell from "./MessagingTestStatusCell";
-import TwilioIcon from "./icons/TwilioIcon";
 
 const EmptyTableNotice = () => {
   return (

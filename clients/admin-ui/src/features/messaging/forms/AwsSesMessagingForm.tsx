@@ -312,7 +312,6 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
         }
       }
     } catch (error) {
-      console.error("Error in handleAwsSesConfiguration:", error);
       handleError(error);
     }
   };
@@ -323,12 +322,10 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
-          console.log("Refetching config after verification...");
           refetchConfig();
         }, 500);
       }
     } catch (error) {
-      console.error("Error Verifying:", error);
       handleError(error);
     }
   };

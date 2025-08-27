@@ -2,8 +2,10 @@ export interface ConfigMessagingDetailsRequest {
   service_type: string;
   details?: {
     is_eu_domain?: string;
-    domain?: string;
+    domain?: string | null;
     twilio_email_from?: string;
+    email_from?: string | null;
+    aws_region?: string;
   };
   secrets?: {
     mailgun_api_key?: string;
@@ -12,6 +14,11 @@ export interface ConfigMessagingDetailsRequest {
     twilio_messaging_service_sid?: string;
     twilio_sender_phone_number?: string;
     api_key?: string;
+    twilio_api_key?: string;
+    auth_method?: string;
+    aws_access_key_id?: string;
+    aws_secret_access_key?: string;
+    assume_role_arn?: string | null;
   };
 }
 

@@ -251,7 +251,6 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
         }
       }
     } catch (error) {
-      console.error("Error in handleMailgunConfiguration:", error);
       handleError(error);
     }
   };
@@ -262,12 +261,10 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
-          console.log("Refetching config after verification...");
           refetchConfig();
         }, 500);
       }
     } catch (error) {
-      console.error("Error Verifying:", error);
       handleError(error);
     }
   };

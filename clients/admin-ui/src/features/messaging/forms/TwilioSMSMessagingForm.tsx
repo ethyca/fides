@@ -275,7 +275,6 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         }
       }
     } catch (error) {
-      console.error("Error in handleTwilioSMSConfiguration:", error);
       message.error("An unexpected error occurred. Please try again.");
     }
   };
@@ -286,12 +285,10 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
-          console.log("Refetching config after verification...");
           refetchConfig();
         }, 500);
       }
     } catch (error) {
-      console.error("Error Verifying:", error);
       message.error("An unexpected error occurred during verification.");
     }
   };

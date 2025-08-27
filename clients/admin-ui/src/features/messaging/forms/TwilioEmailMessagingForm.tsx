@@ -254,7 +254,6 @@ const TwilioEmailMessagingForm = ({
         }
       }
     } catch (error) {
-      console.error("Error in handleTwilioEmailConfiguration:", error);
       handleError(error);
     }
   };
@@ -267,12 +266,10 @@ const TwilioEmailMessagingForm = ({
       if (success && refetchConfig) {
         // Add a small delay to allow backend to update the record
         setTimeout(() => {
-          console.log("Refetching config after verification...");
           refetchConfig();
         }, 500);
       }
     } catch (error) {
-      console.error("Error Verifying:", error);
       handleError(error);
     }
   };
