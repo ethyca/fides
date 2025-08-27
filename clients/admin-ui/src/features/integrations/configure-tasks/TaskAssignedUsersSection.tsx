@@ -15,6 +15,7 @@ import {
   useGetManualTaskConfigQuery,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
+import { UserResponse } from "~/types/api";
 
 type Props = {
   connectionKey: string;
@@ -53,9 +54,10 @@ const TaskAssignedUsersSection = ({
     const users = usersData?.items ?? [];
     return users
       .filter(
-        (u: any) => u.email_address && !selectedUsers.includes(u.email_address),
+        (u: UserResponse) =>
+          u.email_address && !selectedUsers.includes(u.email_address),
       )
-      .map((u: any) => ({
+      .map((u: UserResponse) => ({
         label: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim()
           ? `${u.first_name ?? ""} ${u.last_name ?? ""} (${u.email_address})`
           : `${u.email_address}`,
