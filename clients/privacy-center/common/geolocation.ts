@@ -43,8 +43,10 @@ export const lookupGeolocation = async (
   const log = createRequestLogger(req);
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
+
   if (typeof geolocationQuery === "string") {
     log.debug(`Geolocation found in query: ${geolocationQuery}`);
+
     if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
       throw new Error(
         `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`,
@@ -52,6 +54,7 @@ export const lookupGeolocation = async (
     }
 
     const [country, region] = geolocationQuery.split("-");
+
     return {
       location: geolocationQuery,
       country,
@@ -61,6 +64,7 @@ export const lookupGeolocation = async (
 
   // Check for CloudFront viewer location headers
   const countryHeader = req.headers[CLOUDFRONT_HEADER_COUNTRY];
+
   if (typeof countryHeader === "string") {
     log.debug(`Country found in header: ${countryHeader}`);
     let geolocation;

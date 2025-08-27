@@ -94,12 +94,12 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         // If not a brand color, pass through to Ant Tag
         color: brandColor ? undefined : color,
         style: {
-          ...style,
           ...customStyle,
           marginInlineEnd: 0, // allow for flex gap instead of margin
           paddingInline: shouldReducePadding
             ? "calc((var(--ant-padding-xs) * 0.5))"
             : undefined,
+          ...style,
         },
         className: `${styles.tag} ${className ?? ""}`.trim(),
         bordered: retainDefaultBorder ? true : undefined,

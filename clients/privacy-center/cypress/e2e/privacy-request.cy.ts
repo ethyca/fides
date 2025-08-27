@@ -267,6 +267,9 @@ describe("Privacy Request with multiselect custom fields", () => {
       // Fill required email
       cy.get("#email").type("test@test.com");
 
+      // Fill required location
+      cy.get("#location").type("us-ny{enter}");
+
       // Select preferred format by typing
       cy.get('[data-testid="select-preferred_format"]').click();
       cy.get('[data-testid="select-preferred_format"]').type("HTML{enter}");

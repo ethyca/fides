@@ -7,8 +7,9 @@ export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
+export type { LocationSelectProps } from "./components/select/LocationSelect";
+export { LocationSelect } from "./components/select/LocationSelect";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
-export type { ColumnsType as AntColumnsType } from "antd/es/table";
 export type {
   FilterValue as AntFilterValue,
   SorterResult as AntSorterResult,
@@ -17,9 +18,11 @@ export type {
 export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
+  DatePickerProps as AntDatePickerProps,
   DropdownProps as AntDropdownProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
+  FormItemProps as AntFormItemProps,
   InputProps as AntInputProps,
   ListProps as AntListProps,
   MenuProps as AntMenuProps,
@@ -42,6 +45,7 @@ export {
   Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
+  Cascader as AntCascader,
   Checkbox as AntCheckbox,
   Col as AntCol,
   Collapse as AntCollapse,
@@ -51,6 +55,7 @@ export {
   Empty as AntEmpty,
   Flex as AntFlex,
   Form as AntForm,
+  Image as AntImage,
   Input as AntInput,
   InputNumber as AntInputNumber,
   Layout as AntLayout,
@@ -58,6 +63,8 @@ export {
   Menu as AntMenu,
   message as AntMessage,
   Modal as AntModal,
+  Pagination as AntPagination,
+  Popover as AntPopover,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
@@ -78,21 +85,22 @@ export type {
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
-
 // Higher-order components
+export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
   CustomDateRangePicker as AntDateRangePicker,
-  CustomPagination as AntPagination,
   CustomSelect as AntSelect,
   CustomTable as AntTable,
   CustomTag as AntTag,
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 
-// Constants
-export { PAGE_SIZES } from "./hoc/CustomPagination";
+// Export utils
+export * from "./components/data-display/location.utils";
+export { isoCodesToOptions } from "./components/select/LocationSelect";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
@@ -107,7 +115,7 @@ export const AntLink = CustomTypography.Link;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, QuestionIcon, WarningIcon } from "./icons";
+export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 /* eslint-enable import/export */
 

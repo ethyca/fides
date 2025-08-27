@@ -16,6 +16,7 @@ from fides.api.graph.config import (
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.saas.display_info import SaaSDisplayInfo
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
@@ -413,6 +414,7 @@ class SaaSConfig(SaaSConfigBase):
     rate_limit_config: Optional[RateLimitConfig] = None
     consent_requests: Optional[ConsentRequestMap] = None
     user_guide: Optional[str] = None
+    display_info: Optional[SaaSDisplayInfo] = None
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

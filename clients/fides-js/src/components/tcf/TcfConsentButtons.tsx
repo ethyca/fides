@@ -7,6 +7,7 @@ import {
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
+import { TcfLoadingErrorMessage } from "./TcfLoadingErrorMessage";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
@@ -32,6 +33,16 @@ export const TcfConsentButtons = ({
   }
 
   const isGVLLoading = Object.keys(experience.gvl || {}).length === 0;
+
+  if (!experience.minimal_tcf && isGVLLoading) {
+    fidesDebugger("GVL data is not loaded for full TCF experience.");
+    return (
+      <TcfLoadingErrorMessage
+        generalLabel="supporting GVL data"
+        excludeAcceptReject
+      />
+    );
+  }
 
   return (
     <ConsentButtons

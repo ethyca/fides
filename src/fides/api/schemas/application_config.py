@@ -87,6 +87,12 @@ class AdminUIConfig(FidesSchema):
     model_config = ConfigDict(extra="forbid")
 
 
+class PrivacyCenterConfig(FidesSchema):
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class ConsentConfig(FidesSchema):
     override_vendor_purposes: Optional[bool]
     model_config = ConfigDict(extra="forbid")
@@ -119,6 +125,7 @@ class ApplicationConfig(FidesSchema):
     security: Optional[SecurityApplicationConfig] = None
     consent: Optional[ConsentConfig] = None
     admin_ui: Optional[AdminUIConfig] = None
+    privacy_center: Optional[PrivacyCenterConfig] = None
 
     @model_validator(mode="before")
     @classmethod
