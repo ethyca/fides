@@ -854,7 +854,9 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @pytest.mark.usefixtures(
-        "messaging_config", "privacy_request_receipt_notification_enabled"
+        "messaging_config",
+        "privacy_request_receipt_notification_enabled",
+        "set_notification_service_type_to_mailgun",
     )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -4000,6 +4002,7 @@ class TestApprovePrivacyRequest:
 
         privacy_request.delete(db)
 
+    @pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
