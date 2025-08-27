@@ -71,7 +71,7 @@ const ConsentRequestForm = ({
       {isVerificationRequired ? (
         <Text>We will send you a verification code.</Text>
       ) : null}
-      {emailInput ? (
+      {!!emailInput && (
         <Form.Item
           validateStatus={
             touched.email && Boolean(errors.email) ? "error" : undefined
@@ -90,14 +90,14 @@ const ConsentRequestForm = ({
             value={values.email}
           />
         </Form.Item>
-      ) : null}
-      {phoneInput === "required" ? (
+      )}
+      {!!phoneInput && (
         <Form.Item
           validateStatus={
             touched.phone && Boolean(errors.phone) ? "error" : undefined
           }
           help={touched.phone && errors.phone}
-          required
+          required={phoneInput === "required"}
           label="Phone"
         >
           <PhoneInput
@@ -110,7 +110,7 @@ const ConsentRequestForm = ({
             value={values.phone}
           />
         </Form.Item>
-      ) : null}
+      )}
       {Object.entries(customPrivacyRequestFields).map(([key, item]) => {
         const customFieldProps = (
           value: string | string[],

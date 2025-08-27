@@ -73,6 +73,9 @@ MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
+# Privacy Center URLs
+PRIVACY_CENTER_DSR_PACKAGE = "/privacy-request/{privacy_request_id}/access-package"
+
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"

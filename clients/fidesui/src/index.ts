@@ -7,6 +7,7 @@ export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
+export type { LocationSelectProps } from "./components/select/LocationSelect";
 export { LocationSelect } from "./components/select/LocationSelect";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
@@ -17,9 +18,11 @@ export type {
 export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
+  DatePickerProps as AntDatePickerProps,
   DropdownProps as AntDropdownProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
+  FormItemProps as AntFormItemProps,
   InputProps as AntInputProps,
   ListProps as AntListProps,
   MenuProps as AntMenuProps,
@@ -61,6 +64,7 @@ export {
   message as AntMessage,
   Modal as AntModal,
   Pagination as AntPagination,
+  Popover as AntPopover,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
@@ -82,6 +86,7 @@ export type {
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
 // Higher-order components
+export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
   CustomDateRangePicker as AntDateRangePicker,
   CustomSelect as AntSelect,
@@ -110,7 +115,7 @@ export const AntLink = CustomTypography.Link;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, QuestionIcon, WarningIcon } from "./icons";
+export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 /* eslint-enable import/export */
 
