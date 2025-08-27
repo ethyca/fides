@@ -21,7 +21,7 @@ const DataCategorySelect = ({
     : getActiveDataCategories();
 
   const options: TaxonomySelectOption[] = dataCategories
-    .filter((category) => !selectedTaxonomies.includes(category.fides_key))
+    .filter((category) => !selectedTaxonomies?.includes(category.fides_key))
     .map((category) => {
       const { name, primaryName } = getDataCategoryDisplayNameProps(
         category.fides_key,

@@ -599,14 +599,35 @@ describe("applyOverridesToConsent", () => {
 
     const result = applyOverridesToConsent(consent, [], privacyNotices);
 
-    // Boolean values should be converted to consent mechanism strings because of window.Fides options
+    // Boolean values should be converted to consent mechanism strings
     expect(result).toEqual({
       analytics: UserConsentPreference.OPT_IN,
       marketing: UserConsentPreference.OPT_OUT,
     });
   });
 
-  it("should handle string consent values already formatted as consent mechanism strings", () => {
+  it("should treat previously non-applicable notices as not opted in when they become applicable", () => {
+    const consent = { analytics: true, marketing: false, previously_na: true };
+    const nonApplicableNotices = ["still_na"];
+    const cookieNonApplicableNoticeKeys = ["previously_na", "still_na"];
+
+    const result = applyOverridesToConsent(
+      consent,
+      nonApplicableNotices,
+      [],
+      undefined,
+      undefined,
+      cookieNonApplicableNoticeKeys,
+    );
+    expect(result).toEqual({
+      analytics: true,
+      marketing: false,
+    });
+    expect(result.previously_na).toBeUndefined();
+    expect(result.still_na).toBeUndefined();
+  });
+
+  it("should handle string consent values already formatted as consent mechanism strings (1 ms)", () => {
     const consent = {
       analytics: UserConsentPreference.OPT_IN,
       marketing: UserConsentPreference.OPT_OUT,

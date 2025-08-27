@@ -250,6 +250,10 @@ def logout_oauth_client(
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
+    # Validate that the token looks like a valid JWE token (5 segments separated by dots)
+    if not authorization or authorization.count(".") != 4:
+        return None
+
     try:
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)

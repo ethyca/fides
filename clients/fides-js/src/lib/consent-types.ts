@@ -318,6 +318,7 @@ export interface FidesCookie {
   fides_string?: string;
   tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];
+  non_applicable_notice_keys?: string[];
 }
 
 export type GetPreferencesFnResp = {

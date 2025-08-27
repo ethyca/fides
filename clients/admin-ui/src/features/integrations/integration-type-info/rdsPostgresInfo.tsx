@@ -6,9 +6,9 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const RDS_POSTGRES_PLACEHOLDER = {
   name: "Amazon RDS Postgres",
@@ -74,7 +74,7 @@ const RDS_POSTGRES_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <RDSPostgresOverview />,
   tags: RDS_POSTGRES_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default RDS_POSTGRES_TYPE_INFO;

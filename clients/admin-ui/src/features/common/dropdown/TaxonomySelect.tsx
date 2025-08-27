@@ -1,7 +1,8 @@
 import {
   AntFlex as Flex,
   AntSelect as Select,
-  AntSelectProps as SelectProps,
+  ICustomMultiSelectProps,
+  ICustomSelectProps,
 } from "fidesui";
 
 import styles from "./TaxonomySelect.module.scss";
@@ -35,16 +36,20 @@ export const TaxonomyOption = ({
   );
 };
 
-export interface TaxonomySelectProps
-  extends Omit<SelectProps<string, TaxonomySelectOption>, "options"> {
-  selectedTaxonomies: string[];
-  showDisabled?: boolean;
-}
+interface ITaxonomySelectProps
+  extends ICustomSelectProps<string, TaxonomySelectOption> {}
+interface ITaxonomyMultiSelectProps
+  extends ICustomMultiSelectProps<string, TaxonomySelectOption> {}
 
-export const TaxonomySelect = ({
-  options,
-  ...props
-}: SelectProps<string, TaxonomySelectOption>) => {
+export type TaxonomySelectProps = (
+  | ITaxonomySelectProps
+  | ITaxonomyMultiSelectProps
+) & {
+  showDisabled?: boolean;
+  selectedTaxonomies?: string[];
+};
+
+export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
   const selectOptions = options?.map((opt) => ({
     ...opt,
     className: styles.option,
@@ -69,7 +74,7 @@ export const TaxonomySelect = ({
       autoFocus
       variant="borderless"
       optionRender={TaxonomyOption}
-      dropdownStyle={{ minWidth: "500px" }}
+      styles={{ popup: { root: { minWidth: "500px" } } }}
       className="w-full p-0"
       data-testid="taxonomy-select"
       {...props}

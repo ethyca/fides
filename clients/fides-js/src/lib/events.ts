@@ -116,6 +116,9 @@ export const dispatchFidesEvent = (
         cookie.consent,
         window.Fides?.experience?.non_applicable_privacy_notices,
         window.Fides?.experience?.privacy_notices,
+        undefined,
+        undefined,
+        cookie.non_applicable_notice_keys,
       );
     }
     const event = new CustomEvent(type, {

@@ -2,8 +2,12 @@ import { DefaultOptionType } from "antd/es/select";
 import { AntSelect as Select } from "fidesui";
 import type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 import { iso31661, iso31662 } from "iso-3166";
-import { ComponentProps, useMemo } from "react";
+import { useMemo } from "react";
 
+import {
+  ICustomMultiSelectProps,
+  ICustomSelectProps,
+} from "../../hoc/CustomSelect";
 import {
   formatIsoLocation,
   isoCodeToFlag,
@@ -44,11 +48,12 @@ type LocationOptions = {
 };
 
 interface IsoOption extends DefaultOptionType {
+  value?: string | null;
+  label?: string | null;
+  title?: string;
   country: string;
   subdivision?: string;
   flag: string;
-  value?: string | null;
-  label?: string | null;
 }
 
 const mapIsoObjects = (
@@ -68,19 +73,43 @@ const mapIsoObjects = (
   return mapped.flat();
 };
 
-type LocationSelectProps = Omit<
-  ComponentProps<typeof Select<string, IsoOption>>,
-  "options"
-> & {
+interface ILocationSelectProps
+  extends Omit<ICustomSelectProps<string>, "options"> {}
+interface ILocationMultiSelectProps
+  extends Omit<ICustomMultiSelectProps<string>, "options"> {}
+
+export type LocationSelectProps = (
+  | ILocationSelectProps
+  | ILocationMultiSelectProps
+) & {
   options?: LocationOptions;
 };
 
-export const LocationSelect = ({
-  options = { countries: iso31661, regions: iso31662 },
-  ...props
-}: LocationSelectProps) => {
-  const countries = options.countries ?? iso31661;
-  const regions = options.regions ?? [];
+export const LocationSelect = (props: LocationSelectProps) => {
+  const {
+    mode,
+    options: { countries, regions } = {
+      countries: iso31661,
+      regions: iso31662,
+    },
+  } = props;
+
+  const defaultProps = {
+    "data-testid": "iso_select",
+    id: "iso_select",
+    allowClear: true,
+    showSearch: true,
+    optionFilterProp: "label",
+    filterSort: (left: IsoOption, right: IsoOption) =>
+      (left?.label ?? "")
+        .toLowerCase()
+        .localeCompare((right?.label ?? "").toLowerCase()),
+
+    filterOption: (input: string, option?: IsoOption) =>
+      option?.value?.toLowerCase().includes(input.toLowerCase()) ||
+      option?.label?.toLowerCase().includes(input.toLowerCase()) ||
+      false,
+  };
 
   const userTranslation = new Intl.DisplayNames(navigator.language, {
     type: "region",
@@ -108,25 +137,11 @@ export const LocationSelect = ({
   );
 
   return (
-    <Select
-      data-testid="iso_select"
-      id="iso_select"
-      allowClear
-      options={isoSelectOptions}
-      showSearch
-      optionFilterProp="label"
-      placeholder={!props.mode ? "🌐 Select location" : "🌐 Select locations"}
-      filterOption={(input, option) =>
-        option?.value?.toLowerCase().includes(input.toLowerCase()) ||
-        option?.label?.toLowerCase().includes(input.toLowerCase()) ||
-        false
-      }
-      filterSort={(left, right) =>
-        (left?.label ?? "")
-          .toLowerCase()
-          .localeCompare((right?.label ?? "").toLowerCase())
-      }
+    <Select<string, IsoOption>
+      placeholder={mode ? "🌐 Select locations" : "🌐 Select location"}
+      {...defaultProps}
       {...props}
+      options={isoSelectOptions}
       /**
        * @description this must be set to true to prevent performance issues
        */
