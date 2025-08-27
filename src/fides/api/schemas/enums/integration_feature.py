@@ -21,3 +21,6 @@ class IntegrationFeature(str, Enum):
 
     # Enables Data Subject Request automation for SAAS integrations
     DSR_AUTOMATION = "DSR_AUTOMATION"
+
+    # Enables conditions configuration for manual task creation - shows "Conditions" tab
+    CONDITIONS = "CONDITIONS"
