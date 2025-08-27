@@ -153,7 +153,11 @@ const AddConditionForm = ({
         }}
         rules={[{ required: true, message: "Operator is required" }]}
       >
-        <Select placeholder="Select operator" options={operatorOptions} />
+        <Select
+          placeholder="Select operator"
+          options={operatorOptions}
+          data-testid="operator-select"
+        />
       </Form.Item>
 
       <Form.Item
@@ -178,15 +182,25 @@ const AddConditionForm = ({
               : "Enter value (text, number, or true/false)"
           }
           disabled={isValueDisabled}
+          data-testid="value-input"
         />
       </Form.Item>
 
       <Form.Item>
         <Flex gap={2} justify="flex-end">
-          <Button onClick={handleCancel} disabled={isSubmitting}>
+          <Button
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            data-testid="cancel-btn"
+          >
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isSubmitting}
+            data-testid="save-btn"
+          >
             {isEditing ? "Update" : "Add"}
           </Button>
         </Flex>

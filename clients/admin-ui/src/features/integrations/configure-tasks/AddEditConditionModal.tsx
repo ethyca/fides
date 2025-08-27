@@ -51,7 +51,13 @@ const AddEditConditionModal = ({
   };
 
   return (
-    <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
+    <Modal
+      isCentered
+      isOpen={isOpen}
+      size="lg"
+      onClose={onClose}
+      data-testid="add-edit-condition-modal"
+    >
       <ModalOverlay />
       <ModalContent minWidth="650px">
         <ModalHeader>

@@ -219,6 +219,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
 
       <List
         dataSource={conditions}
+        data-testid="conditions-list"
         locale={{
           emptyText: (
             <div className="py-8 text-center">
@@ -295,6 +296,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         }}
         onConfirm={handleConfirmDelete}
         title="Delete condition"
+        data-testid="delete-condition-modal"
         message={
           <Text className="text-gray-500">
             Are you sure you want to delete the condition for &ldquo;
