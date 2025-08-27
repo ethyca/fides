@@ -7,7 +7,9 @@ import {
   Box,
   Divider,
   Flex,
+  formatIsoLocation,
   FormLabel,
+  isoStringToEntry,
   Stack,
   useToast,
   VStack,
@@ -80,9 +82,17 @@ const PrivacyNoticeLocationDisplay = ({
     </Flex>
     <Box w="100%" data-testid="notice-locations">
       <Space size={[0, 2]} wrap>
-        {regions?.map((r) => (
-          <Tag key={r}>{PRIVACY_NOTICE_REGION_RECORD[r]}</Tag>
-        ))}
+        {regions?.map((region) => {
+          const isoEntry = isoStringToEntry(region);
+
+          return (
+            <Tag key={region}>
+              {isoEntry
+                ? formatIsoLocation({ isoEntry, showFlag: true })
+                : PRIVACY_NOTICE_REGION_RECORD[region]}
+            </Tag>
+          );
+        })}
         {!regions?.length && (
           <Text italic>
             No locations assigned. Navigate to the{" "}

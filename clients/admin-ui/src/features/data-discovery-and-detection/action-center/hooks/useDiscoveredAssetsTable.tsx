@@ -18,11 +18,10 @@ import {
 } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
-  expandCollapseAllMenuItems,
   ListExpandableCell,
-  MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { convertToAntFilters } from "~/features/common/utils";
@@ -222,7 +221,9 @@ export const useDiscoveredAssetsTable = ({
             <SystemCell
               aggregateSystem={record}
               monitorConfigId={record.monitor_config_id}
-              readonly={actionsDisabled ?? false}
+              readonly={
+                actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
+              }
             />
           ),
       },
@@ -237,30 +238,28 @@ export const useDiscoveredAssetsTable = ({
         render: (_, record) => (
           <DiscoveredAssetDataUseCell
             asset={record}
-            readonly={actionsDisabled ?? false}
+            readonly={
+              actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
+            }
           />
         ),
       },
       {
-        title: () => (
-          <MenuHeaderCell
-            title="Locations"
-            menu={{
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                if (e.key === "expand-all") {
-                  setIsLocationsExpanded(true);
-                } else if (e.key === "collapse-all") {
-                  setIsLocationsExpanded(false);
-                }
-              },
-            }}
-          />
-        ),
+        title: "Locations",
         dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
         key: DiscoveredAssetsColumnKeys.LOCATIONS,
         width: 250,
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsLocationsExpanded(true);
+            } else if (e.key === "collapse-all") {
+              setIsLocationsExpanded(false);
+            }
+          },
+        },
         filters: convertToAntFilters(
           filterOptions?.locations,
           (location) =>
@@ -290,23 +289,19 @@ export const useDiscoveredAssetsTable = ({
         // Domain filtering will be handled via search instead of column filters
       },
       {
-        title: () => (
-          <MenuHeaderCell
-            title="Detected on"
-            menu={{
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                if (e.key === "expand-all") {
-                  setIsPagesExpanded(true);
-                } else if (e.key === "collapse-all") {
-                  setIsPagesExpanded(false);
-                }
-              },
-            }}
-          />
-        ),
+        title: "Detected on",
         dataIndex: DiscoveredAssetsColumnKeys.PAGE,
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsPagesExpanded(true);
+            } else if (e.key === "collapse-all") {
+              setIsPagesExpanded(false);
+            }
+          },
+        },
         key: DiscoveredAssetsColumnKeys.PAGE,
         render: (pages: string[]) => (
           <ListExpandableCell
@@ -385,12 +380,13 @@ export const useDiscoveredAssetsTable = ({
 
     return baseColumns;
   }, [
-    filterOptions,
-    columnFilters,
     sortKey,
     sortOrder,
+    filterOptions,
+    columnFilters,
     assetConsentStatusLabels,
     actionsDisabled,
+    activeTab,
     isLocationsExpanded,
     isPagesExpanded,
     firstItemConsentStatus,

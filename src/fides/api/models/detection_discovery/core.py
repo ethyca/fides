@@ -432,11 +432,17 @@ class StagedResourceAncestor(Base):
 
                     # Execute batch when it reaches the desired size
                     if len(current_batch) >= batch_size:
+                        logger.debug(
+                            f"Inserting batch of {len(current_batch)} staged resource ancestor links"
+                        )
                         db.execute(stmt_text, current_batch)
                         current_batch = []
 
         # Execute any remaining items in the final batch
         if current_batch:
+            logger.debug(
+                f"Inserting batch of {len(current_batch)} staged resource ancestor links"
+            )
             db.execute(stmt_text, current_batch)
 
 

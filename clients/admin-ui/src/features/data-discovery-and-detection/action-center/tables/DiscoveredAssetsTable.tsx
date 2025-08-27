@@ -133,9 +133,9 @@ export const DiscoveredAssetsTable = ({
           label: tab.label,
         }))}
         selectedKeys={[activeTab]}
-        onClick={(menuInfo) =>
-          handleTabChange(menuInfo.key as ActionCenterTabHash)
-        }
+        onClick={async (menuInfo) => {
+          await handleTabChange(menuInfo.key as ActionCenterTabHash);
+        }}
         className="mb-4"
         data-testid="asset-state-filter"
       />
@@ -155,21 +155,6 @@ export const DiscoveredAssetsTable = ({
               overlayClassName="bulk-actions-menu-dropdown"
               menu={{
                 items: [
-                  {
-                    key: "add",
-                    label: "Add",
-                    onClick: handleBulkAdd,
-                  },
-                  {
-                    key: "add-data-use",
-                    label: "Add consent category",
-                    onClick: () => setIsAddDataUseModalOpen(true),
-                  },
-                  {
-                    key: "assign-system",
-                    label: "Assign system",
-                    onClick: () => setIsAssignSystemModalOpen(true),
-                  },
                   ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
                     ? [
                         {
@@ -179,6 +164,21 @@ export const DiscoveredAssetsTable = ({
                         },
                       ]
                     : [
+                        {
+                          key: "add",
+                          label: "Add",
+                          onClick: handleBulkAdd,
+                        },
+                        {
+                          key: "add-data-use",
+                          label: "Add consent category",
+                          onClick: () => setIsAddDataUseModalOpen(true),
+                        },
+                        {
+                          key: "assign-system",
+                          label: "Assign system",
+                          onClick: () => setIsAssignSystemModalOpen(true),
+                        },
                         {
                           type: "divider" as const,
                         },
