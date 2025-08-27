@@ -265,8 +265,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
-        #awaiting_async_callback: bool = False
-        db = Session.object_session(privacy_request)
+        awaiting_async_callback: bool = False
 
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
@@ -345,7 +344,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Saving the request task access data to use it on the polling status request
                 # TODO: Consider if we want to clean up the rows. Currently this is the concern of the GraphTask.
                 request_task.access_data = rows
-                request_task.save(db)
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
             raise AwaitingAsyncTask()
 
