@@ -7,7 +7,7 @@ import {
 } from "fidesui";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { COLLAPSE_BUTTON_TEXT } from "./constants";
+import { COLLAPSE_BUTTON_TEXT, TAG_MAX_WIDTH } from "./constants";
 import { ColumnState } from "./types";
 
 type TagExpandableCellValues = { label: string | ReactNode; key: string }[];
@@ -98,7 +98,7 @@ export const TagExpandableCell = ({
           >
             <Text
               ellipsis={isCollapsed ? { tooltip: true } : false}
-              style={isCollapsed ? { maxWidth: "150px" } : {}}
+              style={isCollapsed ? { maxWidth: TAG_MAX_WIDTH } : {}}
             >
               {value.label}
             </Text>
