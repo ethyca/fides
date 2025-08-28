@@ -38,6 +38,7 @@ class StorageDetails(Enum):
     MAX_RETRIES = "max_retries"
     AUTH_METHOD = "auth_method"
     ENABLE_STREAMING = "enable_streaming"
+    ENABLE_ACCESS_PACKAGE_REDIRECT = "enable_access_package_redirect"
     model_config = ConfigDict(extra="forbid")
 
 
@@ -60,6 +61,7 @@ class StorageDetailsS3(FileBasedStorageDetails):
     bucket: str
     max_retries: Optional[int] = 0
     enable_streaming: Optional[bool] = False
+    enable_access_package_redirect: Optional[bool] = False
     model_config = ConfigDict(use_enum_values=True)
 
 

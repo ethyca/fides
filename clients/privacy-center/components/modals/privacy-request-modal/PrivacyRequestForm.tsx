@@ -76,13 +76,13 @@ const PrivacyRequestForm = ({
           <Text size="sm">{paragraph}</Text>
         </Form.Item>
       ))}
-      {nameInput === "required" ? (
+      {!!nameInput && (
         <Form.Item
           validateStatus={
             touched.name && Boolean(errors.name) ? "error" : undefined
           }
           help={touched.name && errors.name}
-          required
+          required={nameInput === "required"}
           label="Name"
         >
           <Input
@@ -94,14 +94,14 @@ const PrivacyRequestForm = ({
             value={values.name}
           />
         </Form.Item>
-      ) : null}
-      {emailInput === "required" ? (
+      )}
+      {!!emailInput && (
         <Form.Item
           validateStatus={
             touched.email && Boolean(errors.email) ? "error" : undefined
           }
           help={touched.email && errors.email}
-          required
+          required={emailInput === "required"}
           label="Email"
         >
           <Input
@@ -114,14 +114,14 @@ const PrivacyRequestForm = ({
             value={values.email}
           />
         </Form.Item>
-      ) : null}
-      {phoneInput === "required" ? (
+      )}
+      {!!phoneInput && (
         <Form.Item
           validateStatus={
             touched.phone && Boolean(errors.phone) ? "error" : undefined
           }
           help={touched.phone && errors.phone}
-          required
+          required={phoneInput === "required"}
           label="Phone"
         >
           <PhoneInput
@@ -134,7 +134,7 @@ const PrivacyRequestForm = ({
             value={values.phone}
           />
         </Form.Item>
-      ) : null}
+      )}
       {Object.entries(customPrivacyRequestFields)
         .filter(([, field]) => !field?.hidden)
         .map(([key, item]) => {

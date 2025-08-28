@@ -415,6 +415,7 @@ export const initialize = async ({
     fides.experience?.privacy_notices,
     options.fidesConsentFlagType ?? undefined,
     options.fidesConsentNonApplicableFlagMode ?? undefined,
+    fides.cookie.non_applicable_notice_keys,
   );
 
   const hasPrivacyNotices =

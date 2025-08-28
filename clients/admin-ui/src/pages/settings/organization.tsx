@@ -17,10 +17,7 @@ const OrganizationPage: NextPage = () => {
   const { data: organization } = useGetOrganizationByFidesKeyQuery(
     DEFAULT_ORGANIZATION_FIDES_KEY,
   );
-  const {
-    plus: hasPlus,
-    flags: { ssoAuthentication },
-  } = useFeatures();
+  const { plus: hasPlus } = useFeatures();
 
   return (
     <Layout title="Organization">
@@ -35,7 +32,7 @@ const OrganizationPage: NextPage = () => {
           <Box background="gray.50" padding={2}>
             <OrganizationForm organization={organization} />
           </Box>
-          {ssoAuthentication && hasPlus && (
+          {hasPlus && (
             <Restrict scopes={[ScopeRegistryEnum.OPENID_PROVIDER_CREATE]}>
               <OpenIDAuthenticationSection />
             </Restrict>
