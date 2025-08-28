@@ -168,16 +168,13 @@ def test_bigquery_example_data(bigquery_test_engine):
     """Confirm that we can connect to the bigquery test db and get table names"""
     inspector = inspect(bigquery_test_engine)
 
-    # Get the dataset name from environment or config
-    dataset_name = integration_config.get("bigquery", {}).get(
-        "dataset"
-    ) or os.environ.get("BIGQUERY_DATASET", "fidesopstest")
-
     # we may have added more tables to the test db, so we just check that
     # _at least_ the expected tables below are present
-    expected_tables = {
+    assert {
         "address",
         "customer",
+        "customer_account",
+        "customer_addresses",
         "customer_profile",
         "employee",
         "login",
@@ -185,18 +182,15 @@ def test_bigquery_example_data(bigquery_test_engine):
         "orders",
         "payment_card",
         "product",
+        "product_interactions",
         "report",
         "service_request",
+        "user_events",
+        "user_preferences",
+        "user_security_settings",
         "visit",
         "visit_partitioned",
-    }
-
-    # Check that all expected tables are present in the specified schema
-    actual_tables = set(inspector.get_table_names(schema=dataset_name))
-    missing_tables = expected_tables - actual_tables
-    assert (
-        not missing_tables
-    ), f"Missing expected tables in {dataset_name}: {missing_tables}"
+    }.issubset(set(inspector.get_table_names(schema="fidesopstest")))
 
 
 @pytest.mark.integration_external

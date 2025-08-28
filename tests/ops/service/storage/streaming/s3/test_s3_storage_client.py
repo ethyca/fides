@@ -42,62 +42,73 @@ class TestS3StorageClient:
     def test_get_transport_params_with_all_keys(self):
         """Test transport params with all S3 keys."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "client": {
+                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+                StorageSecrets.REGION_NAME: "us-west-2",
+            }
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["access_key"] == "test_key"
-        assert params["secret_key"] == "test_secret"
-        assert params["region"] == "us-west-2"
+        assert params["client"]["access_key"] == "test_key"
+        assert params["client"]["secret_key"] == "test_secret"
+        assert params["client"]["region"] == "us-west-2"
         # endpoint_url is no longer supported in the current implementation
 
     def test_get_transport_params_with_partial_keys(self):
         """Test transport params with partial S3 keys."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "client": {
+                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+                StorageSecrets.REGION_NAME: "us-west-2",
+            }
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["access_key"] == "test_key"
-        assert params["region"] == "us-west-2"
-        assert "secret_key" not in params
+        assert params["client"]["access_key"] == "test_key"
+        assert params["client"]["region"] == "us-west-2"
+        assert "secret_key" not in params["client"]
         # endpoint_url is no longer supported in the current implementation
 
     def test_get_transport_params_with_assume_role_arn(self):
         """Test transport params include assume_role_arn when present."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
-            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+            "client": {
+                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+                StorageSecrets.REGION_NAME: "us-west-2",
+                StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+            }
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["access_key"] == "test_key"
-        assert params["secret_key"] == "test_secret"
-        assert params["region"] == "us-west-2"
-        assert params["assume_role_arn"] == "arn:aws:iam::123456789012:role/TestRole"
+        assert params["client"]["access_key"] == "test_key"
+        assert params["client"]["secret_key"] == "test_secret"
+        assert params["client"]["region"] == "us-west-2"
+        assert (
+            params["client"]["assume_role_arn"]
+            == "arn:aws:iam::123456789012:role/TestRole"
+        )
 
     def test_get_transport_params_without_assume_role_arn(self):
         """Test transport params don't include assume_role_arn when not present."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "client": {
+                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+                StorageSecrets.REGION_NAME: "us-west-2",
+            }
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["access_key"] == "test_key"
-        assert params["secret_key"] == "test_secret"
-        assert params["region"] == "us-west-2"
-        assert "assume_role_arn" not in params
+        assert params["client"]["access_key"] == "test_key"
+        assert params["client"]["secret_key"] == "test_secret"
+        assert params["client"]["region"] == "us-west-2"
+        assert "assume_role_arn" not in params["client"]
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(

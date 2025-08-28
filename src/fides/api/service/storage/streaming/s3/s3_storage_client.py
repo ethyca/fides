@@ -49,20 +49,22 @@ class S3StorageClient(BaseStorageClient):
         Returns:
             Dictionary of S3 transport parameters for smart-open
         """
-        params = {}
+        params: dict[str, Any] = {"client": {}}
 
         if StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets:
-            params["access_key"] = self.storage_secrets[
+            params["client"]["access_key"] = self.storage_secrets[
                 StorageSecrets.AWS_ACCESS_KEY_ID
             ]
         if StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets:
-            params["secret_key"] = self.storage_secrets[
+            params["client"]["secret_key"] = self.storage_secrets[
                 StorageSecrets.AWS_SECRET_ACCESS_KEY
             ]
         if StorageSecrets.REGION_NAME in self.storage_secrets:
-            params["region"] = self.storage_secrets[StorageSecrets.REGION_NAME]
+            params["client"]["region"] = (
+                self.storage_secrets[StorageSecrets.REGION_NAME] or "us-east-1"
+            )
         if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
-            params["assume_role_arn"] = self.storage_secrets[
+            params["client"]["assume_role_arn"] = self.storage_secrets[
                 StorageSecrets.AWS_ASSUME_ROLE
             ]
 

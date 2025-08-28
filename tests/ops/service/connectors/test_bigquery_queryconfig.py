@@ -17,7 +17,6 @@ from fides.api.service.connectors import BigQueryConnector
 from fides.api.service.connectors.query_configs.bigquery_query_config import (
     BigQueryQueryConfig,
 )
-from tests.fixtures.bigquery_fixtures import PROJECT_NAME
 
 
 @pytest.mark.integration_external
@@ -558,7 +557,9 @@ class TestBigQueryQueryConfig:
         erasure_policy.rules[0].targets[0].save(db)
         update_stmts = BigQueryQueryConfig(
             address_node,
-            BigQueryNamespaceMeta(project_id=PROJECT_NAME, dataset_id="fidesopstest"),
+            BigQueryNamespaceMeta(
+                project_id="silken-precinct-284918", dataset_id="fidesopstest"
+            ),
         ).generate_masking_stmt(
             address_node,
             {
@@ -575,7 +576,7 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.fidesopstest.address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `{PROJECT_NAME}.fidesopstest.address`.`id` = %(id_1:STRING)s"
+            "UPDATE `silken-precinct-284918.fidesopstest.address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `silken-precinct-284918.fidesopstest.address`.`id` = %(id_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -604,7 +605,9 @@ class TestBigQueryQueryConfig:
 
         delete_stmts = BigQueryQueryConfig(
             employee_node,
-            BigQueryNamespaceMeta(project_id=PROJECT_NAME, dataset_id="fidesopstest"),
+            BigQueryNamespaceMeta(
+                project_id="silken-precinct-284918", dataset_id="fidesopstest"
+            ),
         ).generate_masking_stmt(
             employee_node,
             {
@@ -620,7 +623,7 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            f"DELETE FROM `{PROJECT_NAME}.fidesopstest.employee` WHERE `{PROJECT_NAME}.fidesopstest.employee`.`email` = %(email_1:STRING)s OR `{PROJECT_NAME}.fidesopstest.employee`.`address_id` = %(address_id_1:INT64)s"
+            "DELETE FROM `silken-precinct-284918.fidesopstest.employee` WHERE `silken-precinct-284918.fidesopstest.employee`.`email` = %(email_1:STRING)s OR `silken-precinct-284918.fidesopstest.employee`.`address_id` = %(address_id_1:INT64)s"
         }
         assert stmts == expected_stmts
 
@@ -751,7 +754,9 @@ class TestBigQueryQueryConfig:
 
         update_stmts = BigQueryQueryConfig(
             customer_node,
-            BigQueryNamespaceMeta(project_id=PROJECT_NAME, dataset_id="fidesopstest"),
+            BigQueryNamespaceMeta(
+                project_id="silken-precinct-284918", dataset_id="fidesopstest"
+            ),
         ).generate_masking_stmt(
             customer_node,
             customer_data,
@@ -764,7 +769,7 @@ class TestBigQueryQueryConfig:
 
         # BigQuery namespaced struct updates include the fully qualified project.dataset.table path
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom id`=%(custom id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s"
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom id`=%(custom id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
 
         assert stmts == expected_stmts
@@ -919,7 +924,9 @@ class TestBigQueryQueryConfig:
 
         update_stmts = BigQueryQueryConfig(
             customer_node,
-            BigQueryNamespaceMeta(project_id=PROJECT_NAME, dataset_id="fidesopstest"),
+            BigQueryNamespaceMeta(
+                project_id="silken-precinct-284918", dataset_id="fidesopstest"
+            ),
         ).generate_masking_stmt(
             customer_node,
             row,
@@ -942,7 +949,7 @@ class TestBigQueryQueryConfig:
 
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s"
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -1416,7 +1423,7 @@ class TestBigQueryQueryConfigPartitioning:
     ):
         """Test that update statements correctly combine namespace and partition information"""
         namespace_meta = BigQueryNamespaceMeta(
-            project_id=PROJECT_NAME, dataset_id="fidesopstest"
+            project_id="silken-precinct-284918", dataset_id="fidesopstest"
         )
 
         erasure_policy.rules[0].targets[0].data_category = "user"
@@ -1435,8 +1442,8 @@ class TestBigQueryQueryConfigPartitioning:
 
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
-            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
 
