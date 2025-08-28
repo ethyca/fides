@@ -69,6 +69,7 @@ router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 @fides_limiter.limit(CONFIG.security.auth_rate_limit)
 async def acquire_access_token(
     request: Request,
+    response: Response,
     form_data: OAuth2ClientCredentialsRequestForm = Depends(),
     db: Session = Depends(get_db),
 ) -> AccessToken:
