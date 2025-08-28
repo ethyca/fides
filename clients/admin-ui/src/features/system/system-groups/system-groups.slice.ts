@@ -9,7 +9,7 @@ const systemGroupsApi = baseApi.injectEndpoints({
       query: () => ({ url: `system-groups` }),
       providesTags: () => ["System Groups"],
     }),
-    createSystemGroup: build.mutation<SystemGroupCreate, SystemGroup>({
+    createSystemGroup: build.mutation<SystemGroup, SystemGroupCreate>({
       query: (group) => ({
         url: `system-groups`,
         method: "POST",
@@ -17,7 +17,10 @@ const systemGroupsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["System Groups", "System"],
     }),
-    updateSystemGroup: build.mutation<SystemGroupUpdate, SystemGroup>({
+    updateSystemGroup: build.mutation<
+      SystemGroup,
+      SystemGroupUpdate & { fides_key: string }
+    >({
       query: (group) => ({
         url: `system-groups/${group.fides_key}`,
         method: "PUT",
@@ -41,5 +44,3 @@ export const {
   useUpdateSystemGroupMutation,
   useDeleteSystemGroupMutation,
 } = systemGroupsApi;
-
-export interface State {}

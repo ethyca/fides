@@ -18,7 +18,10 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
-import { useFeatures } from "~/features/common/features/features.slice";
+import {
+  useFeatures,
+  useFlags,
+} from "~/features/common/features/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
@@ -99,6 +102,9 @@ const SystemInformationForm = ({
   children,
 }: Props) => {
   const { data: systems = [] } = useGetAllSystemsQuery();
+  const {
+    flags: { alphaSystemGroups: systemGroupsEnabled },
+  } = useFlags();
 
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({
@@ -164,7 +170,9 @@ const SystemInformationForm = ({
   });
   const [getDictionaryDataUseTrigger] = useLazyGetDictionaryDataUsesQuery();
 
-  const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
+  const { data: allSystemGroups } = useGetAllSystemGroupsQuery(undefined, {
+    skip: !systemGroupsEnabled,
+  });
 
   const systemGroupOptions = useMemo(
     () =>
@@ -385,14 +393,16 @@ const SystemInformationForm = ({
                 layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
               />
-              <ControlledSelect
-                name="system_groups"
-                label="System groups"
-                options={systemGroupOptions}
-                tooltip="Which system groups are associated with this system?"
-                mode="multiple"
-                layout="stacked"
-              />
+              {systemGroupsEnabled && (
+                <ControlledSelect
+                  name="system_groups"
+                  label="System groups"
+                  options={systemGroupOptions}
+                  tooltip="Which system groups are associated with this system?"
+                  mode="multiple"
+                  layout="stacked"
+                />
+              )}
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
               <ControlledSelect

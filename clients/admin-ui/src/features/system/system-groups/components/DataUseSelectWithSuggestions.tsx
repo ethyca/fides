@@ -27,7 +27,10 @@ const DataUseSelectWithSuggestions = ({
 
   const onChange = (value: string[]) => {
     if (value.includes(ALL_SUGGESTED_VALUE)) {
-      const newValue = uniq([...suggestedDataUses, ...value]);
+      const newValue = uniq([
+        ...suggestedDataUses,
+        ...value.filter((v) => v !== ALL_SUGGESTED_VALUE),
+      ]);
       setValue(newValue);
     } else {
       setValue(value);

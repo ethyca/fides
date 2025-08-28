@@ -36,8 +36,6 @@ for (let i = 10; i < 36; i += 1) {
 }
 
 const AntPOC: NextPage = () => {
-  const [messageApi, messageContext] = message.useMessage();
-
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">

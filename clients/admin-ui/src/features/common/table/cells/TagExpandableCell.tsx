@@ -28,7 +28,7 @@ export interface TagExpandableCellProps extends TagProps {
  * Click the cell to collapse the list.
  * @param values - The values to display in the cell.
  * @param columnState - The state of the column.
- * @param tagProps - The props to pass to the Tag component.  If a value has a `props` property, it will override the tagProps.
+ * @param tagProps - The props to pass to the Tag component.  If a value has a `tagProps` property, it will override the tagProps set at the component level.
  */
 export const TagExpandableCell = ({
   values,
