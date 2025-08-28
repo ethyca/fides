@@ -133,7 +133,9 @@ def extract_display_info_from_config(config: SaaSConfig) -> Dict[str, Any]:
     return {
         "category": config.display_info.category if config.display_info else None,
         "tags": config.display_info.tags if config.display_info else None,
-        "enabled_features": config.display_info.enabled_features if config.display_info else None,
+        "enabled_features": (
+            config.display_info.enabled_features if config.display_info else None
+        ),
     }
 
 
