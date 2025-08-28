@@ -65,10 +65,6 @@ class ExecutionSettings(FidesSettings):
         default=3600,
         description="Seconds between polling for async tasks to requeue",
     )
-    use_dsr_3_0: bool = Field(
-        default=False,
-        description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
-    )
     erasure_request_finalization_required: bool = Field(
         default=False,
         description="Whether erasure requests require an additional finalization step after all collections have been executed.",
