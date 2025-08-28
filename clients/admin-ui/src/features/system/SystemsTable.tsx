@@ -1,12 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  AntButton,
   AntButton as Button,
-  AntColumnsType,
-  AntDropdown,
-  AntFlex,
+  AntColumnsType as ColumnsType,
+  AntDropdown as Dropdown,
+  AntFlex as Flex,
   AntMessage as message,
-  AntModal,
+  AntModal as Modal,
   AntTable as Table,
   Icons,
 } from "fidesui";
@@ -185,7 +184,7 @@ const SystemsTable = () => {
     }
   };
 
-  const columns: AntColumnsType<BasicSystemResponseExtended> = useMemo(() => {
+  const columns: ColumnsType<BasicSystemResponseExtended> = useMemo(() => {
     return [
       {
         title: "Name",
@@ -292,8 +291,8 @@ const SystemsTable = () => {
         title: "Actions",
         key: "actions",
         render: (_: undefined, record: BasicSystemResponseExtended) => (
-          <AntFlex justify="end">
-            <AntDropdown
+          <Flex justify="end">
+            <Dropdown
               trigger={["click"]}
               menu={{
                 items: [
@@ -322,8 +321,8 @@ const SystemsTable = () => {
                 aria-label="More actions"
                 type="text"
               />
-            </AntDropdown>
-          </AntFlex>
+            </Dropdown>
+          </Flex>
         ),
         width: 10,
         fixed: "right",
@@ -357,12 +356,12 @@ const SystemsTable = () => {
   return (
     <>
       {messageContext}
-      <AntFlex justify="space-between" className="mb-4">
+      <Flex justify="space-between" className="mb-4">
         <DebouncedSearchInput value={globalFilter} onChange={setGlobalFilter} />
-        <AntFlex gap="small">
+        <Flex gap="small">
           {isAlphaSystemGroupsEnabled && (
             <>
-              <AntDropdown
+              <Dropdown
                 trigger={["click"]}
                 menu={{
                   items: [
@@ -378,14 +377,14 @@ const SystemsTable = () => {
                   ],
                 }}
               >
-                <AntButton
+                <Button
                   disabled={selectedRowKeys.length === 0}
                   icon={<Icons.ChevronDown />}
                 >
                   Add to group
-                </AntButton>
-              </AntDropdown>
-              <AntModal
+                </Button>
+              </Dropdown>
+              <Modal
                 open={createModalIsOpen}
                 destroyOnHidden
                 onCancel={() => setCreateModalIsOpen(false)}
@@ -400,11 +399,11 @@ const SystemsTable = () => {
                   onSubmit={handleCreateSystemGroup}
                   onCancel={() => setCreateModalIsOpen(false)}
                 />
-              </AntModal>
+              </Modal>
             </>
           )}
           <SystemActionsMenu selectedRowKeys={selectedRowKeys} />
-          <AntModal
+          <Modal
             open={deleteModalIsOpen}
             onCancel={() => setDeleteModalIsOpen(false)}
             onOk={() => handleDelete(selectedSystemForDelete!)}
@@ -419,9 +418,9 @@ const SystemsTable = () => {
                 selectedSystemForDelete?.fides_key}
               ? This action cannot be undone.
             </CustomTypography.Paragraph>
-          </AntModal>
-        </AntFlex>
-      </AntFlex>
+          </Modal>
+        </Flex>
+      </Flex>
       <Table
         dataSource={data}
         columns={columns}

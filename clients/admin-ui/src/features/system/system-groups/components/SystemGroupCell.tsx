@@ -1,9 +1,9 @@
 import {
-  AntButton,
-  AntFlex,
+  AntButton as Button,
+  AntFlex as Flex,
   AntMessage as message,
-  AntSelect,
-  AntTag,
+  AntSelect as Select,
+  AntTag as Tag,
   Icons,
 } from "fidesui";
 import { useState } from "react";
@@ -73,8 +73,8 @@ const SystemGroupCell = ({
     <>
       {contextHolder}
       {!isAdding && (
-        <AntFlex gap="small">
-          <AntTag
+        <Flex gap="small">
+          <Tag
             onClick={() => setIsAdding(true)}
             addable
             data-testid="group-add-btn"
@@ -92,11 +92,11 @@ const SystemGroupCell = ({
             bordered={false}
             columnState={columnState}
           />
-        </AntFlex>
+        </Flex>
       )}
       {isAdding && (
-        <AntFlex gap="small">
-          <AntSelect
+        <Flex gap="small">
+          <Select
             options={allGroups.map((group) => ({
               label: group.name,
               value: group.fides_key,
@@ -108,8 +108,8 @@ const SystemGroupCell = ({
               setPendingSelection(value);
             }}
           />
-          <AntButton icon={<Icons.Checkmark />} onClick={handleUpdate} />
-        </AntFlex>
+          <Button icon={<Icons.Checkmark />} onClick={handleUpdate} />
+        </Flex>
       )}
     </>
   );

@@ -1,4 +1,10 @@
-import { AntButton, AntDropdown, AntMessage, AntModal, Icons } from "fidesui";
+import {
+  AntButton as Button,
+  AntDropdown as Dropdown,
+  AntMessage as message,
+  AntModal as Modal,
+  Icons,
+} from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -14,7 +20,7 @@ interface SystemActionsMenuProps {
 }
 
 const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
-  const [messageApi, contextHolder] = AntMessage.useMessage();
+  const [messageApi, contextHolder] = message.useMessage();
   const [deleteModal, deleteModalIsOpen] = useState(false);
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
@@ -59,7 +65,7 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
   return (
     <>
       {contextHolder}
-      <AntModal
+      <Modal
         open={deleteModal}
         onCancel={() => deleteModalIsOpen(false)}
         onOk={handleDelete}
@@ -70,8 +76,8 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
         <p>
           Delete {selectedRowKeys.length} systems? This action cannot be undone.
         </p>
-      </AntModal>
-      <AntDropdown
+      </Modal>
+      <Dropdown
         trigger={["click"]}
         menu={{
           items: [
@@ -94,13 +100,13 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
           ],
         }}
       >
-        <AntButton
+        <Button
           disabled={selectedRowKeys.length === 0}
           icon={<Icons.ChevronDown />}
         >
           Actions
-        </AntButton>
-      </AntDropdown>
+        </Button>
+      </Dropdown>
     </>
   );
 };

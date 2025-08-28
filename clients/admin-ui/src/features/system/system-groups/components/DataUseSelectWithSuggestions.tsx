@@ -1,7 +1,7 @@
 import {
-  AntDefaultOptionType,
-  AntFlex,
-  AntSelect,
+  AntDefaultOptionType as DefaultOptionType,
+  AntFlex as Flex,
+  AntSelect as Select,
   FormControl,
   Icons,
   SparkleIcon,
@@ -35,8 +35,8 @@ const DataUseSelectWithSuggestions = ({
   };
 
   const optionsGroups = useMemo(() => {
-    const suggestedOptions: AntDefaultOptionType[] = [];
-    const allOptions: AntDefaultOptionType[] = [];
+    const suggestedOptions: DefaultOptionType[] = [];
+    const allOptions: DefaultOptionType[] = [];
     options?.forEach((opt) => {
       if (suggestedDataUses.includes(opt.value as string)) {
         suggestedOptions.push(opt);
@@ -52,13 +52,13 @@ const DataUseSelectWithSuggestions = ({
 
   return (
     <FormControl isInvalid={isInvalid}>
-      <AntFlex vertical gap="small">
-        <AntFlex align="center">
+      <Flex vertical gap="small">
+        <Flex align="center">
           <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
             Data uses
           </Label>
-        </AntFlex>
-        <AntSelect
+        </Flex>
+        <Select
           options={[
             {
               label: "Select all suggested",
@@ -66,20 +66,20 @@ const DataUseSelectWithSuggestions = ({
             },
             {
               label: (
-                <AntFlex gap="small" align="center">
+                <Flex gap="small" align="center">
                   <SparkleIcon />
                   <strong>Suggested data uses</strong>
-                </AntFlex>
+                </Flex>
               ),
               value: "suggested",
               options: optionsGroups.suggested,
             },
             {
               label: (
-                <AntFlex gap="small" align="center">
+                <Flex gap="small" align="center">
                   <Icons.Document />
                   <strong>All data uses</strong>
-                </AntFlex>
+                </Flex>
               ),
               value: "all",
               options: optionsGroups.all,
@@ -100,7 +100,7 @@ const DataUseSelectWithSuggestions = ({
           message={meta.error}
           fieldName={field.name}
         />
-      </AntFlex>
+      </Flex>
     </FormControl>
   );
 };
