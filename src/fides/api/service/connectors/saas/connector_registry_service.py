@@ -78,6 +78,14 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                     == OAuth2AuthorizationCodeAuthenticationStrategy.name
                 )
 
+                category = None
+                tags = None
+                enabled_features = None
+                if config.display_info:
+                    category = config.display_info.category
+                    tags = config.display_info.tags
+                    enabled_features = config.display_info.enabled_features
+
                 try:
                     icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
                 except FileNotFoundError:
@@ -100,6 +108,10 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                         authorization_required=authorization_required,
                         user_guide=config.user_guide,
                         supported_actions=config.supported_actions,
+                        # Add cached display info
+                        category=category,
+                        tags=tags,
+                        enabled_features=enabled_features,
                     )
                 except Exception:
                     logger.exception("Unable to load {} connector", connector_type)
@@ -165,6 +177,14 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             == OAuth2AuthorizationCodeAuthenticationStrategy.name
         )
 
+        category = None
+        tags = None
+        enabled_features = None
+        if config.display_info:
+            category = config.display_info.category
+            tags = config.display_info.tags
+            enabled_features = config.display_info.enabled_features
+
         connector_template = ConnectorTemplate(
             config=template.config,
             dataset=template.dataset,
@@ -173,6 +193,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             authorization_required=authorization_required,
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
+            category=category,
+            tags=tags,
+            enabled_features=enabled_features,
         )
 
         # register the template in the loader's template dictionary
