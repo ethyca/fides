@@ -1577,7 +1577,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">462</span>
 <span class="normal">463</span>
 <span class="normal">464</span>
-<span class="normal">465</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1618,7 +1623,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;c88c92097758c385cedb0268e572243f&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3cfe14cd8d835fc5cb1b71553e572aca&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1988,6 +1993,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># The number of requests from a single IP address allowed to hit an</span>
 <span class="c1"># endpoint within a rolling 60 second period.</span>
 <span class="n">request_rate_limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1000/minute&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># The number of authentication requests from a single IP address</span>
+<span class="c1"># allowed to hit authentication endpoints (login, OAuth token) within</span>
+<span class="c1"># the specified time period.</span>
+<span class="n">auth_rate_limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;10/minute&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The list of scopes that are given to the root user.</span>
 <span class="n">root_user_scopes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="c1"># array</span>

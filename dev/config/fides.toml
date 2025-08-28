@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "c88c92097758c385cedb0268e572243f" # string
+analytics_id = "3cfe14cd8d835fc5cb1b71553e572aca" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -409,6 +409,11 @@ rate_limit_prefix = "fides-" # string
 # The number of requests from a single IP address allowed to hit an
 # endpoint within a rolling 60 second period.
 request_rate_limit = "1000/minute" # string
+
+# The number of authentication requests from a single IP address
+# allowed to hit authentication endpoints (login, OAuth token) within
+# the specified time period.
+auth_rate_limit = "10/minute" # string
 
 # The list of scopes that are given to the root user.
 root_user_scopes = [] # array
