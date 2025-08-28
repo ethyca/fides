@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added UI for conditional manual task creation feature [#6431](https://github.com/ethyca/fides/pull/6431)
 - Added streaming attachment capabilities for access packages. [#6474](https://github.com/ethyca/fides/pull/6474)
 - Added tokenized redirect for streaming enabled access package downloads. [#6489](https://github.com/ethyca/fides/pull/6489)
+- Pagination is persisted to the URL on the Consent Report Page [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Changed
 - Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
@@ -36,9 +37,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
 - Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
 - Moved Organization Management and SSO out of beta [#6495](https://github.com/ethyca/fides/pull/6494)
+- Removed total from Consent Report page until Cursor Pagination is added, this solves broken loads when there is a large amount of consent data [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Fixed
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
+- Account for Timezone on Consent Report page [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
