@@ -203,3 +203,229 @@ class TestPollingAsyncDSRStrategy:
             polling_strategy.get_result_request(
                 client=mock_client, secrets=secrets, identity_data=identity_data
             )
+
+
+class TestPollingAsyncDSRStrategyStatusPathTypes:
+    """Test different status path value types that the polling strategy handles"""
+
+    @pytest.fixture
+    def polling_strategy_with_string_status(self):
+        """Create a strategy that expects string status values"""
+        config = PollingAsyncDSRConfiguration(
+            status_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/status/<request_id>",
+            ),
+            status_path="status",
+            status_completed_value="completed",  # String value to match
+            result_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/result/<request_id>",
+            ),
+            result_path="data.results",
+        )
+        return PollingAsyncDSRStrategy(configuration=config)
+
+    @pytest.fixture
+    def polling_strategy_with_list_status(self):
+        """Create a strategy that expects list status values"""
+        config = PollingAsyncDSRConfiguration(
+            status_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/status/<request_id>",
+            ),
+            status_path="status_array",
+            status_completed_value="done",  # Value to match in list
+            result_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/result/<request_id>",
+            ),
+            result_path="data.results",
+        )
+        return PollingAsyncDSRStrategy(configuration=config)
+
+    @pytest.fixture
+    def mock_client(self):
+        """Create a mock authenticated client"""
+        return Mock(spec=AuthenticatedClient)
+
+    @pytest.fixture
+    def secrets(self):
+        """Create sample secrets"""
+        return {"api_token": "test_token", "request_id": "123"}
+
+    @pytest.fixture
+    def identity_data(self):
+        """Create sample identity data"""
+        return {"email": "test@example.com"}
+
+    def test_status_path_boolean_true(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns boolean True"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": True}  # Boolean True
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_string_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is True
+
+    def test_status_path_boolean_false(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns boolean False"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": False}  # Boolean False
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_string_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is False
+
+    def test_status_path_string_completed(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns string that matches completed value"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": "completed"}  # Matches status_completed_value
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_string_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is True
+
+    def test_status_path_string_pending(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns string that doesn't match completed value"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": "pending"}  # Doesn't match status_completed_value
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_string_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is False
+
+    def test_status_path_string_processing(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns different string value"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": "processing"}  # Doesn't match
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_string_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is False
+
+    def test_status_path_list_first_element_matches(
+        self, polling_strategy_with_list_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns list where first element matches"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {
+            "status_array": ["done", "processed", "validated"]  # First element matches
+        }
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_list_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is True
+
+    def test_status_path_list_first_element_no_match(
+        self, polling_strategy_with_list_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns list where first element doesn't match"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {
+            "status_array": ["pending", "done", "validated"]  # First element doesn't match
+        }
+        mock_client.send.return_value = response
+
+        result = polling_strategy_with_list_status.get_status_request(
+            client=mock_client, secrets=secrets, identity_data=identity_data
+        )
+
+        assert result is False
+
+    def test_status_path_list_empty(
+        self, polling_strategy_with_list_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns empty list"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status_array": []}  # Empty list
+        mock_client.send.return_value = response
+
+        with pytest.raises(IndexError):
+            polling_strategy_with_list_status.get_status_request(
+                client=mock_client, secrets=secrets, identity_data=identity_data
+            )
+
+    def test_status_path_unexpected_type_integer(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns unexpected type (integer)"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": 123}  # Integer - unexpected type
+        mock_client.send.return_value = response
+
+        with pytest.raises(PrivacyRequestError) as exc_info:
+            polling_strategy_with_string_status.get_status_request(
+                client=mock_client, secrets=secrets, identity_data=identity_data
+            )
+
+        assert "Status request returned an unexpected value: 123" in str(exc_info.value)
+
+    def test_status_path_unexpected_type_dict(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns unexpected type (dictionary)"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": {"nested": "value"}}  # Dict - unexpected type
+        mock_client.send.return_value = response
+
+        with pytest.raises(PrivacyRequestError) as exc_info:
+            polling_strategy_with_string_status.get_status_request(
+                client=mock_client, secrets=secrets, identity_data=identity_data
+            )
+
+        assert "Status request returned an unexpected value:" in str(exc_info.value)
+
+    def test_status_path_none_value(
+        self, polling_strategy_with_string_status, mock_client, secrets, identity_data
+    ):
+        """Test status path returns None"""
+        response = Mock(spec=Response)
+        response.ok = True
+        response.json.return_value = {"status": None}  # None value
+        mock_client.send.return_value = response
+
+        with pytest.raises(PrivacyRequestError) as exc_info:
+            polling_strategy_with_string_status.get_status_request(
+                client=mock_client, secrets=secrets, identity_data=identity_data
+            )
+
+        assert "Status request returned an unexpected value: None" in str(exc_info.value)
