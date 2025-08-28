@@ -79,36 +79,35 @@ async def get_custom_fields_filtered(
     This is for use in bulk querying of custom fields, to avoid multiple round trips to the db.
     """
     with log.contextualize(model=CustomField):
-        async with async_session.begin():
-            try:
-                log.debug("Fetching resource")
-                query = select(
-                    CustomField.resource_id,
-                    CustomField.value,
-                    CustomFieldDefinition.resource_type,
-                    CustomFieldDefinition.name,
-                    CustomFieldDefinition.field_type,
-                ).join(
-                    CustomFieldDefinition,
-                    CustomFieldDefinition.id == CustomField.custom_field_definition_id,
-                )
+        try:
+            log.debug("Fetching resource")
+            query = select(
+                CustomField.resource_id,
+                CustomField.value,
+                CustomFieldDefinition.resource_type,
+                CustomFieldDefinition.name,
+                CustomFieldDefinition.field_type,
+            ).join(
+                CustomFieldDefinition,
+                CustomFieldDefinition.id == CustomField.custom_field_definition_id,
+            )
 
-                criteria = [
-                    and_(
-                        CustomFieldDefinition.resource_type == resource_type.value,
-                        CustomField.resource_id.in_(resource_ids),
-                        # pylint: disable=singleton-comparison
-                        CustomFieldDefinition.active == True,
-                    )
-                    for resource_type, resource_ids in resource_types_to_ids.items()
-                ]
-                query = query.where(or_(False, *criteria))
-                result = await async_session.execute(query)
-                return result.mappings().all()
-            except SQLAlchemyError as e:
-                sa_error = errors.QueryError()
-                log.exception(f"Failed to fetch custom fields with error: '{e}'")
-                raise sa_error
+            criteria = [
+                and_(
+                    CustomFieldDefinition.resource_type == resource_type.value,
+                    CustomField.resource_id.in_(resource_ids),
+                    # pylint: disable=singleton-comparison
+                    CustomFieldDefinition.active == True,
+                )
+                for resource_type, resource_ids in resource_types_to_ids.items()
+            ]
+            query = query.where(or_(False, *criteria))
+            result = await async_session.execute(query)
+            return result.mappings().all()
+        except SQLAlchemyError as e:
+            sa_error = errors.QueryError()
+            log.exception(f"Failed to fetch custom fields with error: '{e}'")
+            raise sa_error
 
 
 async def get_resource(
@@ -212,17 +211,16 @@ async def list_resource_query(
     """
 
     with log.contextualize(sql_model=sql_model.__name__):
-        async with async_session.begin():
-            try:
-                log.debug("Fetching resources")
-                result = await async_session.execute(query)
-                sql_resources = result.scalars().all()
-            except SQLAlchemyError as e:
-                log.exception(f"Failed to fetch resources with error: '{e}'")
-                sa_error = errors.QueryError()
-                raise sa_error
+        try:
+            log.debug("Fetching resources")
+            result = await async_session.execute(query)
+            sql_resources = result.scalars().all()
+        except SQLAlchemyError as e:
+            log.exception(f"Failed to fetch resources with error: '{e}'")
+            sa_error = errors.QueryError()
+            raise sa_error
 
-            return sql_resources
+        return sql_resources
 
 
 async def update_resource(
@@ -235,18 +233,17 @@ async def update_resource(
     ):
         await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
-        async with async_session.begin():
-            try:
-                log.debug("Updating resource")
-                await async_session.execute(
-                    _update(sql_model.__table__)
-                    .where(sql_model.fides_key == resource_dict["fides_key"])
-                    .values(resource_dict)
-                )
-            except SQLAlchemyError as e:
-                log.exception(f"Failed to update resource with error: '{e}'")
-                sa_error = errors.QueryError()
-                raise sa_error
+        try:
+            log.debug("Updating resource")
+            await async_session.execute(
+                _update(sql_model.__table__)
+                .where(sql_model.fides_key == resource_dict["fides_key"])
+                .values(resource_dict)
+            )
+        except SQLAlchemyError as e:
+            log.exception(f"Failed to update resource with error: '{e}'")
+            sa_error = errors.QueryError()
+            raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
@@ -265,39 +262,38 @@ async def upsert_resources(
         sql_model=sql_model.__name__,
         fides_keys=[resource["fides_key"] for resource in resource_dicts],
     ):
-        async with async_session.begin():
-            try:
-                log.debug("Upserting resources")
-                insert_stmt = (
-                    _insert(sql_model.__table__)
-                    .values(resource_dicts)
-                    .returning(
-                        (column("xmax") == 0),  # Row was inserted
-                        (column("xmax") != 0),  # Row was updated
-                    )
+        try:
+            log.debug("Upserting resources")
+            insert_stmt = (
+                _insert(sql_model.__table__)
+                .values(resource_dicts)
+                .returning(
+                    (column("xmax") == 0),  # Row was inserted
+                    (column("xmax") != 0),  # Row was updated
                 )
+            )
 
-                excluded = dict(insert_stmt.excluded.items())  # type: ignore[attr-defined]
-                excluded.pop("id", None)  # If updating, don't update the "id"
+            excluded = dict(insert_stmt.excluded.items())  # type: ignore[attr-defined]
+            excluded.pop("id", None)  # If updating, don't update the "id"
 
-                result = await async_session.execute(
-                    insert_stmt.on_conflict_do_update(
-                        index_elements=["fides_key"],
-                        set_=excluded,
-                    )
+            result = await async_session.execute(
+                insert_stmt.on_conflict_do_update(
+                    index_elements=["fides_key"],
+                    set_=excluded,
                 )
+            )
 
-                inserts, updates = 0, 0
-                for xmax in result:
-                    inserts += 1 if xmax[0] else 0
-                    updates += 1 if xmax[1] else 0
+            inserts, updates = 0, 0
+            for xmax in result:
+                inserts += 1 if xmax[0] else 0
+                updates += 1 if xmax[1] else 0
 
-                return (inserts, updates)
+            return (inserts, updates)
 
-            except SQLAlchemyError as e:
-                log.exception(f"Failed to upsert resources with error: '{e}'")
-                sa_error = errors.QueryError()
-                raise sa_error
+        except SQLAlchemyError as e:
+            log.exception(f"Failed to upsert resources with error: '{e}'")
+            sa_error = errors.QueryError()
+            raise sa_error
 
 
 async def delete_resource(
