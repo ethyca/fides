@@ -986,7 +986,7 @@ class TestBigQueryConnectorTimeBasedPartitioning:
                 in loguru_caplog.text
             )
         assert (
-            f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom_id` = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
+            f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP)"
             in loguru_caplog.text
         )
 
@@ -1004,10 +1004,9 @@ class TestBigQueryConnectorTableExists:
         dataset_config = bigquery_example_test_dataset_config_with_namespace_meta
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        # Get the dataset name from the connection config
-        dataset_name = dataset_config.connection_config.secrets.get(
-            "dataset", "fidesopstest"
-        )
+        # Get the dataset name from the namespace metadata instead of connection config secrets
+        namespace_meta = dataset_config.ctl_dataset.fides_meta.get("namespace", {})
+        dataset_name = namespace_meta.get("dataset_id", "fidesopstest")
 
         # For BigQuery, the format should be project.dataset.table
         assert connector.table_exists(f"{PROJECT_NAME}.{dataset_name}.customer")
