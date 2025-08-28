@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
 
+### Changed
+- Improved column width handling in Action Center tables [#6496](https://github.com/ethyca/fides/pull/6496)
+
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added
