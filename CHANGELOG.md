@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
 - Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
 - Moved Organization Management and SSO out of beta [#6495](https://github.com/ethyca/fides/pull/6494)
+- Updated data lineage nodes styling to use neutral color scheme for improved visual consistency [#6505](https://github.com/ethyca/fides/pull/6505)
 
 ### Fixed
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
