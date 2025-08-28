@@ -61,7 +61,7 @@ class S3StorageClient(BaseStorageClient):
             ]
         if StorageSecrets.REGION_NAME in self.storage_secrets:
             params["client"]["region"] = (
-                self.storage_secrets[StorageSecrets.REGION_NAME] or "us-east-1"
+                self.storage_secrets[StorageSecrets.REGION_NAME]
             )
         if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
             params["client"]["assume_role_arn"] = self.storage_secrets[
