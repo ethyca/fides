@@ -276,13 +276,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_processing = True
-                if read_request.async_config.strategy not in AsyncTaskType:
+
+                # Validate async strategy with proper enum value checking
+                strategy_value = read_request.async_config.strategy
+                valid_strategies = [task_type.value for task_type in AsyncTaskType]
+
+                if strategy_value not in valid_strategies:
                     raise PrivacyRequestError(
-                        f"Invalid async type for request task {request_task.id}"
+                        f"Invalid async type '{strategy_value}' for request task {request_task.id}. "
+                        f"Valid types are: {valid_strategies}"
                     )
-                request_task.async_type = AsyncTaskType(
-                    read_request.async_config.strategy
-                )  # type: ignore
+
+                request_task.async_type = AsyncTaskType(strategy_value)
 
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
