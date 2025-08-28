@@ -8,8 +8,10 @@ from typing import Any, Generator, Tuple
 from loguru import logger
 from stream_zip import _ZIP_32_TYPE
 
-from fides.api.service.storage.streaming.schemas import AttachmentProcessingInfo
-from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
+from fides.api.service.storage.streaming.schemas import \
+    AttachmentProcessingInfo
+from fides.api.service.storage.streaming.smart_open_client import \
+    SmartOpenStorageClient
 
 
 def stream_dsr_buffer_to_storage(

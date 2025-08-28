@@ -9,7 +9,8 @@ from loguru import logger
 
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 from fides.api.service.storage.s3 import create_presigned_url_for_s3
-from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
+from fides.api.service.storage.streaming.base_storage_client import \
+    BaseStorageClient
 from fides.api.util.aws_util import get_s3_client
 
 
@@ -49,22 +50,49 @@ class S3StorageClient(BaseStorageClient):
         Returns:
             Dictionary of S3 transport parameters for smart-open
         """
-        params: dict[str, Any] = {"client": {}}
+        params: dict[str, Any] = {}
 
+        # Create S3 client for smart-open
+        try:
+            # Determine auth method based on available credentials
+            if (
+                StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets
+                and StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets
+                and self.storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID]
+                and self.storage_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY]
+            ):
+                auth_method = "secret_keys"
+            else:
+                auth_method = "automatic"
+
+            # Extract assume_role_arn if present
+            assume_role_arn = None
+            if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
+                assume_role_arn = self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
+
+            # Create S3 client using existing utility
+            s3_client = get_s3_client(auth_method, self.storage_secrets, assume_role_arn)
+            params["client"] = s3_client
+
+        except Exception as e:
+            logger.error(f"Failed to create S3 client for smart-open: {e}")
+            raise
+
+        # Also include credentials at top level for compatibility
         if StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets:
-            params["client"]["access_key"] = self.storage_secrets[
+            params["access_key"] = self.storage_secrets[
                 StorageSecrets.AWS_ACCESS_KEY_ID
             ]
         if StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets:
-            params["client"]["secret_key"] = self.storage_secrets[
+            params["secret_key"] = self.storage_secrets[
                 StorageSecrets.AWS_SECRET_ACCESS_KEY
             ]
         if StorageSecrets.REGION_NAME in self.storage_secrets:
-            params["client"]["region"] = self.storage_secrets[
+            params["region"] = self.storage_secrets[
                 StorageSecrets.REGION_NAME
             ]
         if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
-            params["client"]["assume_role_arn"] = self.storage_secrets[
+            params["assume_role_arn"] = self.storage_secrets[
                 StorageSecrets.AWS_ASSUME_ROLE
             ]
 

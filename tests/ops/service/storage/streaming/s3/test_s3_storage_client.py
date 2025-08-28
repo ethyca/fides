@@ -1,11 +1,13 @@
-"""Tests for the S3StorageClient class."""
+"""Tests for S3StorageClient."""
 
 from unittest.mock import Mock, patch
 
 import pytest
+from moto import mock_aws
 
-from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
-from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
+from fides.api.schemas.storage.storage import StorageSecrets
+from fides.api.service.storage.streaming.s3.s3_storage_client import \
+    S3StorageClient
 
 
 class TestS3StorageClient:
@@ -39,6 +41,7 @@ class TestS3StorageClient:
         # this will use standard S3 URI
         assert uri == "s3://test-bucket/test-key"
 
+    @mock_aws
     def test_get_transport_params_with_all_keys(self):
         """Test transport params with all S3 keys."""
         secrets = {
@@ -49,11 +52,17 @@ class TestS3StorageClient:
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["client"]["access_key"] == "test_key"
-        assert params["client"]["secret_key"] == "test_secret"
-        assert params["client"]["region"] == "us-west-2"
+        # Should have S3 client instance
+        assert "client" in params
+        assert params["client"] is not None
+
+        # Should have credentials at top level
+        assert params["access_key"] == "test_key"
+        assert params["secret_key"] == "test_secret"
+        assert params["region"] == "us-west-2"
         # endpoint_url is no longer supported in the current implementation
 
+    @mock_aws
     def test_get_transport_params_with_partial_keys(self):
         """Test transport params with partial S3 keys."""
         secrets = {
@@ -63,11 +72,17 @@ class TestS3StorageClient:
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["client"]["access_key"] == "test_key"
-        assert params["client"]["region"] == "us-west-2"
-        assert "secret_key" not in params["client"]
+        # Should have S3 client instance
+        assert "client" in params
+        assert params["client"] is not None
+
+        # Should have available credentials at top level
+        assert params["access_key"] == "test_key"
+        assert params["region"] == "us-west-2"
+        assert "secret_key" not in params
         # endpoint_url is no longer supported in the current implementation
 
+    @mock_aws
     def test_get_transport_params_with_assume_role_arn(self):
         """Test transport params include assume_role_arn when present."""
         secrets = {
@@ -79,14 +94,20 @@ class TestS3StorageClient:
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["client"]["access_key"] == "test_key"
-        assert params["client"]["secret_key"] == "test_secret"
-        assert params["client"]["region"] == "us-west-2"
+        # Should have S3 client instance
+        assert "client" in params
+        assert params["client"] is not None
+
+        # Should have credentials at top level
+        assert params["access_key"] == "test_key"
+        assert params["secret_key"] == "test_secret"
+        assert params["region"] == "us-west-2"
         assert (
-            params["client"]["assume_role_arn"]
+            params["assume_role_arn"]
             == "arn:aws:iam::123456789012:role/TestRole"
         )
 
+    @mock_aws
     def test_get_transport_params_without_assume_role_arn(self):
         """Test transport params don't include assume_role_arn when not present."""
         secrets = {
@@ -97,10 +118,15 @@ class TestS3StorageClient:
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
 
-        assert params["client"]["access_key"] == "test_key"
-        assert params["client"]["secret_key"] == "test_secret"
-        assert params["client"]["region"] == "us-west-2"
-        assert "assume_role_arn" not in params["client"]
+        # Should have S3 client instance
+        assert "client" in params
+        assert params["client"] is not None
+
+        # Should have credentials at top level
+        assert params["access_key"] == "test_key"
+        assert params["secret_key"] == "test_secret"
+        assert params["region"] == "us-west-2"
+        assert "assume_role_arn" not in params
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
@@ -163,7 +189,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with SECRET_KEYS auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets, None
+            "secret_keys", secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -187,7 +213,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets, None
+            "automatic", secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -215,7 +241,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets, None
+            "automatic", secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -243,7 +269,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with SECRET_KEYS auth method and assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value,
+            "secret_keys",
             secrets,
             "arn:aws:iam::123456789012:role/TestRole",
         )
@@ -272,7 +298,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method and assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value,
+            "automatic",
             secrets,
             "arn:aws:iam::123456789012:role/TestRole",
         )
@@ -302,7 +328,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with None for assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets, None
+            "secret_keys", secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -331,5 +357,5 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with empty string for assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets, ""
+            "secret_keys", secrets, ""
         )

@@ -8,15 +8,12 @@ import smart_open
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
-from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
+from fides.api.service.storage.streaming.retry import \
+    retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
-    MIN_PART_SIZE,
-    MultipartUploadResponse,
-    UploadPartResponse,
-)
-from fides.api.service.storage.streaming.storage_client_factory import (
-    StorageClientFactory,
-)
+    MIN_PART_SIZE, MultipartUploadResponse, UploadPartResponse)
+from fides.api.service.storage.streaming.storage_client_factory import \
+    StorageClientFactory
 
 
 class SmartOpenStorageClient:

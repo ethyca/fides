@@ -5,14 +5,8 @@ from unittest.mock import patch
 import pytest
 
 from fides.api.service.storage.streaming.retry import (
-    PermanentError,
-    RetryConfig,
-    TransientError,
-    calculate_backoff_delay,
-    is_transient_error,
-    retry_cloud_storage_operation,
-    retry_with_backoff,
-)
+    PermanentError, RetryConfig, TransientError, calculate_backoff_delay,
+    is_transient_error, retry_cloud_storage_operation, retry_with_backoff)
 
 
 class TestRetryConfig:
@@ -190,9 +184,8 @@ class TestRetryIntegration:
             mock_execution.task_retry_delay = 2
             mock_execution.task_retry_backoff = 3
 
-            from fides.api.service.storage.streaming.retry import (
-                create_retry_config_from_settings,
-            )
+            from fides.api.service.storage.streaming.retry import \
+                create_retry_config_from_settings
 
             config = create_retry_config_from_settings()
 

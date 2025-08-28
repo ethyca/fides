@@ -6,11 +6,12 @@ from unittest.mock import Mock, create_autospec, patch
 import pytest
 
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
-from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
-from fides.api.service.storage.streaming.storage_client_factory import (
-    StorageClientFactory,
-)
+from fides.api.service.storage.streaming.base_storage_client import \
+    BaseStorageClient
+from fides.api.service.storage.streaming.smart_open_client import \
+    SmartOpenStorageClient
+from fides.api.service.storage.streaming.storage_client_factory import \
+    StorageClientFactory
 
 
 class TestSmartOpenStorageClient:

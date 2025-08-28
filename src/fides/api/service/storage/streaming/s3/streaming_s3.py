@@ -10,12 +10,13 @@ from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.s3 import generic_upload_to_s3
-from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
+from fides.api.service.storage.streaming.retry import \
+    retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import StorageUploadConfig
-from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
-from fides.api.service.storage.streaming.smart_open_streaming_storage import (
-    SmartOpenStreamingStorage,
-)
+from fides.api.service.storage.streaming.smart_open_client import \
+    SmartOpenStorageClient
+from fides.api.service.storage.streaming.smart_open_streaming_storage import \
+    SmartOpenStreamingStorage
 
 
 @retry_cloud_storage_operation(

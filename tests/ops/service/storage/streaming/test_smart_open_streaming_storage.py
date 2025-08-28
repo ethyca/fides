@@ -9,15 +9,10 @@ import pytest
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.storage.streaming.schemas import (
-    AttachmentInfo,
-    AttachmentProcessingInfo,
-    PackageSplitConfig,
-    StorageUploadConfig,
-    StreamingBufferConfig,
-)
-from fides.api.service.storage.streaming.smart_open_streaming_storage import (
-    SmartOpenStreamingStorage,
-)
+    AttachmentInfo, AttachmentProcessingInfo, PackageSplitConfig,
+    StorageUploadConfig, StreamingBufferConfig)
+from fides.api.service.storage.streaming.smart_open_streaming_storage import \
+    SmartOpenStreamingStorage
 
 
 class TestSmartOpenStreamingStorage:
