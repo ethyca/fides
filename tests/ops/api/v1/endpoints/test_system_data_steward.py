@@ -35,9 +35,6 @@ class TestAssignDataSteward:
 
         auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
-        import pdb
-
-        pdb.set_trace()
         assert response.status_code == HTTP_200_OK
 
         # Refresh instances from DB to pick up relationship changes
