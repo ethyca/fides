@@ -107,98 +107,96 @@ const ConsentReportingPage = () => {
         }
       />
       <div data-testid="consent-reporting" className="overflow-auto">
-        {isLoading ? (
-          <div className="border p-2">
-            <TableSkeletonLoader rowHeight={26} numRows={10} />
-          </div>
-        ) : (
-          <>
-            <TableActionBar>
-              <DateRangePicker
-                placeholder={["From", "To"]}
-                maxDate={today}
-                data-testid="input-date-range"
-                onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
-                  setStartDate(dates && dates[0]);
-                  setEndDate(dates && dates[1]);
-                }}
-              />
-              <Flex gap={12}>
-                <Button
-                  icon={<Icons.Download />}
-                  data-testid="download-btn"
-                  onClick={() => setIsDownloadReportModalOpen(true)}
-                  aria-label="Download Consent Report"
-                />
-                <Dropdown
-                  menu={{
-                    items: [
-                      {
-                        key: "1",
-                        label: (
-                          <span data-testid="consent-preference-lookup-btn">
-                            Consent preference lookup
-                          </span>
-                        ),
-                        onClick: () => setIsConsentLookupModalOpen(true),
-                      },
-                    ],
-                  }}
-                  overlayStyle={{ width: "220px" }}
-                  trigger={["click"]}
-                >
-                  <Button
-                    icon={<Icons.OverflowMenuVertical />}
-                    data-testid="consent-reporting-dropdown-btn"
-                  />
-                </Dropdown>
-              </Flex>
-            </TableActionBar>
-            <FidesTableV2<ConsentReportingSchema>
-              tableInstance={tableInstance}
-              emptyTableNotice={
-                <Empty
-                  description="No results."
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  imageStyle={{ marginBottom: 15 }}
-                />
-              }
-            />
-            <div
-              style={{
-                display: "flex",
-                columnGap: "10px",
-                alignItems: "center",
-                marginTop: "10px",
-              }}
-            >
-              <Button onClick={previousPage} disabled={pageIndex === 1}>
-                Previous
-              </Button>
-              <span>{pageIndex}</span>
-              <Button
-                onClick={nextPage}
-                disabled={(data?.items?.length ?? 0) < pageSize}
-              >
-                Next
-              </Button>
-              <Select
-                style={{ width: "auto" }}
-                value={pageSize}
-                onChange={updatePageSize}
-                options={[
-                  { label: 25, value: 25 },
-                  { label: 50, value: 50 },
-                  { label: 100, value: 100 },
-                ]}
-                // eslint-disable-next-line react/no-unstable-nested-components
-                labelRender={() => {
-                  return <span>{pageSize} / page</span>;
-                }}
-              />
+        <Flex vertical gap="middle">
+          {isLoading ? (
+            <div className="border p-2">
+              <TableSkeletonLoader rowHeight={26} numRows={10} />
             </div>
-          </>
-        )}
+          ) : (
+            <>
+              <div>
+                <TableActionBar>
+                  <DateRangePicker
+                    placeholder={["From", "To"]}
+                    maxDate={today}
+                    data-testid="input-date-range"
+                    onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
+                      setStartDate(dates && dates[0]);
+                      setEndDate(dates && dates[1]);
+                    }}
+                  />
+                  <Flex gap={12}>
+                    <Button
+                      icon={<Icons.Download />}
+                      data-testid="download-btn"
+                      onClick={() => setIsDownloadReportModalOpen(true)}
+                      aria-label="Download Consent Report"
+                    />
+                    <Dropdown
+                      menu={{
+                        items: [
+                          {
+                            key: "1",
+                            label: (
+                              <span data-testid="consent-preference-lookup-btn">
+                                Consent preference lookup
+                              </span>
+                            ),
+                            onClick: () => setIsConsentLookupModalOpen(true),
+                          },
+                        ],
+                      }}
+                      overlayStyle={{ width: "220px" }}
+                      trigger={["click"]}
+                    >
+                      <Button
+                        icon={<Icons.OverflowMenuVertical />}
+                        data-testid="consent-reporting-dropdown-btn"
+                      />
+                    </Dropdown>
+                  </Flex>
+                </TableActionBar>
+                <FidesTableV2<ConsentReportingSchema>
+                  tableInstance={tableInstance}
+                  emptyTableNotice={
+                    <Empty
+                      description="No results."
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      styles={{
+                        image: {
+                          marginBottom: 15,
+                        },
+                      }}
+                    />
+                  }
+                />
+              </div>
+              <Flex gap="middle" align="center">
+                <Button onClick={previousPage} disabled={pageIndex === 1}>
+                  Previous
+                </Button>
+                <span>{pageIndex}</span>
+                <Button
+                  onClick={nextPage}
+                  disabled={(data?.items?.length ?? 0) < pageSize}
+                >
+                  Next
+                </Button>
+                <Select
+                  className="w-auto"
+                  value={pageSize}
+                  onChange={updatePageSize}
+                  options={[
+                    { label: 25, value: 25 },
+                    { label: 50, value: 50 },
+                    { label: 100, value: 100 },
+                  ]}
+                  labelRender={({ value }) => <span>{value} / page</span>}
+                />
+              </Flex>
+            </>
+          )}
+        </Flex>
       </div>
       <ConsentLookupModal
         isOpen={isConsentLookupModalOpen}
