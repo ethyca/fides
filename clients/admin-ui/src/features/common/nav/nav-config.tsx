@@ -215,7 +215,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
-        requiresFlag: "organizationManagement",
         scopes: [
           ScopeRegistryEnum.ORGANIZATION_READ,
           ScopeRegistryEnum.ORGANIZATION_UPDATE,

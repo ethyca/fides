@@ -248,6 +248,7 @@ describe("configureNavGroups", () => {
             path: routes.USER_DETAIL_ROUTE,
             hidden: true,
           },
+          { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
           { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
           {
