@@ -51,15 +51,15 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
             if isinstance(status_path_value, str):
                 if status_path_value == self.status_completed_value:
                     return True
-                else:
-                    return False
+
+                return False
 
             # if the status path is a list, check if the first element is the expected string value
             if isinstance(status_path_value, list):
                 if status_path_value[0] == self.status_completed_value:
                     return True
-                else:
-                    return False
+
+                return False
             # And if we cant recognize the type, raise an error
             raise PrivacyRequestError(
                 f"Status request returned an unexpected value: {status_path_value}"

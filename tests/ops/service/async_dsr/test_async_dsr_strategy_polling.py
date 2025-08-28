@@ -295,7 +295,9 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
         """Test status path returns string that matches completed value"""
         response = Mock(spec=Response)
         response.ok = True
-        response.json.return_value = {"status": "completed"}  # Matches status_completed_value
+        response.json.return_value = {
+            "status": "completed"
+        }  # Matches status_completed_value
         mock_client.send.return_value = response
 
         result = polling_strategy_with_string_status.get_status_request(
@@ -310,7 +312,9 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
         """Test status path returns string that doesn't match completed value"""
         response = Mock(spec=Response)
         response.ok = True
-        response.json.return_value = {"status": "pending"}  # Doesn't match status_completed_value
+        response.json.return_value = {
+            "status": "pending"
+        }  # Doesn't match status_completed_value
         mock_client.send.return_value = response
 
         result = polling_strategy_with_string_status.get_status_request(
@@ -358,7 +362,11 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
         response = Mock(spec=Response)
         response.ok = True
         response.json.return_value = {
-            "status_array": ["pending", "done", "validated"]  # First element doesn't match
+            "status_array": [
+                "pending",
+                "done",
+                "validated",
+            ]  # First element doesn't match
         }
         mock_client.send.return_value = response
 
@@ -404,7 +412,9 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
         """Test status path returns unexpected type (dictionary)"""
         response = Mock(spec=Response)
         response.ok = True
-        response.json.return_value = {"status": {"nested": "value"}}  # Dict - unexpected type
+        response.json.return_value = {
+            "status": {"nested": "value"}
+        }  # Dict - unexpected type
         mock_client.send.return_value = response
 
         with pytest.raises(PrivacyRequestError) as exc_info:
@@ -428,4 +438,6 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
                 client=mock_client, secrets=secrets, identity_data=identity_data
             )
 
-        assert "Status request returned an unexpected value: None" in str(exc_info.value)
+        assert "Status request returned an unexpected value: None" in str(
+            exc_info.value
+        )

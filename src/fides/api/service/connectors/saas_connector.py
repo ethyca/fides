@@ -275,7 +275,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_processing = True
-                request_task.async_type = AsyncTaskType( ## TODO Validation
+                request_task.async_type = AsyncTaskType(  ## TODO Validation
                     read_request.async_config.strategy
                 )
 

@@ -23,6 +23,7 @@ class SupportedAsyncDSRStrategies(Enum):
     callback = CallbackAsyncDSRStrategy
     polling = PollingAsyncDSRStrategy
 
+
 def get_strategy(
     strategy_name: str,
     configuration: Dict[str, Any],
