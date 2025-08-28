@@ -22,6 +22,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
     def __init__(self, configuration: PollingAsyncDSRConfiguration):
         self.status_request = configuration.status_request
         self.status_path = configuration.status_path
+        self.status_completed_value = configuration.status_completed_value
         self.result_request = configuration.result_request
         self.result_path = configuration.result_path
 
@@ -41,9 +42,28 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         response: Response = client.send(prepared_status_request)
 
         if response.ok:
-
             status_path_value = pydash.get(response.json(), self.status_path)
-            return status_path_value
+            # If the status path value is a boolean, return it
+            if isinstance(status_path_value, bool):
+                return status_path_value
+
+            # if the status path is a string, check if its the expected string value
+            if isinstance(status_path_value, str):
+                if status_path_value == self.status_completed_value:
+                    return True
+                else:
+                    return False
+
+            # if the status path is a list, check if the first element is the expected string value
+            if isinstance(status_path_value, list):
+                if status_path_value[0] == self.status_completed_value:
+                    return True
+                else:
+                    return False
+            # And if we cant recognize the type, raise an error
+            raise PrivacyRequestError(
+                f"Status request returned an unexpected value: {status_path_value}"
+            )
 
         raise PrivacyRequestError(
             f"Status request failed with status code {response.status_code}"

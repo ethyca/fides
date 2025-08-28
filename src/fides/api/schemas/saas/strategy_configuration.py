@@ -187,5 +187,6 @@ class PollingAsyncDSRConfiguration(StrategyConfiguration):
 
     status_request: SaaSRequest
     status_path: str
+    status_completed_value: Optional[str] = None
     result_request: SaaSRequest
     result_path: str
