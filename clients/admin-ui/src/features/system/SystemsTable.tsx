@@ -32,10 +32,10 @@ import SystemGroupCell from "~/features/system/system-groups/components/SystemGr
 import {
   useCreateSystemGroupMutation,
   useGetAllSystemGroupsQuery,
+  useUpdateSystemGroupMutation,
 } from "~/features/system/system-groups/system-groups.slice";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
 import { useGetAllUsersQuery } from "~/features/user-management";
-import { useMockBulkUpdateSystemWithGroupsMutation } from "~/mocks/TEMP-system-groups/endpoints/systems";
 import {
   BasicSystemResponseExtended,
   PrivacyDeclaration,
@@ -61,7 +61,7 @@ const SystemsTable = () => {
   });
   const [createSystemGroup] = useCreateSystemGroupMutation();
   const [deleteSystem] = useDeleteSystemMutation();
-  const [bulkUpdate] = useMockBulkUpdateSystemWithGroupsMutation();
+  const [updateSystemGroup] = useUpdateSystemGroupMutation();
 
   const [messageApi, messageContext] = message.useMessage();
 
@@ -135,9 +135,13 @@ const SystemsTable = () => {
 
   const handleBulkAddToGroup = useCallback(
     async (groupKey: string) => {
-      const result = await bulkUpdate({
-        system_keys: selectedRowKeys.map((key) => key.toString()),
-        group_key: groupKey,
+      const currentGroup = systemGroupMap[groupKey];
+      const result = await updateSystemGroup({
+        ...currentGroup,
+        systems: [
+          ...(currentGroup.systems ?? []),
+          ...selectedRowKeys.map((key) => key.toString()),
+        ],
       });
       if (isErrorResult(result)) {
         messageApi.error(getErrorMessage(result.error));
@@ -147,7 +151,7 @@ const SystemsTable = () => {
         );
       }
     },
-    [bulkUpdate, messageApi, selectedRowKeys],
+    [updateSystemGroup, messageApi, selectedRowKeys, systemGroupMap],
   );
 
   const handleCreateSystemGroup = async (systemGroup: SystemGroupCreate) => {

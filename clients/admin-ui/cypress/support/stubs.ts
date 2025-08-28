@@ -885,3 +885,17 @@ export const stubPlusAuth = () => {
     body: {},
   }).as("logoutRequest");
 };
+
+export const stubSystemGroups = () => {
+  cy.intercept("GET", "/api/v1/system-groups", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroups");
+
+  cy.intercept("POST", "/api/v1/system-groups", {
+    statusCode: 200,
+  }).as("createSystemGroup");
+
+  cy.intercept("PUT", "/api/v1/system-groups/*", {
+    statusCode: 200,
+  }).as("updateSystemGroup");
+};

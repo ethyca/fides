@@ -142,6 +142,7 @@ const CreateSystemGroupForm = ({
                   htmlType="submit"
                   loading={isSubmitting}
                   disabled={!isValid || !dirty || isSubmitting}
+                  data-testid="save-btn"
                 >
                   Create group
                 </Button>
