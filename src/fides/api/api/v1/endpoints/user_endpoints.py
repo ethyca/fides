@@ -117,7 +117,7 @@ def verify_user_read_scopes(
     db: Session = Depends(get_db),
 ) -> ClientDetail:
     """
-    Custom dependency that verifies the user has either USER_READ or USER_READ_OWN scope.
+    Custom dependency that verifies the user has either user:read or user:read-own scope.
     Returns the client if authorized.
     """
     token_data, client = extract_token_and_load_client(authorization, db)
@@ -159,7 +159,7 @@ async def update_user(
 ) -> FidesUser:
     """
     Update a user given a `user_id`. If the user is not updating their own data,
-    they need the USER_UPDATE scope
+    they need the user:update scope
     """
     user = FidesUser.get(db=db, object_id=user_id)
     if not user:
@@ -548,7 +548,7 @@ def get_user(
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
 ) -> FidesUser:
-    """Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data."""
+    """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
