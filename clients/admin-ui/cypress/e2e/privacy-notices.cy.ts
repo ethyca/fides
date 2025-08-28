@@ -111,7 +111,7 @@ describe("Privacy notices", () => {
       cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
         fixture: "privacy-notices/notice.json",
       }).as("getNoticeDetail");
-      cy.get("table").contains("tr", "Essential").click();
+      cy.get("table").contains("td", "Essential").click();
       cy.wait("@getNoticeDetail");
       cy.getByTestId("privacy-notice-detail-page");
       cy.url().should("contain", ESSENTIAL_NOTICE_ID);
