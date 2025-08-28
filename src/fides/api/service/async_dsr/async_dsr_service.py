@@ -192,4 +192,3 @@ def execute_erasure_polling_requests(
     """Execute the erasure polling requests for a given privacy request"""
     # TODO: Implement erasure polling logic
     logger.info(f"Erasure polling not yet implemented. Task {async_task.id} passed")
-    pass
