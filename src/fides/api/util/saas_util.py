@@ -16,8 +16,6 @@ from fides.api.common_exceptions import FidesopsException, ValidationError
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDataset
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.enums.connection_category import ConnectionCategory
-from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config import CONFIG
