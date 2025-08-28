@@ -90,6 +90,7 @@ export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
       updatedAt: "",
     },
     tcf_consent: {},
+    non_applicable_notice_keys: [],
   };
 };
 
@@ -271,6 +272,18 @@ export const updateExperienceFromCookieConsentNotices = ({
   // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {
+      // Check if this notice was previously non-applicable but is now applicable
+      const wasPreviouslyNonApplicable =
+        cookie.non_applicable_notice_keys?.includes(notice.notice_key);
+      const isCurrentlyNonApplicable =
+        experience.non_applicable_privacy_notices?.includes(notice.notice_key);
+
+      // If the notice was previously non-applicable but is now applicable,
+      // don't apply the saved consent (treat as not opted in)
+      if (wasPreviouslyNonApplicable && !isCurrentlyNonApplicable) {
+        return { ...notice, current_preference: undefined };
+      }
+
       const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
             Boolean(cookie.consent[notice.notice_key]),
@@ -383,9 +396,15 @@ export const updateCookieFromNoticePreferences = async (
   oldCookie: FidesCookie,
   consentPreferencesToSave: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
+  // Get the current experience to determine which notices are non-applicable
+  const currentExperience = window.Fides?.experience;
+  const nonApplicableNotices =
+    currentExperience?.non_applicable_privacy_notices || [];
+
   return {
     ...oldCookie,
     consent: buildCookieConsentFromConsentPreferences(consentPreferencesToSave),
+    non_applicable_notice_keys: nonApplicableNotices,
   };
 };
 
@@ -431,5 +450,9 @@ export const updateCookieFromExperience = ({
   return {
     ...cookie,
     consent,
+    non_applicable_notice_keys:
+      experience.non_applicable_privacy_notices ||
+      cookie.non_applicable_notice_keys ||
+      [],
   };
 };

@@ -61,6 +61,7 @@ const pushFidesVariableToGTM = (
     privacyNotices,
     flagType,
     nonApplicableFlagMode,
+    window.Fides?.cookie?.non_applicable_notice_keys,
   );
 
   // Construct the Fides variable that will be pushed to GTM

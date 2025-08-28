@@ -85,6 +85,18 @@ declare global {
        * Click the next page button in the pagination component
        */
       antPaginateNext: () => void;
+
+      /**
+       * Pick a dataset and field reference using the DatasetReferencePicker component
+       * @param datasetName The name of the dataset to select
+       * @param collectionName The name of the collection to expand
+       * @param fieldName The name of the field to select
+       */
+      pickDatasetReference: (
+        datasetName: string,
+        collectionName: string,
+        fieldName: string,
+      ) => void;
     }
   }
 }
@@ -238,6 +250,49 @@ Cypress.Commands.add("antPaginatePrevious", () =>
 );
 Cypress.Commands.add("antPaginateNext", () =>
   cy.getAntPagination().find("li.ant-pagination-next button").click(),
+);
+
+Cypress.Commands.add(
+  "pickDatasetReference",
+  {
+    prevSubject: "element",
+  },
+  (subject, datasetName: string, collectionName: string, fieldName: string) => {
+    // First select the dataset
+    cy.get(subject.selector)
+      .find("[data-testid='dataset-select']")
+      .antSelect(datasetName);
+
+    // Wait for the field tree to load with the selected dataset
+    cy.get(subject.selector)
+      .find("[data-testid='field-tree-select']")
+      .should("not.be.disabled");
+
+    // Then select the field using tree select
+    cy.get(subject.selector).find("[data-testid='field-tree-select']").click();
+
+    // Wait for tree dropdown to open
+    cy.get(".ant-tree-select-dropdown:not(.ant-tree-select-dropdown-hidden)", {
+      withinSubject: null,
+    }).should("be.visible");
+
+    // Find the collection and expand it
+    cy.get(".ant-select-tree-title", {
+      withinSubject: null,
+    })
+      .contains(collectionName)
+      .closest(".ant-select-tree-treenode")
+      .find(".ant-select-tree-switcher")
+      .click();
+
+    // Wait for the field to become visible after expansion
+    cy.get(".ant-select-tree-title", {
+      withinSubject: null,
+    })
+      .contains(fieldName)
+      .should("be.visible")
+      .click();
+  },
 );
 
 export {};
