@@ -78,6 +78,8 @@ def get_messaging_config_by_key(db: Session, key: FidesKey) -> MessagingConfigRe
         key=config.key,
         service_type=config.service_type.value,  # type: ignore[attr-defined]
         details=config.details,
+        last_test_timestamp=config.last_test_timestamp,
+        last_test_succeeded=config.last_test_succeeded,
     )
 
 

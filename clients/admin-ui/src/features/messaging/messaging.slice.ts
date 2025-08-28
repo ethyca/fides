@@ -24,12 +24,23 @@ const messagingApi = baseApi.injectEndpoints({
         method: "POST",
         body: params,
       }),
-      invalidatesTags: ["Messaging Config"],
+      invalidatesTags: ["Messaging Config", "Configuration Settings"],
     }),
     getActiveMessagingProvider: build.query<any, void>({
-      query: () => ({
-        url: `messaging/default/active`,
-      }),
+      // Handle 404 as successful response with null data
+      queryFn: async (arg, api, extraOptions, baseQuery) => {
+        const result = await baseQuery({
+          url: `messaging/default/active`,
+        });
+
+        // If 404, return successful response with null data
+        if (result.error && result.error.status === 404) {
+          return { data: null };
+        }
+
+        return result;
+      },
+      providesTags: ["Messaging Config"],
     }),
     createMessagingConfigurationSecrets: build.mutation<
       any,
@@ -40,12 +51,13 @@ const messagingApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params.details,
       }),
-      invalidatesTags: ["Messaging Config"],
+      invalidatesTags: ["Messaging Config", "Configuration Settings"],
     }),
     getMessagingConfigurationDetails: build.query<any, ConfigMessagingRequest>({
       query: (params) => ({
         url: `messaging/default/${params.type}`,
       }),
+      providesTags: ["Messaging Config"],
     }),
     getMessagingConfigurations: build.query<
       Page_MessagingConfigResponse_,
@@ -79,7 +91,7 @@ const messagingApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: params.config,
       }),
-      invalidatesTags: ["Messaging Config"],
+      invalidatesTags: ["Messaging Config", "Configuration Settings"],
     }),
 
     updateMessagingConfigurationSecretsByKey: build.mutation<
@@ -91,14 +103,14 @@ const messagingApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params.secrets,
       }),
-      invalidatesTags: ["Messaging Config"],
+      invalidatesTags: ["Messaging Config", "Configuration Settings"],
     }),
     deleteMessagingConfigurationByKey: build.mutation<any, { key: string }>({
       query: (params) => ({
         url: `messaging/config/${params.key}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Messaging Config"],
+      invalidatesTags: ["Messaging Config", "Configuration Settings"],
     }),
   }),
 });

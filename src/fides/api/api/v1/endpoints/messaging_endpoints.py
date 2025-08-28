@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
@@ -141,16 +141,22 @@ def post_config(
         # if there is only one messaging config, make it the default
         messaging_config_count = db.query(MessagingConfig).count()
         if messaging_config_count == 1:
-            CONFIG.notifications.notification_service_type = (
-                messaging_config.service_type
+            ApplicationConfig.update_api_set(
+                db,
+                {
+                    "notifications": {
+                        "notification_service_type": messaging_config.service_type
+                    }
+                },
             )
-            ApplicationConfig.update_config_set(db, CONFIG)
 
         return MessagingConfigResponse(
             name=messaging_config.name,
             key=messaging_config.key,
             service_type=messaging_config.service_type.value,  # type: ignore
             details=messaging_config.details,
+            last_test_timestamp=messaging_config.last_test_timestamp,
+            last_test_succeeded=messaging_config.last_test_succeeded,
         )
     except ValueError as exc:
         failed_key = messaging_config_request.key
@@ -199,6 +205,8 @@ def patch_config_by_key(
             key=messaging_config.key,
             service_type=messaging_config.service_type.value,  # type: ignore
             details=messaging_config.details,
+            last_test_timestamp=messaging_config.last_test_timestamp,
+            last_test_succeeded=messaging_config.last_test_succeeded,
         )
     except MessagingConfigNotFoundException:
         logger.warning("No messaging config found with key {}", config_key)
@@ -374,6 +382,8 @@ def put_default_config(
         key=messaging_config.key,
         service_type=messaging_config.service_type.value,  # type: ignore
         details=messaging_config.details,
+        last_test_timestamp=messaging_config.last_test_timestamp,
+        last_test_succeeded=messaging_config.last_test_succeeded,
     )
 
 
@@ -607,9 +617,10 @@ def send_test_message(
 
 @router.post(
     MESSAGING_TEST_DEPRECATED,
+    deprecated=True,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
-    response_model=Dict[str, str],
+    response_model=Dict[str, Any],
     responses={
         HTTP_200_OK: {
             "content": {
@@ -626,7 +637,7 @@ def send_test_message_deprecated(
     message_info: Identity,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     """
     This endpoint is deprecated. Please use the `POST /messaging/test/{service_type}`
     """
@@ -642,7 +653,12 @@ def send_test_message_deprecated(
             status_code=400,
             detail=f"There was an error sending the test message: {exc}",
         )
-    return {"details": "Test message successfully sent"}
+    return {
+        "details": "Test message successfully sent",
+        "warnings": [
+            "This endpoint is deprecated. Please use the `POST /messaging/test/{service_type}`"
+        ],
+    }
 
 
 @router.get(

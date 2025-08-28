@@ -52,7 +52,12 @@ export const configSettingsApi = baseApi.injectEndpoints({
       }),
       // Switching GPP settings causes the backend to update privacy notices behind the scenes, so
       // invalidate privacy notices when a patch goes through.
-      invalidatesTags: ["Configuration Settings", "Privacy Notices"],
+      // Also invalidate messaging config since notification settings affect active messaging provider
+      invalidatesTags: [
+        "Configuration Settings",
+        "Privacy Notices",
+        "Messaging Config",
+      ],
     }),
   }),
 });
