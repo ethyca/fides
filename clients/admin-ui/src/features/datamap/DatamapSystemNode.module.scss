@@ -18,8 +18,8 @@
 
   // Default state
   color: map-get($colors, "neutral-800");
-  background-color: map-get($colors, "neutral-50");
-  border: 1px solid map-get($colors, "neutral-100");
+  background-color: map-get($colors, "neutral-100");
+  border: 1px solid map-get($colors, "neutral-200");
   box-shadow: none;
 
   // Hover state

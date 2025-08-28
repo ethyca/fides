@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
+
+## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added
 - Added models for generic taxonomy support (Fidesplus) [#6421](https://github.com/ethyca/fides/pull/6421)
@@ -35,6 +37,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Privacy Request runner will now also check for awaiting input tags as part of `poll_for_exited_privacy_request_tasks` [#6471](https://github.com/ethyca/fides/pull/6471)
 - Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
 - Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
+- Moved Organization Management and SSO out of beta [#6495](https://github.com/ethyca/fides/pull/6494)
+- Updated data lineage nodes styling to use neutral color scheme for improved visual consistency [#6505](https://github.com/ethyca/fides/pull/6505)
 
 ### Fixed
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
