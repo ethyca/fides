@@ -28,7 +28,9 @@ export const defaultAntTheme: ThemeConfig = {
     colorError: palette.FIDESUI_ERROR,
     colorLink: palette.FIDESUI_LINK,
     colorBgBase: palette.FIDESUI_FULL_WHITE,
+    borderRadiusSM: 4,
     borderRadius: 6,
+    borderRadiusLG: 6,
     wireframe: true,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
