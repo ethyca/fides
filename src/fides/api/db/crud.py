@@ -122,23 +122,22 @@ async def get_resource(
     Returns a SQLAlchemy model of that resource.
     """
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
-        async with async_session.begin():
-            try:
-                log.debug("Fetching resource")
-                query = select(sql_model).where(sql_model.fides_key == fides_key)
-                result = await async_session.execute(query)
-            except SQLAlchemyError as e:
-                sa_error = errors.QueryError()
-                log.exception(f"Failed to fetch resource with error: '{e}'")
-                raise sa_error
+        try:
+            log.debug("Fetching resource")
+            query = select(sql_model).where(sql_model.fides_key == fides_key)
+            result = await async_session.execute(query)
+        except SQLAlchemyError as e:
+            sa_error = errors.QueryError()
+            log.exception(f"Failed to fetch resource with error: '{e}'")
+            raise sa_error
 
-            sql_resource = result.scalars().first()
-            if sql_resource is None and raise_not_found:
-                not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
-                log.bind(error=not_found_error.detail["error"]).info("Resource not found")  # type: ignore[index]
-                raise not_found_error
+        sql_resource = result.scalars().first()
+        if sql_resource is None and raise_not_found:
+            not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
+            log.bind(error=not_found_error.detail["error"]).info("Resource not found")  # type: ignore[index]
+            raise not_found_error
 
-            return sql_resource
+        return sql_resource
 
 
 async def get_resource_with_custom_fields(
