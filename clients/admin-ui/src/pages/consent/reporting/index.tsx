@@ -169,6 +169,7 @@ const ConsentReportingPage = () => {
                 display: "flex",
                 columnGap: "10px",
                 alignItems: "center",
+                marginTop: "10px",
               }}
             >
               <Button onClick={previousPage} disabled={pageIndex === 1}>
