@@ -32,7 +32,7 @@ const badgeTheme = defineStyleConfig({
     solid: solidBadge,
   },
   baseStyle: {
-    borderRadius: "4px",
+    borderRadius: "6px",
     color: palette.FIDESUI_MINOS,
     paddingInlineStart: "var(--chakra-space-1-5)",
     paddingInlineEnd: "var(--chakra-space-1-5)",
