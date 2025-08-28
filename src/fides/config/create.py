@@ -252,6 +252,8 @@ def create_and_update_config_file(
     fides_directory_location: str = ".",
     opt_in: bool = False,
 ) -> Tuple[FidesConfig, str]:
+    # Debug: innocuous log for PR testing; safe to remove later
+    echo("[debug] create_and_update_config_file called (PR test)")
     # request explicit consent for analytics collection
     config = request_analytics_consent(config=config, opt_in=opt_in)
 
