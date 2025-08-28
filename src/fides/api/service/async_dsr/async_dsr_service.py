@@ -162,18 +162,10 @@ def execute_read_result_request(
         secrets,
         identity_data,
     )
-
+    logger.info(f"Result: {result}")
     if result:
-        # Get existing access data from the request task
-        existing_data = async_task.get_access_data()
-
-        if isinstance(result, list):
-            existing_data.extend(result)
-        else:
-            existing_data.append(result)
-
         # Save updated data back to the request task.
-        async_task.access_data = existing_data
+        async_task.access_data = result
         logger.info(
             f"Polling request - {async_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
         )
