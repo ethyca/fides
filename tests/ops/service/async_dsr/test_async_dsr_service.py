@@ -118,8 +118,6 @@ class TestAsyncDSRService:
         config.get_read_requests_by_identity.return_value = [read_request]
         return config
 
-    ##TODO Proper testing for get connection config from task
-
     def test_requeue_polling_request_invalid_status(
         self, mock_db_session, mock_request_task, mock_privacy_request
     ):

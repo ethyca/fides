@@ -14,6 +14,7 @@ from fides.api.common_exceptions import (
     AwaitingAsyncTask,
     FidesopsException,
     PostProcessingException,
+    PrivacyRequestError,
     SkippingConsentPropagation,
 )
 from fides.api.graph.execution import ExecutionNode
@@ -275,9 +276,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_processing = True
-                request_task.async_type = AsyncTaskType(  ## TODO Validation
+                if read_request.async_config.strategy not in AsyncTaskType:
+                    raise PrivacyRequestError(
+                        f"Invalid async type for request task {request_task.id}"
+                    )
+                request_task.async_type = AsyncTaskType(
                     read_request.async_config.strategy
-                )
+                )  # type: ignore
 
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
