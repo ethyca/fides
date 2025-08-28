@@ -1003,5 +1003,14 @@ class TestBigQueryConnectorTableExists:
         # Test with actual connection
         dataset_config = bigquery_example_test_dataset_config_with_namespace_meta
         connector = BigQueryConnector(dataset_config.connection_config)
-        assert connector.table_exists(f"{PROJECT_NAME}.customer")
-        assert not connector.table_exists(f"{PROJECT_NAME}.nonexistent_table")
+
+        # Get the dataset name from the connection config
+        dataset_name = dataset_config.connection_config.secrets.get(
+            "dataset", "fidesopstest"
+        )
+
+        # For BigQuery, the format should be project.dataset.table
+        assert connector.table_exists(f"{PROJECT_NAME}.{dataset_name}.customer")
+        assert not connector.table_exists(
+            f"{PROJECT_NAME}.{dataset_name}.nonexistent_table"
+        )
