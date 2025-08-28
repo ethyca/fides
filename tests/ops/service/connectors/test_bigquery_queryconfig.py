@@ -575,7 +575,7 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `{PROJECT_NAME}.address`.`id` = %(id_1:STRING)s"
+            f"UPDATE `{PROJECT_NAME}.fidesopstest.address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `{PROJECT_NAME}.fidesopstest.address`.`id` = %(id_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -620,7 +620,7 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            f"DELETE FROM `{PROJECT_NAME}.employee` WHERE `{PROJECT_NAME}.employee`.`email` = %(email_1:STRING)s OR `{PROJECT_NAME}.employee`.`address_id` = %(address_id_1:INT64)s"
+            f"DELETE FROM `{PROJECT_NAME}.fidesopstest.employee` WHERE `{PROJECT_NAME}.fidesopstest.employee`.`email` = %(email_1:STRING)s OR `{PROJECT_NAME}.fidesopstest.employee`.`address_id` = %(address_id_1:INT64)s"
         }
         assert stmts == expected_stmts
 
@@ -764,7 +764,7 @@ class TestBigQueryQueryConfig:
 
         # BigQuery namespaced struct updates include the fully qualified project.dataset.table path
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom id`=%(custom id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `{PROJECT_NAME}.customer`.`email` = %(email_1:STRING)s"
+            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom id`=%(custom id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
 
         assert stmts == expected_stmts
@@ -942,7 +942,7 @@ class TestBigQueryQueryConfig:
 
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `{PROJECT_NAME}.customer`.`email` = %(email_1:STRING)s"
+            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -1435,8 +1435,8 @@ class TestBigQueryQueryConfigPartitioning:
 
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            f"UPDATE `{PROJECT_NAME}.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `{PROJECT_NAME}.customer`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
-            f"UPDATE `{PROJECT_NAME}.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `{PROJECT_NAME}.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            f"UPDATE `{PROJECT_NAME}.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `{PROJECT_NAME}.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
 
