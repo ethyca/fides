@@ -152,6 +152,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         baseColumns.push({
           title: "Actions",
           key: DiscoveredSystemAggregateColumnKeys.ACTIONS,
+          fixed: "right",
           render: (_, record) => (
             <DiscoveredSystemActionsCell
               system={record}
