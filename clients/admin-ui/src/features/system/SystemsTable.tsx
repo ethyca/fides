@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { useFlags } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
@@ -68,6 +68,8 @@ const SystemsTable = () => {
   const {
     flags: { alphaSystemGroups: isAlphaSystemGroupsEnabled },
   } = useFlags();
+
+  const { plus: plusIsEnabled } = useFeatures();
 
   const router = useRouter();
 
@@ -218,7 +220,7 @@ const SystemsTable = () => {
         ),
         width: 400,
         title: "Groups",
-        hidden: !isAlphaSystemGroupsEnabled,
+        hidden: !plusIsEnabled || !isAlphaSystemGroupsEnabled,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -324,6 +326,7 @@ const SystemsTable = () => {
       },
     ];
   }, [
+    plusIsEnabled,
     isAlphaSystemGroupsEnabled,
     allSystemGroups,
     allUsers?.items,

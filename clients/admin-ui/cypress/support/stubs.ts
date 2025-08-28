@@ -96,6 +96,12 @@ export const stubSystemCrud = () => {
       },
     }).as("deleteSystem");
   });
+  cy.intercept("POST", "/api/v1/system/bulk-delete", {
+    statusCode: 200,
+  }).as("bulkDeleteSystems");
+  cy.intercept("POST", "/api/v1/system/assign-steward", {
+    statusCode: 200,
+  }).as("bulkAssignSteward");
 };
 
 export const stubVendorList = () => {
