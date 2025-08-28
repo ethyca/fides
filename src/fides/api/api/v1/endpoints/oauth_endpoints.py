@@ -37,6 +37,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import connection_status
+from fides.api.util.endpoint_utils import fides_limiter
 from fides.common.api.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -65,6 +66,7 @@ router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
     TOKEN,
     response_model=AccessToken,
 )
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
 async def acquire_access_token(
     request: Request,
     form_data: OAuth2ClientCredentialsRequestForm = Depends(),

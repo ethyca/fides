@@ -13,6 +13,13 @@ type PrivacyRequestProps = {
   data: PrivacyRequestEntity;
 };
 
+const TERMINAL_STATES = [
+  PrivacyRequestStatus.COMPLETE,
+  PrivacyRequestStatus.CANCELED,
+  PrivacyRequestStatus.DENIED,
+  PrivacyRequestStatus.ERROR,
+];
+
 const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const queryOptions = useMemo(
     () => ({
@@ -24,11 +31,7 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
 
   // Poll for the latest privacy request data while the status is approved or in processing
   const { data: latestData } = useGetAllPrivacyRequestsQuery(queryOptions, {
-    pollingInterval:
-      initialData.status === PrivacyRequestStatus.APPROVED ||
-      initialData.status === PrivacyRequestStatus.IN_PROCESSING
-        ? 2000
-        : 0,
+    pollingInterval: !TERMINAL_STATES.includes(initialData.status) ? 2000 : 0,
     skip: !initialData.id,
   });
 

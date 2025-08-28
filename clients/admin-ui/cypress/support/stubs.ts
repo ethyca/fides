@@ -797,6 +797,28 @@ export const stubManualTaskConfig = () => {
   cy.intercept("POST", "/api/v1/plus/external-user", {
     body: {},
   }).as("createExternalUser");
+
+  // Mock dependency conditions endpoints
+  cy.intercept(
+    "PUT",
+    "/api/v1/plus/connection/*/manual-task/dependency-conditions",
+    {
+      body: {},
+    },
+  ).as("updateDependencyConditions");
+
+  // Mock dataset endpoints for DatasetReferencePicker
+  cy.intercept(
+    "GET",
+    "/api/v1/dataset?minimal=true&exclude_saas_datasets=true",
+    {
+      fixture: "datasets.json",
+    },
+  ).as("getFilteredDatasets");
+
+  cy.intercept("GET", "/api/v1/dataset/*", {
+    fixture: "dataset.json",
+  }).as("getDatasetByKey");
 };
 
 export const stubSharedMonitorConfig = () => {

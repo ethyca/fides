@@ -19,11 +19,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.68.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
+
+## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added
 - Added models for generic taxonomy support (Fidesplus) [#6421](https://github.com/ethyca/fides/pull/6421)
 - Added LocationSelect component and additional utilities for displaying location [#6478](https://github.com/ethyca/fides/pull/6478)
+- Added UI for conditional manual task creation feature [#6431](https://github.com/ethyca/fides/pull/6431)
 - Added streaming attachment capabilities for access packages. [#6474](https://github.com/ethyca/fides/pull/6474)
 - Added tokenized redirect for streaming enabled access package downloads. [#6489](https://github.com/ethyca/fides/pull/6489)
 
@@ -33,6 +36,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Test Website Monitors now show the brand image and a "test monitor" tag [#6476](https://github.com/ethyca/fides/pull/6476)
 - Privacy Request runner will now also check for awaiting input tags as part of `poll_for_exited_privacy_request_tasks` [#6471](https://github.com/ethyca/fides/pull/6471)
 - Added async polling queue for API integrations [#6435](https://github.com/ethyca/fides/pull/6435)
+- Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
+- Moved Organization Management and SSO out of beta [#6495](https://github.com/ethyca/fides/pull/6494)
+- Updated data lineage nodes styling to use neutral color scheme for improved visual consistency [#6505](https://github.com/ethyca/fides/pull/6505)
+
+### Fixed
+- Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
@@ -43,11 +52,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
-
-
-### Fixed
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
 - Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
+
+### Security
+- Changed session invalidation logic to end all sessions for a user when their password has been changed [CVE-2025-57766](https://github.com/ethyca/fides/security/advisories/GHSA-rpw8-82v9-3q87)
+- Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
