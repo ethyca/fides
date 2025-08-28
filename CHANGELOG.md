@@ -58,6 +58,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
 - Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
 
+### Security
+- Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
+
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
 ### Added
