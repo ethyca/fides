@@ -1,7 +1,7 @@
 saas_config:
   fides_key: saas_async_polling_config
   name: Async Polling Example Custom Connector
-  type: async_polling_example
+  type: saas_async_polling
   description: Test Async Polling Config
   version: 0.0.1
 
@@ -11,12 +11,14 @@ saas_config:
       label: API token
 
   client_config:
-    protocol: http
+    protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: api_key
       configuration:
-        token: <api_token>
+        headers:
+          - name: x-api-key
+            value: <api_token>
 
   test_request:
     method: GET
@@ -26,7 +28,7 @@ saas_config:
     - name: user
       requests:
         read:
-          method: GET
+          method: POST
           path: /api/v1/user
           query_params:
             - name: query
