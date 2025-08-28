@@ -8,10 +8,10 @@ import {
 import { DateRangeParams, PaginationQueryParams } from "~/types/query-params";
 
 const startOfDayIso = (date?: Dayjs | null) =>
-  date?.utc()?.startOf("day").toISOString();
+  date?.startOf("day")?.utc()?.toISOString();
 
 const endOfDayIso = (date?: Dayjs | null) =>
-  date?.utc()?.endOf("day").toISOString();
+  date?.endOf("day")?.utc()?.toISOString();
 
 export const consentReportingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
