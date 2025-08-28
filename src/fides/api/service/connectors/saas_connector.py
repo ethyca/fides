@@ -264,7 +264,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
-        awaiting_async_callback: bool = False
+        awaiting_async_processing: bool = False
 
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
@@ -274,8 +274,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             ):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
-                awaiting_async_callback = True
-                request_task.async_type = AsyncTaskType(
+                awaiting_async_processing = True
+                request_task.async_type = AsyncTaskType( ## TODO Validation
                     read_request.async_config.strategy
                 )
 
@@ -335,7 +335,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
         self.unset_connector_state()
-        if awaiting_async_callback:
+        if awaiting_async_processing:
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
             # However for polling async request we want to save the request data for ids that we will use on the pollings status

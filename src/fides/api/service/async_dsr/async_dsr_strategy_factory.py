@@ -23,16 +23,6 @@ class SupportedAsyncDSRStrategies(Enum):
     callback = CallbackAsyncDSRStrategy
     polling = PollingAsyncDSRStrategy
 
-    @classmethod
-    def __contains__(cls, item: str) -> bool:
-        try:
-            cls[item]
-        except KeyError:
-            return False
-
-        return True
-
-
 def get_strategy(
     strategy_name: str,
     configuration: Dict[str, Any],

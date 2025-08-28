@@ -150,7 +150,6 @@ def non_async_request_task(db, pending_privacy_request):
     request_task.delete(db)
 
 
-@pytest.fixture(scope="function")
 def polling_async_dsr_configuration() -> PollingAsyncDSRConfiguration:
     return {
         "status_request": {

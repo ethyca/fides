@@ -36,7 +36,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         param_values = secrets.copy()
         param_values.update(identity_data)
         prepared_status_request = map_param_values(
-            "status", "polling", self.status_request, param_values
+            "status", "polling request", self.status_request, param_values
         )
 
         response: Response = client.send(prepared_status_request)
@@ -80,7 +80,7 @@ class PollingAsyncDSRStrategy(AsyncDSRStrategy):
         param_values.update(identity_data)
         prepared_result_request = map_param_values(
             "result",
-            "Polling",
+            "polling request",
             self.result_request,
             param_values,  # type: ignore
         )
