@@ -52,13 +52,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
-
-
-### Fixed
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
 - Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
 
 ### Security
+- Changed session invalidation logic to end all sessions for a user when their password has been changed [CVE-2025-57766](https://github.com/ethyca/fides/security/advisories/GHSA-rpw8-82v9-3q87)
 - Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
