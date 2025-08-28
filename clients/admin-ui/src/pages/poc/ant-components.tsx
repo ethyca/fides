@@ -9,7 +9,6 @@ import {
   AntFlex as Flex,
   AntInput as Input,
   AntLayout as Layout,
-  AntMessage as message,
   AntRadio as Radio,
   AntRow as Row,
   AntSelect as Select,
@@ -360,34 +359,6 @@ const AntPOC: NextPage = () => {
                 <Link href="https://ant.design" target="_blank">
                   Ant Design (Link)
                 </Link>
-              </Space>
-            </Card>
-          </Col>
-        </Row>
-        <br />
-        <Row gutter={16}>
-          <Col span={8}>
-            <Card title="Message" variant="borderless" className="h-full">
-              <Space direction="vertical">
-                {messageContext}
-                <Button
-                  type="primary"
-                  onClick={() => messageApi.success("Success")}
-                >
-                  Success toast
-                </Button>
-                <Button onClick={() => message.success("Success")}>
-                  Success toast (wrong)
-                </Button>
-                <Button
-                  onClick={() => messageApi.error("Error")}
-                  type="primary"
-                >
-                  Error toast
-                </Button>
-                <Button onClick={() => message.error("Error")}>
-                  Error toast (wrong)
-                </Button>
               </Space>
             </Card>
           </Col>
