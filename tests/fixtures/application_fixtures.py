@@ -3,7 +3,7 @@ import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
-from typing import Dict, Generator, List, Optional
+from typing import Dict, Generator, List, Optional, Any
 from unittest import mock
 from uuid import uuid4
 
@@ -118,7 +118,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
-
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
 
@@ -252,7 +251,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fides.api.service.storage.storage_uploader_service.upload_to_s3"
+            "fides.api.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         _fixture.return_value = "http://www.data-download-url"
         yield _fixture
@@ -495,7 +494,7 @@ def property_b(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def https_connection_config(db: Session) -> Generator:
+def https_connection_config(db: Session) -> Generator[ConnectionConfig, None, None]:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
@@ -516,7 +515,7 @@ def https_connection_config(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def policy_pre_execution_webhooks(
-    db: Session, https_connection_config, policy
+        db: Session, https_connection_config, policy
 ) -> Generator:
     pre_webhook = PolicyPreWebhook.create(
         db=db,
@@ -554,7 +553,7 @@ def policy_pre_execution_webhooks(
 
 @pytest.fixture(scope="function")
 def policy_post_execution_webhooks(
-    db: Session, https_connection_config, policy
+        db: Session, https_connection_config, policy
 ) -> Generator:
     post_webhook = PolicyPostWebhook.create(
         db=db,
@@ -592,8 +591,8 @@ def policy_post_execution_webhooks(
 
 @pytest.fixture(scope="function")
 def pre_approval_webhooks(
-    db: Session,
-    https_connection_config,
+        db: Session,
+        https_connection_config,
 ) -> Generator:
     pre_approval_webhook = PreApprovalWebhook.create(
         db=db,
@@ -625,9 +624,9 @@ def pre_approval_webhooks(
 
 @pytest.fixture(scope="function")
 def access_and_erasure_policy(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config: StorageConfig,
 ) -> Generator:
     access_and_erasure_policy = Policy.create(
         db=db,
@@ -696,9 +695,9 @@ def access_and_erasure_policy(
 
 @pytest.fixture(scope="function")
 def erasure_policy(
-    db: Session,
-    oauth_client: ClientDetail,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+        db: Session,
+        oauth_client: ClientDetail,
+        default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -749,8 +748,8 @@ def erasure_policy(
 
 @pytest.fixture(scope="function")
 def erasure_policy_address_city(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -801,8 +800,8 @@ def erasure_policy_address_city(
 
 @pytest.fixture(scope="function")
 def biquery_erasure_policy(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -861,8 +860,8 @@ def biquery_erasure_policy(
 
 @pytest.fixture(scope="function")
 def bigquery_enterprise_erasure_policy(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -912,9 +911,9 @@ def bigquery_enterprise_erasure_policy(
 
 @pytest.fixture(scope="function")
 def erasure_policy_aes(
-    db: Session,
-    oauth_client: ClientDetail,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+        db: Session,
+        oauth_client: ClientDetail,
+        default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -964,8 +963,8 @@ def erasure_policy_aes(
 
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite_long(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1017,7 +1016,7 @@ def erasure_policy_string_rewrite_long(
 
 @pytest.fixture(scope="function")
 def erasure_policy_two_rules(
-    db: Session, oauth_client: ClientDetail, erasure_policy: Policy
+        db: Session, oauth_client: ClientDetail, erasure_policy: Policy
 ) -> Generator:
     second_erasure_rule = Rule.create(
         db=db,
@@ -1064,8 +1063,8 @@ def erasure_policy_two_rules(
 
 @pytest.fixture(scope="function")
 def erasure_policy_all_categories(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1122,8 +1121,8 @@ def erasure_policy_all_categories(
 
 @pytest.fixture(scope="function")
 def empty_policy(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     policy = Policy.create(
         db=db,
@@ -1142,10 +1141,10 @@ def empty_policy(
 
 @pytest.fixture(scope="function")
 def policy(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config: StorageConfig,
+        default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,
@@ -1193,8 +1192,8 @@ def policy(
 
 @pytest.fixture(scope="function")
 def consent_policy(
-    db: Session,
-    oauth_client: ClientDetail,
+        db: Session,
+        oauth_client: ClientDetail,
 ) -> Generator:
     """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
     consent_request_policy = Policy.create(
@@ -1229,10 +1228,10 @@ def consent_policy(
 
 @pytest.fixture(scope="function")
 def policy_local_storage(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config_local: StorageConfig,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config_local: StorageConfig,
+        default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     """
     A basic example policy fixture that uses a local storage config
@@ -1284,9 +1283,9 @@ def policy_local_storage(
 
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
-    db: Session,
-    oauth_client: ClientDetail,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+        db: Session,
+        oauth_client: ClientDetail,
+        default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1337,9 +1336,9 @@ def erasure_policy_string_rewrite(
 
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite_address(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config: StorageConfig,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1413,9 +1412,9 @@ def erasure_policy_string_rewrite_address(
 
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite_name_and_email(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config: StorageConfig,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1500,9 +1499,9 @@ def erasure_policy_string_rewrite_name_and_email(
 
 @pytest.fixture(scope="function")
 def erasure_policy_hmac(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+        db: Session,
+        oauth_client: ClientDetail,
+        storage_config: StorageConfig,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1575,11 +1574,11 @@ def privacy_requests(db: Session, policy: Policy) -> Generator:
 
 
 def _create_privacy_request_for_policy(
-    db: Session,
-    policy: Policy,
-    status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
-    email_identity: Optional[str] = "test@example.com",
-    phone_identity: Optional[str] = "+12345678910",
+        db: Session,
+        policy: Policy,
+        status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
+        email_identity: Optional[str] = "test@example.com",
+        phone_identity: Optional[str] = "+12345678910",
 ) -> PrivacyRequest:
     data = {
         "external_id": f"ext-{str(uuid4())}",
@@ -1627,7 +1626,7 @@ def _create_privacy_request_for_policy(
 
 @pytest.fixture(scope="function")
 def privacy_request(
-    db: Session, policy: Policy
+        db: Session, policy: Policy
 ) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -1639,9 +1638,9 @@ def privacy_request(
 
 @pytest.fixture(scope="function")
 def soft_deleted_privacy_request(
-    db: Session,
-    policy: Policy,
-    application_user: FidesUser,
+        db: Session,
+        policy: Policy,
+        application_user: FidesUser,
 ) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -1841,7 +1840,7 @@ def consent_request_task(db: Session, privacy_request) -> RequestTask:
 
 @pytest.fixture(scope="function")
 def privacy_request_with_erasure_policy(
-    db: Session, erasure_policy: Policy
+        db: Session, erasure_policy: Policy
 ) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -1853,7 +1852,7 @@ def privacy_request_with_erasure_policy(
 
 @pytest.fixture(scope="function")
 def privacy_request_with_consent_policy(
-    db: Session, consent_policy: Policy
+        db: Session, consent_policy: Policy
 ) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -1864,8 +1863,22 @@ def privacy_request_with_consent_policy(
 
 
 @pytest.fixture(scope="function")
+def privacy_request_with_location(
+        db: Session, policy: Policy
+) -> Generator[PrivacyRequest, Any, None]:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.location = "US"
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_with_custom_fields(
-    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
+        db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
 ) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -1894,7 +1907,7 @@ def privacy_request_with_custom_fields(
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_array_fields(
-    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
+        db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
 ) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -1948,7 +1961,7 @@ def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyR
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_identities(
-    db: Session, policy: Policy
+        db: Session, policy: Policy
 ) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -1986,7 +1999,7 @@ def privacy_request_requires_input(db: Session, policy: Policy) -> PrivacyReques
 
 @pytest.fixture(scope="function")
 def privacy_request_awaiting_consent_email_send(
-    db: Session, consent_policy: Policy
+        db: Session, consent_policy: Policy
 ) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -2000,7 +2013,7 @@ def privacy_request_awaiting_consent_email_send(
 
 @pytest.fixture(scope="function")
 def privacy_request_awaiting_erasure_email_send(
-    db: Session, erasure_policy: Policy
+        db: Session, erasure_policy: Policy
 ) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -2233,7 +2246,7 @@ def privacy_notice(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def served_notice_history(
-    db: Session, privacy_notice, fides_user_provided_identity
+        db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
     pref_1 = ServedNoticeHistory.create(
         db=db,
@@ -2277,11 +2290,11 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_preference_history_us_ca_provide(
-    db: Session,
-    privacy_notice_us_ca_provide,
-    privacy_preference_history,
-    privacy_experience_privacy_center,
-    served_notice_history,
+        db: Session,
+        privacy_notice_us_ca_provide,
+        privacy_preference_history,
+        privacy_experience_privacy_center,
+        served_notice_history,
 ) -> Generator:
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
@@ -2357,7 +2370,7 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_experience_france_tcf_overlay(
-    db: Session, experience_config_tcf_overlay
+        db: Session, experience_config_tcf_overlay
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -2374,7 +2387,7 @@ def privacy_experience_france_tcf_overlay(
 
 @pytest.fixture(scope="function")
 def privacy_experience_france_overlay(
-    db: Session, experience_config_banner_and_modal
+        db: Session, experience_config_banner_and_modal
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -2436,10 +2449,10 @@ def privacy_notice_eu_cy_provide_service_frontend_only(db: Session) -> Generator
 
 @pytest.fixture(scope="function")
 def privacy_preference_history_fr_provide_service_frontend_only(
-    db: Session,
-    privacy_notice_fr_provide_service_frontend_only,
-    privacy_experience_privacy_center,
-    served_notice_history,
+        db: Session,
+        privacy_notice_fr_provide_service_frontend_only,
+        privacy_experience_privacy_center,
+        served_notice_history,
 ) -> Generator:
     preference_history_record = PrivacyPreferenceHistory.create(
         db=db,
@@ -2578,9 +2591,9 @@ def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generato
 
 @pytest.fixture(scope="function")
 def dataset_config(
-    connection_config: ConnectionConfig,
-    ctl_dataset,
-    db: Session,
+        connection_config: ConnectionConfig,
+        ctl_dataset,
+        db: Session,
 ) -> Generator:
     dataset_config = DatasetConfig.create(
         db=db,
@@ -2596,7 +2609,7 @@ def dataset_config(
 
 @pytest.fixture(scope="function")
 def dataset_config_preview(
-    connection_config: ConnectionConfig, db: Session, ctl_dataset
+        connection_config: ConnectionConfig, db: Session, ctl_dataset
 ) -> Generator:
     ctl_dataset.fides_key = "postgres"
     db.add(ctl_dataset)
@@ -2735,8 +2748,8 @@ def sample_data():
 
 @pytest.fixture(scope="function")
 def application_user(
-    db,
-    oauth_client,
+        db,
+        oauth_client,
 ) -> FidesUser:
     unique_username = f"user-{uuid4()}"
     user = FidesUser.create(
@@ -2792,7 +2805,7 @@ def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistrat
 
 @pytest.fixture(scope="function")
 def test_fides_client(
-    fides_connector_example_secrets: Dict[str, str], api_client
+        fides_connector_example_secrets: Dict[str, str], api_client
 ) -> FidesClient:
     return FidesClient(
         fides_connector_example_secrets["uri"],
@@ -2804,7 +2817,7 @@ def test_fides_client(
 
 @pytest.fixture(scope="function")
 def authenticated_fides_client(
-    test_fides_client: FidesClient,
+        test_fides_client: FidesClient,
 ) -> FidesClient:
     test_fides_client.login()
     return test_fides_client
@@ -2875,8 +2888,8 @@ def provided_identity_value():
 
 @pytest.fixture(scope="function")
 def provided_identity_and_consent_request(
-    db,
-    provided_identity_value,
+        db,
+        provided_identity_value,
 ):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -2899,8 +2912,8 @@ def provided_identity_and_consent_request(
 
 @pytest.fixture(scope="function")
 def provided_identity_and_consent_request_with_custom_fields(
-    db,
-    provided_identity_and_consent_request,
+        db,
+        provided_identity_and_consent_request,
 ):
     _, consent_request = provided_identity_and_consent_request
     consent_request.persist_custom_privacy_request_fields(
@@ -2943,9 +2956,9 @@ def fides_user_provided_identity_and_consent_request(db, fides_user_provided_ide
 
 @pytest.fixture(scope="function")
 def executable_consent_request(
-    db,
-    provided_identity_and_consent_request,
-    consent_policy,
+        db,
+        provided_identity_and_consent_request,
+        consent_policy,
 ):
     provided_identity = provided_identity_and_consent_request[0]
     consent_request = provided_identity_and_consent_request[1]
@@ -2963,10 +2976,10 @@ def executable_consent_request(
 
 @pytest.fixture(scope="function")
 def current_privacy_preference(
-    db,
-    privacy_notice,
-    privacy_experience_privacy_center,
-    served_notice_history,
+        db,
+        privacy_notice,
+        privacy_experience_privacy_center,
+        served_notice_history,
 ):
     pref = CurrentPrivacyPreference.create(
         db=db,
@@ -3000,10 +3013,10 @@ def current_privacy_preference(
 
 @pytest.fixture(scope="function")
 def privacy_preference_history(
-    db,
-    privacy_notice,
-    privacy_experience_privacy_center,
-    served_notice_history,
+        db,
+        privacy_notice,
+        privacy_experience_privacy_center,
+        served_notice_history,
 ):
     privacy_notice_history = privacy_notice.translations[0].histories[0]
 
@@ -3032,8 +3045,8 @@ def privacy_preference_history(
 
 @pytest.fixture(scope="function")
 def anonymous_consent_records(
-    db,
-    fides_user_provided_identity_and_consent_request,
+        db,
+        fides_user_provided_identity_and_consent_request,
 ):
     (
         provided_identity,
@@ -3067,8 +3080,8 @@ def anonymous_consent_records(
 
 @pytest.fixture(scope="function")
 def consent_records(
-    db,
-    provided_identity_and_consent_request,
+        db,
+        provided_identity_and_consent_request,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     consent_request.cache_identity_verification_code("abcdefg")
@@ -3157,7 +3170,7 @@ def experience_config_privacy_center(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_experience_privacy_center(
-    db: Session, experience_config_privacy_center
+        db: Session, experience_config_privacy_center
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -3246,7 +3259,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def privacy_experience_overlay(
-    db: Session, experience_config_banner_and_modal
+        db: Session, experience_config_banner_and_modal
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -3262,7 +3275,7 @@ def privacy_experience_overlay(
 
 @pytest.fixture(scope="function")
 def privacy_experience_privacy_center_france(
-    db: Session, experience_config_privacy_center
+        db: Session, experience_config_privacy_center
 ) -> Generator:
     privacy_experience = PrivacyExperience.create(
         db=db,
@@ -3746,7 +3759,7 @@ def purpose_three_consent_publisher_override(db):
 
 @pytest.fixture(scope="function")
 def served_notice_history(
-    db: Session, privacy_notice, fides_user_provided_identity
+        db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
     pref_1 = ServedNoticeHistory.create(
         db=db,
@@ -3815,7 +3828,7 @@ def postgres_dataset_graph(example_datasets, connection_config):
 
 @pytest.fixture()
 def postgres_and_mongo_dataset_graph(
-    example_datasets, connection_config, mongo_connection_config
+        example_datasets, connection_config, mongo_connection_config
 ):
     dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
@@ -3826,7 +3839,7 @@ def postgres_and_mongo_dataset_graph(
 
 @pytest.fixture(scope="function")
 def dataset_with_unreachable_collections(
-    db: Session, test_fides_org: Organization
+        db: Session, test_fides_org: Organization
 ) -> Generator[CtlDataset, None, None]:
     dataset = Dataset(
         **{
@@ -3871,7 +3884,7 @@ def dataset_with_unreachable_collections(
 
 @pytest.fixture(scope="function")
 def dataset_graph_with_unreachable_collections(
-    dataset_with_unreachable_collections: Dataset,
+        dataset_with_unreachable_collections: Dataset,
 ) -> Generator[DatasetGraph, None, None]:
     graph = convert_dataset_to_graph(
         dataset_with_unreachable_collections, "unreachable-dataset-test"

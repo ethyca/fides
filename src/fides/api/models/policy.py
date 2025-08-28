@@ -177,6 +177,30 @@ class Policy(Base):
             for category in node.get_data_categories()
         )
 
+    def to_safe_dict(self) -> Dict[str, Any]:
+        """
+        Returns a dictionary representation of the Policy, excluding sensitive information.
+        """
+        return {
+            "id": self.id,
+            "name": self.name,
+            "key": self.key,
+            "drp_action": self.drp_action.value if self.drp_action else None,
+            "execution_timeframe": self.execution_timeframe,
+            "client_id": self.client_id,
+            "rules": [
+                {
+                    "id": rule.id,
+                    "name": rule.name,
+                    "key": rule.key,
+                    "action_type": rule.action_type.value,
+                    "masking_strategy": rule.masking_strategy,
+                    "storage_destination_id": rule.storage_destination_id,
+                }
+                for rule in self.rules  # type: ignore[attr-defined]
+            ],
+        }
+
 
 def _get_ref_from_taxonomy(
     fides_key: FidesKey,
