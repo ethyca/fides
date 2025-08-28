@@ -693,7 +693,6 @@ class SmartOpenStreamingStorage:
         with self.storage_client.stream_upload(
             config.bucket_name,
             config.file_key,
-            content_type="application/zip",
         ) as upload_stream:
             for chunk in stream_zip(combined_entries):
                 upload_stream.write(chunk)
@@ -770,9 +769,7 @@ class SmartOpenStreamingStorage:
         )
 
         # Use smart-open's streaming upload capability
-        with self.storage_client.stream_upload(
-            bucket_name, file_key, content_type="application/zip"
-        ) as upload_stream:
+        with self.storage_client.stream_upload(bucket_name, file_key) as upload_stream:
             for chunk in stream_zip(zip_generator):
                 upload_stream.write(chunk)
 
@@ -800,9 +797,7 @@ class SmartOpenStreamingStorage:
         zip_generator = self._convert_to_stream_zip_format(data_files_generator)
 
         # Use smart-open streaming upload
-        with self.storage_client.stream_upload(
-            bucket_name, file_key, content_type="application/zip"
-        ) as upload_stream:
+        with self.storage_client.stream_upload(bucket_name, file_key) as upload_stream:
             for chunk in stream_zip(zip_generator):
                 upload_stream.write(chunk)
 

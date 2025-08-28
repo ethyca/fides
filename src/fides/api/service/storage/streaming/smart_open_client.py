@@ -216,7 +216,6 @@ class SmartOpenStorageClient:
         self,
         bucket: str,
         key: str,
-        content_type: Optional[str] = None,
     ) -> Any:
         """Get a writable stream for uploading data.
 
@@ -225,16 +224,15 @@ class SmartOpenStorageClient:
         Args:
             bucket: Storage bucket/container name
             key: Object key/path
-            content_type: MIME type of the object
 
         Returns:
             Writable file-like object
         """
         uri = self._build_uri(bucket, key)
         transport_params = self._get_transport_params()
-
-        if content_type:
-            transport_params["content_type"] = content_type
+        logger.debug(
+            f"Streaming upload to {uri} with transport params: {transport_params}"
+        )
 
         return smart_open.open(uri, "wb", transport_params=transport_params)
 

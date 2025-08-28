@@ -42,11 +42,9 @@ class TestS3StorageClient:
     def test_get_transport_params_with_all_keys(self):
         """Test transport params with all S3 keys."""
         secrets = {
-            "client": {
-                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-                StorageSecrets.REGION_NAME: "us-west-2",
-            }
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -59,10 +57,8 @@ class TestS3StorageClient:
     def test_get_transport_params_with_partial_keys(self):
         """Test transport params with partial S3 keys."""
         secrets = {
-            "client": {
-                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-                StorageSecrets.REGION_NAME: "us-west-2",
-            }
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.REGION_NAME: "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -75,12 +71,10 @@ class TestS3StorageClient:
     def test_get_transport_params_with_assume_role_arn(self):
         """Test transport params include assume_role_arn when present."""
         secrets = {
-            "client": {
-                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-                StorageSecrets.REGION_NAME: "us-west-2",
-                StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
-            }
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
+            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -96,11 +90,9 @@ class TestS3StorageClient:
     def test_get_transport_params_without_assume_role_arn(self):
         """Test transport params don't include assume_role_arn when not present."""
         secrets = {
-            "client": {
-                StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-                StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-                StorageSecrets.REGION_NAME: "us-west-2",
-            }
+            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            StorageSecrets.REGION_NAME: "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
