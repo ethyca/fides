@@ -1900,7 +1900,7 @@ def finalize_privacy_request(
 
     queue_privacy_request(
         privacy_request_id=privacy_request_id,
-        from_step=CurrentStep.finalize_erasure.value,
+        from_step=CurrentStep.finalization.value,
     )
 
     return privacy_request  # type: ignore[return-value]
