@@ -10,6 +10,7 @@ import {
   AntSelect as Select,
   Icons,
   useToast,
+  VisuallyHidden,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
@@ -30,7 +31,6 @@ import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/
 import { ConsentReportingSchema } from "~/types/api";
 
 const ConsentReportingPage = () => {
-  // const pagination = useServerSidePagination();
   const today = useMemo(() => dayjs(), []);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -59,7 +59,7 @@ const ConsentReportingPage = () => {
       size: pageSize,
       startDate,
       endDate,
-      includeTotal: Boolean(startDate) && Boolean(endDate),
+      includeTotal: false,
     });
 
   const { items: privacyPreferences } = useMemo(() => {
@@ -171,16 +171,25 @@ const ConsentReportingPage = () => {
                   }
                 />
               </div>
-              <Flex gap="middle" align="center">
-                <Button onClick={previousPage} disabled={pageIndex === 1}>
-                  Previous
+
+              <Flex gap="middle" align="center" justify="right">
+                <Button
+                  onClick={previousPage}
+                  disabled={pageIndex === 1}
+                  icon={<Icons.ChevronLeft />}
+                >
+                  <VisuallyHidden>Previous</VisuallyHidden>
                 </Button>
-                <span>{pageIndex}</span>
+                <span>
+                  <VisuallyHidden>Page&nbsp;</VisuallyHidden>
+                  {pageIndex}
+                </span>
                 <Button
                   onClick={nextPage}
                   disabled={(data?.items?.length ?? 0) < pageSize}
+                  icon={<Icons.ChevronRight />}
                 >
-                  Next
+                  <VisuallyHidden>Next</VisuallyHidden>
                 </Button>
                 <Select
                   className="w-auto"
