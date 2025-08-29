@@ -74,9 +74,22 @@ class S3StorageClient(BaseStorageClient):
 
             # Create S3 client using existing utility
             # get_s3_client returns a boto3 S3 client, not a Session
-            s3_client: Any = get_s3_client(
-                auth_method, self.storage_secrets, assume_role_arn  # type: ignore
-            )
+            s3_client: Any = None
+            try:
+                s3_client = get_s3_client(
+                    auth_method, self.storage_secrets, assume_role_arn  # type: ignore
+                )
+            except KeyError:
+                try:
+                    s3_str_secrets = {
+                        k.value: v for k, v in self.storage_secrets.items()
+                    }
+                    s3_client = get_s3_client(
+                        auth_method, s3_str_secrets, assume_role_arn  # type: ignore
+                    )
+                except KeyError:
+                    raise ValueError("No S3 credentials provided")
+
             params["client"] = s3_client
 
         except Exception as e:
