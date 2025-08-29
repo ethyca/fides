@@ -230,23 +230,6 @@ def get_saas_connection_types(
     for item in saas_types:
         connector_template = ConnectorRegistry.get_connector_template(item)
         if connector_template is not None:
-            # Read display info from SAAS config if available
-            category = None
-            tags = None
-            enabled_features = None
-
-            try:
-                saas_config = SaaSConfig(
-                    **load_config_from_string(connector_template.config)
-                )
-                if saas_config.display_info:
-                    category = saas_config.display_info.category
-                    tags = saas_config.display_info.tags
-                    enabled_features = saas_config.display_info.enabled_features
-            except Exception:
-                # If config parsing fails, leave display info as None
-                pass
-
             saas_connection_types.append(
                 ConnectionSystemTypeMap(
                     identifier=item,
@@ -256,9 +239,9 @@ def get_saas_connection_types(
                     authorization_required=connector_template.authorization_required,
                     user_guide=connector_template.user_guide,
                     supported_actions=connector_template.supported_actions,
-                    category=category,
-                    tags=tags,
-                    enabled_features=enabled_features,
+                    category=connector_template.category,
+                    tags=connector_template.tags,
+                    enabled_features=connector_template.enabled_features,
                 )
             )
 
