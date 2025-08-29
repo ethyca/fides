@@ -88,10 +88,12 @@ def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
     Any errors accessing related objects are logged and treated as non-invalidating.
     """
     try:
-        if client.user is not None and client.user.password_reset_at is not None:
-            password_reset_at = client.user.password_reset_at
-            if password_reset_at and issued_at < password_reset_at:
-                return True
+        if (
+            client.user is not None
+            and client.user.password_reset_at is not None
+            and issued_at < client.user.password_reset_at
+        ):
+            return True
         return False
     except Exception as exc:
         logger.exception(
