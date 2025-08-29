@@ -13,6 +13,9 @@ from fides.api.service.storage.streaming.base_storage_client import \
     BaseStorageClient
 from fides.api.util.aws_util import get_s3_client
 
+# Type annotation: get_s3_client returns a boto3 S3 client object, not a Session
+# This is what smart-open expects for the "client" transport parameter
+
 
 class S3StorageClient(BaseStorageClient):
     """S3-specific storage client implementation.
@@ -61,9 +64,9 @@ class S3StorageClient(BaseStorageClient):
                 and self.storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID]
                 and self.storage_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY]
             ):
-                auth_method = "secret_keys"
+                auth_method = AWSAuthMethod.SECRET_KEYS.value
             else:
-                auth_method = "automatic"
+                auth_method = AWSAuthMethod.AUTOMATIC.value
 
             # Extract assume_role_arn if present
             assume_role_arn = None
@@ -71,7 +74,8 @@ class S3StorageClient(BaseStorageClient):
                 assume_role_arn = self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
 
             # Create S3 client using existing utility
-            s3_client = get_s3_client(auth_method, self.storage_secrets, assume_role_arn)
+            # get_s3_client returns a boto3 S3 client, not a Session
+            s3_client: Any = get_s3_client(auth_method, self.storage_secrets, assume_role_arn)
             params["client"] = s3_client
 
         except Exception as e:
@@ -136,7 +140,8 @@ class S3StorageClient(BaseStorageClient):
             if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
                 assume_role_arn = self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
 
-            s3_client = get_s3_client(auth_method, s3_secrets, assume_role_arn)
+            # get_s3_client returns a boto3 S3 client, not a Session
+            s3_client: Any = get_s3_client(auth_method, s3_secrets, assume_role_arn)
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:
             logger.error(f"Failed to generate S3 presigned URL: {e}")

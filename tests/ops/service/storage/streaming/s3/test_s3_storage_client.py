@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 from moto import mock_aws
 
-from fides.api.schemas.storage.storage import StorageSecrets
+from fides.api.schemas.storage.storage import StorageSecrets, AWSAuthMethod
 from fides.api.service.storage.streaming.s3.s3_storage_client import \
     S3StorageClient
 
@@ -189,7 +189,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with SECRET_KEYS auth method
         mock_get_s3_client.assert_called_once_with(
-            "secret_keys", secrets, None
+            AWSAuthMethod.SECRET_KEYS.value, secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -213,7 +213,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            "automatic", secrets, None
+            AWSAuthMethod.AUTOMATIC.value, secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -241,7 +241,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            "automatic", secrets, None
+            AWSAuthMethod.AUTOMATIC.value, secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -269,7 +269,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with SECRET_KEYS auth method and assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            "secret_keys",
+            AWSAuthMethod.SECRET_KEYS.value,
             secrets,
             "arn:aws:iam::123456789012:role/TestRole",
         )
@@ -298,7 +298,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method and assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            "automatic",
+            AWSAuthMethod.AUTOMATIC.value,
             secrets,
             "arn:aws:iam::123456789012:role/TestRole",
         )
@@ -328,7 +328,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with None for assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            "secret_keys", secrets, None
+            AWSAuthMethod.SECRET_KEYS.value, secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -357,5 +357,5 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with empty string for assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            "secret_keys", secrets, ""
+            AWSAuthMethod.SECRET_KEYS.value, secrets, ""
         )
