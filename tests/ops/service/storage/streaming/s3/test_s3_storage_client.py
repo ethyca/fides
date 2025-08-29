@@ -178,6 +178,7 @@ class TestS3StorageClient:
             StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
             StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
         }
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -185,7 +186,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with SECRET_KEYS auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets, None
+            AWSAuthMethod.SECRET_KEYS.value, str_secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -202,6 +203,7 @@ class TestS3StorageClient:
 
         # No AWS credentials provided
         secrets = {StorageSecrets.REGION_NAME: "us-west-2"}
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -209,7 +211,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets, None
+            AWSAuthMethod.AUTOMATIC.value, str_secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -230,6 +232,7 @@ class TestS3StorageClient:
             StorageSecrets.AWS_SECRET_ACCESS_KEY: "",
             StorageSecrets.REGION_NAME: "us-west-2",
         }
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -237,7 +240,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with AUTOMATIC auth method
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets, None
+            AWSAuthMethod.AUTOMATIC.value, str_secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -258,6 +261,7 @@ class TestS3StorageClient:
             StorageSecrets.REGION_NAME: "us-west-2",
             StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
         }
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -266,7 +270,7 @@ class TestS3StorageClient:
         # Verify get_s3_client was called with SECRET_KEYS auth method and assume_role_arn
         mock_get_s3_client.assert_called_once_with(
             AWSAuthMethod.SECRET_KEYS.value,
-            secrets,
+            str_secrets,
             "arn:aws:iam::123456789012:role/TestRole",
         )
 
@@ -287,6 +291,7 @@ class TestS3StorageClient:
             StorageSecrets.REGION_NAME: "us-west-2",
             StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
         }
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -295,7 +300,7 @@ class TestS3StorageClient:
         # Verify get_s3_client was called with AUTOMATIC auth method and assume_role_arn
         mock_get_s3_client.assert_called_once_with(
             AWSAuthMethod.AUTOMATIC.value,
-            secrets,
+            str_secrets,
             "arn:aws:iam::123456789012:role/TestRole",
         )
 
@@ -317,6 +322,7 @@ class TestS3StorageClient:
             StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
             StorageSecrets.REGION_NAME: "us-west-2",
         }
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -324,7 +330,7 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with None for assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets, None
+            AWSAuthMethod.SECRET_KEYS.value, str_secrets, None
         )
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
@@ -346,6 +352,7 @@ class TestS3StorageClient:
             StorageSecrets.REGION_NAME: "us-west-2",
             StorageSecrets.AWS_ASSUME_ROLE: "",
         }
+        str_secrets = {k.value: v for k, v in secrets.items()}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -353,5 +360,5 @@ class TestS3StorageClient:
         assert result == "https://test-url.com"
         # Verify get_s3_client was called with empty string for assume_role_arn
         mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value, secrets, ""
+            AWSAuthMethod.SECRET_KEYS.value, str_secrets, ""
         )
