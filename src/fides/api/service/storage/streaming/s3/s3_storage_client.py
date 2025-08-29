@@ -76,6 +76,7 @@ class S3StorageClient(BaseStorageClient):
             # get_s3_client returns a boto3 S3 client, not a Session
             s3_client: Any = None
             try:
+
                 s3_client = get_s3_client(
                     auth_method, self.storage_secrets, assume_role_arn  # type: ignore
                 )
@@ -97,17 +98,29 @@ class S3StorageClient(BaseStorageClient):
             raise
 
         # Include credentials at top level for compatibility
-        if StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets:
+        if (
+            StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets
+            and self.storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID]
+        ):
             params["access_key"] = self.storage_secrets[
                 StorageSecrets.AWS_ACCESS_KEY_ID
             ]
-        if StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets:
+        if (
+            StorageSecrets.AWS_SECRET_ACCESS_KEY in self.storage_secrets
+            and self.storage_secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY]
+        ):
             params["secret_key"] = self.storage_secrets[
                 StorageSecrets.AWS_SECRET_ACCESS_KEY
             ]
-        if StorageSecrets.REGION_NAME in self.storage_secrets:
+        if (
+            StorageSecrets.REGION_NAME in self.storage_secrets
+            and self.storage_secrets[StorageSecrets.REGION_NAME]
+        ):
             params["region"] = self.storage_secrets[StorageSecrets.REGION_NAME]
-        if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
+        if (
+            StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets
+            and self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
+        ):
             params["assume_role_arn"] = self.storage_secrets[
                 StorageSecrets.AWS_ASSUME_ROLE
             ]

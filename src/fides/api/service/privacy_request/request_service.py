@@ -540,6 +540,7 @@ def _get_request_task_ids_in_progress(
 
 
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
@@ -676,16 +677,16 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 should_requeue = False
                                 break
-                            else:
-                                # For other statuses, cancel the entire privacy request
-                                _cancel_interrupted_tasks_and_error_privacy_request(
-                                    db,
-                                    privacy_request,
-                                    f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
-                                )
-                                should_requeue = False
-                                break
+
+                            # For other statuses, cancel the entire privacy request
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db,
+                                privacy_request,
+                                f"No task ID found for request task {request_task_id} "
+                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
+                            )
+                            should_requeue = False
+                            break
 
                         if (
                             subtask_id not in queued_tasks_ids
