@@ -2,6 +2,8 @@ import { AntMenuProps as MenuProps, Icons } from "fidesui";
 
 export const COLLAPSE_BUTTON_TEXT = "show less";
 
+export const TAG_MAX_WIDTH = 150;
+
 /**
  * Import this to use the expand/collapse all menu items in table columns.
  * @example
