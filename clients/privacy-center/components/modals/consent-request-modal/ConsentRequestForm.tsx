@@ -82,6 +82,7 @@ const ConsentRequestForm = ({
             required={emailInput === "required"}
             hasFeedback={touched.email && !!errors.email}
             label="Email"
+            htmlFor="email"
           >
             <Input
               id="email"
@@ -103,6 +104,7 @@ const ConsentRequestForm = ({
             required={phoneInput === "required"}
             hasFeedback={touched.phone && !!errors.phone}
             label="Phone"
+            htmlFor="phone"
           >
             <PhoneInput
               id="phone"
@@ -161,12 +163,13 @@ const ConsentRequestForm = ({
                 item.field_type === "text" && touched[key] && !!errors[key]
               }
               label={item.label}
+              htmlFor={key}
             >
               <CustomFieldRenderer {...customFieldProps(values[key], item)} />
             </Form.Item>
           );
         })}
-        <Flex justify="space-between" gap="middle">
+        <Flex justify="stretch" gap="middle">
           <Button type="default" variant="outlined" onClick={onClose} block>
             {config.consent?.button.cancelButtonText || "Cancel"}
           </Button>

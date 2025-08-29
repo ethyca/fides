@@ -78,27 +78,19 @@ const VerificationForm = ({
             value={values.code}
           />
         </Form.Item>
-        <Flex vertical gap="middle">
+        <Flex justify="stretch" gap="middle">
+          <Button variant="outlined" onClick={resetVerificationProcess} block>
+            Resend Code
+          </Button>
           <Button
             htmlType="submit"
             type="primary"
             loading={isSubmitting}
             disabled={isSubmitting || !(isValid && dirty)}
+            block
           >
             Submit code
           </Button>
-          <Flex align="center" gap="small" vertical>
-            <Text size="sm" type="secondary">
-              {`Didn't receive a code?`}
-            </Text>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={resetVerificationProcess}
-            >
-              Click here to try again
-            </Button>
-          </Flex>
         </Flex>
       </Form>
     </Flex>
