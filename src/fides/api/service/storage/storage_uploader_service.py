@@ -124,10 +124,6 @@ def _s3_uploader(
         config.secrets is not None,
     )
 
-    if not config.secrets:
-        logger.warning("Config secrets is None or empty!")
-        raise StorageUploadError("Config secrets is None or empty!")
-
     enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
     file_key: str = _construct_file_key(privacy_request.id, config, enable_streaming)
 
