@@ -1,7 +1,7 @@
 from typing import Union
 
 from fides.api.schemas.base_class import NoValidationSchema
-from fides.api.schemas.messaging.messaging import (
+from fides.api.schemas.messaging.shared_schemas import (
     MessagingServiceSecretsAWS_SES,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,

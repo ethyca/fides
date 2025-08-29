@@ -854,7 +854,9 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @pytest.mark.usefixtures(
-        "messaging_config", "privacy_request_receipt_notification_enabled"
+        "messaging_config",
+        "privacy_request_receipt_notification_enabled",
+        "set_notification_service_type_to_mailgun",
     )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -4000,6 +4002,7 @@ class TestApprovePrivacyRequest:
 
         privacy_request.delete(db)
 
+    @pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
@@ -4554,6 +4557,7 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert not mock_dispatch_message.called
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestDenyPrivacyRequest:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request):
@@ -5793,6 +5797,7 @@ class TestVerifyIdentity:
         assert queue == MESSAGING_QUEUE_NAME
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -6707,6 +6712,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         )
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestCreatePrivacyRequestEmailReceiptNotification:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:

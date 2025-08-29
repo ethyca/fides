@@ -251,6 +251,10 @@ describe("configureNavGroups", () => {
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
           { title: "Email templates", path: routes.EMAIL_TEMPLATES_ROUTE },
+          {
+            title: "Messaging providers",
+            path: routes.MESSAGING_PROVIDERS_ROUTE,
+          },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });
@@ -279,6 +283,10 @@ describe("configureNavGroups", () => {
           {
             title: "Email templates",
             path: routes.EMAIL_TEMPLATES_ROUTE,
+          },
+          {
+            title: "Messaging providers",
+            path: routes.MESSAGING_PROVIDERS_ROUTE,
           },
           { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],

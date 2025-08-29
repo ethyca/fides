@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
 
+### Added
+- Added a messaging provider configuration page to the Admin UI [#6213](https://github.com/ethyca/fides/pull/6213)
+
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added

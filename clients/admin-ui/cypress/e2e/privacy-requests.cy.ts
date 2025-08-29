@@ -279,43 +279,6 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe("Message Configuration", () => {
-    beforeEach(() => {
-      cy.visit("/privacy-requests/configure/messaging");
-    });
-
-    it("Can configure Mailgun email", () => {
-      cy.getByTestId("option-mailgun").click();
-      cy.getByTestId("input-domain").type("test-domain");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createMessagingConfiguration").then((interception) => {
-        const { body } = interception.request;
-        expect(body.service_type).to.eql("mailgun");
-        cy.contains(
-          "Mailgun email successfully updated. You can now enter your security key.",
-        );
-      });
-    });
-
-    it("Can configure Twilio email", () => {
-      cy.getByTestId("option-twilio-email").click();
-      cy.getByTestId("input-email").type("test-email");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createMessagingConfiguration").then(() => {
-        cy.contains(
-          "Twilio email successfully updated. You can now enter your security key.",
-        );
-      });
-    });
-
-    it("Can configure Twilio SMS", () => {
-      cy.getByTestId("option-twilio-sms").click();
-      cy.wait("@createMessagingConfiguration").then(() => {
-        cy.contains("Messaging provider saved successfully.");
-      });
-    });
-  });
-
   describe("privacy request creation", () => {
     describe("showing button depending on role", () => {
       beforeEach(() => {
