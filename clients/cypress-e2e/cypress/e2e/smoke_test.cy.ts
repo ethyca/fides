@@ -6,7 +6,7 @@ import {
 } from "support/constants";
 
 describe("Smoke test", () => {
-  it.only("can submit an access request from the Privacy Center", () => {
+  it("can submit an access request from the Privacy Center", () => {
     // Watch these routes without changing or stubbing its response
     cy.intercept("PATCH", `${API_URL}/privacy-request/administrate/approve`).as(
       "patchRequest",
