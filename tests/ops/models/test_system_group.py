@@ -62,9 +62,6 @@ class TestSystemGroup:
                 ],
             },
         )
-        # color may be set separately; verify other fields
-        assert group.data_steward == user.username
-        # Relationship present
         assert (
             group.data_steward is not None
             and group.data_steward.username == user.username
