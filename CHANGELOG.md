@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
+- DSR finalization UI tweaks [#6514](https://github.com/ethyca/fides/pull/6514)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
