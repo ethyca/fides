@@ -119,9 +119,13 @@ class TestS3StorageClient:
         }
         client = S3StorageClient(secrets)
 
-        # This should raise an exception since we can't create an S3 client
-        with pytest.raises(Exception):
-            client.get_transport_params()
+        # This shouldn't raise an exception since we can pass the transport params
+        transport_params = client.get_transport_params()
+        assert transport_params is not None
+        assert "access_key" in transport_params
+        assert "secret_key" in transport_params
+        assert "region" in transport_params
+        assert "assume_role_arn" not in transport_params
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     def test_get_transport_params_automatic_auth_failure(self, mock_get_s3_client):
