@@ -108,21 +108,15 @@ def _process_storage_secrets_input(
         for key, value in storage_secrets.model_dump().items():
             if value is not None:
                 final_secrets[key] = value
-                logger.debug(f"Added key '{key}' with value '{value}'")
     else:
         # Process dict input, converting enum keys to strings if needed
         logger.debug("Processing dict input, converting enum keys to strings if needed")
         for key, value in (storage_secrets or {}).items():  # type: ignore[assignment]
             if isinstance(key, str):
                 final_secrets[key] = value
-                logger.debug(f"Added string key '{key}' with value '{value}'")
             elif isinstance(key, StorageSecrets):
                 final_secrets[key.value] = value
-                logger.debug(
-                    f"Converted enum key '{key}' to string '{key.value}' with value '{value}'"
-                )
 
-    logger.debug(f"Processed secrets result: {list(final_secrets.keys())}")
     return final_secrets
 
 
@@ -156,9 +150,6 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
     else:
         # AUTOMATIC authentication - check if region is provided
         has_region = "region_name" in final_secrets and final_secrets["region_name"]
-        logger.debug(
-            f"AUTOMATIC authentication - has_region: {has_region}, region: {final_secrets.get('region_name', 'NOT_SET')}"
-        )
 
         if not has_region:
             raise ValueError(
@@ -167,16 +158,6 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
             )
         logger.debug("Validated AUTOMATIC authentication - region is set")
 
-
-def _set_default_region(final_secrets: dict[str, Any]) -> None:
-    """Set default region if missing."""
-    if "region_name" not in final_secrets or not final_secrets["region_name"]:
-        logger.debug(
-            "Setting default region to 'us-east-1' for automatic authentication"
-        )
-        final_secrets["region_name"] = "us-east-1"
-    else:
-        logger.debug(f"Using specified region: {final_secrets['region_name']}")
 
 
 def format_secrets(
@@ -216,10 +197,7 @@ def format_secrets(
     # Stage 1: Process input and create final format directly
     final_secrets = _process_storage_secrets_input(storage_secrets)
 
-    # Stage 2: Set default region if missing (BEFORE validation for better automatic auth support)
-    _set_default_region(final_secrets)
-
-    # Stage 3: Validate required credentials (after setting defaults)
+    # Stage 2: Validate required credentials (after setting defaults)
     _validate_aws_credentials(final_secrets)
 
     logger.debug(
