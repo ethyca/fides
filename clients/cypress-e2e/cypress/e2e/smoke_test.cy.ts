@@ -20,41 +20,36 @@ describe("Smoke test", () => {
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
       cy.get("input#first_name").type("Jenny");
-      cy.get('[data-testid*="location"]').first().click();
-      cy.get('[data-testid*="location"]').first().type("New York{enter}");
-      // preferred_format has default_value "HTML" so it should be pre-selected
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
 
     // Verify the privacy request payload
     cy.wait("@postPrivacyRequest").then((interception) => {
-      expect(interception.request.body).to.be.an("array").and.have.lengthOf(1);
-      expect(interception.request.body[0]).to.deep.equal({
-        identity: {
-          email: "jenny@example.com",
+      expect(interception.request.body).to.deep.equal([
+        {
+          identity: {
+            email: "jenny@example.com",
+          },
+          custom_privacy_request_fields: {
+            first_name: {
+              label: "First name",
+              value: "Jenny",
+            },
+            color: {
+              label: "Color",
+              value: "blue",
+            },
+            tenant_id: {
+              label: "Tenant ID",
+              value: "123",
+            },
+          },
+          policy_key: "default_access_policy",
+          property_id: null,
+          source: "Privacy Center",
         },
-        custom_privacy_request_fields: {
-          first_name: {
-            label: "First name",
-            value: "Jenny",
-          },
-          tenant_id: {
-            label: "Tenant ID",
-            value: "123",
-          },
-          location: {
-            label: "Location",
-            value: "US-NY",
-          },
-          preferred_format: {
-            label: "Preferred format",
-            value: "HTML",
-          },
-        },
-        policy_key: "default_access_policy",
-        property_id: null,
-        source: "Privacy Center",
-      });
+      ]);
     });
 
     // Approve the request in the admin UI
@@ -135,6 +130,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
 
@@ -170,6 +167,8 @@ describe("Smoke test", () => {
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("consent-request-form").within(() => {
       cy.get("input#email").type("jenny@example.com");
+      cy.get("input#first_name").type("Jenny");
+      cy.get("input#color").clear().type("blue");
       cy.get("button").contains("Continue").click();
     });
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {

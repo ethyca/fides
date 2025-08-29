@@ -1,18 +1,16 @@
 {
   "title": "Take control of your data",
-  "description": "When you use our services, you're trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
+  "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
   "description_subtext": [],
   "addendum": [],
-  "logo_path": "/logo.svg",
+  "logo_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/logo.svg",
   "logo_url": "https://fid.es",
   "privacy_policy_url": "https://fid.es/privacy",
   "privacy_policy_url_text": "Privacy Policy",
-  "favicon_path": "/favicon.ico",
-
   "actions": [
     {
       "policy_key": "default_access_policy",
-      "icon_path": "/download.svg",
+      "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/access.svg",
       "title": "Access your data",
       "description": "We will provide you a report of all your personal data.",
       "description_subtext": [],
@@ -27,82 +25,26 @@
           "label": "Last name",
           "required": false
         },
+        "color": {
+          "label": "Color",
+          "default_value": "red"
+        },
         "tenant_id": {
           "label": "Tenant ID",
           "default_value": "123",
           "hidden": true
-        },
-        "location": {
-          "label": "Location",
-          "field_type": "location",
-          "ip_geolocation_hint": true,
-          "required": true
-        },
-        "preferred_format": {
-          "label": "Preferred format",
-          "field_type": "select",
-          "required": true,
-          "default_value": "HTML",
-          "options": [
-            "JSON",
-            "CSV",
-            "PDF",
-            "XML",
-            "HTML",
-            "TXT",
-            "DOCX",
-            "XLSX",
-            "PPTX",
-            "ZIP",
-            "PNG",
-            "JPEG",
-            "GIF",
-            "SVG",
-            "MP4",
-            "MP3",
-            "WAV",
-            "SQL",
-            "YAML",
-            "MD",
-            "RTF",
-            "EPUB",
-            "PSD"
-          ]
         }
-      },
-      "confirmButtonText": "Continue",
-      "cancelButtonText": "Cancel"
+      }
     },
     {
       "policy_key": "default_erasure_policy",
-      "icon_path": "/delete.svg",
+      "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/erase.svg",
       "title": "Erase your data",
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
-      },
-      "custom_privacy_request_fields": {
-        "data_categories": {
-          "label": "Select data categories to erase",
-          "field_type": "multiselect",
-          "required": false,
-          "options": [
-            "Profile Information",
-            "User Preferences",
-            "Activity History",
-            "Analytics Data"
-          ]
-        },
-        "location": {
-          "label": "Location",
-          "field_type": "location",
-          "required": false,
-          "ip_geolocation_hint": true
-        }
-      },
-      "confirmButtonText": "Continue",
-      "cancelButtonText": "Cancel"
+      }
     }
   ],
   "includeConsent": true,
@@ -112,22 +54,29 @@
       "description_subtext": [
         "In order to opt-out of certain consent preferences, we may need to identify your account via your email address. This is optional."
       ],
-      "icon_path": "/consent.svg",
+      "icon_path": "https://ethyca-cdn-harpocrates.s3.amazonaws.com/assets/cookiehouse_assets/consent.svg",
       "identity_inputs": {
         "email": "optional"
       },
       "custom_privacy_request_fields": {
-        "communication_preference": {
-          "label": "How would you like to be contacted?",
-          "field_type": "select",
-          "required": false,
-          "options": ["Email", "Phone", "Physical Mail", "Do not contact me"]
+        "first_name": {
+          "label": "First name"
+        },
+        "last_name": {
+          "label": "Last name",
+          "required": false
+        },
+        "color": {
+          "label": "Color",
+          "default_value": "red"
+        },
+        "tenant_id": {
+          "label": "Tenant ID",
+          "default_value": "123",
+          "hidden": true
         }
       },
-      "title": "Manage your consent",
-      "modalTitle": "Manage your consent",
-      "confirmButtonText": "Continue",
-      "cancelButtonText": "Cancel"
+      "title": "Manage your consent"
     },
     "page": {
       "consentOptions": [
