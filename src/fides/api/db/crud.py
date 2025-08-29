@@ -53,15 +53,14 @@ async def create_resource(
             )
             raise already_exists_error
 
-        async with async_session.begin():
-            try:
-                log.debug("Creating resource")
-                query = _insert(sql_model.__table__).values(resource_dict)
-                await async_session.execute(query)
-            except SQLAlchemyError as e:
-                log.exception(f"Failed to create resource with error: '{e}'")
-                sa_error = errors.QueryError()
-                raise sa_error
+        try:
+            log.debug("Creating resource")
+            query = _insert(sql_model.__table__).values(resource_dict)
+            await async_session.execute(query)
+        except SQLAlchemyError as e:
+            log.exception(f"Failed to create resource with error: '{e}'")
+            sa_error = errors.QueryError()
+            raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
 

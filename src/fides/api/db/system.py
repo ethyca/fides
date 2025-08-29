@@ -139,33 +139,32 @@ async def upsert_privacy_declarations(
 ) -> None:
     """Helper to handle the specific upsert logic for privacy declarations"""
 
-    async with db.begin():
-        # map existing declarations by their logical identifier
-        existing_declarations: Dict[str, PrivacyDeclaration] = {
-            privacy_declaration_logical_id(existing_declaration): existing_declaration
-            for existing_declaration in system.privacy_declarations
-        }
+    # map existing declarations by their logical identifier
+    existing_declarations: Dict[str, PrivacyDeclaration] = {
+        privacy_declaration_logical_id(existing_declaration): existing_declaration
+        for existing_declaration in system.privacy_declarations
+    }
 
-        # iterate through declarations specified on the request and upsert
-        # looking for "matching" existing declarations based on data_use and name
-        for privacy_declaration in resource.privacy_declarations:
-            # prepare our 'payload' for either create or update
-            data = privacy_declaration.model_dump(mode="json")
-            data["system_id"] = system.id  # include FK back to system
+    # iterate through declarations specified on the request and upsert
+    # looking for "matching" existing declarations based on data_use and name
+    for privacy_declaration in resource.privacy_declarations:
+        # prepare our 'payload' for either create or update
+        data = privacy_declaration.model_dump(mode="json")
+        data["system_id"] = system.id  # include FK back to system
 
-            # if we find matching declaration, remove it from our map
-            if declaration := existing_declarations.pop(
-                privacy_declaration_logical_id(privacy_declaration), None
-            ):
-                # and update existing declaration *in place*
-                declaration.update(db, data=data)
-            else:
-                # otherwise, create a new declaration record
-                declaration = PrivacyDeclaration.create(db, data=data)
+        # if we find matching declaration, remove it from our map
+        if declaration := existing_declarations.pop(
+            privacy_declaration_logical_id(privacy_declaration), None
+        ):
+            # and update existing declaration *in place*
+            declaration.update(db, data=data)
+        else:
+            # otherwise, create a new declaration record
+            declaration = PrivacyDeclaration.create(db, data=data)
 
-        # delete any existing privacy declarations that have not been "matched" in the request
-        for existing_declarations in existing_declarations.values():
-            await db.delete(existing_declarations)
+    # delete any existing privacy declarations that have not been "matched" in the request
+    for existing_declarations in existing_declarations.values():
+        await db.delete(existing_declarations)
 
 
 async def update_system(
