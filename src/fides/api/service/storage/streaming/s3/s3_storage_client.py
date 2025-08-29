@@ -33,7 +33,7 @@ class S3StorageClient(BaseStorageClient):
         self.storage_secrets: dict[StorageSecrets, Any] = storage_secrets
 
     def build_uri(self, bucket: str, key: str) -> str:
-        """Build the S3 URI for the storage location.
+        """Build S3 URI for the given bucket and key.
 
         Args:
             bucket: S3 bucket name
@@ -83,7 +83,7 @@ class S3StorageClient(BaseStorageClient):
             logger.error(f"Failed to create S3 client for smart-open: {e}")
             raise
 
-        # Also include credentials at top level for compatibility
+        # Include credentials at top level for compatibility
         if StorageSecrets.AWS_ACCESS_KEY_ID in self.storage_secrets:
             params["access_key"] = self.storage_secrets[
                 StorageSecrets.AWS_ACCESS_KEY_ID
@@ -118,9 +118,6 @@ class S3StorageClient(BaseStorageClient):
             Exception: If presigned URL generation fails
         """
         try:
-            # Storage secrets are already in the right format for get_s3_client
-            # get_s3_client expects dict[StorageSecrets, Any] with enum keys
-            s3_secrets = self.storage_secrets
 
             # Determine auth method based on available credentials
             # If AWS credentials are present, use SECRET_KEYS, otherwise use AUTOMATIC
@@ -140,7 +137,9 @@ class S3StorageClient(BaseStorageClient):
                 assume_role_arn = self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
 
             # get_s3_client returns a boto3 S3 client, not a Session
-            s3_client: Any = get_s3_client(auth_method, s3_secrets, assume_role_arn)
+            s3_client: Any = get_s3_client(
+                auth_method, self.storage_secrets, assume_role_arn
+            )
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:
             logger.error(f"Failed to generate S3 presigned URL: {e}")

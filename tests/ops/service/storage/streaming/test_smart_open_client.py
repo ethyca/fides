@@ -481,7 +481,7 @@ class TestSmartOpenStorageClient:
                 mock_smart_open.return_value = mock_stream
 
                 client = SmartOpenStorageClient("s3", storage_secrets)
-                result = client.stream_upload(bucket, key, content_type)
+                result = client.stream_upload(bucket, key)
 
                 assert result == mock_stream
                 mock_provider_client.build_uri.assert_called_once_with(bucket, key)
@@ -551,7 +551,7 @@ class TestSmartOpenStorageClient:
                 mock_smart_open.return_value = mock_stream
 
                 client = SmartOpenStorageClient("s3", storage_secrets)
-                result = client.stream_upload(bucket, key, content_type)
+                result = client.stream_upload(bucket, key)
 
                 assert result == mock_stream
                 mock_smart_open.assert_called_once_with(
