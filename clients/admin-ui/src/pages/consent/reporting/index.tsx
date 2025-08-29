@@ -176,21 +176,16 @@ const ConsentReportingPage = () => {
                 <Button
                   onClick={previousPage}
                   disabled={pageIndex === 1}
-                  icon={<Icons.ChevronLeft />}
-                >
-                  <VisuallyHidden>Previous</VisuallyHidden>
-                </Button>
-                <span>
-                  <VisuallyHidden>Page&nbsp;</VisuallyHidden>
-                  {pageIndex}
-                </span>
+                  icon={<Icons.ChevronLeft aria-hidden />}
+                  aria-label="Previous"
+                />
+                <span aria-label={`Page ${pageIndex}`}>{pageIndex}</span>
                 <Button
                   onClick={nextPage}
                   disabled={(data?.items?.length ?? 0) < pageSize}
-                  icon={<Icons.ChevronRight />}
-                >
-                  <VisuallyHidden>Next</VisuallyHidden>
-                </Button>
+                  icon={<Icons.ChevronRight aria-hidden />}
+                  aria-label="Next"
+                />
                 <Select
                   className="w-auto"
                   value={pageSize}
