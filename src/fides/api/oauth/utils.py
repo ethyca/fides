@@ -70,7 +70,7 @@ def is_token_expired(
     return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
 
 
-def is_callback_token_expired(issued_at: datetime) -> bool:
+def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     """Check if a callback token has expired (24 hours)."""
     if not issued_at:
         return True
