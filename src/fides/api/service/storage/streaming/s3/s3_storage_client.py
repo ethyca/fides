@@ -74,9 +74,8 @@ class S3StorageClient(BaseStorageClient):
 
             # Create S3 client using existing utility
             # get_s3_client returns a boto3 S3 client, not a Session
-            s3_secrets = {k.value: v for k, v in self.storage_secrets.items()}
             s3_client: Any = get_s3_client(
-                auth_method, s3_secrets, assume_role_arn  # type: ignore
+                auth_method, self.storage_secrets, assume_role_arn  # type: ignore
             )
             params["client"] = s3_client
 
@@ -138,11 +137,8 @@ class S3StorageClient(BaseStorageClient):
                 assume_role_arn = self.storage_secrets[StorageSecrets.AWS_ASSUME_ROLE]
 
             # get_s3_client returns a boto3 S3 client, not a Session
-            s3_secrets = {  # type: ignore
-                k.value: v for k, v in self.storage_secrets.items()
-            }  #  type: ignore
             s3_client: Any = get_s3_client(
-                auth_method, s3_secrets, assume_role_arn  # type: ignore
+                auth_method, self.storage_secrets, assume_role_arn  # type: ignore
             )
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:
