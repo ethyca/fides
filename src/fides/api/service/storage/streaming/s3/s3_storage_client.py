@@ -65,26 +65,16 @@ class S3StorageClient(BaseStorageClient):
                 and self.storage_secrets["aws_secret_access_key"]
             ):
                 auth_method = AWSAuthMethod.SECRET_KEYS.value
-                logger.debug("Using SECRET_KEYS authentication method")
             else:
                 auth_method = AWSAuthMethod.AUTOMATIC.value
-                logger.debug(
-                    "Using AUTOMATIC authentication method - relying on AWS credential chain"
-                )
 
                 # For automatic authentication, check if region is available
-                if (
+                if not(
                     "region_name" in self.storage_secrets
                     and self.storage_secrets["region_name"]
                 ):
-                    logger.debug(
-                        f"Region specified in storage secrets: {self.storage_secrets['region_name']}"
-                    )
-                else:
                     logger.warning(
                         "No region specified in storage secrets for automatic authentication"
-                    )
-                    logger.warning(
                         "This may cause credential issues - consider setting a default region"
                     )
 
@@ -107,12 +97,8 @@ class S3StorageClient(BaseStorageClient):
                 # For automatic authentication, try to provide more helpful error messages
                 if auth_method == AWSAuthMethod.AUTOMATIC.value:
                     logger.error(
-                        f"Failed to create S3 client with automatic authentication: {e}"
-                    )
-                    logger.error(
+                        f"Failed to create S3 client with automatic authentication: {e}. "
                         "This usually means AWS credentials are not available in the environment"
-                    )
-                    logger.error(
                         "Please ensure AWS credentials are configured via environment variables, IAM roles, or AWS profiles"
                     )
                     raise ValueError(
@@ -128,26 +114,19 @@ class S3StorageClient(BaseStorageClient):
             raise
 
         # Include credentials at top level for compatibility
-        if (
-            "aws_access_key_id" in self.storage_secrets
-            and self.storage_secrets["aws_access_key_id"]
-        ):
-            params["access_key"] = self.storage_secrets["aws_access_key_id"]
-        if (
-            "aws_secret_access_key" in self.storage_secrets
-            and self.storage_secrets["aws_secret_access_key"]
-        ):
-            params["secret_key"] = self.storage_secrets["aws_secret_access_key"]
-        if (
-            "region_name" in self.storage_secrets
-            and self.storage_secrets["region_name"]
-        ):
-            params["region"] = self.storage_secrets["region_name"]
-        if (
-            "assume_role_arn" in self.storage_secrets
-            and self.storage_secrets["assume_role_arn"]
-        ):
-            params["assume_role_arn"] = self.storage_secrets["assume_role_arn"]
+        # Note: When using an S3 client, these credential parameters are not needed
+        # and will be ignored by smart-open, causing warnings
+        # Only include them if no S3 client is provided (fallback scenario)
+        if not params.get("client"):
+            for key, transport_key in [
+                ("aws_access_key_id", "access_key"),
+                ("aws_secret_access_key", "secret_key"),
+                ("region_name", "region"),
+                ("assume_role_arn", "assume_role_arn"),
+            ]:
+                if key in self.storage_secrets and self.storage_secrets[key]:
+                    params[transport_key] = self.storage_secrets[key]
+
 
         return params
 

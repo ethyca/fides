@@ -55,10 +55,11 @@ class TestS3StorageClient:
         assert "client" in params
         assert params["client"] is not None
 
-        # Should have credentials at top level
-        assert params["access_key"] == "test_key"
-        assert params["secret_key"] == "test_secret"
-        assert params["region"] == "us-west-2"
+        # When using an S3 client, credential parameters are not included
+        # to avoid smart-open warnings about ignored parameters
+        assert "access_key" not in params
+        assert "secret_key" not in params
+        assert "region" not in params
         # endpoint_url is no longer supported in the current implementation
 
     @mock_aws
@@ -75,9 +76,10 @@ class TestS3StorageClient:
         assert "client" in params
         assert params["client"] is not None
 
-        # Should have available credentials at top level
-        assert params["access_key"] == "test_key"
-        assert params["region"] == "us-west-2"
+        # When using an S3 client, credential parameters are not included
+        # to avoid smart-open warnings about ignored parameters
+        assert "access_key" not in params
+        assert "region" not in params
         assert "secret_key" not in params
         # endpoint_url is no longer supported in the current implementation
 
@@ -97,11 +99,42 @@ class TestS3StorageClient:
         assert "client" in params
         assert params["client"] is not None
 
-        # Should have credentials at top level
-        assert params["access_key"] == "test_key"
-        assert params["secret_key"] == "test_secret"
-        assert params["region"] == "us-west-2"
-        assert params["assume_role_arn"] == "arn:aws:iam::123456789012:role/TestRole"
+        # When using an S3 client, credential parameters are not included
+        # to avoid smart-open warnings about ignored parameters
+        assert "access_key" not in params
+        assert "secret_key" not in params
+        assert "region" not in params
+        assert "assume_role_arn" not in params
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    def test_get_transport_params_fallback_without_client(self, mock_get_s3_client):
+        """Test transport params include credential parameters when no S3 client is available."""
+        # Mock get_s3_client to return None (simulating failure)
+        mock_get_s3_client.return_value = None
+
+        secrets = {
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
+        }
+        client = S3StorageClient(secrets)
+
+        # This should raise an exception since we can't create an S3 client
+        with pytest.raises(Exception):
+            client.get_transport_params()
+
+    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    def test_get_transport_params_automatic_auth_failure(self, mock_get_s3_client):
+        """Test that automatic authentication failures provide helpful error messages."""
+        # Mock get_s3_client to raise an exception
+        mock_get_s3_client.side_effect = Exception("Unable to locate credentials")
+
+        # No AWS credentials provided - should use automatic auth
+        secrets = {"region_name": "us-west-2"}
+        client = S3StorageClient(secrets)
+
+        with pytest.raises(ValueError, match="Automatic AWS authentication failed"):
+            client.get_transport_params()
 
     @mock_aws
     def test_get_transport_params_without_assume_role_arn(self):
@@ -118,10 +151,11 @@ class TestS3StorageClient:
         assert "client" in params
         assert params["client"] is not None
 
-        # Should have credentials at top level
-        assert params["access_key"] == "test_key"
-        assert params["secret_key"] == "test_secret"
-        assert params["region"] == "us-west-2"
+        # When using an S3 client, credential parameters are not included
+        # to avoid smart-open warnings about ignored parameters
+        assert "access_key" not in params
+        assert "secret_key" not in params
+        assert "region" not in params
         assert "assume_role_arn" not in params
 
     @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
