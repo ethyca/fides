@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added UI for conditional manual task creation feature [#6431](https://github.com/ethyca/fides/pull/6431)
 - Added streaming attachment capabilities for access packages. [#6474](https://github.com/ethyca/fides/pull/6474)
 - Added tokenized redirect for streaming enabled access package downloads. [#6489](https://github.com/ethyca/fides/pull/6489)
+- Pagination is persisted to the URL on the Consent Report Page [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Changed
 - Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
@@ -42,10 +43,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
 - Moved Organization Management and SSO out of beta [#6495](https://github.com/ethyca/fides/pull/6494)
 - Updated data lineage nodes styling to use neutral color scheme for improved visual consistency [#6505](https://github.com/ethyca/fides/pull/6505)
+- Removed total from Consent Report page until Cursor Pagination is added, this solves broken loads when there is a large amount of consent data [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Fixed
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
 - DSR finalization UI tweaks [#6514](https://github.com/ethyca/fides/pull/6514)
+- Account for Timezone on Consent Report page [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
@@ -56,11 +59,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
+
+
+### Fixed
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
 - Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
 
 ### Security
-- Changed session invalidation logic to end all sessions for a user when their password has been changed [CVE-2025-57766](https://github.com/ethyca/fides/security/advisories/GHSA-rpw8-82v9-3q87)
 - Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)

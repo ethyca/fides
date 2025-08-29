@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
   AntText as Text,
@@ -52,48 +53,47 @@ const VerificationForm = ({
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
   return (
-    <>
-      <Text>Enter verification code</Text>
-      <Form onFinish={handleSubmit} data-testid="verification-form">
-        <Text>
-          A verification code has been sent. Return to this window and enter the
-          code below.
-        </Text>
+    <Flex gap="middle" vertical>
+      <Text type="secondary">
+        A verification code has been sent. Return to this window and enter the
+        code below.
+      </Text>
+      <Form
+        onFinish={handleSubmit}
+        data-testid="verification-form"
+        layout="vertical"
+      >
         <Form.Item
           required
-          status={touched.code && Boolean(errors.code) ? "error" : undefined}
-          help={errors.code}
+          validateStatus={touched.code && !!errors.code ? "error" : undefined}
+          label="Verification code"
+          help={touched.code && errors.code}
+          hasFeedback={touched.code && !!errors.code}
         >
           <Input
             id="code"
-            placeholder="Verification Code"
+            placeholder="Verification code"
             onChange={handleChange}
             onBlur={handleBlur}
             value={values.code}
           />
         </Form.Item>
-        <Form.Item>
+        <Flex justify="stretch" gap="middle">
+          <Button variant="outlined" onClick={resetVerificationProcess} block>
+            Resend code
+          </Button>
           <Button
             htmlType="submit"
             type="primary"
             loading={isSubmitting}
             disabled={isSubmitting || !(isValid && dirty)}
+            block
           >
             Submit code
           </Button>
-          <Text size="sm" type="secondary">
-            Didn&apos;t receive a code?
-          </Text>{" "}
-          <Button
-            size="small"
-            variant="text"
-            onClick={resetVerificationProcess}
-          >
-            Click here to try again
-          </Button>
-        </Form.Item>
+        </Flex>
       </Form>
-    </>
+    </Flex>
   );
 };
 

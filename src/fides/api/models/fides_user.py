@@ -22,7 +22,7 @@ from fides.api.cryptography.cryptographic_util import (
 from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
-# SystemManager import is handled in base.py to avoid circular imports
+# Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.schemas.user import DisabledReason
 from fides.config import CONFIG
 
@@ -32,6 +32,7 @@ if TYPE_CHECKING:
         FidesUserRespondentEmailVerification,
     )
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+    from fides.api.models.system_manager import SystemManager
 
 
 class FidesUser(Base):
