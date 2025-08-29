@@ -10,7 +10,6 @@ import {
   AntSelect as Select,
   Icons,
   useToast,
-  VisuallyHidden,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
