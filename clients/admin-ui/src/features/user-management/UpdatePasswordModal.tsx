@@ -13,12 +13,7 @@ import {
   useDisclosure,
   useToast,
 } from "fidesui";
-import { useRouter } from "next/router";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-
-import { LOGIN_ROUTE, STORAGE_ROOT_KEY } from "~/constants";
-import { logout } from "~/features/auth/auth.slice";
 
 import { successToastParams } from "../common/toast";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
@@ -29,8 +24,6 @@ const useUpdatePasswordModal = (id: string) => {
   const [oldPasswordValue, setOldPasswordValue] = useState("");
   const [newPasswordValue, setNewPasswordValue] = useState("");
   const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
-  const router = useRouter();
-  const dispatch = useDispatch();
 
   const changePasswordValidation = !!(
     id &&
@@ -56,16 +49,7 @@ const useUpdatePasswordModal = (id: string) => {
         .unwrap()
         .then(() => {
           toast(successToastParams("Password updated"));
-          // Clear persisted auth state and logout locally
-          try {
-            localStorage.removeItem(STORAGE_ROOT_KEY);
-          } catch (e) {
-            // no-op
-          }
-          dispatch(logout());
           modal.onClose();
-          // Redirect to login
-          router.push(LOGIN_ROUTE);
         });
     }
   };

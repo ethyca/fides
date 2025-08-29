@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
@@ -22,11 +22,9 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.base_class import Base
+from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.jwt import generate_jwe
 from fides.config import FidesConfig
-
-if TYPE_CHECKING:
-    from fides.api.models.fides_user import FidesUser
 
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []
@@ -50,11 +48,9 @@ class ClientDetail(Base):
         ARRAY(String), nullable=False, server_default="{}", default=dict
     )
     fides_key = Column(String, index=True, unique=True, nullable=True)
-    user_id = Column(String, ForeignKey("fidesuser.id"), nullable=True, unique=True)
-
-    if TYPE_CHECKING:
-        # Explicitly annotate the backref relationship for mypy
-        user: Optional["FidesUser"]
+    user_id = Column(
+        String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
+    )
 
     @classmethod
     def create_client_and_secret(

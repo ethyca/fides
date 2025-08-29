@@ -87,6 +87,24 @@ export const usePagination = (config: PaginationConfig = {}) => {
     setQueryState({ page: pageIndex });
   };
 
+  const nextPage = () => {
+    setQueryState(({ page, size }) => {
+      return {
+        page: page + 1,
+        size,
+      };
+    });
+  };
+
+  const previousPage = () => {
+    setQueryState(({ page, size }) => {
+      return {
+        page: page - 1,
+        size,
+      };
+    });
+  };
+
   const updatePageSize = (pageSize: number) => {
     setQueryState({
       page:
@@ -113,6 +131,8 @@ export const usePagination = (config: PaginationConfig = {}) => {
     updatePageIndex,
     updatePageSize,
     resetPagination,
+    nextPage,
+    previousPage,
 
     // Configuration for components
     pageSizeOptions: displayPageSizeOptions,
