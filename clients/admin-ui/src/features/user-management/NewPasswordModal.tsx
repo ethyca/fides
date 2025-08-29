@@ -13,13 +13,8 @@ import {
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import { useRouter } from "next/router";
-import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
-import { LOGIN_ROUTE, STORAGE_ROOT_KEY } from "~/constants";
-import { logout, selectUser } from "~/features/auth/auth.slice";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -42,9 +37,6 @@ const useNewPasswordModal = (id: string) => {
   const modal = useDisclosure();
   const toast = useToast();
   const [resetPassword] = useForceResetUserPasswordMutation();
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const currentUser = useAppSelector(selectUser);
 
   const handleResetPassword = async (values: FormValues) => {
     const result = await resetPassword({
@@ -60,17 +52,6 @@ const useNewPasswordModal = (id: string) => {
         ),
       );
       modal.onClose();
-
-      // Only logout if admin reset their own password
-      if (currentUser?.id === id) {
-        try {
-          localStorage.removeItem(STORAGE_ROOT_KEY);
-        } catch (e) {
-          // no-op
-        }
-        dispatch(logout());
-        router.push(LOGIN_ROUTE);
-      }
     }
   };
 
