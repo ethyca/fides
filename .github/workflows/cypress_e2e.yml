@@ -68,6 +68,13 @@ jobs:
       - name: Teardown
         run: nox -s teardown
 
+      - name: Notify Slack on failure
+        if: failure() && github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"username":"GitHub Actions","text":"🚨 Cypress E2E tests failed in `fides` on the `main` branch\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>","icon_emoji":":x:"}' \
+          ${{ secrets.CYPRESS_SLACK_WEBHOOK }}
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
