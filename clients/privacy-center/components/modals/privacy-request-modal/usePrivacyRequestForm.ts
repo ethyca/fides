@@ -124,7 +124,8 @@ const usePrivacyRequestForm = ({
                   return [
                     key,
                     {
-                      ...field,
+                      // only include label and value
+                      label: field.label,
                       value: !field.hidden ? values[key] : hiddenValue,
                     },
                   ];
