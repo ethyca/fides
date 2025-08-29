@@ -707,9 +707,7 @@ class SmartOpenStreamingStorage:
                 config.bucket_name, config.file_key
             )
         except Exception as e:
-            logger.error(
-                f"Failed to generate presigned URL for {config.file_key}: {e}"
-            )
+            logger.error(f"Failed to generate presigned URL for {config.file_key}: {e}")
             raise StorageUploadError(f"Failed to generate presigned URL: {e}") from e
 
     @retry_cloud_storage_operation(

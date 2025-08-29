@@ -660,16 +660,32 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             break
 
                         # If the task ID is not cached, we can't check if it's running
-                        # This means the subtask is stuck - cancel the entire privacy request
+                        # This means the subtask is stuck - but we need to handle this differently
+                        # based on the privacy request status
                         if not subtask_id:
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db,
-                                privacy_request,
-                                f"No task ID found for request task {request_task_id} "
-                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
-                            )
-                            should_requeue = False
-                            break
+                            if (
+                                privacy_request.status
+                                == PrivacyRequestStatus.requires_input
+                            ):
+                                # For requires_input status, don't automatically error the request
+                                # as it's intentionally waiting for user input
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) in requires_input status - "
+                                    f"keeping request in current status as it may be waiting for manual input"
+                                )
+                                should_requeue = False
+                                break
+                            else:
+                                # For other statuses, cancel the entire privacy request
+                                _cancel_interrupted_tasks_and_error_privacy_request(
+                                    db,
+                                    privacy_request,
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
+                                )
+                                should_requeue = False
+                                break
 
                         if (
                             subtask_id not in queued_tasks_ids
