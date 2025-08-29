@@ -40,6 +40,9 @@ export const useDiscoveredSystemAggregateColumns = ({
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isDomainsExpanded, setIsDomainsExpanded] = useState(false);
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+  const [locationsVersion, setLocationsVersion] = useState(0);
+  const [domainsVersion, setDomainsVersion] = useState(0);
+  const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
       const baseColumns: ColumnsType<SystemStagedResourcesAggregateRecord> = [
@@ -74,8 +77,10 @@ export const useDiscoveredSystemAggregateColumns = ({
               e.domEvent.stopPropagation();
               if (e.key === "expand-all") {
                 setIsDataUsesExpanded(true);
+                setDataUsesVersion((prev) => prev + 1);
               } else if (e.key === "collapse-all") {
                 setIsDataUsesExpanded(false);
+                setDataUsesVersion((prev) => prev + 1);
               }
             },
           },
@@ -84,6 +89,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               system={record}
               columnState={{
                 isExpanded: isDataUsesExpanded,
+                version: dataUsesVersion,
               }}
             />
           ),
@@ -96,8 +102,10 @@ export const useDiscoveredSystemAggregateColumns = ({
               e.domEvent.stopPropagation();
               if (e.key === "expand-all") {
                 setIsLocationsExpanded(true);
+                setLocationsVersion((prev) => prev + 1);
               } else if (e.key === "collapse-all") {
                 setIsLocationsExpanded(false);
+                setLocationsVersion((prev) => prev + 1);
               }
             },
           },
@@ -117,6 +125,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               columnState={{
                 isExpanded: isLocationsExpanded,
                 isWrapped: true,
+                version: locationsVersion,
               }}
             />
           ),
@@ -129,8 +138,10 @@ export const useDiscoveredSystemAggregateColumns = ({
               e.domEvent.stopPropagation();
               if (e.key === "expand-all") {
                 setIsDomainsExpanded(true);
+                setDomainsVersion((prev) => prev + 1);
               } else if (e.key === "collapse-all") {
                 setIsDomainsExpanded(false);
+                setDomainsVersion((prev) => prev + 1);
               }
             },
           },
@@ -142,6 +153,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               valueSuffix="domains"
               columnState={{
                 isExpanded: isDomainsExpanded,
+                version: domainsVersion,
               }}
             />
           ),
@@ -172,6 +184,9 @@ export const useDiscoveredSystemAggregateColumns = ({
       isDataUsesExpanded,
       isLocationsExpanded,
       isDomainsExpanded,
+      dataUsesVersion,
+      locationsVersion,
+      domainsVersion,
       monitorId,
       allowIgnore,
       onTabChange,

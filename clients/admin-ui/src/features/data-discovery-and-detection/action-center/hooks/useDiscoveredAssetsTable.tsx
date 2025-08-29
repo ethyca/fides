@@ -83,6 +83,9 @@ export const useDiscoveredAssetsTable = ({
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+  const [locationsVersion, setLocationsVersion] = useState(0);
+  const [pagesVersion, setPagesVersion] = useState(0);
+  const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
 
@@ -235,8 +238,10 @@ export const useDiscoveredAssetsTable = ({
             e.domEvent.stopPropagation();
             if (e.key === "expand-all") {
               setIsDataUsesExpanded(true);
+              setDataUsesVersion((prev) => prev + 1);
             } else if (e.key === "collapse-all") {
               setIsDataUsesExpanded(false);
+              setDataUsesVersion((prev) => prev + 1);
             }
           },
         },
@@ -252,6 +257,7 @@ export const useDiscoveredAssetsTable = ({
             }
             columnState={{
               isExpanded: isDataUsesExpanded,
+              version: dataUsesVersion,
             }}
           />
         ),
@@ -266,8 +272,10 @@ export const useDiscoveredAssetsTable = ({
             e.domEvent.stopPropagation();
             if (e.key === "expand-all") {
               setIsLocationsExpanded(true);
+              setLocationsVersion((prev) => prev + 1);
             } else if (e.key === "collapse-all") {
               setIsLocationsExpanded(false);
+              setLocationsVersion((prev) => prev + 1);
             }
           },
         },
@@ -288,6 +296,7 @@ export const useDiscoveredAssetsTable = ({
             }
             columnState={{
               isExpanded: isLocationsExpanded,
+              version: locationsVersion,
             }}
           />
         ),
@@ -307,8 +316,10 @@ export const useDiscoveredAssetsTable = ({
             e.domEvent.stopPropagation();
             if (e.key === "expand-all") {
               setIsPagesExpanded(true);
+              setPagesVersion((prev) => prev + 1);
             } else if (e.key === "collapse-all") {
               setIsPagesExpanded(false);
+              setPagesVersion((prev) => prev + 1);
             }
           },
         },
@@ -319,6 +330,7 @@ export const useDiscoveredAssetsTable = ({
             valueSuffix="pages"
             columnState={{
               isExpanded: isPagesExpanded,
+              version: pagesVersion,
             }}
           />
         ),
@@ -400,6 +412,9 @@ export const useDiscoveredAssetsTable = ({
     isDataUsesExpanded,
     isLocationsExpanded,
     isPagesExpanded,
+    dataUsesVersion,
+    locationsVersion,
+    pagesVersion,
     firstItemConsentStatus,
     onShowBreakdown,
     onTabChange,
