@@ -230,9 +230,6 @@ class SmartOpenStorageClient:
         """
         uri = self._build_uri(bucket, key)
         transport_params = self._get_transport_params()
-        logger.debug(
-            f"Streaming upload to {uri} with transport params: {transport_params}"
-        )
 
         return smart_open.open(uri, "wb", transport_params=transport_params)
 
