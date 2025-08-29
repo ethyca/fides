@@ -100,7 +100,7 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
 
         # Query for collection-level redactions
         collection_query = """
-        SELECT ctl.name || '.' || (collection->>'name') as entity_path
+        SELECT ctl.fides_key || '.' || (collection->>'name') as entity_path
         FROM datasetconfig dc
         JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
         CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
@@ -118,7 +118,7 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
         WITH RECURSIVE field_hierarchy AS (
             -- Base case: top-level fields in collections
             SELECT
-                ctl.name || '.' ||
+                ctl.fides_key || '.' ||
                     (collection->>'name') || '.' ||
                     (field->>'name') as entity_path,
                 field->'fields' as nested_fields,

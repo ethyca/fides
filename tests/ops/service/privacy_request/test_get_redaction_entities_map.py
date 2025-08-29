@@ -1,3 +1,4 @@
+import io
 import zipfile
 
 import pytest
@@ -19,6 +20,9 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
 from fides.api.service.privacy_request.dsr_package.utils import (
     get_redaction_entities_map,
     get_redaction_entities_map_db,
+)
+from tests.ops.service.privacy_request.test_dsr_report_builder import (
+    TestDSRReportBuilderBase,
 )
 
 
@@ -73,7 +77,7 @@ class TestGetRedactionEntitiesMap:
         # Create a dataset with dataset-level redaction
         dataset_dict = {
             "fides_key": "test_dataset_redacted",
-            "name": "test_dataset_redacted",
+            "name": "Test Dataset Redacted",
             "collections": [],
             "fides_meta": {"redact": "name"},
         }
@@ -116,7 +120,7 @@ class TestGetRedactionEntitiesMap:
         # Create a dataset with collection-level redaction
         dataset_dict = {
             "fides_key": "test_dataset",
-            "name": "test_dataset",
+            "name": "Test Dataset",
             "collections": [
                 {
                     "name": "users",
@@ -168,7 +172,7 @@ class TestGetRedactionEntitiesMap:
         # Create a dataset with field-level redaction
         dataset_dict = {
             "fides_key": "test_dataset",
-            "name": "test_dataset",
+            "name": "Test Dataset",
             "collections": [
                 {
                     "name": "users",
@@ -228,7 +232,7 @@ class TestGetRedactionEntitiesMap:
         # Create a dataset with redaction at dataset, collection, and field levels
         dataset_dict = {
             "fides_key": "test_dataset",
-            "name": "test_dataset",
+            "name": "Test Dataset",
             "fides_meta": {"redact": "name"},  # Dataset level
             "collections": [
                 {
@@ -305,7 +309,7 @@ class TestGetRedactionEntitiesMap:
         # Create dataset with JSON field
         dataset_dict = {
             "fides_key": "nested_test",
-            "name": "nested_test",
+            "name": "Nested Test",
             "collections": [
                 {
                     "name": "profiles",
@@ -387,7 +391,7 @@ class TestGetRedactionEntitiesMap:
 
             dataset_dict = {
                 "fides_key": f"dataset_{dataset_index}",
-                "name": f"dataset_{dataset_index}",
+                "name": f"Dataset {dataset_index}",
                 "collections": [
                     {
                         "name": "users",
@@ -453,7 +457,7 @@ class TestGetRedactionEntitiesMap:
         # Create a dataset with deeply nested fields
         dataset_dict = {
             "fides_key": "test_nested_dataset",
-            "name": "test_nested_dataset",
+            "name": "Test Nested Dataset",
             "collections": [
                 {
                     "name": "users",
@@ -548,7 +552,7 @@ class TestGetRedactionEntitiesMap:
         # Create a complex dataset with redaction at all levels
         dataset_dict = {
             "fides_key": "comparison_dataset",
-            "name": "comparison_dataset",
+            "name": "Comparison Dataset",
             "fides_meta": {"redact": "name"},
             "collections": [
                 {
@@ -616,7 +620,7 @@ class TestGetRedactionEntitiesMap:
 
 
 @pytest.mark.integration_postgres
-class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase):
+class TestDsrReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase):
     """Tests for DSR report builder integration with redaction entities map"""
 
     def test_redaction_by_entities_map_dataset_level(
@@ -639,7 +643,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
         # Create a dataset with dataset-level redaction
         dataset_dict = {
             "fides_key": "customer_database",
-            "name": "customer_database",
+            "name": "Customer Database",
             "collections": [],
             "fides_meta": {"redact": "name"},
         }
@@ -701,7 +705,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
         # Create a dataset with collection-level redaction
         dataset_dict = {
             "fides_key": "customer_data",
-            "name": "customer_data",
+            "name": "Customer Data",
             "collections": [
                 {
                     "name": "user_profiles",
@@ -775,7 +779,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
         # Create a dataset with field-level redaction
         dataset_dict = {
             "fides_key": "user_data",
-            "name": "user_data",
+            "name": "User Data",
             "collections": [
                 {
                     "name": "profiles",
@@ -851,7 +855,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
         # Create dataset config with specific redaction for one collection
         dataset_dict = {
             "fides_key": "test_data",
-            "name": "test_data",
+            "name": "Test Data",
             "collections": [
                 {
                     "name": "user_accounts",  # Would match regex .*user.* but has specific redaction
@@ -922,7 +926,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
         # Create dataset with redaction at multiple levels including nested fields
         dataset_dict = {
             "fides_key": "mixed_data",
-            "name": "mixed_data",
+            "name": "Mixed Data",
             "fides_meta": {"redact": "name"},  # Dataset level
             "collections": [
                 {
@@ -1043,14 +1047,14 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDsrReportBuilderBase)
             welcome_content = zip_file.read("welcome.html").decode("utf-8")
 
             # Dataset is redacted due to dataset-level config
-            assert "dataset_1" in welcome_content
+            assert "dataset_2" in welcome_content
             assert "mixed_data" not in welcome_content
 
             # Check that file structure uses redacted dataset name
-            assert "data/dataset_1/index.html" in zip_file.namelist()
+            assert "data/dataset_2/index.html" in zip_file.namelist()
 
             # Verify nested data is properly included in the generated report
-            dataset_content = zip_file.read("data/dataset_1/index.html").decode("utf-8")
+            dataset_content = zip_file.read("data/dataset_2/index.html").decode("utf-8")
 
             # Based on the actual output, public_info is not redacted but sensitive_data is
             # This is because only sensitive_data has explicit collection-level redaction

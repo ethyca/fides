@@ -75,15 +75,15 @@ class DSRDataPreprocessor:
 
     def _create_dataset_mapping(self, dsr_data: dict[str, Any]) -> Dict[str, str]:
         """Create dataset name mapping matching original logic."""
-        dataset_names = set()
+        dataset_names = []
         for key, rows in dsr_data.items():
             if key != "attachments":
                 dataset_name, _ = self._parse_key(key, rows)
-                dataset_names.add(dataset_name)
+                dataset_names.append(dataset_name)
 
         mapping = {}
-        # Regular datasets (sorted, excluding "dataset")
-        regular_datasets = sorted(n for n in dataset_names if n != "dataset")
+        # Regular datasets (excluding "dataset")
+        regular_datasets = [n for n in dataset_names if n != "dataset"]
         for idx, name in enumerate(regular_datasets, 1):
             mapping[name] = self._redact_name("dataset", name, idx)
 

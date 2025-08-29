@@ -11,12 +11,15 @@ from unittest.mock import patch
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_patterns import (
+    PrivacyRequestRedactionPatterns,
+)
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
 )
 
 
-class TestDsrReportBuilderBase:
+class TestDSRReportBuilderBase:
     """Base class with common test utilities"""
 
     @staticmethod
@@ -171,7 +174,7 @@ def common_assertions(common_file_assertions):
     }
 
 
-class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
+class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
     """Tests for attachment handling in DSR reports"""
 
     def test_webhook_attachments(
@@ -469,7 +472,7 @@ class TestDsrReportBuilderDataStructure:
             assert "age" in users_collection_content  # age NOT redacted
 
 
-class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
+class TestDsrReportBuilderDataTypes(TestDSRReportBuilderBase):
     """Tests for DSR report builder's data type handling"""
 
     def test_with_complex_data_types(self, privacy_request: PrivacyRequest):
@@ -502,7 +505,7 @@ class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
             )
 
             # Extract all values from the table
-            table_values = TestDsrReportBuilderBase.extract_table_values(manual_data)
+            table_values = TestDSRReportBuilderBase.extract_table_values(manual_data)
 
             # Verify each value is present and properly formatted
             assert "test string" in table_values["string_field"]
@@ -551,7 +554,7 @@ class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
             )
 
             # Extract all values from the table
-            table_values = TestDsrReportBuilderBase.extract_table_values(manual_data)
+            table_values = TestDSRReportBuilderBase.extract_table_values(manual_data)
 
             # Verify each value is present and properly escaped
             assert "test@example.com" in table_values["email"]
@@ -618,7 +621,7 @@ def dsr_data() -> dict:
     }
 
 
-class TestDsrReportBuilder(TestDsrReportBuilderBase):
+class TestDsrReportBuilder(TestDSRReportBuilderBase):
     def test_generate_report_structure(
         self, privacy_request, dsr_data: dict, common_assertions
     ):
@@ -734,7 +737,7 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
             html_content = zip_file.read("attachments/index.html").decode("utf-8")
 
             # Check that all three files are listed with their unique names
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test.txt",  # First file keeps original name
                 "test_1.txt",  # Second file gets _1 suffix
@@ -817,13 +820,13 @@ class TestDsrReportBuilderAttachmentHandling:
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
             # Check that attachments index was created
-            TestDsrReportBuilderBase.assert_file_in_zip(
+            TestDSRReportBuilderBase.assert_file_in_zip(
                 zip_file_obj, "attachments/index.html"
             )
 
             # Check that the HTML contains the attachment links
             html_content = zip_file_obj.read("attachments/index.html").decode("utf-8")
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test1.txt",
                 "test2.pdf",
@@ -857,7 +860,7 @@ class TestDsrReportBuilderAttachmentHandling:
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
             # Check that collection index was created
-            TestDsrReportBuilderBase.assert_file_in_zip(
+            TestDSRReportBuilderBase.assert_file_in_zip(
                 zip_file_obj, "data/dataset1/collection1/index.html"
             )
 
@@ -865,7 +868,7 @@ class TestDsrReportBuilderAttachmentHandling:
             html_content = zip_file_obj.read(
                 "data/dataset1/collection1/index.html"
             ).decode("utf-8")
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content, "item1.txt", "https://example.com/item1.txt", "1.0 KB"
             )
 
@@ -1077,7 +1080,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         assert result["test.txt"]["size"] == "1.0 KB"
 
 
-class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
+class TestDsrReportBuilderContent(TestDSRReportBuilderBase):
     """Tests for content generation in DSR reports"""
 
     def test_report_structure(
@@ -1164,7 +1167,7 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
             assert "data/dataset1/collection1/index.html" in zip_file.namelist()
 
 
-class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
+class TestDsrReportBuilderOrganization(TestDSRReportBuilderBase):
     """Tests for report organization and structure"""
 
     def test_dataset_ordering(self, privacy_request: PrivacyRequest):
