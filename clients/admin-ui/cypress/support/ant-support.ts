@@ -197,6 +197,11 @@ Cypress.Commands.add("getAntTab", (tab: string) =>
 );
 Cypress.Commands.add("clickAntTab", (tab: string) => {
   cy.getAntTab(tab).click({ force: true });
+  cy.getAntTab(tab).should(($tab) => {
+    const hasActiveClass = $tab.hasClass("ant-menu-item-selected");
+    const parentHasActiveClass = $tab.parent().hasClass("ant-tabs-tab-active");
+    expect(hasActiveClass || parentHasActiveClass).to.be.true;
+  });
   // eslint-disable-next-line cypress/no-unnecessary-waiting
   cy.wait(500); // Wait for the animation/router to complete
 });
