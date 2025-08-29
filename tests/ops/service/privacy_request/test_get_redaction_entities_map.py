@@ -1047,14 +1047,14 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase)
             welcome_content = zip_file.read("welcome.html").decode("utf-8")
 
             # Dataset is redacted due to dataset-level config
-            assert "dataset_2" in welcome_content
+            assert "dataset_1" in welcome_content
             assert "mixed_data" not in welcome_content
 
             # Check that file structure uses redacted dataset name
-            assert "data/dataset_2/index.html" in zip_file.namelist()
+            assert "data/dataset_1/index.html" in zip_file.namelist()
 
             # Verify nested data is properly included in the generated report
-            dataset_content = zip_file.read("data/dataset_2/index.html").decode("utf-8")
+            dataset_content = zip_file.read("data/dataset_1/index.html").decode("utf-8")
 
             # Based on the actual output, public_info is not redacted but sensitive_data is
             # This is because only sensitive_data has explicit collection-level redaction

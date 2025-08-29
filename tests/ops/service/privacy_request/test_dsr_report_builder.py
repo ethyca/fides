@@ -426,22 +426,22 @@ class TestDsrReportBuilderDataStructure:
 
             # Dataset-level redaction:
             # "analytics_system" should NOT be redacted (doesn't match "customer.*")
-            # "customer_database" should be redacted to "dataset_2" (matches "customer.*", gets index 2)
+            # "customer_database" should be redacted to "dataset_1" (matches "customer.*", gets index 1)
             # "public_data" should NOT be redacted (no pattern match)
             assert (
                 "analytics_system" in welcome_content
             )  # analytics_system NOT redacted
-            assert "dataset_2" in welcome_content  # customer_database redacted
+            assert "dataset_1" in welcome_content  # customer_database redacted
             assert "public_data" in welcome_content  # public_data NOT redacted
 
             # Verify dataset directory structure exists (uses redacted names for file paths)
-            assert "data/dataset_2/index.html" in zip_file.namelist()
+            assert "data/dataset_1/index.html" in zip_file.namelist()
             assert "data/analytics_system/index.html" in zip_file.namelist()
             assert "data/public_data/index.html" in zip_file.namelist()
 
             # Check dataset index pages for collection-level redaction
             customer_dataset_content = zip_file.read(
-                "data/dataset_2/index.html"
+                "data/dataset_1/index.html"
             ).decode("utf-8")
             # "users" should be redacted to "collection_1" (matches ".*user.*")
             # "orders" should NOT be redacted (no pattern match)
@@ -462,7 +462,7 @@ class TestDsrReportBuilderDataStructure:
 
             # Check collection pages for field-level redaction
             users_collection_content = zip_file.read(
-                "data/dataset_2/collection_1/index.html"
+                "data/dataset_1/collection_1/index.html"
             ).decode("utf-8")
             # "email" should be redacted to "field_N" (matches "^email$")
             # "id", "name", "age" should NOT be redacted (no pattern match)

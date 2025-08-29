@@ -74,23 +74,37 @@ class DSRDataPreprocessor:
         return processed_data
 
     def _create_dataset_mapping(self, dsr_data: dict[str, Any]) -> Dict[str, str]:
-        """Create dataset name mapping matching original logic."""
+        """Create dataset name mapping with ordered numbering for redacted datasets."""
+        # Extract unique dataset names in order of appearance
         dataset_names = []
         for key, rows in dsr_data.items():
             if key != "attachments":
                 dataset_name, _ = self._parse_key(key, rows)
                 dataset_names.append(dataset_name)
 
+        unique_datasets = list(dict.fromkeys(dataset_names))
+
+        # Create mapping using position-based numbering for redacted datasets
         mapping = {}
-        # Regular datasets (excluding "dataset")
-        regular_datasets = [n for n in dataset_names if n != "dataset"]
-        for idx, name in enumerate(regular_datasets, 1):
-            mapping[name] = self._redact_name("dataset", name, idx)
+
+        # Handle regular datasets (excluding "dataset")
+        regular_datasets = [n for n in unique_datasets if n != "dataset"]
+        for index, name in enumerate(regular_datasets, 1):
+            hierarchical_key = self._build_hierarchical_key("dataset", name)
+            if self._should_redact(name, hierarchical_key):
+                mapping[name] = f"dataset_{index}"
+            else:
+                mapping[name] = name  # Keep original name
 
         # Special "dataset" case comes last
-        if "dataset" in dataset_names:
-            idx = len(regular_datasets) + 1
-            mapping["dataset"] = self._redact_name("dataset", "dataset", idx)
+        if "dataset" in unique_datasets:
+            hierarchical_key = self._build_hierarchical_key("dataset", "dataset")
+            if self._should_redact("dataset", hierarchical_key):
+                # Use the next position after regular datasets
+                dataset_index = len(regular_datasets) + 1
+                mapping["dataset"] = f"dataset_{dataset_index}"
+            else:
+                mapping["dataset"] = "dataset"  # Keep original name
 
         return mapping
 
