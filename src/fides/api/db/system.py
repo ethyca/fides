@@ -194,17 +194,15 @@ async def update_system(
     # perform any updates on the system resource itself
     updated_system = await update_resource(System, resource.model_dump(), db)
 
-    async with db.begin():
+    await db.refresh(updated_system)
 
-        await db.refresh(updated_system)
-
-        system_updated: bool = _audit_system_changes(
-            db,
-            system.id,
-            current_user_id,
-            existing_system_dict,
-            SystemSchema.model_validate(updated_system).model_dump(mode="json"),
-        )
+    system_updated: bool = _audit_system_changes(
+        db,
+        system.id,
+        current_user_id,
+        existing_system_dict,
+        SystemSchema.model_validate(updated_system).model_dump(mode="json"),
+    )
 
     return updated_system, system_updated
 
