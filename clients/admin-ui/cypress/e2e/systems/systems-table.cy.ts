@@ -24,7 +24,7 @@ describe("systems table", () => {
 
     it("allows clicking on system name to navigate to system details", () => {
       cy.getAntTableRow("fidesctl_system").within(() => {
-        cy.get("a").click();
+        cy.getByTestId("system-link-fidesctl_system").click();
       });
       cy.url().should("include", "/systems/configure/fidesctl_system");
     });
@@ -33,10 +33,7 @@ describe("systems table", () => {
   describe("filtering", () => {
     it("filters systems by data steward", () => {
       cy.intercept("/api/v1/system?**").as("getSystemsBySteward");
-      cy.get(".ant-table-filter-column").within(() => {
-        cy.findByRole("button").click({ force: true });
-      });
-      cy.get(".ant-dropdown-menu-item").first().click({ force: true });
+      cy.applyTableFilter("Data steward", "user_3");
       cy.get(".ant-table-filter-dropdown").within(() => {
         cy.findByRole("button", { name: "OK" }).click({ force: true });
         cy.wait("@getSystemsBySteward").then((interception) => {

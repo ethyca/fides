@@ -23,12 +23,7 @@ describe("systems table plus features", () => {
 
     it("allows filtering by system groups", () => {
       cy.intercept("/api/v1/system?**").as("getSystemsByGroup");
-      cy.get(".ant-table-filter-column")
-        .first()
-        .within(() => {
-          cy.findByRole("button").click({ force: true });
-        });
-      cy.get(".ant-dropdown-menu-item").first().click({ force: true });
+      cy.applyTableFilter("Groups", "Blue Group");
       cy.wait("@getSystemGroups");
       cy.get(".ant-table-filter-dropdown").within(() => {
         cy.findByRole("button", { name: "OK" }).click({ force: true });

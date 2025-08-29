@@ -7,9 +7,9 @@ import {
   AntMessage as message,
   AntModal as Modal,
   AntTable as Table,
+  AntTypography,
   Icons,
 } from "fidesui";
-import { CustomTypography } from "fidesui/src/hoc";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -18,10 +18,7 @@ import { useFeatures, useFlags } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import {
-  TableSkeletonLoader,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
+import { useServerSidePagination } from "~/features/common/table/v2";
 import { convertToAntFilters } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useDeleteSystemMutation, useGetSystemsQuery } from "~/features/system";
@@ -191,7 +188,10 @@ const SystemsTable = () => {
         dataIndex: "name",
         key: "name",
         render: (name: string | null, record: BasicSystemResponseExtended) => (
-          <LinkCell href={`/systems/configure/${record.fides_key}`}>
+          <LinkCell
+            href={`/systems/configure/${record.fides_key}`}
+            data-testid={`system-link-${record.fides_key}`}
+          >
             {name || record.fides_key}
           </LinkCell>
         ),
@@ -349,10 +349,6 @@ const SystemsTable = () => {
     );
   }, [allSystemGroups, handleBulkAddToGroup]);
 
-  if (isLoading) {
-    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
-  }
-
   return (
     <>
       {messageContext}
@@ -412,12 +408,12 @@ const SystemsTable = () => {
             cancelText="Cancel"
             centered
           >
-            <CustomTypography.Paragraph>
+            <AntTypography.Paragraph>
               Are you sure you want to delete{" "}
               {selectedSystemForDelete?.name ??
                 selectedSystemForDelete?.fides_key}
               ? This action cannot be undone.
-            </CustomTypography.Paragraph>
+            </AntTypography.Paragraph>
           </Modal>
         </Flex>
       </Flex>

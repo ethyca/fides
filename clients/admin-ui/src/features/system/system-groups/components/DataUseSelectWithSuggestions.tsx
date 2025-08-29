@@ -2,7 +2,6 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntFlex as Flex,
   AntSelect as Select,
-  FormControl,
   Icons,
   SparkleIcon,
 } from "fidesui";
@@ -54,57 +53,55 @@ const DataUseSelectWithSuggestions = ({
   }, [options, suggestedDataUses]);
 
   return (
-    <FormControl isInvalid={isInvalid}>
-      <Flex vertical gap="small">
-        <Flex align="center">
-          <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
-            Data uses
-          </Label>
-        </Flex>
-        <Select
-          options={[
-            {
-              label: "Select all suggested",
-              value: ALL_SUGGESTED_VALUE,
-            },
-            {
-              label: (
-                <Flex gap="small" align="center">
-                  <SparkleIcon />
-                  <strong>Suggested data uses</strong>
-                </Flex>
-              ),
-              value: "suggested",
-              options: optionsGroups.suggested,
-            },
-            {
-              label: (
-                <Flex gap="small" align="center">
-                  <Icons.Document />
-                  <strong>All data uses</strong>
-                </Flex>
-              ),
-              value: "all",
-              options: optionsGroups.all,
-            },
-          ]}
-          mode="multiple"
-          placeholder="Select data uses"
-          allowClear
-          loading={loading}
-          value={field.value}
-          onChange={onChange}
-          status={isInvalid ? "error" : undefined}
-          virtual={false}
-          {...props}
-        />
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
+    <Flex vertical gap="small">
+      <Flex align="center">
+        <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
+          Data uses
+        </Label>
       </Flex>
-    </FormControl>
+      <Select
+        options={[
+          {
+            label: "Select all suggested",
+            value: ALL_SUGGESTED_VALUE,
+          },
+          {
+            label: (
+              <Flex gap="small" align="center">
+                <SparkleIcon />
+                <strong>Suggested data uses</strong>
+              </Flex>
+            ),
+            value: "suggested",
+            options: optionsGroups.suggested,
+          },
+          {
+            label: (
+              <Flex gap="small" align="center">
+                <Icons.Document />
+                <strong>All data uses</strong>
+              </Flex>
+            ),
+            value: "all",
+            options: optionsGroups.all,
+          },
+        ]}
+        mode="multiple"
+        placeholder="Select data uses"
+        allowClear
+        loading={loading}
+        value={field.value}
+        onChange={onChange}
+        status={isInvalid ? "error" : undefined}
+        virtual={false}
+        {...props}
+      />
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
+    </Flex>
   );
 };
 

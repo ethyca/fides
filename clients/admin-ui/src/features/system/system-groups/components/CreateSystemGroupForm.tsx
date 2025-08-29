@@ -1,5 +1,4 @@
-import { AntButton as Button, AntFlex as Flex } from "fidesui";
-import { CustomTypography } from "fidesui/src/hoc/CustomTypography";
+import { AntButton as Button, AntFlex as Flex, AntTypography } from "fidesui";
 import { Form, Formik } from "formik";
 import { uniq } from "lodash";
 import { useMemo } from "react";
@@ -94,9 +93,9 @@ const CreateSystemGroupForm = ({
         return (
           <Form>
             <Flex vertical gap="middle">
-              <CustomTypography.Title level={2}>
+              <AntTypography.Title level={2}>
                 Create system group
-              </CustomTypography.Title>
+              </AntTypography.Title>
               <CustomTextInput
                 name="name"
                 label="Name"

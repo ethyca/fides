@@ -3,6 +3,7 @@ import {
   AntDropdown as Dropdown,
   AntMessage as message,
   AntModal as Modal,
+  AntTypography,
   Icons,
 } from "fidesui";
 import { useState } from "react";
@@ -73,9 +74,9 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
         okType="danger"
         centered
       >
-        <p>
+        <AntTypography.Paragraph>
           Delete {selectedRowKeys.length} systems? This action cannot be undone.
-        </p>
+        </AntTypography.Paragraph>
       </Modal>
       <Dropdown
         trigger={["click"]}
