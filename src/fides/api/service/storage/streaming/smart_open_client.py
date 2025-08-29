@@ -29,7 +29,12 @@ class SmartOpenStorageClient:
 
     min_part_size: int = MIN_PART_SIZE
 
-    def __init__(self, storage_type: str, storage_secrets: Any):
+    def __init__(
+        self,
+        storage_type: str,
+        auth_method: Optional[str],
+        storage_secrets: Any,
+    ):
         """Initialize the smart-open storage client.
 
         Args:
@@ -38,9 +43,10 @@ class SmartOpenStorageClient:
                            Will be passed to the specific storage client implementation.
         """
         self.storage_type = StorageClientFactory._normalize_storage_type(storage_type)
+        self.auth_method = auth_method
         self.storage_secrets = storage_secrets
         self._provider_client = StorageClientFactory.create_client(
-            storage_type, storage_secrets
+            storage_type, auth_method, storage_secrets
         )
 
     def _build_uri(self, bucket: str, key: str) -> str:

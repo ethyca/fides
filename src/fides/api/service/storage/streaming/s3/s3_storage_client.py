@@ -20,7 +20,7 @@ class S3StorageClient(BaseStorageClient):
     generation for the smart-open storage client.
     """
 
-    def __init__(self, storage_secrets: dict[str, Any]):
+    def __init__(self, auth_method: str, storage_secrets: dict[str, Any]):
         """Initialize the storage client with secrets.
 
         Args:
@@ -29,6 +29,7 @@ class S3StorageClient(BaseStorageClient):
         """
         super().__init__(storage_secrets)
         self.storage_secrets: dict[str, Any] = storage_secrets
+        self.auth_method = auth_method
 
     def build_uri(self, bucket: str, key: str) -> str:
         """Build S3 URI for the given bucket and key.
@@ -57,21 +58,10 @@ class S3StorageClient(BaseStorageClient):
         # Create S3 client for smart-open
         try:
             # Determine auth method based on available credentials
-            if (
-                "aws_access_key_id" in self.storage_secrets
-                and "aws_secret_access_key" in self.storage_secrets
-                and self.storage_secrets["aws_access_key_id"]
-                and self.storage_secrets["aws_secret_access_key"]
-            ):
-                auth_method = AWSAuthMethod.SECRET_KEYS.value
-            else:
-                auth_method = AWSAuthMethod.AUTOMATIC.value
+            if self.auth_method == AWSAuthMethod.AUTOMATIC.value:
 
                 # For automatic authentication, check if region is available
-                if not (
-                    "region_name" in self.storage_secrets
-                    and self.storage_secrets["region_name"]
-                ):
+                if not self.storage_secrets.get("region_name", None):
                     logger.warning(
                         "No region specified in storage secrets for automatic authentication"
                         "This may cause credential issues - consider setting a default region"
@@ -79,7 +69,10 @@ class S3StorageClient(BaseStorageClient):
 
             # Extract assume_role_arn if present
             assume_role_arn = None
-            if "assume_role_arn" in self.storage_secrets:
+            if (
+                "assume_role_arn" in self.storage_secrets
+                and self.storage_secrets["assume_role_arn"]
+            ):
                 assume_role_arn = self.storage_secrets["assume_role_arn"]
                 logger.debug(f"Using assume role ARN: {assume_role_arn}")
 
@@ -87,14 +80,13 @@ class S3StorageClient(BaseStorageClient):
             # get_s3_client returns a boto3 S3 client, not a Session
             s3_client: Any = None
             try:
-                logger.debug(f"Creating S3 client with auth_method={auth_method}")
                 s3_client = get_s3_client(
-                    auth_method, self.storage_secrets, assume_role_arn  # type: ignore
+                    self.auth_method, self.storage_secrets, assume_role_arn  # type: ignore
                 )
                 logger.debug("Successfully created S3 client")
             except Exception as e:
                 # For automatic authentication, try to provide more helpful error messages
-                if auth_method == AWSAuthMethod.AUTOMATIC.value:
+                if self.auth_method == AWSAuthMethod.AUTOMATIC.value:
                     logger.error(
                         f"Failed to create S3 client with automatic authentication: {e}. "
                         "This usually means AWS credentials are not available in the environment"
@@ -144,19 +136,6 @@ class S3StorageClient(BaseStorageClient):
             Exception: If presigned URL generation fails
         """
         try:
-
-            # Determine auth method based on available credentials
-            # If AWS credentials are present, use SECRET_KEYS, otherwise use AUTOMATIC
-            if (
-                "aws_access_key_id" in self.storage_secrets
-                and "aws_secret_access_key" in self.storage_secrets
-                and self.storage_secrets["aws_access_key_id"]
-                and self.storage_secrets["aws_secret_access_key"]
-            ):
-                auth_method = AWSAuthMethod.SECRET_KEYS.value
-            else:
-                auth_method = AWSAuthMethod.AUTOMATIC.value
-
             # Extract assume_role_arn if present for role assumption
             assume_role_arn = None
             if "assume_role_arn" in self.storage_secrets:
@@ -164,7 +143,7 @@ class S3StorageClient(BaseStorageClient):
 
             # get_s3_client returns a boto3 S3 client, not a Session
             s3_client: Any = get_s3_client(
-                auth_method, self.storage_secrets, assume_role_arn  # type: ignore
+                self.auth_method, self.storage_secrets, assume_role_arn  # type: ignore
             )
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)
         except Exception as e:

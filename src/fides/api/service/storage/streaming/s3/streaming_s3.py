@@ -41,14 +41,9 @@ def upload_to_s3_streaming(
     This function now uses smart-open for efficient cloud storage operations while maintaining
     our DSR-specific business logic for package splitting and attachment processing.
     """
-    logger.debug(f"upload_to_s3_streaming called with auth_method={auth_method}")
-    logger.debug(f"Storage secrets type: {type(storage_secrets).__name__}")
-
     formatted_secrets = format_secrets(storage_secrets)
-    logger.debug(f"Formatted secrets keys: {list(formatted_secrets.keys())}")
 
     if document is not None:
-        logger.debug("Document provided, using generic_upload_to_s3")
         _, response = generic_upload_to_s3(
             formatted_secrets,  # type: ignore[arg-type]
             bucket_name,
@@ -60,7 +55,7 @@ def upload_to_s3_streaming(
 
     try:
         logger.debug("Creating SmartOpenStorageClient with formatted secrets")
-        storage_client = SmartOpenStorageClient("s3", formatted_secrets)
+        storage_client = SmartOpenStorageClient("s3", auth_method, formatted_secrets)
 
         # Create upload config for the streaming interface
         upload_config = StorageUploadConfig(
@@ -104,13 +99,11 @@ def _process_storage_secrets_input(
 
     if isinstance(storage_secrets, StorageSecretsS3):
         # Convert StorageSecretsS3 model directly to string keys
-        logger.debug("Converting StorageSecretsS3 model to string keys")
         for key, value in storage_secrets.model_dump().items():
             if value is not None:
                 final_secrets[key] = value
     else:
         # Process dict input, converting enum keys to strings if needed
-        logger.debug("Processing dict input, converting enum keys to strings if needed")
         for key, value in (storage_secrets or {}).items():  # type: ignore[assignment]
             if isinstance(key, str):
                 final_secrets[key] = value
@@ -130,10 +123,6 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
         and final_secrets["aws_secret_access_key"]
     )
 
-    logger.debug(
-        f"Credential validation - has_access_key: {has_access_key}, has_secret_key: {has_secret_key}"
-    )
-
     # If we have any AWS credentials, we need both for SECRET_KEYS auth
     if has_access_key or has_secret_key:
         if not has_access_key:
@@ -146,7 +135,6 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
                 "Missing required AWS credentials for SECRET_KEYS auth: aws_secret_access_key. "
                 "Storage configuration must include valid AWS access key and secret key."
             )
-        logger.debug("Validated SECRET_KEYS authentication credentials")
     else:
         # AUTOMATIC authentication - check if region is provided
         has_region = "region_name" in final_secrets and final_secrets["region_name"]
@@ -156,7 +144,6 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
                 "Missing required region_name for AUTOMATIC authentication. "
                 "Storage configuration must include a valid AWS region."
             )
-        logger.debug("Validated AUTOMATIC authentication - region is set")
 
 
 def format_secrets(
@@ -191,15 +178,7 @@ def format_secrets(
     Raises:
         ValueError: If required AWS credentials are missing for the chosen auth method
     """
-    logger.debug("format_secrets called with type: {}", type(storage_secrets).__name__)
-
-    # Stage 1: Process input and create final format directly
     final_secrets = _process_storage_secrets_input(storage_secrets)
-
-    # Stage 2: Validate required credentials (after setting defaults)
     _validate_aws_credentials(final_secrets)
 
-    logger.debug(
-        "format_secrets completed successfully with {} keys", len(final_secrets)
-    )
     return final_secrets
