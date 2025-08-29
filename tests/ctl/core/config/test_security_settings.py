@@ -83,6 +83,18 @@ class TestSecuritySettings:
         with pytest.raises(ValueError):
             SecuritySettings(request_rate_limit="invalid")
 
+    def test_validate_auth_rate_limit_invalid_format(self):
+        with pytest.raises(ValueError):
+            SecuritySettings(auth_rate_limit="invalid")
+
+    def test_validate_auth_rate_limit_valid_format(self):
+        # Test that valid auth_rate_limit values work
+        settings = SecuritySettings(auth_rate_limit="10/minute")
+        assert settings.auth_rate_limit == "10/minute"
+
+        settings = SecuritySettings(auth_rate_limit="5 per hour")
+        assert settings.auth_rate_limit == "5 per hour"
+
     def test_security_settings_env_default_to_prod(self):
         settings = SecuritySettings()
         assert settings.env == "prod"
