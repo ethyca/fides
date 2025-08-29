@@ -5,10 +5,12 @@ on:
     branches:
       - "main"
       - "release-**"
+  pull_request:
+    paths:
+      - "clients/cypress-e2e/**"
 
 env:
   CI: true
-  env:
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
