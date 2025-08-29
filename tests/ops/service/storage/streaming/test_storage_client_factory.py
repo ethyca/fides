@@ -3,10 +3,10 @@
 import pytest
 
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.streaming.s3.s3_storage_client import \
-    S3StorageClient
-from fides.api.service.storage.streaming.storage_client_factory import \
-    StorageClientFactory
+from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
+from fides.api.service.storage.streaming.storage_client_factory import (
+    StorageClientFactory,
+)
 
 
 class TestStorageClientFactory:

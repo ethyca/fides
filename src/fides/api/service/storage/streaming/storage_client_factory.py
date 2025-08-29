@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from fides.api.service.storage.streaming.base_storage_client import \
-    BaseStorageClient
-from fides.api.service.storage.streaming.s3.s3_storage_client import \
-    S3StorageClient
+from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
+from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
 class StorageClientFactory:

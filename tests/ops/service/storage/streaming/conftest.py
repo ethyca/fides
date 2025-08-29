@@ -3,8 +3,7 @@ from unittest.mock import MagicMock, Mock, create_autospec
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.service.storage.streaming.smart_open_client import \
-    SmartOpenStorageClient
+from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 
 
 @pytest.fixture

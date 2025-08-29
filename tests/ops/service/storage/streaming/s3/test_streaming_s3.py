@@ -13,7 +13,9 @@ import pytest
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
 from fides.api.service.storage.streaming.s3.streaming_s3 import (
-    format_secrets, upload_to_s3_streaming)
+    format_secrets,
+    upload_to_s3_streaming,
+)
 
 
 @pytest.fixture

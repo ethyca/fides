@@ -5,9 +5,8 @@ from unittest.mock import Mock, patch
 import pytest
 from moto import mock_aws
 
-from fides.api.schemas.storage.storage import StorageSecrets, AWSAuthMethod
-from fides.api.service.storage.streaming.s3.s3_storage_client import \
-    S3StorageClient
+from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
+from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
 class TestS3StorageClient:
@@ -102,10 +101,7 @@ class TestS3StorageClient:
         assert params["access_key"] == "test_key"
         assert params["secret_key"] == "test_secret"
         assert params["region"] == "us-west-2"
-        assert (
-            params["assume_role_arn"]
-            == "arn:aws:iam::123456789012:role/TestRole"
-        )
+        assert params["assume_role_arn"] == "arn:aws:iam::123456789012:role/TestRole"
 
     @mock_aws
     def test_get_transport_params_without_assume_role_arn(self):

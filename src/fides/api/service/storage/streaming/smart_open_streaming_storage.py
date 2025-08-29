@@ -17,17 +17,23 @@ from stream_zip import _ZIP_32_TYPE, stream_zip
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import ResponseFormat
-from fides.api.service.privacy_request.dsr_package.dsr_report_builder import \
-    DsrReportBuilder
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    DsrReportBuilder,
+)
 from fides.api.service.storage.streaming.dsr_storage import (
-    create_dsr_report_files_generator, stream_dsr_buffer_to_storage)
-from fides.api.service.storage.streaming.retry import \
-    retry_cloud_storage_operation
+    create_dsr_report_files_generator,
+    stream_dsr_buffer_to_storage,
+)
+from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
-    CHUNK_SIZE_THRESHOLD, AttachmentInfo, AttachmentProcessingInfo,
-    PackageSplitConfig, StorageUploadConfig, StreamingBufferConfig)
-from fides.api.service.storage.streaming.smart_open_client import \
-    SmartOpenStorageClient
+    CHUNK_SIZE_THRESHOLD,
+    AttachmentInfo,
+    AttachmentProcessingInfo,
+    PackageSplitConfig,
+    StorageUploadConfig,
+    StreamingBufferConfig,
+)
+from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 
 DEFAULT_ATTACHMENT_NAME = "attachment"
 DEFAULT_FILE_MODE = 0o644

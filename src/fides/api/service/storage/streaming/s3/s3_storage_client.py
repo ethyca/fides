@@ -9,8 +9,7 @@ from loguru import logger
 
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 from fides.api.service.storage.s3 import create_presigned_url_for_s3
-from fides.api.service.storage.streaming.base_storage_client import \
-    BaseStorageClient
+from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
 from fides.api.util.aws_util import get_s3_client
 
 # Type annotation: get_s3_client returns a boto3 S3 client object, not a Session
@@ -75,7 +74,9 @@ class S3StorageClient(BaseStorageClient):
 
             # Create S3 client using existing utility
             # get_s3_client returns a boto3 S3 client, not a Session
-            s3_client: Any = get_s3_client(auth_method, self.storage_secrets, assume_role_arn)
+            s3_client: Any = get_s3_client(
+                auth_method, self.storage_secrets, assume_role_arn
+            )
             params["client"] = s3_client
 
         except Exception as e:
@@ -92,9 +93,7 @@ class S3StorageClient(BaseStorageClient):
                 StorageSecrets.AWS_SECRET_ACCESS_KEY
             ]
         if StorageSecrets.REGION_NAME in self.storage_secrets:
-            params["region"] = self.storage_secrets[
-                StorageSecrets.REGION_NAME
-            ]
+            params["region"] = self.storage_secrets[StorageSecrets.REGION_NAME]
         if StorageSecrets.AWS_ASSUME_ROLE in self.storage_secrets:
             params["assume_role_arn"] = self.storage_secrets[
                 StorageSecrets.AWS_ASSUME_ROLE

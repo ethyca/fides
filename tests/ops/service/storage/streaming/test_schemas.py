@@ -4,9 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.service.storage.streaming.schemas import (
-    AttachmentInfo, AttachmentProcessingInfo, MultipartUploadResponse,
-    PackageSplitConfig, StorageUploadConfig, StreamingBufferConfig,
-    UploadPartResponse)
+    AttachmentInfo,
+    AttachmentProcessingInfo,
+    MultipartUploadResponse,
+    PackageSplitConfig,
+    StorageUploadConfig,
+    StreamingBufferConfig,
+    UploadPartResponse,
+)
 
 
 class TestAttachmentInfo:
