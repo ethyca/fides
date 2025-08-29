@@ -123,19 +123,26 @@ const usePrivacyRequestForm = ({
                   const hiddenValue = paramValue ?? field.default_value;
                   const value = !field.hidden ? values[key] : hiddenValue;
 
+                  let processedValue;
+                  if (field.field_type === "multiselect") {
+                    processedValue = value || [];
+                  } else {
+                    processedValue = fallbackNull(value);
+                  }
+
                   return [
                     key,
                     {
                       // only include label and value
                       label: field.label,
-                      value: fallbackNull(value),
+                      value: processedValue,
                     },
                   ];
                 })
                 .filter(
                   ([, fieldData]) =>
                     typeof fieldData === "object" && fieldData.value !== null,
-                ), // Filter out null values
+                ), // Filter out null values (but keep empty arrays for multiselect)
             )
           : {};
 
