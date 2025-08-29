@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -78,6 +78,26 @@ def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     return (
         datetime.now() - issued_at
     ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
+
+
+def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
+    """
+    Return True if the token should be considered invalid due to security events
+    (e.g., user password reset) that occurred after the token was issued.
+
+    Any errors accessing related objects are logged and treated as non-invalidating.
+    """
+    try:
+        if client.user is not None and client.user.password_reset_at is not None:
+            password_reset_at = client.user.password_reset_at
+            if password_reset_at and issued_at < password_reset_at:
+                return True
+        return False
+    except Exception as exc:
+        logger.exception(
+            "Unable to evaluate password reset timestamp for client user: {}", exc
+        )
+        return False
 
 
 def _get_webhook_jwe_or_error(
@@ -225,7 +245,7 @@ async def get_current_user(
             created_at=datetime.utcnow(),
         )
 
-    return client.user  # type: ignore[attr-defined]
+    return cast(FidesUser, client.user)
 
 
 def verify_callback_oauth_policy_pre_webhook(
@@ -370,8 +390,10 @@ def extract_token_and_load_client(
         logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
+    issued_at_dt = datetime.fromisoformat(issued_at)
+
     if is_token_expired(
-        datetime.fromisoformat(issued_at),
+        issued_at_dt,
         token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
@@ -392,6 +414,12 @@ def extract_token_and_load_client(
 
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    # Invalidate tokens issued prior to the user's most recent password reset.
+    # This ensures any existing sessions are expired immediately after a password change.
+    if is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before latest password reset.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Populate request-scoped context with the authenticated user identifier.
