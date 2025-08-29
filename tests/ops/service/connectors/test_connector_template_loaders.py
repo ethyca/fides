@@ -7,6 +7,8 @@ import pytest
 
 from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.schemas.enums.connection_category import ConnectionCategory
+from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.service.authentication.authentication_strategy import (
@@ -429,6 +431,9 @@ class TestCustomConnectorTemplateLoader:
                 authorization_required=False,
                 user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot",
                 supported_actions=[ActionType.access, ActionType.erasure],
+                category=ConnectionCategory.CRM,
+                tags=["API", "DSR Automation"],
+                enabled_features=[IntegrationFeature.DSR_AUTOMATION],
             )
         }
         mock_delete.assert_not_called()
