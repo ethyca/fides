@@ -75,17 +75,22 @@ export default async function handler(
     return res.status(405).send(`Method ${req.method} Not Allowed`);
   }
 
+  // Declare variables outside try block for access in catch block
+  let url: string | undefined;
+  let requestId: string | undefined;
+  let token: string | undefined;
+
   try {
     const settings = loadEnvironmentVariables();
     const { id: requestIdRaw, token: tokenRaw } = req.query;
 
     // Extract and validate requestId parameter
-    const requestId = Array.isArray(requestIdRaw)
+    requestId = Array.isArray(requestIdRaw)
       ? requestIdRaw[0]
       : requestIdRaw;
 
     // Extract and validate token parameter
-    const token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw;
+    token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw;
 
     // Validate that requestId parameter is provided
     if (!requestId) {
@@ -135,7 +140,16 @@ export default async function handler(
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL;
 
     // Build the URL with encoded UUID for safe path parameter
-    const url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package?token=${encodeURIComponent(token)}`;
+    url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package?token=${encodeURIComponent(token)}`;
+
+    log.info(`🚀 Calling Fides API endpoint:`, {
+      baseUrl,
+      endpoint: `/privacy-request/${encodedRequestId}/access-package`,
+      fullUrl: url,
+      requestId: requestId,
+      hasToken: !!token,
+      tokenLength: token?.length || 0,
+    });
 
     log.debug(`Fetching DSR package link from: ${url}`);
 
@@ -149,10 +163,47 @@ export default async function handler(
       headers: Object.fromEntries(headers.entries()),
     });
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers,
-    });
+    log.info(`🔍 About to make fetch request to: ${url}`);
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers,
+      });
+
+      log.info(`📡 Fides API response received:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: url,
+        responseHeaders: Object.fromEntries(response.headers.entries()),
+      });
+    } catch (fetchError) {
+      // Check if this is a connection refused error
+      const isConnectionRefused = fetchError instanceof Error &&
+        fetchError.cause &&
+        typeof fetchError.cause === 'object' &&
+        'code' in fetchError.cause &&
+        fetchError.cause.code === 'ECONNREFUSED';
+
+      if (isConnectionRefused) {
+        log.error(`❌ Fides API connection refused - service may not be running:`, {
+          url,
+          error: 'Connection refused (ECONNREFUSED)',
+          suggestion: 'Check if Fides API service is running on port 8080',
+          baseUrl,
+        });
+      } else {
+        log.error(`❌ Fetch request failed:`, {
+          url,
+          error: fetchError instanceof Error ? fetchError.message : String(fetchError),
+          errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
+          errorType: fetchError?.constructor?.name || typeof fetchError,
+          fullError: fetchError,
+        });
+      }
+      throw fetchError; // Re-throw to be caught by outer catch block
+    }
 
     let data = null;
     const contentType = response.headers.get("content-type");
@@ -300,7 +351,15 @@ export default async function handler(
       .status(500)
       .send("Internal Server Error: Invalid response from backend API");
   } catch (error) {
-    log.error("Unexpected error in dsr-package endpoint:", error);
+    log.error("Unexpected error in dsr-package endpoint:", {
+      error: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      errorType: error?.constructor?.name || typeof error,
+      fullError: error,
+      url: url || 'unknown',
+      requestId: requestId || 'unknown',
+      hasToken: !!token,
+    });
     return res
       .status(500)
       .send("Internal Server Error: An unexpected error occurred");

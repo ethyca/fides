@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 from moto import mock_aws
 
-from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
+from fides.api.schemas.storage.storage import AWSAuthMethod
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
@@ -14,15 +14,15 @@ class TestS3StorageClient:
 
     def test_init_stores_storage_secrets(self):
         """Test that __init__ properly stores storage secrets."""
-        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
+        secrets = {"aws_access_key_id": "test_key"}
         client = S3StorageClient(secrets)
         assert client.storage_secrets == secrets
 
     def test_build_uri_standard_s3(self):
         """Test S3 URI construction for standard AWS."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
         }
         client = S3StorageClient(secrets)
         uri = client.build_uri("test-bucket", "test-key")
@@ -31,8 +31,8 @@ class TestS3StorageClient:
     def test_build_uri_custom_endpoint(self):
         """Test S3 URI construction for custom endpoint (e.g., MinIO)."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
         }
         client = S3StorageClient(secrets)
         uri = client.build_uri("test-bucket", "test-key")
@@ -44,9 +44,9 @@ class TestS3StorageClient:
     def test_get_transport_params_with_all_keys(self):
         """Test transport params with all S3 keys."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -65,8 +65,8 @@ class TestS3StorageClient:
     def test_get_transport_params_with_partial_keys(self):
         """Test transport params with partial S3 keys."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "aws_access_key_id": "test_key",
+            "region_name": "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -85,10 +85,10 @@ class TestS3StorageClient:
     def test_get_transport_params_with_assume_role_arn(self):
         """Test transport params include assume_role_arn when present."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
-            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
+            "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -107,9 +107,9 @@ class TestS3StorageClient:
     def test_get_transport_params_without_assume_role_arn(self):
         """Test transport params don't include assume_role_arn when not present."""
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
         }
         client = S3StorageClient(secrets)
         params = client.get_transport_params()
@@ -137,9 +137,9 @@ class TestS3StorageClient:
         mock_create_presigned.return_value = "https://test-url.com"
 
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
         }
         client = S3StorageClient(secrets)
 
@@ -156,7 +156,7 @@ class TestS3StorageClient:
         """Test presigned URL generation failure."""
         mock_get_s3_client.side_effect = Exception("S3 client error")
 
-        secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
+        secrets = {"aws_access_key_id": "test_key"}
         client = S3StorageClient(secrets)
 
         with pytest.raises(Exception, match="S3 client error"):
@@ -175,8 +175,8 @@ class TestS3StorageClient:
         mock_create_presigned.return_value = "https://test-url.com"
 
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
         }
         client = S3StorageClient(secrets)
 
@@ -201,7 +201,7 @@ class TestS3StorageClient:
         mock_create_presigned.return_value = "https://test-url.com"
 
         # No AWS credentials provided
-        secrets = {StorageSecrets.REGION_NAME: "us-west-2"}
+        secrets = {"region_name": "us-west-2"}
         client = S3StorageClient(secrets)
 
         result = client.generate_presigned_url("test-bucket", "test-key")
@@ -226,9 +226,9 @@ class TestS3StorageClient:
 
         # Empty AWS credentials
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "aws_access_key_id": "",
+            "aws_secret_access_key": "",
+            "region_name": "us-west-2",
         }
         client = S3StorageClient(secrets)
 
@@ -253,10 +253,10 @@ class TestS3StorageClient:
         mock_create_presigned.return_value = "https://test-url.com"
 
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
-            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
+            "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
         client = S3StorageClient(secrets)
 
@@ -284,8 +284,8 @@ class TestS3StorageClient:
 
         # No AWS credentials, but with assume_role_arn
         secrets = {
-            StorageSecrets.REGION_NAME: "us-west-2",
-            StorageSecrets.AWS_ASSUME_ROLE: "arn:aws:iam::123456789012:role/TestRole",
+            "region_name": "us-west-2",
+            "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
         client = S3StorageClient(secrets)
 
@@ -313,9 +313,9 @@ class TestS3StorageClient:
 
         # No assume_role_arn
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
         }
         client = S3StorageClient(secrets)
 
@@ -341,10 +341,10 @@ class TestS3StorageClient:
 
         # Empty assume_role_arn
         secrets = {
-            StorageSecrets.AWS_ACCESS_KEY_ID: "test_key",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY: "test_secret",
-            StorageSecrets.REGION_NAME: "us-west-2",
-            StorageSecrets.AWS_ASSUME_ROLE: "",
+            "aws_access_key_id": "test_key",
+            "aws_secret_access_key": "test_secret",
+            "region_name": "us-west-2",
+            "assume_role_arn": "",
         }
         client = S3StorageClient(secrets)
 
