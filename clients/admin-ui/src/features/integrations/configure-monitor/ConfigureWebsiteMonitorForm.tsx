@@ -259,16 +259,17 @@ const ConfigureWebsiteMonitorForm = ({
           onBlur={formik.handleBlur}
           value={dayjs(values.execution_start_date)}
         />
-        <Flex className="mt-2 justify-between">
+        <Flex className="mt-2" justify="stretch">
           <Button
             onClick={() => {
               resetForm();
               onClose();
             }}
+            block
           >
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" data-testid="save-btn">
+          <Button type="primary" htmlType="submit" data-testid="save-btn" block>
             Save
           </Button>
         </Flex>
