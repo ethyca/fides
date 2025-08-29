@@ -16,7 +16,7 @@ from fides.api.common_exceptions import FidesopsException, ValidationError
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDataset
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import SaaSRequest
+from fides.api.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config import CONFIG
 from fides.config.helpers import load_file
@@ -124,6 +124,17 @@ def replace_dataset_placeholders(
     """Loads the dataset from the yaml string and replaces any string with the given value"""
     yaml_str: str = dataset.replace(string_to_replace, replacement)
     return load_dataset_from_string(yaml_str)
+
+
+def extract_display_info_from_config(config: SaaSConfig) -> Dict[str, Any]:
+    """Extract display info fields from SaaSConfig for caching in ConnectorTemplate."""
+    return {
+        "category": config.display_info.category if config.display_info else None,
+        "tags": config.display_info.tags if config.display_info else None,
+        "enabled_features": (
+            config.display_info.enabled_features if config.display_info else None
+        ),
+    }
 
 
 def load_dataset_with_replacement(
