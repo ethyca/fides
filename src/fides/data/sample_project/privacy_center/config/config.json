@@ -66,47 +66,14 @@
           "label": "Last name",
           "required": false
         },
+        "color": {
+          "label": "Color",
+          "default_value": "red"
+        },
         "tenant_id": {
           "label": "Tenant ID",
           "default_value": "123",
           "hidden": true
-        },
-        "location": {
-          "label": "Location",
-          "field_type": "location",
-          "ip_geolocation_hint": true,
-          "required": true
-        },
-        "preferred_format": {
-          "label": "Preferred format",
-          "field_type": "select",
-          "required": true,
-          "default_value": "HTML",
-          "options": [
-            "JSON",
-            "CSV",
-            "PDF",
-            "XML",
-            "HTML",
-            "TXT",
-            "DOCX",
-            "XLSX",
-            "PPTX",
-            "ZIP",
-            "PNG",
-            "JPEG",
-            "GIF",
-            "SVG",
-            "MP4",
-            "MP3",
-            "WAV",
-            "SQL",
-            "YAML",
-            "MD",
-            "RTF",
-            "EPUB",
-            "PSD"
-          ]
         }
       },
       "title": "Manage your consent"
