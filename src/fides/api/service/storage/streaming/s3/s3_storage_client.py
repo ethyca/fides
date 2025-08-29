@@ -69,7 +69,7 @@ class S3StorageClient(BaseStorageClient):
                 auth_method = AWSAuthMethod.AUTOMATIC.value
 
                 # For automatic authentication, check if region is available
-                if not(
+                if not (
                     "region_name" in self.storage_secrets
                     and self.storage_secrets["region_name"]
                 ):
@@ -104,8 +104,7 @@ class S3StorageClient(BaseStorageClient):
                     raise ValueError(
                         f"Automatic AWS authentication failed: {e}. Please check your AWS credential configuration."
                     )
-                else:
-                    raise
+                raise
 
             params["client"] = s3_client
 
@@ -126,7 +125,6 @@ class S3StorageClient(BaseStorageClient):
             ]:
                 if key in self.storage_secrets and self.storage_secrets[key]:
                     params[transport_key] = self.storage_secrets[key]
-
 
         return params
 
