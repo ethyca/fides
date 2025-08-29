@@ -137,7 +137,16 @@ export default async function handler(
     // Build the URL with encoded UUID for safe path parameter
     const url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package?token=${encodeURIComponent(token)}`;
 
-    log.debug(`Fetching DSR package link from: ${url}`);
+    log.debug(`Fetching DSR package link from: ${url}`, {
+      baseUrl,
+      serverSideUrl: settings.SERVER_SIDE_FIDES_API_URL,
+      clientUrl: settings.FIDES_API_URL,
+      encodedRequestId,
+      tokenLength: token.length,
+      tokenPrefix: token.substring(0, 20) + "...",
+      requestId,
+      privacyRequestId: requestId
+    });
 
     // Prepare headers for public API call (no authentication)
     const headers = new Headers();
@@ -147,12 +156,67 @@ export default async function handler(
       url,
       method: "GET",
       headers: Object.fromEntries(headers.entries()),
+      requestId,
+      privacyRequestId: requestId
     });
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers,
+    log.debug(`Initiating fetch request to backend`, {
+      url,
+      requestId,
+      privacyRequestId: requestId
     });
+
+    let response;
+    try {
+      response = await fetch(url, {
+        method: "GET",
+        headers,
+      });
+
+      log.debug(`Received response from backend`, {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        requestId,
+        privacyRequestId: requestId,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+        } catch (fetchError) {
+      // Enhanced error logging to capture the full error details
+      const errorInfo = {
+        url,
+        requestId,
+        privacyRequestId: requestId,
+        errorType: fetchError?.constructor?.name || 'Unknown',
+        errorName: (fetchError as any)?.name || 'Unknown',
+        errorMessage: fetchError instanceof Error ? fetchError.message : String(fetchError),
+        errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
+        errorCode: (fetchError as any)?.code,
+        errorErrno: (fetchError as any)?.errno,
+        errorSyscall: (fetchError as any)?.syscall,
+        fullError: fetchError
+      };
+
+      log.error(`Fetch request failed with detailed error information:`, errorInfo);
+
+      // Return a more descriptive error message based on the error type
+      let userMessage = 'Failed to connect to backend API';
+      if (fetchError instanceof Error) {
+        if (fetchError.message.includes('ECONNREFUSED')) {
+          userMessage = 'Backend service is not available';
+        } else if (fetchError.message.includes('ENOTFOUND')) {
+          userMessage = 'Backend service not found';
+        } else if (fetchError.message.includes('ETIMEDOUT')) {
+          userMessage = 'Backend service request timed out';
+        } else {
+          userMessage = fetchError.message;
+        }
+      }
+
+      return res
+        .status(500)
+        .send(`Internal Server Error: ${userMessage}`);
+    }
 
     let data = null;
     const contentType = response.headers.get("content-type");
@@ -161,23 +225,55 @@ export default async function handler(
     let responseData: ArrayBuffer | string;
     let isBinary = false;
 
-    if (contentType && contentType.includes("application/json")) {
-      // For JSON responses, use text
-      try {
-        responseData = await response.text();
-      } catch (e) {
-        responseData = "";
-        log.warn("Failed to read response body as text", e);
+    try {
+      if (contentType && contentType.includes("application/json")) {
+        // For JSON responses, use text
+        try {
+          responseData = await response.text();
+          log.debug(`Successfully read JSON response body`, {
+            requestId,
+            privacyRequestId: requestId,
+            bodyLength: responseData.length
+          });
+        } catch (e) {
+          log.error("Failed to read response body as text", {
+            requestId,
+            privacyRequestId: requestId,
+            error: e
+          });
+          responseData = "";
+        }
+      } else {
+        // For binary responses (like ZIP files), use arrayBuffer
+        try {
+          responseData = await response.arrayBuffer();
+          isBinary = true;
+          log.debug(`Successfully read binary response body`, {
+            requestId,
+            privacyRequestId: requestId,
+            bodySize: responseData.byteLength
+          });
+        } catch (e) {
+          log.error("Failed to read response body as arrayBuffer", {
+            requestId,
+            privacyRequestId: requestId,
+            error: e
+          });
+          responseData = new ArrayBuffer(0);
+        }
       }
-    } else {
-      // For binary responses (like ZIP files), use arrayBuffer
-      try {
-        responseData = await response.arrayBuffer();
-        isBinary = true;
-      } catch (e) {
-        responseData = new ArrayBuffer(0);
-        log.warn("Failed to read response body as arrayBuffer", e);
-      }
+    } catch (responseError) {
+      log.error("Unexpected error while reading response body", {
+        requestId,
+        privacyRequestId: requestId,
+        errorType: responseError?.constructor?.name || 'Unknown',
+        errorMessage: responseError instanceof Error ? responseError.message : String(responseError),
+        errorStack: responseError instanceof Error ? responseError.stack : undefined
+      });
+
+      return res
+        .status(500)
+        .send(`Internal Server Error: Failed to process backend response: ${responseError instanceof Error ? responseError.message : String(responseError)}`);
     }
 
     // Check if this is a redirect response FIRST (before checking response.ok)
@@ -266,6 +362,8 @@ export default async function handler(
     if (!response.ok) {
       const errorMessage =
         data?.detail || data?.message || `HTTP ${response.status}`;
+
+      // Enhanced error logging with more context
       log.error(`Failed to fetch DSR package link: ${errorMessage}`, {
         url,
         status: response.status,
@@ -273,6 +371,8 @@ export default async function handler(
         responseData: data,
         responseHeaders: Object.fromEntries(response.headers.entries()),
         responseText: responseData,
+        requestId,
+        privacyRequestId: requestId
       });
 
       // Return appropriate error status with HTML response
@@ -299,10 +399,25 @@ export default async function handler(
     return res
       .status(500)
       .send("Internal Server Error: Invalid response from backend API");
-  } catch (error) {
-    log.error("Unexpected error in dsr-package endpoint:", error);
+    } catch (error) {
+    // Enhanced error logging to prevent truncation
+    const errorDetails = {
+      errorType: error?.constructor?.name || 'Unknown',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      errorDetails: (error as any)?.detail || (error as any)?.details,
+      fullError: error
+    };
+
+    log.error("Unexpected error in dsr-package endpoint:", errorDetails);
+
+    // Return a more descriptive error message
+    const errorMessage = error instanceof Error ? error.message :
+                        (error as any)?.detail ||
+                        (error as any)?.details ||
+                        'An unexpected error occurred';
     return res
       .status(500)
-      .send("Internal Server Error: An unexpected error occurred");
+      .send(`Internal Server Error: ${errorMessage}`);
   }
 }
