@@ -692,7 +692,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     self.execution_node,
                     self.resources.policy,
                     self.resources.request,
-                    self.resources.privacy_request_task,
+                    self.request_task,
                     formatted_input_data,
                 )
 

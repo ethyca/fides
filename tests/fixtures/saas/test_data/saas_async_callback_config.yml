@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: saas_async_config
+  fides_key: saas_async_callback_config
   name: Async Callback Example Custom Connector
   type: async_callback_example
   description: Test Async Config

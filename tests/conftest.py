@@ -65,6 +65,7 @@ from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
+from tests.fixtures.async_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.datahub_fixtures import *
 from tests.fixtures.detection_discovery_fixtures import *
