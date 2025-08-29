@@ -708,7 +708,7 @@ class SmartOpenStreamingStorage:
             )
         except Exception as e:
             logger.error(
-                f"Failed to generate presigned URL for {config.bucket_name}/{config.file_key}: {e}"
+                f"Failed to generate presigned URL for {config.file_key}: {e}"
             )
             raise StorageUploadError(f"Failed to generate presigned URL: {e}") from e
 
@@ -953,11 +953,7 @@ class SmartOpenStreamingStorage:
 
             try:
                 source_bucket, source_key = self._parse_storage_url(storage_key)
-                logger.debug(
-                    f"Parsed storage URL - bucket: {source_bucket}, key: {source_key}"
-                )
             except ValueError as e:
-                logger.error(f"Could not parse storage URL: {storage_key} - {e}")
                 raise StorageUploadError(
                     f"Could not parse storage URL: {storage_key} - {e}"
                 ) from e
