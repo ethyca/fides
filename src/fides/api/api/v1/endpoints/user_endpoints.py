@@ -634,6 +634,8 @@ def user_login(
     client: ClientDetail
     should_raise_exception: bool = False
 
+    raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Intentionally failing login.")
+
     if (
         config.security.root_username
         and config.security.root_password
