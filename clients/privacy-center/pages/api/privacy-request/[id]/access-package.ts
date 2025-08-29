@@ -85,9 +85,7 @@ export default async function handler(
     const { id: requestIdRaw, token: tokenRaw } = req.query;
 
     // Extract and validate requestId parameter
-    requestId = Array.isArray(requestIdRaw)
-      ? requestIdRaw[0]
-      : requestIdRaw;
+    requestId = Array.isArray(requestIdRaw) ? requestIdRaw[0] : requestIdRaw;
 
     // Extract and validate token parameter
     token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw;
@@ -154,28 +152,35 @@ export default async function handler(
         method: "GET",
         headers,
       });
-
     } catch (fetchError) {
       // Check if this is a connection refused error
-      const isConnectionRefused = fetchError instanceof Error &&
+      const isConnectionRefused =
+        fetchError instanceof Error &&
         fetchError.cause &&
-        typeof fetchError.cause === 'object' &&
-        'code' in fetchError.cause &&
-        fetchError.cause.code === 'ECONNREFUSED';
+        typeof fetchError.cause === "object" &&
+        "code" in fetchError.cause &&
+        fetchError.cause.code === "ECONNREFUSED";
 
       if (isConnectionRefused) {
-        log.error(`Fides API connection refused - service may not be running or is not reachable: ${baseUrl}`, {
-          url,
-          error: 'Connection refused (ECONNREFUSED)',
-          suggestion: 'Check if Fides API service is running on port 8080',
-          baseUrl,
-          fullError: fetchError,
-        });
+        log.error(
+          `Fides API connection refused - service may not be running or is not reachable: ${baseUrl}`,
+          {
+            url,
+            error: "Connection refused (ECONNREFUSED)",
+            suggestion: "Check if Fides API service is running on port 8080",
+            baseUrl,
+            fullError: fetchError,
+          },
+        );
       } else {
         log.error(`Fetch request failed.`, {
           url,
-          error: fetchError instanceof Error ? fetchError.message : String(fetchError),
-          errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
+          error:
+            fetchError instanceof Error
+              ? fetchError.message
+              : String(fetchError),
+          errorStack:
+            fetchError instanceof Error ? fetchError.stack : undefined,
           errorType: fetchError?.constructor?.name || typeof fetchError,
           fullError: fetchError,
           baseUrl,
@@ -335,8 +340,8 @@ export default async function handler(
       errorStack: error instanceof Error ? error.stack : undefined,
       errorType: error?.constructor?.name || typeof error,
       fullError: error,
-      url: url || 'unknown',
-      requestId: requestId || 'unknown',
+      url: url || "unknown",
+      requestId: requestId || "unknown",
       hasToken: !!token,
     });
     return res
