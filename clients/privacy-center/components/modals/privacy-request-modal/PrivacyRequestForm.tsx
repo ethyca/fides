@@ -63,7 +63,7 @@ const PrivacyRequestForm = ({
   }
 
   return (
-    <Flex vertical gap="small">
+    <Flex vertical gap="middle">
       <Text type="secondary">{action.description}</Text>
       <Form
         onFinish={handleSubmit}

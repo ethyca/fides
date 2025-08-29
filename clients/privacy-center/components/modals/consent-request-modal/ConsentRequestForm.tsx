@@ -59,7 +59,7 @@ const ConsentRequestForm = ({
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
   return (
-    <Flex vertical gap="small">
+    <Flex vertical gap="middle">
       <Text>{config.consent?.button.description}</Text>
       {config.consent?.button.description_subtext?.map((paragraph) => (
         <Text key={paragraph}>{paragraph}</Text>
