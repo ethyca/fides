@@ -265,7 +265,11 @@ def minimal_config_startup(session: nox.Session) -> None:
 def performance_tests(session: nox.Session) -> None:
     """Compose the various performance checks into a single uber-test."""
     session.notify("teardown")
-    session.run(*START_APP, external=True, silent=True)
+    perf_env = {
+        "FIDES__SECURITY__AUTH_RATE_LIMIT": "1000000/minute",
+        **session.env,
+    }
+    session.run(*START_APP, external=True, silent=True, env=perf_env)
     samples = 2
     for i in range(samples):
         session.log(f"Sample {i + 1} of {samples}")
