@@ -175,26 +175,11 @@ def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
 @pytest.mark.integration
 @pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
 class TestCrud:
-    @pytest.fixture(scope="function")
-    def auth_header_for_endpoint(self, generate_auth_header, application_user):
-        """Provide appropriate authentication header based on endpoint type"""
-
-        def _auth_header(endpoint, scopes):
-            # System endpoints require a user, other endpoints use client-only auth
-            if endpoint == "system":
-                from tests.conftest import generate_auth_header_for_user
-
-                return generate_auth_header_for_user(application_user, scopes)
-            else:
-                return generate_auth_header(scopes=scopes)
-
-        return _auth_header
-
     @pytest.mark.parametrize("endpoint", model_list)
     @pytest.mark.usefixtures("default_taxonomy")
     def test_api_create(
         self,
-        auth_header_for_endpoint,
+        generate_auth_header,
         test_config: FidesConfig,
         resources_dict: Dict,
         endpoint: str,
@@ -203,7 +188,7 @@ class TestCrud:
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}",
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}",
         ]
-        auth_header = auth_header_for_endpoint(endpoint, token_scopes)
+        auth_header = generate_auth_header(scopes=token_scopes)
         existing_resource = _api.get(
             url=test_config.cli.server_url,
             resource_type=endpoint,
@@ -220,7 +205,7 @@ class TestCrud:
 
         manifest = resources_dict[endpoint]
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
-        auth_header = auth_header_for_endpoint(endpoint, token_scopes)
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.create(
             url=test_config.cli.server_url,
@@ -386,11 +371,11 @@ class TestCrud:
         test_config: FidesConfig,
         resources_dict: Dict,
         endpoint: str,
-        auth_header_for_endpoint,
+        generate_auth_header,
     ) -> None:
         # check if the resource exists first
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
-        auth_header = auth_header_for_endpoint(endpoint, token_scopes)
+        auth_header = generate_auth_header(scopes=token_scopes)
         result = _api.ls(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -406,7 +391,7 @@ class TestCrud:
         if not resource:
             # create the resource
             token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
-            auth_header = auth_header_for_endpoint(endpoint, token_scopes)
+            auth_header = generate_auth_header(scopes=token_scopes)
             result = _api.create(
                 url=test_config.cli.server_url,
                 headers=auth_header,
@@ -416,7 +401,7 @@ class TestCrud:
         token_scopes: List[str] = [
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
         ]
-        auth_header = auth_header_for_endpoint(endpoint, token_scopes)
+        auth_header = generate_auth_header(scopes=token_scopes)
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -474,13 +459,13 @@ class TestCrud:
         test_config: FidesConfig,
         resources_dict: Dict,
         endpoint: str,
-        auth_header_for_endpoint,
+        generate_auth_header,
     ) -> None:
         token_scopes: List[str] = [
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
         ]
-        auth_header = auth_header_for_endpoint(endpoint, token_scopes)
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         manifest = resources_dict[endpoint]
         result = _api.upsert(
@@ -618,24 +603,9 @@ class TestCrud:
         assert resp["resource"]["fides_key"] == manifest.fides_key
 
 
-class SystemTestBase:
-    """Base class for system endpoint tests that require user authentication"""
-
-    @pytest.fixture(scope="function")
-    def generate_auth_header(self, application_user):
-        """Override global generate_auth_header to provide user authentication for system endpoints"""
-
-        def _auth_header(scopes):
-            from tests.conftest import generate_auth_header_for_user
-
-            return generate_auth_header_for_user(application_user, scopes)
-
-        return _auth_header
-
-
 @pytest.mark.unit
 @pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
-class TestSystemCreate(SystemTestBase):
+class TestSystemCreate:
     @pytest.fixture(scope="function", autouse=True)
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
@@ -984,7 +954,7 @@ class TestSystemCreate(SystemTestBase):
         assert not System.all(db)  # ensure our system wasn't created
 
     async def test_system_create(
-        self, db, test_config, system_create_request_body, generate_auth_header
+        self, generate_auth_header, db, test_config, system_create_request_body
     ):
         """Ensure system create works for base case, which includes 2 privacy declarations"""
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
@@ -1251,16 +1221,10 @@ class TestSystemCreate(SystemTestBase):
         test_config,
         system_create_request_body,
         db,
-        application_user,
+        generate_role_header,
     ):
         """Ensure system create works for owner role, which has necessary scope"""
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         result = _api.create(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -1389,7 +1353,7 @@ class TestSystemCreate(SystemTestBase):
 
 @pytest.mark.unit
 @pytest.mark.usefixtures("monkeypatch_requests")
-class TestSystemGet(SystemTestBase):
+class TestSystemGet:
     def test_data_stewards_included_in_response(
         self, test_config, system, system_manager, generate_auth_header
     ):
@@ -1437,7 +1401,7 @@ class TestSystemGet(SystemTestBase):
 
 @pytest.mark.unit
 @pytest.mark.usefixtures("monkeypatch_requests")
-class TestSystemList(SystemTestBase):
+class TestSystemList:
     @pytest.fixture(scope="function", autouse=True)
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
@@ -1825,7 +1789,7 @@ class TestSystemList(SystemTestBase):
 
 @pytest.mark.unit
 @pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
-class TestSystemUpdate(SystemTestBase):
+class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
     @pytest.fixture(scope="function", autouse=True)
@@ -1999,16 +1963,10 @@ class TestSystemUpdate(SystemTestBase):
         system_update_request_body,
         system,
         db,
-        application_user,
+        generate_role_header,
     ):
         assert system.name != self.updated_system_name
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -2027,33 +1985,11 @@ class TestSystemUpdate(SystemTestBase):
         system_update_request_body,
         system,
         db,
-        application_user,
+        generate_system_manager_header,
     ):
         assert system.name != self.updated_system_name
 
-        # Add system to the client for system manager auth
-        application_user.client.systems = [system.id]
-        application_user.client.save(db=db)
-
-        # Create system manager auth with user association and system IDs
-        import json
-        from datetime import datetime
-
-        from fides.api.cryptography.schemas.jwt import (
-            JWE_ISSUED_AT,
-            JWE_PAYLOAD_CLIENT_ID,
-            JWE_PAYLOAD_SYSTEMS,
-        )
-        from fides.api.oauth.jwt import generate_jwe
-        from fides.config import CONFIG
-
-        payload = {
-            JWE_PAYLOAD_CLIENT_ID: application_user.client.id,
-            JWE_PAYLOAD_SYSTEMS: [system.id],
-            JWE_ISSUED_AT: datetime.now().isoformat(),
-        }
-        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
-        auth_header = {"Authorization": "Bearer " + jwe}
+        auth_header = generate_system_manager_header([system.id])
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -2088,16 +2024,9 @@ class TestSystemUpdate(SystemTestBase):
         self,
         test_config,
         system_update_request_body,
-        application_user,
-        db,
+        generate_role_header,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.fides_key = "system-does-not-exist"
         result = _api.update(
             url=test_config.cli.server_url,
@@ -2112,16 +2041,10 @@ class TestSystemUpdate(SystemTestBase):
         system,
         test_config,
         system_update_request_body,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_use = "invalid_data_use"
         result = _api.update(
             url=test_config.cli.server_url,
@@ -2143,16 +2066,10 @@ class TestSystemUpdate(SystemTestBase):
         system,
         test_config,
         system_update_request_body,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_categories = [
             "invalid_data_category"
         ]
@@ -2177,16 +2094,10 @@ class TestSystemUpdate(SystemTestBase):
         system,
         test_config,
         system_update_request_body,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_subjects = [
             "invalid_data_subject"
         ]
@@ -2210,16 +2121,10 @@ class TestSystemUpdate(SystemTestBase):
         test_config,
         system_update_request_body,
         inactive_data_use,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_use = (
             inactive_data_use.fides_key
         )
@@ -2243,16 +2148,10 @@ class TestSystemUpdate(SystemTestBase):
         test_config,
         system_update_request_body,
         inactive_data_category,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_categories = [
             inactive_data_category.fides_key
         ]
@@ -2278,16 +2177,10 @@ class TestSystemUpdate(SystemTestBase):
         test_config,
         system_update_request_body,
         inactive_data_subject,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_subjects = [
             inactive_data_subject.fides_key
         ]
@@ -2310,16 +2203,10 @@ class TestSystemUpdate(SystemTestBase):
         system,
         test_config,
         system_update_request_body,
-        application_user,
+        generate_role_header,
         db,
     ):
-        # Add OWNER role to the client
-        application_user.client.roles = [OWNER]
-        application_user.client.save(db=db)
-
-        from tests.conftest import generate_role_header_for_user
-
-        auth_header = generate_role_header_for_user(application_user, [OWNER])
+        auth_header = generate_role_header(roles=[OWNER])
 
         # test that 'exact' duplicate fails (data_use and name match)
         system_update_request_body.privacy_declarations.append(
@@ -2487,33 +2374,11 @@ class TestSystemUpdate(SystemTestBase):
         system_update_request_body_with_new_dictionary_fields,
         system,
         db,
-        application_user,
+        generate_system_manager_header,
     ):
         assert system.name != self.updated_system_name
 
-        # Add system to the client for system manager auth
-        application_user.client.systems = [system.id]
-        application_user.client.save(db=db)
-
-        # Create system manager auth with user association and system IDs
-        import json
-        from datetime import datetime
-
-        from fides.api.cryptography.schemas.jwt import (
-            JWE_ISSUED_AT,
-            JWE_PAYLOAD_CLIENT_ID,
-            JWE_PAYLOAD_SYSTEMS,
-        )
-        from fides.api.oauth.jwt import generate_jwe
-        from fides.config import CONFIG
-
-        payload = {
-            JWE_PAYLOAD_CLIENT_ID: application_user.client.id,
-            JWE_PAYLOAD_SYSTEMS: [system.id],
-            JWE_ISSUED_AT: datetime.now().isoformat(),
-        }
-        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
-        auth_header = {"Authorization": "Bearer " + jwe}
+        auth_header = generate_system_manager_header([system.id])
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -2966,7 +2831,7 @@ class TestSystemUpdate(SystemTestBase):
 
 @pytest.mark.unit
 @pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
-class TestSystemDelete(SystemTestBase):
+class TestSystemDelete:
     @pytest.fixture(scope="function")
     def url(self, system) -> str:
         return V1_URL_PREFIX + f"/system/{system.fides_key}"
