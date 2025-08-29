@@ -282,7 +282,7 @@ def test_get_saas_connection_types_with_display_info(monkeypatch):
     from fides.api.schemas.saas.saas_config import SaaSConfig
     from fides.api.util.connection_type import get_saas_connection_types
 
-    # Mock a connector template
+    # Mock a connector template with display infost
     mock_template = Mock()
     mock_template.human_readable = "Test Connector"
     mock_template.icon = "test-icon"
@@ -290,6 +290,10 @@ def test_get_saas_connection_types_with_display_info(monkeypatch):
     mock_template.user_guide = "https://example.com"
     mock_template.supported_actions = [ActionType.access, ActionType.erasure]
     mock_template.config = '{"test": "config"}'
+    # Add the new display info fields that our optimization now uses directly
+    mock_template.category = ConnectionCategory.ECOMMERCE
+    mock_template.tags = ["tag1", "tag2"]
+    mock_template.enabled_features = [IntegrationFeature.DSR_AUTOMATION]
 
     # Mock display info with values
     mock_display_info = Mock()
@@ -336,7 +340,7 @@ def test_get_saas_connection_types_with_no_display_info(monkeypatch):
 
     from fides.api.util.connection_type import get_saas_connection_types
 
-    # Mock a connector template
+    # Mock a connector template with no display info
     mock_template = Mock()
     mock_template.human_readable = "Test Connector"
     mock_template.icon = "test-icon"
@@ -344,6 +348,10 @@ def test_get_saas_connection_types_with_no_display_info(monkeypatch):
     mock_template.user_guide = None
     mock_template.supported_actions = [ActionType.access]
     mock_template.config = '{"test": "config"}'
+    # Add the new display info fields as None (no display info)
+    mock_template.category = None
+    mock_template.tags = None
+    mock_template.enabled_features = None
 
     # Mock SaaS config with no display_info
     mock_saas_config = Mock()
@@ -392,6 +400,10 @@ def test_get_saas_connection_types_config_parsing_exception():
     mock_template.user_guide = None
     mock_template.supported_actions = [ActionType.erasure]
     mock_template.config = "invalid json"
+    # Add the new display info fields as None (config parsing will fail)
+    mock_template.category = None
+    mock_template.tags = None
+    mock_template.enabled_features = None
 
     with (
         patch(
@@ -434,6 +446,10 @@ def test_get_saas_connection_types_load_config_exception():
     mock_template.user_guide = None
     mock_template.supported_actions = [ActionType.consent]
     mock_template.config = "invalid config"
+    # Add the new display info fields as None (config loading will fail)
+    mock_template.category = None
+    mock_template.tags = None
+    mock_template.enabled_features = None
 
     with (
         patch(
