@@ -491,7 +491,6 @@ class TestSmartOpenStorageClient:
                     "wb",
                     transport_params={
                         "param1": "value1",
-                        "content_type": "text/plain",
                     },
                 )
 
@@ -532,7 +531,6 @@ class TestSmartOpenStorageClient:
         storage_secrets = {"test": "secret"}
         bucket = "test-bucket"
         key = "test/file.txt"
-        content_type = "text/plain"
 
         with patch.object(StorageClientFactory, "create_client") as mock_create:
             mock_provider_client = create_autospec(BaseStorageClient)
@@ -557,10 +555,7 @@ class TestSmartOpenStorageClient:
                 mock_smart_open.assert_called_once_with(
                     "s3://test-bucket/test/file.txt",
                     "wb",
-                    transport_params={
-                        "param1": "value1",
-                        "content_type": "text/plain",
-                    },
+                    transport_params={"param1": "value1"},
                 )
 
     def test_stream_read(self):
