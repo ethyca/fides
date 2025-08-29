@@ -159,7 +159,6 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
         logger.debug("Validated AUTOMATIC authentication - region is set")
 
 
-
 def format_secrets(
     storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]  # type: ignore[misc]
 ) -> dict[str, Any]:
