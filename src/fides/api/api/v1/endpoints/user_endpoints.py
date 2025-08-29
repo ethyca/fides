@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import jose.exceptions
-from fastapi import Depends, HTTPException, Request, Security
+from fastapi import Depends, HTTPException, Request, Response, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -622,6 +622,7 @@ def get_users(
 def user_login(
     *,
     request: Request,
+    response: Response,
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     user_data: UserLogin,
