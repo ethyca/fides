@@ -325,7 +325,7 @@ class TestUploadToS3Streaming:
             "aws_access_key_id": "test_access_key",
             "aws_secret_access_key": "test_secret_key",
         }
-        mock_client_class.assert_called_once_with("s3", expected_secrets)
+        mock_client_class.assert_called_once_with("s3", "secret_keys", expected_secrets)
 
         # Verify the streaming storage was created
         mock_streaming_storage_class.assert_called_once_with(mock_client)
@@ -500,7 +500,9 @@ class TestUploadToS3Streaming:
                 "aws_access_key_id": "test_access_key",
                 "aws_secret_access_key": "test_secret_key",
             }
-            mock_client_class.assert_called_once_with("s3", expected_secrets)
+            mock_client_class.assert_called_once_with(
+                "s3", auth_method, expected_secrets
+            )
 
     @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
     @patch(
@@ -682,7 +684,7 @@ class TestUploadToS3Streaming:
             "region_name": "us-west-2",
             "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
-        mock_client_class.assert_called_once_with("s3", expected_secrets)
+        mock_client_class.assert_called_once_with("s3", "automatic", expected_secrets)
 
     @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
     @patch(
@@ -736,4 +738,4 @@ class TestUploadToS3Streaming:
             "region_name": "us-west-2",
             "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
-        mock_client_class.assert_called_once_with("s3", expected_secrets)
+        mock_client_class.assert_called_once_with("s3", "secret_keys", expected_secrets)

@@ -69,7 +69,7 @@ class TestS3StorageClient:
     @mock_aws
     def test_get_transport_params_with_partial_keys(self):
         """Test transport params with partial S3 keys."""
-        auth_method = "secret_keys"
+        auth_method = "automatic"
         secrets = {
             "aws_access_key_id": "test_key",
             "region_name": "us-west-2",
@@ -141,11 +141,11 @@ class TestS3StorageClient:
         mock_get_s3_client.side_effect = Exception("Unable to locate credentials")
 
         # No AWS credentials provided - should use automatic auth
-        auth_method = "secret_keys"
+        auth_method = "automatic"
         secrets = {"region_name": "us-west-2"}
         client = S3StorageClient(auth_method, secrets)
 
-        with pytest.raises(ValueError, match="Automatic AWS authentication failed"):
+        with pytest.raises(Exception, match="Unable to locate credentials"):
             client.get_transport_params()
 
     @mock_aws
@@ -242,60 +242,6 @@ class TestS3StorageClient:
     @patch(
         "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
-    def test_generate_presigned_url_without_credentials_uses_automatic(
-        self, mock_create_presigned, mock_get_s3_client
-    ):
-        """Test that AUTOMATIC auth method is used when AWS credentials are not present."""
-        mock_s3_client = Mock()
-        mock_get_s3_client.return_value = mock_s3_client
-        mock_create_presigned.return_value = "https://test-url.com"
-
-        # No AWS credentials provided
-        auth_method = "secret_keys"
-        secrets = {"region_name": "us-west-2"}
-        client = S3StorageClient(auth_method, secrets)
-
-        result = client.generate_presigned_url("test-bucket", "test-key")
-
-        assert result == "https://test-url.com"
-        # Verify get_s3_client was called with AUTOMATIC auth method
-        mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets, None
-        )
-
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
-    @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
-    )
-    def test_generate_presigned_url_with_empty_credentials_uses_automatic(
-        self, mock_create_presigned, mock_get_s3_client
-    ):
-        """Test that AUTOMATIC auth method is used when AWS credentials are empty strings."""
-        mock_s3_client = Mock()
-        mock_get_s3_client.return_value = mock_s3_client
-        mock_create_presigned.return_value = "https://test-url.com"
-
-        # Empty AWS credentials
-        auth_method = "secret_keys"
-        secrets = {
-            "aws_access_key_id": "",
-            "aws_secret_access_key": "",
-            "region_name": "us-west-2",
-        }
-        client = S3StorageClient(auth_method, secrets)
-
-        result = client.generate_presigned_url("test-bucket", "test-key")
-
-        assert result == "https://test-url.com"
-        # Verify get_s3_client was called with AUTOMATIC auth method
-        mock_get_s3_client.assert_called_once_with(
-            AWSAuthMethod.AUTOMATIC.value, secrets, None
-        )
-
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
-    @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
-    )
     def test_generate_presigned_url_with_assume_role_arn_secret_keys(
         self, mock_create_presigned, mock_get_s3_client
     ):
@@ -336,7 +282,7 @@ class TestS3StorageClient:
         mock_create_presigned.return_value = "https://test-url.com"
 
         # No AWS credentials, but with assume_role_arn
-        auth_method = "secret_keys"
+        auth_method = "automatic"
         secrets = {
             "region_name": "us-west-2",
             "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
