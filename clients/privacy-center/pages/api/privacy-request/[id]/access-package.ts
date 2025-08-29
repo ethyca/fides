@@ -142,28 +142,11 @@ export default async function handler(
     // Build the URL with encoded UUID for safe path parameter
     url = `${baseUrl}/privacy-request/${encodedRequestId}/access-package?token=${encodeURIComponent(token)}`;
 
-    log.info(`🚀 Calling Fides API endpoint:`, {
-      baseUrl,
-      endpoint: `/privacy-request/${encodedRequestId}/access-package`,
-      fullUrl: url,
-      requestId: requestId,
-      hasToken: !!token,
-      tokenLength: token?.length || 0,
-    });
-
     log.debug(`Fetching DSR package link from: ${url}`);
 
     // Prepare headers for public API call (no authentication)
     const headers = new Headers();
     addCommonHeaders(headers); // No token = public endpoint
-
-    log.debug(`Making request to backend API with headers:`, {
-      url,
-      method: "GET",
-      headers: Object.fromEntries(headers.entries()),
-    });
-
-    log.info(`🔍 About to make fetch request to: ${url}`);
 
     let response: Response;
     try {
@@ -172,12 +155,6 @@ export default async function handler(
         headers,
       });
 
-      log.info(`📡 Fides API response received:`, {
-        status: response.status,
-        statusText: response.statusText,
-        url: url,
-        responseHeaders: Object.fromEntries(response.headers.entries()),
-      });
     } catch (fetchError) {
       // Check if this is a connection refused error
       const isConnectionRefused = fetchError instanceof Error &&
@@ -187,19 +164,21 @@ export default async function handler(
         fetchError.cause.code === 'ECONNREFUSED';
 
       if (isConnectionRefused) {
-        log.error(`❌ Fides API connection refused - service may not be running:`, {
+        log.error(`Fides API connection refused - service may not be running or is not reachable: ${baseUrl}`, {
           url,
           error: 'Connection refused (ECONNREFUSED)',
           suggestion: 'Check if Fides API service is running on port 8080',
           baseUrl,
+          fullError: fetchError,
         });
       } else {
-        log.error(`❌ Fetch request failed:`, {
+        log.error(`Fetch request failed.`, {
           url,
           error: fetchError instanceof Error ? fetchError.message : String(fetchError),
           errorStack: fetchError instanceof Error ? fetchError.stack : undefined,
           errorType: fetchError?.constructor?.name || typeof fetchError,
           fullError: fetchError,
+          baseUrl,
         });
       }
       throw fetchError; // Re-throw to be caught by outer catch block
