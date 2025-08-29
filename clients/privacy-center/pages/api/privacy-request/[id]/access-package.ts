@@ -167,7 +167,7 @@ export default async function handler(
           {
             url,
             error: "Connection refused (ECONNREFUSED)",
-            suggestion: "Check if Fides API service is running on port 8080",
+            suggestion: "Check if Fides API service is running and has network access",
             baseUrl,
             fullError: fetchError,
           },

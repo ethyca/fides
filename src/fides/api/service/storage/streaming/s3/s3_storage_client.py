@@ -12,9 +12,6 @@ from fides.api.service.storage.s3 import create_presigned_url_for_s3
 from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
 from fides.api.util.aws_util import get_s3_client
 
-# Type annotation: get_s3_client returns a boto3 S3 client object, not a Session
-# This is what smart-open expects for the "client" transport parameter
-
 
 class S3StorageClient(BaseStorageClient):
     """S3-specific storage client implementation.
@@ -49,6 +46,8 @@ class S3StorageClient(BaseStorageClient):
 
     def get_transport_params(self) -> dict[str, Any]:
         """Get S3-specific transport parameters for smart-open.
+        Type annotation: get_s3_client returns a boto3 S3 client object, not a Session
+        This is what smart-open expects for the "client" transport parameter
 
         Returns:
             Dictionary of S3 transport parameters for smart-open
