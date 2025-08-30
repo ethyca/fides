@@ -6,9 +6,10 @@ import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
-  Page_BasicSystemResponse_,
+  Page_BasicSystemResponseExtended_,
   System,
   SystemResponse,
+  SystemSchemaExtended,
   TestStatusMessage,
 } from "~/types/api";
 import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
@@ -24,6 +25,11 @@ interface UpsertResponse {
   updated: number;
 }
 
+interface BulkAssignStewardRequest {
+  data_steward: string;
+  system_keys: string[];
+}
+
 export type ConnectionConfigSecretsRequest = {
   systemFidesKey: string;
   secrets: {
@@ -31,11 +37,16 @@ export type ConnectionConfigSecretsRequest = {
   };
 };
 
+export type GetSystemsQueryParams = {
+  data_steward?: string;
+  system_group?: string;
+};
+
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
-      Page_BasicSystemResponse_,
-      PaginationQueryParams & SearchQueryParams
+      Page_BasicSystemResponseExtended_,
+      PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
     >({
       query: (params) => ({
         method: "GET",
@@ -90,9 +101,23 @@ const systemApi = baseApi.injectEndpoints({
         "System Vendors",
       ],
     }),
+    bulkDeleteSystems: build.mutation<SystemDeleteResponse, string[]>({
+      query: (keys) => ({
+        url: `system/bulk-delete`,
+        method: "POST",
+        body: keys,
+      }),
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Datastore Connection",
+        "Privacy Notices",
+        "System Vendors",
+      ],
+    }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
-        url: `/system/upsert`,
+        url: `system/upsert`,
         method: "POST",
         body: systems,
       }),
@@ -106,7 +131,7 @@ const systemApi = baseApi.injectEndpoints({
     }),
     updateSystem: build.mutation<
       SystemResponse,
-      Partial<System> & Pick<System, "fides_key">
+      Partial<SystemSchemaExtended> & Pick<SystemSchemaExtended, "fides_key">
     >({
       query: ({ ...patch }) => ({
         url: `system`,
@@ -167,6 +192,14 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection", "System"],
     }),
+    bulkAssignSteward: build.mutation<void, BulkAssignStewardRequest>({
+      query: ({ data_steward, system_keys }) => ({
+        url: `/system/assign-steward`,
+        method: "POST",
+        body: { data_steward, system_keys },
+      }),
+      invalidatesTags: () => ["System"],
+    }),
   }),
 });
 
@@ -178,12 +211,14 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useDeleteSystemMutation,
+  useBulkDeleteSystemsMutation,
   useUpsertSystemsMutation,
   usePatchSystemConnectionConfigsMutation,
   useDeleteSystemConnectionConfigMutation,
   useGetSystemConnectionConfigsQuery,
   usePatchSystemConnectionSecretsMutation,
   useLazyGetSystemByFidesKeyQuery,
+  useBulkAssignStewardMutation,
 } = systemApi;
 
 export interface State {

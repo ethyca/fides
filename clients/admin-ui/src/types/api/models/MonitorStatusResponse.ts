@@ -8,6 +8,8 @@ import type { MonitorClassifyParams } from "./MonitorClassifyParams";
 import type { MonitorExecution } from "./MonitorExecution";
 import type { MonitorFrequency } from "./MonitorFrequency";
 import type { S3MonitorParams } from "./S3MonitorParams";
+import type { TestMonitorParams } from "./TestMonitorParams";
+import type { TestWebsiteMonitorParams } from "./TestWebsiteMonitorParams";
 import type { WebsiteMonitorParams } from "./WebsiteMonitorParams";
 
 /**
@@ -28,6 +30,8 @@ export type MonitorStatusResponse = {
     | DynamoDBMonitorParams
     | S3MonitorParams
     | WebsiteMonitorParams
+    | TestWebsiteMonitorParams
+    | TestMonitorParams
     | BigQueryMonitorParams
     | null;
   /**

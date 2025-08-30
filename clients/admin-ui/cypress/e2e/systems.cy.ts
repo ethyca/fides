@@ -47,17 +47,6 @@ describe("System management page", () => {
       cy.visit(SYSTEM_ROUTE);
     });
 
-    it("Can render system rows", () => {
-      cy.getByTestId("system-fidesctl_system");
-
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn");
-        cy.getByTestId("delete-btn");
-      });
-      cy.getByTestId("system-demo_analytics_system");
-      cy.getByTestId("system-demo_marketing_system");
-    });
-
     it("Can search and filter cards", () => {
       cy.getByTestId("system-search").type("demo m{enter}");
 

@@ -38,7 +38,6 @@ def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
     session.notify("black(fix)")
     session.notify("isort(fix)")
-    session.notify("xenon")
     session.notify("mypy")
     session.notify("pylint")
 

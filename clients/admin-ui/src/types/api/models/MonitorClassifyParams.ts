@@ -18,6 +18,7 @@ export type MonitorClassifyParams = {
   prefer_context?: boolean;
   excluded_categories?: Array<any>;
   context_classification_enabled?: boolean;
+  context_classifier?: string;
   language?: string;
   decision_method?: string;
   aggregation_method?: string;

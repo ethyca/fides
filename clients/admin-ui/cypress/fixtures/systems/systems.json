@@ -28,7 +28,8 @@
         "path": "/",
         "domain": "https://www.example.com"
       }
-    ]
+    ],
+    "system_groups": ["blue_group", "green_group", "red_group"]
   },
   {
     "fides_key": "demo_analytics_system",
@@ -61,7 +62,8 @@
       }
     ],
     "administrating_department": "Engineering",
-    "cookies": []
+    "cookies": [],
+    "system_groups": ["blue_group", "green_group"]
   },
   {
     "fides_key": "demo_marketing_system",
@@ -94,6 +96,7 @@
       }
     ],
     "administrating_department": "Marketing",
-    "cookies": []
+    "cookies": [],
+    "system_groups": ["red_group"]
   }
 ]
