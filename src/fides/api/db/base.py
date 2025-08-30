@@ -66,6 +66,9 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
+)
 from fides.api.models.property import (
     MessagingTemplateToProperty,
     PrivacyExperienceConfigProperty,

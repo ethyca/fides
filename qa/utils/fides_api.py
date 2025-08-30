@@ -129,6 +129,14 @@ class FidesAPI:
             # Handle paginated response - return the items list
             return result.get('items', [])
 
+    def get_dataset(self, dataset_key: str) -> Dict[str, Any]:
+        """Get a specific dataset by key."""
+        try:
+            response = self._request("GET", f"/api/v1/dataset/{dataset_key}")
+            return response.json()
+        except Exception:
+            return None
+
     def get_systems(self) -> List[Dict[str, Any]]:
         """Get all systems."""
         response = self._request('GET', '/api/v1/system')

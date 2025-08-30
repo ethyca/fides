@@ -116,6 +116,9 @@ PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
 
+# Privacy Request Redaction Patterns URLs
+PRIVACY_REQUEST_REDACTION_PATTERNS = "/privacy-request/redaction-patterns"
+
 # Privacy Request pre-approve URLs
 PRIVACY_REQUEST_PRE_APPROVE = "/privacy-request/{privacy_request_id}/pre-approve"
 PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/eligible"

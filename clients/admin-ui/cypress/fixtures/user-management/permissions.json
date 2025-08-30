@@ -113,6 +113,7 @@
     "privacy-request:transfer",
     "privacy-request:upload_data",
     "privacy-request:view_data",
+    "privacy-request-redaction-patterns:update",
     "property:create",
     "property:read",
     "property:update",

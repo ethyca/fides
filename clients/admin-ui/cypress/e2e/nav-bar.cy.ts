@@ -34,6 +34,7 @@ describe("Nav Bar", () => {
       .click()
       .parents(".ant-menu-submenu")
       .within(() => {
+        cy.getByTestId("Privacy requests-nav-link");
         cy.getByTestId("Users-nav-link");
         cy.getByTestId("Organization-nav-link");
         cy.getByTestId("Taxonomy-nav-link");

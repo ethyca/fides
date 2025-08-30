@@ -127,6 +127,8 @@ export enum ScopeRegistryEnum {
   PRIVACY_REQUEST_MANUAL_STEPS_RESPOND = "privacy-request:manual-steps:respond",
   PRIVACY_REQUEST_MANUAL_STEPS_REVIEW = "privacy-request:manual-steps:review",
   PRIVACY_REQUEST_READ = "privacy-request:read",
+  PRIVACY_REQUEST_REDACTION_PATTERNS_READ = "privacy-request-redaction-patterns:read",
+  PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE = "privacy-request-redaction-patterns:update",
   PRIVACY_REQUEST_RESUME = "privacy-request:resume",
   PRIVACY_REQUEST_REVIEW = "privacy-request:review",
   PRIVACY_REQUEST_TRANSFER = "privacy-request:transfer",
