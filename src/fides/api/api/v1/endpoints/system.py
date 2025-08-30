@@ -344,8 +344,8 @@ async def delete(
         mode="json"
     )
     return {
-        "message": "Deleted 1 system",
-        "deleted": deleted_resource_dict,
+        "message": "resource deleted",
+        "resource": deleted_resource_dict,
     }
 
 

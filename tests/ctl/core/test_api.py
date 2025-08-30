@@ -599,7 +599,7 @@ class TestCrud:
         )
         assert result.status_code == 200
         resp = result.json()
-        assert resp["message"] == "Deleted 1 system"
+        assert resp["message"] == "resource deleted"
         assert resp["resource"]["fides_key"] == manifest.fides_key
 
 
@@ -2874,8 +2874,8 @@ class TestSystemDelete:
         )
 
         assert result.status_code == HTTP_200_OK
-        assert result.json()["message"] == "Deleted 1 system"
-        assert result.json()["deleted"]["fides_key"] == system.fides_key
+        assert result.json()["message"] == "resource deleted"
+        assert result.json()["resource"]["fides_key"] == system.fides_key
 
     def test_system_delete_no_encompassing_role(
         self, test_config, generate_role_header, system
@@ -2903,8 +2903,8 @@ class TestSystemDelete:
             headers=auth_header,
         )
         assert result.status_code == HTTP_200_OK
-        assert result.json()["message"] == "Deleted 1 system"
-        assert result.json()["deleted"]["fides_key"] == system.fides_key
+        assert result.json()["message"] == "resource deleted"
+        assert result.json()["resource"]["fides_key"] == system.fides_key
 
     def test_system_delete_as_system_manager(
         self,
