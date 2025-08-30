@@ -2875,7 +2875,7 @@ class TestSystemDelete:
 
         assert result.status_code == HTTP_200_OK
         assert result.json()["message"] == "Deleted 1 system"
-        assert result.json()["resource"]["fides_key"] == system.fides_key
+        assert result.json()["deleted"]["fides_key"] == system.fides_key
 
     def test_system_delete_no_encompassing_role(
         self, test_config, generate_role_header, system

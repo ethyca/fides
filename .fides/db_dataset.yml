@@ -2930,3 +2930,31 @@ dataset:
     - name: updated_at
       description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
+  - name: system_group
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: fides_key
+        data_categories: [system.operations]
+      - name: data_steward_username
+        data_categories: [system.operations]
+      - name: data_uses
+        data_categories: [system.operations]
+      - name: label_color
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: system_group_member
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: system_group_id
+        data_categories: [system.operations]
+      - name: system_id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
