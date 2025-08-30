@@ -2934,11 +2934,9 @@ dataset:
     fields:
       - name: id
         data_categories: [system.operations]
-      - name: patterns
+      - name: pattern
         data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
-        data_categories: [system.operations]
-      - name: single_row
         data_categories: [system.operations]
