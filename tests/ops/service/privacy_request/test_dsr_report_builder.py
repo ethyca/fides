@@ -11,8 +11,8 @@ from unittest.mock import patch
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.privacy_request_redaction_patterns import (
-    PrivacyRequestRedactionPatterns,
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
 )
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
@@ -379,8 +379,8 @@ class TestDsrReportBuilderDataStructure:
         ]
 
         # Create or update redaction patterns in database
-        PrivacyRequestRedactionPatterns.create_or_update(
-            db=db, data={"patterns": redaction_patterns}
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=redaction_patterns
         )
 
         dsr_data = {

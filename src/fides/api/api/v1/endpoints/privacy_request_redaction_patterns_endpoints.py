@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
 from fides.api.api import deps
-from fides.api.models.privacy_request_redaction_patterns import (
-    PrivacyRequestRedactionPatterns,
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.privacy_request_redaction_patterns import (
@@ -48,7 +48,7 @@ def get_privacy_request_redaction_patterns(
     """
     logger.info("Getting privacy request redaction patterns configuration")
 
-    patterns = PrivacyRequestRedactionPatterns.get_patterns(db)
+    patterns = PrivacyRequestRedactionPattern.get_patterns(db)
     return PrivacyRequestRedactionPatternsResponse(patterns=patterns)
 
 
@@ -79,15 +79,12 @@ def update_privacy_request_redaction_patterns(
     )
 
     try:
-        # Create or update the patterns record
-        patterns_record = PrivacyRequestRedactionPatterns.create_or_update(
-            db=db, data={"patterns": request.patterns}
+        updated = PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=request.patterns
         )
 
         logger.info("Successfully updated privacy request redaction patterns")
-        return PrivacyRequestRedactionPatternsResponse(
-            patterns=patterns_record.patterns
-        )
+        return PrivacyRequestRedactionPatternsResponse(patterns=updated)
 
     except Exception as e:
         logger.error(

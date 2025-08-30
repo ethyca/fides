@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.models.privacy_request_redaction_patterns import (
-    PrivacyRequestRedactionPatterns,
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
 )
 from fides.api.service.privacy_request.dsr_package.utils import (
     get_redaction_entities_map_db,
@@ -20,7 +20,7 @@ class DSRDataPreprocessor:
     def __init__(self, db: Session):
         self.db = db
         self.redaction_patterns: List[str] = []
-        if patterns := PrivacyRequestRedactionPatterns.get_patterns(db):
+        if patterns := PrivacyRequestRedactionPattern.get_patterns(db):
             self.redaction_patterns = patterns
         self.entities_to_redact: Set[str] = get_redaction_entities_map_db(db)
 

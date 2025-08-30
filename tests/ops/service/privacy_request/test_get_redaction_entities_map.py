@@ -10,8 +10,8 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.privacy_request_redaction_patterns import (
-    PrivacyRequestRedactionPatterns,
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
@@ -290,8 +290,8 @@ class TestGetRedactionEntitiesMap:
     ):
         """Test that nested JSON fields get redacted when regex pattern is configured."""
         # Set up redaction patterns
-        PrivacyRequestRedactionPatterns.create_or_update(
-            db=db, data={"patterns": ["full_name", "email.*"]}
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=["full_name", "email.*"]
         )
 
         # Create connection config
@@ -881,9 +881,7 @@ class TestDsrReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase)
         )
 
         # Set up regex patterns that would match both collections
-        PrivacyRequestRedactionPatterns.create_or_update(
-            db=db, data={"patterns": [r".*user.*"]}
-        )
+        PrivacyRequestRedactionPattern.replace_patterns(db=db, patterns=[r".*user.*"])
 
         dsr_data = {
             "test_data:user_accounts": [{"id": 1}],

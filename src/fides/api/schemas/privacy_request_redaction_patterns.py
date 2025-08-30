@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -48,7 +48,7 @@ class PrivacyRequestRedactionPatternsRequest(BaseModel):
 class PrivacyRequestRedactionPatternsResponse(BaseModel):
     """Response schema for privacy request redaction patterns."""
 
-    patterns: Optional[List[str]] = Field(
+    patterns: List[str] = Field(
         description="List of regex patterns used to redact dataset, collection, and field names in privacy request package reports"
     )
 
