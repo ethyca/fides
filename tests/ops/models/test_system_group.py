@@ -55,7 +55,7 @@ class TestSystemGroup:
             db=db,
             data={
                 "fides_key": system_group_element.fides_key,
-                "data_steward": user.username,
+                "data_steward_username": user.username,
                 "data_uses": [
                     "essential.service",
                     "marketing.advertising",

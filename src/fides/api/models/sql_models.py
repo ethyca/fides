@@ -466,6 +466,7 @@ class System(Base, FidesBase):
         secondary="system_group_member",
         back_populates="systems",
         lazy="selectin",
+        viewonly=True,
     )
 
     @classmethod

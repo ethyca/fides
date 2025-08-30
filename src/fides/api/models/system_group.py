@@ -56,7 +56,12 @@ class SystemGroup(Base):
         "FidesUser", foreign_keys=[data_steward_username], lazy="selectin"
     )
 
-    systems = relationship(System, secondary="system_group_member")
+    systems = relationship(
+        System,
+        secondary="system_group_member",
+        back_populates="system_groups",
+        viewonly=True,
+    )
 
 
 class SystemGroupMember(Base):
