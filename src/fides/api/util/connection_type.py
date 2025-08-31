@@ -239,6 +239,9 @@ def get_saas_connection_types(
                     authorization_required=connector_template.authorization_required,
                     user_guide=connector_template.user_guide,
                     supported_actions=connector_template.supported_actions,
+                    category=connector_template.category,
+                    tags=connector_template.tags,
+                    enabled_features=connector_template.enabled_features,
                 )
             )
 

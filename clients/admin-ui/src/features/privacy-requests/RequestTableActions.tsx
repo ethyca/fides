@@ -99,7 +99,7 @@ export const RequestTableActions = ({
         <Button
           title="Finalize"
           aria-label="Finalize"
-          icon={<Icons.Checkmark />}
+          icon={<Icons.Stamp />}
           onClick={finalizeModal.onOpen}
           loading={isLoading}
           disabled={isLoading}
@@ -166,7 +166,10 @@ export const RequestTableActions = ({
       <ConfirmationModal
         isOpen={finalizeModal.isOpen}
         onClose={finalizeModal.onClose}
-        onConfirm={handleFinalizeRequest}
+        onConfirm={() => {
+          handleFinalizeRequest();
+          finalizeModal.onClose();
+        }}
         title="Finalize privacy request"
         message={
           <Text>

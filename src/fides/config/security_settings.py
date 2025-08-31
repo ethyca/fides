@@ -101,6 +101,10 @@ class SecuritySettings(FidesSettings):
         default="1000/minute",
         description="The number of requests from a single IP address allowed to hit an endpoint within a rolling 60 second period.",
     )
+    auth_rate_limit: str = Field(
+        default="10/minute",
+        description="The number of authentication requests from a single IP address allowed to hit authentication endpoints (login, OAuth token) within the specified time period.",
+    )
     root_user_scopes: List[str] = Field(
         default=SCOPE_REGISTRY,
         description="The list of scopes that are given to the root user.",
@@ -213,13 +217,13 @@ class SecuritySettings(FidesSettings):
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
 
-    @field_validator("request_rate_limit")
+    @field_validator("request_rate_limit", "auth_rate_limit")
     @classmethod
-    def validate_request_rate_limit(
+    def validate_rate_limits(
         cls,
         v: str,
     ) -> str:
-        """Validate the formatting of `request_rate_limit`"""
+        """Validate the formatting of rate limit fields"""
         try:
             # Defer to `limits.parse_many` https://limits.readthedocs.io/en/stable/api.html#limits.parse_many
             parse_many(v)

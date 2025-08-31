@@ -4,10 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
+    BaseCustomPrivacyRequestField,
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
-    LocationIdentityField,
+    LocationCustomPrivacyRequestField,
     PrivacyCenterConfig,
 )
 from fides.api.util.saas_util import load_as_string
@@ -60,62 +61,163 @@ class TestPrivacyCenterConfig:
         with pytest.raises(ValueError):
             IdentityInputs(loyalty_id="invalid")
 
-    def test_location_identity_field(self):
-        location_field = LocationIdentityField(
-            label="Location", required=True, ip_geolocation_hint=True
+    def test_location_select_custom_privacy_request_field(self):
+        """Test basic LocationCustomPrivacyRequestField creation and properties"""
+        location_field = LocationCustomPrivacyRequestField(
+            label="User Location",
+            required=True,
+            ip_geolocation_hint=True,
+            default_value="US",
         )
-        assert location_field.label == "Location"
+        assert location_field.label == "User Location"
+        assert location_field.field_type == "location"
         assert location_field.required is True
         assert location_field.ip_geolocation_hint is True
-        assert location_field.default_value is None
-
-    def test_location_identity_field_with_all_options(self):
-        location_field = LocationIdentityField(
-            label="Your Location",
-            required=False,
-            default_value="US",
-            query_param_key="region",
-            ip_geolocation_hint=False,
-        )
-        assert location_field.label == "Your Location"
-        assert location_field.required is False
         assert location_field.default_value == "US"
-        assert location_field.query_param_key == "region"
-        assert location_field.ip_geolocation_hint is False
 
-    def test_identity_inputs_with_location_object(self):
-        identity_inputs = IdentityInputs(
-            email="required",
-            location={
-                "label": "Location",
+    def test_location_select_field_defaults(self):
+        """Test LocationCustomPrivacyRequestField with default values"""
+        location_field = LocationCustomPrivacyRequestField(label="Location")
+        assert location_field.label == "Location"
+        assert location_field.field_type == "location"
+        assert location_field.required is True  # Default from parent
+        assert location_field.ip_geolocation_hint is False  # Default
+        assert location_field.default_value is None  # Default from parent
+        assert location_field.hidden is False  # Default from parent
+
+    def test_location_select_field_rejects_options(self):
+        """Test that LocationCustomPrivacyRequestField rejects options"""
+        with pytest.raises(ValueError) as exc:
+            LocationCustomPrivacyRequestField(
+                label="Location", options=["US", "CA", "UK"]
+            )
+        assert "LocationCustomPrivacyRequestField does not support options" in str(
+            exc.value
+        )
+
+    def test_location_select_field_missing_label(self):
+        """Test validation error when label is missing"""
+        with pytest.raises(ValidationError):
+            LocationCustomPrivacyRequestField()  # Missing required label field
+
+    def test_location_select_field_with_all_properties(self):
+        """Test LocationCustomPrivacyRequestField with all possible properties"""
+        location_field = LocationCustomPrivacyRequestField(
+            label="Your Current Location",
+            required=False,
+            default_value="Unknown",
+            query_param_key="user_region",
+            ip_geolocation_hint=True,
+        )
+        assert location_field.label == "Your Current Location"
+        assert location_field.field_type == "location"
+        assert location_field.required is False
+        assert location_field.default_value == "Unknown"
+        assert location_field.hidden is False  # Location fields cannot be hidden
+        assert location_field.query_param_key == "user_region"
+        assert location_field.ip_geolocation_hint is True
+
+    def test_location_field_rejects_hidden(self):
+        """Test that LocationCustomPrivacyRequestField rejects hidden=True"""
+        with pytest.raises(ValidationError) as exc_info:
+            LocationCustomPrivacyRequestField(
+                label="Location",
+                hidden=True,
+            )
+        assert "Custom location fields cannot be hidden" in str(exc_info.value)
+
+    def test_privacy_center_config_with_location_custom_field(self):
+        """Test that PrivacyCenterConfig correctly handles location fields in custom_privacy_request_fields"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        # Add location field to the first action's custom_privacy_request_fields
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "user_location": {
+                "label": "Your Location",
+                "field_type": "location",
                 "required": True,
                 "ip_geolocation_hint": True,
+            }
+        }
+
+        config = PrivacyCenterConfig(**config_data)
+        location_field = config.actions[0].custom_privacy_request_fields[
+            "user_location"
+        ]
+
+        # Verify the field was parsed as LocationCustomPrivacyRequestField
+        assert isinstance(location_field, LocationCustomPrivacyRequestField)
+        assert location_field.field_type == "location"
+        assert location_field.label == "Your Location"
+        assert location_field.required is True
+        assert location_field.ip_geolocation_hint is True
+
+    def test_privacy_center_config_mixed_custom_fields_with_location(self):
+        """Test PrivacyCenterConfig with a mix of regular and location custom fields"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        # Add mixed custom fields including location to the first action
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "preferred_format": {
+                "label": "Preferred Format",
+                "field_type": "select",
+                "options": ["JSON", "CSV", "HTML"],
             },
+            "user_location": {
+                "label": "Your Location",
+                "field_type": "location",
+                "required": False,
+                "ip_geolocation_hint": False,
+            },
+            "comments": {
+                "label": "Additional Comments",
+                "field_type": "text",
+            },
+        }
+
+        config = PrivacyCenterConfig(**config_data)
+        custom_fields = config.actions[0].custom_privacy_request_fields
+
+        # Test regular custom field
+        format_field = custom_fields["preferred_format"]
+        assert isinstance(format_field, CustomPrivacyRequestField)
+        assert format_field.field_type == "select"
+        assert format_field.options == ["JSON", "CSV", "HTML"]
+
+        # Test location custom field
+        location_field = custom_fields["user_location"]
+        assert isinstance(location_field, LocationCustomPrivacyRequestField)
+        assert location_field.field_type == "location"
+        assert location_field.required is False
+        assert location_field.ip_geolocation_hint is False
+
+        # Test text custom field (defaults to regular CustomPrivacyRequestField)
+        comments_field = custom_fields["comments"]
+        assert isinstance(comments_field, CustomPrivacyRequestField)
+        assert comments_field.field_type == "text"
+
+    def test_privacy_center_config_location_field_validation_in_config(self):
+        """Test that location field validation works within PrivacyCenterConfig"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
         )
-        assert identity_inputs.email == "required"
-        assert isinstance(identity_inputs.location, LocationIdentityField)
-        assert identity_inputs.location.label == "Location"
-        assert identity_inputs.location.required is True
-        assert identity_inputs.location.ip_geolocation_hint is True
 
-    def test_identity_inputs_with_location_string(self):
-        identity_inputs = IdentityInputs(email="required", location="required")
-        assert identity_inputs.email == "required"
-        assert identity_inputs.location == "required"
+        # Test that location field rejects options when defined in config
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "invalid_location": {
+                "label": "Invalid Location",
+                "field_type": "location",
+                "options": ["US", "CA", "UK"],  # This should be rejected
+            }
+        }
 
-    def test_mixed_identity_inputs_with_location(self):
-        identity_inputs = IdentityInputs(
-            email="required",
-            location={"label": "Location", "ip_geolocation_hint": True},
-            loyalty_id={"label": "Loyalty ID"},
+        with pytest.raises(ValidationError) as exc_info:
+            PrivacyCenterConfig(**config_data)
+        assert "LocationCustomPrivacyRequestField does not support options" in str(
+            exc_info.value
         )
-        assert identity_inputs.email == "required"
-        assert isinstance(identity_inputs.location, LocationIdentityField)
-        assert identity_inputs.location.ip_geolocation_hint is True
-
-    def test_location_identity_field_validation_error(self):
-        with pytest.raises(ValidationError):
-            LocationIdentityField()  # Missing required label field
 
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig

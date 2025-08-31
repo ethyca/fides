@@ -3,17 +3,17 @@ import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
-  expandCollapseAllMenuItems,
   ListExpandableCell,
-  MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import {
   ConsentAlertInfo,
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
+import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
@@ -24,7 +24,7 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
   allowIgnore?: boolean;
-  onTabChange: (tab: ActionCenterTabHash) => void;
+  onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   consentStatus?: ConsentAlertInfo;
   rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
 }
@@ -50,7 +50,7 @@ export const useDiscoveredSystemAggregateColumns = ({
             </Space>
           ),
           dataIndex: "name",
-          key: "system_name",
+          key: DiscoveredSystemAggregateColumnKeys.SYSTEM_NAME,
           fixed: "left",
           render: (_, record) => (
             <DiscoveredSystemStatusCell
@@ -62,34 +62,30 @@ export const useDiscoveredSystemAggregateColumns = ({
         {
           title: "Assets",
           dataIndex: "total_updates",
-          key: "total_updates",
+          key: DiscoveredSystemAggregateColumnKeys.TOTAL_UPDATES,
         },
         {
           title: "Categories of consent",
-          key: "data_use",
+          key: DiscoveredSystemAggregateColumnKeys.DATA_USE,
           render: (_, record) => (
             <DiscoveredSystemDataUseCell system={record} />
           ),
         },
         {
-          title: () => (
-            <MenuHeaderCell
-              title="Locations"
-              menu={{
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  if (e.key === "expand-all") {
-                    setIsLocationsExpanded(true);
-                  } else if (e.key === "collapse-all") {
-                    setIsLocationsExpanded(false);
-                  }
-                },
-              }}
-            />
-          ),
+          title: "Locations",
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsLocationsExpanded(true);
+              } else if (e.key === "collapse-all") {
+                setIsLocationsExpanded(false);
+              }
+            },
+          },
           dataIndex: "locations",
-          key: "locations",
+          key: DiscoveredSystemAggregateColumnKeys.LOCATIONS,
           width: 250,
           render: (locations: string[]) => (
             <TagExpandableCell
@@ -110,24 +106,20 @@ export const useDiscoveredSystemAggregateColumns = ({
           ),
         },
         {
-          title: () => (
-            <MenuHeaderCell
-              title="Domains"
-              menu={{
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  if (e.key === "expand-all") {
-                    setIsDomainsExpanded(true);
-                  } else if (e.key === "collapse-all") {
-                    setIsDomainsExpanded(false);
-                  }
-                },
-              }}
-            />
-          ),
+          title: "Domains",
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsDomainsExpanded(true);
+              } else if (e.key === "collapse-all") {
+                setIsDomainsExpanded(false);
+              }
+            },
+          },
           dataIndex: "domains",
-          key: "domains",
+          key: DiscoveredSystemAggregateColumnKeys.DOMAINS,
           render: (domains: string[]) => (
             <ListExpandableCell
               values={domains}
@@ -143,7 +135,7 @@ export const useDiscoveredSystemAggregateColumns = ({
       if (!readonly) {
         baseColumns.push({
           title: "Actions",
-          key: "actions",
+          key: DiscoveredSystemAggregateColumnKeys.ACTIONS,
           render: (_, record) => (
             <DiscoveredSystemActionsCell
               system={record}

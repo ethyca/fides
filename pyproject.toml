@@ -63,6 +63,7 @@ module = [
   "pymysql.*",
   "RestrictedPython.*",
   "sendgrid.*",
+  "smart_open.*",
   "snowflake.*",
   "sqlalchemy_utils.*",
   "sqlalchemy.ext.*",
@@ -162,7 +163,8 @@ extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 ############
 [tool.pytest.ini_options]
 env = [
-  "FIDES__TEST_MODE=true"
+  "FIDES__TEST_MODE=true",
+  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute"
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"

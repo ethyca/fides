@@ -54,7 +54,7 @@ const DatamapDrawer = ({
         in={isOpen}
         unmountOnExit
         style={{
-          zIndex: 11,
+          zIndex: 21,
           pointerEvents: "none",
           position: "absolute",
         }}

@@ -17,7 +17,7 @@ const DataUseSelect = ({
   const dataUses = showDisabled ? getDataUses() : getActiveDataUses();
 
   const options: TaxonomySelectOption[] = dataUses
-    .filter((dataUse) => !selectedTaxonomies.includes(dataUse.fides_key))
+    .filter((dataUse) => !selectedTaxonomies?.includes(dataUse.fides_key))
     .map((dataUse) => {
       const { name, primaryName } = getDataUseDisplayNameProps(
         dataUse.fides_key,

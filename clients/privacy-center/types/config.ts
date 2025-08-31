@@ -1,39 +1,66 @@
 import { ConfigConsentOption } from "./api";
 
+type LegacyIdentityConfigProps = "optional" | "required" | string | null;
+
 type DefaultIdentities = {
-  name?: string | null; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
-  email?: string | null;
-  phone?: string | null;
-  location?: LocationIdentityField | null;
+  name?: LegacyIdentityConfigProps; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
+  email?: LegacyIdentityConfigProps;
+  phone?: LegacyIdentityConfigProps;
 };
 
-export type CustomIdentity = {
-  label: string;
-};
+export type DefaultIdentityKeys = keyof DefaultIdentities;
 
-export type LocationIdentityField = {
+export type CustomIdentityFields = Record<
+  string,
+  CustomConfigField | LegacyIdentityConfigProps
+>;
+
+export type IdentityInputs = DefaultIdentities & CustomIdentityFields;
+
+export interface ICustomField {
   label: string;
   required?: boolean;
-  default_value?: string;
-  query_param_key?: string;
+  query_param_key?: string | null;
+  hidden?: boolean;
+}
+
+export interface CustomTextField extends ICustomField {
+  default_value?: string | null;
+  field_type?: "text" | null;
+}
+
+export interface CustomSelectField extends ICustomField {
+  default_value?: string | null;
+  field_type: "select";
+  options?: string[];
+}
+
+export interface CustomMultiSelectField extends ICustomField {
+  default_value?: string[] | null;
+  field_type: "multiselect";
+  options?: string[];
+}
+
+export interface CustomLocationField extends ICustomField {
+  default_value?: string | null;
+  field_type: "location";
+  options?: string[];
   ip_geolocation_hint?: boolean;
-};
+}
 
-export type IdentityInputs = DefaultIdentities &
-  (Record<string, CustomIdentity> | object);
+export type CustomConfigField =
+  | CustomTextField
+  | CustomSelectField
+  | CustomMultiSelectField
+  | CustomLocationField;
+export type CustomIdentityField =
+  | CustomTextField
+  | CustomSelectField
+  | (CustomLocationField & {
+      required: true;
+    });
 
-export type CustomPrivacyRequestFields = Record<
-  string,
-  {
-    label: string;
-    required?: boolean;
-    default_value?: string | string[];
-    query_param_key?: string;
-    hidden?: boolean;
-    field_type?: "text" | "multiselect" | "select";
-    options?: string[];
-  }
->;
+export type CustomPrivacyRequestFields = Record<string, CustomConfigField>;
 
 export type LegacyConfig = {
   title: string;
@@ -100,11 +127,11 @@ export type PrivacyRequestOption = {
   icon_path: string;
   title: string;
   description: string;
-  description_subtext?: string[];
-  confirmButtonText?: string;
-  cancelButtonText?: string;
-  identity_inputs?: IdentityInputs;
-  custom_privacy_request_fields?: CustomPrivacyRequestFields;
+  description_subtext?: string[] | null;
+  confirmButtonText?: string | null;
+  cancelButtonText?: string | null;
+  identity_inputs?: IdentityInputs | null;
+  custom_privacy_request_fields?: CustomPrivacyRequestFields | null;
 };
 
 export enum ConsentNonApplicableFlagMode {

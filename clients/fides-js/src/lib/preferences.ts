@@ -165,6 +165,9 @@ export const updateConsentPreferences = async ({
     cookie.consent,
     window.Fides?.experience?.non_applicable_privacy_notices,
     window.Fides?.experience?.privacy_notices,
+    undefined,
+    undefined,
+    cookie.non_applicable_notice_keys,
   );
   const hasPrivacyNotices =
     !!window.Fides?.experience?.non_applicable_privacy_notices ||

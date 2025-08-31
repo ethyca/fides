@@ -18,7 +18,15 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Flex,
+  formatIsoLocation,
+  HStack,
+  isoStringToEntry,
+  Text,
+  VStack,
+} from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
@@ -26,7 +34,6 @@ import { useEffect, useMemo } from "react";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
-import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   EnablePrivacyNoticeCell,
@@ -41,6 +48,8 @@ import {
   PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
+
+import { TagExpandableCell } from "../common/table/cells";
 
 const emptyNoticeResponse = {
   items: [],
@@ -146,14 +155,19 @@ export const PrivacyNoticesTable = () => {
         columnHelper.accessor((row) => row.configured_regions, {
           id: "regions",
           cell: (props) => (
-            <BadgeCellExpandable
+            <TagExpandableCell
               values={
-                props.getValue()?.map((location: PrivacyNoticeRegion) => ({
-                  label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
-                  key: location,
-                })) ?? []
+                props.getValue()?.map((location: PrivacyNoticeRegion) => {
+                  const isoEntry = isoStringToEntry(location);
+
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry, showFlag: true })
+                      : (PRIVACY_NOTICE_REGION_RECORD[location] ?? location),
+                    key: location,
+                  };
+                }) ?? []
               }
-              cellProps={props}
             />
           ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,

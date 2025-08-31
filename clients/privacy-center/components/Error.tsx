@@ -1,4 +1,4 @@
-import { Button, Code } from "fidesui";
+import { AntButton as Button, Code } from "fidesui";
 import { FallbackProps } from "react-error-boundary";
 
 import ErrorLayout from "~/components/ErrorLayout";
@@ -19,15 +19,7 @@ const Error = ({ error, resetErrorBoundary }: FallbackProps) => (
         {error.message}
       </Code>
     ) : null}
-    <Button
-      width={320}
-      as="a"
-      bg="primary.800"
-      _hover={{ bg: "primary.400" }}
-      _active={{ bg: "primary.500" }}
-      colorScheme="primary"
-      onClick={resetErrorBoundary}
-    >
+    <Button variant="text" onClick={resetErrorBoundary}>
       Try again
     </Button>
   </ErrorLayout>

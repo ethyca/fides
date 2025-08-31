@@ -22,6 +22,7 @@ import {
   removeCookiesFromBrowser,
   saveFidesCookie,
   transformTcfPreferencesToCookieKeys,
+  updateCookieFromExperience,
   updateCookieFromNoticePreferences,
   updateExperienceFromCookieConsentNotices,
 } from "../../src/lib/cookie";
@@ -86,6 +87,7 @@ describe("cookies", () => {
           fides_user_device_id: MOCK_UUID,
         },
         tcf_consent: {},
+        non_applicable_notice_keys: [],
       });
     });
 
@@ -98,6 +100,11 @@ describe("cookies", () => {
       };
       const cookie: FidesCookie = makeFidesCookie(defaults);
       expect(cookie.consent).toEqual(defaults);
+    });
+
+    it("includes non_applicable_notice_keys field", () => {
+      const cookie: FidesCookie = makeFidesCookie();
+      expect(cookie.non_applicable_notice_keys).toEqual([]);
     });
   });
 
@@ -590,6 +597,85 @@ describe("cookies", () => {
           { notice_key: "three", current_preference: undefined },
         ]);
       });
+
+      it("treats previously non-applicable notices as not opted in when they become applicable", () => {
+        const cookie = {
+          ...baseCookie,
+          consent: { one: true, two: false },
+          non_applicable_notice_keys: ["two", "three"],
+        };
+        const experienceWithNonApplicableNotices = {
+          ...experienceWithNotices,
+          non_applicable_privacy_notices: ["three"], // only "three" is still non-applicable
+        };
+        const updatedExperience = updateExperienceFromCookieConsentNotices({
+          experience: experienceWithNonApplicableNotices,
+          cookie,
+        });
+        expect(updatedExperience.privacy_notices).toEqual([
+          {
+            notice_key: "one",
+            current_preference: UserConsentPreference.OPT_IN,
+          },
+          {
+            notice_key: "two",
+            current_preference: undefined, // was previously non-applicable, now applicable, so no preference
+          },
+          { notice_key: "three", current_preference: undefined }, // still non-applicable
+        ]);
+      });
+    });
+  });
+
+  describe("updateCookieFromExperience", () => {
+    it("updates cookie with experience data and preserves non_applicable_notice_keys", () => {
+      const cookie = makeFidesCookie();
+      cookie.non_applicable_notice_keys = ["old_na_notice"];
+
+      const experience = {
+        privacy_notices: [
+          {
+            notice_key: "one",
+            current_preference: UserConsentPreference.OPT_IN,
+          },
+          {
+            notice_key: "two",
+            current_preference: UserConsentPreference.OPT_OUT,
+          },
+        ],
+        non_applicable_privacy_notices: ["new_na_notice"],
+      } as PrivacyExperience;
+
+      const updatedCookie = updateCookieFromExperience({ cookie, experience });
+
+      expect(updatedCookie.consent).toEqual({
+        one: true,
+        two: false,
+      });
+      expect(updatedCookie.non_applicable_notice_keys).toEqual([
+        "new_na_notice",
+      ]);
+    });
+
+    it("preserves existing non_applicable_notice_keys when experience has none", () => {
+      const cookie = makeFidesCookie();
+      cookie.non_applicable_notice_keys = ["existing_na_notice"];
+
+      const experience = {
+        privacy_notices: [
+          {
+            notice_key: "one",
+            current_preference: UserConsentPreference.OPT_IN,
+          },
+        ],
+        non_applicable_privacy_notices: undefined,
+      } as PrivacyExperience;
+
+      const updatedCookie = updateCookieFromExperience({ cookie, experience });
+
+      expect(updatedCookie.non_applicable_notice_keys).toEqual([
+        "existing_na_notice",
+      ]);
     });
   });
 
@@ -616,6 +702,37 @@ describe("cookies", () => {
         preferences,
       );
       expect(updatedCookie.consent).toEqual({ one: true, two: false });
+    });
+
+    it("includes non_applicable_notice_keys from current experience", async () => {
+      const mockExperience = {
+        non_applicable_privacy_notices: ["na_notice_1", "na_notice_2"],
+      };
+      Object.defineProperty(window, "Fides", {
+        value: { experience: mockExperience },
+        writable: true,
+      });
+
+      const cookie = makeFidesCookie();
+      const notices = [
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      ] as PrivacyNoticeWithPreference[];
+      const preferences = notices.map(
+        (n) =>
+          new SaveConsentPreference(
+            n,
+            n.current_preference ?? UserConsentPreference.OPT_OUT,
+            `pri_notice-history-mock-${n.notice_key}`,
+          ),
+      );
+      const updatedCookie = await updateCookieFromNoticePreferences(
+        cookie,
+        preferences,
+      );
+      expect(updatedCookie.non_applicable_notice_keys).toEqual([
+        "na_notice_1",
+        "na_notice_2",
+      ]);
     });
   });
 });

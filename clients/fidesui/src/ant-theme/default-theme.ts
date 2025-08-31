@@ -52,6 +52,7 @@ export const defaultAntTheme: ThemeConfig = {
     },
     Card: {
       colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
+      borderRadiusLG: 8,
     },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
