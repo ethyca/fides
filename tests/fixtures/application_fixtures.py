@@ -3765,7 +3765,7 @@ def served_notice_history(
     yield pref_1
     pref_1.delete(db)
 
-
+# TODO: remove this fixture when we get rid of DSR 2.0
 @pytest.fixture(scope="function")
 def use_dsr_3_0():
     """DSR 3.0 is now the default - this fixture is kept for test compatibility."""

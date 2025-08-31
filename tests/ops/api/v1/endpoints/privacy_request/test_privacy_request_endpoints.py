@@ -7398,10 +7398,10 @@ class TestPrivacyRequestDataTransfer:
         graph = DatasetGraph(merged_graph)
 
         # execute the privacy request to mimic the expected workflow on the "child"
-        # this will populate the access results, which is required for the
+        # this will populate the access results in the cache, which is required for the
         # transfer endpoint to work
 
-        access_runner_tester(
+        access_runner(
             privacy_request,
             policy,
             graph,
