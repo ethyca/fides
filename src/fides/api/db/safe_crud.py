@@ -1,7 +1,4 @@
 """
-Contains all of the generic CRUD endpoints that can be
-generated programmatically for each resource.
-
 This module contains "safe" versions of CRUD operations that do NOT
 manually manage database transactions. Transaction management is left
 to the calling code (endpoints, services) to handle at the appropriate
@@ -12,6 +9,7 @@ Use functions from this module instead of fides.api.db.crud
 
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple, Type, TypeVar
+
 from fastapi import HTTPException
 from loguru import logger as log
 from sqlalchemy import and_, column
@@ -174,8 +172,7 @@ async def get_resource_with_custom_fields(
                 select(CustomFieldDefinition.name, CustomField.value)
                 .join(
                     CustomField,
-                    CustomField.custom_field_definition_id
-                    == CustomFieldDefinition.id,
+                    CustomField.custom_field_definition_id == CustomFieldDefinition.id,
                 )
                 .where(
                     (CustomField.resource_id == resource.fides_key)
