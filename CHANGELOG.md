@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added system group functionality to systems table [#6453](https://github.com/ethyca/fides/pull/6453)
 
+### Deprecated
+- DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
+
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added
