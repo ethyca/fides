@@ -55,7 +55,7 @@ const PublisherSettings = () => {
               value?.toLowerCase(),
             )
           }
-          className="w-80"
+          className="!w-80"
         />
       </Form.Item>
     </SettingsBox>

@@ -63,7 +63,6 @@ class TestStreamDsrBufferToStorage:
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="application/zip",
         )
 
         # Verify content was written
@@ -95,7 +94,6 @@ class TestStreamDsrBufferToStorage:
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="application/zip",
         )
 
         # Verify content was written
@@ -169,14 +167,12 @@ class TestStreamDsrBufferToStorage:
             bucket_name="test-bucket",
             file_key="test-report.html",
             dsr_buffer=test_buffer,
-            content_type="application/zip",  # HTML DSR reports are now ZIPs
         )
 
         # Verify streaming upload was called
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="application/zip",
         )
 
         # Verify content was written
@@ -202,14 +198,12 @@ class TestStreamDsrBufferToStorage:
             bucket_name="test-bucket",
             file_key="test-report.html",
             dsr_buffer=test_buffer,
-            content_type="text/html",  # Override default
         )
 
         # Verify custom content type was used
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="text/html",
         )
 
         # Verify content was written
@@ -245,7 +239,6 @@ class TestStreamDsrBufferToStorage:
                 bucket_name="test-bucket",
                 file_key="test-report.html",
                 dsr_buffer=test_buffer,
-                content_type="application/zip",
             )
 
             # Verify streaming upload was called

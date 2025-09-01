@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestExit
@@ -19,37 +18,8 @@ from fides.api.task.deprecated_graph_task import (
     run_consent_request_deprecated,
     run_erasure_request_deprecated,
 )
+from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.util.collection_util import Row
-from fides.config import CONFIG
-
-
-def use_dsr_3_0_scheduler(
-    privacy_request: PrivacyRequest, action_type: ActionType
-) -> bool:
-    """Return whether we should use the DSR 3.0 scheduler.
-
-    Override if we have a partially processed Privacy Request that was already run on
-    DSR 2.0 so we can finish processing it on 2.0.
-
-    """
-    use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
-
-    prev_results: Dict[str, Optional[List[Row]]] = (
-        privacy_request.get_raw_access_results()
-    )
-    existing_tasks_count: int = privacy_request.get_tasks_by_action(action_type).count()
-
-    if prev_results and use_dsr_3_0 and not existing_tasks_count:
-        # If we've previously tried to process this Privacy Request using DSR 2.0, continue doing so
-        # for access and erasure requests
-        logger.info(
-            "Overriding scheduler to run privacy request {} using DSR 2.0 as it's "
-            "already partially processed",
-            privacy_request.id,
-        )
-        use_dsr_3_0 = False
-
-    return use_dsr_3_0
 
 
 def access_runner(

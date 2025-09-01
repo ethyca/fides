@@ -244,7 +244,6 @@ class SmartOpenStreamingStorage:
         all_attachments = []
 
         for key, value in data.items():
-            logger.debug(f"Processing key '{key}' with value type: {type(value)}")
 
             if not isinstance(value, list) or not value:
                 continue
@@ -269,10 +268,6 @@ class SmartOpenStreamingStorage:
             List of attachment data dictionaries with metadata
         """
         direct_attachments = []
-
-        logger.debug(
-            f"Found 'attachments' key with {len(attachments_list)} items - processing as direct attachments"
-        )
 
         for idx, attachment in enumerate(attachments_list):
             if not isinstance(attachment, dict):
@@ -431,9 +426,6 @@ class SmartOpenStreamingStorage:
             Iterator that yields chunks of the attachment content
         """
         try:
-            logger.debug(
-                f"Starting streaming read of {storage_key} from bucket: {bucket}, key: {key}"
-            )
             with self.storage_client.stream_read(bucket, key) as content_stream:
                 # Stream in chunks instead of reading entire file
                 chunk_count = 0
@@ -478,9 +470,6 @@ class SmartOpenStreamingStorage:
             if validated:
                 validated_attachments.append(validated)
 
-        logger.debug(
-            f"Successfully validated {len(validated_attachments)} out of {len(raw_attachments)} attachments"
-        )
         return validated_attachments
 
     @retry_cloud_storage_operation(
@@ -667,7 +656,7 @@ class SmartOpenStreamingStorage:
                 )
             except Exception as e:
                 logger.error(
-                    f"Failed to generate presigned URL for {config.bucket_name}/{config.file_key}: {e}"
+                    f"Failed to generate presigned URL for {config.file_key}: {e}"
                 )
                 raise StorageUploadError(
                     f"Failed to generate presigned URL: {e}"
@@ -693,7 +682,6 @@ class SmartOpenStreamingStorage:
         with self.storage_client.stream_upload(
             config.bucket_name,
             config.file_key,
-            content_type="application/zip",
         ) as upload_stream:
             for chunk in stream_zip(combined_entries):
                 upload_stream.write(chunk)
@@ -708,9 +696,7 @@ class SmartOpenStreamingStorage:
                 config.bucket_name, config.file_key
             )
         except Exception as e:
-            logger.error(
-                f"Failed to generate presigned URL for {config.bucket_name}/{config.file_key}: {e}"
-            )
+            logger.error(f"Failed to generate presigned URL for {config.file_key}: {e}")
             raise StorageUploadError(f"Failed to generate presigned URL: {e}") from e
 
     @retry_cloud_storage_operation(
@@ -770,9 +756,7 @@ class SmartOpenStreamingStorage:
         )
 
         # Use smart-open's streaming upload capability
-        with self.storage_client.stream_upload(
-            bucket_name, file_key, content_type="application/zip"
-        ) as upload_stream:
+        with self.storage_client.stream_upload(bucket_name, file_key) as upload_stream:
             for chunk in stream_zip(zip_generator):
                 upload_stream.write(chunk)
 
@@ -800,9 +784,7 @@ class SmartOpenStreamingStorage:
         zip_generator = self._convert_to_stream_zip_format(data_files_generator)
 
         # Use smart-open streaming upload
-        with self.storage_client.stream_upload(
-            bucket_name, file_key, content_type="application/zip"
-        ) as upload_stream:
+        with self.storage_client.stream_upload(bucket_name, file_key) as upload_stream:
             for chunk in stream_zip(zip_generator):
                 upload_stream.write(chunk)
 
@@ -838,12 +820,10 @@ class SmartOpenStreamingStorage:
             data_files_generator = self._create_data_files(
                 data, resp_format, all_attachments
             )
-            logger.debug("Yielding data files for ZIP")
             yield from self._convert_to_stream_zip_format(data_files_generator)
 
         # Then, yield attachment files (already in stream_zip format, stream directly)
         attachment_files_generator = self._create_attachment_files(all_attachments)
-        logger.debug("Yielding attachment files for ZIP")
         yield from attachment_files_generator
 
     def _create_data_files(
@@ -958,11 +938,7 @@ class SmartOpenStreamingStorage:
 
             try:
                 source_bucket, source_key = self._parse_storage_url(storage_key)
-                logger.debug(
-                    f"Parsed storage URL - bucket: {source_bucket}, key: {source_key}"
-                )
             except ValueError as e:
-                logger.error(f"Could not parse storage URL: {storage_key} - {e}")
                 raise StorageUploadError(
                     f"Could not parse storage URL: {storage_key} - {e}"
                 ) from e
