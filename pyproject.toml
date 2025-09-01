@@ -164,10 +164,15 @@ extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 [tool.pytest.ini_options]
 env = [
   "FIDES__TEST_MODE=true",
-  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute"
+  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute",
+  "SQLALCHEMY_WARN_20=1"
 ]
 log_cli=false
-filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
+filterwarnings = [
+  "ignore::DeprecationWarning:aiofiles.*:",
+  "error::sqlalchemy.exc.RemovedIn20Warning",
+  "ignore::sqlalchemy.exc.MovedIn20Warning"
+]
 testpaths="tests"
 log_level = "INFO"
 addopts = [
@@ -176,7 +181,6 @@ addopts = [
     "--no-cov-on-fail",
     "-ra",
     "-vv",
-    "--disable-pytest-warnings"
 ]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",

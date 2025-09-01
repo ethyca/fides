@@ -865,12 +865,11 @@ def get_system_data_uses(db: Session, include_parents: bool) -> Set:
     Same results as System.get_data_uses(System.all(db), include_parents=<>), but more efficient
     """
     system_data_uses = db.execute(
-        text("SELECT distinct data_use from privacydeclaration;")
-    )
+        text("SELECT DISTINCT data_use FROM privacydeclaration;")
+    ).scalars()
 
-    data_uses = set()
-    for row in system_data_uses:
-        data_use: str = row["data_use"]
+    data_uses: Set[str] = set()
+    for data_use in system_data_uses:
         # Expand system data uses so we also include their parents
         if include_parents:
             data_uses.update(DataUse.get_parent_uses_from_key(data_use))
