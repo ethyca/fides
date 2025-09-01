@@ -85,7 +85,7 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
     Returns:
         Set of hierarchical entity keys that should be redacted
     """
-    redaction_entities = set()
+    redaction_entities: set[str] = set()
 
     try:
         # Step 1: Pre-filter to find datasets with ANY redaction metadata
