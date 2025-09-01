@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 
 from fideslang.models import Dataset, DatasetField
 from loguru import logger
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from fides.api.models.datasetconfig import DatasetConfig
@@ -73,9 +74,10 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
     """
     Create a set of hierarchical entity keys that should be redacted based on fides_meta.redact: name.
 
-    This function uses PostgreSQL's JSON processing capabilities directly in the database
-    for better performance. It extracts datasets, collections, and fields (including nested fields)
-    that have fides_meta->>'redact' = 'name'.
+    This function uses a hybrid approach:
+    1. First identifies datasets that contain ANY redaction metadata at any level
+    2. Then processes only those datasets with redaction metadata
+
 
     Args:
         db: Database session
@@ -86,48 +88,100 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
     redaction_entities = set()
 
     try:
-        # Query for dataset-level redactions
-        dataset_query = """
-        SELECT ctl.fides_key as entity_path
+        # Step 1: Pre-filter to find datasets with ANY redaction metadata
+        # Simple existence check - no paths needed, just check if redaction exists anywhere
+        pre_filter_query = """
+        SELECT DISTINCT dc.ctl_dataset_id
         FROM datasetconfig dc
-        JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-        WHERE ctl.fides_meta->>'redact' = 'name'
+        JOIN ctl_datasets ds ON dc.ctl_dataset_id = ds.id
+        WHERE
+            -- Dataset-level redaction
+            ds.fides_meta->>'redact' = 'name'
+            OR
+            -- Collection-level redaction
+            EXISTS (
+                SELECT 1 FROM jsonb_array_elements(ds.collections::jsonb) AS collection
+                WHERE collection->'fides_meta'->>'redact' = 'name'
+                LIMIT 1
+            )
+            OR
+            -- Field-level redaction using jsonb_path_query
+            EXISTS (
+                SELECT 1
+                FROM jsonb_path_query(ds.collections::jsonb, '$.**.fides_meta') AS fides_meta
+                WHERE fides_meta->>'redact' = 'name'
+                LIMIT 1
+            )
         """
 
-        dataset_results = db.execute(dataset_query).fetchall()
+        candidate_datasets = db.execute(pre_filter_query).fetchall()
+
+        if not candidate_datasets:
+            logger.debug("No datasets found with redaction metadata")
+            return redaction_entities
+
+        logger.debug(
+            f"Pre-filtered to {len(candidate_datasets)} datasets with redaction metadata"
+        )
+
+        # Step 2: Process only the candidate datasets with targeted queries
+        # Convert to a format we can use in SQL ANY clause
+        dataset_ids = [row[0] for row in candidate_datasets]
+
+        # Query for dataset-level redactions (only on candidate datasets)
+        dataset_query = text(
+            """
+        SELECT ds.fides_key as entity_path
+        FROM datasetconfig dc
+        JOIN ctl_datasets ds ON dc.ctl_dataset_id = ds.id
+        WHERE ds.id = ANY(:dataset_ids)
+            AND ds.fides_meta->>'redact' = 'name'
+        """
+        )
+
+        dataset_results = db.execute(
+            dataset_query, {"dataset_ids": dataset_ids}
+        ).fetchall()
         for row in dataset_results:
             redaction_entities.add(row[0])
 
-        # Query for collection-level redactions
-        collection_query = """
-        SELECT ctl.fides_key || '.' || (collection->>'name') as entity_path
+        # Query for collection-level redactions (only on candidate datasets)
+        collection_query = text(
+            """
+        SELECT ds.fides_key || '.' || (collection->>'name') as entity_path
         FROM datasetconfig dc
-        JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-        CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
-        WHERE collection->'fides_meta'->>'redact' = 'name'
+        JOIN ctl_datasets ds ON dc.ctl_dataset_id = ds.id
+        CROSS JOIN LATERAL jsonb_array_elements(ds.collections::jsonb) AS collection
+        WHERE ds.id = ANY(:dataset_ids)
+            AND collection->'fides_meta'->>'redact' = 'name'
             AND collection->>'name' IS NOT NULL
         """
+        )
 
-        collection_results = db.execute(collection_query).fetchall()
+        collection_results = db.execute(
+            collection_query, {"dataset_ids": dataset_ids}
+        ).fetchall()
         for row in collection_results:
             redaction_entities.add(row[0])
 
         # Query for field-level redactions (including nested fields)
         # This uses a recursive CTE to handle arbitrary nesting levels
-        field_query = """
+        field_query = text(
+            """
         WITH RECURSIVE field_hierarchy AS (
-            -- Base case: top-level fields in collections
+            -- Base case: top-level fields in collections (only candidate datasets)
             SELECT
-                ctl.fides_key || '.' ||
+                ds.fides_key || '.' ||
                     (collection->>'name') || '.' ||
                     (field->>'name') as entity_path,
                 field->'fields' as nested_fields,
                 field->'fides_meta'->>'redact' as redact_value
             FROM datasetconfig dc
-            JOIN ctl_datasets ctl ON dc.ctl_dataset_id = ctl.id
-            CROSS JOIN LATERAL jsonb_array_elements(ctl.collections::jsonb) AS collection
+            JOIN ctl_datasets ds ON dc.ctl_dataset_id = ds.id
+            CROSS JOIN LATERAL jsonb_array_elements(ds.collections::jsonb) AS collection
             CROSS JOIN LATERAL jsonb_array_elements(collection->'fields') AS field
-            WHERE collection->>'name' IS NOT NULL
+            WHERE ds.id = ANY(:dataset_ids)
+                AND collection->>'name' IS NOT NULL
                 AND field->>'name' IS NOT NULL
 
             UNION ALL
@@ -146,10 +200,13 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
         FROM field_hierarchy
         WHERE redact_value = 'name'
         """
+        )
 
-        field_results = db.execute(field_query).fetchall()
+        field_results = db.execute(field_query, {"dataset_ids": dataset_ids}).fetchall()
         for row in field_results:
             redaction_entities.add(row[0])
+
+        logger.debug(f"Found {len(redaction_entities)} entities requiring redaction")
 
     except Exception as exc:
         # Log error but don't fail, just return empty set
