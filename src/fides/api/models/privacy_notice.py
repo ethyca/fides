@@ -3,8 +3,9 @@ from __future__ import annotations
 import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
+
 from fideslang.validation import FidesKey, validate_fides_key
-from sqlalchemy import Boolean, Column, desc
+from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
