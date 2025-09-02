@@ -109,6 +109,4 @@ def get_unique_filename(filename: str, used_filenames: set[str]) -> str:
         unique_filename = f"{base_name}_{counter}{extension}"
         counter += 1
 
-    # Add the new filename to the dataset's set
-    used_filenames.add(unique_filename)
     return unique_filename
