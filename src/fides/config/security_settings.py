@@ -226,6 +226,9 @@ class SecuritySettings(FidesSettings):
         """Validate supported `rate_limit_client_ip_header`"""
         insecure_headers = ["x-forwarded-for"]
 
+        if not v:
+            return None
+
         if v.lower() in insecure_headers:
             raise ValueError(
                 "The rate_limit_client_ip_header cannot be set to a header that is not secure."
