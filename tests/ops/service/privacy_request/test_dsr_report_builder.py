@@ -215,6 +215,150 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
                 "2.0 KB",  # Assuming the file size is formatted as 2.0 KB
             )
 
+    def test_streaming_attachment_links(
+        self,
+        privacy_request: PrivacyRequest,
+        common_attachment_config,
+        common_assertions,
+    ):
+        """Test that when streaming is enabled, attachment links point to local attachments directory"""
+        dsr_data = {
+            "attachments": [
+                common_attachment_config["text"],
+                common_attachment_config["binary"],
+            ],
+        }
+
+        # Test with streaming enabled
+        builder_streaming = DsrReportBuilder(
+            privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=True
+        )
+        report_streaming = builder_streaming.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report_streaming.getvalue())) as zip_file:
+            # Read the attachments index file
+            attachments_content = zip_file.read(
+                f"{common_assertions['paths']['attachments_dir']}/index.html"
+            ).decode("utf-8")
+
+            # Verify that links point to local attachments directory
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["text"]["file_name"],
+                f"attachments/{common_attachment_config['text']['file_name']}",
+                "1.0 KB",
+            )
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["binary"]["file_name"],
+                f"attachments/{common_attachment_config['binary']['file_name']}",
+                "2.0 KB",
+            )
+
+            # Verify that original download URLs are NOT present
+            self.assert_html_not_contains(
+                attachments_content,
+                common_attachment_config["text"]["download_url"],
+                common_attachment_config["binary"]["download_url"],
+            )
+
+        # Test with streaming disabled (default behavior)
+        builder_default = DsrReportBuilder(
+            privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=False
+        )
+        report_default = builder_default.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report_default.getvalue())) as zip_file:
+            # Read the attachments index file
+            attachments_content = zip_file.read(
+                f"{common_assertions['paths']['attachments_dir']}/index.html"
+            ).decode("utf-8")
+
+            # Verify that links point to original download URLs
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["text"]["file_name"],
+                common_attachment_config["text"]["download_url"],
+                "1.0 KB",
+            )
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["binary"]["file_name"],
+                common_attachment_config["binary"]["download_url"],
+                "2.0 KB",
+            )
+
+    def test_ttl_display_in_templates(
+        self,
+        privacy_request: PrivacyRequest,
+        common_attachment_config,
+        common_assertions,
+    ):
+        """Test that TTL is displayed correctly in templates using the environment variable"""
+        dsr_data = {
+            "attachments": [
+                common_attachment_config["text"],
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Read the attachments index file
+            attachments_content = zip_file.read(
+                f"{common_assertions['paths']['attachments_dir']}/index.html"
+            ).decode("utf-8")
+
+            # Verify that the TTL is displayed (should be 5 days by default)
+            # The exact number will depend on the CONFIG.security.subject_request_download_link_ttl_seconds value
+            self.assert_html_contains(
+                attachments_content, "download links will expire in"
+            )
+            self.assert_html_contains(attachments_content, "days")
+
+            # Verify that the hardcoded "7 days" is not present
+            self.assert_html_not_contains(attachments_content, "7 days")
+
+    def test_ttl_display_in_collection_templates(
+        self,
+        privacy_request: PrivacyRequest,
+        common_assertions,
+    ):
+        """Test that TTL is displayed correctly in collection templates using the environment variable"""
+        dsr_data = {
+            "test_dataset:test_collection": [
+                {
+                    "id": 1,
+                    "name": "Test Item",
+                    "attachments": {
+                        "test_file.txt": {
+                            "url": "https://example.com/test_file.txt",
+                            "size": "1.0 KB",
+                        }
+                    },
+                }
+            ]
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Read the collection index file
+            collection_content = zip_file.read(
+                "data/test_dataset/test_collection/index.html"
+            ).decode("utf-8")
+
+            # Verify that the TTL is displayed
+            self.assert_html_contains(
+                collection_content, "download links will expire in"
+            )
+            self.assert_html_contains(collection_content, "days")
+
+            # Verify that the hardcoded "7 days" is not present
+            self.assert_html_not_contains(collection_content, "7 days")
+
     def test_multiple_webhook_attachments(
         self, privacy_request: PrivacyRequest, webhook_variants, common_assertions
     ):

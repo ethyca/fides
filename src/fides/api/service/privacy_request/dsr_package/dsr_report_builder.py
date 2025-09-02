@@ -46,15 +46,16 @@ class DsrReportBuilder:
         self,
         privacy_request: "PrivacyRequest",
         dsr_data: dict[str, Any],
+        enable_streaming: bool = False,
     ):
         """
         Initializes the DSR report builder.
         """
+        logger.info(f"dsr_data is {dsr_data}")
         # Define pretty_print function for Jinja templates
         jinja2.filters.FILTERS["pretty_print"] = lambda value, indent=4: json.dumps(
             value, indent=indent, cls=StorageJSONEncoder
         )
-
         # Initialize instance zip file variables
         self.baos = BytesIO()
 
@@ -70,15 +71,27 @@ class DsrReportBuilder:
             "text_color": TEXT_COLOR,
             "header_color": HEADER_COLOR,
             "border_color": BORDER_COLOR,
+            "download_link_ttl_days": self._get_download_link_ttl_days(),
         }
         self.main_links: dict[str, Any] = {}  # used to track the generated pages
 
         # report data to populate the templates
         self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
+        self.enable_streaming = enable_streaming
 
-        # Track used filenames across all attachments
+        # Track used filenames globally to match streaming storage behavior
         self.used_filenames: set[str] = set()
+
+        # Track attachments by their unique identifier to prevent duplicate processing
+        # Maps (download_url, file_name) -> unique_filename
+        self.processed_attachments: dict[tuple[str, str], str] = {}
+
+    def _get_download_link_ttl_days(self) -> int:
+        """Get the download link TTL in days from the security configuration."""
+        from fides.config import CONFIG
+
+        return int(CONFIG.security.subject_request_download_link_ttl_seconds / 86400)
 
     def _populate_template(
         self,
@@ -133,6 +146,9 @@ class DsrReportBuilder:
         # track links to collection indexes
         collection_links = {}
         for collection_name, rows in collections.items():
+            logger.info(
+                f"Processing dataset {dataset_name}, collection {collection_name} with {len(rows)} items"
+            )
             collection_url = f"{collection_name}/index.html"
             self._add_collection(rows, dataset_name, collection_name)
             collection_links[collection_name] = collection_url
@@ -148,27 +164,28 @@ class DsrReportBuilder:
             ),
         )
 
-    def _get_unique_filename(self, filename: str) -> str:
+    def _get_unique_filename(self, filename: str, dataset_name: str) -> str:
         """
         Generates a unique filename by appending a counter if the file already exists.
-        Now tracks filenames across all directories to ensure global uniqueness.
+        Uses global tracking to match streaming storage behavior.
 
         Args:
             filename: The original filename
+            dataset_name: The dataset name (unused, kept for compatibility)
 
         Returns:
-            A unique filename that won't conflict with existing files
+            A unique filename that won't conflict with existing files globally
         """
         base_name, extension = os.path.splitext(filename)
         counter = 1
         unique_filename = filename
 
-        # Check if file exists in used_filenames set
+        # Check if file exists in global used_filenames set
         while unique_filename in self.used_filenames:
             unique_filename = f"{base_name}_{counter}{extension}"
             counter += 1
 
-        # Add the new filename to the set
+        # Add the new filename to the global set
         self.used_filenames.add(unique_filename)
         return unique_filename
 
@@ -176,6 +193,7 @@ class DsrReportBuilder:
         self,
         attachments: list[dict[str, Any]],
         directory: str,
+        dataset_name: str = "attachments",
     ) -> dict[str, dict[str, str]]:
         """
         Processes attachments and returns a dictionary mapping filenames to their download URLs and sizes.
@@ -210,12 +228,46 @@ class DsrReportBuilder:
             else:
                 file_size = "Unknown"
 
-            # Get a unique filename to prevent duplicates
-            unique_filename = self._get_unique_filename(file_name)
+            # Check if this attachment has already been processed
+            attachment_key = (download_url, file_name)
+            if attachment_key in self.processed_attachments:
+                # Use the previously generated unique filename
+                unique_filename = self.processed_attachments[attachment_key]
+                logger.info(
+                    f"Reusing existing unique filename {unique_filename} for {file_name} from {download_url}"
+                )
+            else:
+                # Get a unique filename to prevent duplicates globally
+                unique_filename = self._get_unique_filename(file_name, dataset_name)
+                # Track this attachment to prevent duplicate processing
+                self.processed_attachments[attachment_key] = unique_filename
+                logger.info(
+                    f"Generated new unique filename {unique_filename} for {file_name} from {download_url}"
+                )
+
+            # Use local attachment path when streaming is enabled
+            if self.enable_streaming:
+                logger.info(f"Adding attachment {unique_filename} to {directory}")
+                # Calculate relative path from the current directory to attachments
+                if directory.startswith("data/"):
+                    logger.info(f"Directory is {directory}")
+                    # For collection data, go up to root then to attachments
+                    depth = directory.count("/") + 1  # +1 for the attachments directory
+                    logger.info(f"Depth is {depth}")
+                    relative_path = "../" * depth + f"attachments/{unique_filename}"
+                    logger.info(f"Relative path is {relative_path}")
+                else:
+                    # For top-level attachments, just use the filename
+                    logger.info(f"Top-level attachments, using {unique_filename}")
+                    relative_path = unique_filename
+                attachment_url = relative_path
+                logger.info(f"Attachment URL is {attachment_url}")
+            else:
+                attachment_url = download_url
 
             # Add to processed attachments
             processed_attachments.append(
-                (unique_filename, {"url": download_url, "size": file_size})
+                (unique_filename, {"url": attachment_url, "size": file_size})
             )
 
         # Convert list of tuples to dictionary
@@ -238,17 +290,71 @@ class DsrReportBuilder:
             # Create a copy of the item data to avoid modifying the original
             item_data = collection_item.copy()
 
+            # Debug: Log the structure of the collection item
+            logger.info(
+                f"Collection item {index} in {dataset_name}:{collection_name} has keys: {list(item_data.keys())}"
+            )
+            if "attachments" in item_data:
+                logger.info(
+                    f"Attachments field type: {type(item_data['attachments'])}, value: {item_data['attachments']}"
+                )
+
             # Process any attachments in the item
+            # First check for direct attachments key
             if "attachments" in item_data and isinstance(
                 item_data["attachments"], list
             ):
+                logger.info(
+                    f"Found {len(item_data['attachments'])} attachments in {dataset_name}:{collection_name}"
+                )
                 # Process attachments and get their URLs
                 attachment_links = self._write_attachment_content(
                     item_data["attachments"],
                     f"data/{dataset_name}/{collection_name}",
+                    dataset_name,
+                )
+                logger.info(
+                    f"Processed {len(attachment_links)} attachment links for {dataset_name}:{collection_name}"
                 )
                 # Add the attachment URLs to the item data
                 item_data["attachments"] = attachment_links
+            else:
+                # Check for nested attachment fields (ManualTask format)
+                attachment_fields_found = []
+                for field_name, field_value in item_data.items():
+                    if isinstance(field_value, list) and field_value:
+                        # Check if this field contains attachment-like data
+                        first_item = field_value[0]
+                        if isinstance(first_item, dict) and all(
+                            key in first_item
+                            for key in ["file_name", "download_url", "file_size"]
+                        ):
+                            attachment_fields_found.append(field_name)
+                            logger.info(
+                                f"Found attachment field '{field_name}' with {len(field_value)} attachments in {dataset_name}:{collection_name}"
+                            )
+
+                            # Process attachments and get their URLs
+                            attachment_links = self._write_attachment_content(
+                                field_value,
+                                f"data/{dataset_name}/{collection_name}",
+                                dataset_name,
+                            )
+                            logger.info(
+                                f"Processed {len(attachment_links)} attachment links for field '{field_name}' in {dataset_name}:{collection_name}"
+                            )
+
+                            # Replace the field value with processed attachment links
+                            item_data[field_name] = attachment_links
+
+                if not attachment_fields_found:
+                    logger.info(
+                        f"No attachments found in {dataset_name}:{collection_name}"
+                    )
+                else:
+                    logger.info(
+                        f"Found attachments in fields: {attachment_fields_found}"
+                    )
 
             # Add item content to the list
             items_content.append(
@@ -361,9 +467,28 @@ class DsrReportBuilder:
                 self.main_links["Additional Data"] = "data/dataset/index.html"
 
             # Add Additional Attachments last if it exists
+            # Only add attachments that weren't already processed in collections
             if "attachments" in self.dsr_data:
-                self._add_attachments(self.dsr_data["attachments"])
-                self.main_links["Additional Attachments"] = "attachments/index.html"
+                # Filter out attachments that were already processed in collections
+                unprocessed_attachments = []
+                for attachment in self.dsr_data["attachments"]:
+                    attachment_key = (
+                        attachment.get("download_url"),
+                        attachment.get("file_name"),
+                    )
+                    if attachment_key not in self.processed_attachments:
+                        unprocessed_attachments.append(attachment)
+                        logger.info(
+                            f"Adding unprocessed attachment to top-level: {attachment.get('file_name')}"
+                        )
+                    else:
+                        logger.info(
+                            f"Skipping already processed attachment: {attachment.get('file_name')}"
+                        )
+
+                if unprocessed_attachments:
+                    self._add_attachments(unprocessed_attachments)
+                    self.main_links["Additional Attachments"] = "attachments/index.html"
 
             # create the main index once all the datasets have been added
             self._add_file(

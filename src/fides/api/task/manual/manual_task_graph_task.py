@@ -398,9 +398,9 @@ class ManualTaskGraphTask(GraphTask):
 
     def _process_attachment_field(
         self, submission: ManualTaskSubmission
-    ) -> Optional[dict[str, dict[str, Any]]]:
-        """Process attachment field and return attachment map or None."""
-        attachment_map: dict[str, dict[str, Any]] = {}
+    ) -> Optional[list[dict[str, Any]]]:
+        """Process attachment field and return attachment list or None."""
+        attachment_list: list[dict[str, Any]] = []
 
         for attachment in filter(
             lambda a: a.attachment_type == AttachmentType.include_with_access_package,
@@ -408,15 +408,18 @@ class ManualTaskGraphTask(GraphTask):
         ):
             try:
                 size, url = attachment.retrieve_attachment()
-                attachment_map[attachment.file_name] = {
-                    "url": str(url) if url else None,
-                    "size": (format_size(size) if size else "Unknown"),
-                }
+                attachment_list.append(
+                    {
+                        "file_name": attachment.file_name,
+                        "download_url": str(url) if url else None,
+                        "file_size": size,
+                    }
+                )
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 logger.warning(
                     f"Error retrieving attachment {attachment.file_name}: {str(exc)}"
                 )
-        return attachment_map or None
+        return attachment_list or None
 
     def _cleanup_manual_task_instances(
         self, manual_task: ManualTask, privacy_request: PrivacyRequest

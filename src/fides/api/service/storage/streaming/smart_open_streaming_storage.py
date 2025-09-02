@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from datetime import datetime
 from io import BytesIO, StringIO
 from itertools import chain
@@ -68,6 +69,40 @@ class SmartOpenStreamingStorage:
         """
         self.storage_client = storage_client
         self.chunk_size = chunk_size
+        # Track used filenames per dataset to match DSR report builder behavior
+        # Maps dataset_name -> set of used filenames
+        self.used_filenames_per_dataset: dict[str, set[str]] = {}
+
+    def _get_unique_filename(self, filename: str, dataset_name: str) -> str:
+        """
+        Generates a unique filename by appending a counter if the file already exists.
+        Tracks filenames per dataset to match DSR report builder behavior.
+
+        Args:
+            filename: The original filename
+            dataset_name: The dataset name to track filenames within
+
+        Returns:
+            A unique filename that won't conflict with existing files in the same dataset
+        """
+        # Initialize the used filenames set for this dataset if it doesn't exist
+        if dataset_name not in self.used_filenames_per_dataset:
+            self.used_filenames_per_dataset[dataset_name] = set()
+
+        used_filenames = self.used_filenames_per_dataset[dataset_name]
+
+        base_name, extension = os.path.splitext(filename)
+        counter = 1
+        unique_filename = filename
+
+        # Check if file exists in this dataset's used_filenames set
+        while unique_filename in used_filenames:
+            unique_filename = f"{base_name}_{counter}{extension}"
+            counter += 1
+
+        # Add the new filename to the dataset's set
+        used_filenames.add(unique_filename)
+        return unique_filename
 
     def _parse_storage_url(self, storage_key: str) -> tuple[str, str]:
         """Parse storage URL and return (bucket, key).
@@ -514,6 +549,9 @@ class SmartOpenStreamingStorage:
         if not privacy_request:
             raise ValueError("Privacy request must be provided")
 
+        # Reset used filenames for this upload operation
+        self.used_filenames_per_dataset.clear()
+
         # Use default buffer config if none provided
         if buffer_config is None:
             buffer_config = StreamingBufferConfig()
@@ -631,6 +669,7 @@ class SmartOpenStreamingStorage:
             dsr_buffer = DsrReportBuilder(
                 privacy_request=privacy_request,
                 dsr_data=data,
+                enable_streaming=True,
             ).generate()
             # Reset buffer position to ensure it can be read multiple times
             dsr_buffer.seek(0)
@@ -943,7 +982,24 @@ class SmartOpenStreamingStorage:
                     f"Could not parse storage URL: {storage_key} - {e}"
                 ) from e
 
-            file_path = f"{attachment_info.base_path}/{attachment_info.attachment.file_name or DEFAULT_ATTACHMENT_NAME}"
+            # Generate unique filename using same logic as DSR report builder
+            original_filename = (
+                attachment_info.attachment.file_name or DEFAULT_ATTACHMENT_NAME
+            )
+
+            # Determine dataset name from base_path
+            if attachment_info.base_path == "attachments":
+                dataset_name = "attachments"
+            else:
+                # Extract dataset name from path like "data/manualtask/manual_data"
+                path_parts = attachment_info.base_path.split("/")
+                if len(path_parts) >= 2 and path_parts[0] == "data":
+                    dataset_name = path_parts[1]  # e.g., "manualtask"
+                else:
+                    dataset_name = "unknown"
+
+            unique_filename = self._get_unique_filename(original_filename, dataset_name)
+            file_path = f"{attachment_info.base_path}/{unique_filename}"
 
             try:
                 content_stream = self._create_attachment_content_stream(
