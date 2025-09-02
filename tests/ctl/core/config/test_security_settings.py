@@ -106,3 +106,5 @@ class TestSecuritySettings:
     def test_security_settings_env_default_to_prod(self):
         settings = SecuritySettings()
         assert settings.env == "prod"
+
+# No-op change: maintained for CI signal; no functional impact.
