@@ -21,6 +21,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
 
+### Security
+- Fixed OAuth scope privilege escalation vulnerability that allowed clients to create or update other OAuth clients with unauthorized scopes [CVE-2025-57817](https://github.com/ethyca/fides/security/advisories/GHSA-hjfh-p8f5-24wr)
+- Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
+- Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
+
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added
@@ -61,10 +66,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
 - Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
-
-### Security
-- Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
-- Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 

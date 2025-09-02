@@ -117,13 +117,14 @@ class TestCreateClient:
         url,
         generate_auth_header,
     ) -> None:
-        auth_header = generate_auth_header([CLIENT_CREATE])
-
+        # Note: requesting client must have all scopes they want to assign (security fix)
         scopes = [
             CLIENT_CREATE,
             CLIENT_DELETE,
             CLIENT_READ,
         ]
+        auth_header = generate_auth_header(scopes)  # Give requester all needed scopes
+
         response = api_client.post(
             url,
             headers=auth_header,
@@ -154,7 +155,7 @@ class TestCreateClient:
             json=["invalid-scope"],
         )
 
-        assert 422 == response.status_code
+        assert 403 == response.status_code
         assert response.json()["detail"].startswith("Invalid Scope.")
 
     def test_create_client_with_root_client(self, url, api_client):
@@ -266,7 +267,7 @@ class TestSetClientScopes:
         response = api_client.put(
             url, headers=auth_header, json=["this-is-not-a-valid-scope"]
         )
-        assert 422 == response.status_code
+        assert 403 == response.status_code
 
     def test_set_scopes_invalid_client(
         self, api_client: TestClient, oauth_client: ClientDetail, generate_auth_header
@@ -274,7 +275,7 @@ class TestSetClientScopes:
         url = V1_URL_PREFIX + CLIENT_SCOPE.format(client_id="bad_client")
 
         auth_header = generate_auth_header([CLIENT_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=["storage:read"])
+        response = api_client.put(url, headers=auth_header, json=[STORAGE_READ])
         response_body = json.loads(response.text)
 
         assert 200 == response.status_code
@@ -288,16 +289,17 @@ class TestSetClientScopes:
         url,
         generate_auth_header,
     ) -> None:
-        auth_header = generate_auth_header([CLIENT_UPDATE])
+        # Note: requesting client must have all scopes they want to assign (security fix)
+        auth_header = generate_auth_header([CLIENT_UPDATE, STORAGE_READ])
 
-        response = api_client.put(url, headers=auth_header, json=["storage:read"])
+        response = api_client.put(url, headers=auth_header, json=[STORAGE_READ])
         response_body = json.loads(response.text)
 
         assert 200 == response.status_code
         assert response_body is None
 
         db.refresh(oauth_client)
-        assert oauth_client.scopes == ["storage:read"]
+        assert oauth_client.scopes == [STORAGE_READ]
 
 
 class TestReadScopes:
@@ -688,3 +690,444 @@ class TestReadRoleMapping:
             "viewer",
             "viewer_and_approver",
         }
+
+
+class TestOAuthPrivilegeEscalationSecurity:
+    """Security tests to verify the OAuth privilege escalation vulnerability has been fixed."""
+
+    @pytest.fixture(scope="function")
+    def create_client_url(self, oauth_client) -> str:
+        return V1_URL_PREFIX + CLIENT
+
+    @pytest.fixture(scope="function")
+    def set_scopes_url(self, oauth_client) -> str:
+        return V1_URL_PREFIX + CLIENT_SCOPE.format(client_id=oauth_client.id)
+
+    @pytest.fixture(scope="function")
+    def contributor_client(self, db) -> ClientDetail:
+        """Create a client with contributor-level scopes for testing."""
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[CLIENT_CREATE, CLIENT_UPDATE, CLIENT_READ],  # Contributor scopes
+        )
+        yield client
+        client.delete(db)
+
+    def test_create_client_privilege_escalation_blocked(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that a client cannot create another client with scopes they don't have."""
+        # Client only has CLIENT_CREATE scope
+        auth_header = generate_auth_header([CLIENT_CREATE])
+
+        # Try to create a client with owner-level scopes that the requester doesn't have
+        privileged_scopes = [
+            "storage:create_or_update",
+            "messaging:create_or_update",
+            "user-permission:assign_owners",  # Note: hyphen, not underscore
+        ]
+
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=privileged_scopes,
+        )
+
+        assert response.status_code == 403
+        response_data = response.json()
+        assert "Cannot assign scopes that you do not have" in response_data["detail"]
+        assert "storage:create_or_update" in response_data["detail"]
+
+    def test_create_client_with_insecure_scopes(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that creating a client with unauthorized scopes is blocked (security vulnerability fix)."""
+        # Attacker only has basic client management scope
+        auth_header = generate_auth_header([CLIENT_CREATE])
+
+        # Try to escalate privileges by creating a client with admin scopes they don't have
+        insecure_scopes = [
+            "storage:delete",  # Can delete storage backends
+            "messaging:delete",  # Can control messaging systems
+            "user-permission:assign_owners",  # Can create owner accounts
+            "user:delete",  # Can delete users
+        ]
+
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=insecure_scopes,
+        )
+
+        # Should be rejected with 403 Forbidden
+        assert response.status_code == 403
+        response_data = response.json()
+        assert "Cannot assign scopes that you do not have" in response_data["detail"]
+
+        # Verify all unauthorized scopes are listed
+        for scope in insecure_scopes:
+            assert scope in response_data["detail"]
+
+        # Verify no new client was created (the request should have been blocked)
+        # Since we expect a 422 status, no client should have been created by this request
+        # (This is already implicitly tested by the 422 status check above, but let's be explicit)
+
+    def test_create_client_with_role_derived_scopes_blocked(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+    ) -> None:
+        """Test that role-derived scopes are properly considered in authorization checks."""
+        from fides.api.models.client import ClientDetail
+        from fides.api.models.fides_user import FidesUser
+        from fides.api.oauth.roles import CONTRIBUTOR
+        from tests.conftest import generate_role_header_for_user
+
+        # Create a user and client with only the CONTRIBUTOR role (no direct scopes)
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_role_user_blocked",
+                "first_name": "Test",
+                "last_name": "User",
+            },
+        )
+
+        requesting_client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            roles=[
+                CONTRIBUTOR
+            ],  # Contributor role has CLIENT_CREATE but not administrative scopes
+            scopes=[],  # No direct scopes, only role-derived
+            user_id=user.id,
+        )
+
+        # Create auth header for this role-based client
+        auth_header = generate_role_header_for_user(user, [CONTRIBUTOR])
+
+        # Try to create a client with admin scopes that CONTRIBUTOR role doesn't have
+        admin_scopes = [
+            "storage:delete",  # Admin scope not in CONTRIBUTOR role
+            "messaging:delete",  # Admin scope not in CONTRIBUTOR role
+        ]
+
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=admin_scopes,
+        )
+
+        # Should be blocked because CONTRIBUTOR role doesn't include these admin scopes
+        assert response.status_code == 403
+        response_data = response.json()
+        assert "Cannot assign scopes that you do not have" in response_data["detail"]
+
+        # Clean up
+        requesting_client.delete(db)
+        user.delete(db)
+
+    def test_create_client_with_role_derived_scopes_allowed(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+    ) -> None:
+        """Test that clients with roles can assign scopes they have via role inheritance."""
+        from fides.api.models.client import ClientDetail
+        from fides.api.models.fides_user import FidesUser
+        from fides.api.oauth.roles import CONTRIBUTOR, ROLES_TO_SCOPES_MAPPING
+        from tests.conftest import generate_role_header_for_user
+
+        # Create a user and client with CONTRIBUTOR role
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_role_user",
+                "first_name": "Test",
+                "last_name": "User",
+            },
+        )
+
+        requesting_client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            roles=[CONTRIBUTOR],
+            scopes=[],  # No direct scopes, only role-derived
+            user_id=user.id,  # Associate client with user
+        )
+
+        # Get a scope that CONTRIBUTOR role has
+        contributor_scopes = ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR]
+        # Pick a safe scope that CONTRIBUTOR has
+        allowed_scope = CLIENT_READ  # CONTRIBUTOR should have this
+        assert (
+            allowed_scope in contributor_scopes
+        ), f"{allowed_scope} should be in CONTRIBUTOR scopes"
+
+        # Create auth header using role-based authentication
+        auth_header = generate_role_header_for_user(user, [CONTRIBUTOR])
+
+        # Try to create a client with a scope that CONTRIBUTOR role DOES have
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=[allowed_scope],
+        )
+
+        # Should succeed because CONTRIBUTOR role includes this scope
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "client_id" in response_data
+        assert "client_secret" in response_data
+
+        # Verify the new client was created with the correct scope
+        new_client = ClientDetail.get(
+            db, object_id=response_data["client_id"], config=CONFIG
+        )
+        assert new_client.scopes == [allowed_scope]
+
+        # Clean up
+        requesting_client.delete(db)
+        new_client.delete(db)
+        user.delete(db)
+
+    def test_get_client_effective_scopes_utility(
+        self,
+        db,
+    ) -> None:
+        """Test the get_client_effective_scopes utility function directly."""
+        from fides.api.models.client import ClientDetail
+        from fides.api.oauth.roles import CONTRIBUTOR, ROLES_TO_SCOPES_MAPPING
+        from fides.api.oauth.utils import get_client_effective_scopes
+
+        # Test 1: Client with only direct scopes
+        client_direct_only, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[CLIENT_READ, CLIENT_UPDATE],
+            roles=[],
+        )
+
+        effective_scopes = get_client_effective_scopes(client_direct_only)
+        assert set(effective_scopes) == {CLIENT_READ, CLIENT_UPDATE}
+
+        # Test 2: Client with only roles
+        client_roles_only, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[],
+            roles=[CONTRIBUTOR],
+        )
+
+        effective_scopes = get_client_effective_scopes(client_roles_only)
+        expected_scopes = ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR]
+        assert set(effective_scopes) == set(expected_scopes)
+
+        # Test 3: Client with both direct scopes and roles
+        client_mixed, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[CLIENT_DELETE],  # Direct scope
+            roles=[CONTRIBUTOR],  # Role-derived scopes
+        )
+
+        effective_scopes = get_client_effective_scopes(client_mixed)
+        expected_scopes = set([CLIENT_DELETE] + ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR])
+        assert set(effective_scopes) == expected_scopes
+
+        # Clean up
+        client_direct_only.delete(db)
+        client_roles_only.delete(db)
+        client_mixed.delete(db)
+
+    def test_create_client_with_valid_scopes_allowed(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that a client can create another client with scopes they do have."""
+        # Client has these scopes
+        requester_scopes = [CLIENT_CREATE, CLIENT_READ, CLIENT_DELETE]
+        auth_header = generate_auth_header(requester_scopes)
+
+        # Create client with subset of requester's scopes (should work)
+        allowed_scopes = [CLIENT_READ]
+
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=allowed_scopes,
+        )
+
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "client_id" in response_data
+        assert "client_secret" in response_data
+
+        # Verify the client was created with correct scopes
+        new_client = ClientDetail.get(
+            db, object_id=response_data["client_id"], config=CONFIG
+        )
+        assert new_client.scopes == allowed_scopes
+
+        # Cleanup
+        new_client.delete(db)
+
+    def test_set_client_scopes_privilege_escalation_blocked(
+        self,
+        db,
+        api_client: TestClient,
+        oauth_client,
+        generate_auth_header,
+    ) -> None:
+        """Test that a client cannot set scopes they don't have on another client."""
+        # Client only has CLIENT_UPDATE scope
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+
+        url = V1_URL_PREFIX + CLIENT_SCOPE.format(client_id=oauth_client.id)
+
+        # Try to set owner-level scopes that the requester doesn't have
+        privileged_scopes = [
+            "storage:create_or_update",
+            "messaging:create_or_update",
+            "user-permission:assign_owners",  # Note: hyphen, not underscore
+        ]
+
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json=privileged_scopes,
+        )
+
+        assert response.status_code == 403
+        response_data = response.json()
+        assert "Cannot assign scopes that you do not have" in response_data["detail"]
+
+    def test_set_client_scopes_with_valid_scopes_allowed(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """Test that a client can set scopes they do have on another client."""
+        # Create a fresh client with limited scopes for this test
+        target_client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[CLIENT_READ, CLIENT_DELETE],  # Initial scopes
+        )
+
+        # Client has these scopes
+        requester_scopes = [CLIENT_UPDATE, CLIENT_READ, CLIENT_DELETE]
+        auth_header = generate_auth_header(requester_scopes)
+
+        url = V1_URL_PREFIX + CLIENT_SCOPE.format(client_id=target_client.id)
+
+        # Set scopes that are subset of requester's scopes
+        allowed_scopes = [CLIENT_READ]
+
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json=allowed_scopes,
+        )
+
+        assert response.status_code == 200
+
+        # Verify the scopes were updated
+        db.refresh(target_client)  # Refresh to get updated data from database
+        assert target_client.scopes == allowed_scopes
+
+        # Cleanup
+        target_client.delete(db)
+
+    def test_root_client_can_assign_any_scope(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+    ) -> None:
+        """Test that the root client can still assign any scope (maintains functionality)."""
+        # Use root client credentials
+        data = {
+            "client_id": CONFIG.security.oauth_root_client_id,
+            "client_secret": CONFIG.security.oauth_root_client_secret,
+        }
+
+        token_url = V1_URL_PREFIX + TOKEN
+        token_response = api_client.post(token_url, data=data)
+        jwt = token_response.json().get("access_token")
+        auth_header = {"Authorization": "Bearer " + jwt}
+
+        # Try to assign any scope (should work for root client)
+        privileged_scopes = [
+            "storage:create_or_update",
+            "messaging:create_or_update",
+            "user-permission:assign_owners",  # Note: hyphen, not underscore
+        ]
+
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=privileged_scopes,
+        )
+
+        assert response.status_code == 200
+        response_data = response.json()
+
+        # Verify the client was created with privileged scopes
+        new_client = ClientDetail.get(
+            db, object_id=response_data["client_id"], config=CONFIG
+        )
+        assert set(new_client.scopes) == set(privileged_scopes)
+
+        # Cleanup
+        new_client.delete(db)
+
+    def test_empty_scopes_allowed(
+        self,
+        db,
+        api_client: TestClient,
+        create_client_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that creating a client with no scopes is allowed."""
+        auth_header = generate_auth_header([CLIENT_CREATE])
+
+        response = api_client.post(
+            create_client_url,
+            headers=auth_header,
+            json=[],  # Empty scopes
+        )
+
+        assert response.status_code == 200
+        response_data = response.json()
+
+        # Verify the client was created with no scopes
+        new_client = ClientDetail.get(
+            db, object_id=response_data["client_id"], config=CONFIG
+        )
+        assert new_client.scopes == []
+
+        # Cleanup
+        new_client.delete(db)
