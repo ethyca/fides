@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -19,7 +19,9 @@ class DSRDataPreprocessor:
 
     def __init__(self, db: Session):
         self.db = db
-        self.redaction_patterns: PrivacyRequestRedactionPattern.get_patterns(db) or []
+        self.redaction_patterns: List[str] = (
+            PrivacyRequestRedactionPattern.get_patterns(db) or []
+        )
         self.entities_to_redact: Set[str] = get_redaction_entities_map_db(db)
 
     def process_dsr_data(self, dsr_data: dict[str, Any]) -> dict[str, Any]:
@@ -32,9 +34,13 @@ class DSRDataPreprocessor:
 
         # Second pass: process data with redaction
         processed_data = {}
-        collection_indices: Dict[str, int] = {}  # Track per dataset
+        collection_indices: Dict[str, Dict[str, int]] = (
+            {}
+        )  # Track collection indices within each dataset
 
         for key, rows in dsr_data.items():
+            # The "attachment" key is used to pass in the privacy request's attachments into `dsr_data`.
+            # We don't need to redact these.
             if key == "attachments":
                 processed_data[key] = rows
                 continue
@@ -45,20 +51,15 @@ class DSRDataPreprocessor:
             redacted_dataset = dataset_mapping.get(dataset_name, dataset_name)
 
             # Get redacted collection name (index per dataset)
-            collection_key = f"{dataset_name}:{collection_name}"
-            if collection_key not in collection_indices:
-                collection_indices[collection_key] = (
-                    len(
-                        [
-                            k
-                            for k in collection_indices
-                            if k.startswith(f"{dataset_name}:")
-                        ]
-                    )
-                    + 1
+            if dataset_name not in collection_indices:
+                collection_indices[dataset_name] = {}
+
+            if collection_name not in collection_indices[dataset_name]:
+                collection_indices[dataset_name][collection_name] = (
+                    len(collection_indices[dataset_name]) + 1
                 )
 
-            collection_index = collection_indices[collection_key]
+            collection_index = collection_indices[dataset_name][collection_name]
             redacted_collection = self._redact_name(
                 "collection", collection_name, collection_index, dataset_name
             )
@@ -85,24 +86,12 @@ class DSRDataPreprocessor:
         # Create mapping using position-based numbering for redacted datasets
         mapping = {}
 
-        # Handle regular datasets (excluding "dataset")
-        regular_datasets = [n for n in unique_datasets if n != "dataset"]
-        for index, name in enumerate(regular_datasets, 1):
+        for index, name in enumerate(unique_datasets, 1):
             hierarchical_key = self._build_hierarchical_key("dataset", name)
             if self._should_redact(name, hierarchical_key):
                 mapping[name] = f"dataset_{index}"
             else:
                 mapping[name] = name  # Keep original name
-
-        # Special "dataset" case comes last
-        if "dataset" in unique_datasets:
-            hierarchical_key = self._build_hierarchical_key("dataset", "dataset")
-            if self._should_redact("dataset", hierarchical_key):
-                # Use the next position after regular datasets
-                dataset_index = len(regular_datasets) + 1
-                mapping["dataset"] = f"dataset_{dataset_index}"
-            else:
-                mapping["dataset"] = "dataset"  # Keep original name
 
         return mapping
 
@@ -152,7 +141,7 @@ class DSRDataPreprocessor:
 
     def _build_hierarchical_key(
         self,
-        name_type: str,
+        name_type: Literal["dataset", "collection", "field"],
         name: str,
         dataset_name: Optional[str] = None,
         collection_name: Optional[str] = None,
