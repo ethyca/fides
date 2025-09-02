@@ -93,7 +93,7 @@ def get_unique_filename(filename: str, used_filenames: set[str]) -> str:
 
     Args:
         filename: The original filename
-        dataset_name: The dataset name to track filenames within
+        used_filenames: Set of filenames that have already been used
 
     Returns:
         A unique filename that won't conflict with existing files in the same dataset
