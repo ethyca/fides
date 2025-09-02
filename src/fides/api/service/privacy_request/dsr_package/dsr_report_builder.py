@@ -220,8 +220,8 @@ class DsrReportBuilder:
                     depth = directory.count("/") + 1  # +1 for the attachments directory
                     relative_path = "../" * depth + f"attachments/{unique_filename}"
                 else:
-                    # For top-level attachments, just use the filename
-                    relative_path = unique_filename
+                    # For top-level attachments, use the attachments directory path
+                    relative_path = f"{unique_filename}"
                 attachment_url = relative_path
             else:
                 attachment_url = download_url
