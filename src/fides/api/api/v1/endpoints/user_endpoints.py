@@ -59,7 +59,7 @@ from fides.api.schemas.user import (
 )
 from fides.api.service.deps import get_user_service
 from fides.api.util.api_router import APIRouter
-from fides.api.util.endpoint_utils import fides_limiter
+from fides.api.util.rate_limit import fides_limiter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     SYSTEM_MANAGER_DELETE,
