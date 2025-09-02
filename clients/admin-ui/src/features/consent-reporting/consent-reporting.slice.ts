@@ -8,10 +8,10 @@ import {
 import { DateRangeParams, PaginationQueryParams } from "~/types/query-params";
 
 const startOfDayIso = (date?: Dayjs | null) =>
-  date?.utc()?.startOf("day").toISOString();
+  date?.startOf("day")?.utc()?.toISOString();
 
 const endOfDayIso = (date?: Dayjs | null) =>
-  date?.utc()?.endOf("day").toISOString();
+  date?.endOf("day")?.utc()?.toISOString();
 
 export const consentReportingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -48,9 +48,9 @@ export const consentReportingApi = baseApi.injectEndpoints({
     }),
     getAllHistoricalPrivacyPreferences: build.query<
       Page_ConsentReportingSchema_,
-      PaginationQueryParams & DateRangeParams
+      PaginationQueryParams & DateRangeParams & { includeTotal?: boolean }
     >({
-      query: ({ page, size, startDate, endDate }) => {
+      query: ({ page, size, startDate, endDate, includeTotal = true }) => {
         return {
           url: "historical-privacy-preferences",
           params: {
@@ -58,6 +58,7 @@ export const consentReportingApi = baseApi.injectEndpoints({
             size,
             request_timestamp_gt: startOfDayIso(startDate),
             request_timestamp_lt: endOfDayIso(endDate),
+            include_total: includeTotal,
           },
         };
       },

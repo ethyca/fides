@@ -29,7 +29,12 @@ class SmartOpenStorageClient:
 
     min_part_size: int = MIN_PART_SIZE
 
-    def __init__(self, storage_type: str, storage_secrets: Any):
+    def __init__(
+        self,
+        storage_type: str,
+        auth_method: Optional[str],
+        storage_secrets: Any,
+    ):
         """Initialize the smart-open storage client.
 
         Args:
@@ -38,9 +43,10 @@ class SmartOpenStorageClient:
                            Will be passed to the specific storage client implementation.
         """
         self.storage_type = StorageClientFactory._normalize_storage_type(storage_type)
+        self.auth_method = auth_method
         self.storage_secrets = storage_secrets
         self._provider_client = StorageClientFactory.create_client(
-            storage_type, storage_secrets
+            storage_type, auth_method, storage_secrets
         )
 
     def _build_uri(self, bucket: str, key: str) -> str:
@@ -216,7 +222,6 @@ class SmartOpenStorageClient:
         self,
         bucket: str,
         key: str,
-        content_type: Optional[str] = None,
     ) -> Any:
         """Get a writable stream for uploading data.
 
@@ -225,16 +230,12 @@ class SmartOpenStorageClient:
         Args:
             bucket: Storage bucket/container name
             key: Object key/path
-            content_type: MIME type of the object
 
         Returns:
             Writable file-like object
         """
         uri = self._build_uri(bucket, key)
         transport_params = self._get_transport_params()
-
-        if content_type:
-            transport_params["content_type"] = content_type
 
         return smart_open.open(uri, "wb", transport_params=transport_params)
 

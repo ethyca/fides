@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -67,14 +67,17 @@ def is_token_expired(
     """Check if a token has expired based on its issued_at timestamp and duration."""
     if issued_at is None:
         return True
-    expiration_time = issued_at + timedelta(minutes=token_duration_minutes)
-    return datetime.now() > expiration_time
+    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
 
 
-def is_callback_token_expired(issued_at: datetime) -> bool:
+def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     """Check if a callback token has expired (24 hours)."""
-    expiration_time = issued_at + timedelta(hours=24)
-    return datetime.now() > expiration_time
+    if not issued_at:
+        return True
+
+    return (
+        datetime.now() - issued_at
+    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
 
 
 def _get_webhook_jwe_or_error(
@@ -222,9 +225,7 @@ async def get_current_user(
             created_at=datetime.utcnow(),
         )
 
-    if client.user is None:
-        raise AuthorizationError(detail="Client has no associated user")
-    return client.user
+    return client.user  # type: ignore[attr-defined]
 
 
 def verify_callback_oauth_policy_pre_webhook(
@@ -369,10 +370,8 @@ def extract_token_and_load_client(
         logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    issued_at_dt = datetime.fromisoformat(issued_at)
-
     if is_token_expired(
-        issued_at_dt,
+        datetime.fromisoformat(issued_at),
         token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
@@ -394,21 +393,6 @@ def extract_token_and_load_client(
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
-
-    # Invalidate tokens issued prior to the user's most recent password reset.
-    # This ensures any existing sessions are expired immediately after a password change.
-    try:
-        if client.user is not None and client.user.password_reset_at is not None:
-            password_reset_at = client.user.password_reset_at
-            if password_reset_at and issued_at_dt < password_reset_at:
-                logger.debug("Auth token issued before latest password reset.")
-                raise AuthorizationError(detail="Not Authorized for this action")
-    except (
-        Exception
-    ) as exc:  # pragma: no cover - defensive: never block auth on relationship issues
-        logger.exception(
-            "Unable to evaluate password reset timestamp for client user: {}", exc
-        )
 
     # Populate request-scoped context with the authenticated user identifier.
     # Prefer the linked user_id; fall back to the client id when this is the

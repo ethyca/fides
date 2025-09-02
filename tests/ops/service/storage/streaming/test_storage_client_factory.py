@@ -14,30 +14,33 @@ class TestStorageClientFactory:
 
     def test_create_s3_client(self):
         """Test creating an S3 storage client."""
+        auth_method = "secret_keys"
         secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
-        client = StorageClientFactory.create_client("s3", secrets)
+        client = StorageClientFactory.create_client("s3", auth_method, secrets)
 
         assert isinstance(client, S3StorageClient)
         assert client.storage_secrets == secrets
 
     def test_create_client_case_insensitive(self):
         """Test that storage type is case insensitive."""
+        auth_method = "secret_keys"
         secrets = {StorageSecrets.AWS_ACCESS_KEY_ID: "test_key"}
 
         # Test uppercase
-        client_upper = StorageClientFactory.create_client("S3", secrets)
+        client_upper = StorageClientFactory.create_client("S3", auth_method, secrets)
         assert isinstance(client_upper, S3StorageClient)
 
         # Test mixed case
-        client_mixed = StorageClientFactory.create_client("S3", secrets)
+        client_mixed = StorageClientFactory.create_client("S3", auth_method, secrets)
         assert isinstance(client_mixed, S3StorageClient)
 
     def test_create_client_unsupported_type(self):
         """Test that unsupported storage type raises ValueError."""
         secrets = {}
+        auth_method = "secret_keys"
 
         with pytest.raises(ValueError, match="Unsupported storage type: invalid"):
-            StorageClientFactory.create_client("invalid", secrets)
+            StorageClientFactory.create_client("invalid", auth_method, secrets)
 
     def test_normalize_storage_type_s3(self):
         """Test S3 storage type normalization."""
