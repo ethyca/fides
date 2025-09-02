@@ -51,7 +51,6 @@ class DsrReportBuilder:
         """
         Initializes the DSR report builder.
         """
-        logger.info(f"dsr_data is {dsr_data}")
         # Define pretty_print function for Jinja templates
         jinja2.filters.FILTERS["pretty_print"] = lambda value, indent=4: json.dumps(
             value, indent=indent, cls=StorageJSONEncoder
@@ -146,9 +145,6 @@ class DsrReportBuilder:
         # track links to collection indexes
         collection_links = {}
         for collection_name, rows in collections.items():
-            logger.info(
-                f"Processing dataset {dataset_name}, collection {collection_name} with {len(rows)} items"
-            )
             collection_url = f"{collection_name}/index.html"
             self._add_collection(rows, dataset_name, collection_name)
             collection_links[collection_name] = collection_url
@@ -233,35 +229,23 @@ class DsrReportBuilder:
             if attachment_key in self.processed_attachments:
                 # Use the previously generated unique filename
                 unique_filename = self.processed_attachments[attachment_key]
-                logger.info(
-                    f"Reusing existing unique filename {unique_filename} for {file_name} from {download_url}"
-                )
             else:
                 # Get a unique filename to prevent duplicates globally
                 unique_filename = self._get_unique_filename(file_name, dataset_name)
                 # Track this attachment to prevent duplicate processing
                 self.processed_attachments[attachment_key] = unique_filename
-                logger.info(
-                    f"Generated new unique filename {unique_filename} for {file_name} from {download_url}"
-                )
 
             # Use local attachment path when streaming is enabled
             if self.enable_streaming:
-                logger.info(f"Adding attachment {unique_filename} to {directory}")
                 # Calculate relative path from the current directory to attachments
                 if directory.startswith("data/"):
-                    logger.info(f"Directory is {directory}")
                     # For collection data, go up to root then to attachments
                     depth = directory.count("/") + 1  # +1 for the attachments directory
-                    logger.info(f"Depth is {depth}")
                     relative_path = "../" * depth + f"attachments/{unique_filename}"
-                    logger.info(f"Relative path is {relative_path}")
                 else:
                     # For top-level attachments, just use the filename
-                    logger.info(f"Top-level attachments, using {unique_filename}")
                     relative_path = unique_filename
                 attachment_url = relative_path
-                logger.info(f"Attachment URL is {attachment_url}")
             else:
                 attachment_url = download_url
 
@@ -297,31 +281,16 @@ class DsrReportBuilder:
             # Create a copy of the item data to avoid modifying the original
             item_data = collection_item.copy()
 
-            # Debug: Log the structure of the collection item
-            logger.info(
-                f"Collection item {index} in {dataset_name}:{collection_name} has keys: {list(item_data.keys())}"
-            )
-            if "attachments" in item_data:
-                logger.info(
-                    f"Attachments field type: {type(item_data['attachments'])}, value: {item_data['attachments']}"
-                )
-
             # Process any attachments in the item
             # First check for direct attachments key
             if "attachments" in item_data and isinstance(
                 item_data["attachments"], list
             ):
-                logger.info(
-                    f"Found {len(item_data['attachments'])} attachments in {dataset_name}:{collection_name}"
-                )
                 # Process attachments and get their URLs
                 attachment_links = self._write_attachment_content(
                     item_data["attachments"],
                     f"data/{dataset_name}/{collection_name}",
                     dataset_name,
-                )
-                logger.info(
-                    f"Processed {len(attachment_links)} attachment links for {dataset_name}:{collection_name}"
                 )
                 # Add the attachment URLs to the item data
                 item_data["attachments"] = attachment_links
@@ -337,9 +306,6 @@ class DsrReportBuilder:
                             for key in ["file_name", "download_url", "file_size"]
                         ):
                             attachment_fields_found.append(field_name)
-                            logger.info(
-                                f"Found attachment field '{field_name}' with {len(field_value)} attachments in {dataset_name}:{collection_name}"
-                            )
 
                             # Process attachments and get their URLs
                             attachment_links = self._write_attachment_content(
@@ -347,21 +313,9 @@ class DsrReportBuilder:
                                 f"data/{dataset_name}/{collection_name}",
                                 dataset_name,
                             )
-                            logger.info(
-                                f"Processed {len(attachment_links)} attachment links for field '{field_name}' in {dataset_name}:{collection_name}"
-                            )
 
                             # Replace the field value with processed attachment links
                             item_data[field_name] = attachment_links
-
-                if not attachment_fields_found:
-                    logger.info(
-                        f"No attachments found in {dataset_name}:{collection_name}"
-                    )
-                else:
-                    logger.info(
-                        f"Found attachments in fields: {attachment_fields_found}"
-                    )
 
             # Add item content to the list
             items_content.append(
@@ -485,13 +439,6 @@ class DsrReportBuilder:
                     )
                     if attachment_key not in self.processed_attachments:
                         unprocessed_attachments.append(attachment)
-                        logger.info(
-                            f"Adding unprocessed attachment to top-level: {attachment.get('file_name')}"
-                        )
-                    else:
-                        logger.info(
-                            f"Skipping already processed attachment: {attachment.get('file_name')}"
-                        )
 
                 if unprocessed_attachments:
                     self._add_attachments(unprocessed_attachments)
