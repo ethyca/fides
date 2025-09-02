@@ -21,7 +21,7 @@
                   <div class="table-cell" style="text-align: left;">Size</div>
                </div>
                {% for name, info in data.items() %}
-               <a href="{{ info.url }}" class="table-row" target="_blank">
+               <a href="{% if info.url.startswith('http') %}{{ info.url }}{% else %}{{ info.original_name }}{% endif %}" class="table-row" target="_blank">
                   <div class="table-cell" style="text-align: left;">{% if info.url.startswith('http') %}{{ name }}{% else %}{{ info.original_name }}{% endif %}</div>
                   <div class="table-cell" style="text-align: left;">{{ info.size }}</div>
                </a>
