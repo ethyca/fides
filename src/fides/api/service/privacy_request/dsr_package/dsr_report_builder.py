@@ -6,6 +6,7 @@ from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
+from urllib.parse import quote
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
@@ -72,6 +73,7 @@ class DsrReportBuilder:
             "header_color": HEADER_COLOR,
             "border_color": BORDER_COLOR,
             "download_link_ttl_days": self._get_download_link_ttl_days(),
+            "enable_streaming": enable_streaming,
         }
         self.main_links: dict[str, Any] = {}  # used to track the generated pages
 
@@ -188,63 +190,55 @@ class DsrReportBuilder:
                 continue
 
             file_name = attachment.get("file_name")
-            if not file_name:
-                logger.warning("Skipping attachment with no file name")
-                continue
-
             download_url = attachment.get("download_url")
-            if not download_url:
-                logger.warning("Skipping attachment with no download URL")
+            if not file_name or not download_url:
+                logger.warning(
+                    f"Skipping attachment with missing {'file name' if not file_name else 'download URL'}"
+                )
                 continue
 
+            # Format file size
             file_size = attachment.get("file_size")
-            if isinstance(file_size, (int, float)):
-                file_size = format_size(float(file_size))
-            else:
-                file_size = "Unknown"
+            file_size = (
+                format_size(float(file_size))
+                if isinstance(file_size, (int, float))
+                else "Unknown"
+            )
 
-            # Check if this attachment has already been processed
+            # Get or generate unique filename
             attachment_key = (download_url, file_name)
-            if attachment_key in self.processed_attachments:
-                # Use the previously generated unique filename
-                unique_filename = self.processed_attachments[attachment_key]
-            else:
-                # Get a unique filename with different behavior for data vs attachments
-                if dataset_name == "attachments":
-                    # Attachments have their own numbering separate from data datasets
-                    unique_filename = get_unique_filename(
-                        file_name, self.used_filenames_attachments
-                    )
-                    self.used_filenames_attachments.add(unique_filename)
-                else:
-                    # Data datasets share numbering globally
-                    unique_filename = get_unique_filename(
-                        file_name, self.used_filenames_data
-                    )
-                    self.used_filenames_data.add(unique_filename)
-                # Track this attachment to prevent duplicate processing
+            if attachment_key not in self.processed_attachments:
+                used_filenames = (
+                    self.used_filenames_attachments
+                    if dataset_name == "attachments"
+                    else self.used_filenames_data
+                )
+                unique_filename = get_unique_filename(file_name, used_filenames)
+                used_filenames.add(unique_filename)
                 self.processed_attachments[attachment_key] = unique_filename
+            else:
+                unique_filename = self.processed_attachments[attachment_key]
 
-            # Use local attachment path when streaming is enabled
+            # Set attachment URL based on streaming mode
             if self.enable_streaming:
-                # Calculate relative path from the current directory to attachments
-                if directory.startswith("data/"):
-                    # For collection data, go up to root then to attachments
-                    depth = directory.count("/") + 1  # +1 for the attachments directory
-                    relative_path = "../" * depth + f"attachments/{unique_filename}"
-                else:
-                    # For top-level attachments, use the attachments directory path
-                    relative_path = f"{unique_filename}"
-                attachment_url = relative_path
+                depth = directory.count("/") + 1 if directory.startswith("data/") else 0
+                attachment_url = (
+                    "../" * depth + f"attachments/{unique_filename}"
+                    if depth
+                    else unique_filename
+                )
             else:
                 attachment_url = download_url
 
-            # Add to processed attachments
+            # Always encode the URL for safe usage in templates
+            safe_url = quote(attachment_url, safe="/:")
+
             processed_attachments.append(
                 (
                     unique_filename,
                     {
                         "url": attachment_url,
+                        "safe_url": safe_url,
                         "size": file_size,
                         "original_name": file_name,
                     },
@@ -271,8 +265,7 @@ class DsrReportBuilder:
             # Create a copy of the item data to avoid modifying the original
             item_data = collection_item.copy()
 
-            # Process any attachments in the item
-            # First check for direct attachments key
+            # Process any attachments in the item - First check for direct attachments key
             if "attachments" in item_data and isinstance(
                 item_data["attachments"], list
             ):

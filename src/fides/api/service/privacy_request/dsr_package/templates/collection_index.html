@@ -35,14 +35,16 @@
                         {% endif %}
 
                         {% if _is_attachment_block %}
+                           {% if not enable_streaming %}
                            <p class="expiration-notice">Note: All download links will expire in {{ download_link_ttl_days }} days.</p>
+                           {% endif %}
                            <div class="table table-hover">
                               <div class="table-row">
                                  <div class="table-cell" style="text-align: left;">File Name</div>
                                  <div class="table-cell" style="text-align: left;">Size</div>
                               </div>
                               {% for attachment_name, attachment_info in value.items() %}
-                              <a href="{{ attachment_info.url }}" class="table-row" target="_blank">
+                              <a href="{{ attachment_info.safe_url }}" class="table-row" target="_blank">
                                  <div class="table-cell" style="text-align: left;">{{ attachment_name }}</div>
                                  <div class="table-cell" style="text-align: left;">{{ attachment_info.size }}</div>
                               </a>
