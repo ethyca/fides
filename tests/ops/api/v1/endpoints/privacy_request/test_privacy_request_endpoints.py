@@ -58,7 +58,6 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
@@ -115,7 +114,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.conftest import generate_role_header_for_user
+from tests.conftest import access_runner_tester, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
@@ -7404,9 +7403,10 @@ class TestPrivacyRequestDataTransfer:
         graph = DatasetGraph(merged_graph)
 
         # execute the privacy request to mimic the expected workflow on the "child"
-        # this will populate the access results in the cache, which is required for the
+        # this will populate the access results, which is required for the
         # transfer endpoint to work
-        access_runner(
+
+        access_runner_tester(
             privacy_request,
             policy,
             graph,
