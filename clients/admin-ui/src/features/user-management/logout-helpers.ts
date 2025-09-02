@@ -6,7 +6,7 @@ import { logout } from "~/features/auth/auth.slice";
 export const clearAuthAndLogout = (
   dispatch: AppDispatch,
   router: NextRouter,
-  opts?: { onClose?: () => void }
+  opts?: { onClose?: () => void },
 ) => {
   try {
     localStorage.removeItem(STORAGE_ROOT_KEY);

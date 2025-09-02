@@ -95,7 +95,9 @@ def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
         # DB layer may return a tz-aware timestamp while the JWE issued_at is naive (server time).
         # Normalize both to naive for a safe, deterministic comparison without raising TypeError.
         issued_naive = (
-            issued_at.replace(tzinfo=None) if issued_at.tzinfo is not None else issued_at
+            issued_at.replace(tzinfo=None)
+            if issued_at.tzinfo is not None
+            else issued_at
         )
         reset_naive = (
             reset_at.replace(tzinfo=None) if reset_at.tzinfo is not None else reset_at

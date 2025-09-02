@@ -17,10 +17,8 @@ import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { LOGIN_ROUTE } from "~/constants";
-import { clearAuthAndLogout } from "./logout-helpers";
-
 import { successToastParams } from "../common/toast";
+import { clearAuthAndLogout } from "./logout-helpers";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
@@ -56,7 +54,9 @@ const useUpdatePasswordModal = (id: string) => {
         .unwrap()
         .then(() => {
           toast(successToastParams("Password updated"));
-          clearAuthAndLogout(dispatch as any, router, { onClose: modal.onClose });
+          clearAuthAndLogout(dispatch as any, router, {
+            onClose: modal.onClose,
+          });
         });
     }
   };
