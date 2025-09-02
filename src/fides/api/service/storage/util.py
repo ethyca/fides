@@ -98,7 +98,7 @@ def get_unique_filename(filename: str, used_filenames: set[str]) -> str:
     Returns:
         A unique filename that won't conflict with existing files in the same dataset
     """
-    # Initialize the used filenames set for this dataset if it doesn't exis
+    # Initialize the used filenames set for this dataset if it doesn't exist
 
     base_name, extension = os.path.splitext(filename)
     counter = 1
