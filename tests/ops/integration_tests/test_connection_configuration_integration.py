@@ -1451,6 +1451,7 @@ class TestScyllaDBConnector:
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
 
+@pytest.mark.xfail(reason="Needs updated credentials")
 @pytest.mark.integration_external
 @pytest.mark.integration_rds_mysql
 class TestRDSMySQLConnector:
@@ -1477,6 +1478,7 @@ class TestRDSMySQLConnector:
             connector.test_connection()
 
 
+@pytest.mark.xfail(reason="Needs updated credentials")
 @pytest.mark.integration_external
 @pytest.mark.integration_rds_postgres
 class TestRDSPostgresConnector:

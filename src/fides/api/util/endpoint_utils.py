@@ -5,8 +5,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
 from fideslang import FidesModelType
-from slowapi import Limiter
-from slowapi.util import get_remote_address  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
@@ -23,7 +21,6 @@ from fides.common.api.scope_registry import (
     ORGANIZATION,
     SYSTEM,
 )
-from fides.config import CONFIG
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     ModelWithDefaultField,
@@ -43,16 +40,6 @@ CLI_SCOPE_PREFIX_MAPPING: Dict[str, str] = {
     "policy": CTL_POLICY,
     "system": SYSTEM,
 }
-
-# Used for rate limiting with Slow API
-# Decorate individual routes to deviate from the default rate limits
-fides_limiter = Limiter(
-    default_limits=[CONFIG.security.request_rate_limit],
-    headers_enabled=True,
-    key_prefix=CONFIG.security.rate_limit_prefix,
-    key_func=get_remote_address,
-    retry_after="http-date",
-)
 
 
 async def forbid_if_editing_is_default(
