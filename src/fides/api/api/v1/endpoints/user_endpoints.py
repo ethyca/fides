@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import jose.exceptions
-from fastapi import Depends, HTTPException, Request, Response, Security
+from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -59,7 +59,6 @@ from fides.api.schemas.user import (
 )
 from fides.api.service.deps import get_user_service
 from fides.api.util.api_router import APIRouter
-from fides.api.util.endpoint_utils import fides_limiter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     SYSTEM_MANAGER_DELETE,
@@ -618,11 +617,8 @@ def get_users(
     status_code=HTTP_200_OK,
     response_model=UserLoginResponse,
 )
-@fides_limiter.limit(CONFIG.security.auth_rate_limit)
 def user_login(
     *,
-    request: Request,
-    response: Response,
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     user_data: UserLogin,

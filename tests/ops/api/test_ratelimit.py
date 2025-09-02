@@ -53,7 +53,7 @@ def test_requests_rate_limited(api_client_for_rate_limiting):
 
 
 def test_rate_limit_validation():
-    """Tests `SecuritySettings.validate_rate_limits` for both request_rate_limit and auth_rate_limit"""
+    """Tests `SecuritySettings.validate_request_rate_limit`"""
     VALID_VALUES = [
         "10 per hour",
         "10/hour",
@@ -61,8 +61,8 @@ def test_rate_limit_validation():
         "100/day, 500/7days",
     ]
     for value in VALID_VALUES:
-        assert SecuritySettings.validate_rate_limits(v=value)
+        assert SecuritySettings.validate_request_rate_limit(v=value)
 
     INVALID_VALUE = "invalid-value"
     with pytest.raises(ValueError) as exc:
-        SecuritySettings.validate_rate_limits(v=INVALID_VALUE)
+        SecuritySettings.validate_request_rate_limit(v=INVALID_VALUE)
