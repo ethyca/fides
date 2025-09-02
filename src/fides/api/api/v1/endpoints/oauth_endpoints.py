@@ -8,6 +8,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
@@ -26,7 +27,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
-from fides.api.oauth.utils import verify_oauth_client
+from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
 from fides.api.schemas.client import ClientCreatedResponse
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.service.authentication.authentication_strategy import (
@@ -123,21 +124,27 @@ async def acquire_access_token(
 
 @router.post(
     CLIENT,
-    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_CREATE])],
     response_model=ClientCreatedResponse,
 )
 def create_client(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     scopes: List[str] = Body([]),
+    requesting_client: ClientDetail = Security(
+        verify_oauth_client, scopes=[CLIENT_CREATE]
+    ),
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint."""
     logger.info("Creating new client")
     if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_403_FORBIDDEN,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
+
+    # Security check: Verify that the requesting client has all the scopes they're trying to assign
+    verify_client_can_assign_scopes(request, requesting_client, scopes, db)
 
     client, secret = ClientDetail.create_client_and_secret(
         db,
@@ -180,13 +187,16 @@ def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str
 
 @router.put(
     CLIENT_SCOPE,
-    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_UPDATE])],
     response_model=None,
 )
 def set_client_scopes(
     client_id: str,
     scopes: List[str],
+    request: Request,
     db: Session = Depends(get_db),
+    requesting_client: ClientDetail = Security(
+        verify_oauth_client, scopes=[CLIENT_UPDATE]
+    ),
 ) -> None:
     """Overwrites the client's directly-assigned scopes with those provided.
     Roles cannot be edited via this endpoint.
@@ -197,9 +207,12 @@ def set_client_scopes(
 
     if not all(elem in SCOPE_REGISTRY for elem in scopes):
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_403_FORBIDDEN,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
+
+    # Security check: Verify that the requesting client has all the scopes they're trying to assign
+    verify_client_can_assign_scopes(request, requesting_client, scopes, db)
 
     logger.info("Updating client scopes")
     client.update(db, data={"scopes": scopes})
