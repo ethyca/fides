@@ -17,8 +17,8 @@ import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { LOGIN_ROUTE, STORAGE_ROOT_KEY } from "~/constants";
-import { logout } from "~/features/auth/auth.slice";
+import { LOGIN_ROUTE } from "~/constants";
+import { clearAuthAndLogout } from "./logout-helpers";
 
 import { successToastParams } from "../common/toast";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
@@ -56,16 +56,7 @@ const useUpdatePasswordModal = (id: string) => {
         .unwrap()
         .then(() => {
           toast(successToastParams("Password updated"));
-          // Clear persisted auth state and logout locally
-          try {
-            localStorage.removeItem(STORAGE_ROOT_KEY);
-          } catch (e) {
-            // no-op
-          }
-          dispatch(logout());
-          modal.onClose();
-          // Redirect to login
-          router.push(LOGIN_ROUTE);
+          clearAuthAndLogout(dispatch as any, router, { onClose: modal.onClose });
         });
     }
   };
