@@ -108,5 +108,4 @@ def get_unique_filename(filename: str, used_filenames: set[str]) -> str:
     while unique_filename in used_filenames:
         unique_filename = f"{base_name}_{counter}{extension}"
         counter += 1
-
     return unique_filename

@@ -186,129 +186,61 @@ class TestGetLocalFilename:
 class TestGetUniqueFilename:
     """Tests for the get_unique_filename function"""
 
-    def test_unique_filename_no_conflict(self):
+    @pytest.mark.parametrize(
+        "filename, used_filenames, expected_result",
+        [
+            param("test.txt", set(), "test.txt", id="no_conflict"),
+            param("test.txt", {"test.txt"}, "test_1.txt", id="with_conflict"),
+            param(
+                "test.txt",
+                {"test.txt", "test_1.txt"},
+                "test_2.txt",
+                id="multiple_conflicts",
+            ),
+            param(
+                "test.txt",
+                {"test.txt", "test_1.txt", "test_2.txt"},
+                "test_3.txt",
+                id="multiple_conflicts",
+            ),
+            param("testfile", set(), "testfile_1", id="no_conflict_with_file"),
+            param(".testfile", set(), ".testfile_1", id="no_conflict_with_dot_file"),
+            param(
+                "test.backup.txt",
+                set(),
+                "test.backup_1.txt",
+                id="no_conflict_with_multiple_dots",
+            ),
+            param(
+                "测试.txt",
+                set(),
+                "测试_1.txt",
+                id="no_conflict_with_unicode_characters",
+            ),
+            param(
+                "test-file.txt", set(), "test-file_1.txt", id="no_conflict_with_dash"
+            ),
+            param(
+                "a" * 200 + ".txt",
+                set(),
+                "a" * 200 + "_1.txt",
+                id="no_conflict_with_long_filename",
+            ),
+            param(
+                "Test.txt", set(), "Test.txt", id="no_conflict_with_case_sensitivity"
+            ),
+            param(
+                "test.txt",
+                {"test.txt", "test_1.txt", "test_3.txt"},
+                "test_2.txt",
+                id="multiple_conflicts_with_used_filenames",
+            ),
+        ],
+    )
+    def test_unique_filename_no_conflict(
+        self, filename, used_filenames, expected_result
+    ):
         """Test that a unique filename is returned when no conflicts exist"""
         used_filenames = set()
-        result = get_unique_filename("test.txt", used_filenames)
-        assert result == "test.txt"
-        assert "test.txt" in used_filenames
-
-    def test_unique_filename_with_conflict(self):
-        """Test that a unique filename is generated when conflicts exist"""
-        used_filenames = {"test.txt"}
-        result = get_unique_filename("test.txt", used_filenames)
-        assert result == "test_1.txt"
-        assert "test_1.txt" in used_filenames
-        assert "test.txt" in used_filenames
-
-    def test_unique_filename_multiple_conflicts(self):
-        """Test that unique filenames are generated for multiple conflicts"""
-        used_filenames = {"test.txt", "test_1.txt", "test_2.txt"}
-        result = get_unique_filename("test.txt", used_filenames)
-        assert result == "test_3.txt"
-        assert "test_3.txt" in used_filenames
-
-    def test_unique_filename_no_extension(self):
-        """Test that unique filenames work correctly for files without extensions"""
-        used_filenames = {"testfile"}
-        result = get_unique_filename("testfile", used_filenames)
-        assert result == "testfile_1"
-        assert "testfile_1" in used_filenames
-
-    def test_unique_filename_dot_file(self):
-        """Test that unique filenames work correctly for dot files"""
-        used_filenames = {".gitignore"}
-        result = get_unique_filename(".gitignore", used_filenames)
-        assert result == ".gitignore_1"
-        assert ".gitignore_1" in used_filenames
-
-    def test_unique_filename_multiple_dots(self):
-        """Test that unique filenames work correctly for files with multiple dots"""
-        used_filenames = {"test.backup.txt"}
-        result = get_unique_filename("test.backup.txt", used_filenames)
-        assert result == "test.backup_1.txt"
-        assert "test.backup_1.txt" in used_filenames
-
-    def test_unique_filename_preserves_used_filenames(self):
-        """Test that the used_filenames set is properly maintained across calls"""
-        used_filenames = set()
-
-        # First call
-        result1 = get_unique_filename("test.txt", used_filenames)
-        assert result1 == "test.txt"
-        assert used_filenames == {"test.txt"}
-
-        # Second call with same filename
-        result2 = get_unique_filename("test.txt", used_filenames)
-        assert result2 == "test_1.txt"
-        assert used_filenames == {"test.txt", "test_1.txt"}
-
-        # Third call with different filename
-        result3 = get_unique_filename("other.txt", used_filenames)
-        assert result3 == "other.txt"
-        assert used_filenames == {"test.txt", "test_1.txt", "other.txt"}
-
-    def test_unique_filename_empty_string(self):
-        """Test that empty filename is handled correctly"""
-        used_filenames = set()
-        result = get_unique_filename("", used_filenames)
-        assert result == ""
-        assert "" in used_filenames
-
-    def test_unique_filename_unicode_characters(self):
-        """Test that unicode characters in filenames are handled correctly"""
-        used_filenames = {"测试.txt"}
-        result = get_unique_filename("测试.txt", used_filenames)
-        assert result == "测试_1.txt"
-        assert "测试_1.txt" in used_filenames
-
-    def test_unique_filename_special_characters(self):
-        """Test that special characters in filenames are handled correctly"""
-        used_filenames = {"test-file.txt"}
-        result = get_unique_filename("test-file.txt", used_filenames)
-        assert result == "test-file_1.txt"
-        assert "test-file_1.txt" in used_filenames
-
-    def test_unique_filename_long_filename(self):
-        """Test that long filenames are handled correctly"""
-        long_filename = "a" * 200 + ".txt"
-        used_filenames = {long_filename}
-        result = get_unique_filename(long_filename, used_filenames)
-        expected = "a" * 200 + "_1.txt"
-        assert result == expected
-        assert expected in used_filenames
-
-    def test_unique_filename_case_sensitivity(self):
-        """Test that filename uniqueness is case-sensitive"""
-        used_filenames = {"Test.txt"}
-        result = get_unique_filename("test.txt", used_filenames)
-        assert result == "test.txt"  # Should not conflict with "Test.txt"
-        assert "test.txt" in used_filenames
-
-    def test_unique_filename_gap_in_numbering(self):
-        """Test that gaps in numbering are handled correctly"""
-        used_filenames = {"test.txt", "test_1.txt", "test_3.txt"}
-        result = get_unique_filename("test.txt", used_filenames)
-        assert result == "test_2.txt"  # Should fill the gap
-        assert "test_2.txt" in used_filenames
-
-    def test_unique_filename_shared_used_filenames_set(self):
-        """Test that multiple calls with the same used_filenames set work correctly"""
-        used_filenames = set()
-
-        # Simulate multiple files being processed
-        files = ["report.pdf", "data.csv", "report.pdf", "summary.txt", "report.pdf"]
-        expected_results = [
-            "report.pdf",
-            "data.csv",
-            "report_1.pdf",
-            "summary.txt",
-            "report_2.pdf",
-        ]
-
-        for i, filename in enumerate(files):
-            result = get_unique_filename(filename, used_filenames)
-            assert result == expected_results[i]
-
-        # Verify all expected filenames are in the set
-        assert used_filenames == set(expected_results)
+        result = get_unique_filename(filename, used_filenames)
+        assert result == expected_result
