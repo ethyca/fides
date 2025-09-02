@@ -201,29 +201,29 @@ class TestGetUniqueFilename:
                 "test.txt",
                 {"test.txt", "test_1.txt", "test_2.txt"},
                 "test_3.txt",
-                id="multiple_conflicts",
+                id="multiple_conflicts_3",
             ),
-            param("testfile", set(), "testfile_1", id="no_conflict_with_file"),
-            param(".testfile", set(), ".testfile_1", id="no_conflict_with_dot_file"),
+            param("testfile", set(), "testfile", id="no_conflict_with_file"),
+            param(".testfile", set(), ".testfile", id="no_conflict_with_dot_file"),
             param(
                 "test.backup.txt",
                 set(),
-                "test.backup_1.txt",
+                "test.backup.txt",
                 id="no_conflict_with_multiple_dots",
             ),
             param(
                 "测试.txt",
                 set(),
-                "测试_1.txt",
+                "测试.txt",
                 id="no_conflict_with_unicode_characters",
             ),
             param(
-                "test-file.txt", set(), "test-file_1.txt", id="no_conflict_with_dash"
+                "test-file.txt", set(), "test-file.txt", id="no_conflict_with_dash"
             ),
             param(
                 "a" * 200 + ".txt",
                 set(),
-                "a" * 200 + "_1.txt",
+                "a" * 200 + ".txt",
                 id="no_conflict_with_long_filename",
             ),
             param(
@@ -241,6 +241,5 @@ class TestGetUniqueFilename:
         self, filename, used_filenames, expected_result
     ):
         """Test that a unique filename is returned when no conflicts exist"""
-        used_filenames = set()
         result = get_unique_filename(filename, used_filenames)
         assert result == expected_result
