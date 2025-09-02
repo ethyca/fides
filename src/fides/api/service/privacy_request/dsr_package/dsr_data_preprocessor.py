@@ -123,7 +123,7 @@ class DSRDataPreprocessor:
 
     def _redact_name(
         self,
-        name_type: str,
+        name_type: Literal["dataset", "collection", "field"],
         name: str,
         index: int,
         dataset_name: Optional[str] = None,
