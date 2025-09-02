@@ -163,7 +163,7 @@ class DsrReportBuilder:
             ),
         )
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-branches
     def _write_attachment_content(
         self,
         attachments: list[dict[str, Any]],

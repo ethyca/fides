@@ -245,13 +245,17 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             self.assert_html_contains(
                 attachments_content,
                 common_attachment_config["text"]["file_name"],
-                f"attachments/{common_attachment_config['text']['file_name']}",
+                common_attachment_config["text"][
+                    "file_name"
+                ],  # Just filename, not full path
                 "1.0 KB",
             )
             self.assert_html_contains(
                 attachments_content,
                 common_attachment_config["binary"]["file_name"],
-                f"attachments/{common_attachment_config['binary']['file_name']}",
+                common_attachment_config["binary"][
+                    "file_name"
+                ],  # Just filename, not full path
                 "2.0 KB",
             )
 

@@ -1,5 +1,3 @@
-"""Smart-open based streaming storage for efficient cloud-to-cloud data transfer."""
-
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
