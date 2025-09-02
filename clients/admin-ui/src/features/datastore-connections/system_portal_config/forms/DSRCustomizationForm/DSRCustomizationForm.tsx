@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
-import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
+import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 
 import CustomInput from "../../../add-connection/forms/CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
