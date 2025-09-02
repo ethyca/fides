@@ -215,11 +215,13 @@ class DsrReportBuilder:
                     unique_filename = get_unique_filename(
                         file_name, self.used_filenames_attachments
                     )
+                    self.used_filenames_attachments.add(unique_filename)
                 else:
                     # Data datasets share numbering globally
                     unique_filename = get_unique_filename(
                         file_name, self.used_filenames_data
                     )
+                    self.used_filenames_data.add(unique_filename)
                 # Track this attachment to prevent duplicate processing
                 self.processed_attachments[attachment_key] = unique_filename
 
