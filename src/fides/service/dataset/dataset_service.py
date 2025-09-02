@@ -104,7 +104,7 @@ class DatasetService:
         return inserted, updated
 
     def clean_datasets(self) -> Tuple[List[str], List[str]]:
-        datasets = self.db.execute(select([CtlDataset])).scalars().all()
+        datasets = self.db.execute(select(CtlDataset)).scalars().all()
         return _run_clean_datasets(self.db, datasets)
 
 

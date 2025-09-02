@@ -201,6 +201,7 @@ class TestCreateUserPermissions:
         assert response_body["id"] == permissions.id
         assert permissions.roles == [VIEWER]
 
+        db.refresh(client)
         assert client.roles == [VIEWER]
         assert client.scopes == [], "User create flow doesn't override client scopes"
         user.delete(db)

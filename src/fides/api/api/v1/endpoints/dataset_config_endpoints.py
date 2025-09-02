@@ -158,7 +158,7 @@ def put_dataset_configs(
     # first delete any dataset configs not in the dataset pairs
     existing_config_keys = set(
         db.execute(
-            select([DatasetConfig.fides_key]).where(
+            select(DatasetConfig.fides_key).where(
                 DatasetConfig.connection_config_id == connection_config.id
             )
         )
@@ -480,12 +480,12 @@ def get_ctl_datasets(
     )
     filters = []
     if only_unlinked_datasets:
-        unlinked_subquery = select([DatasetConfig.ctl_dataset_id])
+        unlinked_subquery = select(DatasetConfig.ctl_dataset_id)
         filters.append(not_(CtlDataset.id.in_(unlinked_subquery)))
 
     if remove_saas_datasets:
         saas_subquery = (
-            select([ConnectionConfig.saas_config["fides_key"].astext])
+            select(ConnectionConfig.saas_config["fides_key"].astext)
             .select_from(ConnectionConfig)  # type: ignore[arg-type]
             .where(ConnectionConfig.saas_config.is_not(None))  # type: ignore[attr-defined]
         )
