@@ -80,8 +80,10 @@ class DsrReportBuilder:
         self.dsr_data = dsr_data
         self.enable_streaming = enable_streaming
 
-        # Track used filenames per dataset to match streaming storage behavior
-        self.used_filenames_per_dataset: dict[str, set[str]] = {}
+        # Track used filenames with different behavior for data vs attachments
+        # Data datasets share numbering globally, attachments have separate numbering
+        self.used_filenames_data: set[str] = set()  # Shared across all data datasets
+        self.used_filenames_attachments: set[str] = set()  # Separate for attachments
 
         # Track attachments by their unique identifier to prevent duplicate processing
         # Maps (download_url, file_name) -> unique_filename
@@ -161,7 +163,7 @@ class DsrReportBuilder:
             ),
         )
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
     def _write_attachment_content(
         self,
         attachments: list[dict[str, Any]],
@@ -207,12 +209,17 @@ class DsrReportBuilder:
                 # Use the previously generated unique filename
                 unique_filename = self.processed_attachments[attachment_key]
             else:
-                # Get a unique filename to prevent duplicates per dataset
-                if dataset_name not in self.used_filenames_per_dataset:
-                    self.used_filenames_per_dataset[dataset_name] = set()
-                unique_filename = get_unique_filename(
-                    file_name, self.used_filenames_per_dataset[dataset_name]
-                )
+                # Get a unique filename with different behavior for data vs attachments
+                if dataset_name == "attachments":
+                    # Attachments have their own numbering separate from data datasets
+                    unique_filename = get_unique_filename(
+                        file_name, self.used_filenames_attachments
+                    )
+                else:
+                    # Data datasets share numbering globally
+                    unique_filename = get_unique_filename(
+                        file_name, self.used_filenames_data
+                    )
                 # Track this attachment to prevent duplicate processing
                 self.processed_attachments[attachment_key] = unique_filename
 
