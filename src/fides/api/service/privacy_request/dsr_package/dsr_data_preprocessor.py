@@ -19,9 +19,7 @@ class DSRDataPreprocessor:
 
     def __init__(self, db: Session):
         self.db = db
-        self.redaction_patterns: List[str] = []
-        if patterns := PrivacyRequestRedactionPattern.get_patterns(db):
-            self.redaction_patterns = patterns
+        self.redaction_patterns: PrivacyRequestRedactionPattern.get_patterns(db) or []
         self.entities_to_redact: Set[str] = get_redaction_entities_map_db(db)
 
     def process_dsr_data(self, dsr_data: dict[str, Any]) -> dict[str, Any]:
