@@ -267,7 +267,14 @@ class DsrReportBuilder:
 
             # Add to processed attachments
             processed_attachments.append(
-                (unique_filename, {"url": attachment_url, "size": file_size})
+                (
+                    unique_filename,
+                    {
+                        "url": attachment_url,
+                        "size": file_size,
+                        "original_name": file_name,
+                    },
+                )
             )
 
         # Convert list of tuples to dictionary

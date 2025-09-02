@@ -33,7 +33,6 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
-from fides.api.util.storage_util import format_size
 
 
 class ManualTaskGraphTask(GraphTask):

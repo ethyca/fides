@@ -22,7 +22,7 @@
                </div>
                {% for name, info in data.items() %}
                <a href="{{ info.url }}" class="table-row" target="_blank">
-                  <div class="table-cell" style="text-align: left;">{{ name }}</div>
+                  <div class="table-cell" style="text-align: left;">{{ info.original_name }}</div>
                   <div class="table-cell" style="text-align: left;">{{ info.size }}</div>
                </a>
                {% endfor %}
