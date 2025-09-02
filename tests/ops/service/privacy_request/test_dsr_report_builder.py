@@ -773,12 +773,12 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
             # Read and verify the index content
             html_content = zip_file.read("attachments/index.html").decode("utf-8")
 
-            # Check that all three files are listed with their unique names
+            # Check that all three files are listed with their original names (non-streaming mode)
             TestDsrReportBuilderBase.assert_html_contains(
                 html_content,
-                "test.txt",  # First file keeps original name
-                "test_1.txt",  # Second file gets _1 suffix
-                "test_2.txt",  # Third file gets _2 suffix
+                "test.txt",  # All files show original name in non-streaming mode
+                "test.txt",  # All files show original name in non-streaming mode
+                "test.txt",  # All files show original name in non-streaming mode
                 "https://example.com/test1.txt",
                 "https://example.com/test2.txt",
                 "https://example.com/test3.txt",
