@@ -48,18 +48,25 @@ const usePrivacyRequestForm = ({
     phone: phoneInput,
     email: emailInput,
     name: nameInput,
-    ...restIdentityFields
+    ...customIdentityInputs
   } = action?.identity_inputs ?? DEFAULT_IDENTITY_INPUTS;
-  const identityFields = {
+  const legacyIdentityFields = {
     phone: phoneInput,
     email: emailInput,
     name: nameInput,
     ...Object.fromEntries(
-      Object.entries(restIdentityFields).flatMap(([key, value]) =>
+      Object.entries(customIdentityInputs).flatMap(([key, value]) =>
         typeof value === "string" ? [[key, value]] : [],
       ),
     ),
   };
+
+  const customIdentityFields = Object.fromEntries(
+    Object.entries(customIdentityInputs).flatMap(([key, value]) =>
+      typeof value !== "string" ? [[key, value]] : [],
+    ),
+  );
+
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
@@ -76,11 +83,17 @@ const usePrivacyRequestForm = ({
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
-        Object.entries(identityFields).map(([key]) => [key, ""]),
+        Object.entries({
+          ...legacyIdentityFields,
+          ...customIdentityFields,
+        }).map(([key]) => [key, ""]),
       ),
       ...getInitialValues(),
       ...Object.fromEntries(
-        Object.entries(identityFields).map(([key]) => {
+        Object.entries({
+          ...legacyIdentityFields,
+          ...customIdentityFields,
+        }).map(([key]) => {
           const value = params?.get(key) ?? "";
           return [key, value];
         }),
@@ -251,13 +264,21 @@ const usePrivacyRequestForm = ({
           return true;
         },
       ),
+      ...Object.fromEntries(
+        Object.entries(customIdentityFields).flatMap(([key, value]) => {
+          return value
+            ? [[key, Yup.string().required(`${value.label} is required`)]]
+            : [];
+        }),
+      ),
       ...getValidationSchema().fields,
     }),
   });
 
   return {
     ...formik,
-    identityInputs: identityFields,
+    legacyIdentityFields,
+    customIdentityFields,
     customPrivacyRequestFields,
   };
 };
