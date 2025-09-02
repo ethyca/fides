@@ -15,6 +15,7 @@ from loguru import logger
 from fides.api.schemas.policy import ActionType
 from fides.api.service.storage.util import get_unique_filename
 from fides.api.util.storage_util import StorageJSONEncoder, format_size
+from fides.config import CONFIG
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
@@ -93,8 +94,6 @@ class DsrReportBuilder:
 
     def _get_download_link_ttl_days(self) -> int:
         """Get the download link TTL in days from the security configuration."""
-        from fides.config import CONFIG
-
         return int(CONFIG.security.subject_request_download_link_ttl_seconds / 86400)
 
     def _populate_template(
