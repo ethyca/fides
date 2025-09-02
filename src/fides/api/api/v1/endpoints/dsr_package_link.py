@@ -21,7 +21,7 @@ from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.storage.streaming.s3 import S3StorageClient
 from fides.api.util.api_router import APIRouter
-from fides.api.util.endpoint_utils import fides_limiter
+from fides.api.util.rate_limit import fides_limiter
 from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -62,7 +62,7 @@ def raise_error(status_code: int, detail: str) -> None:
     PRIVACY_CENTER_DSR_PACKAGE,
     status_code=HTTP_302_FOUND,
 )
-@fides_limiter.limit(CONFIG.security.public_request_rate_limit)
+@fides_limiter.limit(CONFIG.security.request_rate_limit)
 def get_access_results_urls(
     privacy_request_id: str,
     token: str,
