@@ -112,33 +112,6 @@ class TestFormatSecrets:
         }
         assert result == expected
 
-    def test_format_secrets_sets_default_region_when_missing(self):
-        """Test that default region is set when missing."""
-        storage_secrets = {
-            "aws_access_key_id": "test_key",
-            "aws_secret_access_key": "test_secret",
-        }
-
-        result = format_secrets(storage_secrets)
-
-        assert result["region_name"] == "us-east-1"
-        assert result["aws_access_key_id"] == "test_key"
-        assert result["aws_secret_access_key"] == "test_secret"
-
-    def test_format_secrets_sets_default_region_when_empty(self):
-        """Test that default region is set when region is empty string."""
-        storage_secrets = {
-            "aws_access_key_id": "test_key",
-            "aws_secret_access_key": "test_secret",
-            "region_name": "",
-        }
-
-        result = format_secrets(storage_secrets)
-
-        assert result["region_name"] == "us-east-1"
-        assert result["aws_access_key_id"] == "test_key"
-        assert result["aws_secret_access_key"] == "test_secret"
-
     def test_format_secrets_keeps_existing_region(self):
         """Test that existing region is preserved."""
         storage_secrets = {
@@ -201,7 +174,6 @@ class TestFormatSecrets:
         # Should not raise exception, should set default region
         assert result["aws_access_key_id"] == "test_key"
         assert result["aws_secret_access_key"] == "test_secret"
-        assert result["region_name"] == "us-east-1"  # Default region
 
     def test_format_secrets_validation_automatic_auth(self):
         """Test validation for AUTOMATIC authentication method."""
@@ -352,9 +324,8 @@ class TestUploadToS3Streaming:
         expected_secrets = {
             "aws_access_key_id": "test_access_key",
             "aws_secret_access_key": "test_secret_key",
-            "region_name": "us-east-1",
         }
-        mock_client_class.assert_called_once_with("s3", expected_secrets)
+        mock_client_class.assert_called_once_with("s3", "secret_keys", expected_secrets)
 
         # Verify the streaming storage was created
         mock_streaming_storage_class.assert_called_once_with(mock_client)
@@ -404,7 +375,6 @@ class TestUploadToS3Streaming:
         expected_formatted_secrets = {
             "aws_access_key_id": "test_access_key",
             "aws_secret_access_key": "test_secret_key",
-            "region_name": "us-east-1",
         }
         assert call_args[0][0] == expected_formatted_secrets  # secrets
         assert call_args[0][1] == "test-bucket"  # bucket_name
@@ -529,9 +499,10 @@ class TestUploadToS3Streaming:
             expected_secrets = {
                 "aws_access_key_id": "test_access_key",
                 "aws_secret_access_key": "test_secret_key",
-                "region_name": "us-east-1",
             }
-            mock_client_class.assert_called_once_with("s3", expected_secrets)
+            mock_client_class.assert_called_once_with(
+                "s3", auth_method, expected_secrets
+            )
 
     @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
     @patch(
@@ -713,7 +684,7 @@ class TestUploadToS3Streaming:
             "region_name": "us-west-2",
             "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
-        mock_client_class.assert_called_once_with("s3", expected_secrets)
+        mock_client_class.assert_called_once_with("s3", "automatic", expected_secrets)
 
     @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
     @patch(
@@ -767,4 +738,4 @@ class TestUploadToS3Streaming:
             "region_name": "us-west-2",
             "assume_role_arn": "arn:aws:iam::123456789012:role/TestRole",
         }
-        mock_client_class.assert_called_once_with("s3", expected_secrets)
+        mock_client_class.assert_called_once_with("s3", "secret_keys", expected_secrets)

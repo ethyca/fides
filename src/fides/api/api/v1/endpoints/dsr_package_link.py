@@ -155,7 +155,9 @@ def get_access_results_urls(
 
     try:
         # Use S3StorageClient for cleaner presigned URL generation
-        s3_storage_client = S3StorageClient(storage_config.secrets)
+        s3_storage_client = S3StorageClient(
+            storage_config.details.get("auth_method"), storage_config.secrets
+        )
         result_url = s3_storage_client.generate_presigned_url(
             bucket=bucket_name,
             key=file_name,

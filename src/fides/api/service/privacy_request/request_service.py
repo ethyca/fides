@@ -340,7 +340,7 @@ def remove_saved_dsr_data(self: DatabaseTask) -> None:
 def initiate_interrupted_task_requeue_poll() -> None:
     """Initiates scheduler to check for and requeue interrupted tasks"""
 
-    if CONFIG.test_mode or not CONFIG.execution.use_dsr_3_0:
+    if CONFIG.test_mode:
         return
 
     assert (
@@ -540,6 +540,7 @@ def _get_request_task_ids_in_progress(
 
 
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
@@ -660,8 +661,24 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             break
 
                         # If the task ID is not cached, we can't check if it's running
-                        # This means the subtask is stuck - cancel the entire privacy request
+                        # This means the subtask is stuck - but we need to handle this differently
+                        # based on the privacy request status
                         if not subtask_id:
+                            if (
+                                privacy_request.status
+                                == PrivacyRequestStatus.requires_input
+                            ):
+                                # For requires_input status, don't automatically error the request
+                                # as it's intentionally waiting for user input
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) in requires_input status - "
+                                    f"keeping request in current status as it may be waiting for manual input"
+                                )
+                                should_requeue = False
+                                break
+
+                            # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
                                 db,
                                 privacy_request,

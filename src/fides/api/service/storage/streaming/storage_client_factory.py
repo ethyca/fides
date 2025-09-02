@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
 from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
@@ -17,7 +17,9 @@ class StorageClientFactory:
     """
 
     @staticmethod
-    def create_client(storage_type: str, storage_secrets: Any) -> BaseStorageClient:
+    def create_client(
+        storage_type: str, auth_method: Optional[str], storage_secrets: Any
+    ) -> BaseStorageClient:
         """Create a provider-specific storage client.
 
         Args:
@@ -34,7 +36,9 @@ class StorageClientFactory:
         normalized_type = StorageClientFactory._normalize_storage_type(storage_type)
 
         if normalized_type == "s3":
-            return S3StorageClient(storage_secrets)
+            if not auth_method:
+                raise ValueError("auth_method is required for S3 storage")
+            return S3StorageClient(auth_method, storage_secrets)
         if normalized_type == "gcs":
             raise NotImplementedError("GCS storage is not yet supported")
         raise ValueError(f"Unsupported storage type: {storage_type}")

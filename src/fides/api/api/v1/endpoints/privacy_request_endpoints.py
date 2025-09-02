@@ -1667,17 +1667,15 @@ def privacy_request_data_transfer(
             detail=f"Rule key {rule_key} not found",
         )
 
-    value_dict: Dict[str, Optional[List[Row]]] = cache.get_encoded_objects_by_prefix(
-        f"{privacy_request_id}__access_request"
+    access_result: Dict[str, Optional[List[Row]]] = (
+        privacy_request.get_raw_access_results()
     )
 
-    if not value_dict:
+    if not access_result:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No access request information found for privacy request id {privacy_request_id}",
         )
-
-    access_result = {k.split("__")[-1]: v for k, v in value_dict.items()}
     datasets = DatasetConfig.all(db=db)
     if not datasets:
         raise HTTPException(
@@ -1930,7 +1928,7 @@ def finalize_privacy_request(
 
     queue_privacy_request(
         privacy_request_id=privacy_request_id,
-        from_step=CurrentStep.finalize_erasure.value,
+        from_step=CurrentStep.finalization.value,
     )
 
     return privacy_request  # type: ignore[return-value]

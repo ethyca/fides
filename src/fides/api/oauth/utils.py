@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -67,14 +67,17 @@ def is_token_expired(
     """Check if a token has expired based on its issued_at timestamp and duration."""
     if issued_at is None:
         return True
-    expiration_time = issued_at + timedelta(minutes=token_duration_minutes)
-    return datetime.now() > expiration_time
+    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
 
 
-def is_callback_token_expired(issued_at: datetime) -> bool:
+def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     """Check if a callback token has expired (24 hours)."""
-    expiration_time = issued_at + timedelta(hours=24)
-    return datetime.now() > expiration_time
+    if not issued_at:
+        return True
+
+    return (
+        datetime.now() - issued_at
+    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
 
 
 def _get_webhook_jwe_or_error(
