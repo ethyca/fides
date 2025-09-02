@@ -88,22 +88,13 @@ def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
     Any errors accessing related objects are logged and treated as non-invalidating.
     """
     try:
-        if client.user is None or client.user.password_reset_at is None:
-            return False
-
-        reset_at = client.user.password_reset_at
-        # DB layer may return a tz-aware timestamp while the JWE issued_at is naive (server time).
-        # Normalize both to naive for a safe, deterministic comparison without raising TypeError.
-        issued_naive = (
-            issued_at.replace(tzinfo=None)
-            if issued_at.tzinfo is not None
-            else issued_at
-        )
-        reset_naive = (
-            reset_at.replace(tzinfo=None) if reset_at.tzinfo is not None else reset_at
-        )
-
-        return issued_naive < reset_naive
+        if (
+            client.user is not None
+            and client.user.password_reset_at is not None
+            and issued_at < client.user.password_reset_at
+        ):
+            return True
+        return False
     except Exception as exc:
         logger.exception(
             "Unable to evaluate password reset timestamp for client user: {}", exc
