@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 from datetime import datetime
 from io import BytesIO, StringIO
 from itertools import chain
@@ -968,7 +967,13 @@ class SmartOpenStreamingStorage:
                 else:
                     dataset_name = "unknown"
 
-            unique_filename = self.get_unique_filename(original_filename, dataset_name)
+            if dataset_name not in self.used_filenames_per_dataset:
+                self.used_filenames_per_dataset[dataset_name] = set()
+
+            unique_filename = get_unique_filename(
+                original_filename, self.used_filenames_per_dataset[dataset_name]
+            )
+            self.used_filenames_per_dataset[dataset_name].add(unique_filename)
             file_path = f"{attachment_info.base_path}/{unique_filename}"
 
             try:

@@ -12,6 +12,7 @@ from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 
 from fides.api.schemas.policy import ActionType
+from fides.api.service.storage.util import get_unique_filename
 from fides.api.util.storage_util import StorageJSONEncoder, format_size
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -160,31 +161,6 @@ class DsrReportBuilder:
             ),
         )
 
-    def _get_unique_filename(self, filename: str, dataset_name: str) -> str:
-        """
-        Generates a unique filename by appending a counter if the file already exists.
-        Uses global tracking to match streaming storage behavior.
-
-        Args:
-            filename: The original filename
-            dataset_name: The dataset name (unused, kept for compatibility)
-
-        Returns:
-            A unique filename that won't conflict with existing files globally
-        """
-        base_name, extension = os.path.splitext(filename)
-        counter = 1
-        unique_filename = filename
-
-        # Check if file exists in global used_filenames set
-        while unique_filename in self.used_filenames:
-            unique_filename = f"{base_name}_{counter}{extension}"
-            counter += 1
-
-        # Add the new filename to the global set
-        self.used_filenames.add(unique_filename)
-        return unique_filename
-
     def _write_attachment_content(
         self,
         attachments: list[dict[str, Any]],
@@ -231,7 +207,8 @@ class DsrReportBuilder:
                 unique_filename = self.processed_attachments[attachment_key]
             else:
                 # Get a unique filename to prevent duplicates globally
-                unique_filename = self._get_unique_filename(file_name, dataset_name)
+                unique_filename = get_unique_filename(file_name, self.used_filenames)
+                self.used_filenames.add(unique_filename)
                 # Track this attachment to prevent duplicate processing
                 self.processed_attachments[attachment_key] = unique_filename
 
