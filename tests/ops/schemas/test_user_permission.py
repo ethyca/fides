@@ -1,7 +1,6 @@
 import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.oauth.roles import OWNER
 from fides.api.schemas.user_permission import UserPermissionsCreate
