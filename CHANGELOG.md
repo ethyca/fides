@@ -67,6 +67,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Security
 - Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
+- Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
