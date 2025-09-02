@@ -217,9 +217,7 @@ class TestGetUniqueFilename:
                 "测试.txt",
                 id="no_conflict_with_unicode_characters",
             ),
-            param(
-                "test-file.txt", set(), "test-file.txt", id="no_conflict_with_dash"
-            ),
+            param("test-file.txt", set(), "test-file.txt", id="no_conflict_with_dash"),
             param(
                 "a" * 200 + ".txt",
                 set(),
