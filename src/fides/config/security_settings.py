@@ -89,16 +89,16 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="When using a parent/child Fides deployment, this username will be used by the child server to access the parent server.",
     )
-    public_request_rate_limit: str = Field(
-        default="2000/minute",
-        description="The number of requests from a single IP address allowed to hit a public endpoint within the specified time period",
-    )
     rate_limit_prefix: str = Field(
-        default="fides-",
+        default="rate-limit",
         description="The prefix given to keys in the Redis cache used by the rate limiter.",
     )
+    rate_limit_client_ip_header: Optional[str] = Field(
+        default=None,
+        description="The header used to determine the client IP address for rate limiting. If not set or set to empty string, rate limiting will be disabled.",
+    )
     request_rate_limit: str = Field(
-        default="1000/minute",
+        default="2000/minute",
         description="The number of requests from a single IP address allowed to hit an endpoint within a rolling 60 second period.",
     )
     auth_rate_limit: str = Field(
@@ -216,6 +216,21 @@ class SecuritySettings(FidesSettings):
         )
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
+
+    @field_validator("rate_limit_client_ip_header")
+    @classmethod
+    def validate_rate_limit_client_ip_header(
+        cls,
+        v: str,
+    ) -> str:
+        """Validate supported `rate_limit_client_ip_header`"""
+        insecure_headers = ["x-forwarded-for"]
+
+        if v.lower() in insecure_headers:
+            raise ValueError(
+                "The rate_limit_client_ip_header cannot be set to a header that is not secure."
+            )
+        return v
 
     @field_validator("request_rate_limit", "auth_rate_limit")
     @classmethod
