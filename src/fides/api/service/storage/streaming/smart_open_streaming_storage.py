@@ -35,6 +35,7 @@ from fides.api.service.storage.streaming.schemas import (
     StreamingBufferConfig,
 )
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
+from fides.api.service.storage.util import get_unique_filename
 
 DEFAULT_ATTACHMENT_NAME = "attachment"
 DEFAULT_FILE_MODE = 0o644
@@ -72,37 +73,6 @@ class SmartOpenStreamingStorage:
         # Track used filenames per dataset to match DSR report builder behavior
         # Maps dataset_name -> set of used filenames
         self.used_filenames_per_dataset: dict[str, set[str]] = {}
-
-    def _get_unique_filename(self, filename: str, dataset_name: str) -> str:
-        """
-        Generates a unique filename by appending a counter if the file already exists.
-        Tracks filenames per dataset to match DSR report builder behavior.
-
-        Args:
-            filename: The original filename
-            dataset_name: The dataset name to track filenames within
-
-        Returns:
-            A unique filename that won't conflict with existing files in the same dataset
-        """
-        # Initialize the used filenames set for this dataset if it doesn't exist
-        if dataset_name not in self.used_filenames_per_dataset:
-            self.used_filenames_per_dataset[dataset_name] = set()
-
-        used_filenames = self.used_filenames_per_dataset[dataset_name]
-
-        base_name, extension = os.path.splitext(filename)
-        counter = 1
-        unique_filename = filename
-
-        # Check if file exists in this dataset's used_filenames set
-        while unique_filename in used_filenames:
-            unique_filename = f"{base_name}_{counter}{extension}"
-            counter += 1
-
-        # Add the new filename to the dataset's set
-        used_filenames.add(unique_filename)
-        return unique_filename
 
     def _parse_storage_url(self, storage_key: str) -> tuple[str, str]:
         """Parse storage URL and return (bucket, key).
@@ -998,7 +968,7 @@ class SmartOpenStreamingStorage:
                 else:
                     dataset_name = "unknown"
 
-            unique_filename = self._get_unique_filename(original_filename, dataset_name)
+            unique_filename = self.get_unique_filename(original_filename, dataset_name)
             file_path = f"{attachment_info.base_path}/{unique_filename}"
 
             try:

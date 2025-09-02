@@ -84,3 +84,35 @@ def get_allowed_file_type_or_raise(file_key: str) -> str:
         return AllowedFileType[file_type].value
     except KeyError:
         raise ValueError(error_msg)
+
+
+def get_unique_filename(self, filename: str, dataset_name: str) -> str:
+    """
+    Generates a unique filename by appending a counter if the file already exists.
+    Tracks filenames per dataset to match DSR report builder behavior.
+
+    Args:
+        filename: The original filename
+        dataset_name: The dataset name to track filenames within
+
+    Returns:
+        A unique filename that won't conflict with existing files in the same dataset
+    """
+    # Initialize the used filenames set for this dataset if it doesn't exist
+    if dataset_name not in self.used_filenames_per_dataset:
+        self.used_filenames_per_dataset[dataset_name] = set()
+
+    used_filenames = self.used_filenames_per_dataset[dataset_name]
+
+    base_name, extension = os.path.splitext(filename)
+    counter = 1
+    unique_filename = filename
+
+    # Check if file exists in this dataset's used_filenames set
+    while unique_filename in used_filenames:
+        unique_filename = f"{base_name}_{counter}{extension}"
+        counter += 1
+
+    # Add the new filename to the dataset's set
+    used_filenames.add(unique_filename)
+    return unique_filename
