@@ -279,25 +279,9 @@ class DsrReportBuilder:
             enable_streaming=self.enable_streaming,
         )
 
-<<<<<<< HEAD
-        # Filter out top-level attachments that were already processed as dataset attachments
-        filtered_list = [
-            pa
-            for pa in processed_attachments_list
-            if not (
-                pa["context"].get("type") in ["direct", "nested"]
-                and (
-                    pa["attachment"].get("download_url"),
-                    pa["attachment"].get("file_name"),
-                )
-                in self.dataset_processed_attachments
-            )
-        ]
-=======
         # Trust the contextual processing completely - it already correctly determines
         # context based on the attachment's location in the DSR data structure
         filtered_list = processed_attachments_list
->>>>>>> 8273ecd0630796e8af69a10fd37937ded427e37e
 
         logger.debug(
             f"Processed {len(filtered_list)} unique attachments (filtered from {len(processed_attachments_list)})"
