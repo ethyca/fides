@@ -103,7 +103,7 @@ export const PrivacyRequestModal = ({
       title: "Request submitted",
       children: <RequestSubmitted />,
       footer: (
-        <Button type="primary" size="small" onClick={onClose}>
+        <Button type="primary" onClick={onClose} block>
           Continue
         </Button>
       ),

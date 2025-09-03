@@ -330,6 +330,72 @@ class TestRequeueInterruptedTasks:
             request_task.delete(db)
             privacy_request.delete(db)
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_requires_input_privacy_request_with_stuck_subtask_is_not_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+    ):
+        """Test that requires_input privacy requests with stuck subtasks are not automatically canceled.
+
+        When a privacy request is in requires_input status and has a stuck subtask (no cached subtask ID),
+        it should NOT be automatically moved to error status since it's intentionally waiting for user input.
+        """
+        # Create a privacy request in requires_input status
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.requires_input,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Cache the task ID for the privacy request
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+        # Do NOT cache the subtask ID for the request task
+
+        try:
+            requeue_interrupted_tasks.apply().get()
+            # Should not requeue since there's no cached subtask ID
+            mock_requeue_privacy_request.assert_not_called()
+            # Should NOT cancel the privacy request since it's in requires_input status
+            mock_cancel_interrupted_tasks.assert_not_called()
+        finally:
+            # Clean up
+            request_task.delete(db)
+            privacy_request.delete(db)
+
     @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"

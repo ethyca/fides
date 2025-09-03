@@ -43,6 +43,7 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import (
@@ -126,7 +127,8 @@ class ConnectorRunner:
                 f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
                 [self.external_references],
             )
-            if CONFIG.execution.use_dsr_3_0:
+            # Check if this request uses DSR 3.0
+            if use_dsr_3_0_scheduler(privacy_request, ActionType.access):
                 mock_external_results_3_0(
                     privacy_request,
                     dataset_graph,
@@ -293,7 +295,7 @@ class ConnectorRunner:
                 [self.erasure_external_references],
             )
             # DSR 3.0
-            if CONFIG.execution.use_dsr_3_0:
+            if use_dsr_3_0_scheduler(privacy_request, ActionType.erasure):
                 # DSR 3.0 does not pull its results out of the cache, but rather
                 # off of the Request Tasks -
                 mock_external_results_3_0(

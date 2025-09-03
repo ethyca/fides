@@ -17,7 +17,6 @@ def stream_dsr_buffer_to_storage(
     bucket_name: str,
     file_key: str,
     dsr_buffer: BytesIO,
-    content_type: str = "application/zip",
 ) -> None:
     """Stream DSR buffer to storage using smart-open streaming.
 
@@ -29,15 +28,12 @@ def stream_dsr_buffer_to_storage(
         bucket_name: Storage bucket name
         file_key: File key in storage
         dsr_buffer: Pre-generated DSR report buffer (BytesIO)
-        content_type: MIME type for the uploaded file (defaults to application/zip)
     """
     # Get the content from the buffer
     content = dsr_buffer.getvalue()
     try:
         # Use smart-open's streaming upload for efficient memory usage
-        with storage_client.stream_upload(
-            bucket_name, file_key, content_type=content_type
-        ) as upload_stream:
+        with storage_client.stream_upload(bucket_name, file_key) as upload_stream:
             upload_stream.write(content)
 
     except Exception as e:
