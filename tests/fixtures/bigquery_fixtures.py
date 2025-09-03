@@ -513,8 +513,8 @@ def bigquery_resources_with_namespace_meta(
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
 
-    # Get the dataset name from the connection config
-    dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
+    # Get the dataset name from the namespace metadata
+    dataset_name = bigquery_example_test_dataset_config_with_namespace_meta.ctl_dataset.fides_meta["namespace"]["dataset_id"]
 
     with bigquery_client.connect() as connection:
         uuid = str(uuid4())
