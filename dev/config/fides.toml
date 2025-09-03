@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "fbf6662f07acca9c70dcf20ff98216ab" # string
+analytics_id = "5d3be5a3b9c5e48aa6d4f7b9226d9655" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -211,9 +211,6 @@ privacy_request_requeue_retry_count = 3 # integer
 
 # Seconds between polling for async tasks to requeue
 async_tasks_status_polling_interval_seconds = 3600 # integer
-
-# Temporary flag to switch to using DSR 3.0 to process your tasks.
-use_dsr_3_0 = false # boolean
 
 # Whether erasure requests require an additional finalization step
 # after all collections have been executed.
@@ -399,16 +396,17 @@ oauth_client_id_length_bytes = 16 # integer
 # oauth.
 oauth_client_secret_length_bytes = 16 # integer
 
-# The number of requests from a single IP address allowed to hit a
-# public endpoint within the specified time period
-public_request_rate_limit = "2000/minute" # string
-
 # The prefix given to keys in the Redis cache used by the rate limiter.
-rate_limit_prefix = "fides-" # string
+rate_limit_prefix = "rate-limit" # string
 
 # The number of requests from a single IP address allowed to hit an
 # endpoint within a rolling 60 second period.
-request_rate_limit = "1000/minute" # string
+request_rate_limit = "2000/minute" # string
+
+# The number of authentication requests from a single IP address
+# allowed to hit authentication endpoints (login, OAuth token) within
+# the specified time period.
+auth_rate_limit = "10/minute" # string
 
 # The list of scopes that are given to the root user.
 root_user_scopes = [] # array
