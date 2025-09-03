@@ -5,13 +5,18 @@ import time as time_module
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
+from sqlalchemy.orm import object_session
 
-from fides.api.schemas.policy import ActionType
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.service.privacy_request.dsr_package.dsr_data_preprocessor import (
+    DSRDataPreprocessor,
+)
+from fides.api.service.privacy_request.dsr_package.utils import map_privacy_request
 from fides.api.service.storage.util import (
     _get_datasets_from_dsr_data,
     create_attachment_info_dict,
@@ -31,12 +36,9 @@ TEXT_COLOR = "#4A5568"
 HEADER_COLOR = "#FAFAFA"
 BORDER_COLOR = "#E2E8F0"
 
-if TYPE_CHECKING:
-    from fides.api.models.privacy_request import PrivacyRequest  # pragma: no cover
-
 
 # pylint: disable=too-many-instance-attributes
-class DsrReportBuilder:
+class DSRReportBuilder:
     """
     Manages populating HTML templates from the given data and adding the generated
     pages to a zip file in a way that the pages can be navigated between.
@@ -48,7 +50,7 @@ class DsrReportBuilder:
     - data/dataset_name/collection_name/item_index.html: the detail page for the item
     - attachments/index.html: the index page for the attachments
 
-    Args:
+        Args:
         privacy_request: the privacy request object
         dsr_data: the DSR data
     """
@@ -86,9 +88,18 @@ class DsrReportBuilder:
         }
         self.main_links: dict[str, Any] = {}  # used to track the generated pages
 
+        # Process the DSR data for redaction
+        db = object_session(privacy_request)
+        if db is not None:
+            processor = DSRDataPreprocessor(db)
+            processed_dsr_data = processor.process_dsr_data(dsr_data)
+        else:
+            # Fallback if no database session available
+            processed_dsr_data = dsr_data
+
         # report data to populate the templates
-        self.request_data = _map_privacy_request(privacy_request)
-        self.dsr_data = dsr_data
+        self.request_data = map_privacy_request(privacy_request)
+        self.dsr_data = processed_dsr_data
         self.enable_streaming = enable_streaming
 
         # Track used filenames per dataset to prevent conflicts within the same dataset
@@ -150,10 +161,6 @@ class DsrReportBuilder:
         """
         Generates a page for each collection in the dataset and an index page for the dataset.
         Tracks the generated links to build a root level index after each collection has been processed.
-
-        Args:
-            dataset_name: the name of the dataset to add
-            collections: the collections to add to the dataset
         """
         # track links to collection indexes
         collection_links = {}
@@ -325,19 +332,17 @@ class DsrReportBuilder:
         return corrected_attachment_info
 
     def _add_collection(
-        self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
+        self,
+        rows: list[dict[str, Any]],
+        dataset_name: str,
+        collection_name: str,
     ) -> None:
         """
         Adds a collection to the zip file.
-
-        Args:
-            rows: the rows to add to the collection
-            dataset_name: the name of the dataset to add the collection to
-            collection_name: the name of the collection to add
         """
         items_content = []
 
-        for index, collection_item in enumerate(rows, 1):
+        for item_index, collection_item in enumerate(rows, 1):
             # Create a deep copy of the item data to avoid modifying the original DSR data
             # This ensures the comprehensive attachments index can access unmodified attachments
             item_data = copy.deepcopy(collection_item)
@@ -377,11 +382,13 @@ class DsrReportBuilder:
                             # Replace the field value with processed attachment links
                             item_data[field_name] = attachment_links
 
-            # Add item content to the list
+            # Add item content to the list with item heading
+            # Field names are already redacted in the processed data
+            item_heading = f"{collection_name} (item #{item_index})"
             items_content.append(
                 {
-                    "index": index,
-                    "heading": f"{collection_name} (item #{index})",
+                    "index": item_index,
+                    "heading": item_heading,
                     "data": item_data,
                 }
             )
@@ -518,6 +525,7 @@ class DsrReportBuilder:
             # Add Additional Data if it exists
             if "dataset" in datasets:
                 self._add_dataset("dataset", datasets["dataset"])
+                # Use a more friendly name for the link but keep the dataset name for the path
                 self.main_links["Additional Data"] = "data/dataset/index.html"
 
             # Add comprehensive attachments index that includes ALL attachments
@@ -569,27 +577,3 @@ class DsrReportBuilder:
             "DSR report generation complete."
         )
         return self.baos
-
-
-def _map_privacy_request(privacy_request: "PrivacyRequest") -> dict[str, Any]:
-    """Creates a map with a subset of values from the privacy request"""
-    request_data: dict[str, Any] = {}
-    request_data["id"] = privacy_request.id
-
-    action_type: Optional[ActionType] = privacy_request.policy.get_action_type()
-    if action_type:
-        request_data["type"] = action_type.value
-
-    request_data["identity"] = {
-        key: value
-        for key, value in privacy_request.get_persisted_identity()
-        .labeled_dict(include_default_labels=True)
-        .items()
-        if value["value"] is not None
-    }
-
-    if privacy_request.requested_at:
-        request_data["requested_at"] = privacy_request.requested_at.strftime(
-            "%m/%d/%Y %H:%M %Z"
-        )
-    return request_data

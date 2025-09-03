@@ -399,6 +399,7 @@ def test_namespace_meta(db) -> None:
         "resource_id": None,
         "after": None,
         "namespace": {"dataset_id": "public"},
+        "redact": None,
     }
 
 
