@@ -98,6 +98,8 @@ class DsrReportBuilder:
         # Track attachments by their unique identifier to prevent duplicate processing
         # Maps (download_url, file_name) -> unique_filename
         self.processed_attachments: dict[tuple[str, str], str] = {}
+        # Track which attachments were processed as dataset attachments (not top-level)
+        self.dataset_processed_attachments: set[tuple[str, str]] = set()
 
     def _get_download_link_ttl_days(self) -> int:
         """Get the download link TTL in days from the security configuration."""
@@ -208,7 +210,9 @@ class DsrReportBuilder:
             if result is None:  # Skip if processing failed
                 continue
 
-            unique_filename, _ = result
+            unique_filename, attachment_key = result
+            # Track that this attachment was processed as a dataset attachment
+            self.dataset_processed_attachments.add(attachment_key)
 
             # Format file size using shared utility
             file_size = format_attachment_size(attachment.get("file_size"))
@@ -284,7 +288,7 @@ class DsrReportBuilder:
                     pa["attachment"].get("download_url"),
                     pa["attachment"].get("file_name"),
                 )
-                in self.processed_attachments
+                in self.dataset_processed_attachments
             )
         ]
 
@@ -489,10 +493,15 @@ class DsrReportBuilder:
                 continue
             seen_attachment_keys.add(attachment_key)
 
-            # Generate the correct URL from attachments/index.html to the actual file location
-            correct_url = self._generate_attachment_url_from_index(
-                context, unique_filename
-            )
+            # Generate the correct URL based on streaming settings
+            if self.enable_streaming:
+                # For streaming mode, use local attachment references
+                correct_url = self._generate_attachment_url_from_index(
+                    context, unique_filename
+                )
+            else:
+                # For non-streaming mode, use original download URLs
+                correct_url = attachment.get("download_url", unique_filename)
 
             # Create a descriptive key that includes the source location
             if context.get("type") == "top_level":

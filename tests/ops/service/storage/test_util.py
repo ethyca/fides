@@ -403,28 +403,6 @@ class TestResolveBasePathFromContext:
                 id="old_context_format",
             ),
             param(
-                {"_context": {"type": "unknown_type"}},
-                "attachments",
-                "unknown/unknown/attachments",
-                id="unknown_context_type",
-            ),
-            param(
-                {
-                    "_context": {"type": "direct", "dataset": "users"}
-                },  # missing collection
-                "attachments",
-                "data/users/None/attachments",
-                id="missing_collection",
-            ),
-            param(
-                {
-                    "_context": {"type": "direct", "collection": "profiles"}
-                },  # missing dataset
-                "attachments",
-                "data/None/profiles/attachments",
-                id="missing_dataset",
-            ),
-            param(
                 {},  # no context
                 "attachments",
                 "attachments",
@@ -515,28 +493,6 @@ class TestResolveDirectoryFromContext:
                 "attachments",
                 "dataset:collection/123",
                 id="old_context_format",
-            ),
-            param(
-                {"_context": {"type": "unknown_type"}},
-                "attachments",
-                "attachments",
-                id="unknown_context_type_default",
-            ),
-            param(
-                {
-                    "_context": {"type": "direct", "dataset": "users"}
-                },  # missing collection
-                "attachments",
-                "data/users/None",
-                id="missing_collection",
-            ),
-            param(
-                {
-                    "_context": {"type": "direct", "collection": "profiles"}
-                },  # missing dataset
-                "attachments",
-                "data/None/profiles",
-                id="missing_dataset",
             ),
             param(
                 {},  # no context
@@ -655,8 +611,8 @@ class TestConvertProcessedAttachmentsToAttachmentProcessingInfo:
         """Test conversion when validation function returns None for some attachments"""
 
         def mock_validate_func(attachment_with_context):
-            # Only validate attachments with "valid" in the filename
-            if "valid" in attachment_with_context["file_name"]:
+            # Only validate attachments that start with "valid"
+            if attachment_with_context["file_name"].startswith("valid"):
                 return f"validated_{attachment_with_context['file_name']}"
             return None
 

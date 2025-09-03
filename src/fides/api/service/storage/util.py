@@ -561,11 +561,14 @@ def extract_storage_key_from_attachment(attachment: dict[str, Any]) -> str:
     Returns:
         The storage key (URL or filename) for the attachment
     """
-    return (
-        attachment.get("original_download_url")
-        or attachment.get("download_url")
-        or attachment.get("file_name", "")
-    )
+    if original_url := attachment.get("original_download_url"):
+        return original_url
+
+    if download_url := attachment.get("download_url"):
+        return download_url
+
+    file_name = attachment.get("file_name")
+    return file_name if file_name is not None else ""
 
 
 def resolve_base_path_from_context(
@@ -596,8 +599,11 @@ def resolve_base_path_from_context(
         return f"data/{context['dataset']}/{context['collection']}/attachments"
     if context_type == "top_level":
         return "attachments"
-    # Fallback for old context structure
-    return f"{context.get('key', 'unknown')}/{context.get('item_id', 'unknown')}/attachments"
+    # Handle old context format
+    if context.get("key") and context.get("item_id"):
+        return f"{context['key']}/{context['item_id']}/attachments"
+    # Fallback for unknown context types
+    return "unknown/unknown/attachments"
 
 
 def resolve_directory_from_context(
