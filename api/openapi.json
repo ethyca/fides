@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.69.0"
+    "version": "2.69.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10036,6 +10036,82 @@
         ]
       }
     },
+    "/api/v1/privacy-request/redaction-patterns": {
+      "get": {
+        "tags": [
+          "Privacy Request Redaction Patterns"
+        ],
+        "summary": "Get Privacy Request Redaction Patterns",
+        "description": "Get the current privacy request redaction patterns configuration.\n\nReturns the list of regex patterns used to mask dataset, collection,\nand field names in privacy request package reports.",
+        "operationId": "get_privacy_request_redaction_patterns_api_v1_privacy_request_redaction_patterns_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestRedactionPatternsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-redaction-patterns:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Privacy Request Redaction Patterns"
+        ],
+        "summary": "Update Privacy Request Redaction Patterns",
+        "description": "Update the privacy request redaction patterns configuration.\n\nThis is a complete replacement of the patterns list. To clear all patterns,\nsend an empty list.",
+        "operationId": "update_privacy_request_redaction_patterns_api_v1_privacy_request_redaction_patterns_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyRequestRedactionPatternsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestRedactionPatternsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-redaction-patterns:update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/id-verification/config": {
       "get": {
         "tags": [
@@ -15431,6 +15507,22 @@
               }
             ],
             "title": "Partitioning"
+          },
+          "redact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "name"
+                ],
+                "const": "name"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redact",
+            "description": "Specify 'name' to indicate the collection name should be redacted."
           }
         },
         "type": "object",
@@ -17884,6 +17976,22 @@
               }
             ],
             "title": "Namespace"
+          },
+          "redact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "name"
+                ],
+                "const": "name"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redact",
+            "description": "Specify 'name' to indicate the dataset name should be redacted."
           }
         },
         "type": "object",
@@ -19063,6 +19171,22 @@
               }
             ],
             "description": "Optionally specify a masking strategy override for this field."
+          },
+          "redact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "name"
+                ],
+                "const": "name"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redact",
+            "description": "Specify 'name' to indicate the field name should be redacted."
           }
         },
         "type": "object",
@@ -23601,6 +23725,43 @@
         ],
         "title": "PrivacyRequestNotificationInfo"
       },
+      "PrivacyRequestRedactionPatternsRequest": {
+        "properties": {
+          "patterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Patterns",
+            "description": "List of regex patterns used to redact dataset, collection, and field names in privacy request package reports"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patterns"
+        ],
+        "title": "PrivacyRequestRedactionPatternsRequest",
+        "description": "Request schema for updating privacy request redaction patterns."
+      },
+      "PrivacyRequestRedactionPatternsResponse": {
+        "properties": {
+          "patterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Patterns",
+            "description": "List of regex patterns used to redact dataset, collection, and field names in privacy request package reports"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patterns"
+        ],
+        "title": "PrivacyRequestRedactionPatternsResponse",
+        "description": "Response schema for privacy request redaction patterns."
+      },
       "PrivacyRequestResponse": {
         "properties": {
           "id": {
@@ -25921,6 +26082,8 @@
           "data_use:update",
           "dataset:create_or_update",
           "dataset:delete",
+          "privacy-request-redaction-patterns:read",
+          "privacy-request-redaction-patterns:update",
           "dataset:read",
           "dataset:test",
           "encryption:exec",
