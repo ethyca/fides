@@ -26,7 +26,7 @@ describe("systems table plus features", () => {
       cy.applyTableFilter("Groups", "Blue Group");
       cy.wait("@getSystemGroups");
       cy.get(".ant-table-filter-dropdown").within(() => {
-        cy.findByRole("button", { name: "OK" }).click({ force: true });
+        cy.get(".ant-btn-primary").click({ force: true });
         cy.wait("@getSystemsByGroup").then((interception) => {
           expect(interception.request.query.system_group).to.exist;
         });

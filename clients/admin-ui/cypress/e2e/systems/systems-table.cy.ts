@@ -35,7 +35,7 @@ describe("systems table", () => {
       cy.intercept("/api/v1/system?**").as("getSystemsBySteward");
       cy.applyTableFilter("Data steward", "user_3");
       cy.get(".ant-table-filter-dropdown").within(() => {
-        cy.findByRole("button", { name: "OK" }).click({ force: true });
+        cy.get(".ant-btn-primary").click({ force: true });
         cy.wait("@getSystemsBySteward").then((interception) => {
           expect(interception.request.query.data_steward).to.eql("user_3");
         });

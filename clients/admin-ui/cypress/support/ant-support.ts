@@ -213,7 +213,7 @@ Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   cy.get(".ant-table-column-title")
     .contains(columnTitle)
     .siblings(".ant-dropdown-trigger")
-    .click();
+    .click({ force: true });
 
   // Wait for the filter dropdown to appear and find the visible one
   cy.get(".ant-table-filter-dropdown:visible")
