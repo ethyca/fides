@@ -4,12 +4,26 @@ import zipfile
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.service.privacy_request.dsr_package.dsr_report_builder import DsrReportBuilder
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
+)
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+    DSRReportBuilder,
+)
 
-from .conftest import TestDsrReportBuilderBase
+from .conftest import TestDSRReportBuilderBase
+
+EXPECTED_FILES = [
+    "welcome.html",
+    "data/manualtask/index.html",
+    "data/manualtask/manual_data/index.html",
+    "data/manualtask2/index.html",
+    "data/manualtask2/manual_data/index.html",
+    "attachments/index.html",
+]
 
 
-class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
+class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
     """Tests for attachment handling in DSR reports"""
 
     def test_webhook_attachments(
@@ -28,7 +42,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             ],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -71,7 +85,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
         }
 
         # Test with streaming enabled
-        builder_streaming = DsrReportBuilder(
+        builder_streaming = DSRReportBuilder(
             privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=True
         )
         report_streaming = builder_streaming.generate()
@@ -108,7 +122,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             )
 
         # Test with streaming disabled (default behavior)
-        builder_default = DsrReportBuilder(
+        builder_default = DSRReportBuilder(
             privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=False
         )
         report_default = builder_default.generate()
@@ -146,7 +160,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             ],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -186,7 +200,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -229,7 +243,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             "attachments": [webhook_variants["with_attachments"]["attachments"][0]],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -278,7 +292,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             "manual:test_webhook": [webhook_variants[webhook_type]],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -314,12 +328,12 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             )
 
 
-class TestDsrReportBuilderAttachmentHandling:
+class TestDSRReportBuilderAttachmentHandling:
     """Tests for DSR report builder's attachment handling functions"""
 
     def test_handle_attachment_text(self, privacy_request: PrivacyRequest):
         """Test handling of text attachments with download URLs"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
@@ -336,7 +350,7 @@ class TestDsrReportBuilderAttachmentHandling:
 
     def test_handle_attachment_binary(self, privacy_request: PrivacyRequest):
         """Test handling of binary attachments with download URLs"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.pdf",
@@ -353,7 +367,7 @@ class TestDsrReportBuilderAttachmentHandling:
 
     def test_handle_attachment_no_content(self, privacy_request: PrivacyRequest):
         """Test handling of attachments with missing content"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {"file_name": "test.txt", "download_url": None, "file_size": None}
         ]
@@ -377,19 +391,19 @@ class TestDsrReportBuilderAttachmentHandling:
         ]
 
         dsr_data = {"attachments": attachments}
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         zip_file = builder.generate()
 
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
             # Check that attachments index was created
-            TestDsrReportBuilderBase.assert_file_in_zip(
+            TestDSRReportBuilderBase.assert_file_in_zip(
                 zip_file_obj, "attachments/index.html"
             )
 
             # Check that the HTML contains the attachment links
             html_content = zip_file_obj.read("attachments/index.html").decode("utf-8")
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test1.txt",
                 "test2.pdf",
@@ -417,13 +431,13 @@ class TestDsrReportBuilderAttachmentHandling:
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         zip_file = builder.generate()
 
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
             # Check that collection index was created
-            TestDsrReportBuilderBase.assert_file_in_zip(
+            TestDSRReportBuilderBase.assert_file_in_zip(
                 zip_file_obj, "data/dataset1/collection1/index.html"
             )
 
@@ -431,13 +445,13 @@ class TestDsrReportBuilderAttachmentHandling:
             html_content = zip_file_obj.read(
                 "data/dataset1/collection1/index.html"
             ).decode("utf-8")
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content, "item1.txt", "https://example.com/item1.txt", "1.0 KB"
             )
 
     def test_handle_duplicate_filenames(self, privacy_request: PrivacyRequest):
         """Test handling of duplicate filenames across all directories"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
@@ -470,7 +484,7 @@ class TestDsrReportBuilderAttachmentHandling:
         self, privacy_request: PrivacyRequest
     ):
         """Test handling of duplicate filenames across different directories"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
 
         # Test attachments in different directories
         attachments1 = [
@@ -501,7 +515,7 @@ class TestDsrReportBuilderAttachmentHandling:
         assert result2["test_1.txt"]["url"] == "https://example.com/test2.txt"
 
 
-class TestDsrReportBuilderAttachmentContentWriting:
+class TestDSRReportBuilderAttachmentContentWriting:
     """Tests for DSR report builder's attachment content writing functionality"""
 
     @pytest.mark.parametrize(
@@ -521,7 +535,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         expected_size,
     ):
         """Test attachment content writing with various file types and sizes"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": file_name,
@@ -563,7 +577,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         expected_size,
     ):
         """Test attachment content writing with missing required fields"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": file_name,
@@ -588,7 +602,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         self, privacy_request: PrivacyRequest, directory
     ):
         """Test attachment content writing in different directories"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
@@ -604,12 +618,17 @@ class TestDsrReportBuilderAttachmentContentWriting:
         assert result["test.txt"]["size"] == "1.0 KB"
 
 
-
 class TestDSRReportBuilderDuplicateFileNames:
     """Tests for handling files with same names but different URLs in the DSR report"""
 
     @pytest.mark.parametrize("enable_streaming", [True, False])
-    def test_duplicate_file_names(self, storage_config, privacy_request: PrivacyRequest, enable_streaming, dsr_data_duplicate_file_names):
+    def test_duplicate_file_names(
+        self,
+        storage_config,
+        privacy_request: PrivacyRequest,
+        enable_streaming,
+        dsr_data_duplicate_file_names,
+    ):
         """Test that collection-specific and global attachment indexes correctly handle files with same names but different URLs
 
         Expected DSR Report Structure:
@@ -620,84 +639,426 @@ class TestDSRReportBuilderDuplicateFileNames:
         Note: Each attachment appears twice in HTML (filename display + URL), so filename counts are doubled.
         """
 
-        storage_config.details["enable_streaming"] = enable_streaming
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data_duplicate_file_names)
+        builder = DSRReportBuilder(
+            privacy_request=privacy_request,
+            dsr_data=dsr_data_duplicate_file_names,
+            enable_streaming=enable_streaming,
+        )
         report = builder.generate()
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
             # Get all file names in the zip
             all_files = zip_file.namelist()
 
             # Verify the expected HTML structure is present
-            expected_html_files = [
-                "welcome.html",
-                "data/manualtask/index.html",
-                "data/manualtask/manual_data/index.html",
-                "data/manualtask2/index.html",
-                "data/manualtask2/manual_data/index.html",
-                "attachments/index.html"
-            ]
-
-            for expected_html in expected_html_files:
-                assert expected_html in all_files, f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
+            for expected_html in EXPECTED_FILES:
+                assert (
+                    expected_html in all_files
+                ), f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
 
             # 1. Verify dataset-specific collection indexes contain the correct attachments
             # Check manualtask dataset collection
-            manualtask_collection_html = zip_file.read("data/manualtask/manual_data/index.html").decode('utf-8')
-            assert "test_file_text.txt" in manualtask_collection_html, "manualtask should have test_file_text.txt"
+            manualtask_collection_html = zip_file.read(
+                "data/manualtask/manual_data/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_text.txt" in manualtask_collection_html
+            ), "manualtask should have test_file_text.txt"
 
             # Check manualtask2 dataset collection
-            manualtask2_collection_html = zip_file.read("data/manualtask2/manual_data/index.html").decode('utf-8')
+            manualtask2_collection_html = zip_file.read(
+                "data/manualtask2/manual_data/index.html"
+            ).decode("utf-8")
             # manualtask2 has 3 files: 1 PDF + 2 text files with same name but different URLs
             # Since they have different URLs, they should keep original names (not incremented)
-            assert "test_file_pdf.pdf" in manualtask2_collection_html, "manualtask2 should have test_file_pdf.pdf"
-            assert "test_file_text.txt" in manualtask2_collection_html, "manualtask2 should have test_file_text.txt"
+            assert (
+                "test_file_pdf.pdf" in manualtask2_collection_html
+            ), "manualtask2 should have test_file_pdf.pdf"
+            assert (
+                "test_file_text.txt" in manualtask2_collection_html
+            ), "manualtask2 should have test_file_text.txt"
+            assert (
+                "test_file_text_1.txt" in manualtask2_collection_html
+            ), "manualtask2 should have test_file_text_1.txt"
 
             # Verify that each dataset collection shows its own attachments
             # manualtask should only show its 1 text file
-            manualtask_text_count = manualtask_collection_html.count("test_file_text.txt")
-            assert manualtask_text_count >= 1, f"manualtask should show at least 1 test_file_text.txt, found {manualtask_text_count}"
+            manualtask_text_count = manualtask_collection_html.count(
+                "test_file_text.txt"
+            )
+            assert (
+                manualtask_text_count >= 1
+            ), f"manualtask should show at least 1 test_file_text.txt, found {manualtask_text_count}"
 
             # manualtask2 should show its 3 files (1 PDF + 2 text files)
-            manualtask2_text_count = manualtask2_collection_html.count("test_file_text.txt")
-            manualtask2_pdf_count = manualtask2_collection_html.count("test_file_pdf.pdf")
-            assert manualtask2_text_count >= 2, f"manualtask2 should show at least 2 test_file_text.txt files, found {manualtask2_text_count}"
-            assert manualtask2_pdf_count >= 1, f"manualtask2 should show at least 1 test_file_pdf.pdf, found {manualtask2_pdf_count}"
+            manualtask2_text_count = manualtask2_collection_html.count(
+                "test_file_text.txt"
+            )
+            manualtask2_pdf_count = manualtask2_collection_html.count(
+                "test_file_pdf.pdf"
+            )
+            assert (
+                manualtask2_text_count >= 2
+            ), f"manualtask2 should show at least 2 test_file_text.txt files, found {manualtask2_text_count}"
+            assert (
+                manualtask2_pdf_count >= 1
+            ), f"manualtask2 should show at least 1 test_file_pdf.pdf, found {manualtask2_pdf_count}"
 
             # 2. Verify global attachments index shows all attachments with dataset paths
-            attachments_html = zip_file.read("attachments/index.html").decode('utf-8')
+            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
 
             # Verify all expected filenames are present in the global attachments index
             expected_filenames = [
-                "test_file_text.txt",      # From manualtask (1 occurrence)
-                "test_file_text.txt",      # From manualtask2 (2 occurrences, same name different URLs)
-                "test_file_pdf.pdf"        # From manualtask2 (1 occurrence)
+                "test_file_text.txt",  # From manualtask (1 occurrence)
+                "test_file_text.txt",  # From manualtask2 (2 occurrences, same name different URLs)
+                "test_file_pdf.pdf",  # From manualtask2 (1 occurrence)
             ]
 
             for expected_filename in expected_filenames:
-                assert expected_filename in attachments_html, f"Expected filename {expected_filename} not found in global attachments index"
+                assert (
+                    expected_filename in attachments_html
+                ), f"Expected filename {expected_filename} not found in global attachments index"
 
             # Verify total counts in global attachments index
             # Each attachment appears twice in the HTML (filename display + URL), so we need to count table rows
             # Count the number of attachment table rows (each row represents one attachment)
-            attachment_rows = attachments_html.count('class="table-row" target="_blank"')
-            assert attachment_rows == 4, f"Global attachments should have 4 total attachment rows, found {attachment_rows}"
+            attachment_rows = attachments_html.count(
+                'class="table-row" target="_blank"'
+            )
+            assert (
+                attachment_rows == 4
+            ), f"Global attachments should have 4 total attachment rows, found {attachment_rows}"
 
             # Verify that test_file_text.txt appears in the expected number of attachment entries
-            # Each attachment shows the filename twice (display + URL), so 3 attachments = 6 occurrences
-            total_text_occurrences = attachments_html.count("test_file_text.txt")
-            assert total_text_occurrences == 6, f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
+            if enable_streaming:
+                # Incremented filename appears in global attachments index
+                # test_file_text.txt appears 2 times (2 occurrences each) = 4 occurrences
+                # test_file_text_1.txt appears 1 times (2 occurrences each) = 2 occurrences
+                total_text_occurrences = attachments_html.count("test_file_text.txt")
+                assert (
+                    total_text_occurrences == 4
+                ), f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
+                total_text_1_occurrences = attachments_html.count(
+                    "test_file_text_1.txt"
+                )
+                assert (
+                    total_text_1_occurrences == 2
+                ), f"Global attachments should have 2 total occurrences of test_file_text_1.txt (1 occurrence each), found {total_text_1_occurrences}"
+
+            else:
+                # Each attachment shows the filename twice (display + URL), so 3 attachments = 6 occurrences
+                total_text_occurrences = attachments_html.count("test_file_text.txt")
+                assert (
+                    total_text_occurrences == 6
+                ), f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
 
             total_pdf_occurrences = attachments_html.count("test_file_pdf.pdf")
-            assert total_pdf_occurrences == 2, f"Global attachments should have 2 occurrences of test_file_pdf.pdf (1 attachment × 2 occurrences each), found {total_pdf_occurrences}"
+            assert (
+                total_pdf_occurrences == 2
+            ), f"Global attachments should have 2 occurrences of test_file_pdf.pdf (1 attachment × 2 occurrences each), found {total_pdf_occurrences}"
 
             # 3. Verify all attachment IDs are present in global index
-            assert "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html, "First attachment ID not found in global index"
-            assert "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html, "Second attachment ID not found in global index"
-            assert "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html, "Third attachment ID not found in global index"
-            assert "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html, "Fourth attachment ID not found in global index"
+            if enable_streaming:
+                assert (
+                    "test_file_text.txt" in attachments_html
+                ), "First attachment ID not found in global index"
+                assert (
+                    "test_file_text_1.txt" in attachments_html
+                ), "Third attachment ID not found in global index"
+                assert (
+                    "test_file_pdf.pdf" in attachments_html
+                ), "Fourth attachment ID not found in global index"
+            else:
+                assert (
+                    "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html
+                ), "First attachment ID not found in global index"
+                assert (
+                    "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html
+                ), "Second attachment ID not found in global index"
+                assert (
+                    "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html
+                ), "Third attachment ID not found in global index"
+                assert (
+                    "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html
+                ), "Fourth attachment ID not found in global index"
 
 
 class TestDSRReportBuilderRedactionHandling:
+    """Tests for how redaction patterns affect attachment links and report generation"""
 
-    def test_redaction_handling(self, privacy_request: PrivacyRequest):
-        pass
+    # Redaction Patterns that will match dataset name
+    # Matches "manualtask" but not "manualtask2"
+    REDACTED_PATTERNS_DATASET = [r"^manualtask$"]
+    REDACTED_PATTERNS_COLLECTION = [r"^manual_data$"]
+
+    def assert_not_streaming_paterns(self, attachments_html):
+        # In non-streaming mode, the display text only shows filenames, not dataset paths
+        # So we can't verify redaction from the display text, but we can verify the attachments are present
+        assert (
+            "test_file_text.txt" in attachments_html
+        ), "Global attachments should show all filenames in non-streaming mode"
+        assert (
+            "test_file_pdf.pdf" in attachments_html
+        ), "Global attachments should show all filenames in non-streaming mode"
+        # Verify all attachment IDs are still present (only in non-streaming mode)
+        assert (
+            "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html
+        ), "First attachment ID not found in global index"
+        assert (
+            "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html
+        ), "Second attachment ID not found in global index"
+        assert (
+            "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html
+        ), "Third attachment ID not found in global index"
+        assert (
+            "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html
+        ), "Fourth attachment ID not found in global index"
+
+    def assert_streaming_paterns(self, attachments_html):
+        # In streaming mode, verify that the incremented attachment filenames are present
+        assert (
+            "test_file_text.txt" in attachments_html
+        ), "Global attachments should show all filenames in streaming mode"
+        assert (
+            "test_file_pdf.pdf" in attachments_html
+        ), "Global attachments should show all filenames in streaming mode"
+        assert (
+            "test_file_text_1.txt" in attachments_html
+        ), "Global attachments should show incremented filenames in streaming mode"
+
+    @pytest.mark.parametrize("enable_streaming", [True, False])
+    def test_redaction_patterns_affect_dataset_names_in_attachment_links(
+        self,
+        privacy_request: PrivacyRequest,
+        db,
+        dsr_data_duplicate_file_names,
+        enable_streaming,
+    ):
+        """Test that redaction patterns affecting dataset names are reflected in attachment links"""
+
+        # Create or update redaction patterns in database
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=self.REDACTED_PATTERNS_DATASET
+        )
+
+        builder = DSRReportBuilder(
+            privacy_request=privacy_request,
+            dsr_data=dsr_data_duplicate_file_names,
+            enable_streaming=enable_streaming,
+        )
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Verify the expected HTML structure is present
+            expected_html_files = [
+                f.replace("/manualtask/", "/dataset_1/") for f in EXPECTED_FILES
+            ]
+            all_files = zip_file.namelist()
+
+            for expected_html in expected_html_files:
+                assert (
+                    expected_html in all_files
+                ), f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
+
+            # Verify dataset-specific collection indexes contain the correct attachments
+            # Check redacted manualtask dataset collection (now dataset_1)
+            redacted_collection_html = zip_file.read(
+                "data/dataset_1/manual_data/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_text.txt" in redacted_collection_html
+            ), "Redacted dataset should have test_file_text.txt"
+
+            # Check non-redacted manualtask2 dataset collection
+            non_redacted_collection_html = zip_file.read(
+                "data/manualtask2/manual_data/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_pdf.pdf" in non_redacted_collection_html
+            ), "Non-redacted dataset should have test_file_pdf.pdf"
+            assert (
+                "test_file_text.txt" in non_redacted_collection_html
+            ), "Non-redacted dataset should have test_file_text.txt"
+
+            # Verify global attachments index shows all attachments with correct dataset paths
+            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+
+            if enable_streaming:
+                # In streaming mode, the display text shows the dataset/collection paths
+                assert (
+                    "dataset_1" in attachments_html
+                ), "Global attachments should show redacted dataset name in streaming mode"
+                assert (
+                    "manualtask2" in attachments_html
+                ), "Global attachments should show non-redacted dataset name in streaming mode"
+                # Verify that the original dataset name "manualtask" does NOT appear as a standalone dataset name
+                # (it can appear as part of "manualtask2" which should not be redacted)
+                assert (
+                    "manualtask/manual_data:" not in attachments_html
+                ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
+                self.assert_streaming_paterns(attachments_html)
+            else:
+                self.assert_not_streaming_paterns(attachments_html)
+
+    @pytest.mark.parametrize("enable_streaming", [True, False])
+    def test_redaction_patterns_affect_collection_names_in_attachment_links(
+        self,
+        privacy_request: PrivacyRequest,
+        db,
+        dsr_data_duplicate_file_names,
+        enable_streaming,
+    ):
+        """Test that redaction patterns affecting collection names are reflected in attachment links"""
+
+        # Set up redaction patterns that will match collection names
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=self.REDACTED_PATTERNS_COLLECTION
+        )
+
+        # Create or update redaction patterns in database
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=self.REDACTED_PATTERNS_COLLECTION
+        )
+
+        builder = DSRReportBuilder(
+            privacy_request=privacy_request,
+            dsr_data=dsr_data_duplicate_file_names,
+            enable_streaming=enable_streaming,
+        )
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Verify the expected HTML structure is present with redacted collection names
+            expected_html_files = [
+                f.replace("/manual_data/", "/collection_1/") for f in EXPECTED_FILES
+            ]
+
+            for expected_html in expected_html_files:
+                assert (
+                    expected_html in zip_file.namelist()
+                ), f"Expected HTML file {expected_html} not found in zip"
+
+            # 1. Verify dataset-specific collection indexes contain the correct attachments
+            # Check redacted collection in manualtask dataset
+            redacted_collection_html = zip_file.read(
+                "data/manualtask/collection_1/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_text.txt" in redacted_collection_html
+            ), "Redacted collection should have test_file_text.txt"
+
+            # Check redacted collection in manualtask2 dataset
+            redacted_collection2_html = zip_file.read(
+                "data/manualtask2/collection_1/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_pdf.pdf" in redacted_collection2_html
+            ), "Redacted collection should have test_file_pdf.pdf"
+            assert (
+                "test_file_text.txt" in redacted_collection2_html
+            ), "Redacted collection should have test_file_text.txt"
+            assert (
+                "test_file_text_1.txt" in redacted_collection2_html
+            ), "Redacted collection should have test_file_text_1.txt"
+
+            # 2. Verify global attachments index shows all attachments with correct collection paths
+            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+
+            if enable_streaming:
+                # In streaming mode, the display text shows the dataset/collection paths
+                assert (
+                    "collection_1" in attachments_html
+                ), "Global attachments should show redacted collection name in streaming mode"
+                # Verify that the original collection name "manual_data" does NOT appear in the global index
+                assert (
+                    "manual_data:" not in attachments_html
+                ), "Original collection name should not appear in global attachments index in streaming mode"
+                self.assert_streaming_paterns(attachments_html)
+
+            else:
+                self.assert_not_streaming_paterns(attachments_html)
+
+    @pytest.mark.parametrize("enable_streaming", [True, False])
+    def test_redaction_patterns_affect_both_dataset_and_collection_names(
+        self,
+        privacy_request: PrivacyRequest,
+        db,
+        dsr_data_duplicate_file_names,
+        enable_streaming,
+    ):
+        """Test that redaction patterns affecting both dataset and collection names are reflected in attachment links"""
+
+        # Set up redaction patterns that will match both dataset and collection names
+        redaction_patterns = (
+            self.REDACTED_PATTERNS_DATASET + self.REDACTED_PATTERNS_COLLECTION
+        )
+
+        # Create or update redaction patterns in database
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=redaction_patterns
+        )
+
+        builder = DSRReportBuilder(
+            privacy_request=privacy_request,
+            dsr_data=dsr_data_duplicate_file_names,
+            enable_streaming=enable_streaming,
+        )
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Verify the expected HTML structure is present with both dataset and collection redacted
+            expected_html_files = [
+                f.replace("/manual_data/", "/collection_1/").replace(
+                    "/manualtask/", "/dataset_1/"
+                )
+                for f in EXPECTED_FILES
+            ]
+
+            for expected_html in expected_html_files:
+                assert (
+                    expected_html in zip_file.namelist()
+                ), f"Expected HTML file {expected_html} not found in zip"
+
+            # 1. Verify dataset-specific collection indexes contain the correct attachments
+            # Check both redacted dataset and collection in manualtask
+            redacted_both_html = zip_file.read(
+                "data/dataset_1/collection_1/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_text.txt" in redacted_both_html
+            ), "Redacted dataset and collection should have test_file_text.txt"
+
+            # Check redacted collection but non-redacted dataset in manualtask2
+            redacted_collection_only_html = zip_file.read(
+                "data/manualtask2/collection_1/index.html"
+            ).decode("utf-8")
+            assert (
+                "test_file_pdf.pdf" in redacted_collection_only_html
+            ), "Non-redacted dataset with redacted collection should have test_file_pdf.pdf"
+            assert (
+                "test_file_text.txt" in redacted_collection_only_html
+            ), "Non-redacted dataset with redacted collection should have test_file_text.txt"
+
+            # 2. Verify global attachments index shows all attachments with correct paths
+            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+
+            if enable_streaming:
+                # In streaming mode, the display text shows the dataset/collection paths
+                assert (
+                    "dataset_1" in attachments_html
+                ), "Global attachments should show redacted dataset name in streaming mode"
+                assert (
+                    "manualtask2" in attachments_html
+                ), "Global attachments should show non-redacted dataset name in streaming mode"
+                assert (
+                    "collection_1" in attachments_html
+                ), "Global attachments should show redacted collection name in streaming mode"
+                # Verify that the original names do NOT appear in the global index
+                assert (
+                    "manualtask/manual_data:" not in attachments_html
+                ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
+                assert (
+                    "manual_data:" not in attachments_html
+                ), "Original collection name should not appear in global attachments index in streaming mode"
+                self.assert_streaming_paterns(attachments_html)
+            else:
+                self.assert_not_streaming_paterns(attachments_html)

@@ -1,7 +1,7 @@
-import pytest
 import re
 from io import BytesIO
 
+import pytest
 
 DSR_DATA_DUPLICATE_FILE_NAMES = {
     "manualtask:manual_data": [
@@ -10,7 +10,7 @@ DSR_DATA_DUPLICATE_FILE_NAMES = {
                 {
                     "file_name": "test_file_text.txt",
                     "download_url": "https://example-bucket.s3.amazonaws.com/att_a60d13cc-e6ca-4783-ac7c-5539e4f68584/test_file_text.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA5P2TGBOOU4X5T5NS%2F20250903%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250903T082813Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=3e315fe8b00262867eecc9b031c5ccc7f21fee3e095c181a9bf1b73c8c04952e",
-                    "file_size": 46
+                    "file_size": 46,
                 }
             ]
         }
@@ -21,28 +21,30 @@ DSR_DATA_DUPLICATE_FILE_NAMES = {
                 {
                     "file_name": "test_file_pdf.pdf",
                     "download_url": "https://example-bucket.s3.amazonaws.com/att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1/test_file_pdf.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA5P2TGBOOU4X5T5NS%2F20250903%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250903T082801Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bc3c041750f562e24d8c13a76698e9079334f7cad3f2d3ed56c9a1343f25ad8f",
-                    "file_size": 11236
+                    "file_size": 11236,
                 },
                 {
                     "file_name": "test_file_text.txt",
                     "download_url": "https://example-bucket.s3.amazonaws.com/att_16edd701-8b7c-4276-b1d8-975cb32cabd5/test_file_text.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA5P2TGBOOU4X5T5NS%2F20250903%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250903T082802Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9ef7145e407c460dd75d5a013f1c4eb3f7abb41c7d66931915fc3927becf84e4",
-                    "file_size": 29
+                    "file_size": 29,
                 },
                 {
                     "file_name": "test_file_text.txt",
                     "download_url": "https://example-bucket.s3.amazonaws.com/att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf/test_file_text.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA5P2TGBOOU4X5T5NS%2F20250903%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250903T082803Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=92482f3dd3043ec28fdba554abdca277eb013c189bfcd9d50db1fda9bd974790",
-                    "file_size": 41
-                }
+                    "file_size": 41,
+                },
             ]
         }
-    ]
+    ],
 }
+
 
 @pytest.fixture
 def dsr_data_duplicate_file_names():
     return DSR_DATA_DUPLICATE_FILE_NAMES
 
-class TestDsrReportBuilderBase:
+
+class TestDSRReportBuilderBase:
     """Base class with common test utilities"""
 
     @staticmethod
