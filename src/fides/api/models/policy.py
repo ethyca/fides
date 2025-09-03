@@ -185,7 +185,7 @@ class Policy(Base):
             "id": self.id,
             "name": self.name,
             "key": self.key,
-            "drp_action": self.drp_action.value if self.drp_action else None,
+            "drp_action": self.drp_action.value if self.drp_action else None,  # type: ignore[attr-defined]
             "execution_timeframe": self.execution_timeframe,
             "client_id": self.client_id,
             "rules": [
