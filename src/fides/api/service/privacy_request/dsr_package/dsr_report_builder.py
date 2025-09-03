@@ -2,7 +2,6 @@ import json
 import os
 import time as time_module
 import zipfile
-from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
@@ -17,9 +16,7 @@ from fides.api.service.storage.util import (
     _get_datasets_from_dsr_data,
     create_attachment_info_dict,
     format_attachment_size,
-    generate_attachment_url,
     generate_attachment_url_from_storage_path,
-    get_unique_filename,
     is_attachment_field,
     process_attachment_naming,
     process_attachments_contextually,
@@ -203,7 +200,7 @@ class DsrReportBuilder:
             used_filenames = self.used_filenames_per_dataset[dataset_name]
 
             # Process attachment naming using shared utility
-            unique_filename, attachment_key = process_attachment_naming(
+            unique_filename, _ = process_attachment_naming(
                 attachment, used_filenames, self.processed_attachments, dataset_name
             )
 
@@ -232,8 +229,12 @@ class DsrReportBuilder:
                     actual_directory = f"{context['key']}/{context['item_id']}"
 
             # Generate attachment URL using shared utility with actual storage path
+            download_url = attachment.get("download_url")
+            if not download_url:
+                continue
+
             attachment_url = generate_attachment_url_from_storage_path(
-                attachment.get("download_url"),
+                download_url,
                 unique_filename,
                 actual_directory,  # This is the base_path where the file will be stored
                 actual_directory,  # This is the HTML template directory
@@ -241,8 +242,12 @@ class DsrReportBuilder:
             )
 
             # Create attachment info dictionary using shared utility
+            file_name = attachment.get("file_name")
+            if not file_name:
+                continue
+
             attachment_info = create_attachment_info_dict(
-                attachment_url, file_size, attachment.get("file_name")
+                attachment_url, file_size, file_name
             )
 
             processed_attachments.append((unique_filename, attachment_info))
@@ -281,11 +286,25 @@ class DsrReportBuilder:
             callback=self._process_attachment_callback,
         )
 
+        # Filter out top-level attachments that were already processed as dataset attachments
+        filtered_list = [
+            pa
+            for pa in processed_attachments_list
+            if not (
+                pa["context"].get("type") == "top_level"
+                and (
+                    pa["attachment"].get("download_url"),
+                    pa["attachment"].get("file_name"),
+                )
+                in self.processed_attachments
+            )
+        ]
+
         logger.debug(
-            f"Processed {len(processed_attachments_list)} attachments using shared logic"
+            f"Processed {len(filtered_list)} unique attachments (filtered from {len(processed_attachments_list)})"
         )
 
-        return processed_attachments_list
+        return filtered_list
 
     def _generate_attachment_url_from_index(
         self, context: dict[str, Any], unique_filename: str
@@ -302,15 +321,14 @@ class DsrReportBuilder:
         if context.get("type") == "top_level":
             # Top-level attachments are in the same directory as the index
             return unique_filename
-        elif context.get("type") in ["direct", "nested"]:
+        if context.get("type") in ["direct", "nested"]:
             # Dataset attachments are in data/dataset/collection/attachments/
             # From attachments/index.html, we need to go to ../data/dataset/collection/attachments/filename
             dataset = context.get("dataset", "unknown")
             collection = context.get("collection", "unknown")
             return f"../data/{dataset}/{collection}/attachments/{unique_filename}"
-        else:
-            # Fallback for other cases - return just the filename
-            return unique_filename
+        # Fallback for other cases - return just the filename
+        return unique_filename
 
     def _create_attachment_info_with_corrected_url(
         self, attachment_info: dict[str, str], correct_url: str
@@ -477,13 +495,8 @@ class DsrReportBuilder:
             context = processed_attachment["context"]
             attachment = processed_attachment["attachment"]
 
-            # Create a unique key based on the attachment content to avoid duplicates
-            attachment_key = (
-                attachment.get("download_url"),
-                attachment.get("file_name"),
-            )
-
-            # Skip if we've already processed this exact attachment
+            # Create a unique key based on download_url to avoid duplicates
+            attachment_key = attachment.get("download_url")
             if attachment_key in seen_attachment_keys:
                 continue
             seen_attachment_keys.add(attachment_key)

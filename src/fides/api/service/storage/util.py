@@ -1,6 +1,6 @@
 import os
 from enum import Enum as EnumType
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 from urllib.parse import quote
 
 from loguru import logger
@@ -238,7 +238,7 @@ def process_attachment_naming(
     used_filenames: set[str],
     processed_attachments: dict[tuple[str, str], str],
     dataset_name: str = "attachments",
-) -> tuple[str, str]:
+) -> Optional[tuple[str, tuple[str, str]]]:
     """
     Process attachment naming and return unique filename and attachment key.
 
@@ -249,7 +249,7 @@ def process_attachment_naming(
         dataset_name: The dataset name for context
 
     Returns:
-        Tuple of (unique_filename, attachment_key)
+        Tuple of (unique_filename, attachment_key) where attachment_key is (download_url, file_name)
     """
     file_name = attachment.get("file_name")
     download_url = attachment.get("download_url")
@@ -258,7 +258,7 @@ def process_attachment_naming(
         logger.warning(
             f"Skipping attachment with missing {'file name' if not file_name else 'download URL'}"
         )
-        return None, None
+        return None
 
     # Get or generate unique filename
     attachment_key = (download_url, file_name)
@@ -272,7 +272,7 @@ def process_attachment_naming(
         # to prevent conflicts in subsequent processing
         used_filenames.add(unique_filename)
 
-    return unique_filename, attachment_key
+    return (unique_filename, attachment_key)
 
 
 def format_attachment_size(file_size: Any) -> str:
@@ -344,7 +344,7 @@ def process_attachments_contextually(
     used_filenames_attachments: set[str],
     processed_attachments: dict[tuple[str, str], str],
     enable_streaming: bool = False,
-    callback: Optional[callable] = None,
+    callback: Optional[Callable] = None,
 ) -> list[dict[str, Any]]:
     """
     Process attachments using the same contextual approach as DSR report builder.
@@ -490,7 +490,7 @@ def _process_attachment_list(
     used_filenames_attachments: set[str],
     processed_attachments: dict[tuple[str, str], str],
     enable_streaming: bool,
-    callback: Optional[callable],
+    callback: Optional[Callable],
     context: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """
@@ -535,8 +535,12 @@ def _process_attachment_list(
         file_size = format_attachment_size(attachment.get("file_size"))
 
         # Generate attachment URL using shared utility with actual storage path
+        download_url = attachment.get("download_url")
+        if not download_url:
+            continue
+
         attachment_url = generate_attachment_url_from_storage_path(
-            attachment.get("download_url"),
+            download_url,
             unique_filename,
             directory,  # This is the base_path where the file will be stored
             directory,  # This is the HTML template directory
@@ -544,8 +548,12 @@ def _process_attachment_list(
         )
 
         # Create attachment info dictionary using shared utility
+        file_name = attachment.get("file_name")
+        if not file_name:
+            continue
+
         attachment_info = create_attachment_info_dict(
-            attachment_url, file_size, attachment.get("file_name")
+            attachment_url, file_size, file_name
         )
 
         # Create processed attachment with context
@@ -568,7 +576,7 @@ def _process_attachment_list(
 
 
 def convert_processed_attachments_to_attachment_processing_info(
-    processed_attachments_list: list[dict[str, Any]], validate_attachment_func: callable
+    processed_attachments_list: list[dict[str, Any]], validate_attachment_func: Callable
 ) -> list[Any]:
     """
     Convert processed attachments list to AttachmentProcessingInfo objects.
@@ -594,8 +602,9 @@ def convert_processed_attachments_to_attachment_processing_info(
         attachment_with_context["_context"] = processed_attachment["context"]
 
         # Validate and convert to AttachmentProcessingInfo
-        validated = validate_attachment_func(attachment_with_context)
-        if validated:
-            validated_attachments.append(validated)
+        if validate_attachment_func:
+            validated = validate_attachment_func(attachment_with_context)
+            if validated:
+                validated_attachments.append(validated)
 
     return validated_attachments
