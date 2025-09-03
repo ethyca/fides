@@ -215,6 +215,154 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
                 "2.0 KB",  # Assuming the file size is formatted as 2.0 KB
             )
 
+    def test_streaming_attachment_links(
+        self,
+        privacy_request: PrivacyRequest,
+        common_attachment_config,
+        common_assertions,
+    ):
+        """Test that when streaming is enabled, attachment links point to local attachments directory"""
+        dsr_data = {
+            "attachments": [
+                common_attachment_config["text"],
+                common_attachment_config["binary"],
+            ],
+        }
+
+        # Test with streaming enabled
+        builder_streaming = DsrReportBuilder(
+            privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=True
+        )
+        report_streaming = builder_streaming.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report_streaming.getvalue())) as zip_file:
+            # Read the attachments index file
+            attachments_content = zip_file.read(
+                f"{common_assertions['paths']['attachments_dir']}/index.html"
+            ).decode("utf-8")
+
+            # Verify that links point to local attachments directory
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["text"]["file_name"],
+                common_attachment_config["text"][
+                    "file_name"
+                ],  # Just filename, not full path
+                "1.0 KB",
+            )
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["binary"]["file_name"],
+                common_attachment_config["binary"][
+                    "file_name"
+                ],  # Just filename, not full path
+                "2.0 KB",
+            )
+
+            # Verify that original download URLs are NOT present
+            self.assert_html_not_contains(
+                attachments_content,
+                common_attachment_config["text"]["download_url"],
+                common_attachment_config["binary"]["download_url"],
+            )
+
+        # Test with streaming disabled (default behavior)
+        builder_default = DsrReportBuilder(
+            privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=False
+        )
+        report_default = builder_default.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report_default.getvalue())) as zip_file:
+            # Read the attachments index file
+            attachments_content = zip_file.read(
+                f"{common_assertions['paths']['attachments_dir']}/index.html"
+            ).decode("utf-8")
+
+            # Verify that links point to original download URLs
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["text"]["file_name"],
+                common_attachment_config["text"]["download_url"],
+                "1.0 KB",
+            )
+            self.assert_html_contains(
+                attachments_content,
+                common_attachment_config["binary"]["file_name"],
+                common_attachment_config["binary"]["download_url"],
+                "2.0 KB",
+            )
+
+    def test_ttl_display_in_templates(
+        self,
+        privacy_request: PrivacyRequest,
+        common_attachment_config,
+        common_assertions,
+    ):
+        """Test that TTL is displayed correctly in templates using the environment variable"""
+        dsr_data = {
+            "attachments": [
+                common_attachment_config["text"],
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Read the attachments index file
+            attachments_content = zip_file.read(
+                f"{common_assertions['paths']['attachments_dir']}/index.html"
+            ).decode("utf-8")
+
+            # Verify that the TTL is displayed (should be 5 days by default)
+            # The exact number will depend on the CONFIG.security.subject_request_download_link_ttl_seconds value
+            self.assert_html_contains(
+                attachments_content, "download links will expire in"
+            )
+            self.assert_html_contains(attachments_content, "days")
+
+            # Verify that the hardcoded "7 days" is not present
+            self.assert_html_not_contains(attachments_content, "7 days")
+
+    def test_ttl_display_in_collection_templates(
+        self,
+        privacy_request: PrivacyRequest,
+        common_assertions,
+    ):
+        """Test that TTL is displayed correctly in collection templates using the environment variable"""
+        dsr_data = {
+            "test_dataset:test_collection": [
+                {
+                    "id": 1,
+                    "name": "Test Item",
+                    "attachments": {
+                        "test_file.txt": {
+                            "url": "https://example.com/test_file.txt",
+                            "size": "1.0 KB",
+                        }
+                    },
+                }
+            ]
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Read the collection index file
+            collection_content = zip_file.read(
+                "data/test_dataset/test_collection/index.html"
+            ).decode("utf-8")
+
+            # Verify that the TTL is displayed
+            self.assert_html_contains(
+                collection_content, "download links will expire in"
+            )
+            self.assert_html_contains(collection_content, "days")
+
+            # Verify that the hardcoded "7 days" is not present
+            self.assert_html_not_contains(collection_content, "7 days")
+
     def test_multiple_webhook_attachments(
         self, privacy_request: PrivacyRequest, webhook_variants, common_assertions
     ):
@@ -287,7 +435,6 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
         """Test different webhook data variants"""
         dsr_data = {
             "manual:test_webhook": [webhook_variants[webhook_type]],
-            "attachments": [],
         }
 
         builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
@@ -306,13 +453,23 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
                 manual_data, webhook_variants[webhook_type]["email"]
             )
 
-            # Verify that no attachment files were created
-            assert not any(
-                name.startswith(f"{common_assertions['paths']['attachments_dir']}/")
+            # Verify that attachments directory exists but contains no actual attachment files
+            # (only the index.html file should be present)
+            attachment_files = [
+                name
                 for name in zip_file.namelist()
+                if name.startswith(f"{common_assertions['paths']['attachments_dir']}/")
+            ]
+            # Should only have the index.html file, no actual attachment files
+            assert len(attachment_files) == 1
+            assert (
+                attachment_files[0]
+                == f"{common_assertions['paths']['attachments_dir']}/index.html"
             )
-            self.assert_html_not_contains(
-                manual_data, common_assertions["html"]["attachment_link"]
+
+            # Verify that the attachments index page exists and is accessible
+            self.assert_file_in_zip(
+                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
             )
 
 
@@ -625,12 +782,12 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
             # Read and verify the index content
             html_content = zip_file.read("attachments/index.html").decode("utf-8")
 
-            # Check that all three files are listed with their unique names
+            # Check that all three files are listed with their original names (non-streaming mode)
             TestDsrReportBuilderBase.assert_html_contains(
                 html_content,
-                "test.txt",  # First file keeps original name
-                "test_1.txt",  # Second file gets _1 suffix
-                "test_2.txt",  # Third file gets _2 suffix
+                "test.txt",  # All files show original name in non-streaming mode
+                "test.txt",  # All files show original name in non-streaming mode
+                "test.txt",  # All files show original name in non-streaming mode
                 "https://example.com/test1.txt",
                 "https://example.com/test2.txt",
                 "https://example.com/test3.txt",
