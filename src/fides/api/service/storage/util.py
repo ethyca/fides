@@ -195,8 +195,7 @@ def generate_attachment_url_from_storage_path(
         # For other cases, calculate relative path
         # This is a simplified approach - in practice, you might need more sophisticated path resolution
         return f"../{storage_path}"
-    else:
-        return download_url
+    return download_url
 
 
 def generate_attachment_url(
