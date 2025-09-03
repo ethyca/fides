@@ -620,7 +620,7 @@ class TestGetRedactionEntitiesMap:
 
 
 @pytest.mark.integration_postgres
-class TestDsrReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase):
+class TestDSRReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase):
     """Tests for DSR report builder integration with redaction entities map"""
 
     def test_redaction_by_entities_map_dataset_level(

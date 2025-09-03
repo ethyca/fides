@@ -346,7 +346,7 @@ class SmartOpenStreamingStorage:
         )
 
     def _collect_and_validate_attachments_from_dsr_builder(
-        self, data: dict, dsr_builder: "DsrReportBuilder"
+        self, data: dict, dsr_builder: "DSRReportBuilder"
     ) -> list[AttachmentProcessingInfo]:
         """Collect and validate attachments using the DSR report builder's processed attachments.
 

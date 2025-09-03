@@ -174,7 +174,7 @@ def common_assertions(common_file_assertions):
     }
 
 
-class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
+class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
     """Tests for attachment handling in DSR reports"""
 
     def test_webhook_attachments(
@@ -236,7 +236,7 @@ class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
         }
 
         # Test with streaming enabled
-        builder_streaming = DsrReportBuilder(
+        builder_streaming = DSRReportBuilder(
             privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=True
         )
         report_streaming = builder_streaming.generate()
@@ -273,7 +273,7 @@ class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
             )
 
         # Test with streaming disabled (default behavior)
-        builder_default = DsrReportBuilder(
+        builder_default = DSRReportBuilder(
             privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=False
         )
         report_default = builder_default.generate()
@@ -311,7 +311,7 @@ class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
             ],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -351,7 +351,7 @@ class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -479,7 +479,7 @@ class TestDsrReportBuilderAttachments(TestDSRReportBuilderBase):
             )
 
 
-class TestDsrReportBuilderDataStructure:
+class TestDSRReportBuilderDataStructure:
     """Tests for DSR report builder's data structure handling"""
 
     def test_with_multiple_datasets(self, privacy_request: PrivacyRequest):
@@ -629,7 +629,7 @@ class TestDsrReportBuilderDataStructure:
             assert "age" in users_collection_content  # age NOT redacted
 
 
-class TestDsrReportBuilderDataTypes(TestDSRReportBuilderBase):
+class TestDSRReportBuilderDataTypes(TestDSRReportBuilderBase):
     """Tests for DSR report builder's data type handling"""
 
     def test_with_complex_data_types(self, privacy_request: PrivacyRequest):
@@ -778,7 +778,7 @@ def dsr_data() -> dict:
     }
 
 
-class TestDsrReportBuilder(TestDSRReportBuilderBase):
+class TestDSRReportBuilder(TestDSRReportBuilderBase):
     def test_generate_report_structure(
         self, privacy_request, dsr_data: dict, common_assertions
     ):
@@ -908,7 +908,7 @@ class TestDsrReportBuilder(TestDSRReportBuilderBase):
             )
 
 
-class TestDsrReportBuilderAttachmentHandling:
+class TestDSRReportBuilderAttachmentHandling:
     """Tests for DSR report builder's attachment handling functions"""
 
     def test_handle_attachment_text(self, privacy_request: PrivacyRequest):
@@ -1095,7 +1095,7 @@ class TestDsrReportBuilderAttachmentHandling:
         assert result2["test_1.txt"]["url"] == "https://example.com/test2.txt"
 
 
-class TestDsrReportBuilderDatasetHandling:
+class TestDSRReportBuilderDatasetHandling:
     """Tests for DSR report builder's dataset handling functions"""
 
     def test_add_dataset(self, privacy_request: PrivacyRequest):
@@ -1134,7 +1134,7 @@ class TestDsrReportBuilderDatasetHandling:
             assert "collection" not in content
 
 
-class TestDsrReportBuilderAttachmentContentWriting:
+class TestDSRReportBuilderAttachmentContentWriting:
     """Tests for DSR report builder's attachment content writing functionality"""
 
     @pytest.mark.parametrize(
@@ -1237,7 +1237,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         assert result["test.txt"]["size"] == "1.0 KB"
 
 
-class TestDsrReportBuilderContent(TestDSRReportBuilderBase):
+class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
     """Tests for content generation in DSR reports"""
 
     def test_report_structure(
@@ -1324,7 +1324,7 @@ class TestDsrReportBuilderContent(TestDSRReportBuilderBase):
             assert "data/dataset1/collection1/index.html" in zip_file.namelist()
 
 
-class TestDsrReportBuilderOrganization(TestDSRReportBuilderBase):
+class TestDSRReportBuilderOrganization(TestDSRReportBuilderBase):
     """Tests for report organization and structure"""
 
     def test_dataset_ordering(self, privacy_request: PrivacyRequest):

@@ -98,8 +98,8 @@ class DSRReportBuilder:
             processed_dsr_data = dsr_data
 
         # report data to populate the templates
-        self.request_data = _map_privacy_request(privacy_request)
-        self.dsr_data = dsr_data
+        self.request_data = map_privacy_request(privacy_request)
+        self.dsr_data = processed_dsr_data
         self.enable_streaming = enable_streaming
 
         # Track used filenames per dataset to prevent conflicts within the same dataset
@@ -342,7 +342,7 @@ class DSRReportBuilder:
         """
         items_content = []
 
-        for index, collection_item in enumerate(rows, 1):
+        for item_index, collection_item in enumerate(rows, 1):
             # Create a deep copy of the item data to avoid modifying the original DSR data
             # This ensures the comprehensive attachments index can access unmodified attachments
             item_data = copy.deepcopy(collection_item)
