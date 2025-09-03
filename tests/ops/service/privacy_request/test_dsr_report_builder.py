@@ -1,19 +1,25 @@
 import io
 import re
+import threading
+import time
 import zipfile
 from datetime import datetime
 from io import BytesIO
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
+)
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DSR_DIRECTORY,
-    DsrReportBuilder,
+    DSRReportBuilder,
 )
 
 
-class TestDsrReportBuilderBase:
+class TestDSRReportBuilderBase:
     """Base class with common test utilities"""
 
     @staticmethod
@@ -168,7 +174,7 @@ def common_assertions(common_file_assertions):
     }
 
 
-class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
+class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
     """Tests for attachment handling in DSR reports"""
 
     def test_webhook_attachments(
@@ -187,7 +193,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             ],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -230,7 +236,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
         }
 
         # Test with streaming enabled
-        builder_streaming = DsrReportBuilder(
+        builder_streaming = DSRReportBuilder(
             privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=True
         )
         report_streaming = builder_streaming.generate()
@@ -267,7 +273,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             )
 
         # Test with streaming disabled (default behavior)
-        builder_default = DsrReportBuilder(
+        builder_default = DSRReportBuilder(
             privacy_request=privacy_request, dsr_data=dsr_data, enable_streaming=False
         )
         report_default = builder_default.generate()
@@ -305,7 +311,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             ],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -345,7 +351,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -388,7 +394,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             "attachments": [webhook_variants["with_attachments"]["attachments"][0]],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -437,7 +443,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             "manual:test_webhook": [webhook_variants[webhook_type]],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -473,7 +479,7 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             )
 
 
-class TestDsrReportBuilderDataStructure:
+class TestDSRReportBuilderDataStructure:
     """Tests for DSR report builder's data structure handling"""
 
     def test_with_multiple_datasets(self, privacy_request: PrivacyRequest):
@@ -487,7 +493,7 @@ class TestDsrReportBuilderDataStructure:
             "dataset2:collection1": [{"id": 4, "name": "Item 4"}],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -517,8 +523,113 @@ class TestDsrReportBuilderDataStructure:
             ).decode("utf-8")
             assert "Item 4" in collection3_content
 
+    def test_selective_redaction_with_patterns(
+        self, privacy_request: PrivacyRequest, db
+    ):
+        """Test DSR report builder with selective redaction based on regex patterns"""
 
-class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
+        # Set up redaction patterns that will match some but not all names
+        redaction_patterns = [
+            r"customer.*",  # Matches "customer_database" but not "analytics_system"
+            r".*user.*",  # Matches "users" and "user_events" but not "orders"
+            r"^email$",  # Matches exact field name "email" but not "name" or "id"
+        ]
+
+        # Create or update redaction patterns in database
+        PrivacyRequestRedactionPattern.replace_patterns(
+            db=db, patterns=redaction_patterns
+        )
+
+        dsr_data = {
+            "customer_database:users": [
+                {"id": 1, "name": "John Doe", "email": "john@example.com", "age": 30},
+                {"id": 2, "name": "Jane Smith", "email": "jane@example.com", "age": 25},
+            ],
+            "customer_database:orders": [
+                {"id": 101, "user_id": 1, "amount": 49.99, "product": "Widget A"},
+                {"id": 102, "user_id": 2, "amount": 29.99, "product": "Widget B"},
+            ],
+            "analytics_system:user_events": [
+                {"user_id": 1, "event": "login", "timestamp": "2024-01-01T10:00:00Z"},
+                {
+                    "user_id": 1,
+                    "event": "purchase",
+                    "timestamp": "2024-01-01T10:30:00Z",
+                },
+            ],
+            "public_data:articles": [
+                {"id": 1, "title": "Public Article", "content": "This is public"},
+                {"id": 2, "title": "Another Article", "content": "Also public"},
+            ],
+        }
+
+        # Build DSR report - redaction patterns are automatically loaded from privacy request's session
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        # Save the DSR package to a file for inspection
+        output_file = Path("/tmp/dsr_package_selective_redaction.zip")
+        with open(output_file, "wb") as file:
+            file.write(report.getvalue())
+
+        # Basic verification that the package was created correctly
+        assert output_file.exists()
+        assert output_file.stat().st_size > 0
+
+        # Verify the package structure
+        with zipfile.ZipFile(output_file, "r") as zip_file:
+            # Check welcome page content
+            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+
+            # Dataset-level redaction:
+            # "analytics_system" should NOT be redacted (doesn't match "customer.*")
+            # "customer_database" should be redacted to "dataset_1" (matches "customer.*", gets index 1)
+            # "public_data" should NOT be redacted (no pattern match)
+            assert (
+                "analytics_system" in welcome_content
+            )  # analytics_system NOT redacted
+            assert "dataset_1" in welcome_content  # customer_database redacted
+            assert "public_data" in welcome_content  # public_data NOT redacted
+
+            # Verify dataset directory structure exists (uses redacted names for file paths)
+            assert "data/dataset_1/index.html" in zip_file.namelist()
+            assert "data/analytics_system/index.html" in zip_file.namelist()
+            assert "data/public_data/index.html" in zip_file.namelist()
+
+            # Check dataset index pages for collection-level redaction
+            customer_dataset_content = zip_file.read(
+                "data/dataset_1/index.html"
+            ).decode("utf-8")
+            # "users" should be redacted to "collection_1" (matches ".*user.*")
+            # "orders" should NOT be redacted (no pattern match)
+            assert "collection_1" in customer_dataset_content  # users redacted
+            assert "orders" in customer_dataset_content  # orders NOT redacted
+
+            analytics_dataset_content = zip_file.read(
+                "data/analytics_system/index.html"
+            ).decode("utf-8")
+            # "user_events" should be redacted to "collection_1" (matches ".*user.*")
+            assert "collection_1" in analytics_dataset_content  # user_events redacted
+
+            public_dataset_content = zip_file.read(
+                "data/public_data/index.html"
+            ).decode("utf-8")
+            # "articles" should NOT be redacted (no pattern match)
+            assert "articles" in public_dataset_content  # articles NOT redacted
+
+            # Check collection pages for field-level redaction
+            users_collection_content = zip_file.read(
+                "data/dataset_1/collection_1/index.html"
+            ).decode("utf-8")
+            # "email" should be redacted to "field_N" (matches "^email$")
+            # "id", "name", "age" should NOT be redacted (no pattern match)
+            assert "field_" in users_collection_content  # email redacted
+            assert "id" in users_collection_content  # id NOT redacted
+            assert "name" in users_collection_content  # name NOT redacted
+            assert "age" in users_collection_content  # age NOT redacted
+
+
+class TestDSRReportBuilderDataTypes(TestDSRReportBuilderBase):
     """Tests for DSR report builder's data type handling"""
 
     def test_with_complex_data_types(self, privacy_request: PrivacyRequest):
@@ -542,7 +653,7 @@ class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -551,7 +662,7 @@ class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
             )
 
             # Extract all values from the table
-            table_values = TestDsrReportBuilderBase.extract_table_values(manual_data)
+            table_values = TestDSRReportBuilderBase.extract_table_values(manual_data)
 
             # Verify each value is present and properly formatted
             assert "test string" in table_values["string_field"]
@@ -591,7 +702,7 @@ class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -600,7 +711,7 @@ class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
             )
 
             # Extract all values from the table
-            table_values = TestDsrReportBuilderBase.extract_table_values(manual_data)
+            table_values = TestDSRReportBuilderBase.extract_table_values(manual_data)
 
             # Verify each value is present and properly escaped
             assert "test@example.com" in table_values["email"]
@@ -667,12 +778,12 @@ def dsr_data() -> dict:
     }
 
 
-class TestDsrReportBuilder(TestDsrReportBuilderBase):
+class TestDSRReportBuilder(TestDSRReportBuilderBase):
     def test_generate_report_structure(
         self, privacy_request, dsr_data: dict, common_assertions
     ):
         """Test that the generated report has the correct structure"""
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         report = builder.generate()
 
         # Verify it's a valid zip file
@@ -691,7 +802,7 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
 
     def test_report_content(self, privacy_request, dsr_data: dict):
         """Test that the report content is correctly formatted"""
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(report) as zip_file:
@@ -720,7 +831,7 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
 
     def test_empty_dsr_data(self, privacy_request, common_assertions):
         """Test report generation with empty DSR data"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         report = builder.generate()
 
         with zipfile.ZipFile(report) as zip_file:
@@ -736,7 +847,7 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
 
     def test_privacy_request_mapping(self, privacy_request, dsr_data: dict):
         """Test that privacy request data is correctly mapped in the report"""
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(report) as zip_file:
@@ -750,7 +861,7 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
 
     def test_attachment_links_in_index(self, privacy_request: PrivacyRequest):
         """Test that attachment links in the index page correctly match the files"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
 
         # Create multiple attachments with the same name but different URLs
         attachments = [
@@ -783,7 +894,7 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
             html_content = zip_file.read("attachments/index.html").decode("utf-8")
 
             # Check that all three files are listed with their original names (non-streaming mode)
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test.txt",  # All files show original name in non-streaming mode
                 "test.txt",  # All files show original name in non-streaming mode
@@ -797,12 +908,12 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
             )
 
 
-class TestDsrReportBuilderAttachmentHandling:
+class TestDSRReportBuilderAttachmentHandling:
     """Tests for DSR report builder's attachment handling functions"""
 
     def test_handle_attachment_text(self, privacy_request: PrivacyRequest):
         """Test handling of text attachments with download URLs"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
@@ -819,7 +930,7 @@ class TestDsrReportBuilderAttachmentHandling:
 
     def test_handle_attachment_binary(self, privacy_request: PrivacyRequest):
         """Test handling of binary attachments with download URLs"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.pdf",
@@ -836,7 +947,7 @@ class TestDsrReportBuilderAttachmentHandling:
 
     def test_handle_attachment_no_content(self, privacy_request: PrivacyRequest):
         """Test handling of attachments with missing content"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {"file_name": "test.txt", "download_url": None, "file_size": None}
         ]
@@ -860,19 +971,19 @@ class TestDsrReportBuilderAttachmentHandling:
         ]
 
         dsr_data = {"attachments": attachments}
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         zip_file = builder.generate()
 
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
             # Check that attachments index was created
-            TestDsrReportBuilderBase.assert_file_in_zip(
+            TestDSRReportBuilderBase.assert_file_in_zip(
                 zip_file_obj, "attachments/index.html"
             )
 
             # Check that the HTML contains the attachment links
             html_content = zip_file_obj.read("attachments/index.html").decode("utf-8")
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test1.txt",
                 "test2.pdf",
@@ -900,13 +1011,13 @@ class TestDsrReportBuilderAttachmentHandling:
             ]
         }
 
-        builder = DsrReportBuilder(privacy_request, dsr_data)
+        builder = DSRReportBuilder(privacy_request, dsr_data)
         zip_file = builder.generate()
 
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
             # Check that collection index was created
-            TestDsrReportBuilderBase.assert_file_in_zip(
+            TestDSRReportBuilderBase.assert_file_in_zip(
                 zip_file_obj, "data/dataset1/collection1/index.html"
             )
 
@@ -914,13 +1025,13 @@ class TestDsrReportBuilderAttachmentHandling:
             html_content = zip_file_obj.read(
                 "data/dataset1/collection1/index.html"
             ).decode("utf-8")
-            TestDsrReportBuilderBase.assert_html_contains(
+            TestDSRReportBuilderBase.assert_html_contains(
                 html_content, "item1.txt", "https://example.com/item1.txt", "1.0 KB"
             )
 
     def test_handle_duplicate_filenames(self, privacy_request: PrivacyRequest):
         """Test handling of duplicate filenames across all directories"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
@@ -953,7 +1064,7 @@ class TestDsrReportBuilderAttachmentHandling:
         self, privacy_request: PrivacyRequest
     ):
         """Test handling of duplicate filenames across different directories"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
 
         # Test attachments in different directories
         attachments1 = [
@@ -984,12 +1095,12 @@ class TestDsrReportBuilderAttachmentHandling:
         assert result2["test_1.txt"]["url"] == "https://example.com/test2.txt"
 
 
-class TestDsrReportBuilderDatasetHandling:
+class TestDSRReportBuilderDatasetHandling:
     """Tests for DSR report builder's dataset handling functions"""
 
     def test_add_dataset(self, privacy_request: PrivacyRequest):
         """Test adding a dataset with collections"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
         collections = {
             "collection1": [{"id": 1}, {"id": 2}],
             "collection2": [{"id": 3}],
@@ -1011,7 +1122,7 @@ class TestDsrReportBuilderDatasetHandling:
 
     def test_add_dataset_empty_collections(self, privacy_request: PrivacyRequest):
         """Test adding a dataset with no collections"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
 
         builder._add_dataset("dataset1", {})
         builder.out.close()
@@ -1023,7 +1134,7 @@ class TestDsrReportBuilderDatasetHandling:
             assert "collection" not in content
 
 
-class TestDsrReportBuilderAttachmentContentWriting:
+class TestDSRReportBuilderAttachmentContentWriting:
     """Tests for DSR report builder's attachment content writing functionality"""
 
     @pytest.mark.parametrize(
@@ -1043,7 +1154,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         expected_size,
     ):
         """Test attachment content writing with various file types and sizes"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": file_name,
@@ -1085,7 +1196,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         expected_size,
     ):
         """Test attachment content writing with missing required fields"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": file_name,
@@ -1110,7 +1221,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         self, privacy_request: PrivacyRequest, directory
     ):
         """Test attachment content writing in different directories"""
-        builder = DsrReportBuilder(privacy_request, {})
+        builder = DSRReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
@@ -1126,7 +1237,7 @@ class TestDsrReportBuilderAttachmentContentWriting:
         assert result["test.txt"]["size"] == "1.0 KB"
 
 
-class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
+class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
     """Tests for content generation in DSR reports"""
 
     def test_report_structure(
@@ -1142,7 +1253,7 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
             "attachments": [],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -1164,7 +1275,7 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
 
     def test_template_rendering_edge_cases(self, privacy_request: PrivacyRequest):
         """Test template rendering with various edge cases"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
 
         # Test with missing data
         content = builder._populate_template(
@@ -1193,7 +1304,7 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
     def test_edge_cases(self, privacy_request: PrivacyRequest):
         """Test various edge cases in the DSR report builder"""
         # Test with empty file names
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
         builder._add_file("", "content")  # Should be ignored
         builder._add_file("test.txt", "")  # Should be ignored
 
@@ -1206,14 +1317,14 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
 
         # Test with empty attachments
         dsr_data = {"dataset1:collection1": [{"id": 1, "attachments": []}]}
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
             assert "data/dataset1/collection1/index.html" in zip_file.namelist()
 
 
-class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
+class TestDSRReportBuilderOrganization(TestDSRReportBuilderBase):
     """Tests for report organization and structure"""
 
     def test_dataset_ordering(self, privacy_request: PrivacyRequest):
@@ -1235,7 +1346,7 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
             "charlie:collection1": [{"id": 5}],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -1298,7 +1409,7 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
             "dataset2:collection1": [{"id": 4, "name": "Item 4"}],
         }
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
@@ -1329,9 +1440,8 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
 
     def test_concurrent_access(self, privacy_request: PrivacyRequest):
         """Test concurrent access to the zip file"""
-        import threading
 
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
         errors = []
 
         def write_file():
@@ -1357,7 +1467,6 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
 
     def test_performance_large_dataset(self, privacy_request: PrivacyRequest):
         """Test performance with a large dataset"""
-        import time
 
         # Create a smaller dataset for performance testing
         # 100 collections with 100 items each instead of 1000x1000
@@ -1370,7 +1479,7 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
         }
 
         start_time = time.time()
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
         report = builder.generate()
         end_time = time.time()
 

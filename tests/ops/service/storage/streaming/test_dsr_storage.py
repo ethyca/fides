@@ -123,7 +123,7 @@ class TestStreamDsrBufferToStorage:
         self,
         mock_smart_open_client_s3,
     ):
-        """Test integration with DsrReportBuilder - now handled by caller."""
+        """Test integration with DSRReportBuilder - now handled by caller."""
         # This test is no longer relevant since DSR generation is handled by the caller
         # The storage function now only handles streaming the buffer to storage
         content = "Generated DSR report content"

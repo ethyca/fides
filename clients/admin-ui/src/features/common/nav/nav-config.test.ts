@@ -242,6 +242,10 @@ describe("configureNavGroups", () => {
       expect(navGroups[3]).toMatchObject({
         title: "Settings",
         children: [
+          {
+            title: "Privacy requests",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           {
             title: "User Detail",
@@ -268,6 +272,10 @@ describe("configureNavGroups", () => {
       expect(navGroups[3]).toMatchObject({
         title: "Settings",
         children: [
+          {
+            title: "Privacy requests",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           {
             title: "User Detail",
