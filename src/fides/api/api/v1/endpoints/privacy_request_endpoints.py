@@ -508,7 +508,7 @@ def _filter_privacy_request_queryset(
             for field_name, value in identities.items()
         ]
 
-        identities_query = select([ProvidedIdentity.privacy_request_id]).where(
+        identities_query = select(ProvidedIdentity.privacy_request_id).where(
             or_(*identity_conditions)
             & (ProvidedIdentity.privacy_request_id.isnot(None))
         )

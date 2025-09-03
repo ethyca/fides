@@ -313,8 +313,8 @@ def loguru_caplog(caplog):
 
 
 def create_citext_extension(engine: Engine) -> None:
-    with engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+    with engine.begin() as connection:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS citext;"))
 
 
 @pytest.fixture
