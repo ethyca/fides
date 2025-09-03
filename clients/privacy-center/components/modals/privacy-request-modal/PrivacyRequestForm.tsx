@@ -48,7 +48,12 @@ const PrivacyRequestForm = ({
     touched,
     values,
     isSubmitting,
-    identityInputs: { name: nameInput, email: emailInput, phone: phoneInput },
+    legacyIdentityFields: {
+      name: nameInput,
+      email: emailInput,
+      phone: phoneInput,
+    },
+    customIdentityFields,
     customPrivacyRequestFields,
   } = usePrivacyRequestForm({
     onClose,
@@ -140,7 +145,10 @@ const PrivacyRequestForm = ({
             />
           </Form.Item>
         )}
-        {Object.entries(customPrivacyRequestFields)
+        {Object.entries({
+          ...customIdentityFields,
+          ...customPrivacyRequestFields,
+        })
           .filter(([, field]) => !field?.hidden)
           .map(([key, item]) => {
             const customFieldProps = (

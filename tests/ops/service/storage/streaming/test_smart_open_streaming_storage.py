@@ -252,96 +252,79 @@ class TestSmartOpenStreamingStorage:
             ],
         }
 
-        result = storage._collect_attachments(data)
+        result = storage._collect_and_validate_attachments(data)
 
         assert len(result) == 2
         # Check that direct attachments are processed
-        assert any("global.pdf" in str(att) for att in result)
+        assert any("global.pdf" in str(att.attachment.file_name) for att in result)
         # Check that nested attachments are processed
-        assert any("doc1.pdf" in str(att) for att in result)
+        assert any("doc1.pdf" in str(att.attachment.file_name) for att in result)
 
     def test_collect_direct_attachments(self, mock_smart_open_client):
         """Test collecting direct attachments."""
         storage = SmartOpenStreamingStorage(mock_smart_open_client)
 
-        attachments_list = [
-            {"file_name": "doc1.pdf", "download_url": "http://example.com/doc1.pdf"},
-            {"file_name": "doc2.pdf", "download_url": "http://example.com/doc2.pdf"},
-            {"invalid": "attachment"},  # Should be skipped
-        ]
-
-        result = storage._collect_direct_attachments(attachments_list)
-
-        assert len(result) == 2
-        assert result[0]["file_name"] == "doc1.pdf"
-        assert result[0]["download_url"] == "attachments/doc1.pdf"
-        assert result[0]["original_download_url"] == "http://example.com/doc1.pdf"
-
-    def test_collect_direct_attachments_no_file_name(self, mock_smart_open_client):
-        """Test collecting direct attachments without file_name."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        attachments_list = [
-            {"download_url": "http://example.com/doc1.pdf"},
-        ]
-
-        result = storage._collect_direct_attachments(attachments_list)
-
-        assert len(result) == 1
-        assert result[0]["download_url"] == "attachments/attachment_0"
-
-    def test_collect_nested_attachments(self, mock_smart_open_client):
-        """Test collecting nested attachments."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        key = "users"
-        items = [
-            {
-                "id": "1",
-                "attachments": [
-                    {
-                        "file_name": "doc1.pdf",
-                        "download_url": "http://example.com/doc1.pdf",
-                    },
-                ],
-            }
-        ]
-
-        result = storage._collect_nested_attachments(key, items)
-
-        assert len(result) == 1
-        assert result[0]["file_name"] == "doc1.pdf"
-        assert result[0]["_context"]["key"] == "users"
-        assert result[0]["_context"]["item_id"] == "1"
-
-    def test_find_attachments_recursive(self, mock_smart_open_client):
-        """Test recursive attachment finding."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        item = {
-            "id": "1",
+        data = {
             "attachments": [
                 {
                     "file_name": "doc1.pdf",
                     "download_url": "http://example.com/doc1.pdf",
                 },
-            ],
-            "nested": {
-                "attachments": [
-                    {
-                        "file_name": "doc2.pdf",
-                        "download_url": "http://example.com/doc2.pdf",
-                    },
-                ]
-            },
+                {
+                    "file_name": "doc2.pdf",
+                    "download_url": "http://example.com/doc2.pdf",
+                },
+                {"invalid": "attachment"},  # Should be skipped
+            ]
         }
 
-        result = storage._find_attachments_recursive(item, "users")
+        result = storage._collect_and_validate_attachments(data)
 
         assert len(result) == 2
-        assert result[0]["file_name"] == "doc1.pdf"
-        assert result[1]["file_name"] == "doc2.pdf"
-        assert result[1]["_context"]["path"] == "nested"
+        assert result[0].attachment.file_name == "doc1.pdf"
+        assert result[0].attachment.storage_key == "http://example.com/doc1.pdf"
+        assert result[1].attachment.file_name == "doc2.pdf"
+        assert result[1].attachment.storage_key == "http://example.com/doc2.pdf"
+
+    def test_collect_direct_attachments_no_file_name(self, mock_smart_open_client):
+        """Test collecting direct attachments without file_name."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        data = {
+            "attachments": [
+                {"download_url": "http://example.com/doc1.pdf"},
+            ]
+        }
+
+        result = storage._collect_and_validate_attachments(data)
+
+        # Attachments without file_name are skipped by the processing logic
+        assert len(result) == 0
+
+    def test_collect_nested_attachments(self, mock_smart_open_client):
+        """Test collecting nested attachments."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        data = {
+            "users": [
+                {
+                    "id": "1",
+                    "attachments": [
+                        {
+                            "file_name": "doc1.pdf",
+                            "download_url": "http://example.com/doc1.pdf",
+                        },
+                    ],
+                }
+            ]
+        }
+
+        result = storage._collect_and_validate_attachments(data)
+
+        assert len(result) == 1
+        assert result[0].attachment.file_name == "doc1.pdf"
+        assert result[0].attachment.storage_key == "http://example.com/doc1.pdf"
+        assert result[0].base_path == "data/manual/users/attachments"
 
     def test_validate_attachment_valid(self, mock_smart_open_client):
         """Test validating a valid attachment."""
