@@ -389,30 +389,21 @@ def process_attachments_contextually(
                         )
                         processed_attachments_list.extend(processed)
 
-    # Process top-level attachments (unprocessed ones)
+    # Process top-level attachments from the "attachments" key
+    # These are legitimate top-level attachments, not duplicates of dataset attachments
     if "attachments" in data:
-        unprocessed_attachments = []
-        for attachment in data["attachments"]:
-            attachment_key = (
-                attachment.get("download_url"),
-                attachment.get("file_name"),
-            )
-            if attachment_key not in processed_attachments:
-                unprocessed_attachments.append(attachment)
-
-        if unprocessed_attachments:
-            processed = _process_attachment_list(
-                unprocessed_attachments,
-                "attachments",
-                "attachments",
-                used_filenames_data,
-                used_filenames_attachments,
-                processed_attachments,
-                enable_streaming,
-                callback,
-                {"type": "top_level"},
-            )
-            processed_attachments_list.extend(processed)
+        processed = _process_attachment_list(
+            data["attachments"],
+            "attachments",
+            "attachments",
+            used_filenames_data,
+            used_filenames_attachments,
+            processed_attachments,
+            enable_streaming,
+            callback,
+            {"type": "top_level"},
+        )
+        processed_attachments_list.extend(processed)
 
     return processed_attachments_list
 
