@@ -22,6 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
 
 ### Added
+- Added the ability to selectively redact dataset, collection, and field names in DSR packages [#6487](https://github.com/ethyca/fides/pull/6487)
 - Added system group functionality to systems table [#6453](https://github.com/ethyca/fides/pull/6453)
 
 ### Security
