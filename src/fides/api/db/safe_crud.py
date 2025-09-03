@@ -154,7 +154,7 @@ async def get_resource(
 async def get_resource_with_custom_fields(
     sql_model: Type[T], fides_key: str, async_session: AsyncSession
 ) -> Dict[str, Any]:
-    """Get a resource from the databse by its FidesKey including it's custom fields.
+    """Get a resource from the database by its FidesKey including it's custom fields.
 
     Returns a dictionary of that resource.
 
