@@ -46,6 +46,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
 - DSR finalization UI tweaks [#6514](https://github.com/ethyca/fides/pull/6514)
 - Account for Timezone on Consent Report page [#6504](https://github.com/ethyca/fides/pull/6504)
+- Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
+- Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
+- Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
@@ -53,14 +56,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new npm task for Admin UI that enables optimized Cypress testing with API server connectivity during local development [#6483](https://github.com/ethyca/fides/pull/6483)
 - Added reusable table system with URL synchronization and Ant Design integration for standardized table behavior and deep linking support [#6447](https://github.com/ethyca/fides/pull/6447)
 - Refactored Action Center tables to use new standardized table state management hooks [#6349](https://github.com/ethyca/fides/pull/6349)
-
-### Fixed
-- Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
-
-
-### Fixed
-- Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
-- Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
 
 ## [2.68.0](https://github.com/ethyca/fides/compare/2.67.2...2.68.0)
 
