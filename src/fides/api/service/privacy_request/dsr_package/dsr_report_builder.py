@@ -18,7 +18,9 @@ from fides.api.service.storage.util import (
     create_attachment_info_dict,
     format_attachment_size,
     generate_attachment_url,
+    generate_attachment_url_from_storage_path,
     get_unique_filename,
+    is_attachment_field,
     process_attachment_naming,
     process_attachments_contextually,
 )
@@ -229,11 +231,12 @@ class DsrReportBuilder:
                 elif context.get("key") and context.get("item_id"):
                     actual_directory = f"{context['key']}/{context['item_id']}"
 
-            # Generate attachment URL using shared utility
-            attachment_url = generate_attachment_url(
+            # Generate attachment URL using shared utility with actual storage path
+            attachment_url = generate_attachment_url_from_storage_path(
                 attachment.get("download_url"),
                 unique_filename,
-                actual_directory,
+                actual_directory,  # This is the base_path where the file will be stored
+                actual_directory,  # This is the HTML template directory
                 self.enable_streaming,
             )
 
@@ -247,16 +250,17 @@ class DsrReportBuilder:
         # Convert list of tuples to dictionary
         return dict(processed_attachments)
 
-    def _process_attachments_using_shared_logic(self, data: dict[str, Any]) -> None:
-        """Process attachments using the shared contextual logic.
-
-        This method uses the shared contextual processing function to ensure
-        consistency between DSR report builder and streaming storage.
+    def _get_processed_attachments_list(
+        self, data: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        """Get all processed attachments using shared contextual logic.
 
         Args:
             data: The DSR data dictionary
+
+        Returns:
+            List of processed attachment dictionaries
         """
-        # Use the shared contextual processing function
         # Create temporary sets for compatibility with the shared function
         used_filenames_data = set()
         used_filenames_attachments = set()
@@ -280,6 +284,58 @@ class DsrReportBuilder:
         logger.debug(
             f"Processed {len(processed_attachments_list)} attachments using shared logic"
         )
+
+        return processed_attachments_list
+
+    def _generate_attachment_url_from_index(
+        self, context: dict[str, Any], unique_filename: str
+    ) -> str:
+        """Generate the correct URL from attachments/index.html to an attachment file.
+
+        Args:
+            context: The attachment context information
+            unique_filename: The unique filename of the attachment
+
+        Returns:
+            The relative URL from attachments/index.html to the attachment file
+        """
+        if context.get("type") == "top_level":
+            # Top-level attachments are in the same directory as the index
+            return unique_filename
+        elif context.get("type") in ["direct", "nested"]:
+            # Dataset attachments are in data/dataset/collection/attachments/
+            # From attachments/index.html, we need to go to ../data/dataset/collection/attachments/filename
+            dataset = context.get("dataset", "unknown")
+            collection = context.get("collection", "unknown")
+            return f"../data/{dataset}/{collection}/attachments/{unique_filename}"
+        else:
+            # Fallback for other cases - return just the filename
+            return unique_filename
+
+    def _create_attachment_info_with_corrected_url(
+        self, attachment_info: dict[str, str], correct_url: str
+    ) -> dict[str, str]:
+        """Create attachment info with corrected URL.
+
+        Args:
+            attachment_info: The original attachment info
+            correct_url: The corrected URL
+
+        Returns:
+            New attachment info with corrected URL and safe_url
+        """
+        corrected_attachment_info = attachment_info.copy()
+        corrected_attachment_info["url"] = correct_url
+        corrected_attachment_info["safe_url"] = quote(correct_url, safe="/:")
+        return corrected_attachment_info
+
+    def _process_attachments_using_shared_logic(self, data: dict[str, Any]) -> None:
+        """Process attachments using the shared contextual logic.
+
+        Args:
+            data: The DSR data dictionary
+        """
+        self._get_processed_attachments_list(data)
 
     def _process_attachment_callback(
         self,
@@ -402,6 +458,68 @@ class DsrReportBuilder:
             ),
         )
 
+    def _add_comprehensive_attachments_index(self) -> None:
+        """
+        Creates a comprehensive attachments index that includes ALL attachments
+        from all datasets and top-level attachments, with links pointing to their
+        actual storage locations.
+        """
+        # Get all processed attachments using shared logic
+        processed_attachments_list = self._get_processed_attachments_list(self.dsr_data)
+
+        # Create a comprehensive attachment links dictionary with deduplication
+        all_attachment_links = {}
+        seen_attachment_keys = set()
+
+        for processed_attachment in processed_attachments_list:
+            unique_filename = processed_attachment["unique_filename"]
+            attachment_info = processed_attachment["attachment_info"]
+            context = processed_attachment["context"]
+            attachment = processed_attachment["attachment"]
+
+            # Create a unique key based on the attachment content to avoid duplicates
+            attachment_key = (
+                attachment.get("download_url"),
+                attachment.get("file_name"),
+            )
+
+            # Skip if we've already processed this exact attachment
+            if attachment_key in seen_attachment_keys:
+                continue
+            seen_attachment_keys.add(attachment_key)
+
+            # Generate the correct URL from attachments/index.html to the actual file location
+            correct_url = self._generate_attachment_url_from_index(
+                context, unique_filename
+            )
+
+            # Create a descriptive key that includes the source location
+            if context.get("type") == "top_level":
+                key = f"Top-level: {unique_filename}"
+            elif context.get("type") in ["direct", "nested"]:
+                dataset = context.get("dataset", "unknown")
+                collection = context.get("collection", "unknown")
+                key = f"{dataset}/{collection}: {unique_filename}"
+            else:
+                key = unique_filename
+
+            # Create new attachment info with the correct URL
+            corrected_attachment_info = self._create_attachment_info_with_corrected_url(
+                attachment_info, correct_url
+            )
+            all_attachment_links[key] = corrected_attachment_info
+
+        # Generate comprehensive attachments index page
+        self._add_file(
+            "attachments/index.html",
+            self._populate_template(
+                "templates/attachments_index.html",
+                "All Attachments",
+                "All files attached to this privacy request",
+                all_attachment_links,
+            ),
+        )
+
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -439,22 +557,30 @@ class DsrReportBuilder:
                 self._add_dataset("dataset", datasets["dataset"])
                 self.main_links["Additional Data"] = "data/dataset/index.html"
 
-            # Add Additional Attachments last if it exists
-            # Only add attachments that weren't already processed in collections
-            if "attachments" in self.dsr_data:
-                # Filter out attachments that were already processed in collections
-                unprocessed_attachments = []
-                for attachment in self.dsr_data["attachments"]:
-                    attachment_key = (
-                        attachment.get("download_url"),
-                        attachment.get("file_name"),
+            # Add comprehensive attachments index that includes ALL attachments
+            # Check if there are any attachments at all (top-level or in datasets)
+            has_attachments = (
+                "attachments" in self.dsr_data and self.dsr_data["attachments"]
+            ) or any(
+                any(
+                    "attachments" in item
+                    or any(
+                        is_attachment_field(field_value)
+                        for field_value in item.values()
+                        if isinstance(field_value, list)
                     )
-                    if attachment_key not in self.processed_attachments:
-                        unprocessed_attachments.append(attachment)
+                    for item in collection
+                    if isinstance(item, dict)
+                )
+                for collection in datasets.values()
+                if isinstance(collection, dict)
+                for collection_items in collection.values()
+                if isinstance(collection_items, list)
+            )
 
-                if unprocessed_attachments:
-                    self._add_attachments(unprocessed_attachments)
-                    self.main_links["Additional Attachments"] = "attachments/index.html"
+            if has_attachments:
+                self._add_comprehensive_attachments_index()
+                self.main_links["All Attachments"] = "attachments/index.html"
 
             # create the main index once all the datasets have been added
             self._add_file(

@@ -135,6 +135,70 @@ def determine_dataset_name_from_path(base_path: str) -> str:
     return "unknown"
 
 
+def resolve_attachment_storage_path(
+    unique_filename: str,
+    base_path: str,
+) -> str:
+    """
+    Resolve the actual storage path for an attachment file.
+
+    This function provides a single source of truth for how attachment files
+    are stored in the ZIP file, ensuring consistency between DSR report builder
+    and streaming storage components.
+
+    Args:
+        unique_filename: The unique filename for the attachment
+        base_path: The base path for the attachment (e.g., "attachments", "data/dataset/collection")
+
+    Returns:
+        The full storage path for the attachment file
+    """
+    return f"{base_path}/{unique_filename}"
+
+
+def generate_attachment_url_from_storage_path(
+    download_url: str,
+    unique_filename: str,
+    base_path: str,
+    html_directory: str,
+    enable_streaming: bool = False,
+) -> str:
+    """
+    Generate attachment URL based on the actual storage path and HTML template location.
+
+    This function ensures that URLs in HTML templates correctly point to where
+    attachment files are actually stored in the ZIP file.
+
+    Args:
+        download_url: The original download URL
+        unique_filename: The unique filename for the attachment
+        base_path: The base path where the attachment is stored (e.g., "attachments", "data/dataset/collection")
+        html_directory: The directory where the HTML template is located
+        enable_streaming: Whether streaming mode is enabled
+
+    Returns:
+        The appropriate attachment URL
+    """
+    if enable_streaming:
+        # Calculate the actual storage path
+        storage_path = resolve_attachment_storage_path(unique_filename, base_path)
+
+        # Generate relative path from HTML template directory to storage path
+        if html_directory == "attachments" and base_path == "attachments":
+            # From attachments/index.html to attachments/filename.pdf (same directory)
+            return unique_filename
+        elif html_directory.startswith("data/") and base_path.startswith("data/"):
+            # From data/dataset/collection/index.html to data/dataset/collection/attachments/filename.pdf
+            # Both are in data/ structure, so go to attachments subdirectory
+            return f"attachments/{unique_filename}"
+        else:
+            # For other cases, calculate relative path
+            # This is a simplified approach - in practice, you might need more sophisticated path resolution
+            return f"../{storage_path}"
+    else:
+        return download_url
+
+
 def generate_attachment_url(
     download_url: str,
     unique_filename: str,
@@ -157,7 +221,7 @@ def generate_attachment_url(
         # For streaming mode, generate relative paths from the HTML template directory to the attachment
         if directory == "attachments":
             # From attachments/index.html to attachments/filename.pdf (same directory)
-            return f"attachments/{unique_filename}"
+            return unique_filename
         if directory.startswith("data/"):
             # From data/dataset_name/collection_name/index.html to data/dataset_name/collection_name/attachments/filename.pdf
             # The attachment is in the same dataset directory, so just go to attachments subdirectory
@@ -470,9 +534,13 @@ def _process_attachment_list(
         # Format file size using shared utility
         file_size = format_attachment_size(attachment.get("file_size"))
 
-        # Generate attachment URL using shared utility
-        attachment_url = generate_attachment_url(
-            attachment.get("download_url"), unique_filename, directory, enable_streaming
+        # Generate attachment URL using shared utility with actual storage path
+        attachment_url = generate_attachment_url_from_storage_path(
+            attachment.get("download_url"),
+            unique_filename,
+            directory,  # This is the base_path where the file will be stored
+            directory,  # This is the HTML template directory
+            enable_streaming,
         )
 
         # Create attachment info dictionary using shared utility

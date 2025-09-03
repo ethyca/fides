@@ -38,6 +38,7 @@ from fides.api.service.storage.util import (
     determine_dataset_name_from_path,
     get_unique_filename,
     process_attachments_contextually,
+    resolve_attachment_storage_path,
 )
 
 DEFAULT_ATTACHMENT_NAME = "attachment"
@@ -901,7 +902,9 @@ class SmartOpenStreamingStorage:
                 original_filename, self.used_filenames_per_dataset[dataset_name]
             )
             self.used_filenames_per_dataset[dataset_name].add(unique_filename)
-            file_path = f"{attachment_info.base_path}/{unique_filename}"
+            file_path = resolve_attachment_storage_path(
+                unique_filename, attachment_info.base_path
+            )
 
             try:
                 content_stream = self._create_attachment_content_stream(
