@@ -153,8 +153,12 @@ def bigquery_connection_config_without_default_dataset(
             "access": AccessLevel.write,
         },
     )
+    # Pulling from integration config file or GitHub secrets
+    dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
+        "BIGQUERY_DATASET"
+    )
     if bigquery_keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds)
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -513,8 +517,8 @@ def bigquery_resources_with_namespace_meta(
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
 
-    # Get the dataset name from the namespace metadata
-    dataset_name = bigquery_example_test_dataset_config_with_namespace_meta.ctl_dataset.fides_meta["namespace"]["dataset_id"]
+    # Get the dataset name from the connection config
+    dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
 
     with bigquery_client.connect() as connection:
         uuid = str(uuid4())
