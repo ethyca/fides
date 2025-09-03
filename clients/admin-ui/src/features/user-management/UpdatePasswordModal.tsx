@@ -13,9 +13,12 @@ import {
   useDisclosure,
   useToast,
 } from "fidesui";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 
 import { successToastParams } from "../common/toast";
+import { clearAuthAndLogout } from "./logout-helpers";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
@@ -24,6 +27,8 @@ const useUpdatePasswordModal = (id: string) => {
   const [oldPasswordValue, setOldPasswordValue] = useState("");
   const [newPasswordValue, setNewPasswordValue] = useState("");
   const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   const changePasswordValidation = !!(
     id &&
@@ -49,7 +54,9 @@ const useUpdatePasswordModal = (id: string) => {
         .unwrap()
         .then(() => {
           toast(successToastParams("Password updated"));
-          modal.onClose();
+          clearAuthAndLogout(dispatch as any, router, {
+            onClose: modal.onClose,
+          });
         });
     }
   };
