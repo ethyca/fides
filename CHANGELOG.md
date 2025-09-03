@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.69.1...main)
+
+### Deprecated
+- DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
+
+## [2.69.1](https://github.com/ethyca/fides/compare/2.69.0...2.69.1)
 
 ### Added
 - Added the ability to selectively redact dataset, collection, and field names in DSR packages [#6487](https://github.com/ethyca/fides/pull/6487)
@@ -30,8 +35,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
 - Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
 
-### Deprecated
-- DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
 
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
