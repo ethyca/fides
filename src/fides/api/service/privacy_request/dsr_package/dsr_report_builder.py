@@ -276,7 +276,6 @@ class DsrReportBuilder:
             used_filenames_attachments,
             self.processed_attachments,
             enable_streaming=self.enable_streaming,
-            callback=self._process_attachment_callback,
         )
 
         # Filter out top-level attachments that were already processed as dataset attachments
@@ -284,7 +283,7 @@ class DsrReportBuilder:
             pa
             for pa in processed_attachments_list
             if not (
-                pa["context"].get("type") == "top_level"
+                pa["context"].get("type") in ["direct", "nested"]
                 and (
                     pa["attachment"].get("download_url"),
                     pa["attachment"].get("file_name"),
@@ -339,39 +338,6 @@ class DsrReportBuilder:
         corrected_attachment_info["url"] = correct_url
         corrected_attachment_info["safe_url"] = quote(correct_url, safe="/:")
         return corrected_attachment_info
-
-    def _process_attachments_using_shared_logic(self, data: dict[str, Any]) -> None:
-        """Process attachments using the shared contextual logic.
-
-        Args:
-            data: The DSR data dictionary
-        """
-        self._get_processed_attachments_list(data)
-
-    def _process_attachment_callback(
-        self,
-        attachment: dict[str, Any],
-        unique_filename: str,
-        attachment_info: dict[str, str],
-        context: dict[str, Any],
-    ) -> None:
-        """Callback function to process each attachment during contextual processing.
-
-        This method can be used to perform additional processing on each attachment
-        as it's encountered during the contextual processing.
-
-        Args:
-            attachment: The original attachment dictionary
-            unique_filename: The unique filename generated for the attachment
-            attachment_info: The processed attachment info dictionary
-            context: Context information about where the attachment was found
-        """
-        # This is a placeholder for any additional processing that might be needed
-        # For now, we just log the processing
-        logger.debug(
-            f"Processed attachment {unique_filename} from {context.get('type', 'unknown')} "
-            f"context in dataset {context.get('dataset', 'unknown')}"
-        )
 
     def _add_collection(
         self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
