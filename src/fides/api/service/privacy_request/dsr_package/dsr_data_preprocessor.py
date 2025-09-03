@@ -74,10 +74,11 @@ class DSRDataPreprocessor:
 
     def _create_dataset_mapping(self, dsr_data: dict[str, Any]) -> Dict[str, str]:
         """Create dataset name mapping with ordered numbering for redacted datasets."""
+
         # Extract unique dataset names in order of appearance
         dataset_names = []
         for key, rows in dsr_data.items():
-            if key != "attachments":
+            if key not in ["attachments", "dataset"]:
                 dataset_name, _ = self._parse_key(key, rows)
                 dataset_names.append(dataset_name)
 
@@ -86,12 +87,21 @@ class DSRDataPreprocessor:
         # Create mapping using position-based numbering for redacted datasets
         mapping = {}
 
+        # Handle regular datasets
         for index, name in enumerate(unique_datasets, 1):
             hierarchical_key = self._build_hierarchical_key("dataset", name)
             if self._should_redact(name, hierarchical_key):
                 mapping[name] = f"dataset_{index}"
             else:
                 mapping[name] = name  # Keep original name
+
+        # Special "dataset" and "attachment" cases comes last
+        # These keys are reserved for additional data and do not need to be redacted
+        if "dataset" in dsr_data.keys():
+            mapping["dataset"] = "dataset"
+
+        if "attachments" in dsr_data.keys():
+            mapping["attachments"] = "attachments"
 
         return mapping
 
