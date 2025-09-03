@@ -62,6 +62,7 @@ class DsrReportBuilder:
         """
         Initializes the DSR report builder.
         """
+        logger.info(f"Initializing DSR report builder with data:\n{dsr_data}")
         # Define pretty_print function for Jinja templates
         jinja2.filters.FILTERS["pretty_print"] = lambda value, indent=4: json.dumps(
             value, indent=indent, cls=StorageJSONEncoder
