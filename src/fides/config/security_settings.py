@@ -221,7 +221,7 @@ class SecuritySettings(FidesSettings):
     @classmethod
     def validate_rate_limit_client_ip_header(
         cls,
-        v: str,
+        v: Optional[str],
     ) -> Optional[str]:
         """Validate supported `rate_limit_client_ip_header`"""
         insecure_headers = ["x-forwarded-for"]
