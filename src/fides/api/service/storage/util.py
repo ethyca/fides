@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from enum import Enum as EnumType
 from typing import Any, Callable, Optional
 from urllib.parse import quote
@@ -187,14 +188,13 @@ def generate_attachment_url_from_storage_path(
         if html_directory == "attachments" and base_path == "attachments":
             # From attachments/index.html to attachments/filename.pdf (same directory)
             return unique_filename
-        elif html_directory.startswith("data/") and base_path.startswith("data/"):
+        if html_directory.startswith("data/") and base_path.startswith("data/"):
             # From data/dataset/collection/index.html to data/dataset/collection/attachments/filename.pdf
             # Both are in data/ structure, so go to attachments subdirectory
             return f"attachments/{unique_filename}"
-        else:
-            # For other cases, calculate relative path
-            # This is a simplified approach - in practice, you might need more sophisticated path resolution
-            return f"../{storage_path}"
+        # For other cases, calculate relative path
+        # This is a simplified approach - in practice, you might need more sophisticated path resolution
+        return f"../{storage_path}"
     else:
         return download_url
 
@@ -229,8 +229,8 @@ def generate_attachment_url(
         # For other directory structures, assume attachments are in an "attachments" subdirectory
         # This handles legacy cases and other directory structures
         return f"attachments/{unique_filename}"
-    else:
-        return download_url
+
+    return download_url
 
 
 def process_attachment_naming(
@@ -455,7 +455,6 @@ def _get_datasets_from_dsr_data(dsr_data: dict[str, Any]) -> dict[str, Any]:
     Returns:
         Dictionary of datasets with collections
     """
-    from collections import defaultdict
 
     datasets: dict[str, Any] = defaultdict(lambda: defaultdict(list))
 
@@ -524,12 +523,14 @@ def _process_attachment_list(
         )
 
         # Process attachment naming using shared utility
-        unique_filename, attachment_key = process_attachment_naming(
+        result = process_attachment_naming(
             attachment, used_filenames, processed_attachments, dataset_name
         )
 
-        if unique_filename is None:  # Skip if processing failed
+        if result is None:  # Skip if processing failed
             continue
+
+        unique_filename, _ = result
 
         # Format file size using shared utility
         file_size = format_attachment_size(attachment.get("file_size"))
@@ -602,7 +603,7 @@ def convert_processed_attachments_to_attachment_processing_info(
         attachment_with_context["_context"] = processed_attachment["context"]
 
         # Validate and convert to AttachmentProcessingInfo
-        if validate_attachment_func:
+        if validate_attachment_func is not None:
             validated = validate_attachment_func(attachment_with_context)
             if validated:
                 validated_attachments.append(validated)

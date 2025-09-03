@@ -200,12 +200,14 @@ class DsrReportBuilder:
             used_filenames = self.used_filenames_per_dataset[dataset_name]
 
             # Process attachment naming using shared utility
-            unique_filename, _ = process_attachment_naming(
+            result = process_attachment_naming(
                 attachment, used_filenames, self.processed_attachments, dataset_name
             )
 
-            if unique_filename is None:  # Skip if processing failed
+            if result is None:  # Skip if processing failed
                 continue
+
+            unique_filename, _ = result
 
             # Format file size using shared utility
             file_size = format_attachment_size(attachment.get("file_size"))
