@@ -13,7 +13,15 @@ from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 
 from fides.api.schemas.policy import ActionType
-from fides.api.service.storage.util import get_unique_filename
+from fides.api.service.storage.util import (
+    _get_datasets_from_dsr_data,
+    create_attachment_info_dict,
+    format_attachment_size,
+    generate_attachment_url,
+    get_unique_filename,
+    process_attachment_naming,
+    process_attachments_contextually,
+)
 from fides.api.util.storage_util import StorageJSONEncoder, format_size
 from fides.config import CONFIG
 
@@ -188,64 +196,107 @@ class DsrReportBuilder:
             if not isinstance(attachment, dict):
                 continue
 
-            file_name = attachment.get("file_name")
-            download_url = attachment.get("download_url")
-            if not file_name or not download_url:
-                logger.warning(
-                    f"Skipping attachment with missing {'file name' if not file_name else 'download URL'}"
-                )
+            # Get the appropriate used_filenames set based on dataset type
+            used_filenames = (
+                self.used_filenames_attachments
+                if dataset_name == "attachments"
+                else self.used_filenames_data
+            )
+
+            # Process attachment naming using shared utility
+            unique_filename, attachment_key = process_attachment_naming(
+                attachment, used_filenames, self.processed_attachments, dataset_name
+            )
+
+            if unique_filename is None:  # Skip if processing failed
                 continue
 
-            # Format file size
-            file_size = attachment.get("file_size")
-            file_size = (
-                format_size(float(file_size))
-                if isinstance(file_size, (int, float))
-                else "Unknown"
+            # Format file size using shared utility
+            file_size = format_attachment_size(attachment.get("file_size"))
+
+            # Determine the actual directory for this attachment based on its context
+            actual_directory = directory
+            if attachment.get("_context"):
+                context = attachment["_context"]
+                if context.get("type") == "direct":
+                    actual_directory = (
+                        f"data/{context['dataset']}/{context['collection']}"
+                    )
+                elif context.get("type") == "nested":
+                    actual_directory = (
+                        f"data/{context['dataset']}/{context['collection']}"
+                    )
+                elif context.get("type") == "top_level":
+                    actual_directory = "attachments"
+                # For old context structure, keep the original directory
+                elif context.get("key") and context.get("item_id"):
+                    actual_directory = f"{context['key']}/{context['item_id']}"
+
+            # Generate attachment URL using shared utility
+            attachment_url = generate_attachment_url(
+                attachment.get("download_url"),
+                unique_filename,
+                actual_directory,
+                self.enable_streaming,
             )
 
-            # Get or generate unique filename
-            attachment_key = (download_url, file_name)
-            if attachment_key not in self.processed_attachments:
-                used_filenames = (
-                    self.used_filenames_attachments
-                    if dataset_name == "attachments"
-                    else self.used_filenames_data
-                )
-                unique_filename = get_unique_filename(file_name, used_filenames)
-                used_filenames.add(unique_filename)
-                self.processed_attachments[attachment_key] = unique_filename
-            else:
-                unique_filename = self.processed_attachments[attachment_key]
-
-            # Set attachment URL based on streaming mode
-            if self.enable_streaming:
-                depth = directory.count("/") + 1 if directory.startswith("data/") else 0
-                attachment_url = (
-                    "../" * depth + f"attachments/{unique_filename}"
-                    if depth
-                    else unique_filename
-                )
-            else:
-                attachment_url = download_url
-
-            # Always encode the URL for safe usage in templates
-            safe_url = quote(attachment_url, safe="/:")
-
-            processed_attachments.append(
-                (
-                    unique_filename,
-                    {
-                        "url": attachment_url,
-                        "safe_url": safe_url,
-                        "size": file_size,
-                        "original_name": file_name,
-                    },
-                )
+            # Create attachment info dictionary using shared utility
+            attachment_info = create_attachment_info_dict(
+                attachment_url, file_size, attachment.get("file_name")
             )
+
+            processed_attachments.append((unique_filename, attachment_info))
 
         # Convert list of tuples to dictionary
         return dict(processed_attachments)
+
+    def _process_attachments_using_shared_logic(self, data: dict[str, Any]) -> None:
+        """Process attachments using the shared contextual logic.
+
+        This method uses the shared contextual processing function to ensure
+        consistency between DSR report builder and streaming storage.
+
+        Args:
+            data: The DSR data dictionary
+        """
+        # Use the shared contextual processing function
+        processed_attachments_list = process_attachments_contextually(
+            data,
+            self.used_filenames_data,
+            self.used_filenames_attachments,
+            self.processed_attachments,
+            enable_streaming=self.enable_streaming,
+            callback=self._process_attachment_callback,
+        )
+
+        logger.debug(
+            f"Processed {len(processed_attachments_list)} attachments using shared logic"
+        )
+
+    def _process_attachment_callback(
+        self,
+        attachment: dict[str, Any],
+        unique_filename: str,
+        attachment_info: dict[str, str],
+        context: dict[str, Any],
+    ) -> None:
+        """Callback function to process each attachment during contextual processing.
+
+        This method can be used to perform additional processing on each attachment
+        as it's encountered during the contextual processing.
+
+        Args:
+            attachment: The original attachment dictionary
+            unique_filename: The unique filename generated for the attachment
+            attachment_info: The processed attachment info dictionary
+            context: Context information about where the attachment was found
+        """
+        # This is a placeholder for any additional processing that might be needed
+        # For now, we just log the processing
+        logger.debug(
+            f"Processed attachment {unique_filename} from {context.get('type', 'unknown')} "
+            f"context in dataset {context.get('dataset', 'unknown')}"
+        )
 
     def _add_collection(
         self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
@@ -343,35 +394,6 @@ class DsrReportBuilder:
             ),
         )
 
-    def _get_datasets_from_dsr_data(self) -> dict[str, Any]:
-        """
-        Returns the datasets from the DSR data.
-        """
-        # pre-process data to split the dataset:collection keys
-        datasets: dict[str, Any] = defaultdict(lambda: defaultdict(list))
-        for key, rows in self.dsr_data.items():
-
-            # we handle attachments separately
-            if key == "attachments":
-                continue
-
-            parts = key.split(":", 1)
-            if len(parts) > 1:
-                dataset_name, collection_name = parts
-            else:
-                for row in rows:
-                    if "system_name" in row:
-                        dataset_name = row["system_name"]
-                        collection_name = parts[0]
-                        break
-                else:
-                    dataset_name = "manual"
-                    collection_name = parts[0]
-
-            datasets[dataset_name][collection_name].extend(rows)
-
-        return datasets
-
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -392,7 +414,7 @@ class DsrReportBuilder:
             )
 
             # pre-process data to split the dataset:collection keys
-            datasets: dict[str, Any] = self._get_datasets_from_dsr_data()
+            datasets: dict[str, Any] = _get_datasets_from_dsr_data(self.dsr_data)
 
             # Sort datasets alphabetically, excluding special cases
             regular_datasets = [
