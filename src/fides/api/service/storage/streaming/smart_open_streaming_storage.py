@@ -384,10 +384,21 @@ class SmartOpenStreamingStorage:
             List of validated AttachmentProcessingInfo objects
         """
         # Use the DSR report builder's processed attachments
+        # Create temporary sets for compatibility with the shared function
+        used_filenames_data = set()
+        used_filenames_attachments = set()
+
+        # Populate the temporary sets from the DSR builder's per-dataset tracking
+        for dataset_name, filenames in dsr_builder.used_filenames_per_dataset.items():
+            if dataset_name == "attachments":
+                used_filenames_attachments.update(filenames)
+            else:
+                used_filenames_data.update(filenames)
+
         processed_attachments_list = process_attachments_contextually(
             data,
-            dsr_builder.used_filenames_data,
-            dsr_builder.used_filenames_attachments,
+            used_filenames_data,
+            used_filenames_attachments,
             dsr_builder.processed_attachments,
             enable_streaming=True,  # Always use streaming mode for storage
         )

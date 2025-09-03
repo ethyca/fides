@@ -157,14 +157,14 @@ def generate_attachment_url(
         # For streaming mode, generate relative paths from the HTML template directory to the attachment
         if directory == "attachments":
             # From attachments/index.html to attachments/filename.pdf (same directory)
-            return unique_filename
-        elif directory.startswith("data/"):
-            # From data/dataset_name/collection_name/ to data/dataset_name/collection_name/attachments/filename.pdf
+            return f"attachments/{unique_filename}"
+        if directory.startswith("data/"):
+            # From data/dataset_name/collection_name/index.html to data/dataset_name/collection_name/attachments/filename.pdf
             # The attachment is in the same dataset directory, so just go to attachments subdirectory
             return f"attachments/{unique_filename}"
-        else:
-            # From root (welcome.html) to attachments/filename.pdf
-            return f"attachments/{unique_filename}"
+        # For other directory structures, assume attachments are in an "attachments" subdirectory
+        # This handles legacy cases and other directory structures
+        return f"attachments/{unique_filename}"
     else:
         return download_url
 

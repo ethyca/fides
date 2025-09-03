@@ -91,10 +91,9 @@ class DsrReportBuilder:
         self.dsr_data = dsr_data
         self.enable_streaming = enable_streaming
 
-        # Track used filenames with different behavior for data vs attachments
-        # Data datasets share numbering globally, attachments have separate numbering
-        self.used_filenames_data: set[str] = set()  # Shared across all data datasets
-        self.used_filenames_attachments: set[str] = set()  # Separate for attachments
+        # Track used filenames per dataset to prevent conflicts within the same dataset
+        # Maps dataset_name -> set of used filenames
+        self.used_filenames_per_dataset: dict[str, set[str]] = {}
 
         # Track attachments by their unique identifier to prevent duplicate processing
         # Maps (download_url, file_name) -> unique_filename
@@ -196,12 +195,10 @@ class DsrReportBuilder:
             if not isinstance(attachment, dict):
                 continue
 
-            # Get the appropriate used_filenames set based on dataset type
-            used_filenames = (
-                self.used_filenames_attachments
-                if dataset_name == "attachments"
-                else self.used_filenames_data
-            )
+            # Get or create the used_filenames set for this dataset
+            if dataset_name not in self.used_filenames_per_dataset:
+                self.used_filenames_per_dataset[dataset_name] = set()
+            used_filenames = self.used_filenames_per_dataset[dataset_name]
 
             # Process attachment naming using shared utility
             unique_filename, attachment_key = process_attachment_naming(
@@ -260,10 +257,21 @@ class DsrReportBuilder:
             data: The DSR data dictionary
         """
         # Use the shared contextual processing function
+        # Create temporary sets for compatibility with the shared function
+        used_filenames_data = set()
+        used_filenames_attachments = set()
+
+        # Populate the temporary sets from our per-dataset tracking
+        for dataset_name, filenames in self.used_filenames_per_dataset.items():
+            if dataset_name == "attachments":
+                used_filenames_attachments.update(filenames)
+            else:
+                used_filenames_data.update(filenames)
+
         processed_attachments_list = process_attachments_contextually(
             data,
-            self.used_filenames_data,
-            self.used_filenames_attachments,
+            used_filenames_data,
+            used_filenames_attachments,
             self.processed_attachments,
             enable_streaming=self.enable_streaming,
             callback=self._process_attachment_callback,
