@@ -12,6 +12,7 @@ class TestHubspotConnector:
     def test_hubspot_connection_test(self, hubspot_runner: ConnectorRunner) -> None:
         hubspot_runner.test_connection()
 
+    @pytest.mark.xfail(reason="Unable to create user in Hubspot")
     async def test_hubspot_access_request_task(
         self,
         hubspot_runner: ConnectorRunner,
@@ -42,6 +43,7 @@ class TestHubspotConnector:
             == hubspot_identity_email
         )
 
+    @pytest.mark.xfail(reason="Unable to create user in Hubspot")
     async def test_hubspot_erasure_request_task(
         self,
         hubspot_runner: ConnectorRunner,
