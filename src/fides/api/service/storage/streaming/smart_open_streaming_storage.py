@@ -1,5 +1,4 @@
-"""Smart-open based streaming storage for efficient cloud-to-cloud data transfer."""
-
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import csv
@@ -18,7 +17,7 @@ from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DsrReportBuilder,
+    DSRReportBuilder,
 )
 from fides.api.service.storage.streaming.dsr_storage import (
     create_dsr_report_files_generator,
@@ -34,6 +33,15 @@ from fides.api.service.storage.streaming.schemas import (
     StreamingBufferConfig,
 )
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
+from fides.api.service.storage.util import (
+    convert_processed_attachments_to_attachment_processing_info,
+    determine_dataset_name_from_path,
+    extract_storage_key_from_attachment,
+    get_unique_filename,
+    process_attachments_contextually,
+    resolve_attachment_storage_path,
+    resolve_base_path_from_context,
+)
 
 DEFAULT_ATTACHMENT_NAME = "attachment"
 DEFAULT_FILE_MODE = 0o644
@@ -68,6 +76,9 @@ class SmartOpenStreamingStorage:
         """
         self.storage_client = storage_client
         self.chunk_size = chunk_size
+        # Track used filenames per dataset to match DSR report builder behavior
+        # Maps dataset_name -> set of used filenames
+        self.used_filenames_per_dataset: dict[str, set[str]] = {}
 
     def _parse_storage_url(self, storage_key: str) -> tuple[str, str]:
         """Parse storage URL and return (bucket, key).
@@ -229,138 +240,6 @@ class SmartOpenStreamingStorage:
 
         return packages
 
-    def _collect_attachments(self, data: dict) -> list[dict]:
-        """Collect all attachment data from the input data structure.
-
-        This method handles both direct attachments (under 'attachments' key) and
-        nested attachments within items. It returns raw attachment data without validation.
-
-        Args:
-            data: The data dictionary containing items with attachments
-
-        Returns:
-            List of raw attachment dictionaries with metadata
-        """
-        all_attachments = []
-
-        for key, value in data.items():
-
-            if not isinstance(value, list) or not value:
-                continue
-
-            # Collect direct attachments if this key is "attachments"
-            if key == "attachments":
-                all_attachments.extend(self._collect_direct_attachments(value))
-
-            # Collect nested attachments from items
-            all_attachments.extend(self._collect_nested_attachments(key, value))
-
-        logger.debug(f"Collected {len(all_attachments)} raw attachments")
-        return all_attachments
-
-    def _collect_direct_attachments(self, attachments_list: list) -> list[dict]:
-        """Collect attachments from a direct attachments list.
-
-        Args:
-            attachments_list: List of attachment dictionaries
-
-        Returns:
-            List of attachment data dictionaries with metadata
-        """
-        direct_attachments = []
-
-        for idx, attachment in enumerate(attachments_list):
-            if not isinstance(attachment, dict):
-                continue
-
-            # Check if this looks like an attachment (has file_name or download_url)
-            if "file_name" in attachment or "download_url" in attachment:
-                # Transform download_url to internal access package URL for access package display
-                if "download_url" in attachment:
-                    attachment["original_download_url"] = attachment["download_url"]
-                    attachment["download_url"] = (
-                        f"attachments/{attachment.get('file_name', f'attachment_{idx}')}"
-                    )
-
-                direct_attachments.append(attachment)
-
-        return direct_attachments
-
-    def _collect_nested_attachments(self, key: str, items: list) -> list[dict]:
-        """Collect attachments from nested items.
-
-        Args:
-            key: The key for the items list
-            items: List of items that may contain attachments
-
-        Returns:
-            List of attachment data dictionaries with metadata
-        """
-        nested_attachments = []
-
-        for item in items:
-            if not isinstance(item, dict):
-                continue
-
-            # Recursively search for attachments in nested structures
-            item_attachments = self._find_attachments_recursive(item, key)
-            nested_attachments.extend(item_attachments)
-
-        return nested_attachments
-
-    def _find_attachments_recursive(
-        self, item: dict, context_key: str, path: str = ""
-    ) -> list[dict]:
-        """Recursively find attachments in nested dictionary structures.
-
-        Args:
-            item: Dictionary item to search
-            context_key: The top-level key for context
-            path: Current path in the nested structure
-
-        Returns:
-            List of attachment data dictionaries with metadata
-        """
-        attachments = []
-
-        # Check if this item has direct attachments
-        if "attachments" in item and isinstance(item["attachments"], list):
-            for attachment in item["attachments"]:
-                if not isinstance(attachment, dict):
-                    continue
-
-                # Check if this looks like an attachment
-                if "file_name" in attachment or "download_url" in attachment:
-                    # Add context about which item this attachment belongs to
-                    attachment_with_context = attachment.copy()
-                    attachment_with_context["_context"] = {
-                        "key": context_key,
-                        "item_id": item.get("id", "unknown"),
-                        "path": path,
-                    }
-
-                    # Transform download_url to internal access package URL
-                    if "download_url" in attachment:
-                        attachment_with_context["original_download_url"] = attachment[
-                            "download_url"
-                        ]
-                        attachment_with_context["download_url"] = (
-                            f"attachments/{attachment.get('file_name', 'attachment')}"
-                        )
-
-                    attachments.append(attachment_with_context)
-
-        # Recursively search nested dictionaries
-        for key, value in item.items():
-            if isinstance(value, dict):
-                current_path = f"{path}.{key}" if path else key
-                nested_attachments = self._find_attachments_recursive(
-                    value, context_key, current_path
-                )
-                attachments.extend(nested_attachments)
-
-        return attachments
-
     def _validate_attachment(
         self, attachment: dict
     ) -> Optional[AttachmentProcessingInfo]:
@@ -373,12 +252,8 @@ class SmartOpenStreamingStorage:
             AttachmentProcessingInfo if valid, None otherwise
         """
         try:
-            # Extract required fields - use original_download_url for storage operations
-            storage_key = (
-                attachment.get("original_download_url")
-                or attachment.get("download_url")
-                or attachment.get("file_name", "")
-            )
+            # Extract storage key using shared utility
+            storage_key = extract_storage_key_from_attachment(attachment)
             if not storage_key:
                 return None
 
@@ -390,11 +265,8 @@ class SmartOpenStreamingStorage:
                 content_type=attachment.get("content_type"),
             )
 
-            # Create base path for the attachment in the zip
-            base_path = "attachments"
-            if attachment.get("_context"):
-                context = attachment["_context"]
-                base_path = f"{context['key']}/{context['item_id']}/attachments"
+            # Resolve base path using shared utility
+            base_path = resolve_base_path_from_context(attachment)
 
             # Create AttachmentProcessingInfo
             processing_info = AttachmentProcessingInfo(
@@ -403,9 +275,6 @@ class SmartOpenStreamingStorage:
                 item=attachment,
             )
 
-            logger.debug(
-                f"Successfully validated attachment: {attachment_info.storage_key}"
-            )
             return processing_info
 
         except (ValueError, TypeError, KeyError) as e:
@@ -438,9 +307,6 @@ class SmartOpenStreamingStorage:
                     total_bytes += len(chunk)
                     yield chunk
 
-                logger.debug(
-                    f"Completed streaming {chunk_count} chunks ({total_bytes} bytes) for {storage_key}"
-                )
         except Exception as e:
             logger.warning(f"Failed to stream attachment {storage_key}: {e}")
             # Yield empty content on failure
@@ -449,10 +315,10 @@ class SmartOpenStreamingStorage:
     def _collect_and_validate_attachments(
         self, data: dict
     ) -> list[AttachmentProcessingInfo]:
-        """Collect and validate all attachments from the data.
+        """Collect and validate attachments using the same contextual approach as DSR report builder.
 
-        This method now delegates to _collect_attachments and _validate_attachment
-        for better separation of concerns and readability.
+        This method uses the shared contextual processing logic to ensure consistency
+        between DSR report builder and streaming storage.
 
         Args:
             data: The data dictionary containing items with attachments
@@ -460,17 +326,64 @@ class SmartOpenStreamingStorage:
         Returns:
             List of validated AttachmentProcessingInfo objects
         """
-        # Collect raw attachment data
-        raw_attachments = self._collect_attachments(data)
+        # Initialize tracking structures (similar to DSR report builder)
+        used_filenames_data: set[str] = set()
+        used_filenames_attachments: set[str] = set()
+        processed_attachments: dict[tuple[str, str], str] = {}
 
-        # Validate and convert each attachment
-        validated_attachments = []
-        for attachment_data in raw_attachments:
-            validated = self._validate_attachment(attachment_data)
-            if validated:
-                validated_attachments.append(validated)
+        # Use the shared contextual processing function
+        processed_attachments_list = process_attachments_contextually(
+            data,
+            used_filenames_data,
+            used_filenames_attachments,
+            processed_attachments,
+            enable_streaming=True,  # Always use streaming mode for storage
+        )
 
-        return validated_attachments
+        # Convert to AttachmentProcessingInfo objects using shared utility
+        return convert_processed_attachments_to_attachment_processing_info(
+            processed_attachments_list, self._validate_attachment
+        )
+
+    def _collect_and_validate_attachments_from_dsr_builder(
+        self, data: dict, dsr_builder: "DSRReportBuilder"
+    ) -> list[AttachmentProcessingInfo]:
+        """Collect and validate attachments using the DSR report builder's processed attachments.
+
+        This method reuses the DSR report builder's processed attachments to avoid
+        duplicate processing and ensure consistency.
+
+        Args:
+            data: The data dictionary containing items with attachments
+            dsr_builder: The DSR report builder instance that has already processed attachments
+
+        Returns:
+            List of validated AttachmentProcessingInfo objects
+        """
+        # Use the DSR report builder's processed attachments
+        # Create temporary sets for compatibility with the shared function
+        used_filenames_data = set()
+        used_filenames_attachments = set()
+
+        # Populate the temporary sets from the DSR builder's per-dataset tracking
+        for dataset_name, filenames in dsr_builder.used_filenames_per_dataset.items():
+            if dataset_name == "attachments":
+                used_filenames_attachments.update(filenames)
+            else:
+                used_filenames_data.update(filenames)
+
+        processed_attachments_list = process_attachments_contextually(
+            data,
+            used_filenames_data,
+            used_filenames_attachments,
+            dsr_builder.processed_attachments,
+            enable_streaming=True,  # Always use streaming mode for storage
+        )
+
+        # Convert to AttachmentProcessingInfo objects using shared utility
+        return convert_processed_attachments_to_attachment_processing_info(
+            processed_attachments_list, self._validate_attachment
+        )
 
     @retry_cloud_storage_operation(
         provider="smart_open_streaming",
@@ -513,6 +426,9 @@ class SmartOpenStreamingStorage:
         self._validate_upload_inputs(privacy_request, document)
         if not privacy_request:
             raise ValueError("Privacy request must be provided")
+
+        # Reset used filenames for this upload operation
+        self.used_filenames_per_dataset.clear()
 
         # Use default buffer config if none provided
         if buffer_config is None:
@@ -628,18 +544,22 @@ class SmartOpenStreamingStorage:
         """
         # Generate the DSR report first
         try:
-            dsr_buffer = DsrReportBuilder(
+            dsr_builder = DSRReportBuilder(
                 privacy_request=privacy_request,
                 dsr_data=data,
-            ).generate()
+                enable_streaming=True,
+            )
+            dsr_buffer = dsr_builder.generate()
             # Reset buffer position to ensure it can be read multiple times
             dsr_buffer.seek(0)
         except Exception as e:
             logger.error(f"Failed to generate DSR report: {e}")
             raise StorageUploadError(f"Failed to generate DSR report: {e}") from e
 
-        # Check if there are attachments to include
-        all_attachments = self._collect_and_validate_attachments(data)
+        # Use the DSR report builder's processed attachments to avoid duplicates
+        all_attachments = self._collect_and_validate_attachments_from_dsr_builder(
+            data, dsr_builder
+        )
 
         if not all_attachments:
             # No attachments, just upload the DSR report
@@ -733,7 +653,7 @@ class SmartOpenStreamingStorage:
             batch_size: Number of attachments to process in each batch
             resp_format: Response format (csv, json)
         """
-        # Collect and validate all attachments
+        # Collect and validate all attachments using shared contextual processing
         all_attachments = self._collect_and_validate_attachments(data)
 
         if not all_attachments:
@@ -943,7 +863,24 @@ class SmartOpenStreamingStorage:
                     f"Could not parse storage URL: {storage_key} - {e}"
                 ) from e
 
-            file_path = f"{attachment_info.base_path}/{attachment_info.attachment.file_name or DEFAULT_ATTACHMENT_NAME}"
+            # Generate unique filename using same logic as DSR report builder
+            original_filename = (
+                attachment_info.attachment.file_name or DEFAULT_ATTACHMENT_NAME
+            )
+
+            # Determine dataset name from base_path using shared utility
+            dataset_name = determine_dataset_name_from_path(attachment_info.base_path)
+
+            if dataset_name not in self.used_filenames_per_dataset:
+                self.used_filenames_per_dataset[dataset_name] = set()
+
+            unique_filename = get_unique_filename(
+                original_filename, self.used_filenames_per_dataset[dataset_name]
+            )
+            self.used_filenames_per_dataset[dataset_name].add(unique_filename)
+            file_path = resolve_attachment_storage_path(
+                unique_filename, attachment_info.base_path
+            )
 
             try:
                 content_stream = self._create_attachment_content_stream(
