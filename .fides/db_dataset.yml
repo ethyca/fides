@@ -2930,6 +2930,16 @@ dataset:
     - name: updated_at
       description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
+  - name: privacy_request_redaction_pattern
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: pattern
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
   - name: system_group
     fields:
       - name: id
