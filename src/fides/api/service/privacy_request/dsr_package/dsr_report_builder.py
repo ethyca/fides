@@ -6,7 +6,6 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
-from urllib.parse import quote
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
@@ -327,7 +326,7 @@ class DsrReportBuilder:
         """
         corrected_attachment_info = attachment_info.copy()
         corrected_attachment_info["url"] = correct_url
-        corrected_attachment_info["safe_url"] = quote(correct_url, safe="/:")
+        corrected_attachment_info["safe_url"] = correct_url
         return corrected_attachment_info
 
     def _add_collection(

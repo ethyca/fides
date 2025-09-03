@@ -23,7 +23,7 @@
                   <div class="table-cell" style="text-align: left;">Size</div>
                </div>
                {% for name, info in data.items() %}
-               <a href="{{ info.safe_url }}" class="table-row" target="_blank">
+               <a href="{{ info.url }}" class="table-row" target="_blank">
                   <div class="table-cell" style="text-align: left;">{% if enable_streaming %}{{ name }}{% else %}{{ info.original_name }}{% endif %}</div>
                   <div class="table-cell" style="text-align: left;">{{ info.size }}</div>
                </a>

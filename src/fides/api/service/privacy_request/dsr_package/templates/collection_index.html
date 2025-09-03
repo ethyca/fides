@@ -44,7 +44,7 @@
                                  <div class="table-cell" style="text-align: left;">Size</div>
                               </div>
                               {% for attachment_name, attachment_info in value.items() %}
-                              <a href="{{ attachment_info.safe_url }}" class="table-row" target="_blank">
+                              <a href="{{ attachment_info.url }}" class="table-row" target="_blank">
                                  <div class="table-cell" style="text-align: left;">{{ attachment_name }}</div>
                                  <div class="table-cell" style="text-align: left;">{{ attachment_info.size }}</div>
                               </a>
