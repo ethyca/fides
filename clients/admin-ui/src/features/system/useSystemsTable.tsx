@@ -12,6 +12,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
+import { useHasPermission } from "~/features/common/Restrict";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { convertToAntFilters } from "~/features/common/utils";
@@ -28,6 +29,7 @@ import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   BasicSystemResponseExtended,
   PrivacyDeclaration,
+  ScopeRegistryEnum,
   SystemGroup,
   SystemGroupCreate,
 } from "~/types/api";
@@ -82,6 +84,8 @@ const useSystemsTable = ({
         )
       : {};
   }, [allSystemGroups]);
+
+  const showDeleteOption = useHasPermission([ScopeRegistryEnum.SYSTEM_DELETE]);
 
   const handleDelete = async (system: BasicSystemResponseExtended) => {
     const result = await deleteSystem(system.fides_key);
@@ -269,15 +273,19 @@ const useSystemsTable = ({
                     onClick: () =>
                       router.push(`/systems/configure/${record.fides_key}`),
                   },
-                  {
-                    key: "delete",
-                    label: "Delete",
-                    icon: <Icons.TrashCan />,
-                    onClick: () => {
-                      setSelectedSystemForDelete(record);
-                      setDeleteModalIsOpen(true);
-                    },
-                  },
+                  ...(showDeleteOption
+                    ? [
+                        {
+                          key: "delete",
+                          label: "Delete",
+                          icon: <Icons.TrashCan />,
+                          onClick: () => {
+                            setSelectedSystemForDelete(record);
+                            setDeleteModalIsOpen(true);
+                          },
+                        },
+                      ]
+                    : []),
                 ],
               }}
             >
@@ -286,6 +294,7 @@ const useSystemsTable = ({
                 icon={<Icons.OverflowMenuVertical />}
                 aria-label="More actions"
                 type="text"
+                data-testid="system-actions-menu"
               />
             </Dropdown>
           </Flex>
@@ -295,17 +304,17 @@ const useSystemsTable = ({
       },
     ];
   }, [
-    allUsers,
     plusIsEnabled,
     isAlphaSystemGroupsEnabled,
     allSystemGroups,
+    columnFilters?.system_groups,
+    columnFilters?.data_steward,
+    allUsers?.items,
     isGroupsExpanded,
     systemGroupMap,
     isDataUsesExpanded,
+    showDeleteOption,
     router,
-    setSelectedSystemForDelete,
-    setDeleteModalIsOpen,
-    columnFilters,
   ]);
 
   return {

@@ -72,6 +72,15 @@ declare global {
       getAntTableRow: (rowKey: string) => Chainable;
 
       /**
+       * Get a cell from an Ant Design Table component by cell index within a row
+       * @param cellIndex The index of the cell to get
+       * @example cy.getAntTableRow("some-row-key").within(() => {
+       *   cy.getAntCellWithinRow(0).should("be.visible");
+       * });
+       */
+      getAntCellWithinRow: (cellIndex: number) => Chainable;
+
+      /**
        * Get the pagination component from an Ant Design Table component
        */
       getAntPagination: () => Chainable;
@@ -85,6 +94,19 @@ declare global {
        * Click the next page button in the pagination component
        */
       antPaginateNext: () => void;
+
+      /**
+       * Get an option from an Ant Design Dropdown component by label
+       * @param option The label of the option to get
+       * @example cy.getAntDropdownOption("Delete").should("be.visible");
+       */
+      getAntDropdownOption: (option: string | number) => Chainable;
+
+      /**
+       * Select an option from an Ant Design Dropdown component
+       * @param option The label of the option to select or the index of the option
+       */
+      selectAntDropdownOption: (option: string | number) => void;
 
       /**
        * Pick a dataset and field reference using the DatasetReferencePicker component
@@ -247,6 +269,9 @@ Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
 Cypress.Commands.add("getAntTableRow", (rowKey: string) =>
   cy.get(`[data-row-key='${rowKey}']`),
 );
+Cypress.Commands.add("getAntCellWithinRow", (cellIndex: number) =>
+  cy.get(`td:not(.ant-table-selection-column)`).eq(cellIndex),
+);
 Cypress.Commands.add("getAntPagination", () =>
   cy.get(".ant-pagination").first(),
 );
@@ -255,6 +280,14 @@ Cypress.Commands.add("antPaginatePrevious", () =>
 );
 Cypress.Commands.add("antPaginateNext", () =>
   cy.getAntPagination().find("li.ant-pagination-next button").click(),
+);
+Cypress.Commands.add("getAntDropdownOption", (option: string | number) =>
+  typeof option === "string"
+    ? cy.get(".ant-dropdown-menu-item").contains(option)
+    : cy.get(".ant-dropdown-menu-item").eq(option),
+);
+Cypress.Commands.add("selectAntDropdownOption", (option: string | number) =>
+  cy.getAntDropdownOption(option).click({ force: true }),
 );
 
 Cypress.Commands.add(

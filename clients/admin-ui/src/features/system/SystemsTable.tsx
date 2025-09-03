@@ -87,6 +87,7 @@ const SystemsTable = () => {
         <DebouncedSearchInput
           value={tableState.searchQuery}
           onChange={tableState.updateSearch}
+          data-testid="system-search"
         />
         <Flex gap="small">
           {isAlphaSystemGroupsEnabled && (
