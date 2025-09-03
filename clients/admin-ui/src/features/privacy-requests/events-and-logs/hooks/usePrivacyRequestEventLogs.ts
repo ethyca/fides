@@ -1,7 +1,11 @@
 import {
+  hasAwaitingProcessing,
+  hasSkippedEntry,
+  hasUnresolvedError,
+} from "~/features/privacy-requests/events-and-logs/helpers";
+import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
-  ExecutionLogStatus,
   PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
 
@@ -16,15 +20,10 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
   const eventItems: ActivityTimelineItem[] = !results
     ? []
     : Object.entries(results).map(([key, logs]) => {
-        const hasUnresolvedError = logs.some(
-          (log) => log.status === ExecutionLogStatus.ERROR,
-        );
-        const hasSkippedEntry = logs.some(
-          (log) => log.status === ExecutionLogStatus.SKIPPED,
-        );
-        const hasAwaitingProcessing = logs.some(
-          (log) => log.status === ExecutionLogStatus.AWAITING_PROCESSING,
-        );
+        // Use the proper helper functions that handle collection-level grouping
+        const hasUnresolvedErrorStatus = hasUnresolvedError(logs);
+        const hasSkippedEntryStatus = hasSkippedEntry(logs);
+        const hasAwaitingProcessingStatus = hasAwaitingProcessing(logs);
 
         return {
           author: "Fides",
@@ -32,11 +31,13 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
           showViewLog:
-            hasUnresolvedError || hasSkippedEntry || hasAwaitingProcessing,
+            hasUnresolvedErrorStatus ||
+            hasSkippedEntryStatus ||
+            hasAwaitingProcessingStatus,
           onClick: () => {}, // This will be overridden in the component
-          isError: hasUnresolvedError,
-          isSkipped: hasSkippedEntry,
-          isAwaitingInput: hasAwaitingProcessing,
+          isError: hasUnresolvedErrorStatus,
+          isSkipped: hasSkippedEntryStatus,
+          isAwaitingInput: hasAwaitingProcessingStatus,
           id: `request-${key}`,
         };
       });
