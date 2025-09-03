@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import json
 import time
+from copy import deepcopy
 from datetime import datetime
 from io import BytesIO, StringIO
 from itertools import chain
@@ -36,9 +37,7 @@ from fides.api.service.storage.streaming.schemas import (
 )
 from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 from fides.api.service.storage.util import (
-    convert_processed_attachments_to_attachment_processing_info,
     determine_dataset_name_from_path,
-    extract_storage_key_from_attachment,
     get_unique_filename,
     process_attachments_contextually,
     resolve_attachment_storage_path,
@@ -169,7 +168,9 @@ class SmartOpenStreamingStorage:
         """
         try:
             # Extract storage key using shared utility
-            storage_key = extract_storage_key_from_attachment(attachment)
+            storage_key = (
+                attachment.get("download_url") or attachment.get("file_name") or ""
+            )
             if not storage_key:
                 return None
 
@@ -281,7 +282,11 @@ class SmartOpenStreamingStorage:
             ) from e
 
     def _collect_and_validate_attachments(
-        self, data: dict
+        self,
+        data: dict,
+        used_filenames_data: set[str] = set(),
+        used_filenames_attachments: set[str] = set(),
+        processed_attachments: dict[tuple[str, str], str] = {},
     ) -> list[AttachmentProcessingInfo]:
         """Collect and validate attachments using the same contextual approach as DSR report builder.
 
@@ -294,26 +299,30 @@ class SmartOpenStreamingStorage:
         Returns:
             List of validated AttachmentProcessingInfo objects
         """
-        # Initialize tracking structures (similar to DSR report builder)
-        used_filenames_data: set[str] = set()
-        used_filenames_attachments: set[str] = set()
-        processed_attachments: dict[tuple[str, str], str] = {}
+        validated_attachments = []
 
         # Use the shared contextual processing function
         # Note: This method should only be used when DSR report builder is not available
         # For HTML format, use _collect_and_validate_attachments_from_dsr_builder instead
         processed_attachments_list = process_attachments_contextually(
-            data,
-            used_filenames_data,
-            used_filenames_attachments,
-            processed_attachments,
-            enable_streaming=True,  # Always use streaming mode for storage
+            data=data,
+            used_filenames_data=used_filenames_data,
+            used_filenames_attachments=used_filenames_attachments,
+            processed_attachments=processed_attachments,
+            enable_streaming=True,
         )
 
-        # Convert to AttachmentProcessingInfo objects using shared utility
-        return convert_processed_attachments_to_attachment_processing_info(
-            processed_attachments_list, self._validate_attachment
-        )
+        for processed_attachment in processed_attachments_list:
+            # Add context information to the attachment data
+            attachment_with_context = deepcopy(processed_attachment["attachment"])
+            attachment_with_context["_context"] = processed_attachment["context"]
+
+            # Validate and convert to AttachmentProcessingInfo
+            validated = self._validate_attachment(attachment_with_context)
+            if validated:
+                validated_attachments.append(validated)
+
+        return validated_attachments
 
     def _collect_and_validate_attachments_from_dsr_builder(
         self, data: dict, dsr_builder: "DSRReportBuilder"
@@ -342,17 +351,11 @@ class SmartOpenStreamingStorage:
             else:
                 used_filenames_data.update(filenames)
 
-        processed_attachments_list = process_attachments_contextually(
+        return self._collect_and_validate_attachments(
             data,
             used_filenames_data,
             used_filenames_attachments,
             dsr_builder.processed_attachments,
-            enable_streaming=True,  # Always use streaming mode for storage
-        )
-
-        # Convert to AttachmentProcessingInfo objects using shared utility
-        return convert_processed_attachments_to_attachment_processing_info(
-            processed_attachments_list, self._validate_attachment
         )
 
     @retry_cloud_storage_operation(
@@ -374,7 +377,7 @@ class SmartOpenStreamingStorage:
         """Upload data to cloud storage using smart-open streaming for memory efficiency.
 
         This function leverages smart-open's streaming capabilities while maintaining
-        our DSR-specific business logic for package splitting and attachment processing.
+        our DSR-specific business logic for package and attachment processing.
         All data is streamed directly from source to destination without local storage.
 
         Args:
