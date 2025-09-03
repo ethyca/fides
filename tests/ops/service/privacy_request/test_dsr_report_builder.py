@@ -456,17 +456,20 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
             # Verify that attachments directory exists but contains no actual attachment files
             # (only the index.html file should be present)
             attachment_files = [
-                name for name in zip_file.namelist()
+                name
+                for name in zip_file.namelist()
                 if name.startswith(f"{common_assertions['paths']['attachments_dir']}/")
             ]
             # Should only have the index.html file, no actual attachment files
             assert len(attachment_files) == 1
-            assert attachment_files[0] == f"{common_assertions['paths']['attachments_dir']}/index.html"
+            assert (
+                attachment_files[0]
+                == f"{common_assertions['paths']['attachments_dir']}/index.html"
+            )
 
             # Verify that the attachments index page exists and is accessible
             self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
+                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
             )
 
 
