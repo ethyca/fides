@@ -62,7 +62,6 @@ class DsrReportBuilder:
         """
         Initializes the DSR report builder.
         """
-        logger.info(f"Initializing DSR report builder with data:\n{dsr_data}")
         # Define pretty_print function for Jinja templates
         jinja2.filters.FILTERS["pretty_print"] = lambda value, indent=4: json.dumps(
             value, indent=indent, cls=StorageJSONEncoder
@@ -270,15 +269,6 @@ class DsrReportBuilder:
             else:
                 used_filenames_data.update(filenames)
 
-        logger.debug(
-            f"Processing attachments with used_filenames_data={len(used_filenames_data)}, used_filenames_attachments={len(used_filenames_attachments)}"
-        )
-        logger.debug(f"DSR data keys: {list(data.keys())}")
-        if "attachments" in data:
-            logger.debug(
-                f"Top-level attachments found: {len(data['attachments'])} items"
-            )
-
         processed_attachments_list = process_attachments_contextually(
             data,
             used_filenames_data,
@@ -290,10 +280,6 @@ class DsrReportBuilder:
         # Trust the contextual processing completely - it already correctly determines
         # context based on the attachment's location in the DSR data structure
         filtered_list = processed_attachments_list
-
-        logger.debug(
-            f"Processed {len(filtered_list)} unique attachments (filtered from {len(processed_attachments_list)})"
-        )
 
         return filtered_list
 
@@ -444,14 +430,6 @@ class DsrReportBuilder:
         # Get all processed attachments using shared logic on original DSR data
         processed_attachments_list = self._get_processed_attachments_list(self.dsr_data)
 
-        logger.debug(
-            f"Found {len(processed_attachments_list)} total processed attachments"
-        )
-        for i, attachment in enumerate(processed_attachments_list):
-            logger.debug(
-                f"Attachment {i}: context={attachment.get('context', {}).get('type', 'unknown')}, filename={attachment.get('unique_filename', 'unknown')}"
-            )
-
         # Create a comprehensive attachment links dictionary with deduplication
         all_attachment_links = {}
         seen_attachment_keys = set()
@@ -564,10 +542,6 @@ class DsrReportBuilder:
                 if isinstance(collection_items, list)
             )
             has_attachments = has_top_level_attachments or has_dataset_attachments
-
-            logger.debug(
-                f"Attachment detection: has_top_level_attachments={has_top_level_attachments}, has_dataset_attachments={has_dataset_attachments}, has_attachments={has_attachments}"
-            )
 
             if has_attachments:
                 self._add_comprehensive_attachments_index()

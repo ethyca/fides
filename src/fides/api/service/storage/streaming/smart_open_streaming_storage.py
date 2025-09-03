@@ -275,9 +275,6 @@ class SmartOpenStreamingStorage:
                 item=attachment,
             )
 
-            logger.debug(
-                f"Successfully validated attachment: {attachment_info.storage_key}"
-            )
             return processing_info
 
         except (ValueError, TypeError, KeyError) as e:
@@ -310,9 +307,6 @@ class SmartOpenStreamingStorage:
                     total_bytes += len(chunk)
                     yield chunk
 
-                logger.debug(
-                    f"Completed streaming {chunk_count} chunks ({total_bytes} bytes) for {storage_key}"
-                )
         except Exception as e:
             logger.warning(f"Failed to stream attachment {storage_key}: {e}")
             # Yield empty content on failure
