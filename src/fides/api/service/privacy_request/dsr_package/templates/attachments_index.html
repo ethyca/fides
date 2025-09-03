@@ -14,7 +14,9 @@
                </a>
             </div>
             <h1>Attachments</h1>
-            <p class="expiration-notice">Note: All download links will expire in 7 days.</p>
+            {% if not enable_streaming %}
+            <p class="expiration-notice">Note: All download links will expire in {{ download_link_ttl_days }} days.</p>
+            {% endif %}
             <div class="table table-hover">
                <div class="table-row">
                   <div class="table-cell" style="text-align: left;">File Name</div>
@@ -22,7 +24,7 @@
                </div>
                {% for name, info in data.items() %}
                <a href="{{ info.url }}" class="table-row" target="_blank">
-                  <div class="table-cell" style="text-align: left;">{{ name }}</div>
+                  <div class="table-cell" style="text-align: left;">{% if enable_streaming %}{{ name }}{% else %}{{ info.original_name }}{% endif %}</div>
                   <div class="table-cell" style="text-align: left;">{{ info.size }}</div>
                </a>
                {% endfor %}

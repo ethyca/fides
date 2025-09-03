@@ -184,6 +184,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
 
       {
+        title: "Privacy requests",
+        path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+      },
+      {
         title: "Users",
         path: routes.USER_MANAGEMENT_ROUTE,
         scopes: [
