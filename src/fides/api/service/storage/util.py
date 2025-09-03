@@ -167,8 +167,15 @@ def generate_attachment_url_from_storage_path(
     """
     Generate attachment URL based on the actual storage path and HTML template location.
 
-    This function ensures that URLs in HTML templates correctly point to where
-    attachment files are actually stored in the ZIP file.
+    This is the CURRENTLY USED function for generating attachment URLs in DSR packages.
+    It provides more sophisticated path resolution by:
+    1. Using resolve_attachment_storage_path() to calculate the actual storage path
+    2. Handling different directory structures (attachments vs data/dataset/collection)
+    3. Generating proper relative paths from HTML template locations to attachment files
+
+    Used by:
+    - _process_attachment_list() in this file
+    - _write_attachment_content() in dsr_report_builder.py
 
     Args:
         download_url: The original download URL
@@ -195,40 +202,6 @@ def generate_attachment_url_from_storage_path(
         # For other cases, calculate relative path
         # This is a simplified approach - in practice, you might need more sophisticated path resolution
         return f"../{storage_path}"
-    return download_url
-
-
-def generate_attachment_url(
-    download_url: str,
-    unique_filename: str,
-    directory: str,
-    enable_streaming: bool = False,
-) -> str:
-    """
-    Generate the appropriate attachment URL based on streaming mode and directory structure.
-
-    Args:
-        download_url: The original download URL
-        unique_filename: The unique filename for the attachment
-        directory: The directory path
-        enable_streaming: Whether streaming mode is enabled
-
-    Returns:
-        The appropriate attachment URL
-    """
-    if enable_streaming:
-        # For streaming mode, generate relative paths from the HTML template directory to the attachment
-        if directory == "attachments":
-            # From attachments/index.html to attachments/filename.pdf (same directory)
-            return unique_filename
-        if directory.startswith("data/"):
-            # From data/dataset_name/collection_name/index.html to data/dataset_name/collection_name/attachments/filename.pdf
-            # The attachment is in the same dataset directory, so just go to attachments subdirectory
-            return f"attachments/{unique_filename}"
-        # For other directory structures, assume attachments are in an "attachments" subdirectory
-        # This handles legacy cases and other directory structures
-        return f"attachments/{unique_filename}"
-
     return download_url
 
 
@@ -573,6 +546,91 @@ def _process_attachment_list(
         processed_attachments_list.append(processed_attachment)
 
     return processed_attachments_list
+
+
+def extract_storage_key_from_attachment(attachment: dict[str, Any]) -> str:
+    """
+    Extract storage key from attachment data with fallback logic.
+
+    This function provides a consistent way to extract storage keys from
+    attachment dictionaries across different components.
+
+    Args:
+        attachment: The attachment dictionary
+
+    Returns:
+        The storage key (URL or filename) for the attachment
+    """
+    return (
+        attachment.get("original_download_url")
+        or attachment.get("download_url")
+        or attachment.get("file_name", "")
+    )
+
+
+def resolve_base_path_from_context(
+    attachment: dict[str, Any], default_base_path: str = "attachments"
+) -> str:
+    """
+    Resolve the base path for an attachment based on its context.
+
+    This function provides consistent base path resolution logic across
+    different storage components.
+
+    Args:
+        attachment: The attachment dictionary
+        default_base_path: Default base path if no context is found
+
+    Returns:
+        The resolved base path for the attachment
+    """
+    if not attachment.get("_context"):
+        return default_base_path
+
+    context = attachment["_context"]
+    context_type = context.get("type")
+
+    if context_type == "direct":
+        return f"data/{context['dataset']}/{context['collection']}/attachments"
+    if context_type == "nested":
+        return f"data/{context['dataset']}/{context['collection']}/attachments"
+    if context_type == "top_level":
+        return "attachments"
+    # Fallback for old context structure
+    return f"{context.get('key', 'unknown')}/{context.get('item_id', 'unknown')}/attachments"
+
+
+def resolve_directory_from_context(
+    attachment: dict[str, Any], default_directory: str = "attachments"
+) -> str:
+    """
+    Resolve the directory path for an attachment based on its context.
+
+    This function provides consistent directory resolution logic for DSR report builder.
+
+    Args:
+        attachment: The attachment dictionary
+        default_directory: Default directory if no context is found
+
+    Returns:
+        The resolved directory path for the attachment
+    """
+    if not attachment.get("_context"):
+        return default_directory
+
+    context = attachment["_context"]
+    context_type = context.get("type")
+
+    if context_type == "direct":
+        return f"data/{context['dataset']}/{context['collection']}"
+    if context_type == "nested":
+        return f"data/{context['dataset']}/{context['collection']}"
+    if context_type == "top_level":
+        return "attachments"
+    if context.get("key") and context.get("item_id"):
+        return f"{context['key']}/{context['item_id']}"
+
+    return default_directory
 
 
 def convert_processed_attachments_to_attachment_processing_info(

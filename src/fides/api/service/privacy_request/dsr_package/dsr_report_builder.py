@@ -20,6 +20,7 @@ from fides.api.service.storage.util import (
     is_attachment_field,
     process_attachment_naming,
     process_attachments_contextually,
+    resolve_directory_from_context,
 )
 from fides.api.util.storage_util import StorageJSONEncoder, format_size
 from fides.config import CONFIG
@@ -213,22 +214,7 @@ class DsrReportBuilder:
             file_size = format_attachment_size(attachment.get("file_size"))
 
             # Determine the actual directory for this attachment based on its context
-            actual_directory = directory
-            if attachment.get("_context"):
-                context = attachment["_context"]
-                if context.get("type") == "direct":
-                    actual_directory = (
-                        f"data/{context['dataset']}/{context['collection']}"
-                    )
-                elif context.get("type") == "nested":
-                    actual_directory = (
-                        f"data/{context['dataset']}/{context['collection']}"
-                    )
-                elif context.get("type") == "top_level":
-                    actual_directory = "attachments"
-                # For old context structure, keep the original directory
-                elif context.get("key") and context.get("item_id"):
-                    actual_directory = f"{context['key']}/{context['item_id']}"
+            actual_directory = resolve_directory_from_context(attachment, directory)
 
             # Generate attachment URL using shared utility with actual storage path
             download_url = attachment.get("download_url")

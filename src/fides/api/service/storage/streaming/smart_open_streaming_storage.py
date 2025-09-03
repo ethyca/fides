@@ -36,9 +36,11 @@ from fides.api.service.storage.streaming.smart_open_client import SmartOpenStora
 from fides.api.service.storage.util import (
     convert_processed_attachments_to_attachment_processing_info,
     determine_dataset_name_from_path,
+    extract_storage_key_from_attachment,
     get_unique_filename,
     process_attachments_contextually,
     resolve_attachment_storage_path,
+    resolve_base_path_from_context,
 )
 
 DEFAULT_ATTACHMENT_NAME = "attachment"
@@ -250,12 +252,8 @@ class SmartOpenStreamingStorage:
             AttachmentProcessingInfo if valid, None otherwise
         """
         try:
-            # Extract required fields - use original_download_url for storage operations
-            storage_key = (
-                attachment.get("original_download_url")
-                or attachment.get("download_url")
-                or attachment.get("file_name", "")
-            )
+            # Extract storage key using shared utility
+            storage_key = extract_storage_key_from_attachment(attachment)
             if not storage_key:
                 return None
 
@@ -267,24 +265,8 @@ class SmartOpenStreamingStorage:
                 content_type=attachment.get("content_type"),
             )
 
-            # Create base path for the attachment in the zip
-            base_path = "attachments"
-            if attachment.get("_context"):
-                context = attachment["_context"]
-                # Handle new contextual structure
-                if context.get("type") == "direct":
-                    base_path = (
-                        f"data/{context['dataset']}/{context['collection']}/attachments"
-                    )
-                elif context.get("type") == "nested":
-                    base_path = (
-                        f"data/{context['dataset']}/{context['collection']}/attachments"
-                    )
-                elif context.get("type") == "top_level":
-                    base_path = "attachments"
-                else:
-                    # Fallback for old context structure
-                    base_path = f"{context.get('key', 'unknown')}/{context.get('item_id', 'unknown')}/attachments"
+            # Resolve base path using shared utility
+            base_path = resolve_base_path_from_context(attachment)
 
             # Create AttachmentProcessingInfo
             processing_info = AttachmentProcessingInfo(
