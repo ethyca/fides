@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import time as time_module
@@ -359,8 +360,9 @@ class DsrReportBuilder:
         items_content = []
 
         for index, collection_item in enumerate(rows, 1):
-            # Create a copy of the item data to avoid modifying the original
-            item_data = collection_item.copy()
+            # Create a deep copy of the item data to avoid modifying the original DSR data
+            # This ensures the comprehensive attachments index can access unmodified attachments
+            item_data = copy.deepcopy(collection_item)
 
             # Process any attachments in the item - First check for direct attachments key
             if "attachments" in item_data and isinstance(
@@ -447,7 +449,7 @@ class DsrReportBuilder:
         from all datasets and top-level attachments, with links pointing to their
         actual storage locations.
         """
-        # Get all processed attachments using shared logic
+        # Get all processed attachments using shared logic on original DSR data
         processed_attachments_list = self._get_processed_attachments_list(self.dsr_data)
 
         # Create a comprehensive attachment links dictionary with deduplication
