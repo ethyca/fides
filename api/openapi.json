@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.68.0"
+    "version": "2.69.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5640,6 +5640,56 @@
         ]
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/access-package": {
+      "get": {
+        "tags": [
+          "Privacy Center"
+        ],
+        "summary": "Get Access Results Urls",
+        "description": "Public endpoint for retrieving access results URLs for a privacy request.\nThis endpoint generates fresh presigned URLs and redirects to the first available result.\nThis endpoint is designed to be accessible via email links sent to end users.\nNo authentication is required, but a valid download token is required for security.\nRate limiting is applied for additional security.\n\nprivacy_request_id parameter is required in the URL path.\ntoken parameter is required as a query parameter for security.",
+        "operationId": "get_access_results_urls_api_v1_privacy_request__privacy_request_id__access_package_get",
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cryptography/encryption/key": {
       "get": {
         "tags": [
@@ -8116,6 +8166,22 @@
                 }
               ],
               "title": "External Id"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Location"
             }
           },
           {
@@ -14300,6 +14366,16 @@
                 "type": "null"
               }
             ]
+          },
+          "privacy_center": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyCenterConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -15369,6 +15445,25 @@
         ],
         "title": "ColumnSort"
       },
+      "ConnectionCategory": {
+        "type": "string",
+        "enum": [
+          "DATA_CATALOG",
+          "DATA_WAREHOUSE",
+          "DATABASE",
+          "IDENTITY_PROVIDER",
+          "WEBSITE",
+          "CRM",
+          "MANUAL",
+          "MARKETING",
+          "ANALYTICS",
+          "ECOMMERCE",
+          "COMMUNICATION",
+          "CUSTOM"
+        ],
+        "title": "ConnectionCategory",
+        "description": "Categories for connection types, matching frontend ConnectionCategory enum"
+      },
       "ConnectionConfigurationResponse": {
         "properties": {
           "connection_type": {
@@ -15728,6 +15823,44 @@
             },
             "type": "array",
             "title": "Supported Actions"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "enabled_features": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/IntegrationFeature"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled Features"
           }
         },
         "type": "object",
@@ -18576,7 +18709,6 @@
             ]
           }
         },
-        "additionalProperties": false,
         "type": "object",
         "title": "ExecutionApplicationConfig"
       },
@@ -19450,6 +19582,19 @@
         ],
         "title": "IncludeExcludeEnum",
         "description": "Determine whether or not defined rights are\nbeing included or excluded."
+      },
+      "IntegrationFeature": {
+        "type": "string",
+        "enum": [
+          "DATA_DISCOVERY",
+          "DATA_SYNC",
+          "TASKS",
+          "WITHOUT_CONNECTION",
+          "DSR_AUTOMATION",
+          "CONDITIONS"
+        ],
+        "title": "IntegrationFeature",
+        "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
       },
       "LegalBasisForProcessingEnum": {
         "type": "string",
@@ -22520,6 +22665,26 @@
         "title": "PreApprovalWebhookUpdate",
         "description": "Request schema for updating a single webhook - fields are optional"
       },
+      "PrivacyCenterConfig": {
+        "properties": {
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PrivacyCenterConfig"
+      },
       "PrivacyDeclaration": {
         "properties": {
           "name": {
@@ -23031,6 +23196,17 @@
                 "type": "null"
               }
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           }
         },
         "type": "object",
@@ -23304,6 +23480,17 @@
               }
             ],
             "title": "External Id"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           },
           "action_type": {
             "anyOf": [
@@ -23629,6 +23816,17 @@
                 "type": "null"
               }
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           },
           "deleted_at": {
             "anyOf": [
@@ -24025,6 +24223,17 @@
                 "type": "null"
               }
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           },
           "deleted_at": {
             "anyOf": [
@@ -25153,6 +25362,16 @@
               }
             ],
             "title": "User Guide"
+          },
+          "display_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSDisplayInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -25211,6 +25430,51 @@
         "type": "object",
         "title": "SaaSConfigValidationDetails",
         "description": "Message with any validation issues with the SaaS config"
+      },
+      "SaaSDisplayInfo": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "enabled_features": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/IntegrationFeature"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled Features"
+          }
+        },
+        "type": "object",
+        "title": "SaaSDisplayInfo",
+        "description": "Optional display information for SAAS integrations to enhance frontend presentation.\nWhen not provided, smart defaults will be inferred based on the integration type."
       },
       "SaaSRequest": {
         "properties": {
@@ -26183,6 +26447,8 @@
           "naming",
           "max_retries",
           "auth_method",
+          "enable_streaming",
+          "enable_access_package_redirect",
           {
             "extra": "forbid"
           }
@@ -26264,6 +26530,30 @@
             ],
             "title": "Max Retries",
             "default": 0
+          },
+          "enable_streaming": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Streaming",
+            "default": false
+          },
+          "enable_access_package_redirect": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable Access Package Redirect",
+            "default": false
           }
         },
         "additionalProperties": false,
