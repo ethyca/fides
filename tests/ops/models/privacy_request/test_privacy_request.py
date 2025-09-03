@@ -51,9 +51,9 @@ paused_location = CollectionAddress("test_dataset", "test_collection")
 
 
 def test_privacy_request(
-        db: Session,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
+    db: Session,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
 ) -> None:
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is not None
@@ -63,8 +63,8 @@ def test_privacy_request(
 
 
 def test_create_privacy_request_sets_requested_at(
-        db: Session,
-        policy: Policy,
+    db: Session,
+    policy: Policy,
 ) -> None:
     pr = PrivacyRequest.create(
         db=db,
@@ -101,8 +101,8 @@ def test_create_privacy_request_sets_requested_at(
 
 
 def test_create_privacy_request_sets_due_date(
-        db: Session,
-        policy: Policy,
+    db: Session,
+    policy: Policy,
 ) -> None:
     pr = PrivacyRequest.create(
         db=db,
@@ -161,13 +161,13 @@ def test_update_privacy_requests(db: Session, privacy_requests: PrivacyRequest) 
 
 
 def test_get_all_privacy_requests(
-        db: Session, privacy_requests: List[PrivacyRequest]
+    db: Session, privacy_requests: List[PrivacyRequest]
 ) -> None:
     assert len(PrivacyRequest.all(db=db)) == len(privacy_requests)
 
 
 def test_filter_privacy_requests(
-        db: Session, privacy_requests: List[PrivacyRequest]
+    db: Session, privacy_requests: List[PrivacyRequest]
 ) -> None:
     ids = [pr.id for pr in privacy_requests]
     filtered = PrivacyRequest.filter(
@@ -220,9 +220,9 @@ def test_delete_privacy_request(db: Session, policy: Policy) -> None:
 
 
 def test_delete_privacy_request_removes_cached_data(
-        cache: FidesopsRedis,
-        db: Session,
-        policy: Policy,
+    cache: FidesopsRedis,
+    db: Session,
+    policy: Policy,
 ) -> None:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -246,7 +246,7 @@ def test_delete_privacy_request_removes_cached_data(
         identity_attribute=identity_attribute,
     )
     assert (
-            privacy_request.get_cached_identity_data()[identity_attribute] == identity_value
+        privacy_request.get_cached_identity_data()[identity_attribute] == identity_value
     )
     privacy_request.delete(db)
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
@@ -263,7 +263,7 @@ def test_delete_privacy_request_removes_cached_data(
     ],
 )
 def test_privacy_request_moves_to_in_processing(
-        db: Session, request, privacy_request, expected_status
+    db: Session, request, privacy_request, expected_status
 ):
     pr: PrivacyRequest = request.getfixturevalue(privacy_request)
     pr.start_processing(db)
@@ -273,12 +273,12 @@ def test_privacy_request_moves_to_in_processing(
 
 class TestPrivacyRequestTriggerWebhooks:
     def test_trigger_one_way_policy_webhook(
-            self,
-            https_connection_config,
-            db,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        https_connection_config,
+        db,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[0]
         identity = Identity(email="customer-1@example.com")
@@ -302,12 +302,12 @@ class TestPrivacyRequestTriggerWebhooks:
             assert privacy_request.status == PrivacyRequestStatus.in_processing
 
     def test_trigger_two_way_policy_webhook_with_error(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
@@ -328,12 +328,12 @@ class TestPrivacyRequestTriggerWebhooks:
                 privacy_request.trigger_policy_webhook(webhook)
 
     def test_trigger_two_way_policy_webhook_200_proceed(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
@@ -356,12 +356,12 @@ class TestPrivacyRequestTriggerWebhooks:
             assert privacy_request.status == PrivacyRequestStatus.in_processing
 
     def test_trigger_two_way_policy_webhook_200_pause(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
@@ -384,12 +384,12 @@ class TestPrivacyRequestTriggerWebhooks:
                 privacy_request.trigger_policy_webhook(webhook)
 
     def test_trigger_two_way_policy_webhook_add_derived_identity(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
@@ -417,12 +417,12 @@ class TestPrivacyRequestTriggerWebhooks:
             }
 
     def test_two_way_validation_issues(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = Identity(email="customer-1@example.com")
@@ -461,55 +461,64 @@ class TestPrivacyRequestTriggerWebhooks:
                 privacy_request.trigger_policy_webhook(webhook)
 
     def test_payload_contains_expected_fields(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            privacy_request_with_custom_fields,
-            privacy_request_with_location,
-            policy,
-            policy_pre_execution_webhooks,
-            policy_post_execution_webhooks,
-            pre_approval_webhooks
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        privacy_request_with_custom_fields,
+        privacy_request_with_location,
+        policy,
+        policy_pre_execution_webhooks,
+        policy_post_execution_webhooks,
+        pre_approval_webhooks,
     ):
-        policy_webhooks = [*policy_pre_execution_webhooks, *policy_post_execution_webhooks, *pre_approval_webhooks]
+        policy_webhooks = [
+            *policy_pre_execution_webhooks,
+            *policy_post_execution_webhooks,
+            *pre_approval_webhooks,
+        ]
 
         def match_dsr_has_policy_key(request: requests.Request):
             payload_data = request.json()
             dsr_data = payload_data["privacy_request"]
             assert "policy" in dsr_data
             dsr_policy = dsr_data["policy"]
-            assert dsr_policy['key'] == policy.key
-
+            assert dsr_policy["key"] == policy.key
 
         def match_dsr_has_no_custom_fields(request: requests.Request):
             payload_data = request.json()
             # Validate timestamp is present and correctly formatted
             assert "timestamp" in payload_data
-            assert re.match("\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}", payload_data["timestamp"]) is not None
+            assert (
+                re.match(
+                    "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}",
+                    payload_data["timestamp"],
+                )
+                is not None
+            )
             dsr_data = payload_data["privacy_request"]
-            assert 'custom_fields' in dsr_data
-            assert dsr_data['custom_fields'] is None
+            assert "custom_fields" in dsr_data
+            assert dsr_data["custom_fields"] is None
 
         def match_dsr_has_custom_fields(request: requests.Request):
             payload_data = request.json()
             dsr_data = payload_data["privacy_request"]
-            assert 'custom_fields' in dsr_data
-            assert dsr_data['custom_fields'] is not None
+            assert "custom_fields" in dsr_data
+            assert dsr_data["custom_fields"] is not None
             # Ensure that for each custom field in the request there is a corresponding entry in the payload with correct label and value
             dsr_custom_fields = privacy_request_with_custom_fields.custom_fields
-            assert len(dsr_data['custom_fields']) == len(dsr_custom_fields)
+            assert len(dsr_data["custom_fields"]) == len(dsr_custom_fields)
             for field in dsr_custom_fields:
-                record = dsr_data['custom_fields'][field.field_name]
-                assert record['label'] == field.field_label
-                assert record['value'] == field.encrypted_value["value"]
+                record = dsr_data["custom_fields"][field.field_name]
+                assert record["label"] == field.field_label
+                assert record["value"] == field.encrypted_value["value"]
 
         def match_dsr_has_location(request: requests.Request):
             payload_data = request.json()
             dsr_data = payload_data["privacy_request"]
-            assert 'location' in dsr_data
-            assert dsr_data['location'] is not None
-            assert dsr_data['location'] == privacy_request_with_location.location
+            assert "location" in dsr_data
+            assert dsr_data["location"] is not None
+            assert dsr_data["location"] == privacy_request_with_location.location
 
         test_cases = [
             (privacy_request, match_dsr_has_no_custom_fields),
@@ -531,7 +540,7 @@ class TestPrivacyRequestTriggerWebhooks:
                             "privacy_request_id": dsr.id,
                             "identity": identity.model_dump(mode="json"),
                             "derived_identity": {"phone_number": "+5555555555"},
-                            "halt": False
+                            "halt": False,
                         },
                         status_code=200,
                     )
@@ -541,7 +550,6 @@ class TestPrivacyRequestTriggerWebhooks:
                         dsr.trigger_pre_approval_webhook(webhook)
                     else:
                         dsr.trigger_policy_webhook(webhook)
-
 
 
 class TestCachePausedLocation:
@@ -586,7 +594,7 @@ class TestPrivacyRequestCacheFailedStep:
         assert cached_data.step == CurrentStep.erasure
         assert cached_data.collection is None  # This is deprecated
         assert (
-                cached_data.action_needed is None
+            cached_data.action_needed is None
         )  # This isn't applicable for failed details
 
     def test_cache_null_step_and_location(self, privacy_request):
@@ -629,10 +637,10 @@ class TestCacheIdentityVerificationCode:
 class TestCacheEmailConnectorTemplateContents:
     def test_cache_template_contents(self, privacy_request):
         assert (
-                privacy_request.get_email_connector_template_contents_by_dataset(
-                    CurrentStep.erasure, "email_dataset"
-                )
-                == []
+            privacy_request.get_email_connector_template_contents_by_dataset(
+                CurrentStep.erasure, "email_dataset"
+            )
+            == []
         )
 
         privacy_request.cache_email_connector_template_contents(
@@ -650,23 +658,23 @@ class TestCacheEmailConnectorTemplateContents:
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         ) == [
-                   CheckpointActionRequired(
-                       step=CurrentStep.erasure,
-                       collection=CollectionAddress("email_dataset", "test_collection"),
-                       action_needed=[
-                           ManualAction(
-                               locators={"email": "test@example.com"},
-                               get=None,
-                               update={"phone": "null_rewrite"},
-                           )
-                       ],
-                   )
-               ]
+            CheckpointActionRequired(
+                step=CurrentStep.erasure,
+                collection=CollectionAddress("email_dataset", "test_collection"),
+                action_needed=[
+                    ManualAction(
+                        locators={"email": "test@example.com"},
+                        get=None,
+                        update={"phone": "null_rewrite"},
+                    )
+                ],
+            )
+        ]
 
 
 class TestCacheManualWebhookAccessInput:
     def test_cache_manual_webhook_access_input(
-            self, privacy_request, access_manual_webhook
+        self, privacy_request, access_manual_webhook
     ):
         with pytest.raises(NoCachedManualWebhookEntry):
             privacy_request.get_manual_webhook_access_input_strict(
@@ -681,9 +689,9 @@ class TestCacheManualWebhookAccessInput:
         assert privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         ) == {
-                   "email": "customer-1@example.com",
-                   "last_name": "Customer",
-               }
+            "email": "customer-1@example.com",
+            "last_name": "Customer",
+        }
 
     def test_cache_no_fields_supplied(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_access_input(
@@ -694,9 +702,9 @@ class TestCacheManualWebhookAccessInput:
         assert privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         ) == {
-                   "email": None,
-                   "last_name": None,
-               }, "Missing fields persisted as None"
+            "email": None,
+            "last_name": None,
+        }, "Missing fields persisted as None"
 
     def test_cache_some_fields_supplied(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_access_input(
@@ -709,12 +717,12 @@ class TestCacheManualWebhookAccessInput:
         assert privacy_request.get_manual_webhook_access_input_strict(
             access_manual_webhook
         ) == {
-                   "email": "customer-1@example.com",
-                   "last_name": None,
-               }, "Missing fields saved as None"
+            "email": "customer-1@example.com",
+            "last_name": None,
+        }, "Missing fields saved as None"
 
     def test_cache_extra_fields_not_in_webhook_specs(
-            self, privacy_request, access_manual_webhook
+        self, privacy_request, access_manual_webhook
     ):
         with pytest.raises(ValidationError):
             privacy_request.cache_manual_webhook_access_input(
@@ -726,7 +734,7 @@ class TestCacheManualWebhookAccessInput:
             )
 
     def test_cache_manual_webhook_no_fields_defined(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         access_manual_webhook.fields = (
             None  # Specifically testing the None case to cover our bases
@@ -740,7 +748,7 @@ class TestCacheManualWebhookAccessInput:
             )
 
     def test_fields_added_to_webhook_definition(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test the use case where new fields have been added to the webhook definition
         since the webhook data was saved to the privacy request"""
@@ -760,7 +768,7 @@ class TestCacheManualWebhookAccessInput:
             )
 
     def test_fields_removed_from_webhook_definition(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test the use case where fields have been removed from the webhook definition
         since the webhook data was saved to the privacy request"""
@@ -780,7 +788,7 @@ class TestCacheManualWebhookAccessInput:
             )
 
     def test_non_strict_retrieval_from_cache(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test non-strict retrieval, we ignore extra fields saved and serialize missing fields as None"""
         privacy_request.cache_manual_webhook_access_input(
@@ -810,7 +818,7 @@ class TestCacheManualWebhookAccessInput:
 
 class TestCacheManualWebhookErasureInput:
     def test_cache_manual_webhook_erasure_input(
-            self, privacy_request, access_manual_webhook
+        self, privacy_request, access_manual_webhook
     ):
         with pytest.raises(NoCachedManualWebhookEntry):
             privacy_request.get_manual_webhook_erasure_input_strict(
@@ -825,9 +833,9 @@ class TestCacheManualWebhookErasureInput:
         assert privacy_request.get_manual_webhook_erasure_input_strict(
             access_manual_webhook
         ) == {
-                   "email": False,
-                   "last_name": True,
-               }
+            "email": False,
+            "last_name": True,
+        }
 
     def test_cache_no_fields_supplied(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_erasure_input(
@@ -838,9 +846,9 @@ class TestCacheManualWebhookErasureInput:
         assert privacy_request.get_manual_webhook_erasure_input_strict(
             access_manual_webhook
         ) == {
-                   "email": None,
-                   "last_name": None,
-               }, "Missing fields persisted as None"
+            "email": None,
+            "last_name": None,
+        }, "Missing fields persisted as None"
 
     def test_cache_some_fields_supplied(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_erasure_input(
@@ -853,12 +861,12 @@ class TestCacheManualWebhookErasureInput:
         assert privacy_request.get_manual_webhook_erasure_input_strict(
             access_manual_webhook
         ) == {
-                   "email": False,
-                   "last_name": None,
-               }, "Missing fields saved as None"
+            "email": False,
+            "last_name": None,
+        }, "Missing fields saved as None"
 
     def test_cache_extra_fields_not_in_webhook_specs(
-            self, privacy_request, access_manual_webhook
+        self, privacy_request, access_manual_webhook
     ):
         with pytest.raises(ValidationError):
             privacy_request.cache_manual_webhook_erasure_input(
@@ -870,7 +878,7 @@ class TestCacheManualWebhookErasureInput:
             )
 
     def test_cache_manual_webhook_no_fields_defined(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         access_manual_webhook.fields = (
             None  # Specifically testing the None case to cover our bases
@@ -884,7 +892,7 @@ class TestCacheManualWebhookErasureInput:
             )
 
     def test_fields_added_to_webhook_definition(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test the use case where new fields have been added to the webhook definition
         since the webhook data was saved to the privacy request"""
@@ -904,7 +912,7 @@ class TestCacheManualWebhookErasureInput:
             )
 
     def test_fields_removed_from_webhook_definition(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test the use case where fields have been removed from the webhook definition
         since the webhook data was saved to the privacy request"""
@@ -924,7 +932,7 @@ class TestCacheManualWebhookErasureInput:
             )
 
     def test_non_strict_retrieval_from_cache(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test non-strict retrieval, we ignore extra fields saved and serialize missing fields as None"""
         privacy_request.cache_manual_webhook_erasure_input(
@@ -955,37 +963,37 @@ class TestCacheManualWebhookErasureInput:
 class TestCanRunFromCheckpoint:
     def test_can_run_from_checkpoint(self):
         assert (
-                can_run_checkpoint(
-                    request_checkpoint=CurrentStep.email_post_send,
-                    from_checkpoint=CurrentStep.erasure,
-                )
-                is True
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.email_post_send,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is True
         )
 
     def test_can_run_from_equivalent_checkpoint(self):
         assert (
-                can_run_checkpoint(
-                    request_checkpoint=CurrentStep.erasure,
-                    from_checkpoint=CurrentStep.erasure,
-                )
-                is True
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is True
         )
 
     def test_cannot_run_from_completed_checkpoint(self):
         assert (
-                can_run_checkpoint(
-                    request_checkpoint=CurrentStep.access,
-                    from_checkpoint=CurrentStep.erasure,
-                )
-                is False
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.access,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is False
         )
 
     def test_can_run_if_no_saved_checkpoint(self):
         assert (
-                can_run_checkpoint(
-                    request_checkpoint=CurrentStep.access,
-                )
-                is True
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.access,
+            )
+            is True
         )
 
 
@@ -1032,9 +1040,9 @@ class TestPrivacyRequestCustomFieldFunctions:
     """
 
     def test_cache_custom_privacy_request_fields(
-            self,
-            allow_custom_privacy_request_field_collection_enabled,
-            allow_custom_privacy_request_fields_in_request_execution_enabled,
+        self,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
     ):
         privacy_request = PrivacyRequest(id=str(uuid4()))
         privacy_request.cache_custom_privacy_request_fields(
@@ -1061,8 +1069,8 @@ class TestPrivacyRequestCustomFieldFunctions:
         }
 
     def test_cache_custom_privacy_request_fields_collection_disabled(
-            self,
-            allow_custom_privacy_request_field_collection_disabled,
+        self,
+        allow_custom_privacy_request_field_collection_disabled,
     ):
         """Custom privacy request fields should not be cached if collection is disabled"""
         privacy_request = PrivacyRequest(id=str(uuid4()))
@@ -1084,9 +1092,9 @@ class TestPrivacyRequestCustomFieldFunctions:
         assert privacy_request.get_cached_custom_privacy_request_fields() == {}
 
     def test_cache_custom_privacy_request_fields_collection_enabled_use_disabled(
-            self,
-            allow_custom_privacy_request_field_collection_enabled,
-            allow_custom_privacy_request_fields_in_request_execution_disabled,
+        self,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_disabled,
     ):
         """Custom privacy request fields should not be cached if use is disabled"""
         privacy_request = PrivacyRequest(id=str(uuid4()))
@@ -1108,11 +1116,11 @@ class TestPrivacyRequestCustomFieldFunctions:
         assert privacy_request.get_cached_custom_privacy_request_fields() == {}
 
     def test_persist_custom_privacy_request_fields(
-            self,
-            db,
-            privacy_request,
-            allow_custom_privacy_request_field_collection_enabled,
-            allow_custom_privacy_request_fields_in_request_execution_enabled,
+        self,
+        db,
+        privacy_request,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
     ):
         privacy_request.persist_custom_privacy_request_fields(
             db=db,
@@ -1139,10 +1147,10 @@ class TestPrivacyRequestCustomFieldFunctions:
         }
 
     def test_persist_custom_privacy_request_fields_collection_disabled(
-            self,
-            db,
-            privacy_request,
-            allow_custom_privacy_request_field_collection_disabled,
+        self,
+        db,
+        privacy_request,
+        allow_custom_privacy_request_field_collection_disabled,
     ):
         """Custom privacy request fields should not be persisted if collection is disabled"""
         privacy_request.persist_custom_privacy_request_fields(
@@ -1263,7 +1271,7 @@ class TestPrivacyRequestAttachments:
         """Fixture to create an attachment reference"""
 
         def _create_reference(
-                reference_id: str, attachment_id: str, reference_type: str
+            reference_id: str, attachment_id: str, reference_type: str
         ):
             return AttachmentReference.create(
                 db,
@@ -1288,12 +1296,12 @@ class TestPrivacyRequestAttachments:
         return _cleanup
 
     def test_retrieve_attachments_from_privacy_request(
-            self,
-            db,
-            create_attachment,
-            create_attachment_reference,
-            cleanup_attachments,
-            privacy_request,
+        self,
+        db,
+        create_attachment,
+        create_attachment_reference,
+        cleanup_attachments,
+        privacy_request,
     ):
         # Create Attachments
         attachment1 = create_attachment(b"contents of test file 1")
@@ -1328,7 +1336,7 @@ class TestPrivacyRequestAttachments:
         assert Attachment.get(db, object_id=attachment3.id) is None
 
     def test_privacy_request_get_attachment_by_id(
-            self, db, create_attachment_reference, attachment, privacy_request
+        self, db, create_attachment_reference, attachment, privacy_request
     ):
         # Associate Attachment with the PrivacyRequest
         create_attachment_reference(
@@ -1341,7 +1349,7 @@ class TestPrivacyRequestAttachments:
         assert retrieved_attachment.id == attachment.id
 
     def test_privacy_request_delete_attachment_by_id(
-            self, db, create_attachment_reference, attachment, privacy_request
+        self, db, create_attachment_reference, attachment, privacy_request
     ):
         # Associate Attachment with the PrivacyRequest
         create_attachment_reference(
@@ -1354,13 +1362,13 @@ class TestPrivacyRequestAttachments:
         assert privacy_request.get_attachment_by_id(db, attachment.id) is None
 
     def test_privacy_request_get_manual_webhook_attachments(
-            self,
-            db,
-            create_attachment,
-            create_attachment_reference,
-            cleanup_attachments,
-            privacy_request,
-            access_manual_webhook,
+        self,
+        db,
+        create_attachment,
+        create_attachment_reference,
+        cleanup_attachments,
+        privacy_request,
+        access_manual_webhook,
     ):
         # Create Attachments
         attachment1 = create_attachment(b"contents of test file 1")
@@ -1410,14 +1418,14 @@ class TestPrivacyRequestAttachments:
             db, access_manual_webhook.id
         )
         assert (
-                len(erasure_attachments) == 0
+            len(erasure_attachments) == 0
         )  # No attachments associated with erasure webhook
 
         # Clean up
         cleanup_attachments([attachment1, attachment2, attachment3])
 
     def test_privacy_request_get_manual_webhook_attachments_no_attachments(
-            self, db, privacy_request, access_manual_webhook
+        self, db, privacy_request, access_manual_webhook
     ):
         """Test getting manual webhook attachments when none exist"""
         access_attachments = privacy_request.get_access_manual_webhook_attachments(
@@ -1431,13 +1439,13 @@ class TestPrivacyRequestAttachments:
         assert len(erasure_attachments) == 0
 
     def test_privacy_request_attachment_relationship_warnings(
-            self,
-            s3_client,
-            db,
-            privacy_request,
-            create_attachment,
-            create_attachment_reference,
-            mock_s3_client,
+        self,
+        s3_client,
+        db,
+        privacy_request,
+        create_attachment,
+        create_attachment_reference,
+        mock_s3_client,
     ):
         """Test that no SQLAlchemy relationship warnings occur when creating and accessing PrivacyRequest attachment relationships."""
         with warnings.catch_warnings(record=True) as warning_list:
@@ -1473,7 +1481,7 @@ class TestPrivacyRequestAttachments:
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
             assert (
-                    len(sqlalchemy_warnings) == 0
+                len(sqlalchemy_warnings) == 0
             ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
 
             # Cleanup
@@ -1524,12 +1532,12 @@ class TestPrivacyRequestComments:
         return _cleanup
 
     def test_retrieve_comments_from_privacy_request(
-            self,
-            db,
-            create_comment,
-            create_comment_reference,
-            cleanup_comments,
-            privacy_request,
+        self,
+        db,
+        create_comment,
+        create_comment_reference,
+        cleanup_comments,
+        privacy_request,
     ):
         # Create Comments
         comment1 = create_comment("test comment 1")
@@ -1564,7 +1572,7 @@ class TestPrivacyRequestComments:
         assert Comment.get(db, object_id=comment3.id) is None
 
     def test_privacy_request_get_comment_by_id(
-            self, db, create_comment, create_comment_reference, privacy_request
+        self, db, create_comment, create_comment_reference, privacy_request
     ):
         # Create and associate comment with the PrivacyRequest
         comment = create_comment("test comment")
@@ -1579,7 +1587,7 @@ class TestPrivacyRequestComments:
         assert retrieved_comment.id == comment.id
 
     def test_privacy_request_comment_relationship_warnings(
-            self, db, privacy_request, create_comment, create_comment_reference
+        self, db, privacy_request, create_comment, create_comment_reference
     ):
         """Test that no SQLAlchemy relationship warnings occur when creating and accessing PrivacyRequest comment relationships."""
         with warnings.catch_warnings(record=True) as warning_list:
@@ -1615,7 +1623,7 @@ class TestPrivacyRequestComments:
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
             assert (
-                    len(sqlalchemy_warnings) == 0
+                len(sqlalchemy_warnings) == 0
             ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
 
             # Cleanup
@@ -1716,7 +1724,7 @@ class TestCancelCeleryTasks:
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_with_main_and_sub_tasks(
-            self, privacy_request_with_cached_tasks
+        self, privacy_request_with_cached_tasks
     ):
         """Test canceling celery tasks when main and sub-tasks exist."""
         from unittest import mock
@@ -1746,7 +1754,7 @@ class TestCancelCeleryTasks:
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_with_only_main_task(
-            self, privacy_request_no_cached_tasks
+        self, privacy_request_no_cached_tasks
     ):
         """Test canceling celery tasks when only main task exists."""
         from unittest import mock
@@ -1783,7 +1791,7 @@ class TestCancelCeleryTasks:
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_with_revoke_failures(
-            self, privacy_request_with_cached_tasks
+        self, privacy_request_with_cached_tasks
     ):
         """Test that revoke failures are handled gracefully."""
         from unittest import mock
@@ -1798,7 +1806,7 @@ class TestCancelCeleryTasks:
 
         with mock.patch.object(celery_app.control, "revoke", side_effect=side_effect):
             with mock.patch(
-                    "fides.api.models.privacy_request.privacy_request.logger"
+                "fides.api.models.privacy_request.privacy_request.logger"
             ) as mock_logger:
                 privacy_request.cancel_celery_tasks()
 
@@ -1819,7 +1827,7 @@ class TestCancelCeleryTasks:
 
         with mock.patch.object(celery_app.control, "revoke"):
             with mock.patch(
-                    "fides.api.models.privacy_request.privacy_request.logger"
+                "fides.api.models.privacy_request.privacy_request.logger"
             ) as mock_logger:
                 privacy_request.cancel_celery_tasks()
 
@@ -1849,7 +1857,7 @@ class TestCancelCeleryTasks:
 
     @pytest.mark.unit
     def test_get_request_task_celery_task_ids_no_tasks(
-            self, privacy_request_no_cached_tasks
+        self, privacy_request_no_cached_tasks
     ):
         """Test that get_request_task_celery_task_ids returns empty list when no tasks exist."""
         privacy_request = privacy_request_no_cached_tasks
@@ -1861,7 +1869,7 @@ class TestCancelCeleryTasks:
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_integration_with_cancel_processing(
-            self, privacy_request_no_cached_tasks
+        self, privacy_request_no_cached_tasks
     ):
         """Test that cancel_celery_tasks is called when cancel_processing is invoked."""
         from unittest import mock
@@ -1869,7 +1877,7 @@ class TestCancelCeleryTasks:
         privacy_request = privacy_request_no_cached_tasks
 
         with mock.patch.object(
-                privacy_request, "cancel_celery_tasks"
+            privacy_request, "cancel_celery_tasks"
         ) as mock_cancel_tasks:
             with mock.patch.object(privacy_request, "save"):
                 privacy_request.cancel_processing(mock.Mock(), "Test cancellation")

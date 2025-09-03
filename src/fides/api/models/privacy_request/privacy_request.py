@@ -364,30 +364,34 @@ class PrivacyRequest(
             "id": self.id,
             "external_id": self.external_id,
             "status": self.status.value,
-            "requested_at": self.requested_at.isoformat()
-            if self.requested_at
-            else None,
-            "started_processing_at": self.started_processing_at.isoformat()
-            if self.started_processing_at
-            else None,
-            "finished_processing_at": self.finished_processing_at.isoformat()
-            if self.finished_processing_at
-            else None,
-            "reviewed_at": self.reviewed_at.isoformat()
-            if self.reviewed_at
-            else None,
+            "requested_at": (
+                self.requested_at.isoformat() if self.requested_at else None
+            ),
+            "started_processing_at": (
+                self.started_processing_at.isoformat()
+                if self.started_processing_at
+                else None
+            ),
+            "finished_processing_at": (
+                self.finished_processing_at.isoformat()
+                if self.finished_processing_at
+                else None
+            ),
+            "reviewed_at": self.reviewed_at.isoformat() if self.reviewed_at else None,
             "reviewed_by": self.reviewed_by,
-            "finalized_at": self.finalized_at.isoformat()
-            if self.finalized_at
-            else None,
+            "finalized_at": (
+                self.finalized_at.isoformat() if self.finalized_at else None
+            ),
             "finalized_by": self.finalized_by,
             "submitted_by": self.submitted_by,
             "custom_privacy_request_fields_approved_by": (
                 self.custom_privacy_request_fields_approved_by
             ),
-            "identity_verified_at": self.identity_verified_at.isoformat()
-            if self.identity_verified_at
-            else None,
+            "identity_verified_at": (
+                self.identity_verified_at.isoformat()
+                if self.identity_verified_at
+                else None
+            ),
             "custom_privacy_request_fields_approved_at": (
                 self.custom_privacy_request_fields_approved_at.isoformat()
                 if self.custom_privacy_request_fields_approved_at
@@ -399,15 +403,13 @@ class PrivacyRequest(
             "policy": self.policy.to_safe_dict() if self.policy else None,
             "property_id": self.property_id,
             "cancel_reason": self.cancel_reason,
-            "canceled_at": self.canceled_at.isoformat()
-            if self.canceled_at
-            else None,
+            "canceled_at": self.canceled_at.isoformat() if self.canceled_at else None,
             "consent_preferences": self.consent_preferences,
             "source": self.source.value if self.source else None,
             "paused_at": self.paused_at.isoformat() if self.paused_at else None,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "days_left": self.days_left,
-            "custom_fields": self.get_persisted_custom_privacy_request_fields() if self.custom_fields else None,
+            "custom_fields": self.get_persisted_custom_privacy_request_fields() if self.custom_fields else None,  # type: ignore[attr-defined]
             "location": self.location,
         }
 
