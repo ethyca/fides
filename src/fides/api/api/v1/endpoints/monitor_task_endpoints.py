@@ -14,7 +14,7 @@ from fides.api.models.detection_discovery.monitor_task import MonitorTask, Monit
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.monitor_task import MonitorTaskInProgressResponse
-from fides.common.api.scope_registry import MONITOR_READ
+from fides.common.api.scope_registry import SYSTEM_READ
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 router = APIRouter(tags=["Monitor Tasks"], prefix=V1_URL_PREFIX)
@@ -22,7 +22,7 @@ router = APIRouter(tags=["Monitor Tasks"], prefix=V1_URL_PREFIX)
 
 @router.get(
     "/monitor-tasks/in-progress",
-    dependencies=[Security(verify_oauth_client, scopes=[MONITOR_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_READ])],
     status_code=HTTP_200_OK,
     response_model=Page[MonitorTaskInProgressResponse],
 )
