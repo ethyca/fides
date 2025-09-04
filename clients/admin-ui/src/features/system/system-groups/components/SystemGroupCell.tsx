@@ -7,6 +7,7 @@ import {
   AntTag as Tag,
   Icons,
 } from "fidesui";
+import { isEqual } from "lodash";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -44,6 +45,14 @@ const SystemGroupCell = ({
 
   const handleUpdate = async () => {
     setIsAdding(false);
+    if (
+      isEqual(
+        pendingSelection,
+        selectedGroups.map((group) => group.fides_key),
+      )
+    ) {
+      return;
+    }
     messageApi.open({
       key: UPDATE_SYSTEM_GROUPS_MSG_KEY,
       type: "loading",
@@ -66,7 +75,7 @@ const SystemGroupCell = ({
       messageApi.open({
         key: UPDATE_SYSTEM_GROUPS_MSG_KEY,
         type: "success",
-        content: "System groups updated",
+        content: `Groups updated for ${system.name}`,
       });
     }
     setTimeout(() => {
@@ -116,7 +125,6 @@ const SystemGroupCell = ({
             onChange={(value) => {
               setPendingSelection(value);
             }}
-            className="w-64"
           />
           <Button icon={<Icons.Checkmark />} onClick={handleUpdate} />
         </>

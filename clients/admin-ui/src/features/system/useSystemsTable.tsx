@@ -38,6 +38,7 @@ import {
   SystemGroupCreate,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+import { ListExpandableCell } from "~/features/common/table/cells";
 
 interface UseSystemsTableParams {
   isAlphaSystemGroupsEnabled?: boolean;
@@ -233,7 +234,7 @@ const useSystemsTable = ({
               isWrapped: true,
               isExpanded: isGroupsExpanded,
             }}
-            className="max-w-96"
+            className="w-96"
           />
         ),
         title: "Groups",
@@ -282,10 +283,12 @@ const useSystemsTable = ({
         ),
       },
       {
-        title: "Data steward",
-        dataIndex: "data_steward",
+        title: "Data stewards",
+        dataIndex: "data_stewards",
         key: "data_steward",
-        render: (dataSteward: string | null) => dataSteward,
+        render: (dataStewards: string[] | null) => (
+          <ListExpandableCell values={dataStewards ?? []} valueSuffix="users" />
+        ),
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
         ),
