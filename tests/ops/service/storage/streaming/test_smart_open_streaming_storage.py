@@ -255,19 +255,28 @@ class TestSmartOpenStreamingStorage:
         mock_stream.__exit__ = MagicMock(return_value=None)
         mock_smart_open_client.stream_read.return_value = mock_stream
 
-        # Test that the method respects the timeout
-        # The timeout should be calculated as: 300s (base) + (2GB/10MB) = 300 + 200 = 500s
-        start_time = time.time()
+        # Mock time to make timeout happen quickly
+        with patch("time.time") as mock_time:
+            # Start with time 0, then jump to timeout value
+            mock_time.side_effect = [
+                0,
+                0,
+                0,
+                0,
+                0,
+                600,
+            ]  # Timeout after a few iterations
 
-        # This should timeout after the calculated timeout period
-        result = list(
-            storage._create_attachment_content_stream("bucket", "key", "storage_key")
-        )
+            # This should timeout after the calculated timeout period
+            with pytest.raises(StorageUploadError, match="Timeout reached"):
+                list(
+                    storage._create_attachment_content_stream(
+                        "bucket", "key", "storage_key"
+                    )
+                )
 
-        # Should have processed some chunks before timing out
-        assert len(result) > 0
-        # Should not have processed an unreasonable number of chunks
-        assert len(result) < 1000  # Safety check
+            # Verify that time was called multiple times (indicating timeout check)
+            assert mock_time.call_count > 1
 
     def test_collect_and_validate_attachments(self, mock_smart_open_client):
         """Test collecting and validating attachments."""
@@ -919,7 +928,7 @@ class TestSmartOpenStreamingStorage:
         [
             ("s3://invalid", "Invalid S3 URL format"),
             ("not-a-url", "Could not parse storage URL"),
-            ("", "Could not parse storage URL"),
+            ("", "Storage key cannot be empty"),
         ],
     )
     def test_parse_storage_url_invalid_urls(
@@ -959,7 +968,16 @@ class TestSmartOpenStreamingStorage:
             ]
         }
         mock_dsr_builder.dsr_data = redacted_data
-        mock_dsr_builder.generate.return_value = BytesIO(b"mock zip content")
+
+        # Create a mock ZIP file with some content
+        import zipfile
+
+        mock_zip_buffer = BytesIO()
+        with zipfile.ZipFile(mock_zip_buffer, "w") as mock_zip:
+            mock_zip.writestr("welcome.html", "<html>Welcome</html>")
+            mock_zip.writestr("data/main.css", "body { color: black; }")
+        mock_zip_buffer.seek(0)
+        mock_dsr_builder.generate.return_value = mock_zip_buffer
 
         # Mock the attachment collection method
         mock_attachment_info = AttachmentProcessingInfo(
@@ -983,55 +1001,57 @@ class TestSmartOpenStreamingStorage:
             "_collect_and_validate_attachments_from_dsr_builder",
             return_value=[mock_attachment_info],
         ) as mock_collect_attachments:
-            # Mock the upload method
-            with patch.object(
-                storage,
-                "_upload_zip_to_storage",
-                return_value="https://example.com/result.zip",
-            ):
-                # Test data with original dataset names
-                original_data = {
-                    "manualtask:manual_data": [
-                        {
-                            "id": 1,
-                            "name": "test",
-                            "attachments": [
-                                {
-                                    "file_name": "test.pdf",
-                                    "download_url": "https://example.com/test.pdf",
-                                    "file_size": 1024,
-                                }
-                            ],
-                        }
-                    ]
-                }
+            # Mock the storage client methods
+            mock_smart_open_client.stream_upload.return_value.__enter__.return_value = (
+                MagicMock()
+            )
+            mock_smart_open_client.generate_presigned_url.return_value = (
+                "https://example.com/result.zip"
+            )
 
-                # Create upload config
-                config = StorageUploadConfig(
-                    bucket_name="test-bucket",
-                    file_key="test-key.zip",
-                    resp_format=ResponseFormat.html.value,
-                )
+            # Test data with original dataset names
+            original_data = {
+                "manualtask:manual_data": [
+                    {
+                        "id": 1,
+                        "name": "test",
+                        "attachments": [
+                            {
+                                "file_name": "test.pdf",
+                                "download_url": "https://example.com/test.pdf",
+                                "file_size": 1024,
+                            }
+                        ],
+                    }
+                ]
+            }
 
-                # Call the upload method
-                result = storage.upload_to_storage_streaming(
-                    data=original_data,
-                    config=config,
-                    privacy_request=mock_privacy_request,
-                )
+            # Create upload config
+            config = StorageUploadConfig(
+                bucket_name="test-bucket",
+                file_key="test-key.zip",
+                resp_format=ResponseFormat.html.value,
+            )
 
-                # Verify that DSRReportBuilder was called with original data
-                mock_dsr_builder_class.assert_called_once_with(
-                    privacy_request=mock_privacy_request,
-                    dsr_data=original_data,
-                    enable_streaming=True,
-                )
+            # Call the upload method
+            result = storage.upload_to_storage_streaming(
+                data=original_data,
+                config=config,
+                privacy_request=mock_privacy_request,
+            )
 
-                # Verify that attachment collection was called with redacted data
-                mock_collect_attachments.assert_called_once_with(
-                    redacted_data,  # Should use redacted data, not original data
-                    mock_dsr_builder,
-                )
+            # Verify that DSRReportBuilder was called with original data
+            mock_dsr_builder_class.assert_called_once_with(
+                privacy_request=mock_privacy_request,
+                dsr_data=original_data,
+                enable_streaming=True,
+            )
 
-                # Verify result
-                assert result == "https://example.com/result.zip"
+            # Verify that attachment collection was called with redacted data
+            mock_collect_attachments.assert_called_once_with(
+                redacted_data,  # Should use redacted data, not original data
+                mock_dsr_builder,
+            )
+
+            # Verify result
+            assert result == "https://example.com/result.zip"
