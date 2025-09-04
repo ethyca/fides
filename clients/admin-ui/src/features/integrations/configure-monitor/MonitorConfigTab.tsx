@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unstable-nested-components */
-
 import {
   ColumnDef,
   createColumnHelper,
@@ -10,6 +9,8 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  formatIsoLocation,
+  isoStringToEntry,
   Spacer,
   Text,
   Tooltip,
@@ -40,8 +41,8 @@ import {
   ConnectionSystemTypeMap,
   ConnectionType,
   MonitorConfig,
+  PrivacyNoticeRegion,
   SystemType,
-  WebsiteMonitorParams,
   WebsiteSchema,
 } from "~/types/api";
 
@@ -204,15 +205,37 @@ const MonitorConfigTab = ({
 
       const regionsColumn = columnHelper.accessor(
         (row) => {
-          const params = row.datasource_params as WebsiteMonitorParams | null;
+          const locations =
+            row.datasource_params &&
+            "locations" in row.datasource_params &&
+            Array.isArray(row.datasource_params.locations)
+              ? row.datasource_params.locations
+              : [];
           return (
-            params?.locations
-              ?.map(
-                (location) =>
+            locations
+              ?.map((location) => {
+                const isoEntry = isoStringToEntry(location);
+
+                /**
+                 * regionCode and regionRecord are the result of navigating enums that should be depricated.
+                 * if the backend decides to maintain a list of values for the frontend to use, a less convoluted method should be used
+                 */
+                const regionCode = Object.entries(PrivacyNoticeRegion).find(
+                  ([, region]) => {
+                    return region === location;
+                  },
+                );
+
+                const regionRecord =
+                  regionCode &&
                   PRIVACY_NOTICE_REGION_RECORD[
-                    location as keyof typeof PRIVACY_NOTICE_REGION_RECORD
-                  ],
-              )
+                    regionCode[1]
+                  ]; /* regionCode[1] refers to enum value that is the key for the region records enum (enum-ception) */
+
+                return isoEntry
+                  ? formatIsoLocation({ isoEntry })
+                  : regionRecord;
+              })
               .join(", ") || "No regions selected"
           );
         },

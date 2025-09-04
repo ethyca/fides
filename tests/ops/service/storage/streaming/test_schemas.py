@@ -7,7 +7,7 @@ from fides.api.service.storage.streaming.schemas import (
     AttachmentInfo,
     AttachmentProcessingInfo,
     MultipartUploadResponse,
-    PackageSplitConfig,
+    SmartOpenStreamingStorageConfig,
     StorageUploadConfig,
     StreamingBufferConfig,
     UploadPartResponse,
@@ -201,34 +201,6 @@ class TestStorageUploadConfig:
             )
 
 
-class TestPackageSplitConfig:
-    """Test PackageSplitConfig schema."""
-
-    def test_valid_package_split_config(self):
-        """Test valid package split config creation."""
-        config = PackageSplitConfig(max_attachments=50)
-        assert config.max_attachments == 50
-
-    def test_package_split_config_default(self):
-        """Test default max_attachments value."""
-        config = PackageSplitConfig()
-        assert config.max_attachments == 100
-
-    def test_package_split_config_min_validation(self):
-        """Test minimum max_attachments validation."""
-        with pytest.raises(
-            ValidationError, match="Input should be greater than or equal to 1"
-        ):
-            PackageSplitConfig(max_attachments=0)
-
-    def test_package_split_config_max_validation(self):
-        """Test maximum max_attachments validation."""
-        with pytest.raises(
-            ValidationError, match="Input should be less than or equal to 1000"
-        ):
-            PackageSplitConfig(max_attachments=1001)
-
-
 class TestStreamingBufferConfig:
     """Test StreamingBufferConfig schema."""
 
@@ -249,6 +221,8 @@ class TestStreamingBufferConfig:
         assert config.zip_buffer_threshold == 5 * 1024 * 1024  # 5MB
         assert config.stream_buffer_threshold == 1024 * 1024  # 1MB
         assert config.chunk_size_threshold == 1024 * 1024  # 1MB
+        assert config.fail_fast_on_attachment_errors is True
+        assert config.include_error_details is True
 
     def test_streaming_buffer_config_min_validation(self):
         """Test minimum threshold validation."""
@@ -256,6 +230,67 @@ class TestStreamingBufferConfig:
             ValidationError, match="Input should be greater than or equal to 1048576"
         ):
             StreamingBufferConfig(zip_buffer_threshold=1024 * 1024 - 1)
+
+    def test_streaming_buffer_config_error_handling_options(self):
+        """Test error handling configuration options."""
+        config = StreamingBufferConfig(
+            fail_fast_on_attachment_errors=True,
+            include_error_details=False,
+        )
+        assert config.fail_fast_on_attachment_errors is True
+        assert config.include_error_details is False
+
+
+class TestSmartOpenStreamingStorageConfig:
+    """Test SmartOpenStreamingStorageConfig schema."""
+
+    def test_valid_config(self):
+        """Test valid configuration creation."""
+        config = SmartOpenStreamingStorageConfig(chunk_size=1024 * 1024)  # 1MB
+        assert config.chunk_size == 1024 * 1024
+
+    def test_default_config(self):
+        """Test default configuration values."""
+        config = SmartOpenStreamingStorageConfig()
+        assert config.chunk_size == 5 * 1024 * 1024  # DEFAULT_CHUNK_SIZE
+
+    def test_minimum_chunk_size(self):
+        """Test minimum chunk size validation."""
+        config = SmartOpenStreamingStorageConfig(chunk_size=1024)  # 1KB
+        assert config.chunk_size == 1024
+
+    def test_maximum_chunk_size(self):
+        """Test maximum chunk size validation."""
+        config = SmartOpenStreamingStorageConfig(
+            chunk_size=2 * 1024 * 1024 * 1024
+        )  # 2GB
+        assert config.chunk_size == 2 * 1024 * 1024 * 1024
+
+    def test_invalid_chunk_size_too_small(self):
+        """Test validation error for chunk size too small."""
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 1024"
+        ):
+            SmartOpenStreamingStorageConfig(chunk_size=512)
+
+    def test_invalid_chunk_size_too_large(self):
+        """Test validation error for chunk size too large."""
+        with pytest.raises(
+            ValidationError, match="Input should be less than or equal to"
+        ):
+            SmartOpenStreamingStorageConfig(chunk_size=3 * 1024 * 1024 * 1024)  # 3GB
+
+    def test_boundary_values(self):
+        """Test that boundary values are accepted."""
+        # Test minimum valid value
+        config_min = SmartOpenStreamingStorageConfig(chunk_size=1024)  # 1KB
+        assert config_min.chunk_size == 1024
+
+        # Test maximum valid value
+        config_max = SmartOpenStreamingStorageConfig(
+            chunk_size=2 * 1024 * 1024 * 1024
+        )  # 2GB
+        assert config_max.chunk_size == 2 * 1024 * 1024 * 1024
 
 
 class TestAttachmentProcessingInfo:
