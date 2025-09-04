@@ -7,7 +7,6 @@ from fides.api.service.storage.streaming.schemas import (
     AttachmentInfo,
     AttachmentProcessingInfo,
     MultipartUploadResponse,
-    PackageSplitConfig,
     SmartOpenStreamingStorageConfig,
     StorageUploadConfig,
     StreamingBufferConfig,
@@ -200,34 +199,6 @@ class TestStorageUploadConfig:
                 resp_format="csv",
                 max_workers=21,
             )
-
-
-class TestPackageSplitConfig:
-    """Test PackageSplitConfig schema."""
-
-    def test_valid_package_split_config(self):
-        """Test valid package split config creation."""
-        config = PackageSplitConfig(max_attachments=50)
-        assert config.max_attachments == 50
-
-    def test_package_split_config_default(self):
-        """Test default max_attachments value."""
-        config = PackageSplitConfig()
-        assert config.max_attachments == 100
-
-    def test_package_split_config_min_validation(self):
-        """Test minimum max_attachments validation."""
-        with pytest.raises(
-            ValidationError, match="Input should be greater than or equal to 1"
-        ):
-            PackageSplitConfig(max_attachments=0)
-
-    def test_package_split_config_max_validation(self):
-        """Test maximum max_attachments validation."""
-        with pytest.raises(
-            ValidationError, match="Input should be less than or equal to 1000"
-        ):
-            PackageSplitConfig(max_attachments=1001)
 
 
 class TestStreamingBufferConfig:

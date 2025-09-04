@@ -30,7 +30,6 @@ from fides.api.service.storage.streaming.schemas import (
     LARGE_FILE_THRESHOLD,
     AttachmentInfo,
     AttachmentProcessingInfo,
-    PackageSplitConfig,
     SmartOpenStreamingStorageConfig,
     StorageUploadConfig,
     StreamingBufferConfig,

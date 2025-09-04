@@ -56,21 +56,6 @@ class StorageUploadConfig(BaseModel):
         return v.strip()
 
 
-class PackageSplitConfig(BaseModel):
-    """Configuration for package splitting operations"""
-
-    max_attachments: int = Field(
-        default=100, ge=1, le=1000, description="Max attachments per package"
-    )
-
-    @field_validator("max_attachments")
-    @classmethod
-    def validate_max_attachments(cls, v: int) -> int:
-        if v < 1:
-            raise ValueError("max_attachments must be at least 1")
-        return v
-
-
 class StreamingBufferConfig(BaseModel):
     """Configuration for streaming buffer operations"""
 

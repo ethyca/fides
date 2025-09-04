@@ -193,6 +193,7 @@ def generate_attachment_url_from_storage_path(
         storage_path = resolve_attachment_storage_path(unique_filename, base_path)
 
         # URL-encode the filename for proper HTML link functionality
+        # Always encode when streaming is enabled to ensure consistency
         encoded_filename = quote(unique_filename, safe="")
 
         # Generate relative path from HTML template directory to storage path

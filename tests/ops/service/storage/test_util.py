@@ -450,6 +450,38 @@ class TestGenerateAttachmentUrlFromStoragePath:
             )
             assert result == expected_encoded, f"Failed for filename: {filename}"
 
+    def test_generate_attachment_url_double_encoding_prevention(self):
+        """Test that URL generation prevents double encoding of filenames."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        # Test with already URL-encoded filename
+        already_encoded_filename = "test%20file%20pdf%20%20%22quotes%22%20.pdf"
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename=already_encoded_filename,
+            base_path="data/dataset_1/collection_1",
+            html_directory="data/dataset_1/collection_1",
+            enable_streaming=True,
+        )
+
+        # Should return the filename as-is (not double-encoded)
+        assert result == already_encoded_filename
+
+        # Test with non-encoded filename
+        non_encoded_filename = 'test file pdf  "quotes" .pdf'
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename=non_encoded_filename,
+            base_path="data/dataset_1/collection_1",
+            html_directory="data/dataset_1/collection_1",
+            enable_streaming=True,
+        )
+
+        # Should return URL-encoded filename
+        assert result == "test%20file%20pdf%20%20%22quotes%22%20.pdf"
+
 
 class TestResolveBasePathFromContext:
     """Tests for the resolve_base_path_from_context function"""
