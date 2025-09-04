@@ -697,13 +697,9 @@ class TestSmartOpenStreamingStorage:
                 )
             ]
 
-            # With default config (fail_fast=False), should continue and create error files
-            result = list(storage._create_attachment_files(attachments))
-
-            # Should have 2 entries: error file and summary
-            assert len(result) == 2
-            assert result[0][0] == "errors/ERROR_doc1.pdf"
-            assert result[1][0] == "errors/attachment_failures_summary.json"
+            # With default config (fail_fast=True), should raise exception immediately
+            with pytest.raises(StorageUploadError, match="Test error"):
+                list(storage._create_attachment_files(attachments))
 
     def test_create_attachment_files_fail_fast(self, mock_smart_open_client):
         """Test creating attachment files with fail_fast enabled."""
@@ -750,12 +746,10 @@ class TestSmartOpenStreamingStorage:
                 )
             ]
 
-            # With include_error_details=False, should not create error files
+            # With include_error_details=False but fail_fast=True (default), should raise exception immediately
             buffer_config = StreamingBufferConfig(include_error_details=False)
-            result = list(storage._create_attachment_files(attachments, buffer_config))
-
-            # Should have no entries (no error files created)
-            assert len(result) == 0
+            with pytest.raises(StorageUploadError, match="Test error"):
+                list(storage._create_attachment_files(attachments, buffer_config))
 
     def test_transform_data_for_access_package(self, mock_smart_open_client):
         """Test transforming data for access package."""

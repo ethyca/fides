@@ -221,7 +221,7 @@ class TestStreamingBufferConfig:
         assert config.zip_buffer_threshold == 5 * 1024 * 1024  # 5MB
         assert config.stream_buffer_threshold == 1024 * 1024  # 1MB
         assert config.chunk_size_threshold == 1024 * 1024  # 1MB
-        assert config.fail_fast_on_attachment_errors is False
+        assert config.fail_fast_on_attachment_errors is True
         assert config.include_error_details is True
 
     def test_streaming_buffer_config_min_validation(self):
@@ -239,12 +239,6 @@ class TestStreamingBufferConfig:
         )
         assert config.fail_fast_on_attachment_errors is True
         assert config.include_error_details is False
-
-    def test_streaming_buffer_config_error_handling_defaults(self):
-        """Test error handling configuration defaults."""
-        config = StreamingBufferConfig()
-        assert config.fail_fast_on_attachment_errors is False
-        assert config.include_error_details is True
 
 
 class TestSmartOpenStreamingStorageConfig:
