@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.69.2"
+    "version": "2.69.3b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2760,14 +2760,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "type": "boolean",
               "default": false,
               "title": "Show Deleted"
             }
@@ -2976,6 +2969,110 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/system/bulk-delete": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "System Bulk Delete",
+        "description": "Delete multiple systems by their fides_keys.",
+        "operationId": "system_bulk_delete_api_v1_system_bulk_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "title": "Fides Keys"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response System Bulk Delete Api V1 System Bulk Delete Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/assign-steward": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Bulk Assign Steward",
+        "description": "Assign the given `data_steward` (username) as a system manager for the list of `system_keys`.\n\nThis mirrors the behavior of the user permissions endpoint that assigns systems to a given user but\nfrom the perspective of the System API. It validates that:\n\n1. The provided user exists.\n2. The user already has permissions (cannot be None).\n3. The user is not an approver (approvers are explicitly disallowed from being system managers).\n4. All provided `system_keys` resolve to existing System records.\n5. There are no duplicate keys in the payload.",
+        "operationId": "bulk_assign_steward_api_v1_system_assign_steward_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignStewardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Bulk Assign Steward Api V1 System Assign Steward Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/hidden": {
@@ -12168,7 +12265,7 @@
           "Users"
         ],
         "summary": "Update User",
-        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
+        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the user:update scope",
         "operationId": "update_user_api_v1_user__user_id__put",
         "security": [
           {
@@ -12265,7 +12362,7 @@
           "Users"
         ],
         "summary": "Get User",
-        "description": "Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data.",
+        "description": "Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data.",
         "operationId": "get_user_api_v1_user__user_id__get",
         "security": [
           {
@@ -14458,6 +14555,28 @@
         "type": "object",
         "title": "ApplicationConfig",
         "description": "Application config settings update body is an arbitrary dict (JSON object)\nWe describe it in a schema to enforce some restrictions on the keys passed.\n\nTODO: Eventually this should be driven by a more formal validation schema for this\nthe application config that is properly hooked up to the global pydantic config module."
+      },
+      "AssignStewardRequest": {
+        "properties": {
+          "data_steward": {
+            "type": "string",
+            "title": "Data Steward"
+          },
+          "system_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "System Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_steward",
+          "system_keys"
+        ],
+        "title": "AssignStewardRequest",
+        "description": "Request schema for assigning a data steward to one or more systems."
       },
       "AsyncConfig": {
         "properties": {
