@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Enables the exclude domains field in the website monitor config. [#6544](https://github.com/ethyca/fides/pull/6544)
 - Region table value displayed correctly and Location select only allowing valid values [#6545](https://github.com/ethyca/fides/pull/6545)
+- Adds safeguards when encountering rate limit errors upon instantiation [#6546](https://github.com/ethyca/fides/pull/6546)
 
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
