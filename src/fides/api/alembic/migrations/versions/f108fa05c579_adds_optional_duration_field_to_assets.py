@@ -1,7 +1,7 @@
 """adds optional duration field to assets
 
 Revision ID: f108fa05c579
-Revises: 2f3c1a2d6b10
+Revises: 78dbe23d8204
 Create Date: 2025-08-22 12:47:31.374493
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'f108fa05c579'
-down_revision = '2f3c1a2d6b10'
+down_revision = '78dbe23d8204'
 branch_labels = None
 depends_on = None
 
