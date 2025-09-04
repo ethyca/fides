@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import json
+import time
 from datetime import datetime
 from io import BytesIO, StringIO
 from itertools import chain
@@ -25,10 +26,12 @@ from fides.api.service.storage.streaming.dsr_storage import (
 )
 from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
-    CHUNK_SIZE_THRESHOLD,
+    DEFAULT_CHUNK_SIZE,
+    LARGE_FILE_THRESHOLD,
     AttachmentInfo,
     AttachmentProcessingInfo,
     PackageSplitConfig,
+    SmartOpenStreamingStorageConfig,
     StorageUploadConfig,
     StreamingBufferConfig,
 )
@@ -66,16 +69,22 @@ class SmartOpenStreamingStorage:
     def __init__(
         self,
         storage_client: SmartOpenStorageClient,
-        chunk_size: int = CHUNK_SIZE_THRESHOLD,
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
     ):
         """Initialize with a smart-open storage client.
 
         Args:
             storage_client: Smart-open based storage client
-            chunk_size: Size of chunks for streaming attachments (default: 8KB)
+            chunk_size: Size of chunks for streaming attachments (default: 5MB)
+
+        Raises:
+            ValidationError: If chunk_size is outside valid range (1KB - 2GB)
         """
+        # Validate parameters using Pydantic schema
+        config = SmartOpenStreamingStorageConfig(chunk_size=chunk_size)
+
         self.storage_client = storage_client
-        self.chunk_size = chunk_size
+        self.chunk_size = config.chunk_size
         # Track used filenames per dataset to match DSR report builder behavior
         # Maps dataset_name -> set of used filenames
         self.used_filenames_per_dataset: dict[str, set[str]] = {}
@@ -98,10 +107,15 @@ class SmartOpenStreamingStorage:
         Raises:
             ValueError: If URL cannot be parsed
         """
+        if storage_key is None or storage_key == "":
+            logger.error(f"Storage key cannot be empty: {storage_key}")
+            raise ValueError("Storage key cannot be empty")
+
         if storage_key.startswith("s3://"):
             # Extract bucket from S3 URL: s3://bucket/path
             parts = storage_key.split("/")
             if len(parts) < 4:
+                logger.error(f"Invalid S3 URL format: {storage_key}")
                 raise ValueError(f"Invalid S3 URL format: {storage_key}")
             return parts[2], "/".join(parts[3:])
 
@@ -142,103 +156,6 @@ class SmartOpenStreamingStorage:
             yield filename, datetime.now(), DEFAULT_FILE_MODE, _ZIP_32_TYPE(), iter(
                 [content_bytes]
             )
-
-    def build_attachments_list(
-        self, data: dict, config: PackageSplitConfig
-    ) -> list[tuple[str, dict, int]]:
-        """
-        Build a list of attachments from the data.
-
-        Args:
-            data: The data to build the attachments list from
-            config: The configuration for package splitting
-
-        Returns:
-            A list of AttachmentInfo objects
-        """
-        attachments_list = []
-        for key, value in data.items():
-            if not isinstance(value, list):
-                continue
-
-            for item in value:
-                attachments = item.get("attachments", [])
-                if not isinstance(attachments, list):
-                    attachments = []
-
-                attachment_count = len(attachments)
-
-                # Only include items that have attachments
-                if attachment_count > 0:
-                    # If a single item has more attachments than the limit, we need to split it
-                    if attachment_count > config.max_attachments:
-                        # Split the item into multiple sub-items
-                        for i in range(0, attachment_count, config.max_attachments):
-                            sub_attachments = attachments[
-                                i : i + config.max_attachments
-                            ]
-                            sub_item = item.copy()
-                            sub_item["attachments"] = sub_attachments
-                            attachments_list.append(
-                                (key, sub_item, len(sub_attachments))
-                            )
-                    else:
-                        attachments_list.append((key, item, attachment_count))
-
-        return attachments_list
-
-    def split_data_into_packages(
-        self, data: dict, config: Optional[PackageSplitConfig] = None
-    ) -> list[dict]:
-        """Split large datasets into multiple smaller packages.
-
-        Uses a best-fit decreasing algorithm to optimize package distribution:
-        1. Sort items by attachment count (largest first)
-        2. Try to fit each item in the package with the most remaining space
-        3. Create new packages only when necessary
-        4. Handle items that exceed the max_attachments limit by splitting them
-
-        Args:
-            data: The data to split
-            config: Configuration for package splitting (defaults to PackageSplitConfig())
-
-        Returns:
-            List of data packages
-        """
-        # Use default config if none provided
-        if config is None:
-            config = PackageSplitConfig()
-
-        # Collect all items with their attachment counts
-        all_items = self.build_attachments_list(data, config)
-
-        # Sort by attachment count (largest first) for better space utilization
-        all_items.sort(key=lambda x: x[2], reverse=True)
-
-        packages: list[dict[str, Any]] = []
-        package_attachment_counts: list[int] = []
-
-        for key, item, attachment_count in all_items:
-            # Try to find a package with enough space
-            package_found = False
-
-            for i, current_count in enumerate(package_attachment_counts):
-                if current_count + attachment_count <= config.max_attachments:
-                    # Add to existing package
-                    if key not in packages[i]:
-                        packages[i][key] = []
-                    packages[i][key].append(item)
-                    package_attachment_counts[i] += attachment_count
-                    package_found = True
-                    break
-
-            if not package_found:
-                # Create new package - this item cannot fit in any existing package
-                new_package = {key: [item]}
-                packages.append(new_package)
-                package_attachment_counts.append(attachment_count)
-
-        return packages
 
     def _validate_attachment(
         self, attachment: dict
@@ -294,23 +211,88 @@ class SmartOpenStreamingStorage:
         Returns:
             Iterator that yields chunks of the attachment content
         """
+        for arg in [bucket, key, storage_key]:
+            if arg is None or arg == "":
+                logger.error(f"{arg} cannot be empty: {arg}")
+                raise ValueError(f"{arg} cannot be empty")
+
         try:
             with self.storage_client.stream_read(bucket, key) as content_stream:
                 # Stream in chunks instead of reading entire file
                 chunk_count = 0
                 total_bytes = 0
-                while True:
-                    chunk = content_stream.read(self.chunk_size)
-                    if not chunk:
+                max_chunks = 100000  # Safety limit to prevent infinite loops
+                max_file_size = (
+                    LARGE_FILE_THRESHOLD  # Use LARGE_FILE_THRESHOLD as file size limit
+                )
+
+                # Calculate timeout based on file size - more reasonable for large files
+                # Base timeout of 5 minutes, plus 1 second per 10MB of expected file size
+                # This gives us: 5min + (2GB/10MB) = 5min + 200s = ~8.3 minutes for 2GB files
+                base_timeout = 300  # 5 minutes base
+                estimated_file_size = max_file_size  # Use max as worst case
+                size_based_timeout = estimated_file_size // (
+                    10 * 1024 * 1024
+                )  # 1s per 10MB
+                timeout = base_timeout + size_based_timeout
+
+                start_time = time.time()
+
+                # Log the calculated timeout for debugging
+                logger.debug(
+                    f"Starting stream for {storage_key} with timeout: {timeout}s "
+                    f"(base: {base_timeout}s + size-based: {size_based_timeout}s)"
+                )
+
+                while chunk_count < max_chunks and total_bytes < max_file_size:
+                    # Check timeout
+                    elapsed_time = time.time() - start_time
+                    if elapsed_time >= timeout:
+                        logger.warning(
+                            f"Timeout reached ({timeout}s) while streaming attachment {storage_key}. "
+                            f"Downloaded {total_bytes} bytes in {chunk_count} chunks."
+                        )
                         break
+
+                    try:
+                        chunk = content_stream.read(self.chunk_size)
+                    except Exception as read_error:
+                        logger.error(
+                            f"Error reading chunk from stream for {storage_key}: {read_error}"
+                        )
+                        raise StorageUploadError(
+                            f"Stream read error for {storage_key}: {read_error}"
+                        ) from read_error
+
+                    if not chunk:
+                        # End of stream reached normally
+                        logger.debug(
+                            f"Successfully streamed attachment {storage_key}: "
+                            f"{total_bytes} bytes in {chunk_count} chunks"
+                        )
+                        break
+
                     chunk_count += 1
                     total_bytes += len(chunk)
                     yield chunk
 
+                # Log if we hit limits
+                if chunk_count >= max_chunks:
+                    logger.warning(
+                        f"Maximum chunk count ({max_chunks}) reached for attachment {storage_key}. "
+                        f"Downloaded {total_bytes} bytes. Stream may be incomplete."
+                    )
+                elif total_bytes >= max_file_size:
+                    logger.warning(
+                        f"Maximum file size ({max_file_size} bytes) reached for attachment {storage_key}. "
+                        f"Downloaded {total_bytes} bytes in {chunk_count} chunks. Stream may be incomplete."
+                    )
+
         except Exception as e:
-            logger.warning(f"Failed to stream attachment {storage_key}: {e}")
-            # Yield empty content on failure
-            yield b""
+            logger.error(f"Failed to stream attachment {storage_key}: {e}")
+            raise StorageUploadError(
+                f"Failed to stream attachment {storage_key}: {e}"
+            ) from e
 
     def _collect_and_validate_attachments(
         self, data: dict
@@ -332,6 +314,8 @@ class SmartOpenStreamingStorage:
         processed_attachments: dict[tuple[str, str], str] = {}
 
         # Use the shared contextual processing function
+        # Note: This method should only be used when DSR report builder is not available
+        # For HTML format, use _collect_and_validate_attachments_from_dsr_builder instead
         processed_attachments_list = process_attachments_contextually(
             data,
             used_filenames_data,
@@ -557,8 +541,9 @@ class SmartOpenStreamingStorage:
             raise StorageUploadError(f"Failed to generate DSR report: {e}") from e
 
         # Use the DSR report builder's processed attachments to avoid duplicates
+        # Use the redacted data from the DSR report builder instead of the original data
         all_attachments = self._collect_and_validate_attachments_from_dsr_builder(
-            data, dsr_builder
+            dsr_builder.dsr_data, dsr_builder
         )
 
         if not all_attachments:
@@ -595,7 +580,9 @@ class SmartOpenStreamingStorage:
         )
 
         # Create ZIP generator with attachment files
-        attachment_files_generator = self._create_attachment_files(all_attachments)
+        attachment_files_generator = self._create_attachment_files(
+            all_attachments, buffer_config
+        )
 
         # Combine both generators and stream the complete ZIP to storage
         combined_entries = chain(attachment_files_generator, dsr_files_generator)
@@ -673,6 +660,7 @@ class SmartOpenStreamingStorage:
             max_workers,
             batch_size,
             resp_format,
+            buffer_config,
         )
 
         # Use smart-open's streaming upload capability
@@ -718,6 +706,7 @@ class SmartOpenStreamingStorage:
         max_workers: int,
         batch_size: int,
         resp_format: str,
+        buffer_config: Optional[StreamingBufferConfig] = None,
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Create a generator for ZIP file contents including data and attachments.
 
@@ -743,7 +732,9 @@ class SmartOpenStreamingStorage:
             yield from self._convert_to_stream_zip_format(data_files_generator)
 
         # Then, yield attachment files (already in stream_zip format, stream directly)
-        attachment_files_generator = self._create_attachment_files(all_attachments)
+        attachment_files_generator = self._create_attachment_files(
+            all_attachments, buffer_config
+        )
         yield from attachment_files_generator
 
     def _create_data_files(
@@ -788,6 +779,7 @@ class SmartOpenStreamingStorage:
     def _create_attachment_files(
         self,
         all_attachments: list[AttachmentProcessingInfo],
+        buffer_config: Optional[StreamingBufferConfig] = None,
     ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
         """Create attachment files for the ZIP using true cloud-to-cloud streaming.
 
@@ -797,13 +789,109 @@ class SmartOpenStreamingStorage:
 
         Args:
             all_attachments: List of validated attachments
+            buffer_config: Configuration for error handling behavior
 
         Returns:
             Generator yielding attachment file entries in stream_zip format
         """
+        if buffer_config is None:
+            buffer_config = StreamingBufferConfig()
+
+        failed_attachments = []
+
         for attachment_info in all_attachments:
-            result = self._process_attachment_safely(attachment_info)
-            yield result
+            try:
+                result = self._process_attachment_safely(attachment_info)
+                yield result
+            except StorageUploadError as e:
+                # Log the failure
+                failed_attachments.append(
+                    {
+                        "attachment": attachment_info.attachment.file_name,
+                        "storage_key": attachment_info.attachment.storage_key,
+                        "error": str(e),
+                    }
+                )
+                logger.error(
+                    f"Failed to process attachment {attachment_info.attachment.file_name} "
+                    f"({attachment_info.attachment.storage_key}): {e}"
+                )
+
+                # If fail_fast is enabled, re-raise the exception
+                if buffer_config.fail_fast_on_attachment_errors:
+                    raise
+
+                # Create a placeholder file with error information if error details are enabled
+                if buffer_config.include_error_details:
+                    error_content = (
+                        f"Error: Failed to retrieve attachment - {e}".encode("utf-8")
+                    )
+                    error_filename = (
+                        f"ERROR_{attachment_info.attachment.file_name or 'unknown'}"
+                    )
+                    yield (
+                        f"errors/{error_filename}",
+                        datetime.now(),
+                        DEFAULT_FILE_MODE,
+                        _ZIP_32_TYPE(),
+                        iter([error_content]),
+                    )
+
+        # Log summary of failed attachments
+        if failed_attachments:
+            logger.warning(
+                f"Failed to process {len(failed_attachments)} attachments: "
+                f"{[att['attachment'] for att in failed_attachments]}"
+            )
+
+            # Create a summary error file with details about all failures if error details are enabled
+            if buffer_config.include_error_details:
+                try:
+                    # Calculate success rate with division by zero protection
+                    total_attempted = len(all_attachments)
+                    total_failed = len(failed_attachments)
+                    success_rate = "N/A"
+
+                    if total_attempted > 0:
+                        success_rate = f"{((total_attempted - total_failed) / total_attempted * 100):.1f}%"
+
+                    error_summary = {
+                        "failed_attachments": failed_attachments,
+                        "total_failed": total_failed,
+                        "total_attempted": total_attempted,
+                        "success_rate": success_rate,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+
+                    error_summary_content = json.dumps(error_summary, indent=2).encode(
+                        "utf-8"
+                    )
+                    yield (
+                        "errors/attachment_failures_summary.json",
+                        datetime.now(),
+                        DEFAULT_FILE_MODE,
+                        _ZIP_32_TYPE(),
+                        iter([error_summary_content]),
+                    )
+                except Exception as summary_error:
+                    logger.error(f"Failed to create error summary: {summary_error}")
+                    # Create a minimal error summary as fallback
+                    fallback_summary = {
+                        "error": "Failed to generate detailed error summary",
+                        "total_failed": len(failed_attachments),
+                        "total_attempted": len(all_attachments),
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                    fallback_content = json.dumps(fallback_summary, indent=2).encode(
+                        "utf-8"
+                    )
+                    yield (
+                        "errors/attachment_failures_summary.json",
+                        datetime.now(),
+                        DEFAULT_FILE_MODE,
+                        _ZIP_32_TYPE(),
+                        iter([fallback_content]),
+                    )
 
     def _transform_data_for_access_package(
         self, data: dict[str, Any], all_attachments: list[AttachmentProcessingInfo]

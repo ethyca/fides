@@ -1,6 +1,7 @@
 """Tests for SmartOpenStreamingStorage class."""
 
 import json
+import time
 from io import BytesIO
 from unittest.mock import MagicMock, patch
 
@@ -27,7 +28,7 @@ class TestSmartOpenStreamingStorage:
         """Test initialization with default and custom chunk size."""
         storage = SmartOpenStreamingStorage(mock_smart_open_client)
         assert storage.storage_client == mock_smart_open_client
-        assert storage.chunk_size == 5 * 1024 * 1024  # CHUNK_SIZE_THRESHOLD (5MB)
+        assert storage.chunk_size == 5 * 1024 * 1024  # DEFAULT_CHUNK_SIZE (5MB)
 
         storage = SmartOpenStreamingStorage(mock_smart_open_client, chunk_size=4096)
         assert storage.chunk_size == 4096
@@ -49,184 +50,6 @@ class TestSmartOpenStreamingStorage:
         assert result[0][2] == 0o644
         assert result[0][3] is not None  # _ZIP_32_TYPE instance
         assert list(result[0][4]) == [b'{"test": "data"}']
-
-    def test_build_attachments_list(self, mock_smart_open_client):
-        """Test building attachments list from data."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        data = {
-            "users": [
-                {
-                    "id": "1",
-                    "attachments": [
-                        {
-                            "file_name": "doc1.pdf",
-                            "download_url": "http://example.com/doc1.pdf",
-                        },
-                        {
-                            "file_name": "doc2.pdf",
-                            "download_url": "http://example.com/doc2.pdf",
-                        },
-                    ],
-                },
-                {
-                    "id": "2",
-                    "attachments": [
-                        {
-                            "file_name": "doc3.pdf",
-                            "download_url": "http://example.com/doc3.pdf",
-                        },
-                    ],
-                },
-            ]
-        }
-
-        config = PackageSplitConfig(max_attachments=2)
-        result = storage.build_attachments_list(data, config)
-
-        assert len(result) == 2
-        assert result[0][0] == "users"
-        assert result[0][2] == 2  # attachment count
-        assert result[1][0] == "users"
-        assert result[1][2] == 1  # attachment count
-
-    def test_build_attachments_list_with_splitting(self, mock_smart_open_client):
-        """Test building attachments list with package splitting."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        data = {
-            "users": [
-                {
-                    "id": "1",
-                    "attachments": [
-                        {
-                            "file_name": f"doc{i}.pdf",
-                            "download_url": f"http://example.com/doc{i}.pdf",
-                        }
-                        for i in range(5)  # More than max_attachments
-                    ],
-                }
-            ]
-        }
-
-        config = PackageSplitConfig(max_attachments=2)
-        result = storage.build_attachments_list(data, config)
-
-        # Should split into 3 packages (2+2+1)
-        assert len(result) == 3
-        assert result[0][2] == 2
-        assert result[1][2] == 2
-        assert result[2][2] == 1
-
-    def test_build_attachments_list_no_attachments(self, mock_smart_open_client):
-        """Test building attachments list with no attachments."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        data = {
-            "users": [
-                {"id": "1", "name": "Test User"},
-                {"id": "2", "name": "Test User 2"},
-            ]
-        }
-
-        config = PackageSplitConfig(max_attachments=2)
-        result = storage.build_attachments_list(data, config)
-
-        assert len(result) == 0
-
-    def test_split_data_into_packages(self, mock_smart_open_client):
-        """Test splitting data into packages."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        data = {
-            "users": [
-                {
-                    "id": "1",
-                    "attachments": [
-                        {
-                            "file_name": "doc1.pdf",
-                            "download_url": "http://example.com/doc1.pdf",
-                        },
-                        {
-                            "file_name": "doc2.pdf",
-                            "download_url": "http://example.com/doc2.pdf",
-                        },
-                    ],
-                },
-                {
-                    "id": "2",
-                    "attachments": [
-                        {
-                            "file_name": "doc3.pdf",
-                            "download_url": "http://example.com/doc3.pdf",
-                        },
-                    ],
-                },
-            ]
-        }
-
-        config = PackageSplitConfig(max_attachments=3)
-        result = storage.split_data_into_packages(data, config)
-
-        assert len(result) == 1  # Should fit in one package
-        assert "users" in result[0]
-        assert len(result[0]["users"]) == 2
-
-    def test_split_data_into_packages_default_config(self, mock_smart_open_client):
-        """Test splitting data with default config."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        data = {
-            "users": [
-                {
-                    "id": "1",
-                    "attachments": [
-                        {
-                            "file_name": "doc1.pdf",
-                            "download_url": "http://example.com/doc1.pdf",
-                        },
-                    ],
-                }
-            ]
-        }
-
-        result = storage.split_data_into_packages(data)
-
-        assert len(result) == 1
-        assert "users" in result[0]
-
-    def test_split_data_into_packages_requires_splitting(self, mock_smart_open_client):
-        """Test splitting data that requires multiple packages."""
-        storage = SmartOpenStreamingStorage(mock_smart_open_client)
-
-        data = {
-            "users": [
-                {
-                    "id": "1",
-                    "attachments": [
-                        {
-                            "file_name": f"doc{i}.pdf",
-                            "download_url": f"http://example.com/doc{i}.pdf",
-                        }
-                        for i in range(5)
-                    ],
-                },
-                {
-                    "id": "2",
-                    "attachments": [
-                        {
-                            "file_name": "doc6.pdf",
-                            "download_url": "http://example.com/doc6.pdf",
-                        },
-                    ],
-                },
-            ]
-        }
-
-        config = PackageSplitConfig(max_attachments=2)
-        result = storage.split_data_into_packages(data, config)
-
-        assert len(result) == 3  # 2+2+1+1 split
 
     def test_collect_attachments(self, mock_smart_open_client):
         """Test collecting attachments from data."""
@@ -409,11 +232,43 @@ class TestSmartOpenStreamingStorage:
         # Mock stream_read to raise an exception
         mock_smart_open_client.stream_read.side_effect = Exception("Storage error")
 
+        # Should raise StorageUploadError instead of yielding empty content
+        with pytest.raises(
+            StorageUploadError,
+            match="Failed to stream attachment storage_key: Storage error",
+        ):
+            list(
+                storage._create_attachment_content_stream(
+                    "bucket", "key", "storage_key"
+                )
+            )
+
+    def test_create_attachment_content_stream_timeout_calculation(
+        self, mock_smart_open_client
+    ):
+        """Test that timeout is calculated correctly based on file size."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        # Mock the stream_read to return a stream that never ends (to test timeout)
+        mock_stream = MagicMock()
+        mock_stream.read.return_value = b"chunk"  # Always return data, never empty
+        mock_stream.__enter__ = MagicMock(return_value=mock_stream)
+        mock_stream.__exit__ = MagicMock(return_value=None)
+        mock_smart_open_client.stream_read.return_value = mock_stream
+
+        # Test that the method respects the timeout
+        # The timeout should be calculated as: 300s (base) + (2GB/10MB) = 300 + 200 = 500s
+        start_time = time.time()
+
+        # This should timeout after the calculated timeout period
         result = list(
             storage._create_attachment_content_stream("bucket", "key", "storage_key")
         )
 
-        assert result == [b""]
+        # Should have processed some chunks before timing out
+        assert len(result) > 0
+        # Should not have processed an unreasonable number of chunks
+        assert len(result) < 1000  # Safety check
 
     def test_collect_and_validate_attachments(self, mock_smart_open_client):
         """Test collecting and validating attachments."""
@@ -822,7 +677,7 @@ class TestSmartOpenStreamingStorage:
         with patch.object(
             storage,
             "_create_attachment_content_stream",
-            side_effect=Exception("Test error"),
+            side_effect=StorageUploadError("Test error"),
         ):
             attachments = [
                 AttachmentProcessingInfo(
@@ -834,12 +689,65 @@ class TestSmartOpenStreamingStorage:
                 )
             ]
 
-            # Should raise StorageUploadError when attachment processing fails
-            with pytest.raises(
-                StorageUploadError,
-                match="Failed to process attachment http://example.com/doc1.pdf: Failed to create content stream for attachment: Test error",
-            ):
-                list(storage._create_attachment_files(attachments))
+            # With default config (fail_fast=False), should continue and create error files
+            result = list(storage._create_attachment_files(attachments))
+
+            # Should have 2 entries: error file and summary
+            assert len(result) == 2
+            assert result[0][0] == "errors/ERROR_doc1.pdf"
+            assert result[1][0] == "errors/attachment_failures_summary.json"
+
+    def test_create_attachment_files_fail_fast(self, mock_smart_open_client):
+        """Test creating attachment files with fail_fast enabled."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        # Mock _create_attachment_content_stream to raise exception
+        with patch.object(
+            storage,
+            "_create_attachment_content_stream",
+            side_effect=StorageUploadError("Test error"),
+        ):
+            attachments = [
+                AttachmentProcessingInfo(
+                    attachment=AttachmentInfo(
+                        storage_key="http://example.com/doc1.pdf", file_name="doc1.pdf"
+                    ),
+                    base_path="attachments",
+                    item={},
+                )
+            ]
+
+            # With fail_fast=True, should raise exception immediately
+            buffer_config = StreamingBufferConfig(fail_fast_on_attachment_errors=True)
+            with pytest.raises(StorageUploadError, match="Test error"):
+                list(storage._create_attachment_files(attachments, buffer_config))
+
+    def test_create_attachment_files_no_error_details(self, mock_smart_open_client):
+        """Test creating attachment files with error details disabled."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        # Mock _create_attachment_content_stream to raise exception
+        with patch.object(
+            storage,
+            "_create_attachment_content_stream",
+            side_effect=StorageUploadError("Test error"),
+        ):
+            attachments = [
+                AttachmentProcessingInfo(
+                    attachment=AttachmentInfo(
+                        storage_key="http://example.com/doc1.pdf", file_name="doc1.pdf"
+                    ),
+                    base_path="attachments",
+                    item={},
+                )
+            ]
+
+            # With include_error_details=False, should not create error files
+            buffer_config = StreamingBufferConfig(include_error_details=False)
+            result = list(storage._create_attachment_files(attachments, buffer_config))
+
+            # Should have no entries (no error files created)
+            assert len(result) == 0
 
     def test_transform_data_for_access_package(self, mock_smart_open_client):
         """Test transforming data for access package."""
@@ -1023,3 +931,108 @@ class TestSmartOpenStreamingStorage:
 
         with pytest.raises(ValueError, match=expected_error):
             storage._parse_storage_url(url)
+
+    @patch(
+        "fides.api.service.storage.streaming.smart_open_streaming_storage.DSRReportBuilder"
+    )
+    def test_html_format_upload_uses_redacted_data(
+        self, mock_dsr_builder_class, mock_smart_open_client, mock_privacy_request
+    ):
+        """Test that HTML format upload uses redacted data from DSR report builder."""
+        # Setup mock DSR report builder
+        mock_dsr_builder = MagicMock()
+        mock_dsr_builder_class.return_value = mock_dsr_builder
+
+        # Mock the redacted data (dataset names redacted)
+        redacted_data = {
+            "dataset_1:collection_1": [
+                {
+                    "id": 1,
+                    "name": "test",
+                    "attachments": [
+                        {
+                            "file_name": "test.pdf",
+                            "download_url": "https://example.com/test.pdf",
+                            "file_size": 1024,
+                        }
+                    ],
+                }
+            ]
+        }
+        mock_dsr_builder.dsr_data = redacted_data
+        mock_dsr_builder.generate.return_value = BytesIO(b"mock zip content")
+
+        # Mock the attachment collection method
+        mock_attachment_info = AttachmentProcessingInfo(
+            attachment=AttachmentInfo(
+                storage_key="https://example.com/test.pdf",
+                file_name="test.pdf",
+                size=1024,
+            ),
+            base_path="data/dataset_1/collection_1",  # Redacted path
+            item={"id": 1, "name": "test"},
+        )
+        mock_dsr_builder.used_filenames_per_dataset = {"dataset_1": set()}
+        mock_dsr_builder.processed_attachments = {}
+
+        # Create storage instance
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        # Mock the attachment collection method
+        with patch.object(
+            storage,
+            "_collect_and_validate_attachments_from_dsr_builder",
+            return_value=[mock_attachment_info],
+        ) as mock_collect_attachments:
+            # Mock the upload method
+            with patch.object(
+                storage,
+                "_upload_zip_to_storage",
+                return_value="https://example.com/result.zip",
+            ):
+                # Test data with original dataset names
+                original_data = {
+                    "manualtask:manual_data": [
+                        {
+                            "id": 1,
+                            "name": "test",
+                            "attachments": [
+                                {
+                                    "file_name": "test.pdf",
+                                    "download_url": "https://example.com/test.pdf",
+                                    "file_size": 1024,
+                                }
+                            ],
+                        }
+                    ]
+                }
+
+                # Create upload config
+                config = StorageUploadConfig(
+                    bucket_name="test-bucket",
+                    file_key="test-key.zip",
+                    resp_format=ResponseFormat.html.value,
+                )
+
+                # Call the upload method
+                result = storage.upload_to_storage_streaming(
+                    data=original_data,
+                    config=config,
+                    privacy_request=mock_privacy_request,
+                )
+
+                # Verify that DSRReportBuilder was called with original data
+                mock_dsr_builder_class.assert_called_once_with(
+                    privacy_request=mock_privacy_request,
+                    dsr_data=original_data,
+                    enable_streaming=True,
+                )
+
+                # Verify that attachment collection was called with redacted data
+                mock_collect_attachments.assert_called_once_with(
+                    redacted_data,  # Should use redacted data, not original data
+                    mock_dsr_builder,
+                )
+
+                # Verify result
+                assert result == "https://example.com/result.zip"

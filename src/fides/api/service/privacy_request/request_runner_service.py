@@ -268,7 +268,7 @@ def upload_access_results(
             connection_key=None,
             dataset_name="Access package upload",
             collection_name=None,
-            message="Access package upload failed for privacy request.",
+            message=f"Access package upload failed for privacy request: {Pii(str(exc))}",
             action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error
