@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.1...main)
 
+### Fixed
+- Enables the exclude domains field in the website monitor config. [#6545](https://github.com/ethyca/fides/pull/6545)
+
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
 
