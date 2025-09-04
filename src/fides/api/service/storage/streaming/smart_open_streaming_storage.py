@@ -219,7 +219,9 @@ class SmartOpenStreamingStorage:
             with self.storage_client.stream_read(bucket, key) as content_stream:
                 # Stream in chunks instead of reading entire file
                 chunk_count = total_bytes = 0
-                max_chunks = 100000  # Safety limit to prevent infinite loops
+                max_chunks = (
+                    LARGE_FILE_THRESHOLD // self.chunk_size + 1
+                )  # Safety limit to prevent infinite loops
 
                 size_based_timeout = LARGE_FILE_THRESHOLD // (
                     10 * 1024 * 1024
