@@ -44,6 +44,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
 
 
+### Changed
+- Improved column width handling in Action Center tables [#6496](https://github.com/ethyca/fides/pull/6496)
+
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
 ### Added
