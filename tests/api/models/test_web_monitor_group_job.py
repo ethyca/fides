@@ -40,31 +40,34 @@ class TestWebMonitorGroupJob:
                 }
             }
         }
-        web_monitor_group_job = await WebMonitorGroupJob.create_async(
-            async_session,
-            group_id="test_group_id",
-            is_test_run=False,
-            raw_experiences_data=raw_data,
-            processed_experiences_data=processed_data,
-        )
-        assert web_monitor_group_job.group_id == "test_group_id"
-        assert web_monitor_group_job.is_test_run is False
-        assert web_monitor_group_job.raw_experiences_data == raw_data
-        assert web_monitor_group_job.processed_experiences_data == processed_data
 
-        # Retrieve from the database to test it was persisted
-        retrieve_item_query = select(WebMonitorGroupJob).where(
-            WebMonitorGroupJob.group_id == "test_group_id"
-        )
+        async with async_session.begin():
+            web_monitor_group_job = await WebMonitorGroupJob.create_async(
+                async_session,
+                group_id="test_group_id",
+                is_test_run=False,
+                raw_experiences_data=raw_data,
+                processed_experiences_data=processed_data,
+            )
+            assert web_monitor_group_job.group_id == "test_group_id"
+            assert web_monitor_group_job.is_test_run is False
+            assert web_monitor_group_job.raw_experiences_data == raw_data
+            assert web_monitor_group_job.processed_experiences_data == processed_data
 
-        result = await async_session.execute(retrieve_item_query)
-        retrieved_web_monitor_group_job = result.scalars().first()
-        assert retrieved_web_monitor_group_job.group_id == "test_group_id"
-        assert retrieved_web_monitor_group_job.is_test_run == False
-        assert retrieved_web_monitor_group_job.raw_experiences_data == raw_data
-        assert (
-            retrieved_web_monitor_group_job.processed_experiences_data == processed_data
-        )
+            # Retrieve from the database to test it was persisted
+            retrieve_item_query = select(WebMonitorGroupJob).where(
+                WebMonitorGroupJob.group_id == "test_group_id"
+            )
+
+            result = await async_session.execute(retrieve_item_query)
+            retrieved_web_monitor_group_job = result.scalars().first()
+            assert retrieved_web_monitor_group_job.group_id == "test_group_id"
+            assert retrieved_web_monitor_group_job.is_test_run == False
+            assert retrieved_web_monitor_group_job.raw_experiences_data == raw_data
+            assert (
+                retrieved_web_monitor_group_job.processed_experiences_data
+                == processed_data
+            )
 
     async def test_get_by_group_id(self, async_session: AsyncSession):
         """Test getting a web monitor group job by group id"""
@@ -79,22 +82,25 @@ class TestWebMonitorGroupJob:
         processed_data = {
             "https://example.com": {"us": {}},
         }
-        await WebMonitorGroupJob.create_async(
-            async_session,
-            group_id="test_group_id",
-            is_test_run=True,
-            raw_experiences_data=raw_data,
-            processed_experiences_data=processed_data,
-        )
-        retrieved_web_monitor_group_job = (
-            await WebMonitorGroupJob.get_by_group_id_async(
-                async_session, "test_group_id"
-            )
-        )
 
-        assert retrieved_web_monitor_group_job.group_id == "test_group_id"
-        assert retrieved_web_monitor_group_job.is_test_run == True
-        assert retrieved_web_monitor_group_job.raw_experiences_data == raw_data
-        assert (
-            retrieved_web_monitor_group_job.processed_experiences_data == processed_data
-        )
+        async with async_session.begin():
+            await WebMonitorGroupJob.create_async(
+                async_session,
+                group_id="test_group_id",
+                is_test_run=True,
+                raw_experiences_data=raw_data,
+                processed_experiences_data=processed_data,
+            )
+            retrieved_web_monitor_group_job = (
+                await WebMonitorGroupJob.get_by_group_id_async(
+                    async_session, "test_group_id"
+                )
+            )
+
+            assert retrieved_web_monitor_group_job.group_id == "test_group_id"
+            assert retrieved_web_monitor_group_job.is_test_run == True
+            assert retrieved_web_monitor_group_job.raw_experiences_data == raw_data
+            assert (
+                retrieved_web_monitor_group_job.processed_experiences_data
+                == processed_data
+            )

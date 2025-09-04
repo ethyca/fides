@@ -37,29 +37,25 @@ class WebMonitorGroupJob(Base):
         processed_experiences_data: Optional[dict[str, Any]] = None,
     ) -> "WebMonitorGroupJob":
         """Create a new WebMonitorGroupJob"""
-        async with async_session.begin():
-            values = {
-                "group_id": group_id,
-                "is_test_run": is_test_run,
-                "raw_experiences_data": raw_experiences_data,
-                "processed_experiences_data": processed_experiences_data,
-            }
-            stmt = (
-                insert(cls.__table__).values(**values).returning(*cls.__table__.columns)
-            )
-            result = await async_session.execute(stmt)
-            row = result.first()
-            return cls(**dict(row))
+        values = {
+            "group_id": group_id,
+            "is_test_run": is_test_run,
+            "raw_experiences_data": raw_experiences_data,
+            "processed_experiences_data": processed_experiences_data,
+        }
+        stmt = insert(cls.__table__).values(**values).returning(*cls.__table__.columns)
+        result = await async_session.execute(stmt)
+        row = result.first()
+        return cls(**dict(row))
 
     @classmethod
     async def get_by_group_id_async(
         cls, async_session: AsyncSession, group_id: str
     ) -> Optional["WebMonitorGroupJob"]:
         """Get a WebMonitorGroupJob by group_id"""
-        async with async_session.begin():
-            stmt = select(*cls.__table__.columns).where(
-                cls.__table__.c.group_id == group_id
-            )
-            result = await async_session.execute(stmt)
-            row = result.first()
-            return cls(**dict(row)) if row else None
+        stmt = select(*cls.__table__.columns).where(
+            cls.__table__.c.group_id == group_id
+        )
+        result = await async_session.execute(stmt)
+        row = result.first()
+        return cls(**dict(row)) if row else None
