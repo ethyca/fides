@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.69.1"
+    "version": "2.69.2b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -12168,7 +12168,7 @@
           "Users"
         ],
         "summary": "Update User",
-        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
+        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the user:update scope",
         "operationId": "update_user_api_v1_user__user_id__put",
         "security": [
           {
@@ -12265,7 +12265,7 @@
           "Users"
         ],
         "summary": "Get User",
-        "description": "Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data.",
+        "description": "Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data.",
         "operationId": "get_user_api_v1_user__user_id__get",
         "security": [
           {

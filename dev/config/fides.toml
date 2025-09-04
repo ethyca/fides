@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "ebd7dbef5ec5f67b27e85292c5dc4204" # string
+analytics_id = "c51b7d00642aa86913a5803d79cf98e4" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -211,9 +211,6 @@ privacy_request_requeue_retry_count = 3 # integer
 
 # Seconds between polling for async tasks to requeue
 async_tasks_status_polling_interval_seconds = 3600 # integer
-
-# Temporary flag to switch to using DSR 3.0 to process your tasks.
-use_dsr_3_0 = false # boolean
 
 # Whether erasure requests require an additional finalization step
 # after all collections have been executed.
