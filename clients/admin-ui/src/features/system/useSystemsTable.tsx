@@ -2,7 +2,6 @@ import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
   AntDropdown as Dropdown,
-  AntFilterValue as FilterValue,
   AntMessage as message,
   Flex,
   Icons,
@@ -15,9 +14,13 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
+import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { convertToAntFilters } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { useDeleteSystemMutation } from "~/features/system/system.slice";
+import {
+  useDeleteSystemMutation,
+  useGetSystemsQuery,
+} from "~/features/system/system.slice";
 import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
 import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import {
@@ -37,41 +40,13 @@ import { isErrorResult } from "~/types/errors";
 
 interface UseSystemsTableParams {
   isAlphaSystemGroupsEnabled?: boolean;
-  selectedRowKeys: React.Key[];
-  columnFilters: Record<string, FilterValue | null>;
 }
 
 const useSystemsTable = ({
-  selectedRowKeys,
   isAlphaSystemGroupsEnabled,
-  columnFilters,
 }: UseSystemsTableParams) => {
-  // data
+  // ancillary data
   const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
-  const { data: allUsers } = useGetAllUsersQuery({
-    page: 1,
-    size: 100,
-    username: "",
-  });
-
-  // mutations
-  const [deleteSystem] = useDeleteSystemMutation();
-  const [updateSystemGroup] = useUpdateSystemGroupMutation();
-  const [createSystemGroup] = useCreateSystemGroupMutation();
-
-  // state
-  const [isGroupsExpanded, setIsGroupsExpanded] = useState(false);
-  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
-
-  const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
-  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
-  const [selectedSystemForDelete, setSelectedSystemForDelete] =
-    useState<BasicSystemResponseExtended | null>(null);
-
-  // utils
-  const [messageApi, messageContext] = message.useMessage();
-  const { plus: plusIsEnabled } = useFeatures();
-  const router = useRouter();
 
   const systemGroupMap = useMemo(() => {
     return allSystemGroups
@@ -85,7 +60,74 @@ const useSystemsTable = ({
       : {};
   }, [allSystemGroups]);
 
-  const showDeleteOption = useHasPermission([ScopeRegistryEnum.SYSTEM_DELETE]);
+  const { data: allUsers } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    username: "",
+  });
+
+  // mutations
+  const [deleteSystem] = useDeleteSystemMutation();
+  const [updateSystemGroup] = useUpdateSystemGroupMutation();
+  const [createSystemGroup] = useCreateSystemGroupMutation();
+
+  // UI state
+  const [isGroupsExpanded, setIsGroupsExpanded] = useState(false);
+  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+
+  const [createModalIsOpen, setCreateModalIsOpen] = useState(false);
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
+  const [selectedSystemForDelete, setSelectedSystemForDelete] =
+    useState<BasicSystemResponseExtended | null>(null);
+
+  // main table state
+  const tableState = useTableState({
+    pagination: { defaultPageSize: 25, pageSizeOptions: [25, 50, 100] },
+    search: { defaultSearchQuery: "" },
+  });
+
+  const { columnFilters, pageIndex, pageSize, searchQuery, updateSearch } =
+    tableState;
+
+  const {
+    data: systemsResponse,
+    isLoading,
+    isFetching,
+  } = useGetSystemsQuery({
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+    system_group: columnFilters?.system_groups?.[0]?.toString(),
+    ...columnFilters,
+  });
+
+  const antTableConfig = useMemo(
+    () => ({
+      enableSelection: true,
+      dataSource: systemsResponse?.items ?? [],
+      totalRows: systemsResponse?.total ?? 0,
+      isLoading,
+      isFetching,
+      getRowKey: (record: BasicSystemResponseExtended) => record.fides_key,
+    }),
+    [systemsResponse, isLoading, isFetching],
+  );
+
+  const { tableProps, selectionProps } = useAntTable(
+    tableState,
+    antTableConfig,
+  );
+
+  const { selectedRowKeys } = selectionProps ?? {};
+
+  // utils
+  const [messageApi, messageContext] = message.useMessage();
+  const { plus: plusIsEnabled } = useFeatures();
+  const router = useRouter();
+
+  const showDeleteOption: boolean = useHasPermission([
+    ScopeRegistryEnum.SYSTEM_DELETE,
+  ]);
 
   const handleDelete = async (system: BasicSystemResponseExtended) => {
     const result = await deleteSystem(system.fides_key);
@@ -122,6 +164,9 @@ const useSystemsTable = ({
 
   const handleBulkAddToGroup = useCallback(
     async (groupKey: string) => {
+      if (!selectedRowKeys) {
+        return;
+      }
       const currentGroup = systemGroupMap[groupKey];
       const result = await updateSystemGroup({
         ...currentGroup,
@@ -134,7 +179,7 @@ const useSystemsTable = ({
         messageApi.error(getErrorMessage(result.error));
       } else {
         messageApi.success(
-          `${selectedRowKeys.length} systems added to group '${groupKey}'`,
+          `${selectedRowKeys?.length} systems added to group '${groupKey}'`,
         );
       }
     },
@@ -210,6 +255,7 @@ const useSystemsTable = ({
           (group) => systemGroupMap[group]?.name ?? group,
         ),
         filteredValue: columnFilters?.system_groups || null,
+        filterMultiple: false,
       },
       {
         title: "Data uses",
@@ -318,18 +364,32 @@ const useSystemsTable = ({
   ]);
 
   return {
+    // table
+    tableProps,
+    selectionProps,
     columns,
+    // search
+    searchQuery,
+    updateSearch,
+    // filters
+    columnFilters,
+    // pagination
+    pageIndex,
+    pageSize,
+    // modals
     createModalIsOpen,
     setCreateModalIsOpen,
     deleteModalIsOpen,
     setDeleteModalIsOpen,
-    selectedSystemForDelete,
     setSelectedSystemForDelete,
-    groupMenuItems,
+    // actions
     handleCreateSystemGroup,
     handleDelete,
     handleBulkAddToGroup,
+    // utils
     messageContext,
+    groupMenuItems,
+    selectedSystemForDelete,
   };
 };
 
