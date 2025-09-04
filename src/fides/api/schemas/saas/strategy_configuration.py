@@ -179,14 +179,71 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
 
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
 
+class RequestIdOrigin(Enum):
+    """Sources for request ID in polling async requests."""
+    in_response = "in_response"
+    in_headers = "in_headers"
+    generated = "generated"
 
-class PollingAsyncDSRConfiguration(StrategyConfiguration):
+class SupportedRequestIdFormat(Enum):
+    """Formats for generated request IDs."""
+    uuid = "uuid"
+    random_string = "random_string"
+
+class RequestIdConfiguration(StrategyConfiguration):
+    """Configuration for extracting request ID from responses."""
+    origin: RequestIdOrigin
+    path: Optional[str] = None  # Required when origin is in_response or in_headers
+    format: Optional[SupportedRequestIdFormat] = None  # Required when origin is generated
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_path_required(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        origin = values.get("origin")
+        path = values.get("path")
+        format = values.get("format")
+
+        if origin in [RequestIdOrigin.in_response.value, RequestIdOrigin.in_headers.value] and not path:
+            raise ValueError(f"'path' is required when origin is '{origin}'")
+        if origin == RequestIdOrigin.generated.value and not format:
+            raise ValueError(f"'format' is required when origin is '{origin}'")
+        return values
+
+
+class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
+    """
+    Base configuration for polling async DSR requests.
+    """
+
+    status_request: SaaSRequest
+    status_completed_value: Optional[str] = None
+    result_request: SaaSRequest
+    request_id_config: RequestIdConfiguration
+
+class SupportedDataType(Enum):
+    """Locations where the link to the next page may be found."""
+
+    json = "json"
+    csv = "csv"
+
+class PollingAsyncDSRAccessDataConfiguration(PollingAsyncDSRBaseConfiguration):
     """
     Configuration for polling async DSR requests.
     """
 
-    status_request: SaaSRequest
-    status_path: str
-    status_completed_value: Optional[str] = None
-    result_request: SaaSRequest
-    result_path: str
+    data_type: SupportedDataType = SupportedDataType.json
+
+## We Can move this to a separate PR if it gets complicated enough
+class SupportedDownloadType(Enum):
+    """Supported download types for polling async DSR requests."""
+
+    file = "file"  # Response contains direct file content
+    link = "link"  # Response contains download URL
+
+class PollingAsyncAccessDownloadConfiguration(PollingAsyncDSRBaseConfiguration):
+    """
+    Configuration for polling async DSR requests.
+    """
+
+    download_type: SupportedDownloadType = SupportedDownloadType.link
+    result_path: Optional[str] = None # Placeholder in case we need a result path

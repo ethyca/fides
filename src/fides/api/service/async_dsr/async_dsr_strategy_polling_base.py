@@ -1,31 +1,76 @@
-from typing import Any, Dict, List
+from abc import ABC
+from typing import Any, Dict, List, Optional
 
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
+from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRBaseConfiguration, RequestIdOrigin
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
 
 
-class PollingAsyncDSRStrategy(AsyncDSRStrategy):
+class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
     """
     Strategy for polling async DSR requests.
     """
 
     name = "polling"
-    configuration_model = PollingAsyncDSRConfiguration
+    configuration_model = PollingAsyncDSRBaseConfiguration
 
-    def __init__(self, configuration: PollingAsyncDSRConfiguration):
+    def __init__(self, configuration: PollingAsyncDSRBaseConfiguration):
         self.status_request = configuration.status_request
-        self.status_path = configuration.status_path
         self.status_completed_value = configuration.status_completed_value
         self.result_request = configuration.result_request
-        self.result_path = configuration.result_path
+        self.request_id_config = configuration.request_id_config
 
+    def extract_request_id(
+        self,
+        response: Response,
+        param_values: Dict[str, Any]
+    ) -> Optional[str]:
+        """Extract request ID from response based on configuration."""
+        if not self.request_id_config:
+            return None
+
+        config = self.request_id_config
+
+        if config.origin == RequestIdOrigin.in_response:
+            return pydash.get(response.json(), config.path)
+        elif config.origin == RequestIdOrigin.in_headers:
+            return response.headers.get(config.path)
+        elif config.origin == RequestIdOrigin.from_path:
+            # Extract from original request path/params
+            return param_values.get("request_id")
+        raise PrivacyRequestError(
+            f"Request ID origin {config.origin} not supported"
+        )
+
+    def start_request(
+        self,
+        start_request: SaaSRequestParams,
+        client: AuthenticatedClient,
+        secrets: Dict[str, Any],
+        identity_data: Dict[str, Any]
+    ) -> bool:
+        """Executes the Start request for the polling DSR"""
+        # Prepare the Request
+
+        # Check if we generate the request_id in the response or we need to get it from the path
+
+
+        # Send the request
+
+    def poll_status_request(
+        self,
+        client: AuthenticatedClient,
+        secrets: Dict[str, Any],
+        identity_data: Dict[str, Any],
+    ) -> bool:
+        """Executes the status requests, and move forward if its true"""
     def get_status_request(
         self,
         client: AuthenticatedClient,

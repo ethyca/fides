@@ -25,7 +25,7 @@ from fides.api.task.execute_request_tasks import (
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 
-
+# TODO: Change name to more appropriate name
 def requeue_polling_request(
     db: Session,
     async_task: RequestTask,
@@ -72,6 +72,7 @@ def requeue_polling_request(
         query_config: SaaSQueryConfig = saas_connector.query_config(
             graph_task.execution_node
         )  # type: ignore
+
         if async_task.action_type == ActionType.access:
             logger.info(f"Executing read polling requests for {async_task.id}")
 
@@ -80,6 +81,8 @@ def requeue_polling_request(
             execute_erasure_polling_requests(db, async_task, query_config)
 
 
+
+## Could move to Request Task Class
 def get_connection_config_from_task(
     db: Session, request_task: RequestTask
 ) -> ConnectionConfig:
@@ -103,6 +106,30 @@ def get_connection_config_from_task(
     return connection_config
 
 
+def execute_polling_status_request(
+    db: Session,
+    async_task: RequestTask,
+    query_config: SaaSQueryConfig,
+    connector: SaaSConnector,
+) -> None:
+    """Execute the polling status request for a given privacy request"""
+    read_requests = query_config.get_read_requests_by_identity()
+    logger.info(f"Read requests: {read_requests}")
+    for read_request in read_requests:
+        if read_request.async_config:
+            strategy: PollingAsyncDSRStrategy = AsyncDSRStrategy.get_strategy(  # type: ignore
+                read_request.async_config.strategy,
+                read_request.async_config.configuration,
+            )
+            client: AuthenticatedClient = connector.create_client()
+
+            status = strategy.status_request(
+                read_request,
+                client,
+                connector.secrets,
+                identity_data,
+            )
+
 def execute_read_polling_requests(
     db: Session,
     async_task: RequestTask,
@@ -110,7 +137,7 @@ def execute_read_polling_requests(
     connector: SaaSConnector,
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
-    read_requests = query_config.get_read_requests_by_identity()
+    read_requests = query_config.get_read_requests_by_identity() #Check: Cant we get the request directly from the task?
     logger.info(f"Read requests: {read_requests}")
     for read_request in read_requests:
         if read_request.async_config:
