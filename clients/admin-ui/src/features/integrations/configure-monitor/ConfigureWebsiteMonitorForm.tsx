@@ -213,7 +213,7 @@ const ConfigureWebsiteMonitorForm = ({
           )}
           required
           tooltip={REGIONS_TOOLTIP_COPY}
-          mode="tags"
+          mode="multiple"
           error={getIn(errors, "datasource_params.locations")}
           touched={getIn(touched, "datasource_params.locations")}
           onChange={(value) =>
