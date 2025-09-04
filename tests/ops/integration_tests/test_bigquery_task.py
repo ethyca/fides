@@ -36,10 +36,15 @@ async def test_bigquery_nested_field_update(
     customer_email = bigquery_resources["email"]
     client = bigquery_resources["client"]
 
+    # Get the dataset name from the connection config
+    dataset_name = bigquery_example_test_dataset_config.connection_config.secrets.get(
+        "dataset", "fidesopstest"
+    )
+
     # Verify that the fixture data includes the nested extra_address_data
     with client.connect() as connection:
         verify_stmt = (
-            f"SELECT * FROM fidesopstest.customer WHERE email = '{customer_email}';"
+            f"SELECT * FROM {dataset_name}.customer WHERE email = '{customer_email}';"
         )
         result = connection.execute(verify_stmt).all()
         assert len(result) == 1
@@ -79,7 +84,7 @@ async def test_bigquery_nested_field_update(
     # Verify nested fields were properly masked
     with client.connect() as connection:
         verify_after_stmt = (
-            f"SELECT * FROM fidesopstest.customer WHERE email = '{customer_email}';"
+            f"SELECT * FROM {dataset_name}.customer WHERE email = '{customer_email}';"
         )
         results_after = connection.execute(verify_after_stmt).all()
 
@@ -122,10 +127,15 @@ async def test_bigquery_deeply_nested_field_update(
     customer_id = bigquery_resources["id"]
     client = bigquery_resources["client"]
 
+    # Get the dataset name from the connection config
+    dataset_name = bigquery_example_test_dataset_config.connection_config.secrets.get(
+        "dataset", "fidesopstest"
+    )
+
     # Verify that the fixture data includes customer_profile with nested contact_info
     with client.connect() as connection:
         verify_stmt = (
-            f"SELECT * FROM fidesopstest.customer_profile WHERE id = {customer_id};"
+            f"SELECT * FROM {dataset_name}.customer_profile WHERE id = {customer_id};"
         )
         result = connection.execute(verify_stmt).all()
         assert len(result) == 1
@@ -164,7 +174,7 @@ async def test_bigquery_deeply_nested_field_update(
     # Verify nested fields were properly masked
     with client.connect() as connection:
         verify_after_stmt = (
-            f"SELECT * FROM fidesopstest.customer_profile WHERE id = {customer_id};"
+            f"SELECT * FROM {dataset_name}.customer_profile WHERE id = {customer_id};"
         )
         results_after = connection.execute(verify_after_stmt).all()
 
