@@ -1,14 +1,5 @@
 @use "sass:string";
 
-// Functional color variables //
-$bg-error: #f7c2c2;
-$bg-warning: #fbddb5;
-$bg-caution: #f6e3a4;
-$bg-success: #c3e6b2;
-$bg-info: #a5d6f3;
-$bg-alert: #d9b0d7;
-$bg-default: #f5f5f5;
-
 $colors: (
   "full-black": #000000,
   "full-white": #ffffff,
@@ -28,7 +19,7 @@ $colors: (
   "neutral-900": #2b2e35,
 
   // Brand //
-  "bg-default": $bg-default,
+  "bg-default": #f5f5f5,
   "corinth": #fafafa,
   "bg-corinth": #fafafa,
   "limestone": #f1efee,
@@ -47,25 +38,16 @@ $colors: (
 
   // Functional //
   "error": #d9534f,
-  "bg-error": $bg-error,
+  "bg-error": #f7c2c2,
   "warning": #e59d47,
-  "bg-warning": $bg-warning,
-  "bg-caution": $bg-caution,
+  "bg-warning": #fbddb5,
+  "bg-caution": #f6e3a4,
   "success": #5a9a68,
-  "bg-success": $bg-success,
+  "bg-success": #c3e6b2,
   "info": #4a90e2,
-  "bg-info": $bg-info,
+  "bg-info": #a5d6f3,
   "alert": #7b4ea9,
-  "bg-alert": $bg-alert,
-
-  // Taxonomy colors //
-  "bg-taxonomy-white": $bg-default,
-  "bg-taxonomy-red": $bg-error,
-  "bg-taxonomy-orange": $bg-warning,
-  "bg-taxonomy-yellow": $bg-caution,
-  "bg-taxonomy-green": $bg-success,
-  "bg-taxonomy-blue": $bg-info,
-  "bg-taxonomy-purple": $bg-alert,
+  "bg-alert": #d9b0d7,
 
   // Type //
   "error-text": #d32f2f,
