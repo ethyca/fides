@@ -4,10 +4,11 @@ import {
   AntFlexProps,
   AntTag as Tag,
   AntTagProps as TagProps,
+  AntText as Text,
 } from "fidesui";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { COLLAPSE_BUTTON_TEXT } from "./constants";
+import { COLLAPSE_BUTTON_TEXT, TAG_MAX_WIDTH } from "./constants";
 import { ColumnState } from "./types";
 
 type TagExpandableCellValues = {
@@ -18,10 +19,10 @@ type TagExpandableCellValues = {
    */
   tagProps?: TagProps;
 }[];
-
 export interface TagExpandableCellProps extends Omit<AntFlexProps, "children"> {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
+  onTagClose?: (key: string) => void;
   tagProps?: TagProps;
 }
 
@@ -36,6 +37,7 @@ export const TagExpandableCell = ({
   values,
   columnState,
   tagProps,
+  onTagClose,
   ...props
 }: TagExpandableCellProps) => {
   const { isExpanded, isWrapped, version } = columnState || {};
@@ -89,8 +91,9 @@ export const TagExpandableCell = ({
     }
     return (
       <Flex
-        align="center"
+        align={isCollapsed ? "center" : "start"}
         wrap={isWrappedState ? "wrap" : "nowrap"}
+        vertical={!isCollapsed}
         gap="small"
         data-testid="tag-expandable-cell"
         {...props}
@@ -100,10 +103,16 @@ export const TagExpandableCell = ({
             color="white"
             key={value.key}
             data-testid={value.key}
+            onClose={() => onTagClose?.(value.key)}
             {...tagProps}
             {...value.tagProps}
           >
-            {value.label}
+            <Text
+              ellipsis={isCollapsed ? { tooltip: true } : false}
+              style={isCollapsed ? { maxWidth: TAG_MAX_WIDTH } : {}}
+            >
+              {value.label}
+            </Text>
           </Tag>
         ))}
         {values && values.length > displayThreshold && (
@@ -130,8 +139,10 @@ export const TagExpandableCell = ({
     displayValues,
     isCollapsed,
     isWrappedState,
+    props,
     values,
-    handleToggle,
     tagProps,
+    onTagClose,
+    handleToggle,
   ]);
 };

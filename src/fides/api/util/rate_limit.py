@@ -180,15 +180,33 @@ is_rate_limit_enabled = (
     CONFIG.security.rate_limit_client_ip_header is not None
     and CONFIG.security.rate_limit_client_ip_header != ""
 )
-fides_limiter = Limiter(
-    storage_uri=CONFIG.redis.connection_url_unencoded,
-    application_limits=[
-        CONFIG.security.request_rate_limit
-    ],  # Creates ONE shared bucket for all endpoints
+
+disabled_limiter = Limiter(
+    default_limits=[CONFIG.security.request_rate_limit],
     headers_enabled=True,
     key_prefix=CONFIG.security.rate_limit_prefix,
     key_func=safe_rate_limit_key,
     retry_after="http-date",
-    in_memory_fallback_enabled=False,  # Fall back to no rate limiting if Redis unavailable
-    enabled=is_rate_limit_enabled,
+    enabled=False,
 )
+
+try:
+    if is_rate_limit_enabled:
+        fides_limiter = Limiter(
+            storage_uri=CONFIG.redis.connection_url_unencoded,
+            application_limits=[
+                CONFIG.security.request_rate_limit
+            ],  # Creates ONE shared bucket for all endpoints
+            headers_enabled=True,
+            key_prefix=CONFIG.security.rate_limit_prefix,
+            key_func=safe_rate_limit_key,
+            retry_after="http-date",
+            in_memory_fallback_enabled=False,  # Fall back to no rate limiting if Redis unavailable
+            enabled=is_rate_limit_enabled,
+        )
+    else:
+        fides_limiter = disabled_limiter
+except Exception as e:
+    logger.exception("Error instantiating rate limiter: {}", e)
+    if is_rate_limit_enabled:
+        raise e
