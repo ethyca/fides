@@ -18,7 +18,6 @@ const TERMINAL_STATES = [
   PrivacyRequestStatus.CANCELED,
   PrivacyRequestStatus.DENIED,
   PrivacyRequestStatus.ERROR,
-  PrivacyRequestStatus.PAUSED,
 ];
 
 const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {

@@ -26,8 +26,9 @@ import { FormValues, MultiselectFieldValue } from "~/types/forms";
  * @param value
  * @returns Default to null if the value is undefined or an empty string
  */
-const fallbackNull = (value: string | MultiselectFieldValue) =>
-  value === undefined || value === "" ? null : value;
+const fallbackNull = (
+  value: string | MultiselectFieldValue | null | undefined,
+) => (value === undefined || value === "" ? null : value);
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -47,18 +48,25 @@ const usePrivacyRequestForm = ({
     phone: phoneInput,
     email: emailInput,
     name: nameInput,
-    ...restIdentityFields
+    ...customIdentityInputs
   } = action?.identity_inputs ?? DEFAULT_IDENTITY_INPUTS;
-  const identityFields = {
+  const legacyIdentityFields = {
     phone: phoneInput,
     email: emailInput,
     name: nameInput,
     ...Object.fromEntries(
-      Object.entries(restIdentityFields).flatMap(([key, value]) =>
+      Object.entries(customIdentityInputs).flatMap(([key, value]) =>
         typeof value === "string" ? [[key, value]] : [],
       ),
     ),
   };
+
+  const customIdentityFields = Object.fromEntries(
+    Object.entries(customIdentityInputs).flatMap(([key, value]) =>
+      typeof value !== "string" ? [[key, value]] : [],
+    ),
+  );
+
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
@@ -75,11 +83,17 @@ const usePrivacyRequestForm = ({
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
-        Object.entries(identityFields).map(([key]) => [key, ""]),
+        Object.entries({
+          ...legacyIdentityFields,
+          ...customIdentityFields,
+        }).map(([key]) => [key, ""]),
       ),
       ...getInitialValues(),
       ...Object.fromEntries(
-        Object.entries(identityFields).map(([key]) => {
+        Object.entries({
+          ...legacyIdentityFields,
+          ...customIdentityFields,
+        }).map(([key]) => {
           const value = params?.get(key) ?? "";
           return [key, value];
         }),
@@ -114,31 +128,47 @@ const usePrivacyRequestForm = ({
       const customPrivacyRequestFieldValues =
         action.custom_privacy_request_fields
           ? Object.fromEntries(
-              Object.entries(action.custom_privacy_request_fields).map(
-                ([key, field]) => {
+              Object.entries(action.custom_privacy_request_fields)
+                .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
                     searchParams?.get(field.query_param_key);
                   const hiddenValue = paramValue ?? field.default_value;
+                  const value = !field.hidden ? values[key] : hiddenValue;
+
+                  let processedValue;
+                  if (field.field_type === "multiselect") {
+                    processedValue = value || [];
+                  } else {
+                    processedValue = fallbackNull(value);
+                  }
 
                   return [
                     key,
                     {
-                      ...field,
-                      value: !field.hidden ? values[key] : hiddenValue,
+                      // only include label and value
+                      label: field.label,
+                      value: processedValue,
                     },
                   ];
-                },
-              ),
+                })
+                .filter(
+                  ([, fieldData]) =>
+                    typeof fieldData === "object" && fieldData.value !== null,
+                ), // Filter out null values (but keep empty arrays for multiselect)
             )
+          : {};
+
+      // Extract custom fields object for cleaner code
+      const customFieldsPayload =
+        Object.keys(customPrivacyRequestFieldValues).length > 0
+          ? { custom_privacy_request_fields: customPrivacyRequestFieldValues }
           : {};
 
       const body = [
         {
           identity: identityInputValues,
-          ...(Object.keys(customPrivacyRequestFieldValues).length > 0 && {
-            custom_privacy_request_fields: customPrivacyRequestFieldValues,
-          }),
+          ...customFieldsPayload,
           policy_key: action.policy_key,
           property_id: property?.id || null,
           source: PrivacyRequestSource.PRIVACY_CENTER,
@@ -234,13 +264,21 @@ const usePrivacyRequestForm = ({
           return true;
         },
       ),
+      ...Object.fromEntries(
+        Object.entries(customIdentityFields).flatMap(([key, value]) => {
+          return value
+            ? [[key, Yup.string().required(`${value.label} is required`)]]
+            : [];
+        }),
+      ),
       ...getValidationSchema().fields,
     }),
   });
 
   return {
     ...formik,
-    identityInputs: identityFields,
+    legacyIdentityFields,
+    customIdentityFields,
     customPrivacyRequestFields,
   };
 };

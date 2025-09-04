@@ -21,6 +21,8 @@ from fides.api.service.connectors import BigQueryConnector, get_connector
 
 from .application_fixtures import integration_config
 
+PROJECT_NAME = "prj-sandbox-55855"
+
 
 @pytest.fixture(scope="function")
 def bigquery_connection_config_without_secrets(db: Session) -> Generator:
@@ -151,8 +153,12 @@ def bigquery_connection_config_without_default_dataset(
             "access": AccessLevel.write,
         },
     )
+    # Pulling from integration config file or GitHub secrets
+    dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
+        "BIGQUERY_DATASET"
+    )
     if bigquery_keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds)
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -273,7 +279,7 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
     bigquery_dataset = example_datasets[7]
     bigquery_dataset["fides_meta"] = {
         "namespace": {
-            "project_id": "silken-precinct-284918",
+            "project_id": PROJECT_NAME,
             "dataset_id": "fidesopstest",
             "connection_type": "bigquery",
         }
@@ -307,7 +313,7 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
     bigquery_dataset = example_datasets[7]
     bigquery_dataset["fides_meta"] = {
         "namespace": {
-            "project_id": "silken-precinct-284918",
+            "project_id": PROJECT_NAME,
             "dataset_id": "fidesopstest",
             "connection_type": "bigquery",
         },
@@ -358,7 +364,7 @@ def bigquery_example_test_dataset_config_with_namespace_and_time_based_partition
     bigquery_dataset = example_datasets[7]
     bigquery_dataset["fides_meta"] = {
         "namespace": {
-            "project_id": "silken-precinct-284918",
+            "project_id": PROJECT_NAME,
             "dataset_id": "fidesopstest",
             "connection_type": "bigquery",
         },
@@ -411,29 +417,33 @@ def bigquery_resources(
     bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
+
+    # Get the dataset name from the connection config
+    dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
+
     with bigquery_client.connect() as connection:
         uuid = str(uuid4())
         customer_email = f"customer-{uuid}@example.com"
         customer_name = f"{uuid}"
 
-        stmt = "select max(id) from customer;"
+        stmt = f"select max(id) from {dataset_name}.customer;"
         res = connection.execute(stmt)
         customer_id = res.all()[0][0] + random_increment
 
-        stmt = "select max(id) from address;"
+        stmt = f"select max(id) from {dataset_name}.address;"
         res = connection.execute(stmt)
         address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
         stmt = f"""
-        insert into address (id, house, street, city, state, zip)
+        insert into {dataset_name}.address (id, house, street, city, state, zip)
         values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
         """
         connection.execute(stmt)
 
         stmt = f"""
-            insert into customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history)
+            insert into {dataset_name}.customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
         """
 
@@ -441,27 +451,27 @@ def bigquery_resources(
 
         # Insert into customer_profile table
         stmt = f"""
-            insert into customer_profile (id, contact_info, address)
+            insert into {dataset_name}.customer_profile (id, contact_info, address)
             values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
         """
         connection.execute(stmt)
 
         last_visit_date = "2024-10-03 01:00:00"
         stmt = f"""
-            insert into visit_partitioned (email, last_visit)
+            insert into {dataset_name}.visit_partitioned (email, last_visit)
             values ('{customer_email}', '{last_visit_date}');
         """
 
         connection.execute(stmt)
 
-        stmt = "select max(id) from employee;"
+        stmt = f"select max(id) from {dataset_name}.employee;"
         res = connection.execute(stmt)
         employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
         stmt = f"""
-           insert into employee (id, email, name, address_id)
+           insert into {dataset_name}.employee (id, email, name, address_id)
            values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
         """
         connection.execute(stmt)
@@ -479,19 +489,19 @@ def bigquery_resources(
             "employee_email": employee_email,
         }
         # Remove test data and close BigQuery connection in teardown
-        stmt = f"delete from customer where email = '{customer_email}';"
+        stmt = f"delete from {dataset_name}.customer where email = '{customer_email}';"
         connection.execute(stmt)
 
-        stmt = f"delete from customer_profile where contact_info.primary_email = '{customer_email}';"
+        stmt = f"delete from {dataset_name}.customer_profile where contact_info.primary_email = '{customer_email}';"
         connection.execute(stmt)
 
-        stmt = f"delete from visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        stmt = f"delete from {dataset_name}.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
         connection.execute(stmt)
 
-        stmt = f"delete from address where id = {address_id};"
+        stmt = f"delete from {dataset_name}.address where id = {address_id};"
         connection.execute(stmt)
 
-        stmt = f"delete from employee where address_id = {address_id};"
+        stmt = f"delete from {dataset_name}.employee where address_id = {address_id};"
         connection.execute(stmt)
 
 
@@ -506,29 +516,33 @@ def bigquery_resources_with_namespace_meta(
     )
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
+
+    # Get the dataset name from the connection config
+    dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
+
     with bigquery_client.connect() as connection:
         uuid = str(uuid4())
         customer_email = f"customer-{uuid}@example.com"
         customer_name = f"{uuid}"
 
-        stmt = "select max(id) from fidesopstest.customer;"
+        stmt = f"select max(id) from {dataset_name}.customer;"
         res = connection.execute(stmt)
         customer_id = res.all()[0][0] + random_increment
 
-        stmt = "select max(id) from fidesopstest.address;"
+        stmt = f"select max(id) from {dataset_name}.address;"
         res = connection.execute(stmt)
         address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
         stmt = f"""
-        insert into fidesopstest.address (id, house, street, city, state, zip)
+        insert into {dataset_name}.address (id, house, street, city, state, zip)
         values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
         """
         connection.execute(stmt)
 
         stmt = f"""
-            insert into fidesopstest.customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history, created)
+            insert into {dataset_name}.customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history, created)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)], CURRENT_TIMESTAMP);
         """
 
@@ -536,27 +550,27 @@ def bigquery_resources_with_namespace_meta(
 
         # Insert into customer_profile table
         stmt = f"""
-            insert into fidesopstest.customer_profile (id, contact_info, address)
+            insert into {dataset_name}.customer_profile (id, contact_info, address)
             values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
         """
         connection.execute(stmt)
 
         last_visit_date = "2024-10-03 01:00:00"
         stmt = f"""
-            insert into fidesopstest.visit_partitioned (email, last_visit)
+            insert into {dataset_name}.visit_partitioned (email, last_visit)
             values ('{customer_email}', '{last_visit_date}');
         """
 
         connection.execute(stmt)
 
-        stmt = "select max(id) from fidesopstest.employee;"
+        stmt = f"select max(id) from {dataset_name}.employee;"
         res = connection.execute(stmt)
         employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
         stmt = f"""
-           insert into fidesopstest.employee (id, email, name, address_id)
+           insert into {dataset_name}.employee (id, email, name, address_id)
            values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
         """
         connection.execute(stmt)
@@ -574,19 +588,19 @@ def bigquery_resources_with_namespace_meta(
             "employee_email": employee_email,
         }
         # Remove test data and close BigQuery connection in teardown
-        stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
+        stmt = f"delete from {dataset_name}.customer where email = '{customer_email}';"
         connection.execute(stmt)
 
-        stmt = f"delete from fidesopstest.customer_profile where contact_info.primary_email = '{customer_email}';"
+        stmt = f"delete from {dataset_name}.customer_profile where contact_info.primary_email = '{customer_email}';"
         connection.execute(stmt)
 
-        stmt = f"delete from fidesopstest.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        stmt = f"delete from {dataset_name}.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
         connection.execute(stmt)
 
-        stmt = f"delete from fidesopstest.address where id = {address_id};"
+        stmt = f"delete from {dataset_name}.address where id = {address_id};"
         connection.execute(stmt)
 
-        stmt = f"delete from fidesopstest.employee where address_id = {address_id};"
+        stmt = f"delete from {dataset_name}.employee where address_id = {address_id};"
         connection.execute(stmt)
 
 

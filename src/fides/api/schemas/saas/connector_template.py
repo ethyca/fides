@@ -4,6 +4,8 @@ from fideslang.models import Dataset
 from pydantic import BaseModel, field_validator
 
 from fides.api.models.datasetconfig import validate_masking_strategy_override
+from fides.api.schemas.enums.connection_category import ConnectionCategory
+from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
@@ -22,6 +24,9 @@ class ConnectorTemplate(BaseModel):
     authorization_required: bool
     user_guide: Optional[str] = None
     supported_actions: List[ActionType]
+    category: Optional[ConnectionCategory] = None
+    tags: Optional[List[str]] = None
+    enabled_features: Optional[List[IntegrationFeature]] = None
 
     @field_validator("config")
     @classmethod

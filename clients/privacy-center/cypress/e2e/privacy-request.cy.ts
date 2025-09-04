@@ -264,6 +264,9 @@ describe("Privacy Request with multiselect custom fields", () => {
       // Verify preferred_format select field is displayed
       cy.get('[data-testid="select-preferred_format"]').should("be.visible");
 
+      // Fill required name
+      cy.get("#first_name").type("John");
+
       // Fill required email
       cy.get("#email").type("test@test.com");
 
