@@ -13,6 +13,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
+import { ListExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
@@ -38,7 +39,6 @@ import {
   SystemGroupCreate,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
-import { ListExpandableCell } from "~/features/common/table/cells";
 
 interface UseSystemsTableParams {
   isAlphaSystemGroupsEnabled?: boolean;
