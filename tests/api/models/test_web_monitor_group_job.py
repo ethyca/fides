@@ -48,7 +48,7 @@ class TestWebMonitorGroupJob:
             processed_experiences_data=processed_data,
         )
         assert web_monitor_group_job.group_id == "test_group_id"
-        assert web_monitor_group_job.is_test_run == False
+        assert web_monitor_group_job.is_test_run is False
         assert web_monitor_group_job.raw_experiences_data == raw_data
         assert web_monitor_group_job.processed_experiences_data == processed_data
 
