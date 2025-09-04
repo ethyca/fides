@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntFlexProps,
+  AntFlexProps as FlexProps,
   AntTag as Tag,
   AntTagProps as TagProps,
   AntText as Text,
@@ -19,7 +19,7 @@ type TagExpandableCellValues = {
    */
   tagProps?: TagProps;
 }[];
-export interface TagExpandableCellProps extends Omit<AntFlexProps, "children"> {
+export interface TagExpandableCellProps extends Omit<FlexProps, "children"> {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
   onTagClose?: (key: string) => void;
@@ -103,13 +103,16 @@ export const TagExpandableCell = ({
             color="white"
             key={value.key}
             data-testid={value.key}
-            onClose={() => onTagClose?.(value.key)}
+            onClose={onTagClose ? () => onTagClose(value.key) : undefined}
             {...tagProps}
             {...value.tagProps}
           >
             <Text
               ellipsis={isCollapsed ? { tooltip: true } : false}
-              style={isCollapsed ? { maxWidth: TAG_MAX_WIDTH } : {}}
+              style={{
+                color: "inherit",
+                maxWidth: isCollapsed ? TAG_MAX_WIDTH : undefined,
+              }}
             >
               {value.label}
             </Text>

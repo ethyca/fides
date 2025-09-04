@@ -3,7 +3,7 @@ import {
   AntColumnsType as ColumnsType,
   AntDropdown as Dropdown,
   AntMessage as message,
-  AntTypography,
+  AntTypography as Typography,
   Flex,
   Icons,
 } from "fidesui";
@@ -278,7 +278,6 @@ const useSystemsTable = ({
               isWrapped: true,
               isExpanded: isDataUsesExpanded,
             }}
-            className="max-w-96"
           />
         ),
       },
@@ -287,7 +286,6 @@ const useSystemsTable = ({
         dataIndex: "data_steward",
         key: "data_steward",
         render: (dataSteward: string | null) => dataSteward,
-        width: 200,
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
         ),
@@ -299,12 +297,11 @@ const useSystemsTable = ({
         dataIndex: "description",
         key: "description",
         render: (description: string | null) => (
-          <AntTypography.Text
-            ellipsis={{ tooltip: description }}
-            className="w-64"
-          >
-            {description}
-          </AntTypography.Text>
+          <div className="max-w-96">
+            <Typography.Text ellipsis={{ tooltip: description }}>
+              {description}
+            </Typography.Text>
+          </div>
         ),
         ellipsis: true,
       },

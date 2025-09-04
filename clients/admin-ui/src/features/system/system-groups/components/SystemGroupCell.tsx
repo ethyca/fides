@@ -14,11 +14,7 @@ import { TagExpandableCell } from "~/features/common/table/cells";
 import { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateSystemMutation } from "~/features/system";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
-import {
-  BasicSystemResponseExtended,
-  CustomTaxonomyColor,
-  SystemGroup,
-} from "~/types/api";
+import { BasicSystemResponseExtended, SystemGroup } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const UPDATE_SYSTEM_GROUPS_MSG_KEY = "update-system-groups-msg";
@@ -99,8 +95,7 @@ const SystemGroupCell = ({
                     color: group.label_color
                       ? `${COLOR_VALUE_MAP[group.label_color]}`
                       : undefined,
-                    bordered:
-                      group.label_color === CustomTaxonomyColor.TAXONOMY_WHITE,
+                    bordered: false,
                   },
                 },
             )}
@@ -121,6 +116,7 @@ const SystemGroupCell = ({
             onChange={(value) => {
               setPendingSelection(value);
             }}
+            className="w-64"
           />
           <Button icon={<Icons.Checkmark />} onClick={handleUpdate} />
         </>

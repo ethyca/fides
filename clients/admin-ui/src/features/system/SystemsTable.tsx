@@ -4,7 +4,7 @@ import {
   AntFlex as Flex,
   AntModal as Modal,
   AntTable as Table,
-  AntTypography,
+  AntTypography as Typography,
   Icons,
 } from "fidesui";
 
@@ -113,12 +113,12 @@ const SystemsTable = () => {
             cancelText="Cancel"
             centered
           >
-            <AntTypography.Paragraph>
+            <Typography.Paragraph>
               Are you sure you want to delete{" "}
               {selectedSystemForDelete?.name ??
                 selectedSystemForDelete?.fides_key}
               ? This action cannot be undone.
-            </AntTypography.Paragraph>
+            </Typography.Paragraph>
           </Modal>
         </Flex>
       </Flex>
