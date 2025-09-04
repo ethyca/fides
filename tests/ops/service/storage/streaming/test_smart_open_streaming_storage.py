@@ -928,3 +928,98 @@ class TestSmartOpenStreamingStorage:
 
         # Should replace nested URL
         assert result["users"][0]["profile"]["avatar_url"] == "attachments/avatar.jpg"
+
+    @pytest.mark.parametrize(
+        "url,expected_bucket,expected_key",
+        [
+            # S3 URLs
+            ("s3://test-bucket/path/to/file.pdf", "test-bucket", "path/to/file.pdf"),
+            (
+                "s3://test-bucket/path/to/file with spaces.pdf",
+                "test-bucket",
+                "path/to/file with spaces.pdf",
+            ),
+            # HTTPS S3 Amazon AWS URLs
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/file.pdf",
+                "test-bucket",
+                "path/to/file.pdf",
+            ),
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/file%20with%20spaces.pdf",
+                "test-bucket",
+                "path/to/file with spaces.pdf",
+            ),
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/file%20with%20%26%20special%20chars%20%28test%29.pdf",
+                "test-bucket",
+                "path/to/file with & special chars (test).pdf",
+            ),
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/file.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test",
+                "test-bucket",
+                "path/to/file.pdf",
+            ),
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/file%20with%20spaces.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test",
+                "test-bucket",
+                "path/to/file with spaces.pdf",
+            ),
+            # HTTP S3 Amazon AWS URLs
+            (
+                "http://test-bucket.s3.amazonaws.com/path/to/file.pdf",
+                "test-bucket",
+                "path/to/file.pdf",
+            ),
+            # Generic HTTP/HTTPS URLs
+            ("https://example.com/path/to/file.pdf", "example.com", "path/to/file.pdf"),
+            (
+                "https://example.com/path/to/file%20with%20spaces.pdf",
+                "example.com",
+                "path/to/file with spaces.pdf",
+            ),
+            ("http://example.com/path/to/file.pdf", "example.com", "path/to/file.pdf"),
+            # Edge cases
+            (
+                "https://test-bucket.s3.amazonaws.com//path/to/file.pdf",
+                "test-bucket",
+                "path/to/file.pdf",
+            ),  # Leading slash removal
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/测试文件.pdf",
+                "test-bucket",
+                "path/to/测试文件.pdf",
+            ),  # Unicode
+            (
+                "https://test-bucket.s3.amazonaws.com/path/to/%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6.pdf",
+                "test-bucket",
+                "path/to/测试文件.pdf",
+            ),  # URL-encoded Unicode
+        ],
+    )
+    def test_parse_storage_url_valid_urls(
+        self, mock_smart_open_client, url, expected_bucket, expected_key
+    ):
+        """Test parsing various valid storage URLs with proper URL decoding."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        bucket, key = storage._parse_storage_url(url)
+        assert bucket == expected_bucket
+        assert key == expected_key
+
+    @pytest.mark.parametrize(
+        "url,expected_error",
+        [
+            ("s3://invalid", "Invalid S3 URL format"),
+            ("not-a-url", "Could not parse storage URL"),
+            ("", "Could not parse storage URL"),
+        ],
+    )
+    def test_parse_storage_url_invalid_urls(
+        self, mock_smart_open_client, url, expected_error
+    ):
+        """Test parsing invalid URLs raises appropriate ValueError."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+
+        with pytest.raises(ValueError, match=expected_error):
+            storage._parse_storage_url(url)
