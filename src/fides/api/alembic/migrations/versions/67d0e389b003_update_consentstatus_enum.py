@@ -1,8 +1,8 @@
 """Update ConsentStatus enum
 
 Revision ID: 67d0e389b003
-Revises: b1a2c3d4e5f6
-Create Date: 2025-08-29 19:32:05.025508
+Revises: 78dbe23d8204
+Create Date: 2025-09-02 19:32:05.025508
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "67d0e389b003"
-down_revision = "b1a2c3d4e5f6"
+down_revision = "78dbe23d8204"
 branch_labels = None
 depends_on = None
 
