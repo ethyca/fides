@@ -75,7 +75,7 @@ class StreamingBufferConfig(BaseModel):
         description="Chunk size threshold in bytes (default: 1MB)",
     )
     fail_fast_on_attachment_errors: bool = Field(
-        default=False,
+        default=True,
         description="If True, stop processing on first attachment error. If False, continue with error placeholders.",
     )
     include_error_details: bool = Field(
