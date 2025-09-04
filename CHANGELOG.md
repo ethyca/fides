@@ -19,7 +19,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.69.1...main)
+
+### Fixed
+- Enables the exclude domains field in the website monitor config. [#6545](https://github.com/ethyca/fides/pull/6545)
+
+### Deprecated
+- DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
+
+## [2.69.1](https://github.com/ethyca/fides/compare/2.69.0...2.69.1)
 
 ### Added
 - Added the ability to selectively redact dataset, collection, and field names in DSR packages [#6487](https://github.com/ethyca/fides/pull/6487)
