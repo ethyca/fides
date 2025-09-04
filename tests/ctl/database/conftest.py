@@ -30,17 +30,6 @@ def test_data_category_data():
         "description": "A data category for testing safe_crud operations",
     }
 
-
-@pytest.fixture(scope="function")
-def test_data_use_data():
-    """Provides basic test data for a DataUse resource"""
-    return {
-        "fides_key": f"test_data_use_{uuid4().hex[:8]}",
-        "name": "Test Data Use",
-        "description": "A data use for testing safe_crud operations",
-    }
-
-
 @pytest.fixture(scope="function")
 async def created_test_system(
     test_system_data: dict, async_session: AsyncSession
@@ -63,19 +52,6 @@ async def created_test_data_category(
     )
     await async_session.commit()
     return data_category
-
-
-@pytest.fixture(scope="function")
-async def created_test_data_use(
-    test_data_use_data: dict, async_session: AsyncSession
-) -> sql_models.DataUse:
-    """Creates a test DataUse"""
-
-    data_use = await create_resource(
-        sql_models.DataUse, test_data_use_data, async_session
-    )
-    await async_session.commit()
-    return data_use
 
 
 @pytest.fixture(scope="function")
