@@ -30,6 +30,7 @@ def test_data_category_data():
         "description": "A data category for testing safe_crud operations",
     }
 
+
 @pytest.fixture(scope="function")
 async def created_test_system(
     test_system_data: dict, async_session: AsyncSession
