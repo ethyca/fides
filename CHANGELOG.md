@@ -22,6 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.1...main)
 
 ### Fixed
+- Enables the exclude domains field in the website monitor config. [#6545](https://github.com/ethyca/fides/pull/6545)
 - Adds safeguards when encountering rate limit errors upon instantiation [#6546](https://github.com/ethyca/fides/pull/6546)
 
 ### Deprecated
