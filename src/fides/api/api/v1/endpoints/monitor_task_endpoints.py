@@ -33,15 +33,15 @@ def get_in_progress_monitor_tasks(
 ) -> Page[MonitorTaskInProgressResponse]:
     """
     Get all monitor tasks that are currently in progress (classification and promotion).
-    
+
     This endpoint retrieves tasks that are actively being processed, including:
     - Classification tasks with status: pending, in_processing
     - Promotion tasks with status: pending, in_processing
-    
+
     The response includes monitor name, task type, last updated date, current status,
     associated staged resources, and connection type.
     """
-    
+
     # Build base query for in-progress classification and promotion tasks
     query = (
         db.query(MonitorTask)
@@ -59,7 +59,7 @@ def get_in_progress_monitor_tasks(
             )
         )
     )
-    
+
     # Add search filter if provided
     if search:
         query = query.filter(
@@ -67,20 +67,20 @@ def get_in_progress_monitor_tasks(
                 MonitorConfig.name.ilike(f"%{search}%")
             )
         )
-    
+
     # Order by most recently updated first
     query = query.order_by(MonitorTask.updated_at.desc())
-    
+
     # Use pagination to return results
     page_result = paginate(query, params)
-    
+
     # Transform to response schema
     response_items = []
     for task in page_result.items:
         connection_type = None
         if task.monitor_config and task.monitor_config.connection_config:
             connection_type = task.monitor_config.connection_config.connection_type.value
-        
+
         response_items.append(
             MonitorTaskInProgressResponse(
                 id=task.id,
@@ -94,7 +94,7 @@ def get_in_progress_monitor_tasks(
                 message=task.message,
             )
         )
-    
+
     # Return paginated response with transformed items
     return Page.create(
         items=response_items,

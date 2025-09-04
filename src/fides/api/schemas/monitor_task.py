@@ -8,7 +8,7 @@ class MonitorTaskInProgressResponse(FidesSchema):
     """
     Response schema for in-progress monitor tasks in the Action Center.
     """
-    
+
     id: str
     monitor_name: str
     task_type: str  # classification or promotion
@@ -24,7 +24,7 @@ class MonitorTaskInProgressFilter(FidesSchema):
     """
     Filter parameters for monitor task queries.
     """
-    
+
     monitor_name: Optional[str] = None
     search: Optional[str] = None
     page: int = 1

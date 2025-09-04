@@ -32,14 +32,14 @@ export const InProgressMonitorTasksTable = ({
   return (
     <>
       <Flex justify="space-between" align="center" className="mb-4">
-        <DebouncedSearchInput 
-          value={searchQuery} 
+        <DebouncedSearchInput
+          value={searchQuery}
           onChange={updateSearch}
           placeholder="Search by monitor name..."
         />
       </Flex>
-      <Table 
-        {...tableProps} 
+      <Table
+        {...tableProps}
         columns={columns}
         loading={isLoading || isFetching}
       />
