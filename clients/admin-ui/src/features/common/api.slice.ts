@@ -70,6 +70,7 @@ export const baseApi = createApi({
     "Shared Monitor Configs",
     "System",
     "System Assets",
+    "System Groups",
     "System History",
     "Request",
     "Roles",

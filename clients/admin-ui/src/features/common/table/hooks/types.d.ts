@@ -18,6 +18,7 @@ export interface TableState<TSortKey extends string = string>
 
 export interface TableStateWithHelpers<TSortKey extends string = string>
   extends TableState<TSortKey> {
+  state: TableState<TSortKey>;
   updatePageIndex: (pageIndex: number) => void;
   updatePageSize: (pageSize: number) => void;
   updateSorting: (sortKey?: TSortKey, sortOrder?: SortOrder) => void;
