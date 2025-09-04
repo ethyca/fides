@@ -1,6 +1,6 @@
 """
-Contains all of the generic CRUD endpoints that can be
-generated programmatically for each resource.
+DEPRECATED: This module uses manual transaction handling which can
+lead to unexpected behavior. Use fides.api.db.safe_crud instead.
 """
 
 from collections import defaultdict
@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import Select
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from typing_extensions import deprecated
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomField,
@@ -32,6 +33,9 @@ T = TypeVar("T", bound="FidesBase")
 
 
 # CRUD Functions
+@deprecated(
+    "This function uses a manual session.begin() which can lead to unexpected transaction handling. Use create_resource from safe_crud instead."
+)
 async def create_resource(
     sql_model: Type[T], resource_dict: Dict, async_session: AsyncSession
 ) -> T:
@@ -66,6 +70,9 @@ async def create_resource(
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use get_custom_fields_filtered from safe_crud instead."
+)
 async def get_custom_fields_filtered(
     async_session: AsyncSession,
     resource_types_to_ids: Dict[ResourceTypes, List[str]] = defaultdict(list),
@@ -111,6 +118,9 @@ async def get_custom_fields_filtered(
                 raise sa_error
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use get_resource from safe_crud instead."
+)
 async def get_resource(
     sql_model: Type[T],
     fides_key: str,
@@ -142,6 +152,9 @@ async def get_resource(
             return sql_resource
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use get_resource_with_custom_fields from safe_crud instead."
+)
 async def get_resource_with_custom_fields(
     sql_model: Type[T], fides_key: str, async_session: AsyncSession
 ) -> Dict[str, Any]:
@@ -193,6 +206,9 @@ async def get_resource_with_custom_fields(
     return resource_dict
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use list_resource from safe_crud instead."
+)
 async def list_resource(sql_model: Type[T], async_session: AsyncSession) -> List[T]:
     """
     Get a list of all of the resources of this type from the database.
@@ -203,6 +219,9 @@ async def list_resource(sql_model: Type[T], async_session: AsyncSession) -> List
     return await list_resource_query(async_session, query, sql_model)
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use list_resource_query from safe_crud instead."
+)
 async def list_resource_query(
     async_session: AsyncSession, query: Select, sql_model: Type[T]
 ) -> List[T]:
@@ -225,6 +244,9 @@ async def list_resource_query(
             return sql_resources
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use update_resource from safe_crud instead."
+)
 async def update_resource(
     sql_model: Type[T], resource_dict: Dict, async_session: AsyncSession
 ) -> Dict:
@@ -251,6 +273,9 @@ async def update_resource(
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use upsert_resources from safe_crud instead."
+)
 async def upsert_resources(
     sql_model: Type[T], resource_dicts: List[Dict], async_session: AsyncSession
 ) -> Tuple[int, int]:
@@ -300,6 +325,9 @@ async def upsert_resources(
                 raise sa_error
 
 
+@deprecated(
+    "This function uses manual session.begin() which can lead to unexpected transaction handling. Use delete_resource from safe_crud instead."
+)
 async def delete_resource(
     sql_model: Type[T], fides_key: str, async_session: AsyncSession
 ) -> T:
