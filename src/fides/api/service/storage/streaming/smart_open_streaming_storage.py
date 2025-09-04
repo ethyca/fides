@@ -27,7 +27,7 @@ from fides.api.service.storage.streaming.dsr_storage import (
 from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
     DEFAULT_CHUNK_SIZE,
-    LARGE_FILE_THRESHOLD,
+    MAX_FILE_SIZE,
     AttachmentInfo,
     AttachmentProcessingInfo,
     SmartOpenStreamingStorageConfig,
@@ -220,12 +220,10 @@ class SmartOpenStreamingStorage:
                 # Stream in chunks instead of reading entire file
                 chunk_count = total_bytes = 0
                 max_chunks = (
-                    LARGE_FILE_THRESHOLD // self.chunk_size + 1
+                    MAX_FILE_SIZE // self.chunk_size + 1
                 )  # Safety limit to prevent infinite loops
 
-                size_based_timeout = LARGE_FILE_THRESHOLD // (
-                    10 * 1024 * 1024
-                )  # 1s per 10MB
+                size_based_timeout = MAX_FILE_SIZE // (10 * 1024 * 1024)  # 1s per 10MB
                 timeout = 300 + size_based_timeout  # 5 minutes base + 1s per 10MB
                 start_time = time.time()
 
@@ -235,7 +233,7 @@ class SmartOpenStreamingStorage:
                     f"(base: 300s + size-based: {size_based_timeout}s)"
                 )
 
-                while chunk_count < max_chunks and total_bytes < LARGE_FILE_THRESHOLD:
+                while chunk_count < max_chunks and total_bytes < MAX_FILE_SIZE:
                     elapsed_time = time.time() - start_time
                     if elapsed_time >= timeout:
                         raise TimeoutError(
@@ -270,9 +268,9 @@ class SmartOpenStreamingStorage:
                         f"Maximum chunk count ({max_chunks}) reached for attachment {storage_key}. "
                         f"Streamed {total_bytes} bytes. Stream may be incomplete."
                     )
-                elif total_bytes >= LARGE_FILE_THRESHOLD:
+                elif total_bytes >= MAX_FILE_SIZE:
                     logger.warning(
-                        f"Maximum file size ({LARGE_FILE_THRESHOLD} bytes) reached for attachment {storage_key}. "
+                        f"Maximum file size ({MAX_FILE_SIZE} bytes) reached for attachment {storage_key}. "
                         f"Streamed {total_bytes} bytes in {chunk_count} chunks. Stream may be incomplete."
                     )
 

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 S3_MIN_PART_SIZE = 5 * 1024 * 1024  # 5MB minimum part size for AWS S3 multipart uploads
 ZIP_BUFFER_THRESHOLD = 5 * 1024 * 1024  # 5MB threshold for zip buffer uploads
 DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024  # 5MB default chunk size for streaming operations
-LARGE_FILE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2GB threshold for large file handling
+MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024  # 2GB threshold for large file handling
 
 # Backward compatibility aliases
 MIN_PART_SIZE = S3_MIN_PART_SIZE
@@ -90,7 +90,7 @@ class SmartOpenStreamingStorageConfig(BaseModel):
     chunk_size: int = Field(
         default=DEFAULT_CHUNK_SIZE,
         ge=1024,  # 1KB minimum
-        le=LARGE_FILE_THRESHOLD,  # 2GB maximum
+        le=MAX_FILE_SIZE,  # 2GB maximum
         description="Size of chunks for streaming attachments (default: 5MB)",
     )
 
