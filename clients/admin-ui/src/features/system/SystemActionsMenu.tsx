@@ -22,7 +22,7 @@ interface SystemActionsMenuProps {
 
 const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
   const [messageApi, contextHolder] = message.useMessage();
-  const [deleteModal, deleteModalIsOpen] = useState(false);
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
   const { data: allUsers } = useGetAllUsersQuery({
@@ -67,8 +67,8 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
     <>
       {contextHolder}
       <Modal
-        open={deleteModal}
-        onCancel={() => deleteModalIsOpen(false)}
+        open={deleteModalIsOpen}
+        onCancel={() => setDeleteModalIsOpen(false)}
         onOk={handleDelete}
         okText="Delete"
         okType="danger"
@@ -95,7 +95,7 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
               key: "delete",
               label: "Delete",
               onClick: () => {
-                deleteModalIsOpen(true);
+                setDeleteModalIsOpen(true);
               },
             },
           ],

@@ -1,6 +1,7 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
+  AntFlexProps,
   AntTag as Tag,
   AntTagProps as TagProps,
 } from "fidesui";
@@ -18,9 +19,10 @@ type TagExpandableCellValues = {
   tagProps?: TagProps;
 }[];
 
-export interface TagExpandableCellProps extends TagProps {
+export interface TagExpandableCellProps extends Omit<AntFlexProps, "children"> {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
+  tagProps?: TagProps;
 }
 
 /**
@@ -33,7 +35,8 @@ export interface TagExpandableCellProps extends TagProps {
 export const TagExpandableCell = ({
   values,
   columnState,
-  ...tagProps
+  tagProps,
+  ...props
 }: TagExpandableCellProps) => {
   const { isExpanded, isWrapped, version } = columnState || {};
   const displayThreshold = 2; // Number of badges to display when collapsed
@@ -90,6 +93,7 @@ export const TagExpandableCell = ({
         wrap={isWrappedState ? "wrap" : "nowrap"}
         gap="small"
         data-testid="tag-expandable-cell"
+        {...props}
       >
         {displayValues.map((value) => (
           <Tag

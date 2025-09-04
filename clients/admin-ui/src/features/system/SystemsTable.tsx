@@ -105,7 +105,9 @@ const SystemsTable = () => {
           <Modal
             open={deleteModalIsOpen}
             onCancel={() => setDeleteModalIsOpen(false)}
-            onOk={() => handleDelete(selectedSystemForDelete!)}
+            onOk={() =>
+              !!selectedSystemForDelete && handleDelete(selectedSystemForDelete)
+            }
             okText="Delete"
             okType="danger"
             cancelText="Cancel"

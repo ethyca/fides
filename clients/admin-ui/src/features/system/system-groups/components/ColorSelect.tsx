@@ -4,6 +4,7 @@ import {
   ControlledSelect,
   ControlledSelectProps,
 } from "~/features/common/form/ControlledSelect";
+import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import { CustomTaxonomyColor } from "~/types/api";
 
 type ColorSelectProps = Omit<ControlledSelectProps, "options">;
@@ -20,30 +21,18 @@ const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
   [CustomTaxonomyColor.MINOS]: "Minos",
 };
 
-const COLOR_VALUES: Record<CustomTaxonomyColor, string> = {
-  [CustomTaxonomyColor.TAXONOMY_WHITE]: "var(--fidesui-bg-default)",
-  [CustomTaxonomyColor.TAXONOMY_RED]: "var(--fidesui-bg-taxonomy-red)",
-  [CustomTaxonomyColor.TAXONOMY_ORANGE]: "var(--fidesui-bg-taxonomy-orange)",
-  [CustomTaxonomyColor.TAXONOMY_YELLOW]: "var(--fidesui-bg-taxonomy-yellow)",
-  [CustomTaxonomyColor.TAXONOMY_GREEN]: "var(--fidesui-bg-taxonomy-green)",
-  [CustomTaxonomyColor.TAXONOMY_BLUE]: "var(--fidesui-bg-taxonomy-blue)",
-  [CustomTaxonomyColor.TAXONOMY_PURPLE]: "var(--fidesui-bg-taxonomy-purple)",
-  [CustomTaxonomyColor.SANDSTONE]: "var(--fidesui-bg-sandstone)",
-  [CustomTaxonomyColor.MINOS]: "var(--fidesui-bg-minos)",
-};
-
 const ColorSwatch = ({
   color,
   ...props
-}: { color: string } & HTMLAttributes<HTMLSpanElement>) => {
+}: { color: CustomTaxonomyColor } & HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
       aria-hidden
       className="mr-2 inline-block size-4 rounded-lg align-middle"
       style={{
-        backgroundColor: color,
+        backgroundColor: `var(--fidesui-bg-${COLOR_VALUE_MAP[color]})`,
         border:
-          color === COLOR_VALUES[CustomTaxonomyColor.TAXONOMY_WHITE]
+          color === CustomTaxonomyColor.TAXONOMY_WHITE
             ? "1px solid var(--fidesui-neutral-200)"
             : "none",
         ...props.style,
@@ -55,10 +44,9 @@ const ColorSwatch = ({
 const renderColorOption = (option: any) => {
   const value = option?.value as CustomTaxonomyColor;
   const label = option?.label as string;
-  const color = COLOR_VALUES[value];
   return (
     <span className="flex items-center">
-      <ColorSwatch color={color} />
+      <ColorSwatch color={value} />
       <span>{label}</span>
     </span>
   );
@@ -88,7 +76,7 @@ const ColorSelect = (props: ColorSelectProps) => {
       }}
       prefix={
         <ColorSwatch
-          color={COLOR_VALUES[value ?? CustomTaxonomyColor.TAXONOMY_WHITE]}
+          color={value ?? CustomTaxonomyColor.TAXONOMY_WHITE}
           style={{ marginBottom: "2px" }}
         />
       }

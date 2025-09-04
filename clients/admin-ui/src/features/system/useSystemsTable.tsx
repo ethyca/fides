@@ -3,6 +3,7 @@ import {
   AntColumnsType as ColumnsType,
   AntDropdown as Dropdown,
   AntMessage as message,
+  AntTypography,
   Flex,
   Icons,
 } from "fidesui";
@@ -210,7 +211,6 @@ const useSystemsTable = ({
             {name || record.fides_key}
           </LinkCell>
         ),
-        width: 300,
         ellipsis: true,
         fixed: "left",
       },
@@ -222,7 +222,6 @@ const useSystemsTable = ({
           record: BasicSystemResponseExtended,
         ) => (
           <SystemGroupCell
-            // @ts-ignore - TS doesn't know we filter out undefined
             selectedGroups={
               systemGroups
                 ?.map((key) => systemGroupMap?.[key])
@@ -234,9 +233,9 @@ const useSystemsTable = ({
               isWrapped: true,
               isExpanded: isGroupsExpanded,
             }}
+            className="max-w-96"
           />
         ),
-        width: 400,
         title: "Groups",
         hidden: !plusIsEnabled || !isAlphaSystemGroupsEnabled,
         menu: {
@@ -279,9 +278,9 @@ const useSystemsTable = ({
               isWrapped: true,
               isExpanded: isDataUsesExpanded,
             }}
+            className="max-w-96"
           />
         ),
-        width: 500,
       },
       {
         title: "Data steward",
@@ -299,8 +298,14 @@ const useSystemsTable = ({
         title: "Description",
         dataIndex: "description",
         key: "description",
-        render: (description: string | null) => description,
-        width: 200,
+        render: (description: string | null) => (
+          <AntTypography.Text
+            ellipsis={{ tooltip: description }}
+            className="w-64"
+          >
+            {description}
+          </AntTypography.Text>
+        ),
         ellipsis: true,
       },
       {
@@ -345,7 +350,6 @@ const useSystemsTable = ({
             </Dropdown>
           </Flex>
         ),
-        width: 10,
         fixed: "right",
       },
     ];
