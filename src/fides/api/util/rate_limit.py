@@ -207,5 +207,6 @@ try:
     else:
         fides_limiter = disabled_limiter
 except Exception as e:
-    logger.warning("Disabling rate limiting due to Redis configuration issue: {}", e)
-    fides_limiter = disabled_limiter
+    logger.exception("Error instantiating rate limiter: {}", e)
+    if is_rate_limit_enabled:
+        raise e
