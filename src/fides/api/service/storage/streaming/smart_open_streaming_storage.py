@@ -7,7 +7,7 @@ from datetime import datetime
 from io import BytesIO, StringIO
 from itertools import chain
 from typing import Any, Generator, Iterable, Optional, Tuple
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
@@ -111,16 +111,16 @@ class SmartOpenStreamingStorage:
             parts = clean_url.split(S3_AMAZONAWS_COM_DOMAIN)
             if len(parts) == 2:
                 bucket = parts[0].replace("https://", "").replace("http://", "")
-                key = parts[1].lstrip(
-                    "/"
-                )  # Strip leading forward slash for S3 compatibility
+                key = unquote(
+                    parts[1].lstrip("/")
+                )  # URL-decode and strip leading slash for S3 compatibility
                 return bucket, key
 
         # Handle generic HTTP(S) URLs
         if storage_key.startswith(("http://", "https://")):
             parsed = urlparse(storage_key)
             bucket = parsed.netloc
-            key = parsed.path.lstrip("/")
+            key = unquote(parsed.path.lstrip("/"))  # URL-decode the path
             return bucket, key
 
         raise ValueError(f"Could not parse storage URL: {storage_key}")
