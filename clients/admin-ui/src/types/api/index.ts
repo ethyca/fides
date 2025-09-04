@@ -352,6 +352,7 @@ export { MonitorFrequency } from "./models/MonitorFrequency";
 export type { MonitorStatusResponse } from "./models/MonitorStatusResponse";
 export type { MonitorTaskDetailResponse } from "./models/MonitorTaskDetailResponse";
 export type { MonitorTaskResponse } from "./models/MonitorTaskResponse";
+export type { MonitorTaskInProgressResponse } from "./models/MonitorTaskInProgressResponse";
 export { MonitorTaskType } from "./models/MonitorTaskType";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";

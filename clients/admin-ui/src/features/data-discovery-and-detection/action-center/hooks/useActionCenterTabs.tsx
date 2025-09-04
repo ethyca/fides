@@ -6,6 +6,8 @@ import { DiffStatus } from "~/types/api";
 export enum ActionCenterTabHash {
   ATTENTION_REQUIRED = "attention-required",
   ADDED = "added",
+  IN_PROGRESS = "in-progress",
+  RECENT_ACTIVITY = "recent-activity",
   IGNORED = "ignored",
 }
 
@@ -26,6 +28,18 @@ const useActionCenterTabs = (systemId?: string) => {
       },
       {
         label: "Added",
+        label: "In progress",
+        params: {
+          diff_status: [
+            DiffStatus.CLASSIFYING,
+            DiffStatus.CLASSIFICATION_QUEUED,
+          ],
+          system: systemId,
+        },
+        hash: ActionCenterTabHash.IN_PROGRESS,
+      },
+      {
+        label: "Recent activity",
         params: {
           diff_status: [DiffStatus.MONITORED],
         },
@@ -52,7 +66,10 @@ const useActionCenterTabs = (systemId?: string) => {
   const { diff_status, system } = activeTabData.params;
 
   const actionsDisabled = useMemo(
-    () => diff_status.includes(DiffStatus.MONITORED),
+    () =>
+      diff_status.includes(DiffStatus.MONITORED) ||
+      diff_status.includes(DiffStatus.CLASSIFYING) ||
+      diff_status.includes(DiffStatus.CLASSIFICATION_QUEUED),
     [diff_status],
   );
 
