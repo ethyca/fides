@@ -21,6 +21,7 @@ from fides.api.models.detection_discovery.monitor_task import (
     MonitorTask,
     MonitorTaskExecutionLog,
 )
+from fides.api.models.detection_discovery.web_monitor import WebMonitorGroupJob
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
