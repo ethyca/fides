@@ -135,6 +135,7 @@ def test_create_and_process_erasure_request_saas(
     pr.delete(db=db)
 
 
+@pytest.mark.xfail(reason="Unable to create user in Hubspot")
 @pytest.mark.integration_saas
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas_hubspot(

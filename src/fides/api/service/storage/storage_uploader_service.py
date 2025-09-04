@@ -51,13 +51,7 @@ def upload(
         config.secrets is not None,
     )
 
-    if config.secrets:
-        logger.debug("Storage config secrets type: {}", type(config.secrets))
-        if isinstance(config.secrets, dict):
-            logger.debug("Storage config secrets keys: {}", list(config.secrets.keys()))
-        else:
-            logger.debug("Storage config secrets is not a dict: {}", config.secrets)
-    else:
+    if not config.secrets:
         logger.warning("Storage config has no secrets!")
 
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
@@ -130,19 +124,6 @@ def _s3_uploader(
         config.secrets is not None,
     )
 
-    if config.secrets:
-        logger.debug(
-            "Config secrets keys: {}",
-            (
-                list(config.secrets.keys())
-                if isinstance(config.secrets, dict)
-                else "Not a dict"
-            ),
-        )
-        logger.debug("Config secrets type: {}", type(config.secrets))
-    else:
-        logger.warning("Config secrets is None or empty!")
-
     enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
     file_key: str = _construct_file_key(privacy_request.id, config, enable_streaming)
 
@@ -154,7 +135,6 @@ def _s3_uploader(
         file_key = f"{privacy_request.id}.zip"
         # Use streaming upload for better memory efficiency
         logger.debug("Using streaming S3 upload for {}", file_key)
-        logger.debug("Calling upload_to_s3_streaming with secrets: {}", config.secrets)
         return upload_to_s3_streaming(
             config.secrets,  # type: ignore
             data,

@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_404_NOT_FOUND
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
@@ -30,7 +30,7 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
-from fides.api.oauth.roles import get_scopes_from_roles
+from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING, get_scopes_from_roles
 from fides.api.request_context import set_user_id
 from fides.api.schemas.external_https import (
     DownloadTokenJWE,
@@ -67,14 +67,39 @@ def is_token_expired(
     """Check if a token has expired based on its issued_at timestamp and duration."""
     if issued_at is None:
         return True
-    expiration_time = issued_at + timedelta(minutes=token_duration_minutes)
-    return datetime.now() > expiration_time
+    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
 
 
-def is_callback_token_expired(issued_at: datetime) -> bool:
+def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     """Check if a callback token has expired (24 hours)."""
-    expiration_time = issued_at + timedelta(hours=24)
-    return datetime.now() > expiration_time
+    if not issued_at:
+        return True
+
+    return (
+        datetime.now() - issued_at
+    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
+
+
+def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
+    """
+    Return True if the token should be considered invalid due to security events
+    (e.g., user password reset) that occurred after the token was issued.
+
+    Any errors accessing related objects are logged and treated as non-invalidating.
+    """
+    try:
+        if (
+            client.user is not None
+            and client.user.password_reset_at is not None
+            and issued_at < client.user.password_reset_at
+        ):
+            return True
+        return False
+    except Exception as exc:
+        logger.exception(
+            "Unable to evaluate password reset timestamp for client user: {}", exc
+        )
+        return False
 
 
 def _get_webhook_jwe_or_error(
@@ -222,7 +247,7 @@ async def get_current_user(
             created_at=datetime.utcnow(),
         )
 
-    return client.user  # type: ignore[attr-defined]
+    return cast(FidesUser, client.user)
 
 
 def verify_callback_oauth_policy_pre_webhook(
@@ -367,8 +392,10 @@ def extract_token_and_load_client(
         logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
+    issued_at_dt = datetime.fromisoformat(issued_at)
+
     if is_token_expired(
-        datetime.fromisoformat(issued_at),
+        issued_at_dt,
         token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
@@ -389,6 +416,12 @@ def extract_token_and_load_client(
 
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    # Invalidate tokens issued prior to the user's most recent password reset.
+    # This ensures any existing sessions are expired immediately after a password change.
+    if is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before latest password reset.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Populate request-scoped context with the authenticated user identifier.
@@ -471,6 +504,87 @@ def _has_direct_scopes(
 def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) -> bool:
     """Are the required scopes a subset of the scopes belonging to the user?"""
     return set(endpoint_scopes.scopes).issubset(user_scopes)
+
+
+def get_client_effective_scopes(client: "ClientDetail") -> List[str]:
+    """
+    Get all scopes available to a client, including both direct scopes and role-derived scopes.
+
+    Args:
+        client: The ClientDetail instance
+
+    Returns:
+        List of scope strings that the client has access to
+    """
+    effective_scopes = set()
+
+    # Add direct scopes
+    if client.scopes:
+        effective_scopes.update(client.scopes)
+
+    # Add role-derived scopes
+    if client.roles:
+        for role in client.roles:
+            role_scopes = ROLES_TO_SCOPES_MAPPING.get(role, [])
+            effective_scopes.update(role_scopes)
+
+    # Add user permission scopes if client is associated with a user
+    # Note: client.user is available via SQLAlchemy backref from FidesUser.client relationship
+    user = getattr(client, "user", None)  # Use getattr to avoid mypy attr-defined error
+    if user and hasattr(user, "permissions") and user.permissions:
+        effective_scopes.update(user.permissions.total_scopes)
+
+    return sorted(list(effective_scopes))
+
+
+def verify_client_can_assign_scopes(
+    request: "Request",
+    requesting_client: "ClientDetail",
+    scopes: List[str],
+    db: "Session",
+) -> None:
+    """
+    Verify that a requesting client has permission to assign the given scopes.
+
+    Raises HTTPException if the client lacks permission.
+    Root client is exempt from this check.
+
+    Args:
+        request: FastAPI request object containing Authorization header
+        requesting_client: The client making the request
+        scopes: List of scopes to be assigned
+        db: Database session
+
+    Raises:
+        HTTPException: If the client lacks permission to assign the scopes
+    """
+    # Root client can assign any scope
+    if requesting_client.id == CONFIG.security.oauth_root_client_id:
+        return
+
+    # Get the actual token scopes (not the client's database scopes)
+    authorization = request.headers.get("Authorization", "").replace("Bearer ", "")
+    token_data, _ = extract_token_and_load_client(authorization, db)
+
+    # Get token's effective scopes
+    token_scopes = token_data.get("scopes", [])
+
+    # Check if user has the scopes via roles as well
+    has_scope_via_role = has_permissions(
+        token_data=token_data,
+        client=requesting_client,
+        endpoint_scopes=SecurityScopes(scopes),
+    )
+
+    # If they don't have all scopes via direct assignment or roles, check individual scopes
+    if not has_scope_via_role:
+        unauthorized_scopes = set(scopes) - set(token_scopes)
+
+        if unauthorized_scopes:
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN,
+                detail=f"Cannot assign scopes that you do not have. Missing scopes: {sorted(unauthorized_scopes)}",
+            )
 
 
 def create_temporary_user_for_login_flow(config: FidesConfig) -> FidesUser:
