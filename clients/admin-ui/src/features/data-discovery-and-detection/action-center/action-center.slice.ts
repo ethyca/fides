@@ -6,6 +6,7 @@ import {
 import {
   ConsentStatus,
   DiffStatus,
+  MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -319,6 +320,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       providesTags: ["Discovery Monitor Results"],
     }),
+    getInProgressMonitorTasks: build.query<
+      { items: MonitorTaskInProgressResponse[]; total: number; page: number; pages: number; size: number },
+      SearchQueryParams & PaginationQueryParams
+    >({
+      query: ({ page = 1, size = 20, search }) => ({
+        url: `/monitor-tasks/in-progress`,
+        params: { page, size, search },
+      }),
+      providesTags: ["Monitor Tasks"],
+    }),
   }),
 });
 
@@ -336,4 +347,5 @@ export const {
   useUpdateAssetsMutation,
   useGetConsentBreakdownQuery,
   useGetWebsiteMonitorResourceFiltersQuery,
+  useGetInProgressMonitorTasksQuery,
 } = actionCenterApi;
