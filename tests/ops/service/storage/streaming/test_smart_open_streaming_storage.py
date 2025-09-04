@@ -12,7 +12,6 @@ from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.storage.streaming.schemas import (
     AttachmentInfo,
     AttachmentProcessingInfo,
-    PackageSplitConfig,
     StorageUploadConfig,
     StreamingBufferConfig,
 )

@@ -218,40 +218,27 @@ class SmartOpenStreamingStorage:
         try:
             with self.storage_client.stream_read(bucket, key) as content_stream:
                 # Stream in chunks instead of reading entire file
-                chunk_count = 0
-                total_bytes = 0
+                chunk_count = total_bytes = 0
                 max_chunks = 100000  # Safety limit to prevent infinite loops
-                max_file_size = (
-                    LARGE_FILE_THRESHOLD  # Use LARGE_FILE_THRESHOLD as file size limit
-                )
 
-                # Calculate timeout based on file size - more reasonable for large files
-                # Base timeout of 5 minutes, plus 1 second per 10MB of expected file size
-                # This gives us: 5min + (2GB/10MB) = 5min + 200s = ~8.3 minutes for 2GB files
-                base_timeout = 300  # 5 minutes base
-                estimated_file_size = max_file_size  # Use max as worst case
-                size_based_timeout = estimated_file_size // (
+                size_based_timeout = LARGE_FILE_THRESHOLD // (
                     10 * 1024 * 1024
                 )  # 1s per 10MB
-                timeout = base_timeout + size_based_timeout
-
+                timeout = 300 + size_based_timeout  # 5 minutes base + 1s per 10MB
                 start_time = time.time()
 
                 # Log the calculated timeout for debugging
                 logger.debug(
                     f"Starting stream for {storage_key} with timeout: {timeout}s "
-                    f"(base: {base_timeout}s + size-based: {size_based_timeout}s)"
+                    f"(base: 300s + size-based: {size_based_timeout}s)"
                 )
 
-                while chunk_count < max_chunks and total_bytes < max_file_size:
-                    # Check timeout
+                while chunk_count < max_chunks and total_bytes < LARGE_FILE_THRESHOLD:
                     elapsed_time = time.time() - start_time
                     if elapsed_time >= timeout:
-                        logger.warning(
-                            f"Timeout reached ({timeout}s) while streaming attachment {storage_key}. "
-                            f"Downloaded {total_bytes} bytes in {chunk_count} chunks."
+                        raise TimeoutError(
+                            f"Timeout reached ({timeout}s) while streaming attachment {storage_key}."
                         )
-                        break
 
                     try:
                         chunk = content_stream.read(self.chunk_size)
@@ -279,12 +266,12 @@ class SmartOpenStreamingStorage:
                 if chunk_count >= max_chunks:
                     logger.warning(
                         f"Maximum chunk count ({max_chunks}) reached for attachment {storage_key}. "
-                        f"Downloaded {total_bytes} bytes. Stream may be incomplete."
+                        f"Streamed {total_bytes} bytes. Stream may be incomplete."
                     )
-                elif total_bytes >= max_file_size:
+                elif total_bytes >= LARGE_FILE_THRESHOLD:
                     logger.warning(
-                        f"Maximum file size ({max_file_size} bytes) reached for attachment {storage_key}. "
-                        f"Downloaded {total_bytes} bytes in {chunk_count} chunks. Stream may be incomplete."
+                        f"Maximum file size ({LARGE_FILE_THRESHOLD} bytes) reached for attachment {storage_key}. "
+                        f"Streamed {total_bytes} bytes in {chunk_count} chunks. Stream may be incomplete."
                     )
 
         except Exception as e:
@@ -775,6 +762,58 @@ class SmartOpenStreamingStorage:
                     data_content = json.dumps(value, default=str).encode("utf-8")
                     yield f"{key}.json", BytesIO(data_content), {}
 
+    def _handle_attachment_error(
+        self,
+        all_attachments: list[AttachmentProcessingInfo],
+        failed_attachments: list[dict[str, Optional[str]]],
+    ) -> Generator[Tuple[str, datetime, int, Any, Iterable[bytes]], None, None]:
+        """Handle attachment errors and create a summary file."""
+
+        try:
+            # Calculate success rate with division by zero protection
+            total_attempted = len(all_attachments)
+            total_failed = len(failed_attachments)
+            success_rate = "N/A"
+
+            if total_attempted > 0:
+                success_rate = (
+                    f"{((total_attempted - total_failed) / total_attempted * 100):.1f}%"
+                )
+
+            error_summary = {
+                "failed_attachments": failed_attachments,
+                "total_failed": total_failed,
+                "total_attempted": total_attempted,
+                "success_rate": success_rate,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            error_summary_content = json.dumps(error_summary, indent=2).encode("utf-8")
+            yield (
+                "errors/attachment_failures_summary.json",
+                datetime.now(),
+                DEFAULT_FILE_MODE,
+                _ZIP_32_TYPE(),
+                iter([error_summary_content]),
+            )
+        except Exception as summary_error:
+            logger.error(f"Failed to create error summary: {summary_error}")
+            # Create a minimal error summary as fallback
+            fallback_summary = {
+                "error": "Failed to generate detailed error summary",
+                "total_failed": len(failed_attachments),
+                "total_attempted": len(all_attachments),
+                "timestamp": datetime.now().isoformat(),
+            }
+            fallback_content = json.dumps(fallback_summary, indent=2).encode("utf-8")
+            yield (
+                "errors/attachment_failures_summary.json",
+                datetime.now(),
+                DEFAULT_FILE_MODE,
+                _ZIP_32_TYPE(),
+                iter([fallback_content]),
+            )
+
     def _create_attachment_files(
         self,
         all_attachments: list[AttachmentProcessingInfo],
@@ -845,52 +884,9 @@ class SmartOpenStreamingStorage:
 
             # Create a summary error file with details about all failures if error details are enabled
             if buffer_config.include_error_details:
-                try:
-                    # Calculate success rate with division by zero protection
-                    total_attempted = len(all_attachments)
-                    total_failed = len(failed_attachments)
-                    success_rate = "N/A"
-
-                    if total_attempted > 0:
-                        success_rate = f"{((total_attempted - total_failed) / total_attempted * 100):.1f}%"
-
-                    error_summary = {
-                        "failed_attachments": failed_attachments,
-                        "total_failed": total_failed,
-                        "total_attempted": total_attempted,
-                        "success_rate": success_rate,
-                        "timestamp": datetime.now().isoformat(),
-                    }
-
-                    error_summary_content = json.dumps(error_summary, indent=2).encode(
-                        "utf-8"
-                    )
-                    yield (
-                        "errors/attachment_failures_summary.json",
-                        datetime.now(),
-                        DEFAULT_FILE_MODE,
-                        _ZIP_32_TYPE(),
-                        iter([error_summary_content]),
-                    )
-                except Exception as summary_error:
-                    logger.error(f"Failed to create error summary: {summary_error}")
-                    # Create a minimal error summary as fallback
-                    fallback_summary = {
-                        "error": "Failed to generate detailed error summary",
-                        "total_failed": len(failed_attachments),
-                        "total_attempted": len(all_attachments),
-                        "timestamp": datetime.now().isoformat(),
-                    }
-                    fallback_content = json.dumps(fallback_summary, indent=2).encode(
-                        "utf-8"
-                    )
-                    yield (
-                        "errors/attachment_failures_summary.json",
-                        datetime.now(),
-                        DEFAULT_FILE_MODE,
-                        _ZIP_32_TYPE(),
-                        iter([fallback_content]),
-                    )
+                yield from self._handle_attachment_error(
+                    all_attachments, failed_attachments
+                )
 
     def _transform_data_for_access_package(
         self, data: dict[str, Any], all_attachments: list[AttachmentProcessingInfo]
