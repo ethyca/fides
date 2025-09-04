@@ -215,6 +215,11 @@ const MonitorConfigTab = ({
             locations
               ?.map((location) => {
                 const isoEntry = isoStringToEntry(location);
+
+                /**
+                 * regionCode and regionRecord are the result of navigating enums that should be depricated.
+                 * if the backend decides to maintain a list of values for the frontend to use, a less convoluted method should be used
+                 */
                 const regionCode = Object.entries(PrivacyNoticeRegion).find(
                   ([, region]) => {
                     return region === location;
@@ -222,11 +227,14 @@ const MonitorConfigTab = ({
                 );
 
                 const regionRecord =
-                  regionCode && PRIVACY_NOTICE_REGION_RECORD[regionCode[1]];
+                  regionCode &&
+                  PRIVACY_NOTICE_REGION_RECORD[
+                    regionCode[1]
+                  ]; /* regionCode[1] refers to enum value that is the key for the region records enum (enum-ception) */
 
                 return isoEntry
                   ? formatIsoLocation({ isoEntry })
-                  : regionRecord?.[1];
+                  : regionRecord;
               })
               .join(", ") || "No regions selected"
           );
