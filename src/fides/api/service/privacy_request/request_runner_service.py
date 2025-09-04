@@ -261,14 +261,14 @@ def upload_access_results(
             "Error uploading subject access data for rule {} on policy {}: {}",
             rule.key,
             policy.key,
-            Pii(str(exc)),
+            str(exc),
         )
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
             dataset_name="Access package upload",
             collection_name=None,
-            message="Access package upload failed for privacy request.",
+            message=f"Access package upload failed for privacy request: {str(exc)}",
             action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error
