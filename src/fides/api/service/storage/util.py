@@ -10,7 +10,7 @@ from fides.api.util.storage_util import format_size
 
 # This is the max file size for downloading the content of an attachment.
 # This is an industry standard used by companies like Google and Microsoft.
-LARGE_FILE_THRESHOLD = 25 * 1024 * 1024  # 25 MB
+LARGE_FILE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB
 
 
 class AllowedFileType(EnumType):
@@ -172,6 +172,7 @@ def generate_attachment_url_from_storage_path(
     1. Using resolve_attachment_storage_path() to calculate the actual storage path
     2. Handling different directory structures (attachments vs data/dataset/collection)
     3. Generating proper relative paths from HTML template locations to attachment files
+    4. URL-encoding filenames for proper HTML link functionality
 
     Used by:
     - _process_attachment_list() in this file
@@ -191,17 +192,21 @@ def generate_attachment_url_from_storage_path(
         # Calculate the actual storage path
         storage_path = resolve_attachment_storage_path(unique_filename, base_path)
 
+        # URL-encode the filename for proper HTML link functionality
+        # Always encode when streaming is enabled to ensure consistency
+        encoded_filename = quote(unique_filename, safe="")
+
         # Generate relative path from HTML template directory to storage path
         if html_directory == "attachments" and base_path == "attachments":
             # From attachments/index.html to attachments/filename.pdf (same directory)
-            return unique_filename
+            return encoded_filename
         if html_directory.startswith("data/") and base_path.startswith("data/"):
             # From data/dataset/collection/index.html to data/dataset/collection/attachments/filename.pdf
             # Both are in data/ structure, so go to attachments subdirectory
-            return f"attachments/{unique_filename}"
+            return f"attachments/{encoded_filename}"
         # For other cases, calculate relative path
         # This is a simplified approach - in practice, you might need more sophisticated path resolution
-        return f"../{storage_path}"
+        return f"../{storage_path.replace(unique_filename, encoded_filename)}"
     return download_url
 
 

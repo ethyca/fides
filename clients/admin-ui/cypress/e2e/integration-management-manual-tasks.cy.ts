@@ -57,12 +57,13 @@ describe("Integration Management - Manual Task Configuration", () => {
     it("should display manual tasks with correct data", () => {
       // Verify first task data is displayed correctly
       cy.getAntTableRow("task1").within(() => {
-        cy.get("td").eq(0).should("contain", "Customer Data Export");
-        cy.get("td")
-          .eq(1)
-          .should("contain", "Export customer data for GDPR requests");
-        cy.get("td").eq(2).should("contain", "Attachment");
-        cy.get("td").eq(3).should("contain", "Access");
+        cy.getAntCellWithinRow(0).should("contain", "Customer Data Export");
+        cy.getAntCellWithinRow(1).should(
+          "contain",
+          "Export customer data for GDPR requests",
+        );
+        cy.getAntCellWithinRow(2).should("contain", "Attachment");
+        cy.getAntCellWithinRow(3).should("contain", "Access");
       });
     });
 

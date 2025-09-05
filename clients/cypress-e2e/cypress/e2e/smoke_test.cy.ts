@@ -102,10 +102,7 @@ describe("Smoke test", () => {
       // Postgres
       cy.getByTestId("Data inventory-nav-group").click();
       cy.getByTestId("System inventory-nav-link").click();
-      cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
-
+      cy.getByTestId("system-link-cookie_house_postgresql_database").click();
       cy.get(`.ant-tabs-tab-btn`).filter(`:contains("Integrations")`).click();
       cy.getByTestId("test-connection-button").click();
       cy.getByTestId("toast-success-msg").should("be.visible");
@@ -115,9 +112,7 @@ describe("Smoke test", () => {
       // Mongo
       cy.getByTestId("Data inventory-nav-group").click();
       cy.getByTestId("System inventory-nav-link").click();
-      cy.getByTestId("system-cookie_house_customer_database").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-cookie_house_customer_database").click();
       cy.get(`.ant-tabs-tab-btn`).filter(`:contains("Integrations")`).click();
       cy.getByTestId("test-connection-button").click();
       cy.getByTestId("toast-success-msg").should("be.visible");
