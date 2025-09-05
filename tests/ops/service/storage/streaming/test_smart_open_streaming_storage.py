@@ -1,5 +1,3 @@
-"""Tests for SmartOpenStreamingStorage class."""
-
 import json
 import time
 from io import BytesIO
@@ -32,6 +30,28 @@ class TestSmartOpenStreamingStorage:
         storage = SmartOpenStreamingStorage(mock_smart_open_client, chunk_size=4096)
         assert storage.chunk_size == 4096
 
+    def test_parse_storage_url(self, mock_smart_open_client):
+        """Test parsing storage URL."""
+        storage = SmartOpenStreamingStorage(mock_smart_open_client)
+        assert storage._parse_storage_url("s3://test-bucket/test-key") == (
+            "test-bucket",
+            "test-key",
+        )
+        assert storage._parse_storage_url(
+            "https://test-bucket.s3.amazonaws.com/test-key"
+        ) == ("test-bucket", "test-key")
+        assert storage._parse_storage_url(
+            "http://test-bucket.s3.amazonaws.com/test-key"
+        ) == ("test-bucket", "test-key")
+        assert storage._parse_storage_url("https://test-bucket.com/test-key") == (
+            "test-bucket",
+            "test-key",
+        )
+        assert storage._parse_storage_url("http://test-bucket.com/test-key") == (
+            "test-bucket",
+            "test-key",
+        )
+
     def test_convert_to_stream_zip_format(self, mock_smart_open_client):
         """Test conversion to stream_zip format."""
         storage = SmartOpenStreamingStorage(mock_smart_open_client)
@@ -50,7 +70,11 @@ class TestSmartOpenStreamingStorage:
         assert result[0][3] is not None  # _ZIP_32_TYPE instance
         assert list(result[0][4]) == [b'{"test": "data"}']
 
-    def test_collect_attachments(self, mock_smart_open_client):
+
+class TestSmartOpenStreamingStorageAttachments:
+    """Test SmartOpenStreamingStorage attachments related methods."""
+
+    def test_collect_attachments_and_validate(self, mock_smart_open_client):
         """Test collecting attachments from data."""
         storage = SmartOpenStreamingStorage(mock_smart_open_client)
 

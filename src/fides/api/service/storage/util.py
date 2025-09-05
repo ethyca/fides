@@ -317,9 +317,9 @@ def is_attachment_field(field_value: Any) -> bool:
 
 def process_attachments_contextually(
     data: dict[str, Any],
-    used_filenames_data: set[str],
-    used_filenames_attachments: set[str],
-    processed_attachments: dict[tuple[str, str], str],
+    used_filenames_data: set[str] = set(),
+    used_filenames_attachments: set[str] = set(),
+    processed_attachments: dict[tuple[str, str], str] = {},
     enable_streaming: bool = False,
     callback: Optional[Callable] = None,
 ) -> list[dict[str, Any]]:
@@ -544,29 +544,6 @@ def _process_attachment_list(
     return processed_attachments_list
 
 
-def extract_storage_key_from_attachment(attachment: dict[str, Any]) -> str:
-    """
-    Extract storage key from attachment data with fallback logic.
-
-    This function provides a consistent way to extract storage keys from
-    attachment dictionaries across different components.
-
-    Args:
-        attachment: The attachment dictionary
-
-    Returns:
-        The storage key (URL or filename) for the attachment
-    """
-    if original_url := attachment.get("original_download_url"):
-        return original_url
-
-    if download_url := attachment.get("download_url"):
-        return download_url
-
-    file_name = attachment.get("file_name")
-    return file_name if file_name is not None else ""
-
-
 def resolve_base_path_from_context(
     attachment: dict[str, Any], default_base_path: str = "attachments"
 ) -> str:
@@ -589,17 +566,19 @@ def resolve_base_path_from_context(
     context = attachment["_context"]
     context_type = context.get("type")
 
-    if context_type == "direct":
-        return f"data/{context['dataset']}/{context['collection']}/attachments"
-    if context_type == "nested":
-        return f"data/{context['dataset']}/{context['collection']}/attachments"
-    if context_type == "top_level":
-        return "attachments"
-    # Handle old context format
+    path_mapping = {
+        "direct": f"data/{context['dataset']}/{context['collection']}/attachments",
+        "nested": f"data/{context['dataset']}/{context['collection']}/attachments",
+        "top_level": "attachments",
+    }
+
+    if context_type in path_mapping:
+        return path_mapping[context_type]
+
     if context.get("key") and context.get("item_id"):
         return f"{context['key']}/{context['item_id']}/attachments"
-    # Fallback for unknown context types
-    return "unknown/unknown/attachments"
+
+    return default_base_path
 
 
 def resolve_directory_from_context(
@@ -633,38 +612,3 @@ def resolve_directory_from_context(
         return f"{context['key']}/{context['item_id']}"
 
     return default_directory
-
-
-def convert_processed_attachments_to_attachment_processing_info(
-    processed_attachments_list: list[dict[str, Any]], validate_attachment_func: Callable
-) -> list[Any]:
-    """
-    Convert processed attachments list to AttachmentProcessingInfo objects.
-
-    This is a shared utility function to avoid duplication between different
-    attachment collection methods.
-
-    Args:
-        processed_attachments_list: List of processed attachment dictionaries
-        validate_attachment_func: Function to validate individual attachments
-                                 Signature: validate_attachment_func(attachment_with_context) -> AttachmentProcessingInfo | None
-
-    Returns:
-        List of validated AttachmentProcessingInfo objects
-    """
-    validated_attachments = []
-
-    for processed_attachment in processed_attachments_list:
-        attachment_data = processed_attachment["attachment"]
-
-        # Add context information to the attachment data
-        attachment_with_context = attachment_data.copy()
-        attachment_with_context["_context"] = processed_attachment["context"]
-
-        # Validate and convert to AttachmentProcessingInfo
-        if validate_attachment_func is not None:
-            validated = validate_attachment_func(attachment_with_context)
-            if validated:
-                validated_attachments.append(validated)
-
-    return validated_attachments
