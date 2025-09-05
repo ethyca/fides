@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -51,6 +51,8 @@ class SecondPartyRequestFormat(BaseModel):
     identity: Identity
     policy_action: Optional[ActionType] = None
     model_config = ConfigDict(use_enum_values=True)
+    privacy_request: Dict[str, Any]
+    timestamp: datetime
 
 
 def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
