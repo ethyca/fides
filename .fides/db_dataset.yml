@@ -2968,3 +2968,19 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: web_monitor_group_job
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: group_id
+        data_categories: [system.operations]
+      - name: is_test_run
+        data_categories: [system.operations]
+      - name: raw_experiences_data
+        data_categories: [system.operations]
+      - name: processed_experiences_data
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
