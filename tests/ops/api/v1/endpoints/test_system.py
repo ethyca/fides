@@ -30,7 +30,9 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
+    SYSTEM_DELETE,
     SYSTEM_MANAGER_UPDATE,
+    SYSTEM_READ,
     SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
@@ -1103,3 +1105,39 @@ class TestInstantiateSystemConnectionFromTemplate:
         dataset_config.delete(db)
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
+
+
+class TestBulkDeleteSystems:
+    @pytest.fixture(scope="function")
+    def bulk_url(self) -> str:
+        return V1_URL_PREFIX + "/system/bulk-delete"
+
+    def test_bulk_delete_not_authenticated(
+        self, api_client: TestClient, system, bulk_url
+    ) -> None:
+        resp = api_client.post(bulk_url, headers={}, json=[system.fides_key])
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_bulk_delete_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, system, bulk_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_READ])
+        resp = api_client.post(bulk_url, headers=auth_header, json=[system.fides_key])
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_bulk_delete_systems(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        bulk_url,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.post(bulk_url, headers=auth_header, json=[system.fides_key])
+
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json()["deleted"][0]["fides_key"] == system.fides_key
+
+        # System should be removed from the database
+        assert db.query(System).filter_by(id=system.id).first() is None

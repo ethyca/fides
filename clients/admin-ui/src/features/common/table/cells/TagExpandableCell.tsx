@@ -1,19 +1,29 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
+  AntFlexProps as FlexProps,
   AntTag as Tag,
   AntTagProps as TagProps,
+  AntText as Text,
 } from "fidesui";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { COLLAPSE_BUTTON_TEXT } from "./constants";
+import { COLLAPSE_BUTTON_TEXT, TAG_MAX_WIDTH } from "./constants";
 import { ColumnState } from "./types";
 
-type TagExpandableCellValues = { label: string | ReactNode; key: string }[];
-
-interface TagExpandableCellProps extends TagProps {
+type TagExpandableCellValues = {
+  label: string | ReactNode;
+  key: string;
+  /**
+   * Per-value props to pass to the Tag component.
+   */
+  tagProps?: TagProps;
+}[];
+export interface TagExpandableCellProps extends Omit<FlexProps, "children"> {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
+  onTagClose?: (key: string) => void;
+  tagProps?: TagProps;
 }
 
 /**
@@ -21,12 +31,14 @@ interface TagExpandableCellProps extends TagProps {
  * Click the cell to collapse the list.
  * @param values - The values to display in the cell.
  * @param columnState - The state of the column.
- * @param tagProps - The props to pass to the Tag component.
+ * @param tagProps - The props to pass to the Tag component.  If a value has a `tagProps` property, it will override the tagProps set at the component level.
  */
 export const TagExpandableCell = ({
   values,
   columnState,
-  ...tagProps
+  tagProps,
+  onTagClose,
+  ...props
 }: TagExpandableCellProps) => {
   const { isExpanded, isWrapped, version } = columnState || {};
   const displayThreshold = 2; // Number of badges to display when collapsed
@@ -79,19 +91,31 @@ export const TagExpandableCell = ({
     }
     return (
       <Flex
-        align="center"
+        align={isCollapsed ? "center" : "start"}
         wrap={isWrappedState ? "wrap" : "nowrap"}
+        vertical={!isCollapsed}
         gap="small"
         data-testid="tag-expandable-cell"
+        {...props}
       >
         {displayValues.map((value) => (
           <Tag
             color="white"
             key={value.key}
             data-testid={value.key}
+            onClose={onTagClose ? () => onTagClose(value.key) : undefined}
             {...tagProps}
+            {...value.tagProps}
           >
-            {value.label}
+            <Text
+              ellipsis={isCollapsed ? { tooltip: true } : false}
+              style={{
+                color: "inherit",
+                maxWidth: isCollapsed ? TAG_MAX_WIDTH : undefined,
+              }}
+            >
+              {value.label}
+            </Text>
           </Tag>
         ))}
         {values && values.length > displayThreshold && (
@@ -118,8 +142,10 @@ export const TagExpandableCell = ({
     displayValues,
     isCollapsed,
     isWrappedState,
+    props,
     values,
-    handleToggle,
     tagProps,
+    onTagClose,
+    handleToggle,
   ]);
 };

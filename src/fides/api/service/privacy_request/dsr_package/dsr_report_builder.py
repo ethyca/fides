@@ -6,6 +6,7 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import quote
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
@@ -302,17 +303,24 @@ class DSRReportBuilder:
         Returns:
             The relative URL from attachments/index.html to the attachment file
         """
+        # URL-encode the filename for proper HTML link functionality when streaming is enabled
+        if self.enable_streaming:
+            # Always encode the filename when streaming is enabled to ensure consistency
+            encoded_filename = quote(unique_filename, safe="")
+        else:
+            encoded_filename = unique_filename
+
         if context.get("type") == "top_level":
             # Top-level attachments are in the same directory as the index
-            return unique_filename
+            return encoded_filename
         if context.get("type") in ["direct", "nested"]:
             # Dataset attachments are in data/dataset/collection/attachments/
             # From attachments/index.html, we need to go to ../data/dataset/collection/attachments/filename
             dataset = context.get("dataset", "unknown")
             collection = context.get("collection", "unknown")
-            return f"../data/{dataset}/{collection}/attachments/{unique_filename}"
-        # Fallback for other cases - return just the filename
-        return unique_filename
+            return f"../data/{dataset}/{collection}/attachments/{encoded_filename}"
+        # Fallback for other cases - return just the filename (encoded if streaming)
+        return encoded_filename
 
     def _create_attachment_info_with_corrected_url(
         self, attachment_info: dict[str, str], correct_url: str

@@ -25,6 +25,14 @@ export const createMockTableState = <TSortKey extends string = string>(
       pageSizeOptions: [10, 25, 50],
       showSizeChanger: true,
     },
+    state: {
+      pageIndex: 1,
+      pageSize: 25,
+      sortKey: undefined,
+      sortOrder: undefined,
+      columnFilters: {},
+      searchQuery: undefined,
+    },
     ...overrides,
   };
 };
