@@ -1,0 +1,19 @@
+dataset:
+  - fides_key: saas_async_polling_config
+    name: saas_async_polling
+    description: A sample dataset
+    collections:
+      - name: user
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: system_id
+            data_categories: [system]
+          - name: name
+            data_categories: [user.name]
+          - name: email
+            data_categories: [user.contact.email]
+          - name: state
+            data_categories: [user.contact.address.state]
