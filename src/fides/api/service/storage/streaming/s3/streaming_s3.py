@@ -54,7 +54,8 @@ def upload_to_s3_streaming(
         return response
 
     try:
-        storage_client = SmartOpenStorageClient("s3", formatted_secrets)
+        logger.debug("Creating SmartOpenStorageClient with formatted secrets")
+        storage_client = SmartOpenStorageClient("s3", auth_method, formatted_secrets)
 
         # Create upload config for the streaming interface
         upload_config = StorageUploadConfig(
@@ -91,6 +92,10 @@ def _process_storage_secrets_input(
 ) -> dict[str, Any]:
     """Process input and convert to string-keyed dictionary."""
     final_secrets: dict[str, Any] = {}
+
+    logger.debug(
+        f"Processing storage secrets input of type: {type(storage_secrets).__name__}"
+    )
 
     if isinstance(storage_secrets, StorageSecretsS3):
         # Convert StorageSecretsS3 model directly to string keys
@@ -133,18 +138,12 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
     else:
         # AUTOMATIC authentication - check if region is provided
         has_region = "region_name" in final_secrets and final_secrets["region_name"]
+
         if not has_region:
             raise ValueError(
                 "Missing required region_name for AUTOMATIC authentication. "
                 "Storage configuration must include a valid AWS region."
             )
-
-
-def _set_default_region(final_secrets: dict[str, Any]) -> None:
-    """Set default region if missing."""
-    if "region_name" not in final_secrets or not final_secrets["region_name"]:
-        logger.debug("Setting default region to 'us-east-1'")
-        final_secrets["region_name"] = "us-east-1"
 
 
 def format_secrets(
@@ -156,8 +155,8 @@ def format_secrets(
     This function handles multiple credential formats and processes them through several stages:
     1. Input processing: Accepts either StorageSecretsS3 models (from API) or raw dicts (from database)
     2. Key normalization: Converts all keys to string format for consistency
-    3. Validation: Ensures required AWS credentials are present based on auth method
-    4. Default setting: Sets default region if missing (after validation)
+    3. Default setting: Sets default region if missing (before validation for better automatic auth support)
+    4. Validation: Ensures required AWS credentials are present based on auth method
     5. Return: Returns string-keyed dict ready for S3StorageClient
 
     Input formats:
@@ -179,18 +178,7 @@ def format_secrets(
     Raises:
         ValueError: If required AWS credentials are missing for the chosen auth method
     """
-    logger.debug("format_secrets called with type: {}", type(storage_secrets).__name__)
-
-    # Stage 1: Process input and create final format directly
     final_secrets = _process_storage_secrets_input(storage_secrets)
-
-    # Stage 2: Validate required credentials BEFORE setting defaults
     _validate_aws_credentials(final_secrets)
 
-    # Stage 3: Set default region if missing (after validation)
-    _set_default_region(final_secrets)
-
-    logger.debug(
-        "format_secrets completed successfully with {} keys", len(final_secrets)
-    )
     return final_secrets

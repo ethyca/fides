@@ -66,6 +66,9 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
+)
 from fides.api.models.property import (
     MessagingTemplateToProperty,
     PrivacyExperienceConfigProperty,
@@ -74,6 +77,7 @@ from fides.api.models.property import (
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
+from fides.api.models.system_group import SystemGroup, SystemGroupMember
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
 from fides.api.models.taxonomy import (

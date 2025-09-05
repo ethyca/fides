@@ -12,9 +12,6 @@ class MissingTaxonomyField(ValueError):
     pass
 
 
-# FIXME: this code is basically the same as the one in filter_datamap_query
-# in the fidesplus repo, but slightly more generic. Ideally we want to replace that with using this
-# so we don't duplicate this logic in two different places
 def apply_filters_to_query(
     query: Select,
     filter_params: FilterParams,

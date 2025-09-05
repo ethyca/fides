@@ -18,14 +18,14 @@ import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { LOGIN_ROUTE, STORAGE_ROOT_KEY } from "~/constants";
-import { logout, selectUser } from "~/features/auth/auth.slice";
+import { selectUser } from "~/features/auth/auth.slice";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
+import { clearAuthAndLogout } from "./logout-helpers";
 import { useForceResetUserPasswordMutation } from "./user-management.slice";
 
 const ValidationSchema = Yup.object().shape({
@@ -63,13 +63,7 @@ const useNewPasswordModal = (id: string) => {
 
       // Only logout if admin reset their own password
       if (currentUser?.id === id) {
-        try {
-          localStorage.removeItem(STORAGE_ROOT_KEY);
-        } catch (e) {
-          // no-op
-        }
-        dispatch(logout());
-        router.push(LOGIN_ROUTE);
+        clearAuthAndLogout(dispatch as any, router);
       }
     }
   };

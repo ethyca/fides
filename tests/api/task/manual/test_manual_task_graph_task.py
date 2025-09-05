@@ -319,20 +319,16 @@ class TestManualTaskDataAggregation:
         # Restore the original field_key
         field.field_key = original_field_key
 
-    @patch("fides.api.task.manual.manual_task_graph_task.format_size", autospec=True)
     def test_process_attachment_field_success(
         self,
-        mock_format_size,
         manual_task_graph_task,
         manual_task_submission_attachment,
         attachment_for_access_package,
     ):
         """Test successful attachment field processing"""
-        mock_format_size.return_value = "1.2 KB"
-
         # Mock the attachment retrieval
         with patch.object(
-            attachment_for_access_package, "retrieve_attachment"
+            attachment_for_access_package, "retrieve_attachment", autospec=True
         ) as mock_retrieve:
             mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
 
@@ -341,9 +337,10 @@ class TestManualTaskDataAggregation:
             )
 
             assert result is not None
-            assert "test_document.pdf" in result
-            assert result["test_document.pdf"]["url"] == "https://example.com/file.pdf"
-            assert result["test_document.pdf"]["size"] == "1.2 KB"
+            assert len(result) == 1
+            assert result[0]["file_name"] == "test_document.pdf"
+            assert result[0]["download_url"] == "https://example.com/file.pdf"
+            assert result[0]["file_size"] == 1234
 
     def test_process_attachment_field_no_attachments(
         self, manual_task_graph_task, manual_task_submission_attachment
@@ -395,17 +392,13 @@ class TestManualTaskDataAggregation:
             mock_logger.warning.assert_called_once()
             assert result is None
 
-    @patch("fides.api.task.manual.manual_task_graph_task.format_size", autospec=True)
     def test_process_attachment_field_multiple_attachments(
         self,
-        mock_format_size,
         manual_task_graph_task,
         manual_task_submission_attachment,
         multiple_attachments_for_access,
     ):
         """Test attachment field processing with multiple attachments"""
-        mock_format_size.return_value = "2.5 KB"
-
         # Mock the attachment retrieval for multiple attachments
         with (
             patch.object(
@@ -424,12 +417,20 @@ class TestManualTaskDataAggregation:
             )
 
             assert result is not None
-            assert "document1.pdf" in result
-            assert "document2.pdf" in result
-            assert result["document1.pdf"]["url"] == "https://example.com/doc1.pdf"
-            assert result["document2.pdf"]["url"] == "https://example.com/doc2.pdf"
-            assert result["document1.pdf"]["size"] == "2.5 KB"
-            assert result["document2.pdf"]["size"] == "2.5 KB"
+            assert len(result) == 2
+            # Check that both attachments are in the result
+            file_names = [attachment["file_name"] for attachment in result]
+            assert "document1.pdf" in file_names
+            assert "document2.pdf" in file_names
+
+            # Find each attachment and verify its details
+            doc1 = next(att for att in result if att["file_name"] == "document1.pdf")
+            doc2 = next(att for att in result if att["file_name"] == "document2.pdf")
+
+            assert doc1["download_url"] == "https://example.com/doc1.pdf"
+            assert doc1["file_size"] == 2560
+            assert doc2["download_url"] == "https://example.com/doc2.pdf"
+            assert doc2["file_size"] == 1024
 
     def test_aggregate_submission_data_with_attachment_field(
         self,
@@ -451,8 +452,9 @@ class TestManualTaskDataAggregation:
 
             # Should process attachment field
             assert "user_email" in result
-            assert isinstance(result["user_email"], dict)
-            assert "test_document.pdf" in result["user_email"]
+            assert isinstance(result["user_email"], list)
+            assert len(result["user_email"]) == 1
+            assert result["user_email"][0]["file_name"] == "test_document.pdf"
 
     def test_aggregate_submission_data_mixed_field_types(
         self,
@@ -478,8 +480,9 @@ class TestManualTaskDataAggregation:
             # Should have both text and attachment data
             assert "user_email" in result
             # The last instance processed will overwrite the first one with the same field_key
-            assert isinstance(result["user_email"], dict)
-            assert "test_document.pdf" in result["user_email"]
+            assert isinstance(result["user_email"], list)
+            assert len(result["user_email"]) == 1
+            assert result["user_email"][0]["file_name"] == "test_document.pdf"
 
     def test_aggregate_submission_data_attachment_field_no_attachments(
         self, manual_task_graph_task, manual_task_submission_attachment

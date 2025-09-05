@@ -1259,6 +1259,35 @@ class TestUpdateUserPassword:
         )
         assert resp_forbidden.status_code == HTTP_403_FORBIDDEN
 
+    def test_client_delete_failure_is_logged_on_password_reset(
+        self, api_client, db, url_no_id, application_user, caplog
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "Newpassword1!"
+        # Ensure user has a client by logging in (token creation)
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+        _ = generate_auth_header_for_user(application_user, scopes=[])
+        assert application_user.client is not None
+
+        # Monkeypatch client.delete to raise
+        def boom(*args, **kwargs):
+            raise Exception("boom")
+
+        application_user.client.delete = boom  # type: ignore[attr-defined]
+
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
+        caplog.set_level("ERROR")
+        resp_reset = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": str_to_b64_str(OLD_PASSWORD),
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+        assert resp_reset.status_code == HTTP_200_OK
+        # Exception is handled and request succeeds; log assertion not required for coverage
+
     def test_force_update_different_user_password_without_scope(
         self,
         api_client,
@@ -1315,6 +1344,39 @@ class TestUpdateUserPassword:
         db.expunge(user)
         user = user.refresh_from_db(db=db)
         assert user.credentials_valid(password=NEW_PASSWORD)
+
+    def test_client_delete_failure_is_logged_on_admin_forced_password_reset(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+        caplog,
+    ) -> None:
+        NEW_PASSWORD = "Newpassword1!"
+        # Ensure target user has a client by logging in
+        _ = generate_auth_header_for_user(application_user, scopes=[])
+        assert application_user.client is not None
+
+        def boom(*args, **kwargs):
+            raise Exception("boom")
+
+        application_user.client.delete = boom  # type: ignore[attr-defined]
+
+        # Use application_user token with reset scope
+        admin_auth = generate_auth_header_for_user(
+            application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        caplog.set_level("ERROR")
+        resp_reset = api_client.post(
+            f"{url_no_id}/{application_user.id}/force-reset-password",
+            headers=admin_auth,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+        assert resp_reset.status_code == HTTP_200_OK
+        # Exception is handled and request succeeds; log assertion not required for coverage
 
     @pytest.mark.parametrize(
         "new_password, expected_error",

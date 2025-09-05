@@ -93,6 +93,7 @@ const ConfigureWebsiteMonitorForm = ({
     connection_config_key: integrationId,
     datasource_params: (monitor?.datasource_params as WebsiteMonitorParams) ?? {
       locations: [],
+      exclude_domains: [],
     },
   };
 
@@ -178,16 +179,17 @@ const ConfigureWebsiteMonitorForm = ({
           placeholder="Enter domains to exclude"
           id="exclude_domains"
           label="Exclude domains"
+          mode="tags"
           options={[]}
+          suffixIcon={null}
           open={false}
-          disabled
           error={getIn(errors, "datasource_params.exclude_domains")}
           touched={getIn(touched, "datasource_params.exclude_domains")}
           onChange={(value) =>
             formik.setFieldValue("datasource_params.exclude_domains", value)
           }
           onBlur={formik.handleBlur}
-          value={values.execution_frequency || []}
+          value={values.datasource_params?.exclude_domains || []}
         />
         <FormikTextInput
           name="url"
@@ -211,7 +213,7 @@ const ConfigureWebsiteMonitorForm = ({
           )}
           required
           tooltip={REGIONS_TOOLTIP_COPY}
-          mode="tags"
+          mode="multiple"
           error={getIn(errors, "datasource_params.locations")}
           touched={getIn(touched, "datasource_params.locations")}
           onChange={(value) =>
@@ -259,16 +261,17 @@ const ConfigureWebsiteMonitorForm = ({
           onBlur={formik.handleBlur}
           value={dayjs(values.execution_start_date)}
         />
-        <Flex className="mt-2 justify-between">
+        <Flex className="mt-2" justify="stretch">
           <Button
             onClick={() => {
               resetForm();
               onClose();
             }}
+            block
           >
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" data-testid="save-btn">
+          <Button type="primary" htmlType="submit" data-testid="save-btn" block>
             Save
           </Button>
         </Flex>
