@@ -60,15 +60,13 @@ export const useInProgressMonitorTasksTable = ({
     antTableConfig,
   );
 
-  const tableProps = antTable.getTableProps();
-
   return {
     // Table state and data
     searchQuery,
     updateSearch,
 
     // Ant Design table integration
-    tableProps,
+    tableProps: antTable.tableProps,
 
     // Loading states
     isLoading,
