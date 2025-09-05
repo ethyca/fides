@@ -202,6 +202,19 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             Asset.asset_type == "Cookie",
             or_(*[text(query) for query in or_queries]),
         )
+        # log the cookies found for this notice for debugging
+        for asset in query.all():
+            print(f"Filtered cookie found for notice {self.name}: {asset.name} with data uses {asset.data_uses}")
+
+        query_a = db.query(Asset).filter(
+            Asset.asset_type == "Cookie",
+            or_(*[text(query) for query in or_queries]),
+            )
+
+        # log results of query_a for debugging
+        results = query_a.all()
+        for result in results:
+            print(f"Cookie found for notice {self.name}: {result.name} with data uses {result.data_uses}")
 
         return query.all()
 
