@@ -2,7 +2,6 @@ import { ComponentChildren } from "preact";
 
 import { Cookies } from "../../lib/consent-types";
 import DataUseToggle from "../DataUseToggle";
-import Divider from "../Divider";
 
 export type CookieRecord = {
   title: string;
@@ -37,48 +36,71 @@ const CookieList = ({
       </button>
       {cookiesByNotice.length >= 1 ? (
         <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-          <strong>{cookiesByNotice[0].title} Cookies</strong>
+          <strong>{cookiesByNotice[0].title} Vendors</strong>
         </div>
       ) : null}
       <div className="fides-modal-notices" style={{ marginTop: "12px" }}>
-        {cookiesByNotice.map((group, groupIdx) => {
-          const isLastGroup = groupIdx === cookiesByNotice.length - 1;
-          const groupCookies = group.cookies || [];
-          if (groupCookies.length === 0) {
-            return null;
-          }
-          return (
-            <div key={group.noticeKey}>
-              {groupCookies.map((c, i) => {
-                const isLastCookieInGroup = i === groupCookies.length - 1;
-                const showDivider = !(isLastCookieInGroup && isLastGroup);
-                return (
-                  <div key={`${group.noticeKey}-${c.name}-${i}`}>
-                    <DataUseToggle
-                      noticeKey={`${group.noticeKey}-${c.name}-${i}`}
-                      title={c.name}
-                      checked={false}
-                      onToggle={() => {}}
-                      includeToggle={false}
-                    >
-                      <div className="fides-cookie-details">
-                        <div style={{ marginBottom: "8px" }}>
-                          <strong>Duration:</strong> A few hours
-                        </div>
-                        {c.description ? (
-                          <div>
-                            <strong>Description:</strong> {c.description}
-                          </div>
+        {(() => {
+          // Group cookies across notices by system (vendor) name
+          const vendorToCookies = new Map<string, Cookies[]>();
+          cookiesByNotice.forEach((group) => {
+            (group.cookies || []).forEach((cookie) => {
+              const vendorName = cookie.system_name || "Other";
+              const arr = vendorToCookies.get(vendorName) || [];
+              arr.push(cookie);
+              vendorToCookies.set(vendorName, arr);
+            });
+          });
+
+          const vendorGroups = Array.from(vendorToCookies.entries());
+
+          return vendorGroups.map(([vendorName, vendorCookies]) => {
+            const hasRetentionInfo = vendorCookies.some(
+              (ck) => ck.duration != null && ck.duration !== "",
+            );
+            return (
+              <div key={`vendor-${vendorName}`}>
+                <DataUseToggle
+                  noticeKey={`vendor-${vendorName}`}
+                  title={vendorName}
+                  checked={false}
+                  onToggle={() => {}}
+                  includeToggle={false}
+                >
+                  <table className="fides-vendor-details-table">
+                    <thead>
+                      <tr>
+                        <th width={hasRetentionInfo ? "80%" : undefined}>Cookies</th>
+                        {hasRetentionInfo ? (
+                          <th width="20%" style={{ textAlign: "right" }}>
+                            Retention
+                          </th>
                         ) : null}
-                      </div>
-                    </DataUseToggle>
-                    {showDivider ? <Divider /> : null}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendorCookies.map((ck) => (
+                        <tr key={`${vendorName}-${ck.name}`}>
+                          <td>
+                            <div>Name: {ck.name}</div>
+                            {ck.description ? (
+                              <div>Description: {ck.description}</div>
+                            ) : null}
+                          </td>
+                          {hasRetentionInfo ? (
+                            <td style={{ textAlign: "right" }}>
+                              {ck.duration ? ck.duration : "-"}
+                            </td>
+                          ) : null}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </DataUseToggle>
+              </div>
+            );
+          });
+        })()}
       </div>
     </div>
   );

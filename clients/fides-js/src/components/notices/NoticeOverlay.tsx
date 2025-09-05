@@ -385,6 +385,7 @@ const NoticeOverlay = () => {
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
+      hideModalIntro={isCookieListView}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
@@ -468,7 +469,7 @@ const NoticeOverlay = () => {
                               setIsCookieListView(true);
                             }}
                           >
-                            View Cookie List
+                            Vendors
                           </button>
                         </div>
                       ) : null}

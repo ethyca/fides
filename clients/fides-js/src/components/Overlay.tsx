@@ -47,6 +47,7 @@ interface Props {
   renderModalFooter?: (props: RenderModalFooterProps) => VNode | null;
   onVendorPageClick?: () => void;
   isUiBlocking: boolean;
+  hideModalIntro?: boolean;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -61,7 +62,8 @@ const Overlay: FunctionComponent<Props> = ({
   renderModalFooter,
   onVendorPageClick,
   isUiBlocking,
-}) => {
+  hideModalIntro,
+}: Props) => {
   const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
@@ -269,6 +271,7 @@ const Overlay: FunctionComponent<Props> = ({
           attributes={modalDialogAttributes}
           dismissable={experience.experience_config.dismissable}
           onVendorPageClick={onVendorPageClick}
+          hideIntro={hideModalIntro}
           renderModalFooter={() =>
             renderModalFooter
               ? renderModalFooter({

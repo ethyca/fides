@@ -665,6 +665,10 @@ export type Cookies = {
   path?: string;
   domain?: string;
   /**
+   * Optional name of the vendor/system that sets this cookie. Used for grouping in UI.
+   */
+  system_name?: string;
+  /**
    * The storage duration for this cookie, if available (e.g., "A few seconds", "4 hours").
    */
   duration?: string;

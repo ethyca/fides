@@ -12,6 +12,7 @@ export interface ConsentContentProps {
   className?: string;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
+  hideIntro?: boolean;
 }
 
 const ConsentContent = ({
@@ -20,6 +21,7 @@ const ConsentContent = ({
   renderModalFooter,
   children,
   onVendorPageClick,
+  hideIntro,
 }: ConsentContentProps) => {
   const { i18n } = useI18n();
   const title = i18n.t("exp.title");
@@ -36,25 +38,29 @@ const ConsentContent = ({
         className={className}
       >
         <div className="fides-modal-body">
-          <div
-            data-testid="fides-modal-title"
-            {...titleProps} // adds role, aria-level, id
-            className="fides-modal-title"
-          >
-            {title}
-          </div>
-          <p
-            data-testid="fides-modal-description"
-            className="fides-modal-description"
-          >
-            <ExperienceDescription
-              onVendorPageClick={onVendorPageClick}
-              description={description}
-              allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
-            />
-          </p>
-          {showGpcInfo && (
-            <GpcInfo title={gpcTitle} description={gpcDescription} />
+          {!hideIntro && (
+            <Fragment>
+              <div
+                data-testid="fides-modal-title"
+                {...titleProps} // adds role, aria-level, id
+                className="fides-modal-title"
+              >
+                {title}
+              </div>
+              <p
+                data-testid="fides-modal-description"
+                className="fides-modal-description"
+              >
+                <ExperienceDescription
+                  onVendorPageClick={onVendorPageClick}
+                  description={description}
+                  allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
+                />
+              </p>
+              {showGpcInfo && (
+                <GpcInfo title={gpcTitle} description={gpcDescription} />
+              )}
+            </Fragment>
           )}
           {children}
         </div>
