@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
 
+### Fixed
+- Fix search within language picker in admin-ui [#6550](https://github.com/ethyca/fides/pull/6550)
+
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
 ### Fixed
