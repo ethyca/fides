@@ -7,15 +7,18 @@ import {
   AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntFlex as Flex,
-  AntSelect as Select,
   Icons,
   useToast,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
-import { usePagination } from "~/features/common/hooks/usePagination";
 import PageHeader from "~/features/common/PageHeader";
+import { InfinitePaginator } from "~/features/common/pagination/InfinitePaginator";
+import {
+  PaginationProvider,
+  usePaginationContext,
+} from "~/features/common/pagination/PaginationProvider";
 import {
   FidesTableV2,
   TableActionBar,
@@ -29,7 +32,7 @@ import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetail
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
-const ConsentReportingPage = () => {
+const ConsentReport = () => {
   const today = useMemo(() => dayjs(), []);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -41,14 +44,7 @@ const ConsentReportingPage = () => {
     useState(false);
   const [currentTcfPreferences, setCurrentTcfPreferences] = useState();
 
-  const {
-    pageIndex,
-    pageSize,
-    updatePageIndex,
-    updatePageSize,
-    nextPage,
-    previousPage,
-  } = usePagination();
+  const { pageIndex, pageSize, updatePageIndex } = usePaginationContext();
 
   const toast = useToast();
 
@@ -112,93 +108,67 @@ const ConsentReportingPage = () => {
               <TableSkeletonLoader rowHeight={26} numRows={10} />
             </div>
           ) : (
-            <>
-              <div>
-                <TableActionBar>
-                  <DateRangePicker
-                    placeholder={["From", "To"]}
-                    maxDate={today}
-                    data-testid="input-date-range"
-                    onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
-                      setStartDate(dates && dates[0]);
-                      setEndDate(dates && dates[1]);
+            <div>
+              <TableActionBar>
+                <DateRangePicker
+                  placeholder={["From", "To"]}
+                  maxDate={today}
+                  data-testid="input-date-range"
+                  onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
+                    setStartDate(dates && dates[0]);
+                    setEndDate(dates && dates[1]);
+                  }}
+                />
+                <Flex gap={12}>
+                  <Button
+                    icon={<Icons.Download />}
+                    data-testid="download-btn"
+                    onClick={() => setIsDownloadReportModalOpen(true)}
+                    aria-label="Download Consent Report"
+                  />
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: "1",
+                          label: (
+                            <span data-testid="consent-preference-lookup-btn">
+                              Consent preference lookup
+                            </span>
+                          ),
+                          onClick: () => setIsConsentLookupModalOpen(true),
+                        },
+                      ],
+                    }}
+                    overlayStyle={{ width: "220px" }}
+                    trigger={["click"]}
+                  >
+                    <Button
+                      icon={<Icons.OverflowMenuVertical />}
+                      data-testid="consent-reporting-dropdown-btn"
+                    />
+                  </Dropdown>
+                </Flex>
+              </TableActionBar>
+              <FidesTableV2<ConsentReportingSchema>
+                tableInstance={tableInstance}
+                emptyTableNotice={
+                  <Empty
+                    description="No results."
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    styles={{
+                      image: {
+                        marginBottom: 15,
+                      },
                     }}
                   />
-                  <Flex gap={12}>
-                    <Button
-                      icon={<Icons.Download />}
-                      data-testid="download-btn"
-                      onClick={() => setIsDownloadReportModalOpen(true)}
-                      aria-label="Download Consent Report"
-                    />
-                    <Dropdown
-                      menu={{
-                        items: [
-                          {
-                            key: "1",
-                            label: (
-                              <span data-testid="consent-preference-lookup-btn">
-                                Consent preference lookup
-                              </span>
-                            ),
-                            onClick: () => setIsConsentLookupModalOpen(true),
-                          },
-                        ],
-                      }}
-                      overlayStyle={{ width: "220px" }}
-                      trigger={["click"]}
-                    >
-                      <Button
-                        icon={<Icons.OverflowMenuVertical />}
-                        data-testid="consent-reporting-dropdown-btn"
-                      />
-                    </Dropdown>
-                  </Flex>
-                </TableActionBar>
-                <FidesTableV2<ConsentReportingSchema>
-                  tableInstance={tableInstance}
-                  emptyTableNotice={
-                    <Empty
-                      description="No results."
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      styles={{
-                        image: {
-                          marginBottom: 15,
-                        },
-                      }}
-                    />
-                  }
-                />
-              </div>
-
-              <Flex gap="middle" align="center" justify="right">
-                <Button
-                  onClick={previousPage}
-                  disabled={pageIndex === 1}
-                  icon={<Icons.ChevronLeft aria-hidden />}
-                  aria-label="Previous"
-                />
-                <span aria-label={`Page ${pageIndex}`}>{pageIndex}</span>
-                <Button
-                  onClick={nextPage}
-                  disabled={(data?.items?.length ?? 0) < pageSize}
-                  icon={<Icons.ChevronRight aria-hidden />}
-                  aria-label="Next"
-                />
-                <Select
-                  className="w-auto"
-                  value={pageSize}
-                  onChange={updatePageSize}
-                  options={[
-                    { label: 25, value: 25 },
-                    { label: 50, value: 50 },
-                    { label: 100, value: 100 },
-                  ]}
-                  labelRender={({ value }) => <span>{value} / page</span>}
-                />
-              </Flex>
-            </>
+                }
+              />
+            </div>
           )}
+          <InfinitePaginator
+            disableNext={(data?.items?.length ?? 0) < pageSize}
+          />
         </Flex>
       </div>
       <ConsentLookupModal
@@ -220,6 +190,14 @@ const ConsentReportingPage = () => {
         tcfPreferences={currentTcfPreferences}
       />
     </FixedLayout>
+  );
+};
+
+const ConsentReportingPage = () => {
+  return (
+    <PaginationProvider>
+      <ConsentReport />
+    </PaginationProvider>
   );
 };
 

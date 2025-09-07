@@ -308,7 +308,7 @@ export const FidesTableV2 = <T,>({
   enableSorting = !!onSort,
   columnExpandStorageKey,
   columnWrapStorageKey,
-  loading,
+  loading = false,
 }: FidesTableProps<T>) => {
   const [colExpandVersion, setColExpandVersion] = useState<number>(1);
   const [expandedColumns, setExpandedColumns] = useLocalStorage<string[]>(
