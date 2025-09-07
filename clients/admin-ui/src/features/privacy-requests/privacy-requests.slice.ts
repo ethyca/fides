@@ -13,7 +13,6 @@ import {
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL } from "../../constants";
 import {
   ConfigMessagingDetailsRequest,
   ConfigMessagingRequest,
@@ -109,53 +108,6 @@ export function mapFiltersToSearchParams({
 
   return params;
 }
-
-export const requestCSVDownload = async ({
-  id,
-  from,
-  to,
-  status,
-  action_type,
-  token,
-}: PrivacyRequestParams & { token: string | null }) => {
-  if (!token) {
-    return null;
-  }
-
-  const params = mapFiltersToSearchParams({
-    id,
-    from,
-    to,
-    status,
-    action_type,
-  });
-  params.set("download_csv", "true");
-
-  return fetch(`${BASE_URL}/privacy-request?${params.toString()}`, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-      "X-Fides-Source": "fidesops-admin-ui",
-    },
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        if (response.status === 400) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || "Bad request error");
-        }
-        throw new Error("Got a bad response from the server");
-      }
-      return response.blob();
-    })
-    .then((data) => {
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(data);
-      a.download = "privacy-requests.csv";
-      a.click();
-    })
-    .catch((error) => Promise.reject(error));
-};
 
 export const selectPrivacyRequestFilters = (
   state: RootState,
@@ -355,6 +307,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
             dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
           }
         });
+      },
+    }),
+    downloadPrivacyRequestCsv: build.query<any, Partial<PrivacyRequestParams>>({
+      query: (filters) => {
+        return {
+          url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
+          params: {
+            download_csv: true,
+          },
+          responseHandler: "content-type",
+        };
       },
     }),
     postPrivacyRequest: build.mutation<
@@ -593,4 +556,5 @@ export const {
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
   usePostPrivacyRequestFinalizeMutation,
+  useLazyDownloadPrivacyRequestCsvQuery,
 } = privacyRequestApi;
