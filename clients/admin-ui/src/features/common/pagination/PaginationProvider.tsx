@@ -51,9 +51,9 @@ export const useAntPaginationContext = () => {
 
 export const AntPaginationProvider = ({
   children,
-  ...paginationProps
-}: PropsWithChildren<Parameters<typeof useAntPagination>>) => {
-  const pagination = useAntPagination(...paginationProps);
+  config,
+}: PropsWithChildren<{ config?: Parameters<typeof useAntPagination>[0] }>) => {
+  const pagination = useAntPagination(config);
   return (
     <AntPaginationContext.Provider value={pagination}>
       {children}

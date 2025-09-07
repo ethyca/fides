@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntFlex as Flex,
   Box,
   BoxProps,
   HStack,
@@ -23,14 +24,11 @@ import { DownloadLightIcon } from "~/features/common/Icon";
 import {
   FidesTableV2,
   GlobalFilterV2,
-  PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
-  useServerSidePagination,
 } from "~/features/common/table/v2";
 import {
   clearSortKeys,
-  requestCSVDownload,
   selectPrivacyRequestFilters,
   setSortDirection,
   setSortKey,
@@ -39,6 +37,10 @@ import {
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+
+import AntPaginator from "../common/pagination/AntPaginator";
+import { useAntPaginationContext } from "../common/pagination/PaginationProvider";
+import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const { plus: hasPlus } = useFeatures();
@@ -51,20 +53,8 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-    resetPageIndexToDefault,
-  } = useServerSidePagination();
+
+  const { pageIndex, pageSize, resetPagination } = useAntPaginationContext();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -76,22 +66,24 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   });
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
-    setTotalPages(results.pages);
+
     return results;
-  }, [data, setTotalPages]);
+  }, [data]);
+
+  const { downloadReport } = useDownloadPrivacyRequestReport();
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
       setFuzzySearchTerm(searchTerm ?? "");
-      resetPageIndexToDefault();
+      resetPagination();
     },
-    [resetPageIndexToDefault, setFuzzySearchTerm],
+    [resetPagination, setFuzzySearchTerm],
   );
 
   const handleExport = async () => {
     let message;
     try {
-      await requestCSVDownload({ ...filters, token });
+      downloadReport(filters);
     } catch (error) {
       if (error instanceof Error) {
         message = error.message;
@@ -116,13 +108,13 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const handleSort = (columnSort: ColumnSort) => {
     if (!columnSort) {
       dispatch(clearSortKeys());
-      resetPageIndexToDefault();
+      resetPagination();
       return;
     }
     const { id, desc } = columnSort;
     dispatch(setSortKey(id));
     dispatch(setSortDirection(desc ? "desc" : "asc"));
-    resetPageIndexToDefault();
+    resetPagination();
   };
 
   const tableInstance = useReactTable<PrivacyRequestEntity>({
@@ -157,7 +149,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <RequestTableFilterModal
             isOpen={isOpen}
             onClose={onClose}
-            onFilterChange={resetPageIndexToDefault}
+            onFilterChange={resetPagination}
           />
         </Portal>
       </TableActionBar>
@@ -166,25 +158,15 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <TableSkeletonLoader rowHeight={26} numRows={10} />
         </Box>
       ) : (
-        <>
+        <Flex vertical gap="middle">
           <FidesTableV2<PrivacyRequestEntity>
             tableInstance={tableInstance}
             onRowClick={(row) => handleViewDetails(row.id)}
             onSort={handleSort}
             loading={isFetching}
           />
-          <PaginationBar
-            totalRows={totalRows || 0}
-            pageSizes={PAGE_SIZES}
-            setPageSize={setPageSize}
-            onPreviousPageClick={onPreviousPageClick}
-            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-            onNextPageClick={onNextPageClick}
-            isNextPageDisabled={isNextPageDisabled || isFetching}
-            startRange={startRange}
-            endRange={endRange}
-          />
-        </>
+          <AntPaginator total={totalRows ?? 0} align="end" />
+        </Flex>
       )}
     </Box>
   );
