@@ -13,7 +13,8 @@ import {
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "~/features/auth";
@@ -31,7 +32,6 @@ import {
   clearSortKeys,
   requestCSVDownload,
   selectPrivacyRequestFilters,
-  setFuzzySearchStr,
   setSortDirection,
   setSortKey,
   useGetAllPrivacyRequestsQuery,
@@ -42,7 +42,10 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const { plus: hasPlus } = useFeatures();
-  const [fuzzySearchTerm, setFuzzySearchTerm] = useState<string>("");
+  const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
+    "search",
+    parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
+  );
   const filters = useSelector(selectPrivacyRequestFilters);
   const token = useSelector(selectToken);
   const toast = useToast();
@@ -69,6 +72,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     ...filters,
     page: pageIndex,
     size: pageSize,
+    fuzzy_search_str: fuzzySearchTerm,
   });
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -78,11 +82,10 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
-      dispatch(setFuzzySearchStr(searchTerm));
-      setFuzzySearchTerm(searchTerm);
+      setFuzzySearchTerm(searchTerm ?? "");
       resetPageIndexToDefault();
     },
-    [dispatch, resetPageIndexToDefault, setFuzzySearchTerm],
+    [resetPageIndexToDefault, setFuzzySearchTerm],
   );
 
   const handleExport = async () => {
@@ -168,6 +171,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
             tableInstance={tableInstance}
             onRowClick={(row) => handleViewDetails(row.id)}
             onSort={handleSort}
+            loading={isFetching}
           />
           <PaginationBar
             totalRows={totalRows || 0}

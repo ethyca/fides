@@ -234,11 +234,7 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       id: action.payload,
     }),
-    setFuzzySearchStr: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      fuzzy_search_str: action.payload,
-    }),
+
     setRequestStatus: (
       state,
       action: PayloadAction<PrivacyRequestStatus[]>,
@@ -292,7 +288,6 @@ export const {
   setRequestActionType,
   setRequestTo,
   setRetryRequests,
-  setFuzzySearchStr,
   setSortDirection,
   setSortKey,
   setVerbose,
