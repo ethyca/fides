@@ -27,6 +27,7 @@ import {
   PrivacyRequestResponse,
   RetryRequests,
 } from "./types";
+import dayjs, { Dayjs } from "dayjs";
 
 // Helpers
 export function mapFiltersToSearchParams({
@@ -42,16 +43,14 @@ export function mapFiltersToSearchParams({
   sort_direction,
   sort_field,
 }: Partial<PrivacyRequestParams>): URLSearchParams {
-  let fromISO: Date | undefined;
+  let fromDay: Dayjs | undefined;
   if (from) {
-    fromISO = new Date(from);
-    fromISO.setUTCHours(0, 0, 0);
+    fromDay = dayjs(from);
   }
 
-  let toISO: Date | undefined;
+  let toDay: Dayjs | undefined;
   if (to) {
-    toISO = new Date(to);
-    toISO.setUTCHours(23, 59, 59);
+    toDay = dayjs(to);
   }
 
   const params = new URLSearchParams();
@@ -79,11 +78,11 @@ export function mapFiltersToSearchParams({
     params.set("fuzzy_search_str", fuzzy_search_str);
   }
 
-  if (fromISO && !Number.isNaN(fromISO.getTime())) {
-    params.set("created_gt", fromISO.toISOString());
+  if (fromDay) {
+    params.set("created_gt", fromDay.startOf("day").utc().toISOString());
   }
-  if (toISO && !Number.isNaN(toISO.getTime())) {
-    params.set("created_lt", toISO.toISOString());
+  if (toDay) {
+    params.set("created_lt", toDay.endOf("day").utc().toISOString());
   }
 
   if (page) {
