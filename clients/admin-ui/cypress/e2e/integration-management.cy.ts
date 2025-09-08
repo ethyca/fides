@@ -407,6 +407,26 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@patchConnectionSecrets");
       });
 
+      it("should not show system selection for website integrations", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("details-btn-website_placeholder").click();
+          cy.getByTestId("configure-modal-btn").click();
+
+          // Verify system selection field is not present for website integrations
+          cy.getByTestId("controlled-select-system_fides_key").should(
+            "not.exist",
+          );
+        });
+      });
+
       it("accepts HTTP URLs", () => {
         cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
           "patchConnection",
@@ -857,6 +877,9 @@ describe("Integration management for data detection & discovery", () => {
           .should("have.value", "test website monitor")
           .clear()
           .type("A different name");
+        cy.getByTestId("controlled-select-system_fides_key").should(
+          "not.exist",
+        );
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body.name).to.equal("A different name");
@@ -1088,6 +1111,58 @@ describe("Integration management for data detection & discovery", () => {
           true,
           "Integration authorized successfully",
         );
+      });
+
+      describe("website integrations", () => {
+        // There is no reason for a website integration to have a system linked
+        beforeEach(() => {
+          cy.intercept("GET", "/api/v1/connection/*", {
+            fixture: "connectors/website_integration.json",
+          }).as("getWebsiteIntegration");
+
+          cy.intercept("GET", "/api/v1/connection_type?*", {
+            fixture: "connectors/connection_types.json",
+          }).as("getConnectionTypes");
+        });
+
+        it("should not show link system step for website integrations", () => {
+          cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+            fixture: "detection-discovery/monitors/website_monitor_list.json",
+          }).as("getWebsiteMonitors");
+
+          cy.visit("/integrations/test_website_integration");
+          cy.wait("@getWebsiteIntegration");
+          cy.wait("@getWebsiteMonitors");
+          cy.wait("@getConnectionTypes");
+
+          // Verify that the Link system step is not shown for website integrations
+          cy.getByTestId("integration-setup-card").within(() => {
+            cy.contains("Link system").should("not.exist");
+          });
+
+          // Verify that other steps are still present
+          cy.getByTestId("integration-setup-card").within(() => {
+            cy.contains("Create integration").should("exist");
+            cy.contains("Create monitor").should("exist");
+          });
+        });
+
+        it("shows create integration step as completed for website integrations", () => {
+          cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+            fixture: "detection-discovery/monitors/empty_monitors.json",
+          }).as("getEmptyMonitors");
+
+          cy.visit("/integrations/test_website_integration");
+          cy.wait("@getWebsiteIntegration");
+          cy.wait("@getEmptyMonitors");
+          cy.wait("@getConnectionTypes");
+
+          checkStepStatus(
+            "Create integration",
+            true,
+            "Integration created successfully",
+          );
+        });
       });
     });
   });
