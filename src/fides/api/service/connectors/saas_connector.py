@@ -2,7 +2,9 @@
 import json
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from uuid import uuid4
 
+from fides.api.schemas.saas.strategy_configuration import IdSource
 import pydash
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -266,7 +268,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         rows: List[Row] = []
         awaiting_async_processing: bool = False
-
+        generated_request_id: Optional[str] = None
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
             if (
@@ -288,6 +290,30 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
 
                 request_task.async_type = AsyncTaskType(strategy_value)
+
+                if request_task.async_type == AsyncTaskType.polling:
+                    #Check how to generate the request id config
+                    logger.info("Request  config: {}", read_request.async_config.configuration)
+                    request_id_config = read_request.async_config.configuration["request_id_config"]
+                    logger.info("Request id config: {}", request_id_config)
+
+                    id_source = request_id_config["id_source"]
+                    if request_id_config["id_source"] == IdSource.generated.value:
+                        generated_request_id = str(uuid4())
+                        logger.info(
+                            "Generated request id for request task '{}': {}",
+                            request_task.id,
+                            generated_request_id,
+                        )
+                        input_data["request_id"] = [generated_request_id]
+                        logger.info("Current input data: {}", input_data)
+
+                    else:
+                        raise PrivacyRequestError(
+                            f"Invalid id source '{id_source}' for request task {request_task.id}. "
+                            f"Valid sources are: {IdSource.values()}"
+                        )
+
 
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
@@ -349,10 +375,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
             # However for polling async request we want to save the request data for ids that we will use on the pollings status
+
+            # Saving the request task access data to use it on the polling status request
+            # TODO: Build this on its own table
             if request_task.async_type == AsyncTaskType.polling:
-                # Saving the request task access data to use it on the polling status request
-                # TODO: Consider if we want to clean up the rows. Currently this is the concern of the GraphTask.
-                request_task.access_data = rows
+                request_id_config = read_request.async_config.configuration["request_id_config"]
+                id_source = request_id_config["id_source"]
+                if id_source == IdSource.path.value:
+                    request_id = pydash.get(rows[0], request_id_config.id_path)
+                    request_task.access_data = [{"request_id": request_id}]
+                elif id_source == IdSource.generated.value:
+                    request_task.access_data = [{"request_id": generated_request_id}]
+
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
             raise AwaitingAsyncTask()
 

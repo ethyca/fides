@@ -41,6 +41,8 @@ def requeue_polling_request(
         PrivacyRequestStatus.approved,
         PrivacyRequestStatus.in_processing,
     ]:
+        async_task.callback_succeeded = True
+        async_task.save(db)
         raise PrivacyRequestError(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
@@ -150,6 +152,11 @@ def execute_read_polling_requests(
             # Get missing parameters from available context
             privacy_request: PrivacyRequest = async_task.privacy_request
             secrets: Dict[str, Any] = connector.secrets
+            # Adding Id to the secrets - Barebones
+
+            request_id = async_task.access_data[0]["request_id"]
+            secrets.update({"request_id": request_id})
+            logger.info(f"Secrets: {secrets}")
             identity_data = {
                 **privacy_request.get_persisted_identity().labeled_dict(),
                 **privacy_request.get_cached_identity_data(),

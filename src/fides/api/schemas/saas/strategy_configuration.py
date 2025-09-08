@@ -179,35 +179,42 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
 
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
 
-class RequestIdOrigin(Enum):
-    """Sources for request ID in polling async requests."""
-    in_response = "in_response"
-    in_headers = "in_headers"
+class IdSource(Enum):
+    """
+    Source for the request id.
+    """
+
+    path = "path"
     generated = "generated"
 
-class SupportedRequestIdFormat(Enum):
-    """Formats for generated request IDs."""
-    uuid = "uuid"
+class AcceptedFormats(Enum):
+    """
+    Format for the request id.
+    """
+
+    uuid4 = "uuid4"
     random_string = "random_string"
 
-class RequestIdConfiguration(StrategyConfiguration):
-    """Configuration for extracting request ID from responses."""
-    origin: RequestIdOrigin
-    path: Optional[str] = None  # Required when origin is in_response or in_headers
-    format: Optional[SupportedRequestIdFormat] = None  # Required when origin is generated
+class PollingAsyncIdRequestConfiguration(StrategyConfiguration):
+    """
+    Configuration for polling async requests.
+    """
+
+    id_source: IdSource
+    id_path: Optional[str] = None
+    format: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
-    def validate_path_required(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        origin = values.get("origin")
-        path = values.get("path")
-        format = values.get("format")
-
-        if origin in [RequestIdOrigin.in_response.value, RequestIdOrigin.in_headers.value] and not path:
-            raise ValueError(f"'path' is required when origin is '{origin}'")
-        if origin == RequestIdOrigin.generated.value and not format:
-            raise ValueError(f"'format' is required when origin is '{origin}'")
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        id_source = values.get("id_source")
+        if id_source == IdSource.path and values.get("id_path") is None:
+            raise ValueError("The 'id_path' value must be specified when accessing the request id from the path")
+        if id_source == IdSource.generated and values.get("format") is None:
+            raise ValueError("The 'format' value must be specified when generating the request id")
         return values
+
+
 
 
 class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
@@ -216,9 +223,11 @@ class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
     """
 
     status_request: SaaSRequest
+    status_path: str
     status_completed_value: Optional[str] = None
     result_request: SaaSRequest
-    request_id_config: RequestIdConfiguration
+    result_path: str
+    request_id_config: PollingAsyncIdRequestConfiguration
 
 class SupportedDataType(Enum):
     """Locations where the link to the next page may be found."""
@@ -228,9 +237,8 @@ class SupportedDataType(Enum):
 
 class PollingAsyncDSRAccessDataConfiguration(PollingAsyncDSRBaseConfiguration):
     """
-    Configuration for polling async DSR requests.
+    Configuration for polling async DSR requests. Default is Json
     """
-
     data_type: SupportedDataType = SupportedDataType.json
 
 ## We Can move this to a separate PR if it gets complicated enough
@@ -244,6 +252,5 @@ class PollingAsyncAccessDownloadConfiguration(PollingAsyncDSRBaseConfiguration):
     """
     Configuration for polling async DSR requests.
     """
-
     download_type: SupportedDownloadType = SupportedDownloadType.link
     result_path: Optional[str] = None # Placeholder in case we need a result path
