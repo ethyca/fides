@@ -51,10 +51,13 @@ export const CustomTable = <RecordType = any,>({
     };
   }, [pagination, dataSource]);
 
-  const rowSelection = {
-    ...props.rowSelection,
-    columnWidth: 1,
-  };
+  let rowSelection;
+  if (props.rowSelection) {
+    rowSelection = {
+      ...props.rowSelection,
+      ...(props.rowSelection ? { columnWidth: 1 } : {}),
+    };
+  }
 
   const customColumns = React.useMemo(() => {
     return columns.map((column) => ({
