@@ -1,3 +1,21 @@
+"""
+DEPRECATED MODULE: Use PrivacyRequestStorageService instead.
+
+This module is deprecated and will be removed in a future version.
+Use PrivacyRequestStorageService with unified StorageService which provides
+the same streaming functionality through a cleaner, provider-agnostic interface.
+
+Migration example:
+    # OLD:
+    from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
+    upload_to_s3_streaming(secrets, data, bucket, key, format, privacy_request, doc, auth)
+
+    # NEW:
+    from fides.service.storage.privacy_request_storage_service import PrivacyRequestStorageService
+    service = PrivacyRequestStorageService(db)
+    service.upload_privacy_request_data(privacy_request, data, storage_key)
+"""
+
 from __future__ import annotations
 
 from io import BytesIO
@@ -36,11 +54,20 @@ def upload_to_s3_streaming(
     auth_method: str,
     max_workers: int = 5,
 ) -> Optional[AnyHttpUrlString]:
-    """Uploads arbitrary data to S3 using smart-open streaming for memory efficiency.
+    """
+    DEPRECATED: Use PrivacyRequestStorageService with unified StorageService instead.
 
+    This function is deprecated and will be removed in a future version.
+    Use PrivacyRequestStorageService.upload_privacy_request_data() which provides
+    the same functionality through the unified StorageService interface.
+
+    Uploads arbitrary data to S3 using smart-open streaming for memory efficiency.
     This function now uses smart-open for efficient cloud storage operations while maintaining
     our DSR-specific business logic for package splitting and attachment processing.
     """
+    logger.warning(
+        "upload_to_s3_streaming is deprecated. Use PrivacyRequestStorageService instead."
+    )
     formatted_secrets = format_secrets(storage_secrets)
 
     if document is not None:

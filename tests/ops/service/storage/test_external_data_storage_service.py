@@ -3,7 +3,7 @@ import os
 import pytest
 
 from fides.api.schemas.external_storage import ExternalStorageMetadata
-from fides.api.service.external_data_storage import (
+from fides.service.storage.external_data_storage_service import (
     ExternalDataStorageError,
     ExternalDataStorageService,
 )

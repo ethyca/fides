@@ -372,9 +372,14 @@ class PrivacyRequest(
         """
         self.clear_cached_values()
         self.cleanup_external_storage()
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.privacy_request
+
+        # Use AttachmentService for attachment cleanup
+        from fides.service.attachment import AttachmentService
+        attachment_service = AttachmentService(db)
+        attachment_service.delete_attachments_for_entity(
+            self.id, AttachmentReferenceType.privacy_request
         )
+
         Comment.delete_comments_for_reference_and_type(
             db, self.id, CommentReferenceType.privacy_request
         )

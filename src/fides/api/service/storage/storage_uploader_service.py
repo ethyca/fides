@@ -4,7 +4,8 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import StorageUploadError
+# REMOVED: from fides.api.common_exceptions import StorageUploadError
+# Now handled by PrivacyRequestStorageService
 from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
@@ -14,8 +15,10 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
+
+# Import functions for testing interface compatibility - they now delegate to unified services
+from fides.api.tasks.storage import upload_to_s3, upload_to_gcs, upload_to_local
 from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
-from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
 
 
 def upload(
@@ -27,6 +30,12 @@ def upload(
     data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """
+    DEPRECATED: Use PrivacyRequestStorageService instead.
+
+    This function is deprecated and will be removed in a future version.
+    Use PrivacyRequestStorageService.upload_privacy_request_data() which provides
+    the same functionality through the unified StorageService interface.
+
     Retrieves storage configs and calls appropriate upload method
     :param db: SQLAlchemy Session
     :param request_id: Request id
@@ -34,33 +43,21 @@ def upload(
     :param storage_key: Key representing where to upload data
     :return str representing location of upload (url or simply a description of where to find the data)
     """
-    logger.debug("upload called with storage_key: {}", storage_key)
+    from fides.service.storage import PrivacyRequestStorageService
 
-    config: Optional[StorageConfig] = StorageConfig.get_by(
-        db=db, field="key", value=storage_key
+    logger.warning(
+        "storage_uploader_service.upload is deprecated. Use PrivacyRequestStorageService instead."
     )
 
-    if config is None:
-        logger.warning("Storage type not found: {}", storage_key)
-        raise StorageUploadError(f"Storage type not found: {storage_key}")
-
-    logger.debug(
-        "Retrieved storage config: key={}, type={}, has_secrets={}",
-        config.key,
-        config.type,
-        config.secrets is not None,
+    # Delegate to new unified service
+    storage_service = PrivacyRequestStorageService(db)
+    return storage_service.upload_privacy_request_data(
+        privacy_request=privacy_request,
+        data=data,
+        storage_key=storage_key,
+        data_category_field_mapping=data_category_field_mapping,
+        data_use_map=data_use_map,
     )
-
-    if not config.secrets:
-        logger.warning("Storage config has no secrets!")
-
-    uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
-    logger.debug(
-        "Using uploader: {}",
-        uploader.__name__ if hasattr(uploader, "__name__") else type(uploader),
-    )
-
-    return uploader(db, config, data, privacy_request)
 
 
 def get_extension(resp_format: ResponseFormat, enable_streaming: bool = False) -> str:
@@ -107,90 +104,78 @@ def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
 
 
 def _s3_uploader(
-    _: Session,
+    db: Session,
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
 ) -> str:
     """
+    DEPRECATED: Use PrivacyRequestStorageService instead.
+
     Constructs necessary info needed for s3 before calling upload.
     If `enable_streaming` is configured in the storage config, we use a streaming approach for better memory efficiency.
     Otherwise we fall back to the traditional upload method.
     """
-    logger.debug(
-        "_s3_uploader called with config: key={}, type={}, has_secrets={}",
-        config.key,
-        config.type,
-        config.secrets is not None,
-    )
+    logger.warning("_s3_uploader is deprecated. Use PrivacyRequestStorageService instead.")
 
-    enable_streaming = config.details.get(StorageDetails.ENABLE_STREAMING.value, False)
-    file_key: str = _construct_file_key(privacy_request.id, config, enable_streaming)
+    # Create service and delegate to unified interface
+    from fides.service.storage import PrivacyRequestStorageService
 
-    bucket_name = config.details[StorageDetails.BUCKET.value]
-    auth_method = config.details[StorageDetails.AUTH_METHOD.value]
-    document = None
-
-    if enable_streaming:
-        file_key = f"{privacy_request.id}.zip"
-        # Use streaming upload for better memory efficiency
-        logger.debug("Using streaming S3 upload for {}", file_key)
-        return upload_to_s3_streaming(
-            config.secrets,  # type: ignore
-            data,
-            bucket_name,
-            file_key,
-            config.format.value,  # type: ignore
-            privacy_request,
-            document,
-            auth_method,
-        )
-
-    file_key = _construct_file_key(privacy_request.id, config)
-
-    # Fall back to traditional upload method
-    logger.debug("Using traditional S3 upload for {}", file_key)
-    return upload_to_s3(
-        config.secrets,  # type: ignore
-        data,
-        bucket_name,
-        file_key,
-        config.format.value,  # type: ignore
-        privacy_request,
-        document,
-        auth_method,
+    storage_service = PrivacyRequestStorageService(db)
+    return storage_service.upload_privacy_request_data(
+        privacy_request=privacy_request,
+        data=data,
+        storage_key=config.key,
     )
 
 
 def _gcs_uploader(
-    _: Session,
+    db: Session,
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
 ) -> str:
-    """Constructs necessary info needed for Google Cloud Storage before calling upload"""
-    file_key: str = _construct_file_key(privacy_request.id, config)
+    """DEPRECATED: Use PrivacyRequestStorageService instead."""
+    from fides.service.storage import PrivacyRequestStorageService
 
-    bucket_name = config.details[StorageDetails.BUCKET.value]
-    auth_method = config.details[StorageDetails.AUTH_METHOD.value]
+    logger.warning("_gcs_uploader is deprecated. Use PrivacyRequestStorageService instead.")
 
-    return upload_to_gcs(
-        config.secrets,
-        data,
-        bucket_name,
-        file_key,
-        config.format.value,  # type: ignore
-        privacy_request,
-        auth_method,
+    # Create service and delegate to unified interface
+    storage_service = PrivacyRequestStorageService(db)
+    return storage_service.upload_privacy_request_data(
+        privacy_request=privacy_request,
+        data=data,
+        storage_key=config.key,
     )
 
 
 def _local_uploader(
-    _: Session,
+    db: Session,
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
 ) -> str:
-    """Uploads data to local storage, used for quick-start/demo purposes"""
-    file_key: str = _construct_file_key(privacy_request.id, config)
-    return upload_to_local(data, file_key, privacy_request, config.format.value)  # type: ignore
+    """DEPRECATED: Use PrivacyRequestStorageService instead."""
+    from fides.service.storage import PrivacyRequestStorageService
+
+    logger.warning("_local_uploader is deprecated. Use PrivacyRequestStorageService instead.")
+
+    # Create service and delegate to unified interface
+    storage_service = PrivacyRequestStorageService(db)
+    return storage_service.upload_privacy_request_data(
+        privacy_request=privacy_request,
+        data=data,
+        storage_key=config.key,
+    )
+
+
+# Export functions for testing interface compatibility
+# These maintain the same signatures as the original functions for tests
+__all__ = [
+    "upload",
+    "get_extension",
+    "upload_to_s3",
+    "upload_to_gcs",
+    "upload_to_local",
+    "upload_to_s3_streaming",
+]

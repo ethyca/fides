@@ -401,10 +401,10 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.service.storage.StorageService.validate_connection")
     def test_put_config_secrets_and_verify(
         self,
-        mock_valid: Mock,
+        mock_validate_connection: Mock,
         db: Session,
         api_client: TestClient,
         payload,
@@ -412,7 +412,7 @@ class TestPutStorageConfigSecretsS3:
         generate_auth_header,
         storage_config,
     ):
-        mock_valid.return_value = True
+        mock_validate_connection.return_value = True
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
@@ -433,8 +433,8 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-        mock_valid.reset_mock()
-        mock_valid.return_value = False
+        mock_validate_connection.reset_mock()
+        mock_validate_connection.return_value = False
         response = api_client.put(url, headers=auth_header, json=payload)
         assert json.loads(response.text) == {
             "msg": "Secrets updated for StorageConfig with key: my_test_config.",
@@ -1165,10 +1165,10 @@ class TestPutDefaultStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.service.storage.StorageService.validate_connection")
     def test_put_default_config_secrets_and_verify(
         self,
-        mock_valid: Mock,
+        mock_validate_connection: Mock,
         db: Session,
         api_client: TestClient,
         payload,
@@ -1176,7 +1176,7 @@ class TestPutDefaultStorageConfigSecretsS3:
         generate_auth_header,
         storage_config_default,
     ):
-        mock_valid.return_value = True
+        mock_validate_connection.return_value = True
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
@@ -1197,8 +1197,8 @@ class TestPutDefaultStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-        mock_valid.reset_mock()
-        mock_valid.return_value = False
+        mock_validate_connection.reset_mock()
+        mock_validate_connection.return_value = False
         response = api_client.put(url, headers=auth_header, json=payload)
         assert json.loads(response.text) == {
             "msg": "Secrets updated for default config of storage type: s3.",

@@ -5,11 +5,8 @@ from loguru import logger
 
 from fides.api.api.deps import get_autoclose_db_session
 from fides.api.schemas.external_storage import ExternalStorageMetadata
-from fides.api.service.external_data_storage import (
-    ExternalDataStorageError,
-    ExternalDataStorageService,
-)
 from fides.api.util.data_size import LARGE_DATA_THRESHOLD_BYTES, calculate_data_size
+from fides.service.storage.external_data_storage_service import ExternalDataStorageError, ExternalDataStorageService
 
 
 class EncryptedLargeDataDescriptor:

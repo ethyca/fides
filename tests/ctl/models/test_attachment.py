@@ -608,10 +608,12 @@ class TestAttachmentBulkOperations:
             },
         )
 
-        # delete all attachments associated with the comment
-        # should delete all attachments and references to the attachment
-        Attachment.delete_attachments_for_reference_and_type(
-            db, reference_id=comment.id, reference_type=AttachmentReferenceType.comment
+        # delete all attachments associated with the comment using AttachmentService
+        from fides.service.attachment import AttachmentService
+
+        attachment_service = AttachmentService(db)
+        attachment_service.delete_attachments_for_entity(
+            comment.id, AttachmentReferenceType.comment
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
         assert retrieved_attachment is None

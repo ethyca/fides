@@ -5,15 +5,14 @@ import time as time_module
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 from urllib.parse import quote
-
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 from sqlalchemy.orm import object_session
-
-from fides.api.models.privacy_request import PrivacyRequest
+if TYPE_CHECKING:
+    from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.privacy_request.dsr_package.dsr_data_preprocessor import (
     DSRDataPreprocessor,
 )

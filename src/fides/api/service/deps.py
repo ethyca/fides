@@ -13,6 +13,7 @@ from fides.service.privacy_request.privacy_request_service import PrivacyRequest
 from fides.service.system.system_service import SystemService
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.user.user_service import UserService
+from fides.service.storage.privacy_request_storage_service import PrivacyRequestStorageService
 
 
 def get_messaging_service(
@@ -53,3 +54,9 @@ def get_taxonomy_service(db: Session = Depends(get_db)) -> TaxonomyService:
 
 def get_system_service(db: AsyncSession = Depends(get_async_db)) -> SystemService:
     return SystemService(db)
+
+
+def get_privacy_request_storage_service(
+    db: Session = Depends(get_db),
+) -> PrivacyRequestStorageService:
+    return PrivacyRequestStorageService(db)

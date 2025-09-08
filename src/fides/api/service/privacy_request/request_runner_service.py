@@ -8,7 +8,7 @@ import requests
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
-
+from fides.service.storage.privacy_request_storage_service import PrivacyRequestStorageService
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
@@ -69,7 +69,6 @@ from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
 )
-from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import (
@@ -235,8 +234,8 @@ def upload_access_results(
 
     logger.info("Starting access request upload for rule {}", rule.key)
     try:
-        download_url: Optional[str] = upload(
-            db=session,
+        storage_service = PrivacyRequestStorageService(session)
+        download_url: Optional[str] = storage_service.upload_privacy_request_data(
             privacy_request=privacy_request,
             data=results_to_upload,
             storage_key=storage_destination.key,  # type: ignore

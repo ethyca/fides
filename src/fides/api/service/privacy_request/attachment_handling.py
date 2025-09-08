@@ -6,6 +6,8 @@ from loguru import logger
 
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.schemas.storage.storage import StorageDetails
+from fides.service.attachment.attachment_service import AttachmentService
+from fides.api.api.deps import get_autoclose_db_session
 
 
 @dataclass
@@ -73,8 +75,10 @@ def get_attachments_content(
             continue
 
         try:
-            # Get size and download URL using retrieve_attachment
-            size, url = attachment.retrieve_attachment()
+            # Get size and download URL using from AttachmentService
+            with get_autoclose_db_session() as session:
+                attachment_service = AttachmentService(session)
+                size, url = attachment_service.get_download_info(attachment)
             total_size += size if size else 0
             if url is None:
                 logger.warning(
