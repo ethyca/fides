@@ -1,6 +1,7 @@
 import {
   stubDatamap,
   stubPlus,
+  stubSystemGroups,
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
@@ -10,6 +11,7 @@ describe("Taxonomy management with Plus features", () => {
   beforeEach(() => {
     cy.login();
     stubTaxonomyEntities();
+    stubSystemGroups();
     stubPlus(true);
     stubDatamap();
     cy.visit("/taxonomy");
@@ -120,6 +122,117 @@ describe("Taxonomy management with Plus features", () => {
             value: ["Charmander", "Eevee"],
           },
         ]);
+      });
+    });
+  });
+
+  describe("System groups", () => {
+    describe("When alpha flag is disabled", () => {
+      beforeEach(() => {
+        // Mock flags with alphaSystemGroups disabled by setting Redux persist state
+        cy.window().then((win) => {
+          const existingState = win.localStorage.getItem("persist:root");
+          const parsedState = existingState ? JSON.parse(existingState) : {};
+
+          // Set the features slice with the disabled flag
+          parsedState.features = JSON.stringify({
+            flags: {
+              alphaSystemGroups: {
+                development: false,
+                test: false,
+                production: false,
+              },
+            },
+            showNotificationBanner: true,
+          });
+
+          win.localStorage.setItem("persist:root", JSON.stringify(parsedState));
+        });
+        cy.visit("/taxonomy");
+      });
+
+      it("Does not show system groups in taxonomy selector", () => {
+        cy.getByTestId("taxonomy-type-selector").click();
+
+        // System groups should not be available
+        cy.contains("System groups").should("not.exist");
+
+        // Core taxonomies should still be available
+        cy.contains("Data categories").should("exist");
+        cy.contains("Data uses").should("exist");
+        cy.contains("Data subjects").should("exist");
+      });
+    });
+
+    describe("When alpha flag is enabled", () => {
+      beforeEach(() => {
+        // Mock flags with alphaSystemGroups enabled by setting Redux persist state
+        cy.window().then((win) => {
+          const existingState = win.localStorage.getItem("persist:root");
+          const parsedState = existingState ? JSON.parse(existingState) : {};
+
+          // Set the features slice with the enabled flag
+          parsedState.features = JSON.stringify({
+            flags: {
+              alphaSystemGroups: {
+                development: true,
+                test: true,
+                production: true,
+              },
+            },
+            showNotificationBanner: true,
+          });
+
+          win.localStorage.setItem("persist:root", JSON.stringify(parsedState));
+        });
+        cy.visit("/taxonomy");
+      });
+
+      it("Shows system groups as a taxonomy option", () => {
+        cy.getByTestId("taxonomy-type-selector").click();
+
+        // System groups should be available alongside other taxonomies
+        cy.contains("System groups").should("exist");
+        cy.contains("Data categories").should("exist");
+        cy.contains("Data uses").should("exist");
+        cy.contains("Data subjects").should("exist");
+      });
+
+      it("Can navigate to system groups taxonomy", () => {
+        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+          "System groups",
+        );
+        cy.wait("@getSystemGroups");
+
+        // Should show system groups root with proper label
+        cy.getByTestId("taxonomy-node-root")
+          .should("contain", "System groups")
+          .should("not.contain", "system_group");
+
+        // Should show system group items
+        cy.contains("Blue Group").should("exist");
+        cy.contains("Green Group").should("exist");
+        cy.contains("Red Group").should("exist");
+      });
+
+      it("Displays human-readable root node label", () => {
+        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+          "System groups",
+        );
+        cy.wait("@getSystemGroups");
+
+        // Root node should show "System groups" not "system_group"
+        cy.getByTestId("taxonomy-node-root").should("contain", "System groups");
+      });
+
+      it("Can interact with system group nodes", () => {
+        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+          "System groups",
+        );
+        cy.wait("@getSystemGroups");
+
+        // Should be able to click on system group nodes
+        cy.getByTestId("taxonomy-node-blue_group").should("exist").click();
       });
     });
   });

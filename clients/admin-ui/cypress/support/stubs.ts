@@ -12,6 +12,27 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_use", {
     fixture: "taxonomy/data_uses.json",
   }).as("getDataUses");
+
+  // Generic taxonomy endpoints
+  cy.intercept("GET", "/api/v1/taxonomies", {
+    body: [], // No custom taxonomies by default
+  }).as("getCustomTaxonomies");
+
+  // Generic taxonomy endpoint for system groups (if accessed via taxonomy API)
+  cy.intercept("GET", "/api/v1/taxonomies/system_group", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroupTaxonomy");
+
+  // Generic taxonomy CRUD operations
+  cy.intercept("POST", "/api/v1/taxonomies/*", {
+    statusCode: 201,
+  }).as("createTaxonomyItem");
+  cy.intercept("PUT", "/api/v1/taxonomies/*", {
+    statusCode: 200,
+  }).as("updateTaxonomyItem");
+  cy.intercept("DELETE", "/api/v1/taxonomies/*/*", {
+    statusCode: 204,
+  }).as("deleteTaxonomyItem");
   cy.intercept(
     {
       method: "GET",
