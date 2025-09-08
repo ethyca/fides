@@ -5,9 +5,7 @@ from fides.api.service.async_dsr.async_dsr_strategy_callback import (
     CallbackAsyncDSRStrategy,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
-    SupportedAsyncDSRStrategies,
     get_strategy,
-    get_strategy_names,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_polling import (
     PollingAsyncDSRStrategy,

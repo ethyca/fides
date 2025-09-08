@@ -30,7 +30,7 @@ def requeue_polling_request(
     db: Session,
     async_task: RequestTask,
 ) -> None:
-    """Re-queue a Privacy request that polling async tasks for a given privacy request"""
+    """Re-queue a Privacy request that polls async tasks for a given privacy request"""
     # Check that the privacy request is approved or in processing
     privacy_request: PrivacyRequest = async_task.privacy_request
     logger.info(

@@ -1,10 +1,7 @@
-import json
-import random
 import time
-from typing import Any, Dict, List
 from unittest import mock
 from unittest.mock import Mock
-from uuid import uuid4
+
 
 import pytest
 from loguru import logger
@@ -13,14 +10,10 @@ from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_notice import UserConsentPreference
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import  RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.service.async_dsr.async_dsr_service import requeue_polling_request
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -66,7 +59,7 @@ class TestAsyncDsrRequest:
         async_graph,
     ):
         """
-        If a read request is marked with needing an async callback response, the initial response is ignored and
+        If a read request is marked with needing an async polling response, the initial response is ignored and
         we raise an AwaitingAsyncTask exception.
         We mark the request task as a Polling Task so we can recognize it in the request runner service.
 
