@@ -67,6 +67,7 @@ const AddTranslationMenu = ({
         onChange={handleSelect}
         data-testid="select-language"
         className="w-full"
+        optionFilterProp="label"
       />
     );
   }

@@ -9,13 +9,12 @@ import type { PrivacyDeclaration } from "./PrivacyDeclaration";
 import type { SystemMetadata } from "./SystemMetadata";
 
 /**
- * Extension of base pydantic model to include additional fields on the DB model that
- * are relevant in API responses.
+ * Extended version of BasicSystemResponse that includes system group information.
  *
- * This is still meant to be a "lightweight" model that does not reference relationships
- * that may require additional querying beyond the `System` db table.
+ * This response model automatically extracts system group information from the
+ * System.system_groups relationship.
  */
-export type BasicSystemResponse = {
+export type BasicSystemResponseExtended = {
   /**
    * A unique key used to identify this resource.
    */
@@ -181,4 +180,12 @@ export type BasicSystemResponse = {
    */
   legitimate_interest_disclosure_url?: string | null;
   created_at: string;
+  /**
+   * List of system group fides_keys this system belongs to
+   */
+  system_groups?: Array<string>;
+  /**
+   * List of data stewards from all system groups
+   */
+  data_stewards?: Array<string>;
 };

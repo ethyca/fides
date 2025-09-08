@@ -10,7 +10,7 @@ from loguru import logger
 
 from fides.api.service.storage.streaming.retry import retry_cloud_storage_operation
 from fides.api.service.storage.streaming.schemas import (
-    MIN_PART_SIZE,
+    S3_MIN_PART_SIZE,
     MultipartUploadResponse,
     UploadPartResponse,
 )
@@ -27,7 +27,7 @@ class SmartOpenStorageClient:
     logic to specialized client implementations.
     """
 
-    min_part_size: int = MIN_PART_SIZE
+    min_part_size: int = S3_MIN_PART_SIZE
 
     def __init__(
         self,

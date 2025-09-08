@@ -116,7 +116,6 @@ def retry(
                     # Run access or erasure request
                     return func(*args, **kwargs)
                 except AwaitingAsyncTask as ex:
-                    traceback.print_exc()
                     logger.warning(
                         "Request Task {} {} {} awaiting async continuation",
                         self.request_task.id if self.request_task.id else None,
@@ -694,7 +693,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     self.execution_node,
                     self.resources.policy,
                     self.resources.request,
-                    self.resources.privacy_request_task,
+                    self.request_task,
                     formatted_input_data,
                 )
 

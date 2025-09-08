@@ -21,6 +21,7 @@ from fides.api.models.detection_discovery.monitor_task import (
     MonitorTask,
     MonitorTaskExecutionLog,
 )
+from fides.api.models.detection_discovery.web_monitor import WebMonitorGroupJob
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
@@ -77,6 +78,7 @@ from fides.api.models.property import (
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
+from fides.api.models.system_group import SystemGroup, SystemGroupMember
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
 from fides.api.models.taxonomy import (

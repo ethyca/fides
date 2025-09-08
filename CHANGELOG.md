@@ -19,15 +19,27 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.69.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.69.2...main)
 
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
+
+### Fixed
+- Fix search within language picker in admin-ui [#6550](https://github.com/ethyca/fides/pull/6550)
+
+## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
+
+### Fixed
+- Decode S3 storage URLs when building object keys for streaming attachments into download packages [#6541](https://github.com/ethyca/fides/pull/6541)
+- Enables the exclude domains field in the website monitor config. [#6544](https://github.com/ethyca/fides/pull/6544)
+- Region table value displayed correctly and Location select only allowing valid values [#6545](https://github.com/ethyca/fides/pull/6545)
+- Adds safeguards when encountering rate limit errors upon instantiation [#6546](https://github.com/ethyca/fides/pull/6546)
 
 ## [2.69.1](https://github.com/ethyca/fides/compare/2.69.0...2.69.1)
 
 ### Added
 - Added the ability to selectively redact dataset, collection, and field names in DSR packages [#6487](https://github.com/ethyca/fides/pull/6487)
+- Added system group functionality to systems table [#6453](https://github.com/ethyca/fides/pull/6453)
 
 ### Security
 - Changed session invalidation logic to end all sessions for a user when their password has been changed [CVE-2025-57766](https://github.com/ethyca/fides/security/advisories/GHSA-rpw8-82v9-3q87)
@@ -35,6 +47,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
 - Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
 
+
+### Changed
+- Improved column width handling in Action Center tables [#6496](https://github.com/ethyca/fides/pull/6496)
 
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 

@@ -1,29 +1,27 @@
-import datetime
 from typing import Annotated, Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
-from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.api.db.crud import (
-    get_resource,
-    get_resource_with_custom_fields,
-    list_resource,
-)
+from fides.api.db.crud import get_resource, get_resource_with_custom_fields
 from fides.api.db.ctl_session import get_async_db
 from fides.api.db.system import (
     create_system,
@@ -34,10 +32,8 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.sql_models import (  # type:ignore[attr-defined]
-    PrivacyDeclaration,
-    System,
-)
+from fides.api.models.sql_models import System  # type:ignore[attr-defined]
+from fides.api.oauth.roles import APPROVER
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_request_body_cli,
@@ -56,8 +52,12 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.filter_params import FilterParams
-from fides.api.schemas.system import BasicSystemResponse, SystemResponse
+from fides.api.schemas.system import (
+    AssignStewardRequest,
+    BasicSystemResponse,
+    SystemResponse,
+)
+from fides.api.service.deps import get_system_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
@@ -66,7 +66,6 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     validate_secrets,
 )
-from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -82,6 +81,7 @@ from fides.common.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
+from fides.service.system.system_service import SystemService
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
@@ -350,6 +350,123 @@ async def delete(
 
 
 @SYSTEM_ROUTER.post(
+    "/bulk-delete",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_DELETE],
+        )
+    ],
+    status_code=status.HTTP_200_OK,
+)
+async def system_bulk_delete(
+    fides_keys: List[str],
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    """Delete multiple systems by their fides_keys."""
+
+    deleted: List[Dict] = []
+
+    async with db.begin():
+        # Retrieve all systems within the same transactional context
+        stmt = select(System).filter(System.fides_key.in_(fides_keys))
+        result = await db.execute(stmt)
+        systems_to_delete = result.scalars().all()
+
+        for system in systems_to_delete:
+            await db.delete(system)
+            deleted.append(SystemSchema.model_validate(system).model_dump(mode="json"))
+
+    return {
+        "message": f"Deleted {len(deleted)} system(s)",
+        "deleted": deleted,
+    }
+
+
+@SYSTEM_ROUTER.post(
+    "/assign-steward",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_UPDATE],
+        )
+    ],
+)
+async def bulk_assign_steward(
+    data: AssignStewardRequest,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """Assign the given `data_steward` (username) as a system manager for the list of `system_keys`.
+
+    This mirrors the behavior of the user permissions endpoint that assigns systems to a given user but
+    from the perspective of the System API. It validates that:
+
+    1. The provided user exists.
+    2. The user already has permissions (cannot be None).
+    3. The user is not an approver (approvers are explicitly disallowed from being system managers).
+    4. All provided `system_keys` resolve to existing System records.
+    5. There are no duplicate keys in the payload.
+    """
+
+    data_steward = data.data_steward
+    system_keys = data.system_keys
+
+    user: Optional[FidesUser] = FidesUser.get_by(
+        db, field="username", value=data_steward
+    )
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No user found with username {data_steward}.",
+        )
+
+    # Validate user has permissions assigned
+    if not (user.permissions and user.permissions.roles):  # type: ignore[attr-defined]
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {data_steward} needs permissions before they can be assigned as system manager.",
+        )
+
+    # Approvers are not allowed to be system managers
+    if APPROVER in user.permissions.roles:  # type: ignore[attr-defined]
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {data_steward} is an {APPROVER} and cannot be assigned as a system manager.",
+        )
+
+    # Check for duplicate system keys
+    if len(set(system_keys)) != len(system_keys):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot add user {data_steward} as system manager. Duplicate systems in request body.",
+        )
+
+    # Retrieve systems and validate existence
+    systems_query = db.query(System).filter(System.fides_key.in_(system_keys))
+    if systems_query.count() != len(system_keys):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Cannot add user {data_steward} as system manager. System(s) not found.",
+        )
+
+    systems = systems_query.all()
+
+    logger.info(
+        "Assigning user {} as data steward for {} systems", data_steward, len(systems)
+    )
+
+    updated_count = 0
+    for system in systems:
+        if user not in system.data_stewards:
+            user.set_as_system_manager(db, system)
+            updated_count += 1
+
+    return {
+        "message": f"User {data_steward} assigned as data steward to {updated_count} system(s)",
+    }
+
+
+@SYSTEM_ROUTER.post(
     "/",
     response_model=SystemResponse,
     status_code=status.HTTP_201_CREATED,
@@ -384,62 +501,30 @@ async def create(
     name="List systems (optionally paginated)",
 )
 async def ls(  # pylint: disable=invalid-name
-    db: AsyncSession = Depends(get_async_db),
+    system_service: SystemService = Depends(get_system_service),
     size: Optional[int] = Query(None, ge=1, le=100),
     page: Optional[int] = Query(None, ge=1),
     search: Optional[str] = None,
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
-    show_deleted: Optional[bool] = Query(False),
-) -> List:
+    show_deleted: bool = Query(False),
+) -> Union[List[System], Page[System]]:
     """Get a list of all of the Systems.
     If any parameters or filters are provided the response will be paginated and/or filtered.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if not (size or page or search or data_uses or data_categories or data_subjects):
-        # if no advanced parameters are passed, we return a very basic list of all System resources
-        # to maintain backward compatibility of the original API, which backs some important client usages, e.g. the fides CLI
 
-        return await list_resource(System, db)
-
-    query = select(System)
-
-    pagination_params = Params(page=page or 1, size=size or 50)
-    # Need to join with PrivacyDeclaration in order to be able to filter
-    # by data use, data category, and data subject
-    if any([data_uses, data_categories, data_subjects]):
-        query = query.outerjoin(
-            PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
-        )
-
-    # Filter out any vendor deleted systems, unless explicitly asked for
-    if not show_deleted:
-        query = query.filter(
-            or_(
-                System.vendor_deleted_date.is_(None),
-                System.vendor_deleted_date >= datetime.datetime.now(),
-            )
-        )
-
-    filter_params = FilterParams(
+    return await system_service.get_systems(
         search=search,
         data_uses=data_uses,
         data_categories=data_categories,
         data_subjects=data_subjects,
+        size=size,
+        page=page,
+        show_deleted=show_deleted,
     )
-    filtered_query = apply_filters_to_query(
-        query=query,
-        filter_params=filter_params,
-        search_model=System,
-        taxonomy_model=PrivacyDeclaration,
-    )
-
-    # Add a distinct so we only get one row per system
-    duplicates_removed = filtered_query.distinct(System.id)
-
-    return await async_paginate(db, duplicates_removed, pagination_params)
 
 
 @SYSTEM_ROUTER.patch(
