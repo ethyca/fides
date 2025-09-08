@@ -26,7 +26,7 @@ from fides.api.service.async_dsr.async_dsr_service import (
     execute_read_polling_requests,
     execute_read_result_request,
     get_connection_config_from_task,
-    requeue_polling_request,
+    execute_polling_task,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_polling import (
     PollingAsyncDSRStrategy,
@@ -118,14 +118,14 @@ class TestAsyncDSRService:
         config.get_read_requests_by_identity.return_value = [read_request]
         return config
 
-    def test_requeue_polling_request_invalid_status(
+    def test_execute_polling_task_invalid_status(
         self, mock_db_session, mock_request_task, mock_privacy_request
     ):
         """Test that requeue fails with invalid privacy request status"""
         mock_privacy_request.status = PrivacyRequestStatus.complete
 
         with pytest.raises(PrivacyRequestError) as exc_info:
-            requeue_polling_request(mock_db_session, mock_request_task)
+            execute_polling_task(mock_db_session, mock_request_task)
 
         assert "Cannot re-queue privacy request" in str(exc_info.value)
         assert "with status complete" in str(exc_info.value)
@@ -138,7 +138,7 @@ class TestAsyncDSRService:
     @patch(
         "fides.api.service.async_dsr.async_dsr_service.execute_read_polling_requests"
     )
-    def test_requeue_polling_request_access_task(
+    def test_execute_polling_task_access_task(
         self,
         mock_execute_read,
         mock_create_graph_task,
@@ -164,7 +164,7 @@ class TestAsyncDSRService:
         mock_request_task.action_type = ActionType.access
         mock_request_task.upstream_tasks_objects.return_value = []
 
-        requeue_polling_request(mock_db_session, mock_request_task)
+        execute_polling_task(mock_db_session, mock_request_task)
 
         # Verify the access-specific path was taken
         mock_execute_read.assert_called_once_with(
@@ -182,7 +182,7 @@ class TestAsyncDSRService:
     @patch(
         "fides.api.service.async_dsr.async_dsr_service.execute_erasure_polling_requests"
     )
-    def test_requeue_polling_request_erasure_task(
+    def test_execute_polling_task_erasure_task(
         self,
         mock_execute_erasure,
         mock_create_graph_task,
@@ -206,7 +206,7 @@ class TestAsyncDSRService:
         # Test erasure task requeue
         mock_request_task.action_type = ActionType.erasure
 
-        requeue_polling_request(mock_db_session, mock_request_task)
+        execute_polling_task(mock_db_session, mock_request_task)
 
         # Verify the erasure-specific path was taken
         mock_execute_erasure.assert_called_once_with(

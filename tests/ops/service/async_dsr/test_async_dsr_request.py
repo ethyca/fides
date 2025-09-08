@@ -13,7 +13,7 @@ from fides.api.models.privacy_request import RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.async_dsr.async_dsr_service import requeue_polling_request
+from fides.api.service.async_dsr.async_dsr_service import execute_polling_task
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.task.create_request_tasks import (
@@ -151,7 +151,7 @@ class TestAsyncDsrRequest:
 
             mock_send().json.return_value = {"request_complete": False}
             # Requeue the polling task
-            requeue_polling_request(db, pr.access_tasks[1])
+            execute_polling_task(db, pr.access_tasks[1])
             db.refresh(pr)
             # We are still awaiting for processing and data should be the base response data
             assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
@@ -163,7 +163,7 @@ class TestAsyncDsrRequest:
 
             mock_send().json.return_value = {"request_complete": True}
             # Requeue the polling task
-            requeue_polling_request(db, pr.access_tasks[1])
+            execute_polling_task(db, pr.access_tasks[1])
             time.sleep(10)
             db.refresh(pr)
             # We are still awaiting for processing and data should be the base response data

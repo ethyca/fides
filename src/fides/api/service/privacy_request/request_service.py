@@ -721,19 +721,23 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         with self.get_new_session() as db:
             logger.debug("Polling for async tasks status")
 
-            # Get all tasks that are awaiting processing and are from polling async tasks
-            async_tasks = (
-                db.query(RequestTask)
-                .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
-                .filter(RequestTask.async_type == AsyncTaskType.polling)
-                .all()
+    with self.get_new_session() as db:
+        logger.debug("Polling for async tasks status")
+
+        # Get all tasks that are awaiting processing and are from polling async tasks
+        async_tasks = (
+            db.query(RequestTask)
+            .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+            .filter(RequestTask.async_type == AsyncTaskType.polling)
+            .all()
+        )
+        logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
+
+        if async_tasks:
+            from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
+                execute_polling_task,
             )
             logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
 
-            if async_tasks:
-                from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                    requeue_polling_request,
-                )
-
-                for async_task in async_tasks:
-                    requeue_polling_request(db, async_task)
+            for async_task in async_tasks:
+                execute_polling_task(db, async_task)
