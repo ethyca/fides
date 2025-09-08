@@ -184,7 +184,7 @@ const usePrivacyRequestForm = ({
       }) => {
         toast({
           title,
-          description: error,
+          // description: error,
           ...ErrorToastOptions,
         });
         onClose();

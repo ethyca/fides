@@ -12,7 +12,7 @@ const nextConfig = {
   env: {
     version: importFidesPackageVersion(),
   },
-  transpilePackages: ["react-syntax-highlighter", "fidesui"],
+  transpilePackages: ["react-syntax-highlighter", "fidesui", "rc-utils"],
 
   async rewrites() {
     return [

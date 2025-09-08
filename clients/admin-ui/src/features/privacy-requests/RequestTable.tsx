@@ -12,11 +12,24 @@ import {
   Portal,
   useDisclosure,
   useToast,
+  AntList as List,
+  AntTypography as Typography,
+  AntCard as Card,
+  AntTag as Tag,
+  AntSpin as Spin,
+  AntTooltip as Tooltip,
+  AntRow as Row,
+  AntCol as Col,
+  Icons,
+  AntDivider as Divider,
 } from "fidesui";
+import { formatDate, sentenceCase } from "~/features/common/utils";
 import { useRouter } from "next/router";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
+import { Badge } from "antd";
 
 import { selectToken } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
@@ -36,11 +49,71 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestEntity, Rule } from "~/features/privacy-requests/types";
 
 import AntPaginator from "../common/pagination/AntPaginator";
 import { useAntPaginationContext } from "../common/pagination/PaginationProvider";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+import RequestStatusBadge, {
+  statusPropMap,
+} from "../common/RequestStatusBadge";
+import { Descriptions, Space } from "antd";
+import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import { formatDistance } from "date-fns";
+import Link from "next/link";
+import dayjs from "dayjs";
+
+const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
+  Array.from(
+    new Set(
+      rules
+        .filter((rule) => Object.values(ActionType).includes(rule.action_type))
+        .map((rule) => rule.action_type),
+    ),
+  );
+
+const DAY_IRRELEVANT_STATUSES = [
+  PrivacyRequestStatus.COMPLETE,
+  PrivacyRequestStatus.CANCELED,
+  PrivacyRequestStatus.DENIED,
+  PrivacyRequestStatus.IDENTITY_UNVERIFIED,
+];
+
+const DaysLeft = ({
+  status,
+  daysLeft,
+  timeframe = 45,
+}: {
+  status: PrivacyRequestStatus;
+  daysLeft: number | undefined;
+  timeframe: number | undefined;
+}) => {
+  const showBadge =
+    !DAY_IRRELEVANT_STATUSES.includes(status) && daysLeft !== undefined;
+
+  if (showBadge) {
+    const percentage = (100 * daysLeft) / timeframe;
+    let color = "error";
+    if (percentage < 25) {
+      color = "error";
+    } else if (percentage >= 75) {
+      color = "success";
+    } else {
+      color = "warning";
+    }
+    return (
+      <div>
+        <Tag color={color} bordered={false}>
+          <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
+            <>{daysLeft} days left</>
+          </Tooltip>
+        </Tag>
+      </div>
+    );
+  }
+
+  return <></>;
+};
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const { plus: hasPlus } = useFeatures();
@@ -159,12 +232,149 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
         </Box>
       ) : (
         <Flex vertical gap="middle">
-          <FidesTableV2<PrivacyRequestEntity>
+          {/* <FidesTableV2<PrivacyRequestEntity>
             tableInstance={tableInstance}
             onRowClick={(row) => handleViewDetails(row.id)}
             onSort={handleSort}
             loading={isFetching}
-          />
+          /> */}
+          <Spin spinning={isLoading || isFetching}>
+            <List<PrivacyRequestEntity>
+              itemLayout="vertical"
+              dataSource={requests}
+              renderItem={(item) => {
+                return (
+                  <List.Item>
+                    <Row justify="space-between" gutter={[20, 20]} wrap>
+                      <Col sm={24} md={24} lg={20}>
+                        <Row wrap>
+                          <Col xs={24} sm={18}>
+                            <Flex vertical gap={8}>
+                              <Space wrap>
+                                <Typography.Title
+                                  level={3}
+                                  copyable={{
+                                    text: item.id,
+                                    tooltips: "Copy Request Id",
+                                  }}
+                                >
+                                  {item.policy.name}
+                                </Typography.Title>
+                                <RequestStatusBadge status={item.status} />
+                              </Space>
+                              <Flex gap={8} wrap>
+                                <Tag>{item.source}</Tag>
+                                {getActionTypesFromRules(item.policy.rules)
+                                  .map((actionType) =>
+                                    SubjectRequestActionTypeMap.get(actionType),
+                                  )
+                                  .map((actionType) => (
+                                    <Tag>{actionType}</Tag>
+                                  ))}
+                              </Flex>
+                            </Flex>
+                          </Col>
+                          <Col xs={24} sm={6}>
+                            <Flex justify="end" vertical align="end">
+                              <div>
+                                <Tag bordered={false}>
+                                  <Tooltip title={formatDate(item.created_at)}>
+                                    <Typography.Text>
+                                      {sentenceCase(
+                                        formatDistance(
+                                          new Date(item.created_at),
+                                          new Date(),
+                                          {
+                                            addSuffix: true,
+                                          },
+                                        ),
+                                      )}
+                                    </Typography.Text>
+                                  </Tooltip>
+                                </Tag>
+                              </div>
+
+                              <DaysLeft
+                                daysLeft={item.days_left}
+                                status={item.status}
+                                timeframe={item.policy.execution_timeframe}
+                              />
+                            </Flex>
+                          </Col>
+                        </Row>
+                        <Row gutter={[20, 20]}>
+                          <Col span={12} xs={24} sm={24}>
+                            <Descriptions
+                              layout="vertical"
+                              style={{ paddingTop: 8 }}
+                            >
+                              {Object.values(item.identity)
+                                .concat(
+                                  Object.values(
+                                    item.custom_privacy_request_fields ?? {},
+                                  ),
+                                )
+                                .map(({ label, value }) =>
+                                  value ? (
+                                    <Descriptions.Item
+                                      label={label}
+                                      style={{ paddingBottom: 0 }}
+                                    >
+                                      <Typography.Text copyable>
+                                        {value}
+                                      </Typography.Text>
+                                    </Descriptions.Item>
+                                  ) : null,
+                                )}
+                            </Descriptions>
+                          </Col>
+                        </Row>
+                      </Col>
+                      <Col sm={24} md={24} lg={4}>
+                        <Card size="small" style={{ height: "100%" }}>
+                          <Space.Compact
+                            direction="vertical"
+                            style={{ width: "100%" }}
+                          >
+                            <Link
+                              href={`/privacy-requests/${item.id}`}
+                              passHref
+                              legacyBehavior
+                            >
+                              <Button icon={<Icons.View />}>View</Button>
+                            </Link>
+
+                            {item.status === PrivacyRequestStatus.PENDING ? (
+                              <>
+                                <Button icon={<Icons.Checkmark />}>
+                                  Approve
+                                </Button>
+                                <Button icon={<Icons.Close />}>Deny</Button>
+                                <Button icon={<Icons.TrashCan />}>
+                                  Delete
+                                </Button>
+                              </>
+                            ) : null}
+                            {item.status ===
+                            PrivacyRequestStatus.REQUIRES_INPUT ? (
+                              <Button icon={<Icons.ListChecked />}>
+                                Tasks
+                              </Button>
+                            ) : null}
+                            {item.status ===
+                            PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION ? (
+                              <Button>Finalize Erasure</Button>
+                            ) : null}
+                          </Space.Compact>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </List.Item>
+                );
+              }}
+              bordered
+            />
+          </Spin>
           <AntPaginator total={totalRows ?? 0} align="end" />
         </Flex>
       )}
