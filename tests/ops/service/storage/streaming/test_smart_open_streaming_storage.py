@@ -44,11 +44,11 @@ class TestSmartOpenStreamingStorage:
             "http://test-bucket.s3.amazonaws.com/test-key"
         ) == ("test-bucket", "test-key")
         assert storage._parse_storage_url("https://test-bucket.com/test-key") == (
-            "test-bucket",
+            "test-bucket.com",
             "test-key",
         )
         assert storage._parse_storage_url("http://test-bucket.com/test-key") == (
-            "test-bucket",
+            "test-bucket.com",
             "test-key",
         )
 

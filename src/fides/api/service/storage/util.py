@@ -566,15 +566,12 @@ def resolve_base_path_from_context(
     context = attachment["_context"]
     context_type = context.get("type")
 
-    path_mapping = {
-        "direct": f"data/{context['dataset']}/{context['collection']}/attachments",
-        "nested": f"data/{context['dataset']}/{context['collection']}/attachments",
-        "top_level": "attachments",
-    }
-
-    if context_type in path_mapping:
-        return path_mapping[context_type]
-
+    if context_type in ["direct", "nested"]:
+        dataset = context.get("dataset", "")
+        collection = context.get("collection", "")
+        return f"data/{dataset}/{collection}/attachments"
+    if context_type == "top_level":
+        return "attachments"
     if context.get("key") and context.get("item_id"):
         return f"{context['key']}/{context['item_id']}/attachments"
 
