@@ -26,7 +26,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.async_dsr.async_dsr_service import requeue_polling_request
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
