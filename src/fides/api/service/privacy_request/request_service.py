@@ -47,7 +47,10 @@ INTERRUPTED_TASK_REQUEUE_POLL = "interrupted_task_requeue_poll"
 REQUEUE_INTERRUPTED_TASKS_LOCK = "requeue_interrupted_tasks_lock"
 ASYNC_TASKS_STATUS_POLLING = "async_tasks_status_polling"
 ASYNC_TASKS_STATUS_POLLING_LOCK = "async_tasks_status_polling_lock"
-ASYNC_TASKS_STATUS_POLLING_LOCK_TIMEOUT = 300 #Starting timeout is shorter because the task goes directly to the workers.
+ASYNC_TASKS_STATUS_POLLING_LOCK_TIMEOUT = (
+    300  # Starting timeout is shorter because the task goes directly to the workers.
+)
+
 
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime],
@@ -394,8 +397,6 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
     except Exception as exc:
         logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
         raise
-
-
 
 
 def _get_task_ids_from_dsr_queue(

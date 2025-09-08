@@ -2,7 +2,6 @@ import time
 from unittest import mock
 from unittest.mock import Mock
 
-
 import pytest
 from loguru import logger
 
@@ -10,7 +9,7 @@ from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.models.privacy_request import  RequestTask
+from fides.api.models.privacy_request import RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
