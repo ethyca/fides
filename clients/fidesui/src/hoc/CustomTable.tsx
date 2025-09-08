@@ -55,7 +55,7 @@ export const CustomTable = <RecordType = any,>({
   if (props.rowSelection) {
     rowSelection = {
       ...props.rowSelection,
-      ...(props.rowSelection ? { columnWidth: 1 } : {}),
+      columnWidth: 1,
     };
   }
 
