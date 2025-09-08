@@ -78,9 +78,6 @@ export const taxonomyHandlers = (
   taxonomyType = "sensitivity",
 ) => {
   sensitivityStorage = [...(hasLocalStorage ? readStorage() : initialData)];
-  if (!hasLocalStorage) {
-    sensitivityStorage = [...initialData];
-  }
   writeStorage(sensitivityStorage);
 
   const apiBase = "/api/v1"; // we match relative to avoid hard-coding host
