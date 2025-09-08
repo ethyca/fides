@@ -47,33 +47,22 @@ describe("System management page", () => {
       cy.visit(SYSTEM_ROUTE);
     });
 
-    it("Can render system rows", () => {
-      cy.getByTestId("system-fidesctl_system");
-
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn");
-        cy.getByTestId("delete-btn");
-      });
-      cy.getByTestId("system-demo_analytics_system");
-      cy.getByTestId("system-demo_marketing_system");
-    });
-
-    it("Can search and filter cards", () => {
+    it("Can search and filter", () => {
       cy.getByTestId("system-search").type("demo m{enter}");
 
       cy.wait("@getSystemsWithSearch").then((interception) => {
         expect(interception.request.query.search).to.eq("demo m");
       });
 
-      cy.getByTestId("system-fidesctl_system").should("not.exist");
-      cy.getByTestId("system-demo_analytics_system").should("not.exist");
-      cy.getByTestId("system-demo_marketing_system");
+      cy.getAntTableRow("fidesctl_system").should("not.exist");
+      cy.getAntTableRow("demo_analytics_system").should("not.exist");
+      cy.getAntTableRow("demo_marketing_system");
 
       // erase "m" so that search input is "demo "
       cy.getByTestId("system-search").type("{backspace}");
-      cy.getByTestId("system-fidesctl_system").should("not.exist");
-      cy.getByTestId("system-demo_analytics_system");
-      cy.getByTestId("system-demo_marketing_system");
+      cy.getAntTableRow("fidesctl_system").should("not.exist");
+      cy.getAntTableRow("demo_analytics_system");
+      cy.getAntTableRow("demo_marketing_system");
     });
   });
 
@@ -225,26 +214,26 @@ describe("System management page", () => {
       stubSystemCrud();
     });
 
-    it("Can delete a system from its card", () => {
+    it("Can delete a system", () => {
       cy.visit(SYSTEM_ROUTE);
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("delete-btn").click();
+      cy.getAntTableRow("fidesctl_system").within(() => {
+        cy.getByTestId("system-actions-menu").click();
       });
-      cy.getByTestId("confirmation-modal");
-      cy.getByTestId("continue-btn").click();
+      cy.selectAntDropdownOption("Delete");
+      cy.findByRole("button", { name: "Delete" }).click();
       cy.wait("@deleteSystem").then((interception) => {
         const { url } = interception.request;
         expect(url).to.contain("fidesctl_system");
       });
-      cy.getByTestId("toast-success-msg");
     });
 
     it("Can't delete a system as a viewer", () => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(SYSTEM_ROUTE);
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("delete-btn").should("not.exist");
+      cy.getAntTableRow("fidesctl_system").within(() => {
+        cy.getByTestId("system-actions-menu").click({ force: true });
       });
+      cy.getAntDropdownOption("Delete").should("not.exist");
     });
 
     it("Can render an error on delete", () => {
@@ -259,13 +248,12 @@ describe("System management page", () => {
         },
       }).as("deleteSystemError");
       cy.visit(SYSTEM_ROUTE);
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("delete-btn").click();
+      cy.getAntTableRow("fidesctl_system").within(() => {
+        cy.getByTestId("system-actions-menu").click({ force: true });
       });
-      cy.getByTestId("confirmation-modal");
-      cy.getByTestId("continue-btn").click();
+      cy.selectAntDropdownOption("Delete");
+      cy.findByRole("button", { name: "Delete" }).click();
       cy.wait("@deleteSystemError");
-      cy.getByTestId("toast-error-msg").contains("resource does not exist");
     });
   });
 
@@ -292,11 +280,6 @@ describe("System management page", () => {
       // and can render a not found state
       cy.visit("/systems/configure/system-that-does-not-exist");
       cy.getByTestId("system-not-found");
-    });
-
-    it("Can go to a system's edit page by clicking its card", () => {
-      cy.getByTestId("row-0").click();
-      cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
     it("Can persist fields not directly in the form", () => {
@@ -647,9 +630,7 @@ describe("System management page", () => {
       });
 
       cy.visit(SYSTEM_ROUTE);
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Data flow").click({ force: true });
     });
 

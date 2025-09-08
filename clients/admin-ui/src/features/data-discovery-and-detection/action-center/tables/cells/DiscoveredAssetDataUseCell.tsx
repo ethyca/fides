@@ -103,9 +103,8 @@ const DiscoveredAssetDataUseCell = ({
               key: d,
             }))}
             columnState={columnState}
-            closable
-            onClose={handleDeleteDataUse}
-            closeButtonLabel="Remove data use"
+            tagProps={{ closable: true, closeButtonLabel: "Remove data use" }}
+            onTagClose={handleDeleteDataUse}
           />
         </Space>
       )}
