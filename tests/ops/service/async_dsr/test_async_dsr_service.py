@@ -321,6 +321,8 @@ class TestAsyncDSRService:
             mock_request_task, privacy_request_proceed=True
         )
 
+    @patch("fides.api.service.async_dsr.async_dsr_service.log_task_queued")
+    @patch("fides.api.service.async_dsr.async_dsr_service.queue_request_task")
     def test_execute_read_result_request_no_data(
         self,
         mock_db_session,
@@ -345,7 +347,10 @@ class TestAsyncDSRService:
             identity_data,
         )
 
-        # Verify strategy was called but no task updates occurred
+        # Verify task was updated
         mock_strategy.get_result_request.assert_called_once()
-        mock_request_task.update_status.assert_not_called()
-        mock_request_task.save.assert_not_called()
+        assert mock_request_task.callback_succeeded is True
+        mock_request_task.update_status.assert_called_with(
+            mock_db_session, ExecutionLogStatus.pending
+        )
+        mock_request_task.save.assert_called_with(mock_db_session)

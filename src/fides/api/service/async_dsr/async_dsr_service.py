@@ -171,6 +171,7 @@ def execute_read_result_request(
         )
 
     else:
+        async_task.access_data = []
         logger.info(
             f"Polling request - {async_task.id} is ready but returned no results"
         )
