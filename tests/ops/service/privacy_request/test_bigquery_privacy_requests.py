@@ -39,8 +39,11 @@ def test_create_and_process_access_request_bigquery(
         "identity": {"email": customer_email},
     }
     bigquery_client = bigquery_resources["client"]
+    dataset_name = "fidesopstest"  # Get from connection config if needed
+    table_names = bigquery_resources["table_names"]
+
     with bigquery_client.connect() as connection:
-        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from {dataset_name}.{table_names['employee']} where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.address_id == bigquery_resources["address_id"]
@@ -55,12 +58,22 @@ def test_create_and_process_access_request_bigquery(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_raw_access_results()
-    customer_table_key = "bigquery_example_test_dataset:customer"
+
+    # Get the dynamic dataset key and table names from the fixture
+    table_names = bigquery_resources["table_names"]
+    # The dataset key is the fides_key from the dataset config
+    dataset_key = (
+        bigquery_resources["dataset_key"]
+        if "dataset_key" in bigquery_resources
+        else "bigquery_example_test_dataset"
+    )
+
+    customer_table_key = f"{dataset_key}:{table_names['customer']}"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
-    address_table_key = "bigquery_example_test_dataset:address"
+    address_table_key = f"{dataset_key}:{table_names['address']}"
 
     city = bigquery_resources["city"]
     state = bigquery_resources["state"]
@@ -68,9 +81,9 @@ def test_create_and_process_access_request_bigquery(
     assert results[address_table_key][0]["city"] == city
     assert results[address_table_key][0]["state"] == state
 
-    employee_table_key = "bigquery_example_test_dataset:employee"
+    employee_table_key = f"{dataset_key}:{table_names['employee']}"
     assert len(results[employee_table_key]) == 1
-    assert results["bigquery_example_test_dataset:employee"] != []
+    assert results[employee_table_key] != []
     assert (
         results[employee_table_key][0]["address_id"] == bigquery_resources["address_id"]
     )
@@ -80,11 +93,11 @@ def test_create_and_process_access_request_bigquery(
     assert results[employee_table_key][0]["id"] == bigquery_resources["employee_id"]
 
     # this covers access requests against a partitioned table
-    visit_partitioned_table_key = "bigquery_example_test_dataset:visit_partitioned"
+    visit_partitioned_table_key = f"{dataset_key}:{table_names['visit_partitioned']}"
     assert len(results[visit_partitioned_table_key]) == 1
     assert results[visit_partitioned_table_key][0]["email"] == customer_email
 
-    customer_profile_table_key = "bigquery_example_test_dataset:customer_profile"
+    customer_profile_table_key = f"{dataset_key}:{table_names['customer_profile']}"
     assert len(results[customer_profile_table_key]) == 1
     assert (
         results[customer_profile_table_key][0]["contact_info"]["primary_email"]
@@ -117,8 +130,11 @@ def test_create_and_process_erasure_request_bigquery(
 
     bigquery_client = bigquery_resources["client"]
     # Verifying that employee info exists in db
+    dataset_name = "fidesopstest"
+    table_names = bigquery_resources["table_names"]
+
     with bigquery_client.connect() as connection:
-        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from {dataset_name}.{table_names['employee']} where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.address_id == bigquery_resources["address_id"]
@@ -143,16 +159,17 @@ def test_create_and_process_erasure_request_bigquery(
     pr.delete(db=db)
 
     bigquery_client = bigquery_resources["client"]
+    dataset_name = "fidesopstest"
+    table_names = bigquery_resources["table_names"]
+
     with bigquery_client.connect() as connection:
-        stmt = (
-            f"select name from fidesopstest.customer where email = '{customer_email}';"
-        )
+        stmt = f"select name from {dataset_name}.{table_names['customer']} where email = '{customer_email}';"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.name is None
 
         address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
+        stmt = f"select 'id', city, state from {dataset_name}.{table_names['address']} where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # Not yet masked because these fields aren't targeted by erasure policy
@@ -173,23 +190,26 @@ def test_create_and_process_erasure_request_bigquery(
     )
 
     bigquery_client = bigquery_resources["client"]
+    dataset_name = "fidesopstest"
+    table_names = bigquery_resources["table_names"]
+
     with bigquery_client.connect() as connection:
         address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
+        stmt = f"select 'id', city, state from {dataset_name}.{table_names['address']} where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
             assert row.city is not None
             assert row.state is None
 
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
+        stmt = f"select 'id', city, state from {dataset_name}.{table_names['address']} where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
             assert row.city is not None
             assert row.state is None
 
-        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from {dataset_name}.{table_names['employee']} where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
 
         # Employee records deleted entirely due to collection-level masking strategy override
