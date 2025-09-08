@@ -41,13 +41,13 @@ class Strategy(ABC, Generic[C]):
     """Abstract base class for strategies"""
 
     name: str
-    configuration_model: Type[C]
+    configuration_model: Optional[Type[C]] = None
 
     @classmethod
     def get_strategy(
         cls: Type[T],
         strategy_name: str,
-        configuration: Dict[str, Any],
+        configuration: Optional[Dict[str, Any]] = None,
     ) -> T:
         """
         Returns the strategy given the name and configuration.
@@ -64,7 +64,10 @@ class Strategy(ABC, Generic[C]):
                 f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"
             )
         try:
-            strategy_config = strategy_class.configuration_model(**configuration)
+            if strategy_class.configuration_model:
+                strategy_config = strategy_class.configuration_model(**configuration)
+            else:
+                return strategy_class()  # type: ignore
         except ValidationError as e:
             raise FidesopsValidationError(message=str(e))
         return strategy_class(strategy_config)  # type: ignore

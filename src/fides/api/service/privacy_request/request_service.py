@@ -44,7 +44,12 @@ from fides.config import CONFIG
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
 INTERRUPTED_TASK_REQUEUE_POLL = "interrupted_task_requeue_poll"
+REQUEUE_INTERRUPTED_TASKS_LOCK = "requeue_interrupted_tasks_lock"
 ASYNC_TASKS_STATUS_POLLING = "async_tasks_status_polling"
+ASYNC_TASKS_STATUS_POLLING_LOCK = "async_tasks_status_polling_lock"
+ASYNC_TASKS_STATUS_POLLING_LOCK_TIMEOUT = (
+    300  # Starting timeout is shorter because the task goes directly to the workers.
+)
 
 
 def build_required_privacy_request_kwargs(
@@ -394,9 +399,6 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
         raise
 
 
-REQUEUE_INTERRUPTED_TASKS_LOCK = "requeue_interrupted_tasks_lock"
-
-
 def _get_task_ids_from_dsr_queue(
     redis_client: FidesopsRedis, chunk_size: int = 100
 ) -> Set[str]:
@@ -708,22 +710,29 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
     """
     Poll the status of async tasks that are awaiting processing.
     """
+    with redis_lock(
+        ASYNC_TASKS_STATUS_POLLING_LOCK,
+        ASYNC_TASKS_STATUS_POLLING_LOCK_TIMEOUT,
+    ) as lock:
+        if not lock:
+            logger.debug("Async tasks status polling lock not acquired, skipping")
+            return
+        with self.get_new_session() as db:
+            logger.debug("Polling for async tasks status")
 
-    with self.get_new_session() as db:
-        logger.debug("Polling for async tasks status")
-
-        # Get all tasks that are awaiting processing and are from polling async tasks
-        async_tasks = (
-            db.query(RequestTask)
-            .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
-            .filter(RequestTask.async_type == AsyncTaskType.polling)
-            .all()
-        )
-        if async_tasks:
-            logger.debug(f"Found {len(async_tasks)} async tasks to poll")
-            from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                requeue_polling_request,
+            # Get all tasks that are awaiting processing and are from polling async tasks
+            async_tasks = (
+                db.query(RequestTask)
+                .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+                .filter(RequestTask.async_type == AsyncTaskType.polling)
+                .all()
             )
+            logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
 
-            for async_task in async_tasks:
-                requeue_polling_request(db, async_task)
+            if async_tasks:
+                from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
+                    requeue_polling_request,
+                )
+
+                for async_task in async_tasks:
+                    requeue_polling_request(db, async_task)
