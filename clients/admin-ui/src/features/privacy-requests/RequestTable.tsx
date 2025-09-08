@@ -83,7 +83,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const handleExport = async () => {
     let message;
     try {
-      downloadReport(filters);
+      await downloadReport(filters);
     } catch (error) {
       if (error instanceof Error) {
         message = error.message;

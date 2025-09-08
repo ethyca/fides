@@ -52,7 +52,9 @@ export const useAntPaginationContext = () => {
 export const AntPaginationProvider = ({
   children,
   config,
-}: PropsWithChildren<{ config?: Parameters<typeof useAntPagination>[0] }>) => {
+}: PropsWithChildren<{
+  config?: Partial<Parameters<typeof useAntPagination>[0]>;
+}>) => {
   const pagination = useAntPagination(config);
   return (
     <AntPaginationContext.Provider value={pagination}>
