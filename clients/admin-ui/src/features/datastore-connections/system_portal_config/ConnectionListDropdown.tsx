@@ -72,10 +72,15 @@ type SelectDropdownProps = {
 
 type UseConnectionListDropDown = {
   connectionConfig?: ConnectionConfigurationResponse | null;
+  /**
+   * Connection type identifiers to hide from the dropdown
+   */
+  hiddenTypes?: string[];
 };
 
 export const useConnectionListDropDown = ({
   connectionConfig,
+  hiddenTypes = [],
 }: UseConnectionListDropDown) => {
   const filters = useAppSelector(selectConnectionTypeFilters);
   const { data } = useGetAllConnectionTypesQuery(filters);
@@ -86,10 +91,10 @@ export const useConnectionListDropDown = ({
 
   const sortedItems = useMemo(
     () =>
-      [...connectionOptions].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1,
-      ),
-    [connectionOptions],
+      [...connectionOptions]
+        .filter((option) => !hiddenTypes.includes(option.identifier))
+        .sort((a, b) => (a.human_readable > b.human_readable ? 1 : -1)),
+    [connectionOptions, hiddenTypes],
   );
 
   const dropDownOptions = useMemo(() => {
