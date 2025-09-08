@@ -7,7 +7,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import ActionType, PrivacyRequestStatus
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
+from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRAccessDataConfiguration
 
 
 @pytest.fixture
@@ -148,18 +148,3 @@ def non_async_request_task(db, pending_privacy_request):
     )
     yield request_task
     request_task.delete(db)
-
-
-def polling_async_dsr_configuration() -> PollingAsyncDSRConfiguration:
-    return {
-        "status_request": {
-            "method": "GET",
-            "path": "/status/<status_id>",
-        },
-        "status_path": "status",
-        "result_request": {
-            "method": "GET",
-            "path": "/result/<result_id>",
-        },
-        "result_path": "data",
-    }

@@ -1,12 +1,14 @@
-from abc import ABC
-from typing import Any, Dict, List, Optional
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Union
 
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRBaseConfiguration, RequestIdOrigin
+from fides.api.schemas.saas.strategy_configuration import (
+    PollingAsyncDSRBaseConfiguration,
+    IdSource,
+)
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
@@ -15,16 +17,15 @@ from fides.api.util.saas_util import map_param_values
 
 class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
     """
-    Strategy for polling async DSR requests.
+    Base strategy for polling async DSR requests.
     """
-
-    name = "polling"
-    configuration_model = PollingAsyncDSRBaseConfiguration
 
     def __init__(self, configuration: PollingAsyncDSRBaseConfiguration):
         self.status_request = configuration.status_request
+        self.status_path = configuration.status_path
         self.status_completed_value = configuration.status_completed_value
         self.result_request = configuration.result_request
+        self.result_path = configuration.result_path
         self.request_id_config = configuration.request_id_config
 
     def extract_request_id(
@@ -38,48 +39,29 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
 
         config = self.request_id_config
 
-        if config.origin == RequestIdOrigin.in_response:
-            return pydash.get(response.json(), config.path)
-        elif config.origin == RequestIdOrigin.in_headers:
-            return response.headers.get(config.path)
-        elif config.origin == RequestIdOrigin.from_path:
-            # Extract from original request path/params
+        if config.id_source == IdSource.path:
+            return pydash.get(response.json(), config.id_path)
+        elif config.id_source == IdSource.generated:
+            # For generated IDs, we should have stored it in param_values
             return param_values.get("request_id")
         raise PrivacyRequestError(
-            f"Request ID origin {config.origin} not supported"
+            f"Request ID source {config.id_source} not supported"
         )
 
-    def start_request(
-        self,
-        start_request: SaaSRequestParams,
-        client: AuthenticatedClient,
-        secrets: Dict[str, Any],
-        identity_data: Dict[str, Any]
-    ) -> bool:
-        """Executes the Start request for the polling DSR"""
-        # Prepare the Request
-
-        # Check if we generate the request_id in the response or we need to get it from the path
-
-
-        # Send the request
-
-    def poll_status_request(
-        self,
-        client: AuthenticatedClient,
-        secrets: Dict[str, Any],
-        identity_data: Dict[str, Any],
-    ) -> bool:
-        """Executes the status requests, and move forward if its true"""
     def get_status_request(
         self,
         client: AuthenticatedClient,
         secrets: Dict[str, Any],
         identity_data: Dict[str, Any],
+        request_id: Optional[str] = None,
     ) -> bool:
-        """Executes the status requests, and move forward if its true"""
+        """Execute status request and return completion status."""
         param_values = secrets.copy()
         param_values.update(identity_data)
+
+        if request_id:
+            param_values["request_id"] = request_id
+
         prepared_status_request = map_param_values(
             "status", "polling request", self.status_request, param_values
         )
@@ -88,31 +70,37 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
 
         if response.ok:
             status_path_value = pydash.get(response.json(), self.status_path)
-            # If the status path value is a boolean, return it
-            if isinstance(status_path_value, bool):
-                return status_path_value
-
-            # if the status path is a string, check if its the expected string value
-            if isinstance(status_path_value, str):
-                if status_path_value == self.status_completed_value:
-                    return True
-
-                return False
-
-            # if the status path is a list, check if the first element is the expected string value
-            if isinstance(status_path_value, list):
-                if status_path_value[0] == self.status_completed_value:
-                    return True
-
-                return False
-            # And if we cant recognize the type, raise an error
-            raise PrivacyRequestError(
-                f"Status request returned an unexpected value: {status_path_value}"
-            )
+            return self._evaluate_status_value(status_path_value)
 
         raise PrivacyRequestError(
             f"Status request failed with status code {response.status_code}"
         )
+
+    def _evaluate_status_value(self, status_path_value: Any) -> bool:
+        """Evaluate if status indicates completion."""
+        # Boolean direct check
+        if isinstance(status_path_value, bool):
+            return status_path_value
+
+        # String comparison with completed value
+        if isinstance(status_path_value, str):
+            if self.status_completed_value:
+                return status_path_value == self.status_completed_value
+            # If no completed value specified, any non-empty string is considered complete
+            return bool(status_path_value)
+
+        # List check (first element)
+        if isinstance(status_path_value, list) and status_path_value:
+            first_element = status_path_value[0]
+            if self.status_completed_value:
+                return first_element == self.status_completed_value
+            return bool(first_element)
+
+        # Unexpected type
+        raise PrivacyRequestError(
+            f"Status request returned an unexpected value: {status_path_value}"
+        )
+
 
     def get_result_request(
         self,

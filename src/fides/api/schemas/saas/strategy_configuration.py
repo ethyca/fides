@@ -208,9 +208,9 @@ class PollingAsyncIdRequestConfiguration(StrategyConfiguration):
     @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         id_source = values.get("id_source")
-        if id_source == IdSource.path and values.get("id_path") is None:
+        if id_source == IdSource.path.value and values.get("id_path") is None:
             raise ValueError("The 'id_path' value must be specified when accessing the request id from the path")
-        if id_source == IdSource.generated and values.get("format") is None:
+        if id_source == IdSource.generated.value and values.get("format") is None:
             raise ValueError("The 'format' value must be specified when generating the request id")
         return values
 
