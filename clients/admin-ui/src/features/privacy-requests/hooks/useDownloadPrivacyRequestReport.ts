@@ -19,10 +19,12 @@ const useDownloadPrivacyRequestReport = () => {
     } else {
       const a = document.createElement("a");
       const csvBlob = new Blob([result.data], { type: "text/csv" });
-      a.href = window.URL.createObjectURL(csvBlob);
+      const csvUrl = window.URL.createObjectURL(csvBlob);
+      a.href = csvUrl;
       a.download = `privacy-request-report.csv`;
       a.click();
       a.remove();
+      window.URL.revokeObjectURL(csvUrl);
       toast({
         status: "success",
         description: "Successfully downloaded Privacy Request report.",

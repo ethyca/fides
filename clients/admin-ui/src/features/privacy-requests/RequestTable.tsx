@@ -18,7 +18,6 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectToken } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import {
@@ -49,7 +48,6 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
   );
   const filters = useSelector(selectPrivacyRequestFilters);
-  const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
