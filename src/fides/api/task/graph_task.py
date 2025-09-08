@@ -116,7 +116,6 @@ def retry(
                     # Run access or erasure request
                     return func(*args, **kwargs)
                 except AwaitingAsyncTask as ex:
-                    traceback.print_exc()
                     logger.warning(
                         "Request Task {} {} {} awaiting async continuation",
                         self.request_task.id if self.request_task.id else None,
