@@ -23,13 +23,13 @@ import {
   useDeleteSystemMutation,
   useGetSystemsQuery,
 } from "~/features/system/system.slice";
-import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import {
   useCreateSystemGroupMutation,
   useGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
-} from "~/features/system/system-groups/system-groups.slice";
+} from "~/features/system/system-groups.slice";
+import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   BasicSystemResponseExtended,

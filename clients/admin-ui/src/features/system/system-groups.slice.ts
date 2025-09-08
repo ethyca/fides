@@ -2,43 +2,44 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { TaxonomyEntity as SystemGroup } from "~/features/taxonomy/types";
+import { TaxonomyEntity } from "~/features/taxonomy/types";
+import { SystemGroup } from "~/types/api/models/SystemGroup";
+import { SystemGroupCreate } from "~/types/api/models/SystemGroupCreate";
+import { SystemGroupUpdate } from "~/types/api/models/SystemGroupUpdate";
 
 const systemGroupApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllSystemGroups: build.query<SystemGroup[], void>({
-      query: () => ({ url: `system_group` }),
+      query: () => ({ url: `system-groups` }),
       providesTags: () => ["System Groups"],
       transformResponse: (systemGroups: SystemGroup[]) =>
         systemGroups.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateSystemGroup: build.mutation<
       SystemGroup,
-      Partial<SystemGroup> & Pick<SystemGroup, "fides_key">
+      SystemGroupUpdate & { fides_key: string }
     >({
-      query: (systemGroup) => ({
-        url: `system_group`,
-        params: { resource_type: "system_group" },
+      query: (group) => ({
+        url: `system-groups/${group.fides_key}`,
         method: "PUT",
-        body: systemGroup,
+        body: group,
       }),
-      invalidatesTags: ["System Groups"],
+      invalidatesTags: ["System Groups", "System"],
     }),
-    createSystemGroup: build.mutation<SystemGroup, Partial<SystemGroup>>({
-      query: (systemGroup) => ({
-        url: `system_group`,
+    createSystemGroup: build.mutation<SystemGroup, SystemGroupCreate>({
+      query: (group) => ({
+        url: `system-groups`,
         method: "POST",
-        body: systemGroup,
+        body: group,
       }),
-      invalidatesTags: ["System Groups"],
+      invalidatesTags: ["System Groups", "System"],
     }),
-    deleteSystemGroup: build.mutation<string, string>({
-      query: (key) => ({
-        url: `system_group/${key}`,
-        params: { resource_type: "system_group" },
+    deleteSystemGroup: build.mutation<{ fides_key: string }, string>({
+      query: (fides_key) => ({
+        url: `system-groups/${fides_key}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["System Groups"],
+      invalidatesTags: ["System Groups", "System"],
     }),
   }),
 });
@@ -63,16 +64,22 @@ export const systemGroupSlice = createSlice({
 const emptySystemGroups: SystemGroup[] = [];
 export const selectSystemGroups: (state: RootState) => SystemGroup[] =
   createSelector(
-    [
-      (_state: RootState) => _state,
-      systemGroupApi.endpoints.getAllSystemGroups.select(),
-    ],
-    (_state, { data }) => data ?? emptySystemGroups,
+    systemGroupApi.endpoints.getAllSystemGroups.select(),
+    ({ data }) => data ?? emptySystemGroups,
   );
 
 export const selectEnabledSystemGroups = createSelector(
   selectSystemGroups,
   (items) => items.filter((item) => item.active),
+);
+
+// Compatibility selector for taxonomy hooks that expect TaxonomyEntity[]
+const emptyTaxonomyEntities: TaxonomyEntity[] = [];
+export const selectSystemGroupsAsTaxonomyEntities: (
+  state: RootState,
+) => TaxonomyEntity[] = createSelector(
+  systemGroupApi.endpoints.getAllSystemGroups.select(),
+  ({ data }) => data ?? emptyTaxonomyEntities,
 );
 
 export const { reducer } = systemGroupSlice;

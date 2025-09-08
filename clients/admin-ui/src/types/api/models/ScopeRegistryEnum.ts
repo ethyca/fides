@@ -173,6 +173,7 @@ export enum ScopeRegistryEnum {
   SYSTEM_MANAGER_UPDATE = "system_manager:update",
   SYSTEM_SCAN_CREATE = "system_scan:create",
   SYSTEM_SCAN_READ = "system_scan:read",
+  TAXONOMY_READ = "taxonomy:read",
   TAXONOMY_CREATE = "taxonomy:create",
   TAXONOMY_DELETE = "taxonomy:delete",
   TAXONOMY_UPDATE = "taxonomy:update",

@@ -62,7 +62,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
-import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups/system-groups.slice";
+import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";

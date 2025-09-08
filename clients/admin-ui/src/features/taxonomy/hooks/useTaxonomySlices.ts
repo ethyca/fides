@@ -17,7 +17,7 @@ import {
   useDeleteSystemGroupMutation,
   useLazyGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
-} from "~/features/system-groups/system-group.slice";
+} from "~/features/system/system-groups.slice";
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import {
   useCreateDataCategoryMutation,

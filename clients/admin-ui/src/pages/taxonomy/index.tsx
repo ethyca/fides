@@ -11,7 +11,7 @@ import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-// import { useFeatures } from "~/features/common/features";
+import { useFlags } from "~/features/common/features";
 import {
   enumToOptions,
   getErrorMessage,
@@ -38,6 +38,9 @@ const TaxonomyPage: NextPage = () => {
   const [taxonomyType, setTaxonomyType] = useState<string>(
     TaxonomyTypeEnum.DATA_CATEGORY,
   );
+  const {
+    flags: { alphaSystemGroups: isAlphaSystemGroupsEnabled },
+  } = useFlags();
   // const features = useFeatures();
   // const isPlusEnabled = features.plus;
   const isPlusEnabled = true;
@@ -72,6 +75,16 @@ const TaxonomyPage: NextPage = () => {
     setLastCreatedItemKey(null);
     setTaxonomyItemToEdit(null);
   }, [taxonomyType]);
+
+  // Redirect away from system groups if alpha flag is disabled
+  useEffect(() => {
+    if (
+      taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP &&
+      (!isPlusEnabled || !isAlphaSystemGroupsEnabled)
+    ) {
+      setTaxonomyType(TaxonomyTypeEnum.DATA_CATEGORY);
+    }
+  }, [taxonomyType, isPlusEnabled, isAlphaSystemGroupsEnabled]);
 
   const toast = useToast();
   const createNewLabel = useCallback(
@@ -148,7 +161,7 @@ const TaxonomyPage: NextPage = () => {
                 const items = enumToOptions(CoreTaxonomiesEnum)
                   .filter(
                     (opt) =>
-                      isPlusEnabled ||
+                      (isPlusEnabled && isAlphaSystemGroupsEnabled) ||
                       opt.value !== CoreTaxonomiesEnum.SYSTEM_GROUPS,
                   )
                   .map((e) => ({

@@ -16,7 +16,10 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
-import { TAXONOMY_ROOT_NODE_ID } from "~/features/taxonomy/constants";
+import {
+  TAXONOMY_ROOT_NODE_ID,
+  taxonomyTypeToLabel,
+} from "~/features/taxonomy/constants";
 import { TaxonomyTreeHoverProvider } from "~/features/taxonomy/context/TaxonomyTreeHoverContext";
 import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
@@ -67,7 +70,7 @@ const TaxonomyInteractiveTree = ({
       id: TAXONOMY_ROOT_NODE_ID,
       position: { x: 0, y: 0 },
       data: {
-        label: taxonomyType,
+        label: taxonomyTypeToLabel(taxonomyType),
         taxonomyItem: {
           fides_key: TAXONOMY_ROOT_NODE_ID,
         },

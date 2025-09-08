@@ -19,6 +19,22 @@ export enum CoreTaxonomiesEnum {
   SYSTEM_GROUPS = "System groups", // Plus-only, but still protected
 }
 
+export const taxonomyTypeToLabel = (taxonomyType: string): string => {
+  switch (taxonomyType) {
+    case TaxonomyTypeEnum.DATA_CATEGORY:
+      return CoreTaxonomiesEnum.DATA_CATEGORIES;
+    case TaxonomyTypeEnum.DATA_USE:
+      return CoreTaxonomiesEnum.DATA_USES;
+    case TaxonomyTypeEnum.DATA_SUBJECT:
+      return CoreTaxonomiesEnum.DATA_SUBJECTS;
+    case TaxonomyTypeEnum.SYSTEM_GROUP:
+      return CoreTaxonomiesEnum.SYSTEM_GROUPS;
+    default:
+      // Fallback to the original key if no mapping is found
+      return taxonomyType;
+  }
+};
+
 export const taxonomyKeyToScopeRegistryEnum = (taxonomyKey: string) => {
   switch (taxonomyKey) {
     case TaxonomyTypeEnum.DATA_CATEGORY:
@@ -54,7 +70,7 @@ export const taxonomyKeyToScopeRegistryEnum = (taxonomyKey: string) => {
         UPDATE: ScopeRegistryEnum.TAXONOMY_UPDATE,
         CREATE: ScopeRegistryEnum.TAXONOMY_CREATE,
         DELETE: ScopeRegistryEnum.TAXONOMY_DELETE,
-        READ: ScopeRegistryEnum.TAXONOMY_UPDATE,
+        READ: ScopeRegistryEnum.TAXONOMY_READ,
       } as const;
   }
 };
