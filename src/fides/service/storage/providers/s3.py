@@ -1,19 +1,18 @@
 import os
-from typing import Any, Dict, IO, Optional, Union
 from io import BytesIO
+from typing import IO, Any, Dict, Optional, Union
 
 import smart_open
-
 from botocore.exceptions import ClientError, NoCredentialsError
-from loguru import logger
-
 from fideslang.validation import AnyHttpUrlString
-from .base import StorageProvider, StorageResponse, StorageMetadata
+from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 from fides.api.service.storage.s3 import create_presigned_url_for_s3, get_s3_client
 from fides.api.util.aws_util import get_aws_session
+
+from .base import StorageMetadata, StorageProvider, StorageResponse
 
 
 class S3StorageProvider(StorageProvider):

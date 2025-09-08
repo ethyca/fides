@@ -1,11 +1,12 @@
 from typing import Any, Dict
 
+from fides.api.models.storage import StorageConfig
+from fides.api.schemas.storage.storage import StorageType
+
 from .base import StorageProvider
-from .s3 import S3StorageProvider
 from .gcs import GCSStorageProvider
 from .local import LocalStorageProvider
-from fides.api.schemas.storage.storage import StorageType
-from fides.api.models.storage import StorageConfig
+from .s3 import S3StorageProvider
 
 
 class StorageProviderFactory:

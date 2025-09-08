@@ -8,7 +8,7 @@ import requests
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
-from fides.service.storage.privacy_request_storage_service import PrivacyRequestStorageService
+
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
@@ -91,6 +91,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.storage.privacy_request_storage_service import (
+    PrivacyRequestStorageService,
+)
 
 
 class ManualWebhookResults(FidesSchema):

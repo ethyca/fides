@@ -3,14 +3,15 @@ AttachmentService handles all attachment operations.
 Complete abstraction for attachment lifecycle: create, persist, store, retrieve, delete.
 """
 
-from typing import IO, Tuple, Dict, Any
 from io import BytesIO
-from sqlalchemy.orm import Session
-from loguru import logger as log
-from fides.api.models.attachment import Attachment
+from typing import IO, Any, Dict, Tuple
+
 from fideslang.validation import AnyHttpUrlString
+from loguru import logger as log
+from sqlalchemy.orm import Session
+
+from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.service.storage import StorageService
-from fides.api.models.attachment import AttachmentReference
 
 # 7 days in seconds - max allowed expiration time for presigned URLs
 MAX_TTL_SECONDS = 604800
@@ -90,7 +91,10 @@ class AttachmentService:
                 attachment.file_key, get_content=False
             )
             if not response.success:
-                raise Exception(f"Failed to get metadata: {response.error_message}")
+                if "File not found" in response.error_message:
+                    raise FileNotFoundError(f"Attachment file not found: {attachment.file_key}")
+                else:
+                    raise Exception(f"Failed to get metadata: {response.error_message}")
 
             # Generate presigned URL
             presigned_url = storage_service.generate_presigned_url(
@@ -125,6 +129,9 @@ class AttachmentService:
 
         except Exception as e:
             log.error(f"Failed to get content for {attachment.id}: {e}")
+            # Check if this is an S3 error wrapped by smart_open and re-raise the original error
+            if hasattr(e, 'backend_error'):
+                raise e.backend_error
             raise
 
     def delete_completely(self, attachment) -> None:
@@ -139,6 +146,20 @@ class AttachmentService:
     def _upload_to_storage(self, attachment, attachment_file: IO[bytes]) -> None:
         """Upload an attachment file to storage."""
         try:
+            # Validate attachment_file parameter
+            if attachment_file is None:
+                # Import here to avoid circular imports
+                from botocore.exceptions import ClientError
+                raise ClientError(
+                    error_response={
+                        'Error': {
+                            'Code': 'InvalidParameterValue',
+                            'Message': "Failed to upload attachment: The 'document' parameter must be a file-like object"
+                        }
+                    },
+                    operation_name='UploadAttachment'
+                )
+
             storage_service = StorageService.from_config(attachment.config)
 
             # Reset file pointer to beginning
@@ -241,7 +262,6 @@ class AttachmentService:
             entity_id: The ID of the entity whose attachments should be deleted
             reference_type: The type of reference (AttachmentReferenceType enum value)
         """
-        from fides.api.models.attachment import AttachmentReference
 
         # Find all attachment references for this entity
         attachment_refs = (

@@ -3,24 +3,22 @@ PrivacyRequestStorageService handles storage operations for privacy request data
 Clean separation of concerns using the unified StorageService.
 """
 
-from typing import Dict, Optional, Set, Any, TYPE_CHECKING
-from sqlalchemy.orm import Session
-from loguru import logger
+from typing import TYPE_CHECKING, Any, Dict, Optional, Set
 
-from fideslang.validation import FidesKey, AnyHttpUrlString
+from fideslang.validation import AnyHttpUrlString, FidesKey
+from loguru import logger
+from sqlalchemy.orm import Session
+
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.storage import StorageConfig
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.storage.storage import (
-    FileNaming,
-    ResponseFormat,
-    StorageDetails,
-)
+    from fides.service.storage.storage_service import StorageService
+
+from fides.api.schemas.storage.storage import FileNaming, ResponseFormat, StorageDetails
 from fides.api.tasks.storage import write_to_in_memory_buffer
-from fides.service.storage import StorageService
 
 
 class PrivacyRequestStorageService:
@@ -82,7 +80,8 @@ class PrivacyRequestStorageService:
             logger.warning("Storage config has no secrets!")
 
         try:
-            # Create unified storage service
+            # Create unified storage service (lazy import to avoid circular import)
+            from fides.service.storage.storage_service import StorageService
             storage_service = StorageService.from_config(storage_config)
 
             # Check if streaming is enabled
@@ -107,7 +106,7 @@ class PrivacyRequestStorageService:
 
     def _upload_standard(
         self,
-        storage_service: StorageService,
+        storage_service: "StorageService",
         privacy_request,  # PrivacyRequest
         data: Dict[str, Any],
         storage_config: StorageConfig,
@@ -153,7 +152,7 @@ class PrivacyRequestStorageService:
 
     def _upload_streaming(
         self,
-        storage_service: StorageService,
+        storage_service: "StorageService",
         privacy_request,  # PrivacyRequest
         data: Dict[str, Any],
         storage_config: StorageConfig,

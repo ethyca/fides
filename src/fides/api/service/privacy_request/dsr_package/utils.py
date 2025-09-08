@@ -1,12 +1,13 @@
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from fideslang.models import Dataset, DatasetField
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+
 from fides.api.schemas.policy import ActionType
 
 
@@ -31,6 +32,7 @@ def get_redaction_entities_map(db: Session) -> set[str]:
 
     try:
         from fides.api.models.datasetconfig import DatasetConfig
+
         dataset_configs = DatasetConfig.all(db=db)
 
         for dataset_config in dataset_configs:

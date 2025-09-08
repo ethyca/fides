@@ -4,10 +4,10 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from loguru import logger
 
+from fides.api.api.deps import get_autoclose_db_session
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.service.attachment.attachment_service import AttachmentService
-from fides.api.api.deps import get_autoclose_db_session
 
 
 @dataclass

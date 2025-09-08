@@ -3,16 +3,16 @@ ExternalDataStorageService handles external storage of large encrypted data.
 Clean implementation using the unified StorageService with automatic encryption.
 """
 
-from typing import Any, Optional
 from io import BytesIO
-from sqlalchemy.orm import Session
+from typing import Any, Optional
+
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.util.encryption.aes_gcm_encryption_util import decrypt_data, encrypt_data
-from fides.service.storage import StorageService
 
 
 class ExternalDataStorageError(Exception):
@@ -114,7 +114,8 @@ class ExternalDataStorageService:
             encrypted_data = encrypt_data(data)
             file_size = len(encrypted_data)
 
-            # Create unified storage service
+            # Create unified storage service (lazy import to avoid circular import)
+            from fides.service.storage.storage_service import StorageService
             storage_service = StorageService.from_config(storage_config)
 
             # Store encrypted data
@@ -160,7 +161,8 @@ class ExternalDataStorageService:
             # Get storage configuration
             storage_config = self._get_storage_config(metadata.storage_key)
 
-            # Create unified storage service
+            # Create unified storage service (lazy import to avoid circular import)
+            from fides.service.storage.storage_service import StorageService
             storage_service = StorageService.from_config(storage_config)
 
             # Retrieve encrypted data
@@ -205,7 +207,8 @@ class ExternalDataStorageService:
             # Get storage configuration
             storage_config = self._get_storage_config(metadata.storage_key)
 
-            # Create unified storage service
+            # Create unified storage service (lazy import to avoid circular import)
+            from fides.service.storage.storage_service import StorageService
             storage_service = StorageService.from_config(storage_config)
 
             # Delete from storage

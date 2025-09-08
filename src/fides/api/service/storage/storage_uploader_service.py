@@ -15,10 +15,10 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
+from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
 
 # Import functions for testing interface compatibility - they now delegate to unified services
-from fides.api.tasks.storage import upload_to_s3, upload_to_gcs, upload_to_local
-from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
+from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
 
 
 def upload(
@@ -116,7 +116,9 @@ def _s3_uploader(
     If `enable_streaming` is configured in the storage config, we use a streaming approach for better memory efficiency.
     Otherwise we fall back to the traditional upload method.
     """
-    logger.warning("_s3_uploader is deprecated. Use PrivacyRequestStorageService instead.")
+    logger.warning(
+        "_s3_uploader is deprecated. Use PrivacyRequestStorageService instead."
+    )
 
     # Create service and delegate to unified interface
     from fides.service.storage import PrivacyRequestStorageService
@@ -138,7 +140,9 @@ def _gcs_uploader(
     """DEPRECATED: Use PrivacyRequestStorageService instead."""
     from fides.service.storage import PrivacyRequestStorageService
 
-    logger.warning("_gcs_uploader is deprecated. Use PrivacyRequestStorageService instead.")
+    logger.warning(
+        "_gcs_uploader is deprecated. Use PrivacyRequestStorageService instead."
+    )
 
     # Create service and delegate to unified interface
     storage_service = PrivacyRequestStorageService(db)
@@ -158,7 +162,9 @@ def _local_uploader(
     """DEPRECATED: Use PrivacyRequestStorageService instead."""
     from fides.service.storage import PrivacyRequestStorageService
 
-    logger.warning("_local_uploader is deprecated. Use PrivacyRequestStorageService instead.")
+    logger.warning(
+        "_local_uploader is deprecated. Use PrivacyRequestStorageService instead."
+    )
 
     # Create service and delegate to unified interface
     storage_service = PrivacyRequestStorageService(db)

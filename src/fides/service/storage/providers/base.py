@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, IO, Optional, Union
-from io import BytesIO
 from dataclasses import dataclass
+from io import BytesIO
+from typing import IO, Any, Dict, Optional, Union
 
 from fideslang.validation import AnyHttpUrlString
 

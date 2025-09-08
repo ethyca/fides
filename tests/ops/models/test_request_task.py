@@ -12,9 +12,9 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
-from fides.service.storage.external_data_storage_service import ExternalDataStorageError
 from fides.api.service.storage.util import get_local_filename
 from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
+from fides.service.storage.external_data_storage_service import ExternalDataStorageError
 
 
 class TestRequestTask:

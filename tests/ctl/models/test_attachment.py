@@ -178,21 +178,45 @@ class TestAttachmentCreation:
         mock_blob.name = "test_blob"
         mock_blob.size = len(attachment_file_copy)
         mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+        mock_blob.download_as_bytes = MagicMock(return_value=attachment_file_copy)
+        mock_blob.exists = MagicMock(return_value=True)
         mock_blob.reload = MagicMock(return_value=None)
+        mock_blob.upload_from_string = MagicMock(return_value=None)
 
-        # Configure the bucket to always return our mock blob
-        mock_bucket.blob.return_value = mock_blob
+        # Configure the bucket to always return our mock blob for any file_key
+        def create_mock_blob(file_key):
+            # Create a new mock blob for each request but with same behavior
+            new_mock_blob = MagicMock()
+            new_mock_blob.name = file_key
+            new_mock_blob.size = len(attachment_file_copy)
+            new_mock_blob.download_to_file = types.MethodType(mock_download_to_file, new_mock_blob)
+            new_mock_blob.download_as_bytes = MagicMock(return_value=attachment_file_copy)
+            new_mock_blob.exists = MagicMock(return_value=True)
+            new_mock_blob.reload = MagicMock(return_value=None)
+            new_mock_blob.upload_from_string = MagicMock(return_value=None)
+            new_mock_blob.delete = MagicMock(return_value=None)
+            new_mock_blob.generate_signed_url = MagicMock(return_value=f"https://storage.googleapis.com/test-bucket/{file_key}")
+            return new_mock_blob
 
-        # Patch both the model and service layer GCS client imports
+        mock_bucket.blob.side_effect = create_mock_blob
+
+        # Patch all GCS client imports - use same client instance always
+        def get_mock_client(*args, **kwargs):
+            return mock_gcs_client
+
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock1,
             patch(
                 "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock2,
+            patch(
+                "fides.service.storage.providers.gcs.get_gcs_client",
+                side_effect=get_mock_client,
+            ) as mock3,
         ):
             attachment = Attachment.create_and_upload(
                 db=db, data=attachment_data, attachment_file=attachment_file[1]
@@ -283,21 +307,45 @@ class TestAttachmentRetrieval:
         mock_blob.name = "test_blob"
         mock_blob.size = len(attachment_file_copy)
         mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+        mock_blob.download_as_bytes = MagicMock(return_value=attachment_file_copy)
+        mock_blob.exists = MagicMock(return_value=True)
         mock_blob.reload = MagicMock(return_value=None)
+        mock_blob.upload_from_string = MagicMock(return_value=None)
 
-        # Configure the bucket to always return our mock blob
-        mock_bucket.blob.return_value = mock_blob
+        # Configure the bucket to always return our mock blob for any file_key
+        def create_mock_blob(file_key):
+            # Create a new mock blob for each request but with same behavior
+            new_mock_blob = MagicMock()
+            new_mock_blob.name = file_key
+            new_mock_blob.size = len(attachment_file_copy)
+            new_mock_blob.download_to_file = types.MethodType(mock_download_to_file, new_mock_blob)
+            new_mock_blob.download_as_bytes = MagicMock(return_value=attachment_file_copy)
+            new_mock_blob.exists = MagicMock(return_value=True)
+            new_mock_blob.reload = MagicMock(return_value=None)
+            new_mock_blob.upload_from_string = MagicMock(return_value=None)
+            new_mock_blob.delete = MagicMock(return_value=None)
+            new_mock_blob.generate_signed_url = MagicMock(return_value=f"https://storage.googleapis.com/test-bucket/{file_key}")
+            return new_mock_blob
 
-        # Patch both the model and service layer GCS client imports
+        mock_bucket.blob.side_effect = create_mock_blob
+
+        # Patch all GCS client imports - use same client instance always
+        def get_mock_client(*args, **kwargs):
+            return mock_gcs_client
+
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock1,
             patch(
                 "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock2,
+            patch(
+                "fides.service.storage.providers.gcs.get_gcs_client",
+                side_effect=get_mock_client,
+            ) as mock3,
         ):
             attachment = Attachment.create_and_upload(
                 db=db, data=attachment_data, attachment_file=attachment_file[1]
@@ -405,21 +453,45 @@ class TestAttachmentDeletion:
         mock_blob.name = "test_blob"
         mock_blob.size = len(attachment_file_copy)
         mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+        mock_blob.download_as_bytes = MagicMock(return_value=attachment_file_copy)
+        mock_blob.exists = MagicMock(return_value=True)
         mock_blob.reload = MagicMock(return_value=None)
+        mock_blob.upload_from_string = MagicMock(return_value=None)
 
-        # Configure the bucket to always return our mock blob
-        mock_bucket.blob.return_value = mock_blob
+        # Configure the bucket to always return our mock blob for any file_key
+        def create_mock_blob(file_key):
+            # Create a new mock blob for each request but with same behavior
+            new_mock_blob = MagicMock()
+            new_mock_blob.name = file_key
+            new_mock_blob.size = len(attachment_file_copy)
+            new_mock_blob.download_to_file = types.MethodType(mock_download_to_file, new_mock_blob)
+            new_mock_blob.download_as_bytes = MagicMock(return_value=attachment_file_copy)
+            new_mock_blob.exists = MagicMock(return_value=True)
+            new_mock_blob.reload = MagicMock(return_value=None)
+            new_mock_blob.upload_from_string = MagicMock(return_value=None)
+            new_mock_blob.delete = MagicMock(return_value=None)
+            new_mock_blob.generate_signed_url = MagicMock(return_value=f"https://storage.googleapis.com/test-bucket/{file_key}")
+            return new_mock_blob
 
-        # Patch both the model and service layer GCS client imports
+        mock_bucket.blob.side_effect = create_mock_blob
+
+        # Patch all GCS client imports - use same client instance always
+        def get_mock_client(*args, **kwargs):
+            return mock_gcs_client
+
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock1,
             patch(
                 "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock2,
+            patch(
+                "fides.service.storage.providers.gcs.get_gcs_client",
+                side_effect=get_mock_client,
+            ) as mock3,
         ):
             attachment = Attachment.create_and_upload(
                 db=db, data=attachment_data, attachment_file=attachment_file[1]
@@ -772,16 +844,23 @@ class TestAttachmentContentRetrieval:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
-        # Patch both the model and service layer GCS client imports
+        # Patch all GCS client imports - use same client instance always
+        def get_mock_client(*args, **kwargs):
+            return mock_gcs_client
+
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock1,
             patch(
                 "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
+                side_effect=get_mock_client,
             ) as mock2,
+            patch(
+                "fides.service.storage.providers.gcs.get_gcs_client",
+                side_effect=get_mock_client,
+            ) as mock3,
         ):
             # Create and upload the attachment
             attachment = Attachment.create_and_upload(

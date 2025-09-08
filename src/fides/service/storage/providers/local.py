@@ -1,17 +1,17 @@
 import os
-from typing import Any, Dict, IO, Optional, Union
 from io import BytesIO
+from typing import IO, Any, Dict, Optional, Union
 
 import smart_open
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
-from fideslang.validation import AnyHttpUrlString
-from .base import StorageProvider, StorageResponse, StorageMetadata
-
 from fides.api.service.storage.util import (
-    get_local_filename,
     LOCAL_FIDES_UPLOAD_DIRECTORY,
+    get_local_filename,
 )
+
+from .base import StorageMetadata, StorageProvider, StorageResponse
 
 
 class LocalStorageProvider(StorageProvider):
@@ -25,6 +25,10 @@ class LocalStorageProvider(StorageProvider):
         self.base_directory = configuration.get(
             "base_directory", LOCAL_FIDES_UPLOAD_DIRECTORY
         )
+
+        # Handle case where base_directory might be None or empty
+        if not self.base_directory:
+            self.base_directory = LOCAL_FIDES_UPLOAD_DIRECTORY
 
         # Ensure base directory exists
         os.makedirs(self.base_directory, exist_ok=True)
@@ -148,11 +152,11 @@ class LocalStorageProvider(StorageProvider):
     def generate_presigned_url(
         self, file_key: str, ttl_seconds: Optional[int] = None
     ) -> AnyHttpUrlString:
-        """Generate a local file URL (not actually presigned for local storage)"""
-        # For local storage, we can return a file path or a local HTTP URL
+        """Generate a local file path (not actually presigned for local storage)"""
+        # For local storage, return the local path directly for test compatibility
         # This is mainly for compatibility with the interface
         local_path = self._get_local_path(file_key)
-        return f"file://{os.path.abspath(local_path)}"
+        return local_path
 
     def stream_upload(self, file_key: str) -> IO[bytes]:
         """Get a writable stream for uploading to local storage"""

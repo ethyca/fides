@@ -10,10 +10,12 @@ from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.storage.privacy_request_storage_service import (
+    PrivacyRequestStorageService,
+)
 from fides.service.system.system_service import SystemService
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.user.user_service import UserService
-from fides.service.storage.privacy_request_storage_service import PrivacyRequestStorageService
 
 
 def get_messaging_service(

@@ -3,11 +3,11 @@ import os
 import pytest
 
 from fides.api.schemas.external_storage import ExternalStorageMetadata
+from fides.api.service.storage.util import get_local_filename
 from fides.service.storage.external_data_storage_service import (
     ExternalDataStorageError,
     ExternalDataStorageService,
 )
-from fides.api.service.storage.util import get_local_filename
 
 
 class TestExternalDataStorageService:

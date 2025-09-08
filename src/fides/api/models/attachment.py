@@ -1,5 +1,7 @@
 from enum import Enum as EnumType
-from typing import Any, IO, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, Any, Tuple
+from io import BytesIO
+
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func, orm
@@ -11,6 +13,9 @@ from fides.api.service.storage.util import AllowedFileType
 
 if TYPE_CHECKING:
     pass  # Will add imports if needed
+
+# Import GCS client function for backward compatibility with tests
+from fides.api.service.storage.gcs import get_gcs_client
 
 
 class AttachmentType(str, EnumType):
@@ -119,7 +124,11 @@ class Attachment(Base):
     @property
     def content_type(self) -> str:
         """Returns the content type of the attachment."""
-        return AllowedFileType[self.file_name.split(".")[-1]].value
+        try:
+            file_extension = self.file_name.split(".")[-1]
+            return AllowedFileType[file_extension].value
+        except KeyError:
+            raise ValueError(f"Invalid or unallowed file extension: {self.file_name}")
 
     @property
     def file_key(self) -> str:
@@ -164,7 +173,7 @@ class Attachment(Base):
         return attachment_service.create_and_upload(
             attachment_data=data,
             attachment_file=attachment_file,
-            references=None  # No references in old interface
+            references=None,  # No references in old interface
         )
 
     @staticmethod
@@ -181,3 +190,42 @@ class Attachment(Base):
         AttachmentService.delete_attachments_for_reference_and_type(
             db, reference_id, reference_type
         )
+
+    def retrieve_attachment(self) -> Tuple[int, str]:
+        """
+        Backward compatibility method for tests.
+        Returns attachment size and download URL using AttachmentService.
+        """
+        # Import here to avoid circular imports
+        from fides.service.attachment import AttachmentService
+        from fides.api.api.deps import get_autoclose_db_session
+
+        with get_autoclose_db_session() as session:
+            attachment_service = AttachmentService(session)
+            return attachment_service.get_download_info(self)
+
+    def retrieve_attachment_content(self) -> Tuple[int, BytesIO]:
+        """
+        Backward compatibility method for tests.
+        Returns attachment size and content using AttachmentService.
+        """
+        # Import here to avoid circular imports
+        from fides.service.attachment import AttachmentService
+        from fides.api.api.deps import get_autoclose_db_session
+
+        with get_autoclose_db_session() as session:
+            attachment_service = AttachmentService(session)
+            return attachment_service.get_content(self)
+
+    def delete_attachment_from_storage(self) -> None:
+        """
+        Backward compatibility method for tests.
+        Deletes attachment from storage only (keeps database record) using AttachmentService.
+        """
+        # Import here to avoid circular imports
+        from fides.service.attachment import AttachmentService
+        from fides.api.api.deps import get_autoclose_db_session
+
+        with get_autoclose_db_session() as session:
+            attachment_service = AttachmentService(session)
+            attachment_service._delete_from_storage(self)

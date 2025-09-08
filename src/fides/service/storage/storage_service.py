@@ -1,14 +1,16 @@
-from typing import Any, Dict, IO, Optional, Union
 from io import BytesIO
+from typing import IO, Any, Dict, Optional, Union
 
 from fideslang.validation import AnyHttpUrlString
+
+from fides.api.schemas.storage.storage import StorageType
+
 from .providers.base import StorageProvider, StorageResponse
 from .providers.factory import (
-    create_storage_provider_from_config,
-    create_storage_provider_by_key,
     create_default_storage_provider,
+    create_storage_provider_by_key,
+    create_storage_provider_from_config,
 )
-from fides.api.schemas.storage.storage import StorageType
 
 
 class StorageService:

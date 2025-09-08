@@ -19,8 +19,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
-from fides.service.storage.privacy_request_storage_service import PrivacyRequestStorageService
-from fides.api.service.deps import get_privacy_request_storage_service
+
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
 from fides.api.models.connectionconfig import ConnectionTestStatus
@@ -51,6 +50,7 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
+from fides.api.service.deps import get_privacy_request_storage_service
 
 # REMOVED: from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 # Now using StorageService.validate_connection() method
@@ -73,6 +73,9 @@ from fides.common.api.v1.urn_registry import (
     STORAGE_STATUS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
+)
+from fides.service.storage.privacy_request_storage_service import (
+    PrivacyRequestStorageService,
 )
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)

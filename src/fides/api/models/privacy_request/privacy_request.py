@@ -375,6 +375,7 @@ class PrivacyRequest(
 
         # Use AttachmentService for attachment cleanup
         from fides.service.attachment import AttachmentService
+
         attachment_service = AttachmentService(db)
         attachment_service.delete_attachments_for_entity(
             self.id, AttachmentReferenceType.privacy_request
