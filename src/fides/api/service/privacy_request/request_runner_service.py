@@ -261,14 +261,14 @@ def upload_access_results(
             "Error uploading subject access data for rule {} on policy {}: {}",
             rule.key,
             policy.key,
-            Pii(str(exc)),
+            str(exc),
         )
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
             dataset_name="Access package upload",
             collection_name=None,
-            message="Access package upload failed for privacy request.",
+            message=f"Access package upload failed for privacy request: {str(exc)}",
             action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error
@@ -312,8 +312,14 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     loaded_attachments = [
         attachment
         for attachment in privacy_request.attachments
-        if AttachmentReferenceType.access_manual_webhook
-        not in [ref.reference_type for ref in attachment.references]
+        if not any(
+            ref.reference_type
+            in [
+                AttachmentReferenceType.access_manual_webhook,
+                AttachmentReferenceType.manual_task_submission,
+            ]
+            for ref in attachment.references
+        )
     ]
     attachments = get_attachments_content(loaded_attachments)
     # Process attachments once for both upload and storage
