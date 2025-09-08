@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.69.3b0.post0.dev4"
+    "version": "2.69.3b0.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14578,28 +14578,6 @@
         "title": "AssignStewardRequest",
         "description": "Request schema for assigning a data steward to one or more systems."
       },
-      "AsyncConfig": {
-        "properties": {
-          "strategy": {
-            "$ref": "#/components/schemas/AsyncStrategy"
-          }
-        },
-        "type": "object",
-        "required": [
-          "strategy"
-        ],
-        "title": "AsyncConfig",
-        "description": "Async config only has strategy for now, but could be\nextended with other configuration options when we add polling"
-      },
-      "AsyncStrategy": {
-        "type": "string",
-        "enum": [
-          "callback"
-        ],
-        "const": "callback",
-        "title": "AsyncStrategy",
-        "description": "Async strategies: supports callback for now, but could be\nextended to polling as well in the future"
-      },
       "AuditLogAction": {
         "type": "string",
         "enum": [
@@ -25037,7 +25015,7 @@
           "async_config": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AsyncConfig"
+                "$ref": "#/components/schemas/Strategy"
               },
               {
                 "type": "null"
@@ -25937,7 +25915,7 @@
           "async_config": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AsyncConfig"
+                "$ref": "#/components/schemas/Strategy"
               },
               {
                 "type": "null"
@@ -26993,14 +26971,20 @@
             "title": "Strategy"
           },
           "configuration": {
-            "type": "object",
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Configuration"
           }
         },
         "type": "object",
         "required": [
-          "strategy",
-          "configuration"
+          "strategy"
         ],
         "title": "Strategy",
         "description": "General shape for swappable strategies (ex: auth, processors, pagination, etc.)"
