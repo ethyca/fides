@@ -7,7 +7,7 @@ import { SystemGroup } from "~/types/api/models/SystemGroup";
 import { SystemGroupCreate } from "~/types/api/models/SystemGroupCreate";
 import { SystemGroupUpdate } from "~/types/api/models/SystemGroupUpdate";
 
-const systemGroupApi = baseApi.injectEndpoints({
+const systemGroupsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllSystemGroups: build.query<SystemGroup[], void>({
       query: () => ({ url: `system-groups` }),
@@ -50,7 +50,7 @@ export const {
   useUpdateSystemGroupMutation,
   useCreateSystemGroupMutation,
   useDeleteSystemGroupMutation,
-} = systemGroupApi;
+} = systemGroupsApi;
 
 export interface State {}
 const initialState: State = {};
@@ -64,7 +64,7 @@ export const systemGroupSlice = createSlice({
 const emptySystemGroups: SystemGroup[] = [];
 export const selectSystemGroups: (state: RootState) => SystemGroup[] =
   createSelector(
-    systemGroupApi.endpoints.getAllSystemGroups.select(),
+    systemGroupsApi.endpoints.getAllSystemGroups.select(),
     ({ data }) => data ?? emptySystemGroups,
   );
 
@@ -78,7 +78,7 @@ const emptyTaxonomyEntities: TaxonomyEntity[] = [];
 export const selectSystemGroupsAsTaxonomyEntities: (
   state: RootState,
 ) => TaxonomyEntity[] = createSelector(
-  systemGroupApi.endpoints.getAllSystemGroups.select(),
+  systemGroupsApi.endpoints.getAllSystemGroups.select(),
   ({ data }) => data ?? emptyTaxonomyEntities,
 );
 
