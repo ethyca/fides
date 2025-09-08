@@ -20,12 +20,12 @@ const taxonomyApi = baseApi.injectEndpoints({
         const remaining = [...items];
 
         // Add all root items first (no parent)
-        const rootItems = remaining.filter((i) => i.parent_key == null);
+        const rootItems = remaining.filter((i) => i.parent_key === null);
         rootItems.sort((a, b) => a.fides_key.localeCompare(b.fides_key));
         result.push(...rootItems);
 
         // Work through children ensuring their parent already exists in result
-        let pending = remaining.filter((i) => i.parent_key != null);
+        let pending = remaining.filter((i) => i.parent_key !== null);
         while (pending.length > 0) {
           const toAdd = pending.filter((i) =>
             result.some((r) => r.fides_key === i.parent_key),
