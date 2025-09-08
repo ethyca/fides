@@ -9,6 +9,7 @@ import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
 
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
+import SystemGroupEditForm from "./SystemGroupEditForm";
 
 interface TaxonomyEditFormProps {
   initialValues: TaxonomyEntity;
@@ -27,6 +28,23 @@ const TaxonomyEditForm = ({
   taxonomyType,
   isDisabled,
 }: TaxonomyEditFormProps) => {
+  const isDataSubjectType = taxonomyType === TaxonomyTypeEnum.DATA_SUBJECT;
+  const isSystemGroupType = taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP;
+
+  // For system groups, use the dedicated SystemGroupEditForm
+  if (isSystemGroupType) {
+    return (
+      <SystemGroupEditForm
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        form={form}
+        formId={formId}
+        isDisabled={isDisabled}
+      />
+    );
+  }
+
+  // Standard taxonomy form logic
   const handleFinish = (formValues: FormValues) => {
     const updatedTaxonomy: TaxonomyEntity = {
       ...initialValues,
@@ -40,8 +58,6 @@ const TaxonomyEditForm = ({
     }
     onSubmit(updatedTaxonomy);
   };
-
-  const isDataSubjectType = taxonomyType === TaxonomyTypeEnum.DATA_SUBJECT;
 
   return (
     <Form

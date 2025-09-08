@@ -9,7 +9,13 @@ import {
   EditableHeaderCell,
 } from "~/features/common/table/v2/cells";
 import { getColumnHeaderText } from "~/features/common/table/v2/util";
-import { CustomFieldDefinitionWithId, Page_DatamapReport_ } from "~/types/api";
+import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
+import {
+  CustomFieldDefinitionWithId,
+  DATAMAP_GROUPING,
+  Page_DatamapReport_,
+  SystemGroup,
+} from "~/types/api";
 
 import { COLUMN_IDS, DEFAULT_COLUMN_NAMES } from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
@@ -109,7 +115,9 @@ interface DatamapReportColumnProps {
   getDataSubjectDisplayName: (dataSubjectKey: string) => ReactNode;
   datamapReport: Page_DatamapReport_ | undefined;
   customFields: CustomFieldDefinitionWithId[];
+  systemGroups?: SystemGroup[];
   isRenaming?: boolean;
+  groupBy?: string;
 }
 export const getDatamapReportColumns = ({
   onSelectRow,
@@ -118,10 +126,36 @@ export const getDatamapReportColumns = ({
   getDataSubjectDisplayName,
   datamapReport,
   customFields,
+  systemGroups = [],
   isRenaming = false,
+  groupBy,
 }: DatamapReportColumnProps) => {
   const customFieldColumns = getCustomFieldColumns(datamapReport, customFields);
-  return [
+
+  // Helper function to get system group color by fides_key
+  const getSystemGroupColor = (fidesKey: string): string | undefined => {
+    const systemGroup = systemGroups.find(
+      (group) => group.fides_key === fidesKey,
+    );
+    return systemGroup?.label_color
+      ? COLOR_VALUE_MAP[systemGroup.label_color]
+      : undefined;
+  };
+
+  // Helper function to get the dominant color for a group of system groups
+  const getDominantColor = (groupKeys: string[]): string | undefined => {
+    if (!groupKeys || groupKeys.length === 0) {
+      return undefined;
+    }
+    if (groupKeys.length === 1) {
+      return getSystemGroupColor(groupKeys[0]);
+    }
+    // For multiple groups, use white as neutral color (consistent with other columns)
+    return undefined;
+  };
+
+  // Base columns that are always included
+  const baseColumns = [
     columnHelper.accessor((row) => row.system_name, {
       enableGrouping: true,
       id: COLUMN_IDS.SYSTEM_NAME,
@@ -475,7 +509,117 @@ export const getDatamapReportColumns = ({
     columnHelper.accessor((row) => row.uses_profiling, {
       id: COLUMN_IDS.USES_PROFILING,
     }),
+    columnHelper.accessor((row) => row.system_groups, {
+      id: COLUMN_IDS.SYSTEM_GROUPS,
+      cell: (props) => {
+        const value = props.getValue();
+        if (!value || (Array.isArray(value) && value.length === 0)) {
+          return null;
+        }
+        // Convert to display names and get appropriate color
+        const groupNames = Array.isArray(value)
+          ? value.map(
+              (groupKey) =>
+                systemGroups.find((sg) => sg.fides_key === groupKey)?.name ||
+                groupKey,
+            )
+          : [systemGroups.find((sg) => sg.fides_key === value)?.name || value];
+
+        const groupKeys = Array.isArray(value) ? value : [value];
+        const dominantColor = getDominantColor(groupKeys);
+
+        return (
+          <GroupCountBadgeCell
+            suffix="system groups"
+            ignoreZero
+            value={groupNames}
+            tagProps={{
+              color: dominantColor || "white",
+              bordered: false,
+            }}
+            {...props}
+          />
+        );
+      },
+      meta: {
+        width: "auto",
+      },
+    }),
     // Tack on the custom field columns to the end
     ...customFieldColumns,
   ];
+
+  // System group specific columns - only include when grouping by system group
+  const systemGroupColumns = [];
+  if (groupBy === DATAMAP_GROUPING.SYSTEM_GROUP) {
+    systemGroupColumns.push(
+      columnHelper.accessor((row) => row.system_group_fides_key, {
+        id: COLUMN_IDS.SYSTEM_GROUP,
+        cell: (props) => {
+          const value = props.getValue();
+          if (!value || (Array.isArray(value) && value.length === 0)) {
+            return null;
+          }
+          // Convert to display name and get appropriate color
+          const groupName = Array.isArray(value)
+            ? value.map(
+                (groupKey) =>
+                  systemGroups.find((sg) => sg.fides_key === groupKey)?.name ||
+                  groupKey,
+              )
+            : [
+                systemGroups.find((sg) => sg.fides_key === value)?.name ||
+                  value,
+              ];
+
+          const groupKeys = Array.isArray(value) ? value : [value];
+          const dominantColor = getDominantColor(groupKeys);
+
+          return (
+            <GroupCountBadgeCell
+              suffix="system group"
+              ignoreZero
+              value={groupName}
+              tagProps={{
+                color: dominantColor || "white",
+                bordered: false,
+              }}
+              {...props}
+            />
+          );
+        },
+        meta: {
+          width: "auto",
+        },
+      }),
+      columnHelper.accessor((row) => row.system_group_data_uses, {
+        id: COLUMN_IDS.SYSTEM_GROUP_DATA_USES,
+        cell: (props) => {
+          const value = props.getValue();
+          if (!value || (Array.isArray(value) && value.length === 0)) {
+            return null;
+          }
+          return (
+            <GroupCountBadgeCell
+              suffix="data uses"
+              ignoreZero
+              value={
+                isArray(value)
+                  ? map(value, getDataUseDisplayName)
+                  : getDataUseDisplayName(value || "")
+              }
+              tagProps={{ color: "white" }}
+              {...props}
+            />
+          );
+        },
+        meta: {
+          width: "auto",
+        },
+      }),
+    );
+  }
+
+  // Combine all columns
+  return [...baseColumns, ...systemGroupColumns];
 };
