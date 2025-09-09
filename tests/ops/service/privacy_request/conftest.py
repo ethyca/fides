@@ -1,4 +1,7 @@
+import copy
+import random
 from typing import Dict, Generator, List
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.orm import Session
@@ -23,7 +26,6 @@ def create_modified_bigquery_dataset(
     Create a modified BigQuery dataset configuration with the specified table renamed
     to {table}_missing to simulate a missing table scenario.
     """
-    import copy
 
     # Load the original BigQuery dataset
     original_datasets = load_dataset("data/dataset/bigquery_example_test_dataset.yml")
@@ -247,9 +249,6 @@ def bigquery_missing_table_resources(
 ):
     """Create BigQuery resources with tables that have _missing suffix for missing table tests."""
     # Increment the ids by a random number to avoid conflicts on concurrent test runs
-    import random
-    from uuid import uuid4
-
     random_increment = random.randint(1, 99999)
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()

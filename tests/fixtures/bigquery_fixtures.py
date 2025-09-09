@@ -1,6 +1,8 @@
 import ast
+import copy
 import os
 import random
+import uuid
 from datetime import datetime
 from typing import Dict, Generator, List
 from uuid import uuid4
@@ -382,9 +384,6 @@ def bigquery_example_test_dataset_config(
     bigquery_connection_config.save(db=db)
 
     # Create a modified dataset with unique table names for test isolation
-    import copy
-    import uuid
-
     # Generate unique suffix for this test run
     test_uuid = str(uuid.uuid4())[:8]
 
