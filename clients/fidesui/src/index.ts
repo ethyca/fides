@@ -63,6 +63,7 @@ export {
   Menu as AntMenu,
   message as AntMessage,
   Modal as AntModal,
+  notification as AntNotification,
   Pagination as AntPagination,
   Popover as AntPopover,
   Radio as AntRadio,

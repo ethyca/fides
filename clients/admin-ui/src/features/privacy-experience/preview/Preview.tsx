@@ -1,5 +1,9 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import { AntFlex as Flex, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntNotification as notification,
+  Text,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -157,6 +161,18 @@ const Preview = ({
         )
       : null;
   }, [initialValues, noticesOnConfig, values.component]);
+
+  useEffect(() => {
+    if (vendorCount === 0 && values.component === ComponentType.TCF_OVERLAY) {
+      notification.warning({
+        message: "No vendors available",
+        description:
+          "This TCF Overlay will not appear on live sites until you add consent vendors from the Global Vendor List (GVL)",
+        duration: 0,
+        key: "vendor-warning", // Prevent duplicate messages
+      });
+    }
+  }, [vendorCount, values.component]);
 
   useEffect(() => {
     if (
