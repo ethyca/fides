@@ -42,8 +42,9 @@ def create_modified_bigquery_dataset(
         "collections": [],
     }
 
-    # Always use the modified dataset key for self-contained references
-    reference_key = modified_dataset["fides_key"]
+    # Use the modified dataset key for self-contained references
+    # If no reference dataset key is provided, use the modified dataset key
+    reference_key = reference_dataset_key or modified_dataset["fides_key"]
 
     # Copy all collections, but rename the target table to target_table_missing
     # and update any references to maintain dataset integrity
@@ -201,13 +202,11 @@ def bigquery_missing_customer_profile_config(
 @pytest.fixture(scope="function")
 def bigquery_missing_customer_config(
     bigquery_connection_config: ConnectionConfig,
-    bigquery_example_test_dataset_config: DatasetConfig,
     db: Session,
 ) -> Generator[DatasetConfig, None, None]:
     """Dataset configuration with customer renamed to customer_missing (collection with dependencies)."""
-    # Get the reference dataset key from the example dataset config
-    reference_dataset_key = bigquery_example_test_dataset_config.fides_key
-    dataset_data = create_modified_bigquery_dataset("customer", reference_dataset_key)
+    # Create a self-contained missing table dataset without depending on the regular dataset
+    dataset_data = create_modified_bigquery_dataset("customer")
     fides_key = dataset_data["fides_key"]
 
     # Create new connection config with same secrets but different key
@@ -256,14 +255,14 @@ def bigquery_missing_table_resources(
     # Get the dataset name from the connection config
     dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
 
-    # Create table names - create tables with original names
-    # The missing table scenario is created by the dataset configuration referencing _missing tables
+    # Create unique table names for this test to avoid concurrency issues
+    test_uuid = str(uuid4())[:8]  # Short unique identifier
     table_names = {
-        "customer": "customer",  # Create customer table, but dataset config will look for customer_missing
-        "customer_profile": "customer_profile",  # Create customer_profile table, but dataset config will look for customer_profile_missing
-        "address": "address",
-        "employee": "employee",
-        "visit_partitioned": "visit_partitioned",
+        "customer": f"customer_{test_uuid}",  # Create customer table, but dataset config will look for customer_missing
+        "customer_profile": f"customer_profile_{test_uuid}",  # Create customer_profile table, but dataset config will look for customer_profile_missing
+        "address": f"address_{test_uuid}",
+        "employee": f"employee_{test_uuid}",
+        "visit_partitioned": f"visit_partitioned_{test_uuid}",
     }
 
     with bigquery_client.connect() as connection:
