@@ -21,7 +21,7 @@ from fides.api.service.privacy_request.dsr_package.utils import (
     get_redaction_entities_map,
     get_redaction_entities_map_db,
 )
-from tests.ops.service.privacy_request.test_dsr_report_builder import (
+from tests.ops.service.privacy_request.dsr_report_builder.conftest import (
     TestDSRReportBuilderBase,
 )
 
