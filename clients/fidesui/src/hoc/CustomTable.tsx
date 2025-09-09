@@ -74,7 +74,6 @@ export const CustomTable = <RecordType = any,>({
       pagination={paginationDefaults}
       dataSource={dataSource}
       scroll={scroll}
-      rowSelection={rowSelection}
       {...props}
       components={{
         header: {
