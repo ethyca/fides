@@ -3,7 +3,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
@@ -30,11 +30,7 @@ import {
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemHistoryTable from "~/features/system/history/SystemHistoryTable";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import {
-  selectActiveSystem,
-  setActiveSystem,
-  useGetSystemByFidesKeyQuery,
-} from "~/features/system/system.slice";
+import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
 import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
@@ -87,22 +83,14 @@ const useSystemFormTabs = ({
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
-  const { plus: hasPlus } = useFeatures();
+  const showNewIntegrationNotice = isPlusEnabled;
 
-  // Once we have saved the system basics, subscribe to the query so that activeSystem
-  // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
-  const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
-    activeSystem?.fides_key,
-    { skip: !activeSystem },
-  );
+  const systemFidesKey = router.query.id as string;
 
-  useEffect(() => {
-    dispatch(setActiveSystem(systemFromApi));
-  }, [systemFromApi, dispatch]);
+  const { data: activeSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
 
   useEffect(() => {
     if (activeSystem) {
@@ -116,7 +104,6 @@ const useSystemFormTabs = ({
       if (activeSystem === undefined) {
         setShowSaveMessage(true);
       }
-      dispatch(setActiveSystem(system));
       router.push({
         pathname: EDIT_SYSTEM_ROUTE,
         query: { id: system.fides_key },
@@ -140,14 +127,7 @@ const useSystemFormTabs = ({
       };
       toast({ ...toastParams });
     },
-    [
-      activeSystem,
-      dispatch,
-      router,
-      systemOrDatamapRoute,
-      toast,
-      baseOnTabChange,
-    ],
+    [activeSystem, router, systemOrDatamapRoute, toast, baseOnTabChange],
   );
 
   useEffect(() => {
@@ -157,14 +137,9 @@ const useSystemFormTabs = ({
      * When navigating not through a URL path, the return unmount should handle resetting the system
      */
     if (isCreate) {
-      dispatch(setActiveSystem(undefined));
       dispatch(setSuggestions("initial"));
       dispatch(setLockedForGVL(false));
     }
-    return () => {
-      // on unmount, unset the active system
-      dispatch(setActiveSystem(undefined));
-    };
   }, [dispatch, isCreate]);
 
   const { attemptAction } = useIsAnyFormDirty();
@@ -210,8 +185,6 @@ const useSystemFormTabs = ({
       onTabChange("integrations");
     }
   }, [router.query, onTabChange]);
-
-  const showNewIntegrationNotice = hasPlus;
 
   const tabData: NonNullable<TabsProps["items"]> = [
     {
