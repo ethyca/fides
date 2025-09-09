@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.models.event_audit import EventAudit, EventAuditType
+from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.request_context import get_user_id
 
 
@@ -18,6 +18,7 @@ class EventAuditService:
     def create_event_audit(
         self,
         event_type: EventAuditType,
+        status: EventAuditStatus,
         *,
         user_id: Optional[str] = None,
         resource_type: Optional[str] = None,
@@ -32,6 +33,7 @@ class EventAuditService:
             db=self.db,
             data={
                 "event_type": event_type,
+                "status": status,
                 "user_id": user_id or get_user_id(),
                 "resource_type": resource_type,
                 "resource_identifier": resource_identifier,

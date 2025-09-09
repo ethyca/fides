@@ -41,6 +41,11 @@ def upgrade():
         sa.Column(
             "event_details", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
+        sa.Column(
+            "status",
+            sa.Enum("succeeded", "failed", name="eventauditstatus"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -62,9 +67,13 @@ def upgrade():
     op.create_index(
         op.f("ix_event_audit_user_id"), "event_audit", ["user_id"], unique=False
     )
+    op.create_index(
+        op.f("ix_event_audit_status"), "event_audit", ["status"], unique=False
+    )
 
 
 def downgrade():
+    op.drop_index(op.f("ix_event_audit_status"), table_name="event_audit")
     op.drop_index(op.f("ix_event_audit_user_id"), table_name="event_audit")
     op.drop_index(op.f("ix_event_audit_resource_type"), table_name="event_audit")
     op.drop_index(op.f("ix_event_audit_resource_identifier"), table_name="event_audit")

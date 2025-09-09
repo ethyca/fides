@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import pytest
 
-from fides.api.models.event_audit import EventAudit, EventAuditType
+from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.request_context import get_user_id, reset_request_context, set_user_id
 from fides.service.event_audit_service import EventAuditService
 
@@ -43,6 +43,7 @@ class TestCreateEventAudit:
         """Test creating event audit with all fields populated."""
         event_audit = event_audit_service.create_event_audit(
             event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
             user_id="test_user_123",
             resource_type="system",
             resource_identifier="sys_456",
@@ -63,7 +64,8 @@ class TestCreateEventAudit:
     def test_create_event_audit_with_minimal_fields(self, db, event_audit_service):
         """Test creating event audit with only required fields."""
         event_audit = event_audit_service.create_event_audit(
-            event_type=EventAuditType.taxonomy_element_created
+            event_type=EventAuditType.taxonomy_element_created,
+            status=EventAuditStatus.succeeded,
         )
 
         assert event_audit is not None
@@ -81,7 +83,8 @@ class TestCreateEventAudit:
     ):
         """Test that create_event_audit uses user_id from request context when no explicit user_id provided."""
         event_audit = event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_group_created
+            event_type=EventAuditType.system_group_created,
+            status=EventAuditStatus.succeeded,
         )
 
         # Should use the user_id from request context
@@ -93,7 +96,9 @@ class TestCreateEventAudit:
     ):
         """Test that create_event_audit uses explicit user_id instead of request context."""
         event_audit = event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_group_updated, user_id="explicit_user"
+            event_type=EventAuditType.system_group_updated,
+            status=EventAuditStatus.succeeded,
+            user_id="explicit_user",
         )
 
         # Should use explicit user_id, not the one from request context
@@ -123,6 +128,7 @@ class TestCreateEventAudit:
         """Test creating event audits with all available EventAuditType values."""
         event_audit = event_audit_service.create_event_audit(
             event_type=event_type,
+            status=EventAuditStatus.succeeded,
             resource_type="test_resource",
             resource_identifier="test_123",
             description=f"Test event for {event_type.value}",
@@ -152,7 +158,9 @@ class TestCreateEventAudit:
         }
 
         event_audit = event_audit_service.create_event_audit(
-            event_type=EventAuditType.taxonomy_updated, event_details=complex_details
+            event_type=EventAuditType.taxonomy_updated,
+            status=EventAuditStatus.succeeded,
+            event_details=complex_details,
         )
 
         assert event_audit.event_details == complex_details
@@ -164,6 +172,7 @@ class TestCreateEventAudit:
         """Test that created event audit is properly persisted to database."""
         event_audit = event_audit_service.create_event_audit(
             event_type=EventAuditType.system_group_deleted,
+            status=EventAuditStatus.succeeded,
             resource_identifier="persistent_test",
         )
 
@@ -191,6 +200,7 @@ class TestEventAuditServiceQueries:
         events.append(
             event_audit_service.create_event_audit(
                 event_type=EventAuditType.system_updated,
+                status=EventAuditStatus.succeeded,
                 user_id="user_1",
                 resource_type="system",
                 resource_identifier="sys_1",
@@ -201,6 +211,7 @@ class TestEventAuditServiceQueries:
         events.append(
             event_audit_service.create_event_audit(
                 event_type=EventAuditType.system_group_created,
+                status=EventAuditStatus.succeeded,
                 user_id="user_1",
                 resource_type="system_group",
                 resource_identifier="group_1",
@@ -211,6 +222,7 @@ class TestEventAuditServiceQueries:
         events.append(
             event_audit_service.create_event_audit(
                 event_type=EventAuditType.system_group_updated,
+                status=EventAuditStatus.succeeded,
                 user_id="user_2",
                 resource_type="system_group",
                 resource_identifier="group_1",
@@ -221,6 +233,7 @@ class TestEventAuditServiceQueries:
         events.append(
             event_audit_service.create_event_audit(
                 event_type=EventAuditType.taxonomy_element_created,
+                status=EventAuditStatus.succeeded,
                 user_id="user_2",
                 resource_type="taxonomy_element",
                 resource_identifier="elem_1",
@@ -398,13 +411,17 @@ class TestEventAuditServiceQueries:
         import time
 
         first_event = event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_updated, description="First event"
+            event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
+            description="First event",
         )
 
         time.sleep(0.01)  # Small delay to ensure different timestamps
 
         second_event = event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_updated, description="Second event"
+            event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
+            description="Second event",
         )
 
         events = event_audit_service.get_events_by_type(EventAuditType.system_updated)
@@ -520,7 +537,9 @@ class TestEventAuditServiceEdgeCases:
     def test_create_event_audit_with_none_event_details(self, db, event_audit_service):
         """Test creating event audit with None event_details."""
         event_audit = event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_updated, event_details=None
+            event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
+            event_details=None,
         )
 
         assert event_audit.event_details is None
@@ -528,7 +547,9 @@ class TestEventAuditServiceEdgeCases:
     def test_create_event_audit_with_empty_event_details(self, db, event_audit_service):
         """Test creating event audit with empty event_details dictionary."""
         event_audit = event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_updated, event_details={}
+            event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
+            event_details={},
         )
 
         assert event_audit.event_details == {}
@@ -541,6 +562,7 @@ class TestEventAuditServiceEdgeCases:
 
         event_audit = event_audit_service.create_event_audit(
             event_type=EventAuditType.taxonomy_element_created,
+            status=EventAuditStatus.succeeded,
             description=long_description,
         )
 
@@ -548,7 +570,10 @@ class TestEventAuditServiceEdgeCases:
 
     def test_get_events_with_zero_limit(self, db, event_audit_service):
         """Test query methods with zero limit."""
-        event_audit_service.create_event_audit(event_type=EventAuditType.system_updated)
+        event_audit_service.create_event_audit(
+            event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
+        )
 
         events = event_audit_service.get_events_by_type(
             EventAuditType.system_updated, limit=0
@@ -557,7 +582,10 @@ class TestEventAuditServiceEdgeCases:
 
     def test_get_events_with_negative_limit(self, db, event_audit_service):
         """Test query methods with negative limit raises appropriate error."""
-        event_audit_service.create_event_audit(event_type=EventAuditType.system_updated)
+        event_audit_service.create_event_audit(
+            event_type=EventAuditType.system_updated,
+            status=EventAuditStatus.succeeded,
+        )
 
         # PostgreSQL doesn't allow negative LIMIT values
         with pytest.raises(
@@ -578,6 +606,7 @@ class TestEventAuditServiceEdgeCases:
 
         event_audit = event_audit_service.create_event_audit(
             event_type=EventAuditType.taxonomy_updated,
+            status=EventAuditStatus.succeeded,
             resource_identifier="special_chars_🔥",
             description="Testing special chars: 測試",
             event_details=special_chars_data,

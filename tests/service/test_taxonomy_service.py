@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import get_key_from_data
-from fides.api.models.event_audit import EventAudit, EventAuditType
+from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataCategory,
     DataSubject,
@@ -760,6 +760,7 @@ class TestTaxonomyServiceAuditEvents:
         audit_event = audit_events[-1]  # Get the most recent one
         assert audit_event.resource_type == "taxonomy_element"
         assert audit_event.resource_identifier == element.fides_key
+        assert audit_event.status == EventAuditStatus.succeeded
         assert f"Created {taxonomy_type} element: {element.fides_key}" in audit_event.description
         assert audit_event.event_details["taxonomy_type"] == taxonomy_type
         assert audit_event.event_details["fides_key"] == element.fides_key
@@ -796,6 +797,7 @@ class TestTaxonomyServiceAuditEvents:
         audit_event = audit_events[-1]  # Get the most recent one
         assert audit_event.resource_type == "taxonomy_element"
         assert audit_event.resource_identifier == element.fides_key
+        assert audit_event.status == EventAuditStatus.succeeded
         assert f"Updated {taxonomy_type} element: {element.fides_key}" in audit_event.description
         assert audit_event.event_details["taxonomy_type"] == taxonomy_type
         assert audit_event.event_details["name"] == update_data["name"]
@@ -828,6 +830,7 @@ class TestTaxonomyServiceAuditEvents:
         audit_event = audit_events[-1]  # Get the most recent one
         assert audit_event.resource_type == "taxonomy_element"
         assert audit_event.resource_identifier == element.fides_key
+        assert audit_event.status == EventAuditStatus.succeeded
         assert f"Deleted {taxonomy_type} element: {element.fides_key}" in audit_event.description
         assert audit_event.event_details["taxonomy_type"] == taxonomy_type
 

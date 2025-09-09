@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 
 
 class EventAuditType(str, EnumType):
@@ -31,6 +32,13 @@ class EventAuditType(str, EnumType):
     taxonomy_element_deleted = "taxonomy.element.deleted"
 
 
+class EventAuditStatus(str, EnumType):
+    """Status enum for event audit logging."""
+
+    succeeded = "succeeded"
+    failed = "failed"
+
+
 class EventAudit(Base):
     """Audit log for significant business events across the Fides platform."""
 
@@ -51,3 +59,10 @@ class EventAudit(Base):
 
     # Structured data about event
     event_details = Column(JSONB, nullable=True)
+
+    # Status of the event
+    status = Column(
+        EnumColumn(EventAuditStatus),
+        index=True,
+        nullable=False,
+    )
