@@ -282,7 +282,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
                 self._handle_async_read_request_setup(
                     read_request,
-                    request_task
+                    request_task,
+                    input_data
                 )
 
             # check all the values specified by param_values are provided in input_data
@@ -365,6 +366,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self,
         read_request: SaaSRequest,
         request_task: RequestTask,
+        input_data: Dict[str, Any],
     ) -> None:
 
         # Validate async strategy with proper enum value checking
@@ -390,6 +392,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
                 self._save_request_data(request_task, request_data)
+                input_data.update(request_data)
 
     def _save_request_data(
         self,
@@ -397,23 +400,38 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         request_data: Dict[str, Any],
     ) -> None:
         """
-        Saves the request data for future use in the request task on async requests
+        Saves the request data for future use in the request task on async requests.
+        Ensures only one RequestTaskRequestData entry per request task.
         """
         with get_db() as db:
-            # Create new request data entry
-            RequestTaskRequestData.create(
-                db,
-                data={
-                    "request_task_id": request_task.id,
-                    "request_data": request_data,
-                },
-            )
+            # Check if request_data already exists for this task
+            existing_request_data = db.query(RequestTaskRequestData).filter(
+                RequestTaskRequestData.request_task_id == request_task.id
+            ).first()
 
-            logger.info(
-                "Saved request data for task '{}': {}",
-                request_task.id,
-                request_data,
-            )
+            if existing_request_data:
+                # Update existing request data
+                existing_request_data.request_data = request_data
+                existing_request_data.save(db)
+                logger.info(
+                    "Updated existing request data for task '{}': {}",
+                    request_task.id,
+                    request_data,
+                )
+            else:
+                # Create new request data entry
+                RequestTaskRequestData.create(
+                    db,
+                    data={
+                        "request_task_id": request_task.id,
+                        "request_data": request_data,
+                    },
+                )
+                logger.info(
+                    "Created new request data for task '{}': {}",
+                    request_task.id,
+                    request_data,
+                )
 
     def _apply_output_template(
         self,

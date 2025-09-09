@@ -210,6 +210,6 @@ def _prepare_param_values_for_polling(
     param_values = secrets.copy()
     param_values.update(identity_data)
 
-    param_values["request_id"] = _get_request_id_from_storage(request_task)
+    param_values.update({"request_id": _get_request_id_from_storage(request_task)})
 
     return param_values
