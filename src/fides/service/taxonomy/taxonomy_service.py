@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional, Union, overload
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from fides.api.models.event_audit import EventAuditType, EventAuditStatus
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     DataCategory,
     DataSubject,

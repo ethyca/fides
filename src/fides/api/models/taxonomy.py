@@ -88,10 +88,14 @@ class Taxonomy(Base, FidesBase):
         applies_to = data.get("applies_to", [])
 
         # Create a copy of data without applies_to to avoid modifying the input
-        data_without_applies_to = {key: value for key, value in data.items() if key != "applies_to"}
+        data_without_applies_to = {
+            key: value for key, value in data.items() if key != "applies_to"
+        }
 
         # Create the taxonomy
-        taxonomy: Taxonomy = super().create(db=db, data=data_without_applies_to, check_name=check_name)
+        taxonomy: Taxonomy = super().create(
+            db=db, data=data_without_applies_to, check_name=check_name
+        )
 
         # Reconcile allowed usages if applies_to was provided
         if applies_to:
@@ -104,7 +108,9 @@ class Taxonomy(Base, FidesBase):
         applies_to = data.get("applies_to", None)
 
         # Create a copy of data without applies_to to avoid modifying the input
-        data_without_applies_to = {key: value for key, value in data.items() if key != "applies_to"}
+        data_without_applies_to = {
+            key: value for key, value in data.items() if key != "applies_to"
+        }
 
         # Update the base fields
         super().update(db=db, data=data_without_applies_to)
