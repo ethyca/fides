@@ -314,7 +314,7 @@ def privacy_request_csv_download(
             "Time Approved/Denied",
             "Denial Reason",
         ]
-        + with_prefix("Identity", list(identity_columns))
+        + with_prefix("Identity", identity_columns)
         + with_prefix("Custom Field", list(custom_field_columns.values()))
     )
 
@@ -350,7 +350,9 @@ def privacy_request_csv_download(
     return response
 
 
-def extract_custom_field_cells(custom_field_columns, pr):
+def extract_custom_field_cells(
+    custom_field_columns: Dict[str, str], pr: PrivacyRequest
+) -> List[str]:
     custom_fields = pr.get_persisted_custom_privacy_request_fields()
     custom_field_cells = []
     for custom_field_column in custom_field_columns:
@@ -360,16 +362,20 @@ def extract_custom_field_cells(custom_field_columns, pr):
     return custom_field_cells
 
 
-def extract_identity_cells(identity_columns, pr):
+def extract_identity_cells(
+    identity_columns: List[str], pr: PrivacyRequest
+) -> List[str]:
     identity = pr.get_persisted_identity()
     identity_dict = identity.dict()
-    identity_cells = []
+    identity_cells: List[str] = []
     for identity_column in identity_columns:
-        identity_cells.append(identity_dict.get(identity_column))
+        identity_cells.append(identity_dict.get(identity_column))  # type: ignore
     return identity_cells
 
 
-def get_variable_columns(privacy_request_query):
+def get_variable_columns(
+    privacy_request_query: Query,
+) -> tuple[List[str], Dict[str, str]]:
     identity_columns: Set[str] = set()
     custom_field_columns: Dict[str, str] = {}
     for pr in privacy_request_query:
@@ -378,7 +384,7 @@ def get_variable_columns(privacy_request_query):
             custom_field_columns, pr.get_persisted_custom_privacy_request_fields()
         )
 
-    return identity_columns, custom_field_columns
+    return list(identity_columns), custom_field_columns
 
 
 def execution_and_audit_logs_by_dataset_name(
