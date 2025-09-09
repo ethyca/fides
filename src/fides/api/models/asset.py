@@ -29,6 +29,8 @@ class ConsentStatus(str, Enum):
     Consent status of the asset
     """
 
+    cmp_error = "cmp_error"
+    pre_consent = "pre_consent"
     with_consent = "with_consent"
     without_consent = "without_consent"
     exempt = "exempt"

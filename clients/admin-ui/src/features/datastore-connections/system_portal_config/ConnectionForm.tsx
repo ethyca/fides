@@ -12,6 +12,7 @@ import { ConnectorParameters } from "~/features/datastore-connections/system_por
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
   ScopeRegistryEnum,
   SystemType,
 } from "~/types/api";
@@ -31,12 +32,21 @@ type Props = {
   systemFidesKey: string;
 };
 
+// Website integrations have no reason to be linked to systems
+const hiddenConnectionTypes = [
+  ConnectionType.WEBSITE,
+  ConnectionType.TEST_WEBSITE,
+];
+
 const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   const {
     dropDownOptions,
     selectedValue: selectedConnectionOption,
     setSelectedValue: setSelectedConnectionOption,
-  } = useConnectionListDropDown({ connectionConfig });
+  } = useConnectionListDropDown({
+    connectionConfig,
+    hiddenTypes: hiddenConnectionTypes,
+  });
   const filters = useAppSelector(selectDatastoreConnectionFilters);
 
   const { data } = useGetAllDatastoreConnectionsQuery({
@@ -49,7 +59,12 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
 
   useEffect(() => {
     if (data) {
-      setOrphanedConnectionConfigs(data.items);
+      // Filter out website connections from orphaned connections since they
+      // have no reason to be linked to systems
+      const filteredOrphanedConnections = data.items.filter(
+        (config) => !hiddenConnectionTypes.includes(config.connection_type),
+      );
+      setOrphanedConnectionConfigs(filteredOrphanedConnections);
     }
   }, [data]);
 

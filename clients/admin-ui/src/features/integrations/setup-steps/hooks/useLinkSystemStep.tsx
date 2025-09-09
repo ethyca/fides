@@ -2,12 +2,21 @@ import { AntLink } from "fidesui";
 import Link from "next/link";
 
 import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
+import { ConnectionType } from "~/types/api";
 
 import { BaseStepHookParams, Step } from "./types";
 
-export const useLinkSystemStep = ({ connection }: BaseStepHookParams): Step => {
+export const useLinkSystemStep = ({
+  connection,
+}: BaseStepHookParams): Step | null => {
   // Check if the connection has a system_key property to determine if it's linked
   const isComplete = !!connection?.system_key;
+  const isWebsite = connection?.connection_type === ConnectionType.WEBSITE;
+
+  if (isWebsite) {
+    // Website monitors aren't linked to a system
+    return null;
+  }
 
   // Determine the appropriate link URL
   const linkUrl = isComplete
