@@ -138,7 +138,6 @@ export const TcfOverlay = () => {
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
-  const defaultLocale = i18n.getDefaultLocale();
   const userlocale = detectUserLocale(
     navigator,
     options.fidesLocale,
@@ -252,6 +251,9 @@ export const TcfOverlay = () => {
       );
       setIsI18nLoading(true);
     }
+    console.log("userlocale", userlocale);
+    console.log("bestLocale", bestLocale);
+    console.log("DEFAULT_LOCALE", DEFAULT_LOCALE);
     if (!!userlocale && bestLocale !== DEFAULT_LOCALE) {
       // We can only get English GVL translations from the experience.
       // If the user's locale is not English, we need to load them from the api.
@@ -272,7 +274,7 @@ export const TcfOverlay = () => {
   useEffect(() => {
     if (experienceFull) {
       loadMessagesFromExperience(i18n, experienceFull, translationOverrides);
-      if (!userlocale || bestLocale === defaultLocale) {
+      if (!userlocale || bestLocale === DEFAULT_LOCALE) {
         // English (default) GVL translations are part of the full experience, so we load them here.
         loadGVLMessagesFromExperience(i18n, experienceFull);
       } else {
