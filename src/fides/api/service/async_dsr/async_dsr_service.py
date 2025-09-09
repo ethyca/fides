@@ -1,5 +1,8 @@
 from typing import Any, Dict, Optional
 
+from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.api.util.memory_watchdog import memory_limiter
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -23,49 +26,58 @@ from fides.api.task.execute_request_tasks import (
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 
-
+@celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "polling_task_id": LoggerContextKeys.task_id,
+    }
+)
 def execute_polling_task(
-    db: Session,
-    polling_task: RequestTask,
+    self: DatabaseTask,
+    privacy_request_id: str,
+    polling_task_id: str,
 ) -> None:
     """Executes a polling request task from the status onward"""
+    with self.get_new_session() as db:
+        polling_task: RequestTask = RequestTask.get(db, object_id=polling_task_id)
+        privacy_request: PrivacyRequest = polling_task.privacy_request
+        # Check that the privacy request is in processing
+        if  privacy_request.status != PrivacyRequestStatus.in_processing:
+            polling_task.status = ExecutionLogStatus.error
+            polling_task.save(db)
+            raise PrivacyRequestError(
+                f"Cannot execute Polling Task {polling_task.id} for privacy request {privacy_request.id} with status {privacy_request.status.value}"
+            )
 
-    privacy_request: PrivacyRequest = polling_task.privacy_request
-     # Check that the privacy request is in processing
-    if  privacy_request.status != PrivacyRequestStatus.in_processing:
-        polling_task.callback_succeeded = True
-        polling_task.save(db)
-        raise PrivacyRequestError(
-            f"Cannot execute Polling Task {polling_task.id} for privacy request {privacy_request.id} with status {privacy_request.status.value}"
-        )
+        connection_config = get_connection_config_from_task(db, polling_task)
 
-    connection_config = get_connection_config_from_task(db, polling_task)
-
-    with TaskResources(
-        privacy_request,
-        privacy_request.policy,
-        [connection_config],
-        polling_task,
-        db,
-    ) as resources:
-        graph_task: GraphTask = create_graph_task(db, polling_task, resources)
-
-        saas_connector: SaaSConnector = graph_task.connector  # type: ignore
-        saas_connector.set_privacy_request_state(
+        with TaskResources(
             privacy_request,
-            graph_task.execution_node,
+            privacy_request.policy,
+            [connection_config],
             polling_task,
-        )
-        query_config: SaaSQueryConfig = saas_connector.query_config(
-            graph_task.execution_node
-        )  # type: ignore
+            db,
+        ) as resources:
+            graph_task: GraphTask = create_graph_task(db, polling_task, resources)
 
-        if polling_task.action_type == ActionType.access:
-            logger.info(f"Executing read polling requests for {polling_task.id}")
+            saas_connector: SaaSConnector = graph_task.connector  # type: ignore
+            saas_connector.set_privacy_request_state(
+                privacy_request,
+                graph_task.execution_node,
+                polling_task,
+            )
+            query_config: SaaSQueryConfig = saas_connector.query_config(
+                graph_task.execution_node
+            )  # type: ignore
 
-            execute_read_polling_requests(db, polling_task, query_config, saas_connector)
-        elif polling_task.action_type == ActionType.erasure:
-            execute_erasure_polling_requests(db, polling_task, query_config)
+            if polling_task.action_type == ActionType.access:
+                logger.info(f"Executing read polling requests for {polling_task.id}")
+
+                execute_read_polling_requests(db, polling_task, query_config, saas_connector)
+            elif polling_task.action_type == ActionType.erasure:
+                execute_erasure_polling_requests(db, polling_task, query_config)
 
 
 ## Could move to Request Task Class

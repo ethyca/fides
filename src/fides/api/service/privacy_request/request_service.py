@@ -30,6 +30,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
+    cache_task_tracking_key,
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -720,23 +721,27 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         with self.get_new_session() as db:
             logger.debug("Polling for async tasks status")
 
-    with self.get_new_session() as db:
-        logger.debug("Polling for async tasks status")
-
-        # Get all tasks that are awaiting processing and are from polling async tasks
-        async_tasks = (
-            db.query(RequestTask)
-            .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
-            .filter(RequestTask.async_type == AsyncTaskType.polling)
-            .all()
-        )
-        logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
-
-        if async_tasks:
-            from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                execute_polling_task,
+            # Get all tasks that are awaiting processing and are from polling async tasks
+            async_tasks = (
+                db.query(RequestTask)
+                .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+                .filter(RequestTask.async_type == AsyncTaskType.polling)
+                .all()
             )
             logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
 
-            for async_task in async_tasks:
-                execute_polling_task(db, async_task)
+            if async_tasks:
+                from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
+                    execute_polling_task,
+                )
+                logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
+
+                for async_task in async_tasks:
+                    celery_task = execute_polling_task.apply_async(
+                        queue=DSR_QUEUE_NAME,
+                        kwargs={
+                            "polling_task_id": async_task.id,
+                            "privacy_request_id": async_task.privacy_request_id,
+                        },
+                    )
+                    cache_task_tracking_key(async_task.id, celery_task.task_id)
