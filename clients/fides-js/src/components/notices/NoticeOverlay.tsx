@@ -465,7 +465,7 @@ const NoticeOverlay = () => {
                         <div style={{ marginTop: "12px" }}>
                           <button
                             type="button"
-                            className="fides-link-button"
+                            className="fides-link-button fides-vendors-disclosure-link"
                             onClick={() => {
                               setSelectedNoticeKey(props.noticeKey);
                               setIsVendorAssetDisclosureView(true);

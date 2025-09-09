@@ -167,6 +167,9 @@ export const PrivacyExperienceForm = ({
   const {
     values,
     setFieldValue,
+    setFieldError,
+    setFieldTouched,
+    validateForm,
     dirty,
     isValid,
     isSubmitting,
@@ -554,7 +557,7 @@ export const PrivacyExperienceForm = ({
       />
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
-        Assets
+        Vendors & Assets
       </Heading>
       <Collapse
         in={
@@ -567,18 +570,24 @@ export const PrivacyExperienceForm = ({
           <CustomSwitch
             name="allow_vendor_asset_disclosure"
             id="allow_vendor_asset_disclosure"
-            label="Enable Vendor / Asset Disclosure"
+            label="Enable Vendor Disclosure"
             variant="stacked"
             tooltip="If enabled, the consent banner will include a link beneath privacy notices to view the vendors and assets associated with the notice."
             onChange={(checked) => {
               if (checked) {
                 // Default selection to Cookie
-                setFieldValue("asset_disclosure_include_types", [
-                  StagedResourceTypeValue.COOKIE,
-                ]);
+                setFieldValue(
+                  "asset_disclosure_include_types",
+                  [StagedResourceTypeValue.COOKIE],
+                );
               } else {
+                // Clear values and any lingering validation state when disabling
                 setFieldValue("asset_disclosure_include_types", []);
+                setFieldError("asset_disclosure_include_types", undefined);
+                setFieldTouched("asset_disclosure_include_types", false, false);
               }
+              // Re-run validation to immediately reflect schema changes in isValid
+              validateForm();
             }}
           />
         </Box>

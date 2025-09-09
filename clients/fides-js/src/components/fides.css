@@ -239,8 +239,12 @@ div#fides-banner-heading {
 .fides-banner-description a,
 .fides-modal-description a,
 .fides-banner-description .fides-link-button,
-.fides-modal-description .fides-link-button {
-  /* in case HTML rendering is turned on and customer adds a link */
+.fides-modal-description .fides-link-button,
+.fides-link-button.fides-vendors-disclosure-link {
+  /*
+  Used for HTML rendering when customer adds a link
+  as well as vendor disclosure link
+  */
   color: var(--fides-overlay-primary-color);
   text-decoration: underline;
   font-weight: 600;

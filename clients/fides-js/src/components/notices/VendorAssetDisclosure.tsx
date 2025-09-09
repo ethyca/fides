@@ -81,8 +81,10 @@ const VendorAssetDisclosure = ({
                     <tbody>
                       {vendorCookies.map((ck) => (
                         <tr key={`${vendorName}-${ck.name}`}>
-                          <td>
-                            <div>Name: {ck.name}</div>
+                          <td
+                            style={{ paddingBottom: "2px", paddingTop: "2px" }}
+                          >
+                            <div>{ck.name}</div>
                             {ck.description ? (
                               <div>Description: {ck.description}</div>
                             ) : null}
