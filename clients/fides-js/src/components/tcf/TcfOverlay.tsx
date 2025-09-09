@@ -251,9 +251,6 @@ export const TcfOverlay = () => {
       );
       setIsI18nLoading(true);
     }
-    console.log("userlocale", userlocale);
-    console.log("bestLocale", bestLocale);
-    console.log("DEFAULT_LOCALE", DEFAULT_LOCALE);
     if (!!userlocale && bestLocale !== DEFAULT_LOCALE) {
       // We can only get English GVL translations from the experience.
       // If the user's locale is not English, we need to load them from the api.
