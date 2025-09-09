@@ -180,8 +180,12 @@ class TaxonomyService:
         # Update the element via handler
         updated_element = handler.update_element(fides_key, element_data)
 
+        # Return early if element was not found
+        if updated_element is None:
+            return None
+
         # Handle hierarchical activation/deactivation logic at service level
-        if updated_element and "active" in element_data:
+        if "active" in element_data:
             if element_data["active"]:
                 activate_taxonomy_parents(updated_element, self.db)
             else:

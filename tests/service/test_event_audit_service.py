@@ -439,6 +439,7 @@ class TestEventAuditModelDirect:
         """Test EventAudit.create() method with data dictionary."""
         event_data = {
             "event_type": EventAuditType.taxonomy_created.value,
+            "status": EventAuditStatus.succeeded,
             "user_id": "direct_user",
             "resource_type": "taxonomy",
             "resource_identifier": "tax_123",
@@ -458,7 +459,10 @@ class TestEventAuditModelDirect:
 
     def test_event_audit_model_create_minimal_data(self, db):
         """Test EventAudit.create() with minimal required data."""
-        event_data = {"event_type": EventAuditType.system_group_created.value}
+        event_data = {
+            "event_type": EventAuditType.system_group_created.value,
+            "status": EventAuditStatus.succeeded,
+        }
 
         event_audit = EventAudit.create(db=db, data=event_data)
 

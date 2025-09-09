@@ -854,7 +854,9 @@ class TestTaxonomyServiceAuditEvents:
         # Verify audit event was created
         audit_events = (
             db.query(EventAudit)
-            .filter(EventAuditType.taxonomy_element_deleted.value)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_deleted.value
+            )
             .all()
         )
         assert len(audit_events) == initial_count + 1
