@@ -348,6 +348,14 @@ describe("shouldResurfaceBanner", () => {
       expected: false,
     },
     {
+      label: "returns false for TCF when there are no vendors",
+      experience: { ...mockTCFExperience, vendor_count: 0 },
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
       label: "returns false for modal component",
       experience: {
         ...mockExperience,

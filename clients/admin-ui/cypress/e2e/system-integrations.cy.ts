@@ -47,6 +47,12 @@ describe("System integrations", () => {
         .find('[role="menuitem"] p')
         .should("contain.text", "Shopify");
     });
+
+    it("should not display Website in the dropdown", () => {
+      cy.getByTestId("select-dropdown-list")
+        .find('[role="menuitem"] p')
+        .should("not.contain.text", "Website");
+    });
   });
 
   describe("Integration form contents", () => {
