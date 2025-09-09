@@ -21,6 +21,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.69.2...main)
 
+### Added
+- Added new `WebMonitorGroupJob` model and table to store web monitor scan data [#6542](https://github.com/ethyca/fides/pull/6542) https://github.com/ethyca/fides/labels/db-migration
+- Added new values to `ConsentStatus` enum [#6562](https://github.com/ethyca/fides/pull/6562) https://github.com/ethyca/fides/labels/db-migration
+
 ### Changed
 - Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
 
