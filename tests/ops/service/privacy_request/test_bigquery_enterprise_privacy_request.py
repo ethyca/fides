@@ -133,6 +133,7 @@ def validate_erasure_privacy_request(
 
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
+@pytest.mark.serial
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0"],
@@ -218,6 +219,7 @@ def test_access_request(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
+@pytest.mark.serial
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0"],
@@ -297,6 +299,7 @@ def test_erasure_request(
 
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
+@pytest.mark.serial
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0"],
@@ -372,6 +375,7 @@ def test_access_request_multiple_custom_identities(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
+@pytest.mark.serial
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0"],
