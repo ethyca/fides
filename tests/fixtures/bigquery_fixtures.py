@@ -1,8 +1,6 @@
 import ast
-import copy
 import os
 import random
-import uuid
 from datetime import datetime
 from typing import Dict, Generator, List
 from uuid import uuid4
@@ -24,209 +22,6 @@ from fides.api.service.connectors import BigQueryConnector, get_connector
 from .application_fixtures import integration_config
 
 PROJECT_NAME = "prj-sandbox-55855"
-
-
-def _create_test_tables(
-    connection, dataset_name: str, table_names: Dict[str, str]
-) -> None:
-    """Create test tables with unique names for test isolation."""
-    # Create customer table with full schema
-    connection.execute(
-        f"""
-        CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['customer']} (
-            id INT,
-            email STRING,
-            name STRING,
-            created TIMESTAMP,
-            address_id BIGINT,
-            `custom id` STRING,
-            extra_address_data STRUCT<
-                city STRING,
-                house STRING,
-                id INT,
-                state STRING,
-                street STRING,
-                address_id BIGINT
-            >,
-            tags ARRAY<STRING>,
-            purchase_history ARRAY<STRUCT<
-                item_id STRING,
-                price FLOAT64,
-                purchase_date STRING,
-                item_tags ARRAY<STRING>
-            >>
-        )
-    """
-    )
-
-    # Create customer_profile table
-    connection.execute(
-        f"""
-        CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['customer_profile']} (
-            id INT,
-            contact_info STRUCT<
-                primary_email STRING,
-                phone_number STRING
-            >,
-            address STRING
-        )
-    """
-    )
-
-    # Create address table
-    connection.execute(
-        f"""
-        CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['address']} (
-            id BIGINT,
-            house STRING,
-            street STRING,
-            city STRING,
-            state STRING,
-            zip STRING
-        )
-    """
-    )
-
-    # Create employee table
-    connection.execute(
-        f"""
-        CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['employee']} (
-            id INT,
-            email STRING,
-            name STRING,
-            address_id BIGINT
-        )
-    """
-    )
-
-    # Create visit_partitioned table
-    connection.execute(
-        f"""
-        CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['visit_partitioned']} (
-            email STRING,
-            last_visit TIMESTAMP
-        )
-    """
-    )
-
-    # Create all other tables from the dataset configuration
-    # These tables are needed for the privacy request system to work properly
-
-    # Create login table
-    if "login" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['login']} (
-                id INT,
-                customer_id INT,
-                time TIMESTAMP
-            )
-        """
-        )
-
-    # Create orders table
-    if "orders" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['orders']} (
-                id INT,
-                customer_id INT,
-                shipping_address_id INT
-            )
-        """
-        )
-
-    # Create order_item table
-    if "order_item" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['order_item']} (
-                order_id INT,
-                product_id INT,
-                quantity INT
-            )
-        """
-        )
-
-    # Create payment_card table
-    if "payment_card" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['payment_card']} (
-                id INT,
-                customer_id INT,
-                billing_address_id INT,
-                ccn STRING,
-                code STRING,
-                name STRING,
-                preferred BOOLEAN
-            )
-        """
-        )
-
-    # Create product table
-    if "product" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['product']} (
-                id INT,
-                name STRING,
-                price FLOAT64
-            )
-        """
-        )
-
-    # Create report table
-    if "report" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['report']} (
-                id INT,
-                email STRING,
-                name STRING,
-                month INT,
-                total_visits INT,
-                year INT
-            )
-        """
-        )
-
-    # Create service_request table
-    if "service_request" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['service_request']} (
-                id INT,
-                email STRING,
-                alt_email STRING,
-                employee_id INT,
-                opened TIMESTAMP,
-                closed TIMESTAMP
-            )
-        """
-        )
-
-    # Create visit table
-    if "visit" in table_names:
-        connection.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {dataset_name}.{table_names['visit']} (
-                email STRING,
-                last_visit TIMESTAMP
-            )
-        """
-        )
-
-
-def _cleanup_test_tables(
-    connection, dataset_name: str, table_names: Dict[str, str]
-) -> None:
-    """Clean up test tables after test completion."""
-    for table_name in table_names.values():
-        try:
-            connection.execute(f"DROP TABLE IF EXISTS {dataset_name}.{table_name}")
-        except Exception as e:
-            logger.warning(f"Failed to drop table {dataset_name}.{table_name}: {e}")
 
 
 @pytest.fixture(scope="function")
@@ -383,74 +178,13 @@ def bigquery_example_test_dataset_config(
     bigquery_connection_config.key = fides_key
     bigquery_connection_config.save(db=db)
 
-    # Create a modified dataset with unique table names for test isolation
-    # Generate unique suffix for this test run
-    test_uuid = str(uuid.uuid4())[:8]
-
-    # Create a deep copy of the dataset and modify collection names
-    modified_dataset = copy.deepcopy(bigquery_dataset)
-    modified_dataset["fides_key"] = f"{fides_key}_{test_uuid}"
-    modified_dataset["name"] = f"{bigquery_dataset['name']} (Test {test_uuid})"
-
-    # Create a mapping of original collection names to new names
-    collection_name_mapping = {}
-    for collection in modified_dataset["collections"]:
-        original_name = collection["name"]
-        new_name = f"{original_name}_{test_uuid}"
-        collection_name_mapping[original_name] = new_name
-        collection["name"] = new_name
-
-        # Update any references to other collections in fides_meta
-        if "fides_meta" in collection:
-            if "erase_after" in collection["fides_meta"]:
-                collection["fides_meta"]["erase_after"] = [
-                    ref.replace(fides_key, f"{fides_key}_{test_uuid}")
-                    for ref in collection["fides_meta"]["erase_after"]
-                ]
-
-    # Update field references to use new collection names and dataset key
-    for collection in modified_dataset["collections"]:
-        for field in collection.get("fields", []):
-            if "fides_meta" in field and "references" in field["fides_meta"]:
-                for ref in field["fides_meta"]["references"]:
-                    if ref.get("dataset") == fides_key and "field" in ref:
-                        # Update dataset reference
-                        ref["dataset"] = f"{fides_key}_{test_uuid}"
-                        # Update field references like "address.id" to "address_9860ac4d.id"
-                        field_parts = ref["field"].split(".")
-                        if len(field_parts) == 2:
-                            collection_name, field_name = field_parts
-                            if collection_name in collection_name_mapping:
-                                ref["field"] = (
-                                    f"{collection_name_mapping[collection_name]}.{field_name}"
-                                )
-
-            # Also check nested fields
-            if "fields" in field:
-                for nested_field in field["fields"]:
-                    if (
-                        "fides_meta" in nested_field
-                        and "references" in nested_field["fides_meta"]
-                    ):
-                        for ref in nested_field["fides_meta"]["references"]:
-                            if ref.get("dataset") == fides_key and "field" in ref:
-                                # Update dataset reference
-                                ref["dataset"] = f"{fides_key}_{test_uuid}"
-                                field_parts = ref["field"].split(".")
-                                if len(field_parts) == 2:
-                                    collection_name, field_name = field_parts
-                                    if collection_name in collection_name_mapping:
-                                        ref["field"] = (
-                                            f"{collection_name_mapping[collection_name]}.{field_name}"
-                                        )
-
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, modified_dataset)
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
 
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": bigquery_connection_config.id,
-            "fides_key": modified_dataset["fides_key"],
+            "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -687,47 +421,29 @@ def bigquery_resources(
     # Get the dataset name from the connection config
     dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
 
-    # Get unique table names from the dataset configuration
-    # The dataset config has been modified to use unique collection names
-    dataset_graph = bigquery_example_test_dataset_config.get_graph()
-    table_names = {}
-    for collection in dataset_graph.collections:
-        # Map original collection names to unique names
-        # The collection names now have the unique suffix at the end
-        # We need to remove the last part after the last underscore
-        if "_" in collection.name:
-            # Split on underscores and remove the last part (the unique suffix)
-            parts = collection.name.split("_")
-            original_name = "_".join(parts[:-1])
-        else:
-            original_name = collection.name
-        table_names[original_name] = collection.name
-
-    # Debug: print the table_names mapping
-    print(f"DEBUG: table_names = {table_names}")
-
     with bigquery_client.connect() as connection:
-        # Create unique tables for this test
-        _create_test_tables(connection, dataset_name, table_names)
-
         uuid = str(uuid4())
         customer_email = f"customer-{uuid}@example.com"
         customer_name = f"{uuid}"
 
-        # Start with ID 1 since we're creating fresh tables
-        customer_id = 1 + random_increment
-        address_id = 1 + random_increment
+        stmt = f"select max(id) from {dataset_name}.customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + random_increment
+
+        stmt = f"select max(id) from {dataset_name}.address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
         stmt = f"""
-        insert into {dataset_name}.{table_names['address']} (id, house, street, city, state, zip)
+        insert into {dataset_name}.address (id, house, street, city, state, zip)
         values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
         """
         connection.execute(stmt)
 
         stmt = f"""
-            insert into {dataset_name}.{table_names['customer']} (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history)
+            insert into {dataset_name}.customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
         """
 
@@ -735,26 +451,27 @@ def bigquery_resources(
 
         # Insert into customer_profile table
         stmt = f"""
-            insert into {dataset_name}.{table_names['customer_profile']} (id, contact_info, address)
+            insert into {dataset_name}.customer_profile (id, contact_info, address)
             values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
         """
         connection.execute(stmt)
 
         last_visit_date = "2024-10-03 01:00:00"
         stmt = f"""
-            insert into {dataset_name}.{table_names['visit_partitioned']} (email, last_visit)
+            insert into {dataset_name}.visit_partitioned (email, last_visit)
             values ('{customer_email}', '{last_visit_date}');
         """
 
         connection.execute(stmt)
 
-        # Use random_increment instead of select max(id) to avoid conflicts
-        employee_id = customer_id  # Use the same ID as customer for simplicity
+        stmt = f"select max(id) from {dataset_name}.employee;"
+        res = connection.execute(stmt)
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
         stmt = f"""
-           insert into {dataset_name}.{table_names['employee']} (id, email, name, address_id)
+           insert into {dataset_name}.employee (id, email, name, address_id)
            values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
         """
         connection.execute(stmt)
@@ -770,12 +487,22 @@ def bigquery_resources(
             "connector": connector,
             "employee_id": employee_id,
             "employee_email": employee_email,
-            "table_names": table_names,  # Include table names for tests
-            "dataset_key": bigquery_example_test_dataset_config.fides_key,  # Include dataset key for tests
         }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from {dataset_name}.customer where email = '{customer_email}';"
+        connection.execute(stmt)
 
-        # Clean up the unique tables
-        _cleanup_test_tables(connection, dataset_name, table_names)
+        stmt = f"delete from {dataset_name}.customer_profile where contact_info.primary_email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from {dataset_name}.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from {dataset_name}.address where id = {address_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from {dataset_name}.employee where address_id = {address_id};"
+        connection.execute(stmt)
 
 
 @pytest.fixture(scope="function")
@@ -793,37 +520,29 @@ def bigquery_resources_with_namespace_meta(
     # Get the dataset name from the connection config
     dataset_name = bigquery_connection_config.secrets.get("dataset", "fidesopstest")
 
-    # Create unique table names for this test to prevent interference
-    test_uuid = str(uuid4())[:8]  # Short unique identifier
-    table_names = {
-        "customer": f"customer_{test_uuid}",
-        "customer_profile": f"customer_profile_{test_uuid}",
-        "address": f"address_{test_uuid}",
-        "employee": f"employee_{test_uuid}",
-        "visit_partitioned": f"visit_partitioned_{test_uuid}",
-    }
-
     with bigquery_client.connect() as connection:
-        # Create unique tables for this test
-        _create_test_tables(connection, dataset_name, table_names)
         uuid = str(uuid4())
         customer_email = f"customer-{uuid}@example.com"
         customer_name = f"{uuid}"
 
-        # Use unique IDs instead of querying existing tables
-        customer_id = random_increment + 1
-        address_id = random_increment + 1
+        stmt = f"select max(id) from {dataset_name}.customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + random_increment
+
+        stmt = f"select max(id) from {dataset_name}.address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
         stmt = f"""
-        insert into {dataset_name}.{table_names['address']} (id, house, street, city, state, zip)
+        insert into {dataset_name}.address (id, house, street, city, state, zip)
         values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
         """
         connection.execute(stmt)
 
         stmt = f"""
-            insert into {dataset_name}.{table_names['customer']} (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history, created)
+            insert into {dataset_name}.customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history, created)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)], CURRENT_TIMESTAMP);
         """
 
@@ -831,26 +550,27 @@ def bigquery_resources_with_namespace_meta(
 
         # Insert into customer_profile table
         stmt = f"""
-            insert into {dataset_name}.{table_names['customer_profile']} (id, contact_info, address)
+            insert into {dataset_name}.customer_profile (id, contact_info, address)
             values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
         """
         connection.execute(stmt)
 
         last_visit_date = "2024-10-03 01:00:00"
         stmt = f"""
-            insert into {dataset_name}.{table_names['visit_partitioned']} (email, last_visit)
+            insert into {dataset_name}.visit_partitioned (email, last_visit)
             values ('{customer_email}', '{last_visit_date}');
         """
 
         connection.execute(stmt)
 
-        # Use unique employee ID instead of querying existing table
-        employee_id = customer_id
+        stmt = f"select max(id) from {dataset_name}.employee;"
+        res = connection.execute(stmt)
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
         stmt = f"""
-           insert into {dataset_name}.{table_names['employee']} (id, email, name, address_id)
+           insert into {dataset_name}.employee (id, email, name, address_id)
            values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
         """
         connection.execute(stmt)
@@ -866,11 +586,22 @@ def bigquery_resources_with_namespace_meta(
             "connector": connector,
             "employee_id": employee_id,
             "employee_email": employee_email,
-            "table_names": table_names,  # Include table names for tests
         }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from {dataset_name}.customer where email = '{customer_email}';"
+        connection.execute(stmt)
 
-        # Clean up the unique tables
-        _cleanup_test_tables(connection, dataset_name, table_names)
+        stmt = f"delete from {dataset_name}.customer_profile where contact_info.primary_email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from {dataset_name}.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from {dataset_name}.address where id = {address_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from {dataset_name}.employee where address_id = {address_id};"
+        connection.execute(stmt)
 
 
 @pytest.fixture(scope="function")
