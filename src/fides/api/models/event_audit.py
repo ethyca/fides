@@ -1,0 +1,53 @@
+"""EventAudit model and related enums for comprehensive audit logging."""
+
+from enum import Enum as EnumType
+
+from sqlalchemy import Column, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
+
+from fides.api.db.base_class import Base
+
+
+class EventAuditType(str, EnumType):
+    """Hierarchical event types for audit logging - variable depth as needed."""
+
+    # System
+    system_updated = "system.updated"
+
+    # System group
+    system_group_created = "system_group.created"
+    system_group_updated = "system_group.updated"
+    system_group_deleted = "system_group.deleted"
+
+    # Taxonomy
+    taxonomy_created = "taxonomy.created"
+    taxonomy_updated = "taxonomy.updated"
+    taxonomy_deleted = "taxonomy.deleted"
+    taxonomy_usage_updated = "taxonomy.usage.updated"
+    taxonomy_usage_deleted = "taxonomy.usage.deleted"
+    taxonomy_element_created = "taxonomy.element.created"
+    taxonomy_element_updated = "taxonomy.element.updated"
+    taxonomy_element_deleted = "taxonomy.element.deleted"
+
+
+class EventAudit(Base):
+    """Audit log for significant business events across the Fides platform."""
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "event_audit"
+
+    # Uses EventAuditType values but left as String to avoid future migrations
+    event_type = Column(String, index=True, nullable=False)
+    user_id = Column(String, nullable=True, index=True)
+
+    # Resource information
+    resource_type = Column(String, nullable=True, index=True)
+    resource_identifier = Column(String, nullable=True, index=True)
+
+    # User-friendly description of event
+    description = Column(Text, nullable=True)
+
+    # Structured data about event
+    event_details = Column(JSONB, nullable=True)
