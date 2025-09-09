@@ -185,6 +185,7 @@ markers = [
     "postgres: only runs the integration tests for postgres",
     "mssql: only runs the integration tests for sqlserver/mssql",
     "mysql: only runs the integration tests for mysql",
+    "serial: marks tests that must run sequentially to avoid resource conflicts",
     "integration",
     "integration_external",
     "integration_mysql",
