@@ -6,6 +6,7 @@ import {
 import {
   AntButton as Button,
   AntFlex as Flex,
+  AntPagination as Pagination,
   Box,
   BoxProps,
   HStack,
@@ -37,8 +38,7 @@ import { getRequestTableColumns } from "~/features/privacy-requests/RequestTable
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
-import AntPaginator from "../common/pagination/AntPaginator";
-import { useAntPaginationContext } from "../common/pagination/PaginationProvider";
+import { useAntPagination } from "../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
@@ -52,7 +52,8 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { pageIndex, pageSize, resetPagination } = useAntPaginationContext();
+  const pagination = useAntPagination();
+  const { pageIndex, pageSize, resetPagination } = pagination;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -106,7 +107,6 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const handleSort = (columnSort: ColumnSort) => {
     if (!columnSort) {
       dispatch(clearSortKeys());
-      resetPagination();
       return;
     }
     const { id, desc } = columnSort;
@@ -163,7 +163,14 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
             onSort={handleSort}
             loading={isFetching}
           />
-          <AntPaginator total={totalRows ?? 0} align="end" />
+          <Pagination
+            {...pagination.paginationProps}
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+            }
+            total={totalRows ?? 0}
+            align="end"
+          />
         </Flex>
       )}
     </Box>

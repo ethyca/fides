@@ -13,12 +13,9 @@ import {
 import React, { useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
+import { usePagination } from "~/features/common/hooks";
 import PageHeader from "~/features/common/PageHeader";
 import { InfinitePaginator } from "~/features/common/pagination/InfinitePaginator";
-import {
-  PaginationProvider,
-  usePaginationContext,
-} from "~/features/common/pagination/PaginationProvider";
 import {
   FidesTableV2,
   TableActionBar,
@@ -32,7 +29,9 @@ import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetail
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
-const ConsentReport = () => {
+const ConsentReportingPage = () => {
+  const pagination = usePagination();
+  const { pageIndex, pageSize, updatePageIndex } = pagination;
   const today = useMemo(() => dayjs(), []);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -43,8 +42,6 @@ const ConsentReport = () => {
   const [isConsentTcfDetailModalOpen, setIsConsentTcfDetailModalOpen] =
     useState(false);
   const [currentTcfPreferences, setCurrentTcfPreferences] = useState();
-
-  const { pageIndex, pageSize, updatePageIndex } = usePaginationContext();
 
   const toast = useToast();
 
@@ -168,6 +165,7 @@ const ConsentReport = () => {
           )}
           <InfinitePaginator
             disableNext={(data?.items?.length ?? 0) < pageSize}
+            pagination={pagination}
           />
         </Flex>
       </div>
@@ -190,14 +188,6 @@ const ConsentReport = () => {
         tcfPreferences={currentTcfPreferences}
       />
     </FixedLayout>
-  );
-};
-
-const ConsentReportingPage = () => {
-  return (
-    <PaginationProvider>
-      <ConsentReport />
-    </PaginationProvider>
   );
 };
 

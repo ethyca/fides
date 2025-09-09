@@ -6,39 +6,40 @@ import {
 } from "fidesui";
 import React from "react";
 
-import { usePaginationContext } from "~/features/common/pagination/PaginationProvider";
+import { usePagination } from "./usePagination";
 
 export const InfinitePaginator = ({
   disableNext,
+  pagination,
 }: {
   disableNext?: boolean;
+  pagination: ReturnType<typeof usePagination>;
 }) => {
-  const { nextPage, pageIndex, pageSize, previousPage, updatePageSize } =
-    usePaginationContext();
   return (
     <Flex gap="middle" align="center" justify="right">
       <Button
-        onClick={previousPage}
-        disabled={pageIndex === 1}
+        onClick={pagination.previousPage}
+        disabled={pagination.pageIndex === 1}
         icon={<Icons.ChevronLeft aria-hidden />}
         aria-label="Previous"
       />
-      <span aria-label={`Page ${pageIndex}`}>{pageIndex}</span>
+      <span aria-label={`Page ${pagination.pageIndex}`}>
+        {pagination.pageIndex}
+      </span>
       <Button
-        onClick={nextPage}
+        onClick={pagination.nextPage}
         disabled={disableNext}
         icon={<Icons.ChevronRight aria-hidden />}
         aria-label="Next"
       />
       <Select
         className="w-auto"
-        value={pageSize}
-        onChange={updatePageSize}
-        options={[
-          { label: 25, value: 25 },
-          { label: 50, value: 50 },
-          { label: 100, value: 100 },
-        ]}
+        value={pagination.pageSize}
+        onChange={pagination.updatePageSize}
+        options={pagination.pageSizeOptions.map((option) => ({
+          label: option,
+          value: option,
+        }))}
         // eslint-disable-next-line react/no-unstable-nested-components
         labelRender={({ value }) => <span>{value} / page</span>}
       />

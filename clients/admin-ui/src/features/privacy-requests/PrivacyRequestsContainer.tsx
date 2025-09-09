@@ -15,7 +15,6 @@ import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyReque
 import { ScopeRegistryEnum } from "~/types/api";
 
 import PageHeader from "../common/PageHeader";
-import { AntPaginationProvider } from "../common/pagination/PaginationProvider";
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 import {
   PRIVACY_REQUEST_TABS,
@@ -59,7 +58,7 @@ const PrivacyRequestsContainer = () => {
   }, [availableTabs.manualTask, availableTabs.request]);
 
   return (
-    <AntPaginationProvider>
+    <>
       <PageHeader
         heading="Privacy Requests"
         breadcrumbItems={[{ title: "All requests" }]}
@@ -77,7 +76,7 @@ const PrivacyRequestsContainer = () => {
       />
 
       <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
-    </AntPaginationProvider>
+    </>
   );
 };
 
