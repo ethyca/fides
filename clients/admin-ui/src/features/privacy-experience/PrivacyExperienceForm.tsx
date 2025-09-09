@@ -49,6 +49,7 @@ import {
   Property,
   RejectAllMechanism,
   SupportedLanguage,
+  StagedResourceTypeValue,
 } from "~/types/api";
 
 import { useFeatures } from "../common/features";
@@ -551,6 +552,81 @@ export const PrivacyExperienceForm = ({
         maxHeight={100}
         baseTestId="property"
       />
+      <Divider />
+      <Heading fontSize="md" fontWeight="semibold">
+        Assets
+      </Heading>
+      <Collapse
+        in={
+          values.component === ComponentType.BANNER_AND_MODAL ||
+          values.component === ComponentType.MODAL
+        }
+        animateOpacity
+      >
+        <Box p="1px">
+          <CustomSwitch
+            name="allow_vendor_asset_disclosure"
+            id="allow_vendor_asset_disclosure"
+            label="Enable Vendor / Asset Disclosure"
+            variant="stacked"
+            tooltip="If enabled, the consent banner will include a link beneath privacy notices to view the vendors and assets associated with the notice."
+            onChange={(checked) => {
+              if (checked) {
+                // Default selection to Cookie
+                setFieldValue("asset_disclosure_include_types", [
+                  StagedResourceTypeValue.COOKIE,
+                ]);
+              } else {
+                setFieldValue("asset_disclosure_include_types", []);
+              }
+            }}
+          />
+        </Box>
+      </Collapse>
+      <Collapse
+        in={
+          (values.component === ComponentType.BANNER_AND_MODAL ||
+            values.component === ComponentType.MODAL) &&
+          !!values.allow_vendor_asset_disclosure
+        }
+        animateOpacity
+      >
+        <ControlledSelect
+          name="asset_disclosure_include_types"
+          id="asset_disclosure_include_types"
+          mode="multiple"
+          label="Asset Types to Disclose"
+          layout="stacked"
+          tooltip="Select the asset types to disclose. Only cookies are currently supported."
+          options={[
+            {
+              label: StagedResourceTypeValue.COOKIE,
+              value: StagedResourceTypeValue.COOKIE,
+              disabled: false,
+            },
+            {
+              label: StagedResourceTypeValue.BROWSER_REQUEST,
+              value: StagedResourceTypeValue.BROWSER_REQUEST,
+              disabled: true,
+            },
+            {
+              label: StagedResourceTypeValue.I_FRAME,
+              value: StagedResourceTypeValue.I_FRAME,
+              disabled: true,
+            },
+            {
+              label: StagedResourceTypeValue.JAVASCRIPT_TAG,
+              value: StagedResourceTypeValue.JAVASCRIPT_TAG,
+              disabled: true,
+            },
+            {
+              label: StagedResourceTypeValue.IMAGE,
+              value: StagedResourceTypeValue.IMAGE,
+              disabled: true,
+            },
+          ]}
+        />
+      </Collapse>
       <Divider />
       <CustomSwitch
         name="auto_subdomain_cookie_deletion"

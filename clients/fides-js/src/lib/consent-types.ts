@@ -614,6 +614,8 @@ export interface PrivacyExperienceMinimal
 export interface ExperienceConfig extends FidesExperienceConfig {
   component: ComponentType;
   layer1_button_options?: Layer1ButtonOption;
+  allow_vendor_asset_disclosure?: boolean;
+  asset_disclosure_include_types?: Array<string>;
   /**
    * List of regions that apply to this ExperienceConfig.
    *

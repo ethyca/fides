@@ -60,7 +60,6 @@ const DEFAULT_VALUES: Asset = {
   data_uses: [] as string[],
   domain: "",
   asset_type: "",
-  duration: "",
   id: "",
   system_id: "",
 };
@@ -172,12 +171,6 @@ const AddEditAssetModal = ({
                     id="description"
                     name="description"
                     label="Description"
-                    variant="stacked"
-                  />
-                  <CustomTextInput
-                    id="duration"
-                    name="duration"
-                    label="Duration"
                     variant="stacked"
                   />
                   <Collapse

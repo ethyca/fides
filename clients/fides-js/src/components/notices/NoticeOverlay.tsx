@@ -45,7 +45,7 @@ import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
-import CookieList from "./CookieList";
+import VendorAssetDisclosure from "./VendorAssetDisclosure";
 
 const NoticeOverlay = () => {
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
@@ -190,7 +190,7 @@ const NoticeOverlay = () => {
     };
   });
 
-  const [isCookieListView, setIsCookieListView] = useState(false);
+  const [isVendorAssetDiscloserView, setIsVendorAssetDisclosureView] = useState(false);
   const [selectedNoticeKey, setSelectedNoticeKey] = useState<string | null>(
     null,
   );
@@ -385,7 +385,7 @@ const NoticeOverlay = () => {
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
-      hideModalIntro={isCookieListView}
+      hideModalIntro={isVendorAssetDiscloserView}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
@@ -440,11 +440,11 @@ const NoticeOverlay = () => {
       }}
       renderModalContent={() => (
         <div>
-          {isCookieListView ? (
-            <CookieList
+          {isVendorAssetDiscloserView ? (
+            <VendorAssetDisclosure
               cookiesByNotice={cookiesBySelectedNotice}
               onBack={() => {
-                setIsCookieListView(false);
+                setIsVendorAssetDisclosureView(false);
                 setSelectedNoticeKey(null);
               }}
             />
@@ -459,14 +459,16 @@ const NoticeOverlay = () => {
                   return (
                     <div>
                       {props.description}
-                      {hasCookies ? (
+                      {hasCookies &&
+                      experience.experience_config
+                        ?.allow_vendor_asset_disclosure ? (
                         <div style={{ marginTop: "12px" }}>
                           <button
                             type="button"
                             className="fides-link-button"
                             onClick={() => {
                               setSelectedNoticeKey(props.noticeKey);
-                              setIsCookieListView(true);
+                              setIsVendorAssetDisclosureView(true);
                             }}
                           >
                             Vendors

@@ -8,7 +8,7 @@ export type CookieRecord = {
   description?: ComponentChildren;
 };
 
-const CookieList = ({
+const VendorAssetDisclosure = ({
   cookiesByNotice,
   onBack,
 }: {
@@ -106,4 +106,4 @@ const CookieList = ({
   );
 };
 
-export default CookieList;
+export default VendorAssetDisclosure;
