@@ -26,6 +26,7 @@ import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeL
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
 } from "~/types/api";
 
 type ItemOption = {
@@ -75,7 +76,7 @@ type UseConnectionListDropDown = {
   /**
    * Connection type identifiers to hide from the dropdown
    */
-  hiddenTypes?: string[];
+  hiddenTypes?: ConnectionType[];
 };
 
 export const useConnectionListDropDown = ({
@@ -92,7 +93,10 @@ export const useConnectionListDropDown = ({
   const sortedItems = useMemo(
     () =>
       [...connectionOptions]
-        .filter((option) => !hiddenTypes.includes(option.identifier))
+        .filter(
+          (option) =>
+            !hiddenTypes.includes(option.identifier as ConnectionType),
+        )
         .sort((a, b) => (a.human_readable > b.human_readable ? 1 : -1)),
     [connectionOptions, hiddenTypes],
   );

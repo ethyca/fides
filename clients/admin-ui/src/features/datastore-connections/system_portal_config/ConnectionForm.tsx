@@ -32,10 +32,13 @@ type Props = {
   systemFidesKey: string;
 };
 
-const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
-  // Website integrations have no reason to be linked to systems
-  const hiddenConnectionTypes = [ConnectionType.WEBSITE];
+// Website integrations have no reason to be linked to systems
+const hiddenConnectionTypes = [
+  ConnectionType.WEBSITE,
+  ConnectionType.TEST_WEBSITE,
+];
 
+const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   const {
     dropDownOptions,
     selectedValue: selectedConnectionOption,
@@ -59,9 +62,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       // Filter out website connections from orphaned connections since they
       // have no reason to be linked to systems
       const filteredOrphanedConnections = data.items.filter(
-        (config) =>
-          config.connection_type !== ConnectionType.WEBSITE &&
-          config.connection_type !== ConnectionType.TEST_WEBSITE,
+        (config) => !hiddenConnectionTypes.includes(config.connection_type),
       );
       setOrphanedConnectionConfigs(filteredOrphanedConnections);
     }
