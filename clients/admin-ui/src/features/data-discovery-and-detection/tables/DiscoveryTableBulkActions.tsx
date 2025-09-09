@@ -1,5 +1,6 @@
 import {
   AntFlex as Flex,
+  AntList as List,
   CheckIcon,
   ConfirmationModal,
   Text,
@@ -7,6 +8,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { sentenceCase } from "~/features/common/utils";
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
   useMuteResourcesMutation,
@@ -19,7 +21,7 @@ const DiscoveryTableBulkActions = ({
   selectedUrns: string[];
 }) => {
   const [confirmationState, setConfirmationState] = useState<
-    "Confirm" | "Ignore"
+    "confirm" | "ignore"
   >();
   const [promoteResourcesMutationTrigger, { isLoading: isPromoteLoading }] =
     usePromoteResourcesMutation();
@@ -57,7 +59,7 @@ const DiscoveryTableBulkActions = ({
           <ActionButton
             title="Confirm"
             icon={<CheckIcon />}
-            onClick={() => setConfirmationState("Confirm")}
+            onClick={() => setConfirmationState("confirm")}
             disabled={anyActionIsLoading}
             loading={isPromoteLoading}
             type="primary"
@@ -68,7 +70,7 @@ const DiscoveryTableBulkActions = ({
             icon={<ViewOffIcon />}
             disabled={anyActionIsLoading}
             loading={isMuteLoading}
-            onClick={() => setConfirmationState("Ignore")}
+            onClick={() => setConfirmationState("ignore")}
             size="middle"
           />
         </Flex>
@@ -78,24 +80,25 @@ const DiscoveryTableBulkActions = ({
         onClose={() => setConfirmationState(undefined)}
         onConfirm={() => {
           switch (confirmationState) {
-            case "Ignore":
+            case "ignore":
               handleIgnoreMutation(selectedUrns);
               break;
-            case "Confirm":
+            case "confirm":
               handleConfirmMutation(selectedUrns);
               break;
             default:
               break;
           }
         }}
-        title={`${confirmationState} Collection`}
+        title={sentenceCase(`${confirmationState} resources`)}
         message={
           <Text>
-            {`You are about to bulk ${confirmationState}}`}
+            {`You are about to ${confirmationState} `}
             <Text color="complimentary.500" as="span" fontWeight="bold">
-              {selectedUrns.join()}
+              {selectedUrns.length}
             </Text>
-            . Are you sure you would like to continue?
+            {` items. `}
+            Are you sure you would like to continue?
           </Text>
         }
       />

@@ -1,7 +1,9 @@
-import { HStack } from "fidesui";
+import { ConfirmationModal, HStack, Text } from "fidesui";
+import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { sentenceCase } from "~/features/common/utils";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -25,6 +27,9 @@ const DetectionItemActionsCell = ({
   resource,
   ignoreChildActions = false,
 }: DetectionItemActionProps) => {
+  const [confirmationState, setConfirmationState] = useState<
+    "confirm" | "mute"
+  >();
   const resourceType = findResourceType(resource);
   const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
     useConfirmResourceMutation();
@@ -130,47 +135,80 @@ const DetectionItemActionsCell = ({
     !hasClassificationChanges;
 
   return (
-    <HStack>
-      {(showStartMonitoringAction || showConfirmAction) && (
-        <ActionButton
-          title="Monitor"
-          icon={<MonitorOnIcon />}
-          onClick={handleMonitor}
-          disabled={anyActionIsLoading}
-          loading={confirmIsLoading}
-        />
-      )}
-      {showUnMuteAction && (
-        <ActionButton
-          title="Un-Mute"
-          icon={<MonitorOnIcon />}
-          // Un-mute a field (marks field as monitored)
-          onClick={handleUnMute}
-          disabled={anyActionIsLoading}
-          loading={confirmIsLoading}
-        />
-      )}
-      {showStartMonitoringActionOnMutedParent && (
-        <ActionButton
-          title="Monitor"
-          icon={<MonitorOnIcon />}
-          // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
-          onClick={handleStartMonitoringOnMutedParent}
-          disabled={anyActionIsLoading}
-          loading={confirmIsLoading}
-        />
-      )}
-      {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
-      {showMuteAction && (
-        <ActionButton
-          title="Ignore"
-          icon={<MonitorOffIcon />}
-          onClick={handleMute}
-          disabled={anyActionIsLoading}
-          loading={muteIsLoading}
-        />
-      )}
-    </HStack>
+    <>
+      <HStack>
+        {(showStartMonitoringAction || showConfirmAction) && (
+          <ActionButton
+            title="Monitor"
+            icon={<MonitorOnIcon />}
+            onClick={() =>
+              isFieldType ? handleMonitor : setConfirmationState("confirm")
+            }
+            disabled={anyActionIsLoading}
+            loading={confirmIsLoading}
+          />
+        )}
+        {showUnMuteAction && (
+          <ActionButton
+            title="Un-Mute"
+            icon={<MonitorOnIcon />}
+            // Un-mute a field (marks field as monitored)
+            onClick={handleUnMute}
+            disabled={anyActionIsLoading}
+            loading={confirmIsLoading}
+          />
+        )}
+        {showStartMonitoringActionOnMutedParent && (
+          <ActionButton
+            title="Monitor"
+            icon={<MonitorOnIcon />}
+            // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
+            onClick={() => setConfirmationState("confirm")}
+            disabled={anyActionIsLoading}
+            loading={confirmIsLoading}
+          />
+        )}
+        {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
+        {showMuteAction && (
+          <ActionButton
+            title="Ignore"
+            icon={<MonitorOffIcon />}
+            onClick={() =>
+              isFieldType ? handleMute : setConfirmationState("mute")
+            }
+            disabled={anyActionIsLoading}
+            loading={muteIsLoading}
+          />
+        )}
+      </HStack>
+      <ConfirmationModal
+        isOpen={!!confirmationState}
+        onClose={() => setConfirmationState(undefined)}
+        onConfirm={() => {
+          switch (confirmationState) {
+            case "mute":
+              handleMute;
+              break;
+            case "confirm":
+              handleStartMonitoringOnMutedParent;
+              break;
+            default:
+              break;
+          }
+        }}
+        title={sentenceCase(`${confirmationState} resources`)}
+        message={
+          <Text>
+            {`You are about to ${confirmationState} ${resource.data_type}`}
+            <Text color="complimentary.500" as="span" fontWeight="bold">
+              {resource.data_type}
+            </Text>
+            {` items. `}
+            Are you sure you would like to continue?
+          </Text>
+        }
+      />
+    </>
   );
 };
 
