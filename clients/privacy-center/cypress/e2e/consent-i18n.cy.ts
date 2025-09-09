@@ -1803,6 +1803,217 @@ describe("Consent i18n", () => {
         });
       });
     });
+
+    describe("TCF overlay with non-English default locale", () => {
+      // French translations for TCF banner & modal
+      const FRENCH_TCF_BANNER: TestTcfBannerTranslations = {
+        ...ENGLISH_TCF_BANNER,
+        ...{
+          banner_title: "Gestion du consentement et des préférences",
+          banner_description:
+            "Nous, et nos 16 fournisseurs, utilisons des cookies et des technologies similaires",
+          privacy_preferences_link_label: "Gérer les préférences",
+          reject_button_label: "Rejeter tout",
+          accept_button_label: "Accepter tout",
+          purpose_header: "Finalités",
+          purpose_example:
+            "Stocker et/ou accéder à des informations sur un terminal",
+        },
+      };
+
+      const FRENCH_TCF_MODAL: TestTcfModalTranslations = {
+        ...ENGLISH_TCF_MODAL,
+        ...{
+          title: "Préférences de confidentialité",
+          description:
+            "Nous, et nos 16 fournisseurs, utilisons des cookies et des technologies similaires",
+          save_button_label: "Enregistrer",
+          reject_button_label: "Rejeter tout",
+          accept_button_label: "Accepter tout",
+          purposes: "Finalités",
+          purposes_description:
+            "Nous utilisons des cookies pour stocker et/ou accéder aux informations sur un terminal",
+          purpose_example:
+            "Stocker et/ou accéder à des informations sur un terminal",
+          purpose_example_description:
+            "Les cookies, appareils ou identifiants similaires stockés sur votre terminal",
+          purpose_example_illustration:
+            "La plupart des finalités expliquées dans cette liste ne s'appliquent pas à tous les développeurs ou sites web.",
+          special_purposes: "Finalités spéciales",
+          special_purpose_example:
+            "Offrir et présenter des publicités et du contenu",
+          special_purpose_example_description:
+            "Certaines informations (comme un identifiant unique) stockées sur votre terminal",
+          special_purpose_example_illustration:
+            "Cliquer sur un lien ou sur 'Accepter' sur ce site web",
+          features: "Fonctionnalités",
+          features_description:
+            "Nous utilisons des cookies pour identifier les appareils basés sur les informations",
+          feature_example:
+            "Identification des appareils basée sur les informations transmises automatiquement",
+          feature_example_description:
+            "Votre appareil pourrait être distingué des autres appareils basés sur les informations",
+          special_features: "Fonctionnalités spéciales",
+          special_feature_example:
+            "Utiliser des données de localisation précise",
+          special_feature_example_description:
+            "Avec votre acceptation, votre localisation précise peut être utilisée",
+          vendors: "Fournisseurs",
+          vendors_description:
+            "Ci-dessous, vous trouverez une liste des fournisseurs",
+          vendors_iab: "Fournisseurs IAB TCF",
+          vendor_iab_example: "Captify",
+          vendor_iab_example_description:
+            "Captify stocke des cookies avec une durée maximale",
+          vendors_other: "Autres fournisseurs",
+          vendor_other_example: "Example Corp",
+          vendor_other_example_description:
+            "Example Corp utilise des cookies pour améliorer votre expérience",
+          consent: "Consentement",
+          legint: "Intérêt légitime",
+          retention: "Conservation",
+          data_categories: "Catégories de données",
+          vendor_privacy_policy: "Politique de confidentialité",
+          vendor_legint_disclosure: "Divulgation d'intérêt légitime",
+        },
+      };
+
+      it("should display French TCF purposes in both banner and modal when French is default and user locale is English", () => {
+        // This test covers the exact scenario that caused the translation bug
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE, // User locale is English
+          globalPrivacyControl: true,
+          options: { tcfEnabled: true },
+          overrideExperience: (experience: any) => {
+            /* eslint-disable no-param-reassign */
+            // Set French as the default translation for the experience
+            experience.experience_config!.translations[0].is_default = false; // English
+            experience.experience_config!.translations[1].is_default = false; // Spanish
+            // Add French as default
+            experience.experience_config!.translations.push({
+              language: "fr",
+              is_default: true,
+              accept_button_label: "Accepter tout",
+              reject_button_label: "Rejeter tout",
+              acknowledge_button_label: "OK",
+              banner_description:
+                "Nous, et nos 16 fournisseurs, utilisons des cookies et des technologies similaires",
+              banner_title: "Gestion du consentement et des préférences",
+              description:
+                "Nous, et nos 16 fournisseurs, utilisons des cookies et des technologies similaires",
+              title: "Préférences de confidentialité",
+              privacy_preferences_link_label: "Gérer les préférences",
+              privacy_policy_link_label: "Politique de confidentialité",
+              privacy_policy_url: "https://example.com/privacy",
+              save_button_label: "Enregistrer",
+              modal_link_label: "Gérer mes préférences",
+              purpose_header: "Finalités",
+            });
+            experience.available_locales = ["en", "es", "fr"];
+            return experience;
+            /* eslint-enable no-param-reassign */
+          },
+        });
+
+        // Test that French TCF purposes are displayed in the banner
+        testTcfBannerLocalization(FRENCH_TCF_BANNER);
+
+        // Test that French TCF purposes are displayed in the modal (not overwritten by English)
+        testTcfModalLocalization(FRENCH_TCF_MODAL);
+      });
+
+      it("should maintain French TCF translations when opening modal after banner", () => {
+        // This test specifically verifies that French GVL translations are not overwritten
+        // when the full experience loads with English GVL structure
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          options: { tcfEnabled: true },
+          overrideExperience: (experience: any) => {
+            /* eslint-disable no-param-reassign */
+            // Set French as the default translation
+            experience.experience_config!.translations[0].is_default = false; // English
+            experience.experience_config!.translations[1].is_default = true; // Spanish -> French
+            experience.experience_config!.translations[1].language = "fr";
+            experience.experience_config!.translations[1].banner_title =
+              "Gestion du consentement et des préférences";
+            experience.experience_config!.translations[1].banner_description =
+              "Nous, et nos 16 fournisseurs, utilisons des cookies et des technologies similaires";
+            experience.available_locales = ["en", "fr"];
+            return experience;
+            /* eslint-enable no-param-reassign */
+          },
+        });
+
+        // Verify French banner is displayed
+        cy.get("#fides-banner").within(() => {
+          cy.get(".fides-banner-title").contains(
+            "Gestion du consentement et des préférences",
+          );
+          cy.get(".fides-banner-description").contains(
+            "Nous, et nos 16 fournisseurs, utilisons des cookies et des technologies similaires",
+          );
+        });
+
+        // Open modal and verify French TCF purposes are still displayed
+        cy.get("#fides-banner .fides-manage-preferences-button").click();
+        cy.get("#fides-modal").should("be.visible");
+
+        // Check that French TCF purposes are displayed (not English)
+        cy.get("#fides-panel-purposes").within(() => {
+          cy.getByTestId("records-list-purposes").within(() => {
+            cy.get(".fides-notice-toggle")
+              .contains(
+                "Stocker et/ou accéder à des informations sur un terminal",
+              )
+              .click();
+            cy.get(".fides-disclosure-visible").contains(
+              "Les cookies, appareils ou identifiants similaires stockés sur votre terminal",
+            );
+          });
+        });
+      });
+
+      it("should load French GVL via API when default locale is French and user locale is English", () => {
+        // This test verifies that French GVL translations are loaded via API
+        // when the condition `bestLocale !== DEFAULT_LOCALE` is true
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          options: { tcfEnabled: true },
+          overrideExperience: (experience: any) => {
+            /* eslint-disable no-param-reassign */
+            // Set French as the default translation
+            experience.experience_config!.translations[0].is_default = false; // English
+            experience.experience_config!.translations[1].is_default = true; // Spanish -> French
+            experience.experience_config!.translations[1].language = "fr";
+            experience.available_locales = ["en", "fr"];
+            return experience;
+            /* eslint-enable no-param-reassign */
+          },
+        });
+
+        // Verify that French GVL translations are loaded by checking for French text
+        cy.get("#fides-banner").within(() => {
+          cy.getByTestId("fides-tcf-banner-supplemental").contains(
+            "Stocker et/ou accéder à des informations sur un terminal",
+          );
+        });
+
+        // Open modal and verify French GVL translations are used
+        cy.get("#fides-banner .fides-manage-preferences-button").click();
+        cy.get("#fides-modal").should("be.visible");
+
+        // Check that French GVL translations are displayed in the modal
+        cy.get("#fides-panel-purposes").within(() => {
+          cy.getByTestId("records-list-purposes").within(() => {
+            cy.get(".fides-notice-toggle").contains(
+              "Stocker et/ou accéder à des informations sur un terminal",
+            );
+          });
+        });
+      });
+    });
   });
 
   describe("when localizing the modal link", () => {
