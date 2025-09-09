@@ -90,7 +90,9 @@ const useSystemFormTabs = ({
 
   const systemFidesKey = router.query.id as string;
 
-  const { data: activeSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
+  const { data: activeSystem } = useGetSystemByFidesKeyQuery(systemFidesKey, {
+    skip: !systemFidesKey || isCreate,
+  });
 
   useEffect(() => {
     if (activeSystem) {
