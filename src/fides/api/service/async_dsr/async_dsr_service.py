@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -112,19 +112,21 @@ def execute_read_polling_requests(
             privacy_request: PrivacyRequest = polling_task.privacy_request
             secrets: Dict[str, Any] = connector.secrets
 
-            # Adding Id to the secrets - Barebones. Failing in tests
-            request_id = polling_task.access_data[0]["request_id"]
-            secrets.update({"request_id": request_id})
-            logger.info(f"Secrets: {secrets}")
             identity_data = {
                 **privacy_request.get_persisted_identity().labeled_dict(),
                 **privacy_request.get_cached_identity_data(),
             }
 
-            status = strategy.get_status_request(
-                client,
+            param_values = _prepare_param_values_for_polling(
                 secrets,
                 identity_data,
+                polling_task,
+            )
+
+            logger.info(f"Param values: {param_values}")
+            status = strategy.get_status_request(
+                client,
+                param_values
             )
 
             if status:
@@ -133,8 +135,7 @@ def execute_read_polling_requests(
                     polling_task,
                     strategy,
                     client,
-                    secrets,
-                    identity_data,
+                    param_values
                 )
             else:
                 logger.info(f"Polling request - {polling_task.id} still not Ready. ")
@@ -146,14 +147,12 @@ def execute_result_request(
     polling_task: RequestTask,
     strategy: PollingAsyncDSRBaseStrategy,
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
-    identity_data: Dict[str, Any],
+    param_values: Dict[str, Any],
 ) -> None:
     """Execute the result request of a successfull polling task"""
     result = strategy.get_result_request(
         client,
-        secrets,
-        identity_data,
+        param_values
     )
     logger.info(f"Result: {result}")
     if result:
@@ -186,3 +185,31 @@ def execute_erasure_polling_requests(
     """Execute the erasure polling requests for a given privacy request"""
     # TODO: Implement erasure polling logic. Or consider if we can generalize polling for all tasks
     logger.info(f"Erasure polling not yet implemented. Task {polling_task.id} passed")
+
+
+def _get_request_id_from_storage(
+    request_task: RequestTask
+) -> Optional[str]:
+    """Helper method to get request_id from stored data or param_values."""
+    # Try to get from stored request_data first
+    if request_task and request_task.request_data:
+        stored_data = request_task.request_data.request_data
+        if stored_data and "request_id" in stored_data:
+            return stored_data["request_id"]
+
+    logger.error(f"Request ID not found in stored data")
+    return None
+
+
+def _prepare_param_values_for_polling(
+    secrets: Dict[str, Any],
+    identity_data: Dict[str, Any],
+    request_task: RequestTask
+) -> Dict[str, Any]:
+    """Prepare parameter values including request_id from various sources."""
+    param_values = secrets.copy()
+    param_values.update(identity_data)
+
+    param_values["request_id"] = _get_request_id_from_storage(request_task)
+
+    return param_values

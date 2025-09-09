@@ -13,6 +13,7 @@ from fides.api.service.async_dsr.async_dsr_strategy_polling_base import PollingA
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
+from fides.api.models.privacy_request.request_task import RequestTask
 
 
 class PollingAsyncAccessDownloadStrategy(PollingAsyncDSRBaseStrategy):
@@ -31,16 +32,10 @@ class PollingAsyncAccessDownloadStrategy(PollingAsyncDSRBaseStrategy):
     def get_result_request(
         self,
         client: AuthenticatedClient,
-        secrets: Dict[str, Any],
-        identity_data: Dict[str, Any],
-        request_id: Optional[str] = None,
+        param_values: Dict[str, Any],
+
     ) -> Union[str, bytes, List[Row]]:
         """Execute result request and return download URL or file content."""
-        param_values = secrets.copy()
-        param_values.update(identity_data)
-
-        if request_id:
-            param_values["request_id"] = request_id
 
         prepared_result_request = map_param_values(
             "result", "polling request", self.result_request, param_values

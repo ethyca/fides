@@ -4,7 +4,9 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
+from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.schemas.saas.strategy_configuration import IdSource
+from fides.api.service.async_dsr.async_dsr_strategy_factory import get_strategy as get_async_strategy
 import pydash
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -23,7 +25,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.models.privacy_request.request_task import AsyncTaskType
+from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTaskRequestData
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -268,7 +270,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         rows: List[Row] = []
         awaiting_async_processing: bool = False
-        generated_request_id: Optional[str] = None
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
             if (
@@ -279,41 +280,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 # Request Task in an "awaiting_processing" status.
                 awaiting_async_processing = True
 
-                # Validate async strategy with proper enum value checking
-                strategy_value = read_request.async_config.strategy
-                valid_strategies = [task_type.value for task_type in AsyncTaskType]
-
-                if strategy_value not in valid_strategies:
-                    raise PrivacyRequestError(
-                        f"Invalid async type '{strategy_value}' for request task {request_task.id}. "
-                        f"Valid types are: {valid_strategies}"
-                    )
-
-                request_task.async_type = AsyncTaskType(strategy_value)
-
-                if request_task.async_type == AsyncTaskType.polling:
-                    #Check how to generate the request id config
-                    logger.info("Request  config: {}", read_request.async_config.configuration)
-                    request_id_config = read_request.async_config.configuration["request_id_config"]
-                    logger.info("Request id config: {}", request_id_config)
-
-                    id_source = request_id_config["id_source"]
-                    if request_id_config["id_source"] == IdSource.generated.value:
-                        generated_request_id = str(uuid4())
-                        logger.info(
-                            "Generated request id for request task '{}': {}",
-                            request_task.id,
-                            generated_request_id,
-                        )
-                        input_data["request_id"] = [generated_request_id]
-                        logger.info("Current input data: {}", input_data)
-
-                    else:
-                        raise PrivacyRequestError(
-                            f"Invalid id source '{id_source}' for request task {request_task.id}. "
-                            f"Valid sources are: {IdSource}"
-                        )
-
+                self._handle_async_read_request_setup(
+                    read_request,
+                    request_task
+                )
 
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
@@ -377,20 +347,73 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # However for polling async request we want to save the request data for ids that we will use on the pollings status
 
             # Saving the request task access data to use it on the polling status request
-            # TODO: Build this on its own table
             if request_task.async_type == AsyncTaskType.polling:
                 request_id_config = read_request.async_config.configuration["request_id_config"]
                 id_source = request_id_config["id_source"]
                 if id_source == IdSource.path.value:
-                    request_id = pydash.get(rows[0], request_id_config.id_path)
-                    request_task.access_data = [{"request_id": request_id}]
-                elif id_source == IdSource.generated.value:
-                    request_task.access_data = [{"request_id": generated_request_id}]
+                    request_data = {
+                        "request_id": pydash.get(rows[0], request_id_config.id_path)
+                    }
+                    self._save_request_data(request_task, request_data)
 
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
             raise AwaitingAsyncTask()
 
         return rows
+
+    def _handle_async_read_request_setup(
+        self,
+        read_request: SaaSRequest,
+        request_task: RequestTask,
+    ) -> None:
+
+        # Validate async strategy with proper enum value checking
+        strategy = get_async_strategy(
+            read_request.async_config.strategy,
+            read_request.async_config.configuration
+        )
+
+        request_task.async_type = AsyncTaskType(strategy.type)
+
+        if request_task.async_type == AsyncTaskType.polling:
+            #Check if request id config for polling async requests is generated
+            request_id_config = read_request.async_config.configuration["request_id_config"]
+            if request_id_config["id_source"] == IdSource.generated.value:
+
+                request_data = {
+                    "request_id": str(uuid4())
+                }
+                logger.info(
+                    "Generated for request task '{}': {}",
+                    request_task.id,
+                    request_data,
+                )
+
+                self._save_request_data(request_task, request_data)
+
+    def _save_request_data(
+        self,
+        request_task: RequestTask,
+        request_data: Dict[str, Any],
+    ) -> None:
+        """
+        Saves the request data for future use in the request task on async requests
+        """
+        with get_db() as db:
+            # Create new request data entry
+            RequestTaskRequestData.create(
+                db,
+                data={
+                    "request_task_id": request_task.id,
+                    "request_data": request_data,
+                },
+            )
+
+            logger.info(
+                "Saved request data for task '{}': {}",
+                request_task.id,
+                request_data,
+            )
 
     def _apply_output_template(
         self,

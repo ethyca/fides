@@ -13,12 +13,14 @@ from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
+from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
+from loguru import logger
 
-
-class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
+class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
     """
     Base strategy for polling async DSR requests.
     """
+    type = AsyncTaskType.polling
 
     def __init__(self, configuration: PollingAsyncDSRBaseConfiguration):
         self.status_request = configuration.status_request
@@ -28,40 +30,12 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
         self.result_path = configuration.result_path
         self.request_id_config = configuration.request_id_config
 
-    def extract_request_id(
-        self,
-        response: Response,
-        param_values: Dict[str, Any]
-    ) -> Optional[str]:
-        """Extract request ID from response based on configuration."""
-        if not self.request_id_config:
-            return None
-
-        config = self.request_id_config
-
-        if config.id_source == IdSource.path:
-            return pydash.get(response.json(), config.id_path)
-        elif config.id_source == IdSource.generated:
-            # For generated IDs, we should have stored it in param_values
-            return param_values.get("request_id")
-        raise PrivacyRequestError(
-            f"Request ID source {config.id_source} not supported"
-        )
-
     def get_status_request(
         self,
         client: AuthenticatedClient,
-        secrets: Dict[str, Any],
-        identity_data: Dict[str, Any],
-        request_id: Optional[str] = None,
+        param_values: Dict[str, Any]
     ) -> bool:
         """Execute status request and return completion status."""
-        param_values = secrets.copy()
-        param_values.update(identity_data)
-
-        if request_id:
-            param_values["request_id"] = request_id
-
         prepared_status_request = map_param_values(
             "status", "polling request", self.status_request, param_values
         )
@@ -101,27 +75,10 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy, ABC):
             f"Status request returned an unexpected value: {status_path_value}"
         )
 
-
+    @abstractmethod
     def get_result_request(
         self,
         client: AuthenticatedClient,
-        secrets: Dict[str, Any],
-        identity_data: Dict[str, Any],
-    ) -> List[Row]:
-        """Build request to get the result of the async DSR process"""
-        param_values = secrets.copy()
-        param_values.update(identity_data)
-        prepared_result_request = map_param_values(
-            "result",
-            "polling request",
-            self.result_request,
-            param_values,  # type: ignore
-        )
-        response: Response = client.send(prepared_result_request)
-        if response.ok:
-            result = pydash.get(response.json(), self.result_path)
-            return result
-
-        raise PrivacyRequestError(
-            f"Result request failed with status code {response.status_code}"
-        )
+        param_values: Dict[str, Any],
+    ) -> Union[List[Row], str, bytes, Dict[str, Any]]:
+        """Execute result request - implementation varies by strategy type."""
