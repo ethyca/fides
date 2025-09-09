@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from "./Cookies";
 import type { LegalBasisForProcessingEnum } from "./LegalBasisForProcessingEnum";
 import type { SpecialCategoryLegalBasisEnum } from "./SpecialCategoryLegalBasisEnum";
 
@@ -81,8 +80,4 @@ export type PrivacyDeclaration = {
    * The categories of personal data that this system shares with third parties.
    */
   shared_categories?: Array<string>;
-  /**
-   * Cookies associated with this data use to deliver services and functionality
-   */
-  cookies?: Array<Cookies> | null;
 };

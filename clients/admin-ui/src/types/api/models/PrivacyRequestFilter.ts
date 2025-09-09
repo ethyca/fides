@@ -21,6 +21,7 @@ export type PrivacyRequestFilter = {
   errored_lt?: string | null;
   errored_gt?: string | null;
   external_id?: string | null;
+  location?: string | null;
   action_type?: ActionType | null;
   verbose?: boolean | null;
   include_identities?: boolean | null;

@@ -23,7 +23,7 @@ export type GoogleCloudSQLMySQLDocsSchema = {
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds;
   /**
-   * Specify the IP Address type required for the database (defaults to public).
+   * Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview
    */
   ip_type?: GoogleCloudSQLIPType | null;
 };

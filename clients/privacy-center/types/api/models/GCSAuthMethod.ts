@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export enum GCSAuthMethod {
-  ADC = "adc", // Application Default Credentials
+  ADC = "adc",
   SERVICE_ACCOUNT_KEYS = "service_account_keys",
 }

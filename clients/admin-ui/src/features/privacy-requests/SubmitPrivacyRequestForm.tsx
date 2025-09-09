@@ -18,6 +18,7 @@ import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/priv
 import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
+  LocationCustomPrivacyRequestField,
   PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
@@ -69,7 +70,8 @@ const CustomFields = ({
 }: {
   customFieldInputs?: Record<
     string,
-    fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
+    | fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
+    | LocationCustomPrivacyRequestField
   > | null;
 }) => {
   if (!customFieldInputs) {

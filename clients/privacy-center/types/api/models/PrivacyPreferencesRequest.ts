@@ -30,8 +30,6 @@ export type PrivacyPreferencesRequest = {
   system_consent_preferences?: Array<TCFVendorSave>;
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   preferences?: Array<ConsentOptionCreate>;
-  browser_identity: Identity;
-  code?: string | null;
   /**
    * If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features
    */
@@ -44,4 +42,6 @@ export type PrivacyPreferencesRequest = {
   served_notice_history_id?: string | null;
   property_id?: string | null;
   source?: PrivacyRequestSource | null;
+  browser_identity: Identity;
+  code?: string | null;
 };

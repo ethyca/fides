@@ -15,8 +15,8 @@ import {
   isV1ConsentConfig,
   translateV1ConfigToV2,
 } from "~/features/consent/helpers";
+import type { fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig } from "~/types/api";
 import { Property } from "~/types/api";
-import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
 import { Config, LegacyConfig } from "~/types/config";
 
 /**
