@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: saas_async_config
+  - fides_key: saas_async_callback_config
     name: async_callback_example
     description: A sample dataset
     collections:
