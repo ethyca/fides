@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional, Union, overload
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from fides.api.models.event_audit import EventAuditType
+from fides.api.models.event_audit import EventAuditType, EventAuditStatus
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     DataCategory,
     DataSubject,
@@ -198,6 +198,7 @@ class TaxonomyService:
 
         self.event_audit_service.create_event_audit(
             EventAuditType.taxonomy_element_updated,
+            EventAuditStatus.succeeded,
             resource_type="taxonomy_element",
             resource_identifier=fides_key,
             description=f"Updated {taxonomy_type} element: {fides_key} ({updated_element.name})",  # type: ignore
