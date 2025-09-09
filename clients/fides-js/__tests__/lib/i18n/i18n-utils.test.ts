@@ -508,7 +508,7 @@ describe("i18n-utils", () => {
         mockExpFrenchDefault.experience_config.translations[0].is_default =
           false; // English
         mockExpFrenchDefault.experience_config.translations[1].is_default =
-          true; // Spanish
+          false; // Spanish
         // Add French as default
         mockExpFrenchDefault.experience_config.translations.push({
           language: "fr",
@@ -555,7 +555,7 @@ describe("i18n-utils", () => {
         const mockFrenchGVLTranslations = {
           fr: {
             purposes: {
-              "1": {
+              1: {
                 id: 1,
                 name: "Stocker et/ou accéder à des informations sur un terminal",
                 description:
@@ -619,16 +619,16 @@ describe("i18n-utils", () => {
         // Simulate the condition check from TcfOverlay
         const userlocale: string = "en";
         const bestLocale: string = "fr";
-        const DEFAULT_LOCALE: string = "en";
+        const defaultLocale: string = "en";
 
         // This should be true (load French GVL via API)
         const shouldLoadFrenchGVL =
-          !!userlocale && bestLocale !== DEFAULT_LOCALE;
+          !!userlocale && bestLocale !== defaultLocale;
         expect(shouldLoadFrenchGVL).toBe(true);
 
         // This should be false (don't load English GVL from experience)
         const shouldLoadEnglishGVL =
-          !userlocale || bestLocale === DEFAULT_LOCALE;
+          !userlocale || bestLocale === defaultLocale;
         expect(shouldLoadEnglishGVL).toBe(false);
 
         // Verify that French GVL translations are already present
@@ -654,24 +654,18 @@ describe("i18n-utils", () => {
         mockExpEnglishDefault.experience_config.translations[1].is_default =
           false; // Spanish
 
-        const mockI18nEnglish = {
-          ...mockI18n,
-          locale: "en",
-          getDefaultLocale: () => "en",
-        };
-
         // Simulate the condition check from TcfOverlay
         const userlocale = "en";
         const bestLocale = "en";
-        const DEFAULT_LOCALE = "en";
+        const defaultLocale = "en";
 
         // This should be false (don't load via API)
-        const shouldLoadViaAPI = !!userlocale && bestLocale !== DEFAULT_LOCALE;
+        const shouldLoadViaAPI = !!userlocale && bestLocale !== defaultLocale;
         expect(shouldLoadViaAPI).toBe(false);
 
         // This should be true (load English GVL from experience)
         const shouldLoadFromExperience =
-          !userlocale || bestLocale === DEFAULT_LOCALE;
+          !userlocale || bestLocale === defaultLocale;
         expect(shouldLoadFromExperience).toBe(true);
       });
     });
