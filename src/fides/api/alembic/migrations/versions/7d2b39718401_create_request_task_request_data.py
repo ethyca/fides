@@ -25,7 +25,20 @@ def upgrade():
         "requesttask_request_data",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("request_task_id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.Column("request_data", JSONB(astext_type=sa.Text()), nullable=False),
+
         sa.ForeignKeyConstraint(["request_task_id"], ["requesttask.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
