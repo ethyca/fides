@@ -26,6 +26,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fix search within language picker in admin-ui [#6550](https://github.com/ethyca/fides/pull/6550)
+- Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557)
+- Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
+- Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
