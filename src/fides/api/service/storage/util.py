@@ -599,9 +599,7 @@ def resolve_directory_from_context(
     context = attachment["_context"]
     context_type = context.get("type")
 
-    if context_type == "direct":
-        return f"data/{context['dataset']}/{context['collection']}"
-    if context_type == "nested":
+    if context_type in ["direct", "nested"]:
         return f"data/{context['dataset']}/{context['collection']}"
     if context_type == "top_level":
         return "attachments"
