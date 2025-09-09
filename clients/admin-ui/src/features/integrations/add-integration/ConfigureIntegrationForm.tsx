@@ -152,6 +152,7 @@ const ConfigureIntegrationForm = ({
 
   const isEditing = !!connection;
   const isSaas = connectionOption.type === SystemType.SAAS;
+  const isWebsite = connectionOption.identifier === ConnectionType.WEBSITE;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -325,7 +326,7 @@ const ConfigureIntegrationForm = ({
                   variant="stacked"
                 />
                 {hasSecrets && secrets && generateFields(secrets)}
-                {!isEditing && !isSaas && (
+                {!isEditing && !isSaas && !isWebsite && (
                   <ControlledSelect
                     id="system_fides_key"
                     name="system_fides_key"
