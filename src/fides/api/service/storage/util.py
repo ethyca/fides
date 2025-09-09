@@ -544,8 +544,8 @@ def _process_attachment_list(
     return processed_attachments_list
 
 
-def resolve_base_path_from_context(
-    attachment: dict[str, Any], default_base_path: str = "attachments"
+def resolve_path_from_context(
+    attachment: dict[str, Any], default_path: str = "attachments",
 ) -> str:
     """
     Resolve the base path for an attachment based on its context.
@@ -555,13 +555,13 @@ def resolve_base_path_from_context(
 
     Args:
         attachment: The attachment dictionary
-        default_base_path: Default base path if no context is found
+        default_path: Default path if no context is found
 
     Returns:
-        The resolved base path for the attachment
+        The resolved path for the attachment
     """
     if not attachment.get("_context"):
-        return default_base_path
+        return default_path
 
     context = attachment["_context"]
     context_type = context.get("type")
@@ -576,34 +576,3 @@ def resolve_base_path_from_context(
         return f"{context['key']}/{context['item_id']}/attachments"
 
     return default_base_path
-
-
-def resolve_directory_from_context(
-    attachment: dict[str, Any], default_directory: str = "attachments"
-) -> str:
-    """
-    Resolve the directory path for an attachment based on its context.
-
-    This function provides consistent directory resolution logic for DSR report builder.
-
-    Args:
-        attachment: The attachment dictionary
-        default_directory: Default directory if no context is found
-
-    Returns:
-        The resolved directory path for the attachment
-    """
-    if not attachment.get("_context"):
-        return default_directory
-
-    context = attachment["_context"]
-    context_type = context.get("type")
-
-    if context_type in ["direct", "nested"]:
-        return f"data/{context['dataset']}/{context['collection']}"
-    if context_type == "top_level":
-        return "attachments"
-    if context.get("key") and context.get("item_id"):
-        return f"{context['key']}/{context['item_id']}"
-
-    return default_directory

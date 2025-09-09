@@ -9,8 +9,7 @@ from fides.api.service.storage.util import (
     get_allowed_file_type_or_raise,
     get_local_filename,
     get_unique_filename,
-    resolve_base_path_from_context,
-    resolve_directory_from_context,
+    resolve_path_from_context,
 )
 
 
@@ -342,8 +341,8 @@ class TestGenerateAttachmentUrlFromStoragePath:
             assert result == expected_encoded, f"Failed for filename: {filename}"
 
 
-class TestResolveBasePathFromContext:
-    """Tests for the resolve_base_path_from_context function"""
+class TestResolvePathFromContext:
+    """Tests for the resolve_path_from_context function"""
 
     @pytest.mark.parametrize(
         "attachment, default_base_path, expected_path",
@@ -424,119 +423,11 @@ class TestResolveBasePathFromContext:
     )
     def test_resolve_base_path(self, attachment, default_base_path, expected_path):
         """Test that base path is resolved correctly based on context"""
-        result = resolve_base_path_from_context(attachment, default_base_path)
+        result = resolve_path_from_context(attachment, default_base_path)
         assert result == expected_path
 
     def test_resolve_base_path_with_none_context(self):
         """Test that None context is handled gracefully"""
         attachment = {"_context": None}
-        result = resolve_base_path_from_context(attachment, "default")
-        assert result == "default"
-
-
-class TestResolveDirectoryFromContext:
-    """Tests for the resolve_directory_from_context function"""
-
-    @pytest.mark.parametrize(
-        "attachment, default_directory, expected_directory",
-        [
-            param(
-                {
-                    "_context": {
-                        "type": "direct",
-                        "dataset": "users",
-                        "collection": "profiles",
-                    }
-                },
-                "attachments",
-                "data/users/profiles",
-                id="direct_context",
-            ),
-            param(
-                {
-                    "_context": {
-                        "type": "nested",
-                        "dataset": "orders",
-                        "collection": "items",
-                    }
-                },
-                "attachments",
-                "data/orders/items",
-                id="nested_context",
-            ),
-            param(
-                {"_context": {"type": "top_level"}},
-                "attachments",
-                "attachments",
-                id="top_level_context",
-            ),
-            param(
-                {
-                    "_context": {
-                        "type": "old_format",
-                        "key": "dataset:collection",
-                        "item_id": "123",
-                    }
-                },
-                "attachments",
-                "dataset:collection/123",
-                id="old_context_format",
-            ),
-            param(
-                {},  # no context
-                "attachments",
-                "attachments",
-                id="no_context_default",
-            ),
-            param(
-                {},  # no context with custom default
-                "custom/path",
-                "custom/path",
-                id="no_context_custom_default",
-            ),
-            param(
-                {"_context": {}},  # empty context
-                "attachments",
-                "attachments",
-                id="empty_context",
-            ),
-            param(
-                {
-                    "_context": {
-                        "type": "direct",
-                        "dataset": "users",
-                        "collection": "profiles",
-                    }
-                },
-                "custom/default",
-                "data/users/profiles",
-                id="context_overrides_default",
-            ),
-            param(
-                {
-                    "_context": {"key": "dataset:collection", "item_id": "123"}
-                },  # old format without type
-                "attachments",
-                "dataset:collection/123",
-                id="old_format_without_type",
-            ),
-            param(
-                {
-                    "_context": {"key": "dataset:collection"}
-                },  # old format missing item_id
-                "attachments",
-                "attachments",
-                id="old_format_missing_item_id",
-            ),
-        ],
-    )
-    def test_resolve_directory(self, attachment, default_directory, expected_directory):
-        """Test that directory is resolved correctly based on context"""
-        result = resolve_directory_from_context(attachment, default_directory)
-        assert result == expected_directory
-
-    def test_resolve_directory_with_none_context(self):
-        """Test that None context is handled gracefully"""
-        attachment = {"_context": None}
-        result = resolve_directory_from_context(attachment, "default")
+        result = resolve_path_from_context(attachment, "default")
         assert result == "default"

@@ -41,7 +41,7 @@ from fides.api.service.storage.util import (
     get_unique_filename,
     process_attachments_contextually,
     resolve_attachment_storage_path,
-    resolve_base_path_from_context,
+    resolve_path_from_context,
 )
 
 DEFAULT_ATTACHMENT_NAME = "attachment"
@@ -183,7 +183,7 @@ class SmartOpenStreamingStorage:
             )
 
             # Resolve base path using shared utility
-            base_path = resolve_base_path_from_context(attachment)
+            base_path = resolve_path_from_context(attachment)
 
             # Create AttachmentProcessingInfo
             processing_info = AttachmentProcessingInfo(
