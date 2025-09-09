@@ -545,7 +545,8 @@ def _process_attachment_list(
 
 
 def resolve_path_from_context(
-    attachment: dict[str, Any], default_path: str = "attachments",
+    attachment: dict[str, Any],
+    default_path: str = "attachments",
 ) -> str:
     """
     Resolve the base path for an attachment based on its context.
@@ -575,4 +576,4 @@ def resolve_path_from_context(
     if context.get("key") and context.get("item_id"):
         return f"{context['key']}/{context['item_id']}/attachments"
 
-    return default_base_path
+    return default_path
