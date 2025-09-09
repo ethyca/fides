@@ -96,6 +96,12 @@ export const stubSystemCrud = () => {
       },
     }).as("deleteSystem");
   });
+  cy.intercept("POST", "/api/v1/system/bulk-delete", {
+    statusCode: 200,
+  }).as("bulkDeleteSystems");
+  cy.intercept("POST", "/api/v1/system/assign-steward", {
+    statusCode: 200,
+  }).as("bulkAssignSteward");
 };
 
 export const stubVendorList = () => {
@@ -900,4 +906,18 @@ export const stubPlusAuth = () => {
     statusCode: 200,
     body: {},
   }).as("logoutRequest");
+};
+
+export const stubSystemGroups = () => {
+  cy.intercept("GET", "/api/v1/system-groups", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroups");
+
+  cy.intercept("POST", "/api/v1/system-groups", {
+    statusCode: 200,
+  }).as("createSystemGroup");
+
+  cy.intercept("PUT", "/api/v1/system-groups/*", {
+    statusCode: 200,
+  }).as("updateSystemGroup");
 };

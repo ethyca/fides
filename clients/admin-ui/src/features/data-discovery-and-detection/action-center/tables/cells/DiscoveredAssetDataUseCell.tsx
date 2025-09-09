@@ -5,6 +5,8 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import styles from "~/features/common/table/cells/Cells.module.scss";
+import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
+import { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
@@ -14,9 +16,11 @@ import { isErrorResult } from "~/types/errors";
 const DiscoveredAssetDataUseCell = ({
   asset,
   readonly,
+  columnState,
 }: {
   asset: StagedResourceAPIResponse;
   readonly?: boolean;
+  columnState?: ColumnState;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -73,37 +77,34 @@ const DiscoveredAssetDataUseCell = ({
 
   if (readonly) {
     return (
-      <Space direction="vertical">
-        {consentUses?.map((d) => (
-          <Tag key={d} color="white">
-            {getDataUseDisplayName(d)}
-          </Tag>
-        ))}
-      </Space>
+      <TagExpandableCell
+        values={consentUses?.map((d) => ({
+          label: getDataUseDisplayName(d),
+          key: d,
+        }))}
+        columnState={columnState}
+      />
     );
   }
 
   return (
     <>
       {!isAdding && (
-        <Space wrap>
-          {consentUses?.map((d) => (
-            <Tag
-              key={d}
-              data-testid={`data-use-${d}`}
-              color="white"
-              closable
-              onClose={() => handleDeleteDataUse(d)}
-              closeButtonLabel="Remove data use"
-            >
-              {getDataUseDisplayName(d)}
-            </Tag>
-          ))}
+        <Space align="start">
           <Tag
             onClick={() => setIsAdding(true)}
             data-testid="taxonomy-add-btn"
             addable
             aria-label="Add data use"
+          />
+          <TagExpandableCell
+            values={consentUses?.map((d) => ({
+              label: getDataUseDisplayName(d),
+              key: d,
+            }))}
+            columnState={columnState}
+            tagProps={{ closable: true, closeButtonLabel: "Remove data use" }}
+            onTagClose={handleDeleteDataUse}
           />
         </Space>
       )}

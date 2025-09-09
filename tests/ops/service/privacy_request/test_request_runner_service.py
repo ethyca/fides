@@ -1969,6 +1969,12 @@ class TestAsyncCallbacks:
         )
         db.refresh(pr)
 
+        if dsr_version == "use_dsr_2_0":
+            # Async Access Requests not supported for DSR 2.0 - the given
+            # node cannot be paused
+            assert pr.status == PrivacyRequestStatus.complete
+            return
+
         if dsr_version == "use_dsr_3_0":
             assert pr.status == PrivacyRequestStatus.in_processing
 
@@ -1978,7 +1984,9 @@ class TestAsyncCallbacks:
             # SaaS Request was marked as needing async results, so the Request
             # Task was put in a paused state
             assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            assert request_tasks[1].collection_address == "saas_async_config:user"
+            assert (
+                request_tasks[1].collection_address == "saas_async_callback_config:user"
+            )
 
             # Terminator task is downstream so it is still in a pending state
             assert request_tasks[2].status == ExecutionLogStatus.pending
@@ -1995,18 +2003,16 @@ class TestAsyncCallbacks:
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
             assert pr.get_raw_access_results() == {
-                "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
+                "saas_async_callback_config:user": [
+                    {"id": 1, "user_id": "abcde", "state": "VA"}
+                ]
             }
             # User data supplied async was filtered before being returned to the end user
             assert pr.get_filtered_final_upload() == {
                 "access_request_rule": {
-                    "saas_async_config:user": [{"state": "VA", "id": 1}]
+                    "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
                 }
             }
-        else:
-            # Async Access Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            assert pr.status == PrivacyRequestStatus.complete
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
@@ -2070,12 +2076,6 @@ class TestAsyncCallbacks:
 
             assert pr.erasure_tasks[1].rows_masked == 2
             assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
-
-        else:
-            # Async Erasure Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.complete
 
 
 class TestDatasetReferenceValidation:

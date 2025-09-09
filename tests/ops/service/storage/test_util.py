@@ -354,6 +354,103 @@ class TestExtractStorageKeyFromAttachment:
         assert result == "https://example.com/file.pdf"
 
 
+class TestGenerateAttachmentUrlFromStoragePath:
+    """Tests for the generate_attachment_url_from_storage_path function"""
+
+    def test_generate_attachment_url_streaming_mode_same_directory(self):
+        """Test URL generation in streaming mode for same directory."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="attachments",
+            html_directory="attachments",
+            enable_streaming=True,
+        )
+
+        # Should URL-encode the filename
+        assert result == "test%20file%20%25%20pdf.pdf"
+
+    def test_generate_attachment_url_streaming_mode_data_directory(self):
+        """Test URL generation in streaming mode for data directory."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="data/dataset/collection",
+            html_directory="data/dataset/collection",
+            enable_streaming=True,
+        )
+
+        # Should URL-encode the filename and add attachments prefix
+        assert result == "attachments/test%20file%20%25%20pdf.pdf"
+
+    def test_generate_attachment_url_streaming_mode_other_cases(self):
+        """Test URL generation in streaming mode for other cases."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="other/path",
+            html_directory="different/path",
+            enable_streaming=True,
+        )
+
+        # Should URL-encode the filename in the relative path
+        assert result == "../other/path/test%20file%20%25%20pdf.pdf"
+
+    def test_generate_attachment_url_non_streaming_mode(self):
+        """Test URL generation in non-streaming mode."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="attachments",
+            html_directory="attachments",
+            enable_streaming=False,
+        )
+
+        # Should return the original download URL
+        assert result == "https://example.com/file.pdf"
+
+    def test_generate_attachment_url_special_characters(self):
+        """Test URL generation with various special characters."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        test_cases = [
+            ("file with spaces.pdf", "file%20with%20spaces.pdf"),
+            ("file%20with%20encoded.pdf", "file%2520with%2520encoded.pdf"),
+            ("file+with+plus.pdf", "file%2Bwith%2Bplus.pdf"),
+            ("file#with#hash.pdf", "file%23with%23hash.pdf"),
+            ("file?with?query.pdf", "file%3Fwith%3Fquery.pdf"),
+            ("file&with&ampersand.pdf", "file%26with%26ampersand.pdf"),
+        ]
+
+        for filename, expected_encoded in test_cases:
+            result = generate_attachment_url_from_storage_path(
+                download_url="https://example.com/file.pdf",
+                unique_filename=filename,
+                base_path="attachments",
+                html_directory="attachments",
+                enable_streaming=True,
+            )
+            assert result == expected_encoded, f"Failed for filename: {filename}"
+
+
 class TestResolveBasePathFromContext:
     """Tests for the resolve_base_path_from_context function"""
 

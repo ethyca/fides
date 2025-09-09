@@ -22,18 +22,14 @@ describe("System integrations", () => {
   });
 
   it("should render the integration configuration panel when navigating to integrations tab", () => {
-    cy.getByTestId("system-fidesctl_system").within(() => {
-      cy.getByTestId("edit-btn").click();
-    });
+    cy.getByTestId("system-link-fidesctl_system").click();
     cy.getAntTab("Integrations").click({ force: true });
     cy.get("#rc-tabs-0-panel-integrations").should("be.visible");
   });
 
   describe("Integration search", () => {
     beforeEach(() => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
     });
@@ -51,13 +47,17 @@ describe("System integrations", () => {
         .find('[role="menuitem"] p')
         .should("contain.text", "Shopify");
     });
+
+    it("should not display Website in the dropdown", () => {
+      cy.getByTestId("select-dropdown-list")
+        .find('[role="menuitem"] p')
+        .should("not.contain.text", "Website");
+    });
   });
 
   describe("Integration form contents", () => {
     beforeEach(() => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
 

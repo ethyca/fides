@@ -41,6 +41,7 @@ describe("Manual Tasks", () => {
         .first()
         .within(() => {
           cy.get("td")
+            .not("td.ant-table-selection-column")
             .first()
             .should("contain", "Export Customer Data from Salesforce");
           cy.getByTestId("manual-task-status-tag").should("contain", "New");
@@ -203,6 +204,7 @@ describe("Manual Tasks", () => {
         .first()
         .within(() => {
           cy.get("td")
+            .not("td.ant-table-selection-column")
             .eq(4)
             .within(() => {
               cy.get(".ant-tag").should("have.length.at.least", 1);
@@ -617,6 +619,7 @@ describe("Manual Tasks", () => {
         .first()
         .within(() => {
           cy.get("td")
+            .not("td.ant-table-selection-column")
             .first()
             .should("contain", "Export Customer Data from Salesforce");
           cy.getByTestId("manual-task-status-tag").should("contain", "New");

@@ -27,6 +27,10 @@ export type MinimalTCFBannerTranslation = {
    */
   description?: string | null;
   /**
+   * Whether the given translation is the default
+   */
+  is_default?: boolean | null;
+  /**
    * The language of the given translation
    */
   language: SupportedLanguage;
