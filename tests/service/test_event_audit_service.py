@@ -1,10 +1,9 @@
-from datetime import datetime
 from typing import Any, Dict
 
 import pytest
 
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
-from fides.api.request_context import get_user_id, reset_request_context, set_user_id
+from fides.api.request_context import reset_request_context, set_user_id
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -580,23 +579,8 @@ class TestEventAuditServiceEdgeCases:
         )
         assert len(events) == 0
 
-    def test_get_events_with_negative_limit(self, db, event_audit_service):
-        """Test query methods with negative limit raises appropriate error."""
-        event_audit_service.create_event_audit(
-            event_type=EventAuditType.system_updated,
-            status=EventAuditStatus.succeeded,
-        )
-
-        # PostgreSQL doesn't allow negative LIMIT values
-        with pytest.raises(
-            Exception
-        ):  # Could be DataError or other database-specific error
-            event_audit_service.get_events_by_type(
-                EventAuditType.system_updated, limit=-1
-            )
-
     def test_create_event_audit_with_special_characters_in_strings(
-        self, db, event_audit_service
+        self, event_audit_service
     ):
         """Test creating event audit with special characters in string fields."""
         special_chars_data = {

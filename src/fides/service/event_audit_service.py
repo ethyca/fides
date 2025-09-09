@@ -104,9 +104,11 @@ class EventAuditService:
     ) -> List[EventAudit]:
         """Get all events matching a category prefix (e.g., 'consent', 'system', 'taxonomy')."""
 
+        prefix_with_dot = category_prefix + "."
+
         return (
             self.db.query(EventAudit)
-            .filter(EventAudit.event_type.like(f"{category_prefix}.%"))
+            .filter(EventAudit.event_type.startswith(prefix_with_dot))
             .order_by(EventAudit.created_at.desc())
             .limit(limit)
             .all()

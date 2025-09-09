@@ -129,6 +129,7 @@ class TaxonomyService:
 
         self.event_audit_service.create_event_audit(
             EventAuditType.taxonomy_element_created,
+            EventAuditStatus.succeeded,
             resource_type="taxonomy_element",
             resource_identifier=processed_data.get("fides_key"),
             description=f"Created {taxonomy_type} element: {processed_data.get('fides_key')} ({processed_data.get('name')})",
@@ -226,6 +227,7 @@ class TaxonomyService:
 
         self.event_audit_service.create_event_audit(
             EventAuditType.taxonomy_element_deleted,
+            EventAuditStatus.succeeded,
             resource_type="taxonomy_element",
             resource_identifier=fides_key,
             description=f"Deleted {taxonomy_type} element: {fides_key}",
