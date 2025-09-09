@@ -311,7 +311,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     else:
                         raise PrivacyRequestError(
                             f"Invalid id source '{id_source}' for request task {request_task.id}. "
-                            f"Valid sources are: {IdSource.values()}"
+                            f"Valid sources are: {IdSource}"
                         )
 
 

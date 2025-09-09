@@ -3,7 +3,7 @@ Tests for async DSR service functionality.
 Tests the core service methods that handle asynchronous data subject requests.
 """
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import  Mock, patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -18,18 +18,13 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.schemas.saas.saas_config import SaaSRequest
-from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
 from fides.api.service.async_dsr.async_dsr_service import (
-    execute_erasure_polling_requests,
     execute_read_polling_requests,
-    execute_read_result_request,
-    get_connection_config_from_task,
+    execute_result_request,
     execute_polling_task,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling import (
-    PollingAsyncDSRStrategy,
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
 )
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -108,7 +103,7 @@ class TestAsyncDSRService:
         # Create a read request with async config
         read_request = Mock()
         read_request.async_config = Mock()
-        read_request.async_config.strategy = "polling"
+        read_request.async_config.strategy = "polling_access_data"
         read_request.async_config.configuration = {
             "status_request": {"method": "GET", "path": "/api/status/<request_id>"},
             "result_request": {"method": "GET", "path": "/api/results/<request_id>"},
@@ -226,7 +221,7 @@ class TestAsyncDSRService:
     ):
         """Test execute_read_polling_requests when status is not ready"""
         # Setup strategy mock
-        mock_strategy = Mock(spec=PollingAsyncDSRStrategy)
+        mock_strategy = Mock(spec=PollingAsyncDSRBaseStrategy)
         mock_strategy.get_status_request.return_value = False  # Not ready
         mock_get_strategy.return_value = mock_strategy
 
@@ -241,7 +236,7 @@ class TestAsyncDSRService:
     @patch(
         "fides.api.service.async_dsr.async_dsr_service.AsyncDSRStrategy.get_strategy"
     )
-    @patch("fides.api.service.async_dsr.async_dsr_service.execute_read_result_request")
+    @patch("fides.api.service.async_dsr.async_dsr_service.execute_result_request")
     def test_execute_read_polling_requests_status_ready(
         self,
         mock_execute_result,
@@ -253,7 +248,7 @@ class TestAsyncDSRService:
     ):
         """Test execute_read_polling_requests when status is ready"""
         # Setup strategy mock
-        mock_strategy = Mock(spec=PollingAsyncDSRStrategy)
+        mock_strategy = Mock(spec=PollingAsyncDSRBaseStrategy)
         mock_strategy.get_status_request.return_value = True  # Ready
         mock_get_strategy.return_value = mock_strategy
 
@@ -284,7 +279,7 @@ class TestAsyncDSRService:
     ):
         """Test execute_read_result_request when data is returned"""
         # Setup mocks
-        mock_strategy = Mock(spec=PollingAsyncDSRStrategy)
+        mock_strategy = Mock(spec=PollingAsyncDSRBaseStrategy)
         mock_strategy.get_result_request.return_value = [
             {"id": 1, "name": "John Doe"},
             {"id": 2, "name": "Jane Smith"},
@@ -294,7 +289,7 @@ class TestAsyncDSRService:
         secrets = {"api_key": "test"}
         identity_data = {"email": "test@example.com"}
 
-        execute_read_result_request(
+        execute_result_request(
             mock_db_session,
             mock_request_task,
             mock_strategy,
@@ -316,7 +311,7 @@ class TestAsyncDSRService:
         mock_request_task.save.assert_called_with(mock_db_session)
 
         # Verify task was queued for next step
-        mock_log_queued.assert_called_once_with(mock_request_task, "callback")
+        mock_log_queued.assert_called_once_with(mock_request_task, "polling success")
         mock_queue_task.assert_called_once_with(
             mock_request_task, privacy_request_proceed=True
         )
@@ -331,14 +326,14 @@ class TestAsyncDSRService:
         """Test that when no data is returned, the task is not updated"""
 
         # Setup mocks
-        mock_strategy = Mock(spec=PollingAsyncDSRStrategy)
+        mock_strategy = Mock(spec=PollingAsyncDSRBaseStrategy)
         mock_strategy.get_result_request.return_value = None  # No data
 
         mock_client = Mock(spec=AuthenticatedClient)
         secrets = {"api_key": "test"}
         identity_data = {"email": "test@example.com"}
 
-        execute_read_result_request(
+        execute_result_request(
             mock_db_session,
             mock_request_task,
             mock_strategy,

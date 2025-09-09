@@ -111,8 +111,8 @@ def execute_read_polling_requests(
             # Get missing parameters from available context
             privacy_request: PrivacyRequest = polling_task.privacy_request
             secrets: Dict[str, Any] = connector.secrets
-            # Adding Id to the secrets - Barebones
 
+            # Adding Id to the secrets - Barebones. Failing in tests
             request_id = polling_task.access_data[0]["request_id"]
             secrets.update({"request_id": request_id})
             logger.info(f"Secrets: {secrets}")
@@ -164,7 +164,7 @@ def execute_result_request(
         )
 
     else:
-        async_task.access_data = []
+        polling_task.access_data = []
         logger.info(
             f"Polling request - {polling_task.id} is ready but returned no results"
         )

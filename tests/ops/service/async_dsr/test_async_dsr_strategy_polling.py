@@ -1,16 +1,15 @@
-import json
-from unittest.mock import Mock, patch
 
-import pydash
+from unittest.mock import Mock
+
 import pytest
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
-from fides.api.service.async_dsr.async_dsr_strategy_polling import (
-    PollingAsyncDSRStrategy,
+from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRBaseConfiguration
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
@@ -22,7 +21,7 @@ class TestPollingAsyncDSRStrategy:
     @pytest.fixture
     def polling_strategy(self):
         """Create a PollingAsyncDSRStrategy with basic configuration"""
-        config = PollingAsyncDSRConfiguration(
+        config = PollingAsyncDSRBaseConfiguration(
             status_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/status/<request_id>",
@@ -34,7 +33,7 @@ class TestPollingAsyncDSRStrategy:
             ),
             result_path=self.RESULT_PATH,
         )
-        return PollingAsyncDSRStrategy(configuration=config)
+        return PollingAsyncDSRBaseStrategy(configuration=config)
 
     @pytest.fixture
     def mock_client(self):
@@ -224,7 +223,7 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
             ),
             result_path="data.results",
         )
-        return PollingAsyncDSRStrategy(configuration=config)
+        return PollingAsyncDSRBaseStrategy(configuration=config)
 
     @pytest.fixture
     def polling_strategy_with_list_status(self):
@@ -242,7 +241,7 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
             ),
             result_path="data.results",
         )
-        return PollingAsyncDSRStrategy(configuration=config)
+        return PollingAsyncDSRBaseStrategy(configuration=config)
 
     @pytest.fixture
     def mock_client(self):

@@ -3,7 +3,6 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from loguru import logger
 
 from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.graph.execution import ExecutionNode
@@ -89,7 +88,6 @@ class TestAsyncDsrRequest:
                 )
                 == []
             )
-        logger.info(f"Request Task: {request_task.access_data}")
 
         # Check that we are sending the correct request to the start endpoint
         call_args = mock_send.call_args[0][0]
@@ -98,7 +96,7 @@ class TestAsyncDsrRequest:
         assert request_task.async_type == AsyncTaskType.polling
         assert request_task.get_access_data() == [
             {
-                "id": "123",
+                "request_id": "123",
             }
         ]
 
