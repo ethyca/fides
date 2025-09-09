@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added a messaging provider configuration page to the Admin UI [#6213](https://github.com/ethyca/fides/pull/6213)
 
+### Changed
+- Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
+
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
 
