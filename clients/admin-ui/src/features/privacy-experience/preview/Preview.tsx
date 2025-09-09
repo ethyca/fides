@@ -167,7 +167,7 @@ const Preview = ({
       notification.warning({
         message: "No vendors available",
         description:
-          "The TCF overlay will not display correctly until GVL vendors are added.",
+          "This TCF Overlay will not appear on live sites until you add consent vendors from the Global Vendor List (GVL)",
         duration: 0,
         key: "vendor-warning", // Prevent duplicate messages
       });
