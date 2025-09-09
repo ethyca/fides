@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 from loguru import logger
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
+
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -332,6 +334,11 @@ class RequestTaskRequestData(Base):
     Model for storing request data for middle steps during the execution of a request task.
     Currently used for storing the request data for polling tasks
     """
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "requesttask_request_data"
+
 
     request_task_id = Column(
         String(255),
