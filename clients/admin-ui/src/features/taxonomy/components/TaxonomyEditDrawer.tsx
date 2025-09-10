@@ -13,26 +13,23 @@ import {
 } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
+import EditDrawer, { EditDrawerHeader } from "~/features/common/EditDrawer";
 import { getErrorMessage } from "~/features/common/helpers";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { taxonomyKeyToScopeRegistryEnum } from "~/features/taxonomy/constants";
+import { taxonomyTypeToResourceType } from "~/features/taxonomy/helpers";
+import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
+import { TaxonomyEntity } from "~/features/taxonomy/types";
 import { isErrorResult } from "~/types/errors";
 
-import EditDrawer, { EditDrawerHeader } from "../../common/EditDrawer";
-import {
-  CoreTaxonomiesEnum,
-  taxonomyTypeToScopeRegistryEnum,
-} from "../constants";
-import { taxonomyTypeToResourceType } from "../helpers";
-import useTaxonomySlices from "../hooks/useTaxonomySlices";
-import { TaxonomyEntity } from "../types";
 import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
 import TaxonomyEditForm from "./TaxonomyEditForm";
 
 interface TaxonomyEditDrawerProps {
   taxonomyItem?: TaxonomyEntity | null;
-  taxonomyType: CoreTaxonomiesEnum;
+  taxonomyType: string;
   onClose: () => void;
 }
 
@@ -66,10 +63,10 @@ const TaxonomyEditDrawer = ({
   });
 
   const canUserEditTaxonomy = useHasPermission([
-    taxonomyTypeToScopeRegistryEnum(taxonomyType).UPDATE,
+    taxonomyKeyToScopeRegistryEnum(taxonomyType).UPDATE,
   ]);
   const canUserDeleteTaxonomy = useHasPermission([
-    taxonomyTypeToScopeRegistryEnum(taxonomyType).DELETE,
+    taxonomyKeyToScopeRegistryEnum(taxonomyType).DELETE,
   ]);
 
   const handleEdit = async (formValues: TaxonomyEntity) => {
