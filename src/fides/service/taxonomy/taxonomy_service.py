@@ -7,12 +7,14 @@ from typing import Any, Dict, List, Literal, Optional, Union, overload
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     DataCategory,
     DataSubject,
     DataUse,
 )
 from fides.api.models.taxonomy import TaxonomyUsage
+from fides.service.event_audit_service import EventAuditService
 
 from .handlers import LegacyTaxonomyHandler, TaxonomyHandler
 from .utils import (
@@ -34,8 +36,9 @@ class TaxonomyService:
 
     # Most of the main methods in this service have a type-specific overload to help with type hints
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, event_audit_service: EventAuditService):
         self.db = db
+        self.event_audit_service = event_audit_service
 
     @overload
     def get_elements(
@@ -121,7 +124,22 @@ class TaxonomyService:
 
         # Centralized validation before delegation
         self._validate_element_data(processed_data, taxonomy_type, action="create")
-        return self._get_handler(taxonomy_type).create_element(processed_data)
+
+        element = self._get_handler(taxonomy_type).create_element(processed_data)
+
+        self.event_audit_service.create_event_audit(
+            EventAuditType.taxonomy_element_created,
+            EventAuditStatus.succeeded,
+            resource_type="taxonomy_element",
+            resource_identifier=processed_data.get("fides_key"),
+            description=f"Created {taxonomy_type} element: {processed_data.get('fides_key')} ({processed_data.get('name')})",
+            event_details={
+                "taxonomy_type": taxonomy_type,
+                **processed_data,
+            },
+        )
+
+        return element
 
     @overload
     def update_element(
@@ -162,8 +180,12 @@ class TaxonomyService:
         # Update the element via handler
         updated_element = handler.update_element(fides_key, element_data)
 
+        # Return early if element was not found
+        if updated_element is None:
+            return None
+
         # Handle hierarchical activation/deactivation logic at service level
-        if updated_element and "active" in element_data:
+        if "active" in element_data:
             if element_data["active"]:
                 activate_taxonomy_parents(updated_element, self.db)
             else:
@@ -177,6 +199,18 @@ class TaxonomyService:
             self.db.commit()
             # Refresh the updated element to return the latest state
             self.db.refresh(updated_element)
+
+        self.event_audit_service.create_event_audit(
+            EventAuditType.taxonomy_element_updated,
+            EventAuditStatus.succeeded,
+            resource_type="taxonomy_element",
+            resource_identifier=fides_key,
+            description=f"Updated {taxonomy_type} element: {fides_key} ({updated_element.name})",  # type: ignore
+            event_details={
+                "taxonomy_type": taxonomy_type,
+                **element_data,
+            },
+        )
 
         return updated_element
 
@@ -195,6 +229,18 @@ class TaxonomyService:
         # Then delete the element itself via the appropriate handler
         self._get_handler(taxonomy_type).delete_element(fides_key)
         self.db.commit()
+
+        self.event_audit_service.create_event_audit(
+            EventAuditType.taxonomy_element_deleted,
+            EventAuditStatus.succeeded,
+            resource_type="taxonomy_element",
+            resource_identifier=fides_key,
+            description=f"Deleted {taxonomy_type} element: {fides_key}",
+            event_details={
+                "taxonomy_type": taxonomy_type,
+                "fides_key": fides_key,
+            },
+        )
 
     @overload
     def create_or_update_element(

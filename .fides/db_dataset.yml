@@ -2988,3 +2988,36 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: event_audit
+    description: 'Table used to store audit events for tracking system changes and operations'
+    fields:
+    - name: created_at
+      description: 'Timestamp when the audit event was created'
+      data_categories: [system.operations]
+    - name: description
+      description: 'Human-readable description of the audit event'
+      data_categories: [system.operations]
+    - name: event_details
+      description: 'JSON details about the specific event and its context'
+      data_categories: [system.operations]
+    - name: event_type
+      description: 'Type/category of the audit event'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Unique identifier for the audit event'
+      data_categories: [system.operations]
+    - name: resource_identifier
+      description: 'Identifier of the resource that was affected by the event'
+      data_categories: [system.operations]
+    - name: resource_type
+      description: 'Type of resource that was affected by the event'
+      data_categories: [system.operations]
+    - name: status
+      description: 'Status of the audit event (succeeded, failed, etc.)'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Timestamp when the audit event was last updated'
+      data_categories: [system.operations]
+    - name: user_id
+      description: 'ID of the user who triggered the audit event'
+      data_categories: [user.unique_id]
