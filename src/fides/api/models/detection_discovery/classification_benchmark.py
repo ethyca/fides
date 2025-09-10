@@ -11,10 +11,10 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Query, Session
 
-from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.base_class import Base
 
 
-class ClassificationBenchmark(Base, FidesBase):
+class ClassificationBenchmark(Base):
     """
     Database model for storing classification benchmark results.
 
