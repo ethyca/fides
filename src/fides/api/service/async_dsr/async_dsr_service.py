@@ -1,8 +1,5 @@
 from typing import Any, Dict, Optional
 
-from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
-from fides.api.util.memory_watchdog import memory_limiter
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -14,7 +11,9 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
-from fides.api.service.async_dsr.async_dsr_strategy_polling_base import PollingAsyncDSRBaseStrategy
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
+)
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -25,6 +24,10 @@ from fides.api.task.execute_request_tasks import (
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
+from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.api.util.memory_watchdog import memory_limiter
+
 
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
@@ -44,7 +47,7 @@ def execute_polling_task(
         polling_task: RequestTask = RequestTask.get(db, object_id=polling_task_id)
         privacy_request: PrivacyRequest = polling_task.privacy_request
         # Check that the privacy request is in processing
-        if  privacy_request.status != PrivacyRequestStatus.in_processing:
+        if privacy_request.status != PrivacyRequestStatus.in_processing:
             polling_task.status = ExecutionLogStatus.error
             polling_task.save(db)
             raise PrivacyRequestError(
@@ -75,7 +78,9 @@ def execute_polling_task(
             if polling_task.action_type == ActionType.access:
                 logger.info(f"Executing read polling requests for {polling_task.id}")
 
-                execute_read_polling_requests(db, polling_task, query_config, saas_connector)
+                execute_read_polling_requests(
+                    db, polling_task, query_config, saas_connector
+                )
             elif polling_task.action_type == ActionType.erasure:
                 execute_erasure_polling_requests(db, polling_task, query_config)
 
@@ -103,6 +108,7 @@ def get_connection_config_from_task(
 
     return connection_config
 
+
 def execute_read_polling_requests(
     db: Session,
     polling_task: RequestTask,
@@ -110,7 +116,9 @@ def execute_read_polling_requests(
     connector: SaaSConnector,
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
-    read_requests = query_config.get_read_requests_by_identity() #Check: Cant we get the request directly from the task?
+    read_requests = (
+        query_config.get_read_requests_by_identity()
+    )  # Check: Cant we get the request directly from the task?
     logger.info(f"Read requests: {read_requests}")
     for read_request in read_requests:
         if read_request.async_config:
@@ -136,19 +144,10 @@ def execute_read_polling_requests(
             )
 
             logger.info(f"Param values: {param_values}")
-            status = strategy.get_status_request(
-                client,
-                param_values
-            )
+            status = strategy.get_status_request(client, param_values)
 
             if status:
-                execute_result_request(
-                    db,
-                    polling_task,
-                    strategy,
-                    client,
-                    param_values
-                )
+                execute_result_request(db, polling_task, strategy, client, param_values)
             else:
                 logger.info(f"Polling request - {polling_task.id} still not Ready. ")
                 continue
@@ -162,10 +161,7 @@ def execute_result_request(
     param_values: Dict[str, Any],
 ) -> None:
     """Execute the result request of a successfull polling task"""
-    result = strategy.get_result_request(
-        client,
-        param_values
-    )
+    result = strategy.get_result_request(client, param_values)
     logger.info(f"Result: {result}")
     if result:
         # Save updated data back to the request task.
@@ -180,9 +176,7 @@ def execute_result_request(
             f"Polling request - {polling_task.id} is ready but returned no results"
         )
 
-    polling_task.callback_succeeded = (
-        True  # Setting this task as successful, finished
-    )
+    polling_task.callback_succeeded = True  # Setting this task as successful, finished
     polling_task.update_status(db, ExecutionLogStatus.pending)
     polling_task.save(db)
     log_task_queued(polling_task, "polling success")
@@ -199,9 +193,7 @@ def execute_erasure_polling_requests(
     logger.info(f"Erasure polling not yet implemented. Task {polling_task.id} passed")
 
 
-def _get_request_id_from_storage(
-    request_task: RequestTask
-) -> Optional[str]:
+def _get_request_id_from_storage(request_task: RequestTask) -> Optional[str]:
     """Helper method to get request_id from stored data or param_values."""
     # Try to get from stored request_data first
     if request_task and request_task.request_data:
@@ -214,9 +206,7 @@ def _get_request_id_from_storage(
 
 
 def _prepare_param_values_for_polling(
-    secrets: Dict[str, Any],
-    identity_data: Dict[str, Any],
-    request_task: RequestTask
+    secrets: Dict[str, Any], identity_data: Dict[str, Any], request_task: RequestTask
 ) -> Dict[str, Any]:
     """Prepare parameter values including request_id from various sources."""
     param_values = secrets.copy()

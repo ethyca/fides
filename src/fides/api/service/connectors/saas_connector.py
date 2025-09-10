@@ -4,9 +4,6 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from uuid import uuid4
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
-from fides.api.schemas.saas.strategy_configuration import IdSource
-from fides.api.service.async_dsr.async_dsr_strategy_factory import get_strategy as get_async_strategy
 import pydash
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -14,6 +11,7 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
+from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     AwaitingAsyncTask,
     FidesopsException,
@@ -25,7 +23,10 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTaskRequestData
+from fides.api.models.privacy_request.request_task import (
+    AsyncTaskType,
+    RequestTaskRequestData,
+)
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -42,6 +43,10 @@ from fides.api.schemas.saas.saas_config import (
 from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
+)
+from fides.api.schemas.saas.strategy_configuration import IdSource
+from fides.api.service.async_dsr.async_dsr_strategy_factory import (
+    get_strategy as get_async_strategy,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
@@ -281,9 +286,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 awaiting_async_processing = True
 
                 self._handle_async_read_request_setup(
-                    read_request,
-                    request_task,
-                    input_data
+                    read_request, request_task, input_data
                 )
 
             # check all the values specified by param_values are provided in input_data
@@ -349,7 +352,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
             # Saving the request task access data to use it on the polling status request
             if request_task.async_type == AsyncTaskType.polling:
-                request_id_config = read_request.async_config.configuration["request_id_config"]
+                request_id_config = read_request.async_config.configuration[
+                    "request_id_config"
+                ]
                 id_source = request_id_config["id_source"]
                 if id_source == IdSource.path.value:
                     request_data = {
@@ -371,20 +376,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # Validate async strategy with proper enum value checking
         strategy = get_async_strategy(
-            read_request.async_config.strategy,
-            read_request.async_config.configuration
+            read_request.async_config.strategy, read_request.async_config.configuration
         )
 
         request_task.async_type = AsyncTaskType(strategy.type)
 
         if request_task.async_type == AsyncTaskType.polling:
-            #Check if request id config for polling async requests is generated
-            request_id_config = read_request.async_config.configuration["request_id_config"]
+            # Check if request id config for polling async requests is generated
+            request_id_config = read_request.async_config.configuration[
+                "request_id_config"
+            ]
             if request_id_config["id_source"] == IdSource.generated.value:
 
-                request_data = {
-                    "request_id": str(uuid4())
-                }
+                request_data = {"request_id": str(uuid4())}
                 logger.info(
                     "Generated for request task '{}': {}",
                     request_task.id,
@@ -405,9 +409,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         with get_db() as db:
             # Check if request_data already exists for this task
-            existing_request_data = db.query(RequestTaskRequestData).filter(
-                RequestTaskRequestData.request_task_id == request_task.id
-            ).first()
+            existing_request_data = (
+                db.query(RequestTaskRequestData)
+                .filter(RequestTaskRequestData.request_task_id == request_task.id)
+                .first()
+            )
 
             if existing_request_data:
                 # Update existing request data

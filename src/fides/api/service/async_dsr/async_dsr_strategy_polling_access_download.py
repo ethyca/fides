@@ -1,19 +1,21 @@
-from typing import Any, Dict, List, Optional, Union
 from io import BytesIO
+from typing import Any, Dict, List, Optional, Union
 
 import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncAccessDownloadConfiguration,
     SupportedDownloadType,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling_base import PollingAsyncDSRBaseStrategy
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
+)
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
-from fides.api.models.privacy_request.request_task import RequestTask
 
 
 class PollingAsyncAccessDownloadStrategy(PollingAsyncDSRBaseStrategy):
@@ -33,7 +35,6 @@ class PollingAsyncAccessDownloadStrategy(PollingAsyncDSRBaseStrategy):
         self,
         client: AuthenticatedClient,
         param_values: Dict[str, Any],
-
     ) -> Union[str, bytes, List[Row]]:
         """Execute result request and return download URL or file content."""
 
@@ -49,7 +50,9 @@ class PollingAsyncAccessDownloadStrategy(PollingAsyncDSRBaseStrategy):
             elif self.download_type == SupportedDownloadType.file:
                 return self._process_direct_file(response)
             else:
-                raise PrivacyRequestError(f"Unsupported download type: {self.download_type}")
+                raise PrivacyRequestError(
+                    f"Unsupported download type: {self.download_type}"
+                )
 
         raise PrivacyRequestError(
             f"Result request failed with status code {response.status_code}"

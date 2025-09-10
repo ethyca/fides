@@ -4,13 +4,16 @@ import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRBaseConfiguration
-from fides.api.service.async_dsr.async_dsr_strategy_polling_base import PollingAsyncDSRBaseStrategy
+from fides.api.models.privacy_request.request_task import RequestTask
+from fides.api.schemas.saas.strategy_configuration import (
+    PollingAsyncDSRBaseConfiguration,
+)
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
+)
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
-
-from fides.api.models.privacy_request.request_task import RequestTask
 
 
 class PollingAsyncErasureStrategy(PollingAsyncDSRBaseStrategy):
@@ -39,12 +42,13 @@ class PollingAsyncErasureStrategy(PollingAsyncDSRBaseStrategy):
 
         if response.ok:
             # For erasure, we typically just need confirmation
-            result = pydash.get(response.json(), self.result_path) if self.result_path else response.json()
+            result = (
+                pydash.get(response.json(), self.result_path)
+                if self.result_path
+                else response.json()
+            )
 
-            return {
-                "status": "completed",
-                "details": result
-            }
+            return {"status": "completed", "details": result}
 
         raise PrivacyRequestError(
             f"Erasure result request failed with status code {response.status_code}"

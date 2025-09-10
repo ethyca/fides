@@ -734,6 +734,7 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
                 from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
                     execute_polling_task,
                 )
+
                 logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
 
                 for async_task in async_tasks:

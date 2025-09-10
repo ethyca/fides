@@ -179,6 +179,7 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
 
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
 
+
 class IdSource(Enum):
     """
     Source for the request id.
@@ -187,6 +188,7 @@ class IdSource(Enum):
     path = "path"
     generated = "generated"
 
+
 class AcceptedFormats(Enum):
     """
     Format for the request id.
@@ -194,6 +196,7 @@ class AcceptedFormats(Enum):
 
     uuid4 = "uuid4"
     random_string = "random_string"
+
 
 class PollingAsyncIdRequestConfiguration(StrategyConfiguration):
     """
@@ -209,12 +212,14 @@ class PollingAsyncIdRequestConfiguration(StrategyConfiguration):
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         id_source = values.get("id_source")
         if id_source == IdSource.path.value and values.get("id_path") is None:
-            raise ValueError("The 'id_path' value must be specified when accessing the request id from the path")
+            raise ValueError(
+                "The 'id_path' value must be specified when accessing the request id from the path"
+            )
         if id_source == IdSource.generated.value and values.get("format") is None:
-            raise ValueError("The 'format' value must be specified when generating the request id")
+            raise ValueError(
+                "The 'format' value must be specified when generating the request id"
+            )
         return values
-
-
 
 
 class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
@@ -229,17 +234,21 @@ class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
     result_path: str
     request_id_config: PollingAsyncIdRequestConfiguration
 
+
 class SupportedDataType(Enum):
     """Locations where the link to the next page may be found."""
 
     json = "json"
     csv = "csv"
 
+
 class PollingAsyncDSRAccessDataConfiguration(PollingAsyncDSRBaseConfiguration):
     """
     Configuration for polling async DSR requests. Default is Json
     """
+
     data_type: SupportedDataType = SupportedDataType.json
+
 
 ## We Can move this to a separate PR if it gets complicated enough
 class SupportedDownloadType(Enum):
@@ -248,9 +257,11 @@ class SupportedDownloadType(Enum):
     file = "file"  # Response contains direct file content
     link = "link"  # Response contains download URL
 
+
 class PollingAsyncAccessDownloadConfiguration(PollingAsyncDSRBaseConfiguration):
     """
     Configuration for polling async DSR requests.
     """
+
     download_type: SupportedDownloadType = SupportedDownloadType.link
-    result_path: Optional[str] = None # Placeholder in case we need a result path
+    result_path: Optional[str] = None  # Placeholder in case we need a result path

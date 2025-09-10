@@ -2,24 +2,26 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 import pydash
+from loguru import logger
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
 from fides.api.schemas.saas.strategy_configuration import (
-    PollingAsyncDSRBaseConfiguration,
     IdSource,
+    PollingAsyncDSRBaseConfiguration,
 )
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
-from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
-from loguru import logger
+
 
 class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
     """
     Base strategy for polling async DSR requests.
     """
+
     type = AsyncTaskType.polling
 
     def __init__(self, configuration: PollingAsyncDSRBaseConfiguration):
@@ -31,9 +33,7 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
         self.request_id_config = configuration.request_id_config
 
     def get_status_request(
-        self,
-        client: AuthenticatedClient,
-        param_values: Dict[str, Any]
+        self, client: AuthenticatedClient, param_values: Dict[str, Any]
     ) -> bool:
         """Execute status request and return completion status."""
         prepared_status_request = map_param_values(

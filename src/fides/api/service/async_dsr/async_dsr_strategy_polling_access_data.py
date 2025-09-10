@@ -1,20 +1,23 @@
-from typing import Any, Dict, List, Optional
 import csv
 import io
+from typing import Any, Dict, List, Optional
 
 import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncDSRAccessDataConfiguration,
     SupportedDataType,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling_base import PollingAsyncDSRBaseStrategy
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
+)
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
-from fides.api.models.privacy_request.request_task import RequestTask
+
 
 class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
     """
@@ -35,7 +38,6 @@ class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
         param_values: Dict[str, Any],
     ) -> List[Row]:
         """Execute result request and return parsed data."""
-
 
         prepared_result_request = map_param_values(
             "result", "polling request", self.result_request, param_values
