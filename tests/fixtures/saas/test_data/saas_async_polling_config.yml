@@ -37,13 +37,17 @@ saas_config:
             - name: email
               identity: email
           async_config:
-            strategy: polling
+            strategy: polling_access_data
             configuration:
               status_request:
                 method: GET
                 path: /api/v1/user/status
               status_path: request_complete
+              status_completed_value: completed
               result_request:
                 method: GET
                 path: /api/v1/user/result
               result_path: result
+              request_id_config:
+                id_source: path
+                id_path: id
