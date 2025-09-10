@@ -29,6 +29,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
+- Request manager screen now shows loader while waiting for sets of results [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen now persists pagination parameters to URL [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen no longer persists search to local storage and instead populates URL parameters [#6552](https://github.com/ethyca/fides/pull/6552)
 
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
@@ -40,6 +43,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
 - Fix bug in oauth authorization success toast [#6572](https://github.com/ethyca/fides/pull/6572)
 - Fix expadable tag cell for locations in notices page of admin-ui [#6559](https://github.com/ethyca/fides/pull/6559)
+- Request manager screen date range now respects timezones [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen will no longer silently filter results by prior searches [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager CSV download link is now cleaned up making memory leaks in Admin UI less likely [#6552](https://github.com/ethyca/fides/pull/6552)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
