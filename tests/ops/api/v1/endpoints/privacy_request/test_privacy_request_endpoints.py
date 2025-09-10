@@ -169,7 +169,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        
+
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
@@ -2068,7 +2068,7 @@ class TestGetPrivacyRequests:
         assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial Reason"] == ""
         assert first_row["Request ID"] == privacy_request.id
-        
+
         assert (
             first_row[f"Custom Field {EXAMPLE_CUSTOM_FIELD_LABEL}"]
             == EXAMPLE_CUSTOM_FIELD_VALUE
