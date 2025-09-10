@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557)
 - Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
 - Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
+- Location field submission and display for privacy requests [#6570](https://github.com/ethyca/fides/pull/6570)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
