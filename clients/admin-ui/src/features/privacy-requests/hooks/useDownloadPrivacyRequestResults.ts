@@ -21,9 +21,9 @@ const useDownloadPrivacyRequestResults = ({
   const isCompletedRequest =
     privacyRequest.status === PrivacyRequestStatus.COMPLETE;
 
-  const isActionRequest = getActionTypes(privacyRequest.policy.rules).includes(
-    ActionType.ACCESS,
-  );
+  const isActionRequest =
+    privacyRequest.policy.rules &&
+    getActionTypes(privacyRequest.policy.rules).includes(ActionType.ACCESS);
 
   const hasPermissionsToAccessResults = useHasPermission([
     ScopeRegistryEnum.PRIVACY_REQUEST_ACCESS_RESULTS_READ,

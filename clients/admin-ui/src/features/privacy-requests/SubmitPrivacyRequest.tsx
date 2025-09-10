@@ -128,7 +128,6 @@ const SubmitPrivacyRequest = () => {
   const handleSubmitRequestOpen = () => setState("submit-request");
   const handleCreateLinkOpen = () => setState("create-link");
   const handleClose = () => setState("closed");
-
   const { data } = useGetFidesCloudConfigQuery();
   const privacyCenterUrl = (data?.privacy_center_url ?? "").trim();
   const hasPrivacyCenterUrl = privacyCenterUrl.length > 0;

@@ -90,21 +90,30 @@ const ManualProcessingList = ({
   const [resumePrivacyRequestFromRequiresInput] =
     useResumePrivacyRequestFromRequiresInputMutation();
 
-  const actionTypes = getActionTypes(subjectRequest.policy.rules);
+  const actionTypes =
+    subjectRequest.policy.rules && getActionTypes(subjectRequest.policy.rules);
   const [uploadManualWebhookAccessData] =
     useUploadManualAccessWebhookDataMutation();
   const [uploadManualWebhookErasureData] =
     useUploadManualErasureWebhookDataMutation();
 
+  const actionConfig =
+    actionTypes &&
+    getActionConfig(
+      actionTypes,
+      uploadManualWebhookAccessData,
+      uploadManualWebhookErasureData,
+    );
+
   const {
     ProcessingDetailComponent: ProcessingDetail,
     uploadMutation,
     getUploadedWebhookDataEndpoint,
-  } = getActionConfig(
-    actionTypes,
-    uploadManualWebhookAccessData,
-    uploadManualWebhookErasureData,
-  ) as ActionConfig;
+  } = actionConfig ?? {
+    ProcessingDetailComponent: null,
+    uploadMutation: null,
+    getUploadedWebhookDataEndpoint: null,
+  };
 
   const handleCompleteDSRClick = async () => {
     try {
@@ -122,7 +131,11 @@ const ManualProcessingList = ({
   const handleSubmit = async (params: PatchUploadManualWebhookDataRequest) => {
     try {
       setIsSubmitting(true);
-      await uploadMutation(params).unwrap();
+
+      if (uploadMutation) {
+        await uploadMutation(params).unwrap();
+      }
+
       const response = {
         connection_key: params.connection_key,
         fields: {},
@@ -211,8 +224,8 @@ const ManualProcessingList = ({
   ]);
 
   if (
-    !actionTypes.includes(ActionType.ACCESS) &&
-    !actionTypes.includes(ActionType.ERASURE)
+    !actionTypes?.includes(ActionType.ACCESS) &&
+    !actionTypes?.includes(ActionType.ERASURE)
   ) {
     return null;
   }
@@ -253,7 +266,7 @@ const ManualProcessingList = ({
                     <Tr key={item.id} display="block">
                       <Td pl="0">{item.connection_config.key}</Td>
                       <Td>
-                        {dataList.length > 0 ? (
+                        {ProcessingDetail && dataList.length > 0 ? (
                           <ProcessingDetail
                             connectorName={item.connection_config.name}
                             data={

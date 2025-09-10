@@ -14,13 +14,16 @@ import { useGetConfigurationSettingsQuery } from "~/features/config-settings/con
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
+import {
+  PrivacyRequestResponse,
+  PrivacyRequestStatus,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import { useGetActiveMessagingProviderQuery } from "../messaging/messaging.slice";
 
 interface RequestTableActionsProps extends StackProps {
-  subjectRequest: PrivacyRequestEntity;
+  subjectRequest: PrivacyRequestResponse;
 }
 
 export const RequestTableActions = ({

@@ -2,7 +2,10 @@ import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
-import { PrivacyRequestStatus } from "~/types/api";
+import {
+  PrivacyRequestStatus,
+  PrivacyRequestVerboseResponse,
+} from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
 import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
@@ -49,7 +52,11 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
       {
         key: "activity",
         label: "Activity",
-        children: <ActivityTab subjectRequest={subjectRequest} />,
+        children: (
+          <ActivityTab
+            subjectRequest={subjectRequest as PrivacyRequestVerboseResponse}
+          />
+        ),
       },
       {
         key: "manual-tasks",

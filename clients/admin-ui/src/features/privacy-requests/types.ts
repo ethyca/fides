@@ -1,4 +1,55 @@
-import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  DrpAction,
+  PrivacyRequestResponse,
+  PrivacyRequestStatus,
+  PrivacyRequestVerboseResponse,
+  RuleResponse,
+} from "~/types/api";
+
+export type PrivacyRequestEntity =
+  | PrivacyRequestResponse
+  | PrivacyRequestVerboseResponse;
+
+export type Rule = Omit<
+  RuleResponse,
+  "storage_destination" | "masking_strategy"
+>;
+
+/**
+ * This type was being used in place of types generated from the api
+ */
+export interface LegacyPrivacyRequestEntity {
+  status: PrivacyRequestStatus;
+  results?: PrivacyRequestResults;
+  identity: {
+    [key: string]: { label: string; value: any };
+  };
+  identity_verified_at?: string;
+  custom_privacy_request_fields?: {
+    [key: string]: { label: string; value: any };
+  };
+  custom_privacy_request_fields_approved_by?: string;
+  custom_privacy_request_fields_approved_at?: string;
+  policy: {
+    name: string;
+    key: string;
+    rules: Rule[];
+    drp_action?: DrpAction;
+    execution_timeframe?: number;
+  };
+  reviewer: {
+    id: string;
+    username: string;
+  };
+  created_at: string;
+  reviewed_by: string;
+  finalized_at?: string;
+  finalized_by?: string;
+  id: string;
+  days_left?: number;
+  source?: string;
+}
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -61,12 +112,6 @@ export type GetUploadedManualWebhookDataRequest = {
   privacy_request_id: string;
 };
 
-export interface Rule {
-  name: string;
-  key: string;
-  action_type: ActionType;
-}
-
 export type PatchUploadManualWebhookDataRequest = {
   body: object;
   connection_key: string;
@@ -74,46 +119,6 @@ export type PatchUploadManualWebhookDataRequest = {
 };
 
 export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
-
-export interface PrivacyRequestEntity {
-  status: PrivacyRequestStatus;
-  results?: PrivacyRequestResults;
-  identity: {
-    [key: string]: { label: string; value: any };
-  };
-  identity_verified_at?: string;
-  custom_privacy_request_fields?: {
-    [key: string]: { label: string; value: any };
-  };
-  custom_privacy_request_fields_approved_by?: string;
-  custom_privacy_request_fields_approved_at?: string;
-  policy: {
-    name: string;
-    key: string;
-    rules: Rule[];
-    drp_action?: DrpAction;
-    execution_timeframe?: number;
-  };
-  reviewer: {
-    id: string;
-    username: string;
-  };
-  created_at: string;
-  reviewed_by: string;
-  finalized_at?: string;
-  finalized_by?: string;
-  id: string;
-  days_left?: number;
-  source?: string;
-}
-
-export interface PrivacyRequestResponse {
-  items: PrivacyRequestEntity[];
-  total: number;
-  page?: number;
-  pages?: number;
-  size?: number;
-}
 
 export interface PrivacyRequestParams {
   status?: PrivacyRequestStatus[];

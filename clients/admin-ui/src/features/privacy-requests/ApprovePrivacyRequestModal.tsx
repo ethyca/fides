@@ -14,6 +14,7 @@ import {
 } from "fidesui";
 import React, { useCallback } from "react";
 
+import { renderValue } from "../common/utils";
 import { PrivacyRequestEntity } from "./types";
 
 type ApproveModalProps = {
@@ -52,59 +53,114 @@ const ApprovePrivacyRequestModal = ({
             Are you sure you want to approve this privacy request?
           </Text>
           <UnorderedList>
-            {Object.entries(identity)
-              .filter(([, { value }]) => value !== null)
-              .map(([key, { value, label }]) => (
-                <ListItem key={key}>
-                  <Flex key={key} alignItems="flex-start">
-                    <Text
-                      mr={2}
-                      fontSize="sm"
-                      color="gray.900"
-                      fontWeight="500"
-                    >
-                      {label}:
-                    </Text>
-                    <Text
-                      color="gray.600"
-                      fontWeight="500"
-                      fontSize="sm"
-                      mr={2}
-                    >
-                      {value}
-                    </Text>
-                    ({identityVerifiedAt ? "Verified" : "Unverified"})
-                  </Flex>
-                </ListItem>
-              ))}
-            {customPrivacyRequestFields &&
-              Object.entries(customPrivacyRequestFields)
-                .filter(([, item]) => item.value)
-                .map(([key, item]) => (
-                  <ListItem key={key}>
-                    <Flex alignItems="flex-start" key={key}>
-                      <Text
-                        mr={2}
-                        fontSize="sm"
-                        color="gray.900"
-                        fontWeight="500"
-                      >
-                        {item.label}:
-                      </Text>
-                      <Text
-                        color="gray.600"
-                        fontWeight="500"
-                        fontSize="sm"
-                        mr={2}
-                      >
-                        {Array.isArray(item.value)
-                          ? item.value.join(", ")
-                          : item.value}{" "}
-                      </Text>
-                      (Unverified)
-                    </Flex>
-                  </ListItem>
-                ))}
+            {
+              /*
+               * Doing this despite what the api is saying
+               * Casting to unknown to cover all bases until types are fixed
+               */
+              identity &&
+                Object.entries(identity as Record<string, unknown>)
+                  .filter(
+                    ([, item]) =>
+                      item &&
+                      typeof item === "object" &&
+                      "value" in item &&
+                      !!item?.value,
+                  )
+                  .map(([key, item]) => {
+                    const parsedValue =
+                      item &&
+                      typeof item === "object" &&
+                      "value" in item &&
+                      "label" in item &&
+                      typeof item.label === "string"
+                        ? item
+                        : null;
+                    const value = renderValue(parsedValue?.value);
+                    const label =
+                      typeof parsedValue?.label === "string" &&
+                      parsedValue.label.toLocaleLowerCase();
+
+                    return (
+                      <ListItem key={key}>
+                        <Flex key={key} alignItems="flex-start">
+                          <Text
+                            mr={2}
+                            fontSize="sm"
+                            color="gray.900"
+                            fontWeight="500"
+                          >
+                            {label}:
+                          </Text>
+                          <Text
+                            color="gray.600"
+                            fontWeight="500"
+                            fontSize="sm"
+                            mr={2}
+                          >
+                            {value}
+                          </Text>
+                          ({identityVerifiedAt ? "Verified" : "Unverified"})
+                        </Flex>
+                      </ListItem>
+                    );
+                  })
+            }
+            {
+              /*
+               * Doing this despite what the api is saying
+               * Casting to unknown to cover all bases until types are fixed
+               */
+              customPrivacyRequestFields &&
+                Object.entries(
+                  customPrivacyRequestFields as Record<string, unknown>,
+                )
+                  .filter(
+                    ([, item]) =>
+                      item &&
+                      typeof item === "object" &&
+                      "value" in item &&
+                      !!item?.value,
+                  )
+                  .map(([key, item]) => {
+                    const parsedValue =
+                      item &&
+                      typeof item === "object" &&
+                      "value" in item &&
+                      "label" in item &&
+                      typeof item.label === "string"
+                        ? item
+                        : null;
+                    const value = renderValue(parsedValue?.value);
+                    const label =
+                      typeof parsedValue?.label === "string" &&
+                      parsedValue.label.toLocaleLowerCase();
+
+                    return (
+                      <ListItem key={key}>
+                        <Flex alignItems="flex-start" key={key}>
+                          <Text
+                            mr={2}
+                            fontSize="sm"
+                            color="gray.900"
+                            fontWeight="500"
+                          >
+                            {label}:
+                          </Text>
+                          <Text
+                            color="gray.600"
+                            fontWeight="500"
+                            fontSize="sm"
+                            mr={2}
+                          >
+                            {value}{" "}
+                          </Text>
+                          (Unverified)
+                        </Flex>
+                      </ListItem>
+                    );
+                  })
+            }
           </UnorderedList>
         </ModalBody>
         <ModalFooter>

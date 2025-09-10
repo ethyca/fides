@@ -16,6 +16,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ClipboardButton from "../common/ClipboardButton";
+import { renderValue } from "../common/utils";
 import RequestAttachments from "./attachments/RequestAttachments";
 import RequestCustomFields from "./RequestCustomFields";
 import RequestDetailsRow from "./RequestDetailsRow";
@@ -45,13 +46,13 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </RequestDetailsRow>
         <RequestDetailsRow label="Time remaining">
           <DaysLeftTag
-            daysLeft={subjectRequest.days_left}
+            daysLeft={subjectRequest.days_left || undefined}
             includeText
             status={subjectRequest.status as ApiPrivacyRequestStatus}
           />
         </RequestDetailsRow>
         <RequestDetailsRow label="Request type">
-          <RequestType rules={policy.rules} />
+          {!!policy.rules && <RequestType rules={policy.rules} />}
         </RequestDetailsRow>
         <RequestDetailsRow label="Source">
           {hasPlus && (
@@ -59,22 +60,43 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           )}
         </RequestDetailsRow>
 
-        {Object.entries(identity)
-          .filter(([, { value }]) => value !== null)
-          .map(([key, { value = "", label }]) => {
-            const text = `${value}${!identityVerifiedAt ? " (Unverified)" : ""}`;
+        {
+          /*
+           * Doing this despite what the api is saying
+           * Casting to unknown to cover all bases until types are fixed
+           */
+          identity &&
+            Object.entries(identity as Record<string, unknown>)
+              .filter(
+                ([, item]) =>
+                  item &&
+                  typeof item === "object" &&
+                  "value" in item &&
+                  !!item?.value,
+              )
+              .map(([key, item]) => {
+                const parsedValue =
+                  item &&
+                  typeof item === "object" &&
+                  "value" in item &&
+                  "label" in item &&
+                  typeof item.label === "string"
+                    ? item
+                    : null;
+                const text = `${renderValue(parsedValue?.value)}${!identityVerifiedAt ? " (Unverified)" : ""}`;
+                const label =
+                  typeof parsedValue?.label === "string" &&
+                  parsedValue.label.toLocaleLowerCase();
 
-            return (
-              <RequestDetailsRow
-                label={`Subject ${label.toLocaleLowerCase()}`}
-                key={key}
-              >
-                <Tooltip title={text} trigger="click">
-                  <Typography.Text ellipsis>{text}</Typography.Text>
-                </Tooltip>
-              </RequestDetailsRow>
-            );
-          })}
+                return (
+                  <RequestDetailsRow label={`Subject ${label}`} key={key}>
+                    <Tooltip title={text} trigger="click">
+                      <Typography.Text ellipsis>{text}</Typography.Text>
+                    </Tooltip>
+                  </RequestDetailsRow>
+                );
+              })
+        }
 
         <RequestCustomFields subjectRequest={subjectRequest} />
       </Flex>
@@ -94,7 +116,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Form.Item label="Policy key:" className="mb-4">
           <Input
             readOnly
-            value={subjectRequest.policy.key}
+            value={subjectRequest.policy.key || undefined}
             data-testid="request-detail-value-policy"
           />
         </Form.Item>

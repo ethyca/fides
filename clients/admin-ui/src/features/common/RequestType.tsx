@@ -1,9 +1,10 @@
 import { AntTypography as Typography } from "fidesui";
-import { Rule } from "privacy-requests/types";
 import React from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { ActionType } from "~/types/api";
+
+import { Rule } from "../privacy-requests/types";
 
 type RequestTypeProps = {
   rules: Rule[];
