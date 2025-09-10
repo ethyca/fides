@@ -261,7 +261,7 @@ const ConfigureWebsiteMonitorForm = ({
           onBlur={formik.handleBlur}
           value={dayjs(values.execution_start_date)}
         />
-        <Flex className="mt-2" justify="stretch">
+        <Flex gap="small" className="mt-2" justify="stretch">
           <Button
             onClick={() => {
               resetForm();

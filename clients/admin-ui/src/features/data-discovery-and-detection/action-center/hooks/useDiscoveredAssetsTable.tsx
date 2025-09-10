@@ -162,7 +162,7 @@ export const useDiscoveredAssetsTable = ({
 
   const antTableConfig = useMemo(
     () => ({
-      enableSelection: activeTab !== ActionCenterTabHash.RECENT_ACTIVITY,
+      enableSelection: activeTab !== ActionCenterTabHash.ADDED,
       getRowKey: (record: StagedResourceAPIResponse) => record.urn,
       isLoading,
       isFetching,

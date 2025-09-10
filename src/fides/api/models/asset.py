@@ -34,6 +34,7 @@ class ConsentStatus(str, Enum):
     with_consent = "with_consent"
     without_consent = "without_consent"
     exempt = "exempt"
+    not_applicable = "not_applicable"
     unknown = "unknown"
 
 

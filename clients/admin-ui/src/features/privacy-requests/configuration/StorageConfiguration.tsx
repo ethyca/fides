@@ -3,7 +3,6 @@ import {
   AntRadio as Radio,
   Box,
   Heading,
-  RadioChangeEvent,
   Text,
 } from "fidesui";
 import { useEffect, useState } from "react";
@@ -23,6 +22,7 @@ import {
   useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
+import { StorageTypeApiAccepted } from "~/types/api";
 
 import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
@@ -45,8 +45,7 @@ const StorageConfiguration = () => {
     }
   }, [activeStorage]);
 
-  const handleChange = async (e: RadioChangeEvent) => {
-    const { value } = e.target;
+  const handleChange = async (value: StorageTypeApiAccepted) => {
     if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
@@ -62,7 +61,7 @@ const StorageConfiguration = () => {
 
     const activeStorageResults = await saveActiveStorage({
       storage: {
-        active_default_storage_type: value,
+        active_default_storage_type: value as StorageTypeApiAccepted,
       },
     });
 
@@ -126,7 +125,7 @@ const StorageConfiguration = () => {
         </Heading>
         <Radio.Group
           disabled={isLoading}
-          onChange={handleChange}
+          onChange={(e) => handleChange(e.target.value)}
           value={storageValue}
           data-testid="privacy-requests-storage-selection"
           className="p-3"

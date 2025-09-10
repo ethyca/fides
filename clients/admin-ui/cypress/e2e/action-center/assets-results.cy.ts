@@ -347,11 +347,11 @@ describe("Action center Asset Results", () => {
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.getByTestId("asset-state-filter")
-          .contains("Recent activity")
+          .contains("Added")
           .click({ force: true });
-        cy.location("hash").should("eq", "#recent-activity");
+        cy.location("hash").should("eq", "#added");
 
-        // "recent activity" tab should be read-only
+        // "added" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
         cy.getAntTableRow(rowUrns[0]).within(() => {
           cy.getByTestId("system-badge")

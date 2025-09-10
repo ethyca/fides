@@ -189,10 +189,10 @@ describe("Action center system aggregate results", () => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
       cy.location("hash").should("eq", "#attention-required");
 
-      cy.clickAntTab("Recent activity");
-      cy.location("hash").should("eq", "#recent-activity");
+      cy.clickAntTab("Added");
+      cy.location("hash").should("eq", "#added");
 
-      // "recent activity" tab should be read-only
+      // "added" tab should be read-only
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.get("thead tr")
         .should("be.visible")
@@ -227,13 +227,13 @@ describe("Action center system aggregate results", () => {
         );
       });
 
-      cy.clickAntTab("Recent activity");
+      cy.clickAntTab("Added");
       cy.wait("@getSystemAggregateResults");
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#recent-activity`,
+          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#added`,
         );
       });
 
