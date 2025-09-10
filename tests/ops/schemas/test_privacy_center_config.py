@@ -198,6 +198,80 @@ class TestPrivacyCenterConfig:
         assert isinstance(comments_field, CustomPrivacyRequestField)
         assert comments_field.field_type == "text"
 
+    def test_union_serialization_excludes_location_properties_from_non_location_fields(
+        self,
+    ):
+        """Test that CustomPrivacyRequestFieldUnion serialization correctly excludes
+        location-specific properties from non-location field types"""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        # Add mixed custom fields to test serialization behavior
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "location": {
+                "label": "Location",
+                "field_type": "location",
+                "ip_geolocation_hint": True,
+                "required": True
+            },
+            "first_name": {
+                "label": "First Name",
+                "field_type": "text",
+                "required": True
+            },
+            "preferred_format": {
+                "label": "Preferred Format",
+                "field_type": "select",
+                "options": ["JSON", "CSV"],
+                "required": False
+            },
+            "topics": {
+                "label": "Topics of Interest",
+                "field_type": "multiselect",
+                "options": ["Privacy", "Security", "Data"],
+                "required": False
+            }
+        }
+
+        config = PrivacyCenterConfig(**config_data)
+
+        # Serialize to dict to check the actual output
+        serialized = config.model_dump(mode="json")
+        fields = serialized["actions"][0]["custom_privacy_request_fields"]
+
+        # Location field should have ip_geolocation_hint
+        location_field = fields["location"]
+        assert "ip_geolocation_hint" in location_field
+        assert location_field["ip_geolocation_hint"] is True
+        assert location_field["field_type"] == "location"
+
+        # Non-location fields should NOT have ip_geolocation_hint or other location-specific properties
+        text_field = fields["first_name"]
+        assert "ip_geolocation_hint" not in text_field, f"Text field should not have ip_geolocation_hint: {text_field}"
+        assert text_field["field_type"] == "text"
+        assert "options" in text_field  # Text fields can have options (though null)
+
+        select_field = fields["preferred_format"]
+        assert "ip_geolocation_hint" not in select_field, f"Select field should not have ip_geolocation_hint: {select_field}"
+        assert select_field["field_type"] == "select"
+        assert select_field["options"] == ["JSON", "CSV"]
+
+        multiselect_field = fields["topics"]
+        assert "ip_geolocation_hint" not in multiselect_field, f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
+        assert multiselect_field["field_type"] == "multiselect"
+        assert multiselect_field["options"] == ["Privacy", "Security", "Data"]
+
+        # Verify that all non-location fields have the correct base properties but not location-specific ones
+        for field_name, field_data in fields.items():
+            if field_name != "location":
+                # All fields should have base properties
+                assert "label" in field_data
+                assert "required" in field_data
+                assert "field_type" in field_data
+
+                # Non-location fields should never have location-specific properties
+                assert "ip_geolocation_hint" not in field_data, f"Non-location field '{field_name}' should not have ip_geolocation_hint"
+
     def test_privacy_center_config_location_field_validation_in_config(self):
         """Test that location field validation works within PrivacyCenterConfig"""
         config_data = json.loads(
