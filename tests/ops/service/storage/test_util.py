@@ -421,12 +421,12 @@ class TestResolvePathFromContext:
             ),
         ],
     )
-    def test_resolve_base_path(self, attachment, default_base_path, expected_path):
+    def test_resolve_path(self, attachment, default_base_path, expected_path):
         """Test that base path is resolved correctly based on context"""
         result = resolve_path_from_context(attachment, default_base_path)
         assert result == expected_path
 
-    def test_resolve_base_path_with_none_context(self):
+    def test_resolve_path_with_none_context(self):
         """Test that None context is handled gracefully"""
         attachment = {"_context": None}
         result = resolve_path_from_context(attachment, "default")

@@ -790,7 +790,7 @@ class TestDSRReportBuilderRedactionHandling:
     REDACTED_PATTERNS_DATASET = [r"^manualtask$"]
     REDACTED_PATTERNS_COLLECTION = [r"^manual_data$"]
 
-    def assert_not_streaming_paterns(self, attachments_html):
+    def assert_not_streaming_patterns(self, attachments_html):
         # In non-streaming mode, the display text only shows filenames, not dataset paths
         # So we can't verify redaction from the display text, but we can verify the attachments are present
         assert (
@@ -813,7 +813,7 @@ class TestDSRReportBuilderRedactionHandling:
             "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html
         ), "Fourth attachment ID not found in global index"
 
-    def assert_streaming_paterns(self, attachments_html):
+    def assert_streaming_patterns(self, attachments_html):
         # In streaming mode, verify that the incremented attachment filenames are present
         assert (
             "test_file_text.txt" in attachments_html
@@ -895,9 +895,9 @@ class TestDSRReportBuilderRedactionHandling:
                 assert (
                     "manualtask/manual_data:" not in attachments_html
                 ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
-                self.assert_streaming_paterns(attachments_html)
+                self.assert_streaming_patterns(attachments_html)
             else:
-                self.assert_not_streaming_paterns(attachments_html)
+                self.assert_not_streaming_patterns(attachments_html)
 
     @pytest.mark.parametrize("enable_streaming", [True, False])
     def test_redaction_patterns_affect_collection_names_in_attachment_links(
@@ -908,11 +908,6 @@ class TestDSRReportBuilderRedactionHandling:
         enable_streaming,
     ):
         """Test that redaction patterns affecting collection names are reflected in attachment links"""
-
-        # Set up redaction patterns that will match collection names
-        PrivacyRequestRedactionPattern.replace_patterns(
-            db=db, patterns=self.REDACTED_PATTERNS_COLLECTION
-        )
 
         # Create or update redaction patterns in database
         PrivacyRequestRedactionPattern.replace_patterns(
@@ -972,10 +967,10 @@ class TestDSRReportBuilderRedactionHandling:
                 assert (
                     "manual_data:" not in attachments_html
                 ), "Original collection name should not appear in global attachments index in streaming mode"
-                self.assert_streaming_paterns(attachments_html)
+                self.assert_streaming_patterns(attachments_html)
 
             else:
-                self.assert_not_streaming_paterns(attachments_html)
+                self.assert_not_streaming_patterns(attachments_html)
 
     @pytest.mark.parametrize("enable_streaming", [True, False])
     def test_redaction_patterns_affect_both_dataset_and_collection_names(
@@ -1059,6 +1054,6 @@ class TestDSRReportBuilderRedactionHandling:
                 assert (
                     "manual_data:" not in attachments_html
                 ), "Original collection name should not appear in global attachments index in streaming mode"
-                self.assert_streaming_paterns(attachments_html)
+                self.assert_streaming_patterns(attachments_html)
             else:
-                self.assert_not_streaming_paterns(attachments_html)
+                self.assert_not_streaming_patterns(attachments_html)

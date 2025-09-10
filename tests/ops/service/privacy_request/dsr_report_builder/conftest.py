@@ -80,7 +80,7 @@ class TestDSRReportBuilderBase:
             re.DOTALL,
         )
 
-        for i, (key_cell, value_cell) in enumerate(rows):
+        for key_cell, value_cell in rows:
             # Extract the key
             key = re.sub(r"<[^>]+>", "", key_cell).strip()
 

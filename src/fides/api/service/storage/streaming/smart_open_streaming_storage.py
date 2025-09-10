@@ -284,9 +284,9 @@ class SmartOpenStreamingStorage:
     def _collect_and_validate_attachments(
         self,
         data: dict,
-        used_filenames_data: set[str] = set(),
-        used_filenames_attachments: set[str] = set(),
-        processed_attachments: dict[tuple[str, str], str] = {},
+        used_filenames_data: set[str] = None,
+        used_filenames_attachments: set[str] = None,
+        processed_attachments: dict[tuple[str, str], str] = None,
     ) -> list[AttachmentProcessingInfo]:
         """Collect and validate attachments using the same contextual approach as DSR report builder.
 
