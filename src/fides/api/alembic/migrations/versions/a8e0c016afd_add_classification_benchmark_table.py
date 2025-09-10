@@ -1,7 +1,7 @@
 """Add classification benchmark table
 
 Revision ID: a8e0c016afd
-Revises: fd7571bef683
+Revises: 5fa78b1f324d
 Create Date: 2024-12-19 12:00:00.000000
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "a8e0c016afd"
-down_revision = "fd7571bef683"
+down_revision = "5fa78b1f324d"
 branch_labels = None
 depends_on = None
 
