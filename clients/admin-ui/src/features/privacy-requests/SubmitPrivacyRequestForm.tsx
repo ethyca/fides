@@ -1,11 +1,13 @@
 import {
   AntButton as Button,
+  AntForm as Form,
   LinkIcon,
+  LocationSelect,
   Stack,
   useClipboard,
   useToast,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form as FormikForm, Formik, useField } from "formik";
 import { lazy } from "yup";
 import * as Yup from "yup";
 
@@ -14,7 +16,6 @@ import {
   findActionFromPolicyKey,
   generateValidationSchemaFromAction,
 } from "~/features/privacy-requests/form/helpers";
-import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
@@ -24,6 +25,7 @@ import {
 } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
+import { useGetPrivacyCenterConfigQuery } from "./privacy-requests.slice";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
@@ -65,6 +67,40 @@ const IdentityFields = ({
   );
 };
 
+const LocationSelectInput = (props: {
+  label: string;
+  name: string;
+  required: boolean;
+}) => {
+  const { label, required, name } = props;
+  const [initialField, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const { value, onChange } = {
+    ...initialField,
+    value: initialField.value ?? "",
+  };
+
+  return (
+    <Form.Item
+      label={label}
+      name="location"
+      required={required ?? undefined}
+      layout="vertical"
+      validateStatus={isInvalid ? "error" : undefined}
+    >
+      <LocationSelect
+        key={name}
+        value={value}
+        onChange={(newValue) => {
+          if (newValue) {
+            onChange(value);
+          }
+        }}
+      />
+    </Form.Item>
+  );
+};
+
 const CustomFields = ({
   customFieldInputs,
 }: {
@@ -80,15 +116,25 @@ const CustomFields = ({
   const allInputs = Object.entries(customFieldInputs);
   return (
     <>
-      {allInputs.map(([fieldName, fieldInfo]) => (
-        <CustomTextInput
-          name={`custom_privacy_request_fields.${fieldName}.value`}
-          key={fieldName}
-          label={fieldInfo.label}
-          isRequired={Boolean(fieldInfo.required)}
-          variant="stacked"
-        />
-      ))}
+      {allInputs.map(([fieldName, fieldInfo]) => {
+        return fieldInfo.field_type ===
+          LocationCustomPrivacyRequestField.field_type.LOCATION ? (
+          <LocationSelectInput
+            name="location"
+            key={fieldName}
+            label={fieldInfo.label}
+            required={Boolean(fieldInfo.required)}
+          />
+        ) : (
+          <CustomTextInput
+            name={`custom_privacy_request_fields.${fieldName}.value`}
+            key={fieldName}
+            label={fieldInfo.label}
+            isRequired={Boolean(fieldInfo.required)}
+            variant="stacked"
+          />
+        );
+      })}
     </>
   );
 };
@@ -142,7 +188,7 @@ const SubmitPrivacyRequestForm = ({
         };
 
         return (
-          <Form>
+          <FormikForm>
             <Stack spacing={6} mb={2}>
               <ControlledSelect
                 name="policy_key"
@@ -178,7 +224,7 @@ const SubmitPrivacyRequestForm = ({
                 </Button>
               </div>
             </Stack>
-          </Form>
+          </FormikForm>
         );
       }}
     </Formik>
@@ -216,7 +262,7 @@ export const CopyPrivacyRequestLinkForm = ({
     >
       {({ dirty, isValid }) => {
         return (
-          <Form>
+          <FormikForm>
             <Stack spacing={6} mb={2}>
               <IdentityFields identityInputs={{ email: "required" }} />
               <div className="flex gap-4 self-end">
@@ -232,7 +278,7 @@ export const CopyPrivacyRequestLinkForm = ({
                 </Button>
               </div>
             </Stack>
-          </Form>
+          </FormikForm>
         );
       }}
     </Formik>

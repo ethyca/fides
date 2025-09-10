@@ -1,6 +1,9 @@
 import * as Yup from "yup";
 
-import { PrivacyRequestOption } from "~/types/api";
+import {
+  LocationCustomPrivacyRequestField,
+  PrivacyRequestOption,
+} from "~/types/api";
 
 export const findActionFromPolicyKey = (
   key: string,
@@ -17,6 +20,11 @@ export const generateValidationSchemaFromAction = (
   }
   const customFieldsSchema = action.custom_privacy_request_fields
     ? Object.entries(action.custom_privacy_request_fields)
+        .filter(
+          ([, fieldInfo]) =>
+            fieldInfo.field_type !==
+            LocationCustomPrivacyRequestField.field_type.LOCATION,
+        )
         .map(([fieldName, fieldInfo]) => ({
           [fieldName]: Yup.object().shape({
             value:
