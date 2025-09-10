@@ -1,6 +1,7 @@
 import { ComponentChildren } from "preact";
 
 import { Cookies } from "../../lib/consent-types";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
 
 export type CookieRecord = {
@@ -19,6 +20,7 @@ const VendorAssetDisclosure = ({
   }>;
   onBack: () => void;
 }) => {
+  const { i18n } = useI18n();
   return (
     <div>
       <button
@@ -36,7 +38,7 @@ const VendorAssetDisclosure = ({
       </button>
       {cookiesByNotice.length >= 1 ? (
         <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-          <strong>{cookiesByNotice[0].title} Vendors</strong>
+          <strong>{cookiesByNotice[0].title} {i18n.t("static.other.vendors")}</strong>
         </div>
       ) : null}
       <div className="fides-modal-notices" style={{ marginTop: "12px" }}>
@@ -75,7 +77,7 @@ const VendorAssetDisclosure = ({
                         </th>
                         {hasRetentionInfo ? (
                           <th width="20%" style={{ textAlign: "right" }}>
-                            Retention
+                              {i18n.t("static.other.retention")}
                           </th>
                         ) : null}
                       </tr>

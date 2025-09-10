@@ -472,7 +472,7 @@ const NoticeOverlay = () => {
                               setIsVendorAssetDisclosureView(true);
                             }}
                           >
-                            Vendors
+                            {i18n.t("static.other.vendors")}
                           </button>
                         </div>
                       ) : null}
