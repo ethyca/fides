@@ -57,7 +57,11 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
-from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    LabeledIdentity,
+)
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
@@ -165,7 +169,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        print(resp.json())
+        
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
@@ -2004,6 +2008,10 @@ class TestGetPrivacyRequests:
             ExecutionLog.privacy_request_id == privacy_request.id
         ).delete()
 
+    @pytest.mark.usefixtures(
+        "allow_custom_privacy_request_field_collection_enabled",
+        "allow_custom_privacy_request_fields_in_request_execution_enabled",
+    )
     def test_get_privacy_requests_csv_format(
         self, db, generate_auth_header, api_client, url, privacy_request, user
     ):
@@ -2022,10 +2030,21 @@ class TestGetPrivacyRequests:
                 "phone_number": TEST_PHONE,
             }
         )
+        EXAMPLE_CUSTOM_FIELD = "example_custom_fields"
+        EXAMPLE_CUSTOM_FIELD_LABEL = "Example Field"
+        EXAMPLE_CUSTOM_FIELD_VALUE = "example_value"
+        custom_request_field = CustomPrivacyRequestField(
+            label=EXAMPLE_CUSTOM_FIELD_LABEL, value=EXAMPLE_CUSTOM_FIELD_VALUE
+        )
+
+        privacy_request.persist_custom_privacy_request_fields(
+            db, {EXAMPLE_CUSTOM_FIELD: custom_request_field}
+        )
+
         privacy_request.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?download_csv=True", headers=auth_header)
+        response = api_client.get(url + "?download_csv=True", headers=auth_header)
         assert 200 == response.status_code
 
         assert response.headers["content-type"] == "text/csv; charset=utf-8"
@@ -2040,20 +2059,20 @@ class TestGetPrivacyRequests:
 
         first_row = next(csv_file)
         assert parse(first_row["Time Received"], ignoretz=True) == created_at
-        assert ast.literal_eval(first_row["Subject Identity"]) == {
-            "email": TEST_EMAIL,
-            "phone_number": TEST_PHONE,
-            "ga_client_id": None,
-            "ljt_readerID": None,
-            "fides_user_device_id": None,
-            "external_id": None,
-        }
+
+        assert first_row["email"] == TEST_EMAIL
+        assert first_row["phone_number"] == TEST_PHONE
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
         assert first_row["Reviewed By"] == user.id
         assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial Reason"] == ""
         assert first_row["Request ID"] == privacy_request.id
+        
+        assert (
+            first_row[f"Custom Field {EXAMPLE_CUSTOM_FIELD_LABEL}"]
+            == EXAMPLE_CUSTOM_FIELD_VALUE
+        )
 
         privacy_request.delete(db)
 
@@ -3184,6 +3203,10 @@ class TestPrivacyRequestSearch:
             ExecutionLog.privacy_request_id == privacy_request.id
         ).delete()
 
+    @pytest.mark.usefixtures(
+        "allow_custom_privacy_request_field_collection_enabled",
+        "allow_custom_privacy_request_fields_in_request_execution_enabled",
+    )
     def test_privacy_request_search_csv_format(
         self, db, generate_auth_header, api_client, url, privacy_request, user
     ):
@@ -3201,6 +3224,16 @@ class TestPrivacyRequestSearch:
                 "email": TEST_EMAIL,
                 "phone_number": TEST_PHONE,
             }
+        )
+
+        EXAMPLE_CUSTOM_FIELD = "example_custom_fields"
+        EXAMPLE_CUSTOM_FIELD_LABEL = "Example Field"
+        EXAMPLE_CUSTOM_FIELD_VALUE = "example_value"
+        custom_request_field = CustomPrivacyRequestField(
+            label=EXAMPLE_CUSTOM_FIELD_LABEL, value=EXAMPLE_CUSTOM_FIELD_VALUE
+        )
+        privacy_request.persist_custom_privacy_request_fields(
+            db, {EXAMPLE_CUSTOM_FIELD: custom_request_field}
         )
         privacy_request.save(db)
 
@@ -3222,20 +3255,18 @@ class TestPrivacyRequestSearch:
 
         first_row = next(csv_file)
         assert parse(first_row["Time Received"], ignoretz=True) == created_at
-        assert ast.literal_eval(first_row["Subject Identity"]) == {
-            "email": TEST_EMAIL,
-            "phone_number": TEST_PHONE,
-            "ga_client_id": None,
-            "ljt_readerID": None,
-            "fides_user_device_id": None,
-            "external_id": None,
-        }
+        assert first_row["email"] == TEST_EMAIL
+        assert first_row["phone_number"] == TEST_PHONE
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
         assert first_row["Reviewed By"] == user.id
         assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial Reason"] == ""
         assert first_row["Request ID"] == privacy_request.id
+        assert (
+            first_row[f"Custom Field {EXAMPLE_CUSTOM_FIELD_LABEL}"]
+            == EXAMPLE_CUSTOM_FIELD_VALUE
+        )
 
         privacy_request.delete(db)
 

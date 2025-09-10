@@ -314,7 +314,7 @@ def privacy_request_csv_download(
             "Time Approved/Denied",
             "Denial Reason",
         ]
-        + with_prefix("Identity", identity_columns)
+        + identity_columns
         + with_prefix("Custom Field", list(custom_field_columns.values()))
     )
 
