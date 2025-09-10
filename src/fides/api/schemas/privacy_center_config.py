@@ -1,7 +1,14 @@
 from abc import ABC
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
-from pydantic import ConfigDict, Discriminator, Field, field_validator, model_validator, Tag
+from pydantic import (
+    ConfigDict,
+    Discriminator,
+    Field,
+    Tag,
+    field_validator,
+    model_validator,
+)
 
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema

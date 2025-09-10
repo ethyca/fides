@@ -212,25 +212,25 @@ class TestPrivacyCenterConfig:
                 "label": "Location",
                 "field_type": "location",
                 "ip_geolocation_hint": True,
-                "required": True
+                "required": True,
             },
             "first_name": {
                 "label": "First Name",
                 "field_type": "text",
-                "required": True
+                "required": True,
             },
             "preferred_format": {
                 "label": "Preferred Format",
                 "field_type": "select",
                 "options": ["JSON", "CSV"],
-                "required": False
+                "required": False,
             },
             "topics": {
                 "label": "Topics of Interest",
                 "field_type": "multiselect",
                 "options": ["Privacy", "Security", "Data"],
-                "required": False
-            }
+                "required": False,
+            },
         }
 
         config = PrivacyCenterConfig(**config_data)
@@ -247,17 +247,23 @@ class TestPrivacyCenterConfig:
 
         # Non-location fields should NOT have ip_geolocation_hint or other location-specific properties
         text_field = fields["first_name"]
-        assert "ip_geolocation_hint" not in text_field, f"Text field should not have ip_geolocation_hint: {text_field}"
+        assert (
+            "ip_geolocation_hint" not in text_field
+        ), f"Text field should not have ip_geolocation_hint: {text_field}"
         assert text_field["field_type"] == "text"
         assert "options" in text_field  # Text fields can have options (though null)
 
         select_field = fields["preferred_format"]
-        assert "ip_geolocation_hint" not in select_field, f"Select field should not have ip_geolocation_hint: {select_field}"
+        assert (
+            "ip_geolocation_hint" not in select_field
+        ), f"Select field should not have ip_geolocation_hint: {select_field}"
         assert select_field["field_type"] == "select"
         assert select_field["options"] == ["JSON", "CSV"]
 
         multiselect_field = fields["topics"]
-        assert "ip_geolocation_hint" not in multiselect_field, f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
+        assert (
+            "ip_geolocation_hint" not in multiselect_field
+        ), f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
         assert multiselect_field["field_type"] == "multiselect"
         assert multiselect_field["options"] == ["Privacy", "Security", "Data"]
 
@@ -270,7 +276,9 @@ class TestPrivacyCenterConfig:
                 assert "field_type" in field_data
 
                 # Non-location fields should never have location-specific properties
-                assert "ip_geolocation_hint" not in field_data, f"Non-location field '{field_name}' should not have ip_geolocation_hint"
+                assert (
+                    "ip_geolocation_hint" not in field_data
+                ), f"Non-location field '{field_name}' should not have ip_geolocation_hint"
 
     def test_privacy_center_config_location_field_validation_in_config(self):
         """Test that location field validation works within PrivacyCenterConfig"""
