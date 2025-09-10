@@ -382,10 +382,7 @@ def extract_identity_cells(
 ) -> List[str]:
     identity = pr.get_persisted_identity()
     identity_dict = identity.dict()
-    identity_cells: List[str] = []
-    for identity_column in identity_columns:
-        identity_cells.append(identity_dict.get(identity_column))  # type: ignore
-    return identity_cells
+    return [identity_dict.get(identity_column) for identity_column in identity_columns]
 
 
 def execution_and_audit_logs_by_dataset_name(
