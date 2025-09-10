@@ -190,7 +190,8 @@ const NoticeOverlay = () => {
     };
   });
 
-  const [isVendorAssetDiscloserView, setIsVendorAssetDisclosureView] = useState(false);
+  const [isVendorAssetDiscloserView, setIsVendorAssetDisclosureView] =
+    useState(false);
   const [selectedNoticeKey, setSelectedNoticeKey] = useState<string | null>(
     null,
   );

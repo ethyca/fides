@@ -70,7 +70,9 @@ const VendorAssetDisclosure = ({
                   <table className="fides-vendor-details-table">
                     <thead>
                       <tr>
-                        <th width={hasRetentionInfo ? "80%" : undefined}>Cookies</th>
+                        <th width={hasRetentionInfo ? "80%" : undefined}>
+                          Cookies
+                        </th>
                         {hasRetentionInfo ? (
                           <th width="20%" style={{ textAlign: "right" }}>
                             Retention

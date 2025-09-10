@@ -576,10 +576,9 @@ export const PrivacyExperienceForm = ({
             onChange={(checked) => {
               if (checked) {
                 // Default selection to Cookie
-                setFieldValue(
-                  "asset_disclosure_include_types",
-                  [StagedResourceTypeValue.COOKIE],
-                );
+                setFieldValue("asset_disclosure_include_types", [
+                  StagedResourceTypeValue.COOKIE,
+                ]);
               } else {
                 // Clear values and any lingering validation state when disabling
                 setFieldValue("asset_disclosure_include_types", []);

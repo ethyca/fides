@@ -54,7 +54,9 @@ const ConsentContent = ({
                 <ExperienceDescription
                   onVendorPageClick={onVendorPageClick}
                   description={description}
-                  allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
+                  allowHTMLDescription={
+                    window.Fides?.options?.allowHTMLDescription
+                  }
                 />
               </p>
               {showGpcInfo && (

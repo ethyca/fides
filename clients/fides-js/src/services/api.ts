@@ -98,10 +98,11 @@ export const fetchExperience = async <T = PrivacyExperience>({
     ...(requestMinimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
     ...(excludeNoticeAssetsBySystems && {
-      exclude_notice_assets_by_systems:
-        Array.isArray(excludeNoticeAssetsBySystems)
-          ? excludeNoticeAssetsBySystems.join(",")
-          : excludeNoticeAssetsBySystems,
+      exclude_notice_assets_by_systems: Array.isArray(
+        excludeNoticeAssetsBySystems,
+      )
+        ? excludeNoticeAssetsBySystems.join(",")
+        : excludeNoticeAssetsBySystems,
     }),
   };
   params = new URLSearchParams(params);
