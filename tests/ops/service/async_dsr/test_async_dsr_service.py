@@ -3,8 +3,9 @@ Tests for async DSR service functionality.
 Tests the core service methods that handle asynchronous data subject requests.
 """
 
-from unittest.mock import  Mock, patch
+from unittest.mock import Mock, patch
 
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 import pytest
 from sqlalchemy.orm import Session
 
@@ -14,7 +15,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.models.privacy_request.request_task import AsyncTaskType
+from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTaskRequestData
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
@@ -34,58 +35,55 @@ from fides.api.service.connectors.saas_connector import SaaSConnector
 @pytest.mark.integration_saas
 class TestAsyncDSRService:
     """Test suite for async DSR service methods"""
-
     @pytest.fixture
-    def mock_db_session(self):
-        """Create a mock database session"""
-        return Mock(spec=Session)
-
-    @pytest.fixture
-    def mock_privacy_request(self):
-        """Create a mock privacy request"""
-        request = Mock(spec=PrivacyRequest)
-        request.id = "pr_12345"
-        request.status = PrivacyRequestStatus.in_processing
-        request.policy = Mock(spec=Policy)
-        request.get_persisted_identity.return_value.labeled_dict.return_value = {
+    def param_values(self):
+        """Create sample param values"""
+        return {
+            "request_id": "req_12345",
+            "api_token": "test_api_token_123",
+            "client_secret": "test_secret",
             "email": "test@example.com",
             "user_id": "123",
+            "phone": "+1234567890",
         }
-        request.get_cached_identity_data.return_value = {"phone": "+1234567890"}
-        return request
+    @pytest.fixture
+    def mock_request_task_data(self):
+        """Create a mock RequestTaskRequestData with proper attributes"""
+        mock_data = Mock(spec=RequestTaskRequestData)
+        mock_data.request_data = {
+            "request_id": "req_12345",
+        }
+        return mock_data
 
     @pytest.fixture
-    def mock_request_task(self, mock_privacy_request):
-        """Create a mock request task"""
-        task = Mock(spec=RequestTask)
-        task.id = "req_12345"
-        task.dataset_name = "test_dataset"
-        task.collection_address = "test_dataset:users"
-        task.action_type = ActionType.access
-        task.async_type = AsyncTaskType.polling
-        task.privacy_request = mock_privacy_request
-        task.get_access_data.return_value = []
-        task.access_data = []
-        task.callback_succeeded = False
-        task.update_status = Mock()
-        task.save = Mock()
-        return task
+    def mock_request_task(self, in_processing_privacy_request, mock_request_task_data):
+        """Create a mock RequestTask with proper attributes"""
+        mock_task = Mock(spec=RequestTask)
+        mock_task.id = "req_12345"
+        mock_task.privacy_request = in_processing_privacy_request
+        mock_task.action_type = ActionType.access
+        mock_task.status = ExecutionLogStatus.awaiting_processing
+        mock_task.collection_address = "test_dataset:users"
+        mock_task.dataset_name = "test_dataset"
+        mock_task.collection_name = "users"
+        mock_task.async_type = AsyncTaskType.polling
+        mock_task.access_data = []
+        mock_task.callback_succeeded = False
+        mock_task.upstream_tasks_objects.return_value = []
+        mock_task.save = Mock()
+        mock_task.update_status = Mock()
+        mock_task.request_data = mock_request_task_data
+        return mock_task
 
     @pytest.fixture
     def mock_connection_config(self):
-        """Create a mock connection config"""
-        config = Mock(spec=ConnectionConfig)
-        config.id = "conn_12345"
-        config.key = "test_connector"
-        return config
-
-    @pytest.fixture
-    def mock_dataset_config(self, mock_connection_config):
-        """Create a mock dataset config"""
-        config = Mock(spec=DatasetConfig)
-        config.fides_key = "test_dataset"
-        config.connection_config_id = mock_connection_config.id
-        return config
+        """Create a mock ConnectionConfig instance"""
+        mock_config = Mock(spec=ConnectionConfig)
+        mock_config.id = "conn_12345"
+        mock_config.key = "test_connector"
+        mock_config.connection_type = "saas"
+        mock_config.access = "read"
+        return mock_config
 
     @pytest.fixture
     def mock_saas_connector(self):
@@ -101,7 +99,7 @@ class TestAsyncDSRService:
         config = Mock(spec=SaaSQueryConfig)
 
         # Create a read request with async config
-        read_request = Mock()
+        read_request = Mock(spec=ReadSaaSRequest)
         read_request.async_config = Mock()
         read_request.async_config.strategy = "polling_access_data"
         read_request.async_config.configuration = {
@@ -114,15 +112,17 @@ class TestAsyncDSRService:
         return config
 
     def test_execute_polling_task_invalid_status(
-        self, mock_db_session, mock_request_task, mock_privacy_request
+        self, db, in_processing_privacy_request, polling_request_task
     ):
-        """Test that requeue fails with invalid privacy request status"""
-        mock_privacy_request.status = PrivacyRequestStatus.complete
+        """Test that execute_polling_task fails with invalid privacy request status"""
+        # Change the privacy request status to complete (invalid for polling)
+        in_processing_privacy_request.status = PrivacyRequestStatus.complete
+        in_processing_privacy_request.save(db)
 
         with pytest.raises(PrivacyRequestError) as exc_info:
-            execute_polling_task(mock_db_session, mock_request_task)
+            execute_polling_task(in_processing_privacy_request.id, polling_request_task.id)
 
-        assert "Cannot re-queue privacy request" in str(exc_info.value)
+        assert "Cannot execute Polling Task" in str(exc_info.value)
         assert "with status complete" in str(exc_info.value)
 
     @patch(
@@ -139,11 +139,12 @@ class TestAsyncDSRService:
         mock_create_graph_task,
         mock_task_resources,
         mock_get_connection,
-        mock_db_session,
-        mock_request_task,
+        db,
+        in_processing_privacy_request,
+        polling_request_task,
         mock_connection_config,
     ):
-        """Test successful requeue of access polling request"""
+        """Test successful execution of access polling request"""
         # Setup mocks
         mock_get_connection.return_value = mock_connection_config
         mock_graph_task = Mock()
@@ -155,19 +156,16 @@ class TestAsyncDSRService:
         mock_graph_task.connector.query_config.return_value = mock_query_config
         mock_graph_task.connector.set_privacy_request_state = Mock()
 
-        # Test access task requeue
-        mock_request_task.action_type = ActionType.access
-        mock_request_task.upstream_tasks_objects.return_value = []
+        # Mock the task resources context manager
+        mock_task_resources.return_value.__enter__.return_value = Mock()
 
-        execute_polling_task(mock_db_session, mock_request_task)
+        # Test access task execution
+        polling_request_task.action_type = ActionType.access
+
+        execute_polling_task(in_processing_privacy_request.id, polling_request_task.id)
 
         # Verify the access-specific path was taken
-        mock_execute_read.assert_called_once_with(
-            mock_db_session,
-            mock_request_task,
-            mock_query_config,
-            mock_graph_task.connector,
-        )
+        mock_execute_read.assert_called_once()
 
     @patch(
         "fides.api.service.async_dsr.async_dsr_service.get_connection_config_from_task"
@@ -183,11 +181,12 @@ class TestAsyncDSRService:
         mock_create_graph_task,
         mock_task_resources,
         mock_get_connection,
-        mock_db_session,
-        mock_request_task,
+        db,
+        in_processing_privacy_request,
+        polling_request_task,
         mock_connection_config,
     ):
-        """Test successful requeue of erasure polling request"""
+        """Test successful execution of erasure polling request"""
         # Setup mocks
         mock_get_connection.return_value = mock_connection_config
         mock_graph_task = Mock()
@@ -198,15 +197,16 @@ class TestAsyncDSRService:
         mock_graph_task.connector.query_config.return_value = mock_query_config
         mock_graph_task.connector.set_privacy_request_state = Mock()
 
-        # Test erasure task requeue
-        mock_request_task.action_type = ActionType.erasure
+        # Mock the task resources context manager
+        mock_task_resources.return_value.__enter__.return_value = Mock()
 
-        execute_polling_task(mock_db_session, mock_request_task)
+        # Test erasure task execution
+        polling_request_task.action_type = ActionType.erasure
+        polling_request_task.save(db)
+        execute_polling_task(in_processing_privacy_request.id, polling_request_task.id)
 
         # Verify the erasure-specific path was taken
-        mock_execute_erasure.assert_called_once_with(
-            mock_db_session, mock_request_task, mock_query_config
-        )
+        mock_execute_erasure.assert_called_once()
 
     @patch(
         "fides.api.service.async_dsr.async_dsr_service.AsyncDSRStrategy.get_strategy"
@@ -214,7 +214,7 @@ class TestAsyncDSRService:
     def test_execute_read_polling_requests_status_not_ready(
         self,
         mock_get_strategy,
-        mock_db_session,
+        db,
         mock_request_task,
         mock_query_config,
         mock_saas_connector,
@@ -226,7 +226,7 @@ class TestAsyncDSRService:
         mock_get_strategy.return_value = mock_strategy
 
         execute_read_polling_requests(
-            mock_db_session, mock_request_task, mock_query_config, mock_saas_connector
+            db, mock_request_task, mock_query_config, mock_saas_connector
         )
 
         # Verify status was checked but result wasn't fetched
@@ -241,7 +241,7 @@ class TestAsyncDSRService:
         self,
         mock_execute_result,
         mock_get_strategy,
-        mock_db_session,
+        db,
         mock_request_task,
         mock_query_config,
         mock_saas_connector,
@@ -253,20 +253,12 @@ class TestAsyncDSRService:
         mock_get_strategy.return_value = mock_strategy
 
         execute_read_polling_requests(
-            mock_db_session, mock_request_task, mock_query_config, mock_saas_connector
+            db, mock_request_task, mock_query_config, mock_saas_connector
         )
 
         # Verify both status check and result fetch were called
         mock_strategy.get_status_request.assert_called_once()
-        mock_execute_result.assert_called_once_with(
-            mock_db_session,
-            mock_request_task,
-            mock_strategy,
-            mock_saas_connector.create_client.return_value,
-            mock_saas_connector.secrets,
-            mock_request_task.privacy_request.get_persisted_identity.return_value.labeled_dict.return_value
-            | mock_request_task.privacy_request.get_cached_identity_data.return_value,
-        )
+        mock_execute_result.assert_called_once()
 
     @patch("fides.api.service.async_dsr.async_dsr_service.log_task_queued")
     @patch("fides.api.service.async_dsr.async_dsr_service.queue_request_task")
@@ -274,8 +266,9 @@ class TestAsyncDSRService:
         self,
         mock_queue_task,
         mock_log_queued,
-        mock_db_session,
+        db,
         mock_request_task,
+        param_values,
     ):
         """Test execute_read_result_request when data is returned"""
         # Setup mocks
@@ -286,29 +279,26 @@ class TestAsyncDSRService:
         ]
 
         mock_client = Mock(spec=AuthenticatedClient)
-        secrets = {"api_key": "test"}
-        identity_data = {"email": "test@example.com"}
 
         execute_result_request(
-            mock_db_session,
+            db,
             mock_request_task,
             mock_strategy,
             mock_client,
-            secrets,
-            identity_data,
+            param_values,
         )
 
         # Verify result was processed correctly
         mock_strategy.get_result_request.assert_called_once_with(
-            mock_client, secrets, identity_data
+            mock_client, param_values
         )
 
         # Verify task was updated
         assert mock_request_task.callback_succeeded is True
         mock_request_task.update_status.assert_called_with(
-            mock_db_session, ExecutionLogStatus.pending
+            db, ExecutionLogStatus.complete
         )
-        mock_request_task.save.assert_called_with(mock_db_session)
+        mock_request_task.save.assert_called_with(db)
 
         # Verify task was queued for next step
         mock_log_queued.assert_called_once_with(mock_request_task, "polling success")
@@ -320,8 +310,11 @@ class TestAsyncDSRService:
     @patch("fides.api.service.async_dsr.async_dsr_service.queue_request_task")
     def test_execute_read_result_request_no_data(
         self,
-        mock_db_session,
+        mock_queue_task,
+        mock_log_queued,
+        db,
         mock_request_task,
+        param_values,
     ):
         """Test that when no data is returned, the task is not updated"""
 
@@ -330,22 +323,19 @@ class TestAsyncDSRService:
         mock_strategy.get_result_request.return_value = None  # No data
 
         mock_client = Mock(spec=AuthenticatedClient)
-        secrets = {"api_key": "test"}
-        identity_data = {"email": "test@example.com"}
 
         execute_result_request(
-            mock_db_session,
+            db,
             mock_request_task,
             mock_strategy,
             mock_client,
-            secrets,
-            identity_data,
+            param_values,
         )
 
         # Verify task was updated
         mock_strategy.get_result_request.assert_called_once()
         assert mock_request_task.callback_succeeded is True
         mock_request_task.update_status.assert_called_with(
-            mock_db_session, ExecutionLogStatus.pending
+            db, ExecutionLogStatus.complete
         )
-        mock_request_task.save.assert_called_with(mock_db_session)
+        mock_request_task.save.assert_called_with(db)

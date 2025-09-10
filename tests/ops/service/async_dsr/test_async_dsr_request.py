@@ -30,23 +30,6 @@ class TestAsyncDsrRequest:
     Tests the DSR Request flow, from the start of the request to the very completion of it
     """
 
-    @pytest.fixture(scope="function")
-    def async_graph(
-        self, saas_async_polling_example_dataset_config, db, privacy_request
-    ):
-        # Build proper async graph with persisted request tasks to test the connector
-        async_graph = saas_async_polling_example_dataset_config.get_graph()
-        graph = DatasetGraph(async_graph)
-        traversal = Traversal(graph, {"email": "customer-1@example.com"})
-        traversal_nodes = {}
-        end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
-        persist_new_access_request_tasks(
-            db, privacy_request, traversal, traversal_nodes, end_nodes, graph
-        )
-        persist_initial_erasure_request_tasks(
-            db, privacy_request, traversal_nodes, end_nodes, graph
-        )
-
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_read_request_expects_async_results(
         self,

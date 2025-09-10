@@ -1,5 +1,7 @@
+from ast import List
 from typing import Any, Dict, Optional
 
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -116,9 +118,10 @@ def execute_read_polling_requests(
     connector: SaaSConnector,
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
-    read_requests = (
+    logger.info(f"Executing read polling requests for {polling_task}")
+    read_requests: List[ReadSaaSRequest] = (
         query_config.get_read_requests_by_identity()
-    )  # Check: Cant we get the request directly from the task?
+    )
     logger.info(f"Read requests: {read_requests}")
     for read_request in read_requests:
         if read_request.async_config:

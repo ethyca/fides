@@ -29,9 +29,7 @@ class TestPollAsyncTasksStatus:
 
     @pytest.mark.usefixtures("in_progress_polling_request_task")
     @mock.patch("fides.api.service.async_dsr.async_dsr_service.execute_polling_task")
-    def test_in_progress_polling_task_is_not_requeued(
-        self, mock_execute_polling_task
-    ):
+    def test_in_progress_polling_task_is_not_requeued(self, mock_execute_polling_task):
         """Test that a polling task not awaiting processing is not requeued."""
         poll_async_tasks_status.apply().get()
         mock_execute_polling_task.assert_not_called()
