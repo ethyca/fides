@@ -20,7 +20,6 @@ import { BASE_URL } from "../../constants";
 import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
-  DenyPrivacyRequest,
   GetUploadedManualWebhookDataRequest,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
@@ -303,8 +302,8 @@ export const { reducer } = subjectRequestsSlice;
 export const privacyRequestApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     approveRequest: build.mutation<
-      ReviewPrivacyRequestIds,
-      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
+      PrivacyRequestEntity,
+      ReviewPrivacyRequestIds
     >({
       query: (body) => ({
         url: "privacy-request/administrate/approve",
@@ -321,7 +320,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
-    denyRequest: build.mutation<DenyPrivacyRequests, DenyPrivacyRequest>({
+    denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequests>({
       query: (body) => ({
         url: "privacy-request/administrate/deny",
         method: "PATCH",
@@ -357,7 +356,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       },
     }),
     postPrivacyRequest: build.mutation<
-      BulkPostPrivacyRequests,
+      PrivacyRequestEntity,
       PrivacyRequestCreate[]
     >({
       query: (payload) => ({

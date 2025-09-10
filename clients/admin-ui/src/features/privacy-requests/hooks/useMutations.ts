@@ -28,9 +28,10 @@ export const useMutations = ({
       fixedCacheKey: subjectRequest.id,
     });
 
-  const handleApproveRequest = () => approveRequest(subjectRequest);
+  const handleApproveRequest = () =>
+    approveRequest({ request_ids: [subjectRequest.id] });
   const handleDenyRequest = (reason: string) =>
-    denyRequest({ id: subjectRequest.id, reason });
+    denyRequest({ request_ids: [subjectRequest.id], reason });
   const handleDeleteRequest = () => softDeleteRequest(subjectRequest);
   const handleFinalizeRequest = () =>
     finalizeRequest({ privacyRequestId: subjectRequest.id });
