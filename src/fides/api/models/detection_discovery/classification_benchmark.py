@@ -25,7 +25,7 @@ class ClassificationBenchmark(Base, FidesBase):
     """
 
     @declared_attr
-    def __tablename__(cls) -> str:
+    def __tablename__(self) -> str:
         return "classification_benchmark"
 
     # Basic benchmark information
@@ -90,4 +90,4 @@ class ClassificationBenchmark(Base, FidesBase):
         query = query.order_by(cls.created_at.desc())
 
         # Use sqlalchemy_paginate for pagination
-        return sqlalchemy_paginate(db, query, params, unique=False)
+        return sqlalchemy_paginate(query, params, unique=False)
