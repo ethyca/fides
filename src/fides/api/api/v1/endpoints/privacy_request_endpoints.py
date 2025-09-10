@@ -262,13 +262,6 @@ def create_privacy_request_authenticated(
     )
 
 
-def with_prefix(prefix: str, items: List[str]) -> List[str]:
-    prefixed = []
-    for item in items:
-        prefixed.append(f"{prefix} {item}")
-    return prefixed
-
-
 def privacy_request_csv_download(
     db: Session, privacy_request_query: Query
 ) -> StreamingResponse:
@@ -332,18 +325,22 @@ def privacy_request_csv_download(
     )
     return response
 
+
 def get_variable_columns(
     privacy_request_query: Query,
 ) -> tuple[List[str], Dict[str, str]]:
     identity_columns: Set[str] = set()
     custom_field_columns: Dict[str, str] = {}
     for pr in privacy_request_query:
-        get_unique_identity_columns(identity_columns, pr.get_persisted_identity().dict())
+        get_unique_identity_columns(
+            identity_columns, pr.get_persisted_identity().dict()
+        )
         get_unique_custom_field_columns(
             custom_field_columns, pr.get_persisted_custom_privacy_request_fields()
         )
 
     return list(identity_columns), custom_field_columns
+
 
 def get_unique_identity_columns(
     existing_columns: Set[str], identities: dict[str, Any]
@@ -359,6 +356,13 @@ def get_unique_custom_field_columns(
     for key, value in custom_fields.items():
         if value["value"]:
             existing_custom_fields[key] = value["label"]
+
+
+def with_prefix(prefix: str, items: List[str]) -> List[str]:
+    prefixed = []
+    for item in items:
+        prefixed.append(f"{prefix} {item}")
+    return prefixed
 
 
 def extract_custom_field_cells(
