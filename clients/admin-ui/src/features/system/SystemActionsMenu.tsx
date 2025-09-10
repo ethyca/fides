@@ -82,15 +82,22 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
         trigger={["click"]}
         menu={{
           items: [
-            {
-              key: "assign-data-steward",
-              label: "Assign data steward",
-              children: allUsers?.items?.map((user) => ({
-                key: user.username,
-                label: user.username,
-                onClick: () => handleAssignSteward(user.username),
-              })),
-            },
+            ...(allUsers?.items && allUsers.items.length > 0
+              ? [
+                  {
+                    key: "assign-data-steward",
+                    label: "Assign data steward",
+                    children: allUsers.items.map((user) => ({
+                      key: user.username,
+                      label: user.username,
+                      onClick: () => handleAssignSteward(user.username),
+                    })),
+                  },
+                  {
+                    type: "divider" as const,
+                  },
+                ]
+              : []),
             {
               key: "delete",
               label: "Delete",

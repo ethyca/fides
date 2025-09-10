@@ -9,7 +9,7 @@ import { CustomTaxonomyColor } from "~/types/api";
 
 type ColorSelectProps = Omit<ControlledSelectProps, "options">;
 
-const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
+export const COLOR_LABELS: Record<CustomTaxonomyColor, string> = {
   [CustomTaxonomyColor.TAXONOMY_WHITE]: "White",
   [CustomTaxonomyColor.TAXONOMY_RED]: "Red",
   [CustomTaxonomyColor.TAXONOMY_ORANGE]: "Orange",

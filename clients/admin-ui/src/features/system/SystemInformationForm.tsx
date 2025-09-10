@@ -18,10 +18,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
-import {
-  useFeatures,
-  useFlags,
-} from "~/features/common/features/features.slice";
+import { useFeatures } from "~/features/common/features/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
@@ -62,7 +59,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
-import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups/system-groups.slice";
+import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
@@ -102,9 +99,7 @@ const SystemInformationForm = ({
   children,
 }: Props) => {
   const { data: systems = [] } = useGetAllSystemsQuery();
-  const {
-    flags: { alphaSystemGroups: systemGroupsEnabled },
-  } = useFlags();
+  const { plus: systemGroupsEnabled } = useFeatures();
 
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({

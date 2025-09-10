@@ -48,12 +48,6 @@
     "test": true,
     "production": false
   },
-  "alphaSystemGroups": {
-    "description": "Alpha feature to add system groups to the system table",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "newIntegrationManagement": {
     "description": "Shows all integrations (including SaaS) in the integrations page",
     "development": true,

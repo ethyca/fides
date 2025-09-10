@@ -6,7 +6,8 @@
     "created_at": "2024-01-15T10:30:00.000Z",
     "updated_at": "2024-03-20T15:45:00.000Z",
     "systems": ["fidesctl_system", "demo_analytics_system"],
-    "label_color": "blue"
+    "label_color": "taxonomy_blue",
+    "active": true
   },
   {
     "fides_key": "green_group",
@@ -15,7 +16,8 @@
     "created_at": "2024-02-01T08:00:00.000Z",
     "updated_at": "2024-03-19T11:20:00.000Z",
     "systems": ["fidesctl_system", "demo_analytics_system"],
-    "label_color": "green"
+    "label_color": "taxonomy_green",
+    "active": true
   },
   {
     "fides_key": "red_group",
@@ -24,6 +26,7 @@
     "created_at": "2024-02-15T14:20:00.000Z",
     "updated_at": "2024-03-18T09:15:00.000Z",
     "systems": ["fidesctl_system", "demo_marketing_system"],
-    "label_color": "red"
+    "label_color": "taxonomy_red",
+    "active": true
   }
 ]

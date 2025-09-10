@@ -7,6 +7,7 @@ import {
   Table as TableInstance,
 } from "@tanstack/react-table";
 import {
+  AntSpin as Spin,
   ArrowDownIcon,
   ArrowUpIcon,
   Box,
@@ -234,6 +235,7 @@ type FidesTableProps<T> = {
   onSort?: (columnSort: ColumnSort) => void;
   columnExpandStorageKey?: string;
   columnWrapStorageKey?: string;
+  loading?: boolean;
 };
 
 const TableBody = <T,>({
@@ -306,6 +308,7 @@ export const FidesTableV2 = <T,>({
   enableSorting = !!onSort,
   columnExpandStorageKey,
   columnWrapStorageKey,
+  loading = false,
 }: FidesTableProps<T>) => {
   const [colExpandVersion, setColExpandVersion] = useState<number>(1);
   const [expandedColumns, setExpandedColumns] = useLocalStorage<string[]>(
@@ -389,125 +392,129 @@ export const FidesTableV2 = <T,>({
   }, [tableInstance.getState().sorting]);
 
   return (
-    <TableContainer
-      data-testid="fidesTable"
-      overflowY={overflow}
-      overflowX={overflow}
-      borderColor="gray.200"
-      borderBottomWidth="1px"
-      borderRightWidth="1px"
-      borderLeftWidth="1px"
-    >
-      <Table
-        variant="unstyled"
-        style={{
-          borderCollapse: "separate",
-          borderSpacing: 0,
-          ...columnSizeVars,
-          minWidth: "100%",
-        }}
+    <Spin spinning={loading}>
+      <TableContainer
+        data-testid="fidesTable"
+        overflowY={overflow}
+        overflowX={overflow}
+        borderColor="gray.200"
+        borderBottomWidth="1px"
+        borderRightWidth="1px"
+        borderLeftWidth="1px"
       >
-        <Thead
-          position="sticky"
-          top="0"
-          height="36px"
-          zIndex={10}
-          backgroundColor="gray.50"
+        <Table
+          variant="unstyled"
+          style={{
+            borderCollapse: "separate",
+            borderSpacing: 0,
+            ...columnSizeVars,
+            minWidth: "100%",
+          }}
         >
-          {tableInstance.getHeaderGroups().map((headerGroup) => (
-            <Tr key={headerGroup.id} height="inherit">
-              {headerGroup.headers.map((header) => {
-                const v = columnExpandedVersion(header.id, expandedColumns);
-                const colIsExpanded = !!v && v > 0;
-                return (
-                  <Th
-                    key={header.id}
-                    borderColor="gray.200"
-                    borderTopWidth="1px"
-                    borderBottomWidth="1px"
-                    borderRightWidth="1px"
-                    _last={{
-                      borderRightWidth: 0,
-                    }}
-                    colSpan={header.colSpan}
-                    data-testid={`column-${header.id}`}
-                    id={`column-${header.id}`}
-                    sx={{
-                      padding: 0,
-                      width: `calc(var(--header-${header.id}-size) * 1px)`,
-                      overflowX: "auto",
-                    }}
-                    textTransform="unset"
-                    position="relative"
-                    _hover={{
-                      "& .resizer": {
-                        opacity: 1,
-                      },
-                    }}
-                    {...header.column.columnDef.meta?.cellProps}
-                  >
-                    <HeaderContent
-                      header={header}
-                      onGroupAll={handleColumnCollapse}
-                      onExpandAll={handleColumnExpand}
-                      onWrapToggle={handleColumnWrap}
-                      isExpandAll={colIsExpanded}
-                      isWrapped={!!wrappedColumns.find((c) => header.id === c)}
-                      enableSorting={enableSorting}
-                    />
-                    {/* Capture area to render resizer cursor */}
-                    {header.column.getCanResize() ? (
-                      <Box
-                        onDoubleClick={() => header.column.resetSize()}
-                        onMouseDown={header.getResizeHandler()}
-                        position="absolute"
-                        height="100%"
-                        top="0"
-                        right="0"
-                        width="5px"
-                        cursor="col-resize"
-                        userSelect="none"
-                        // eslint-disable-next-line tailwindcss/no-custom-classname
-                        className="resizer"
-                        opacity={0}
-                        backgroundColor={
-                          header.column.getIsResizing()
-                            ? "complimentary.500"
-                            : "gray.200"
+          <Thead
+            position="sticky"
+            top="0"
+            height="36px"
+            zIndex={10}
+            backgroundColor="gray.50"
+          >
+            {tableInstance.getHeaderGroups().map((headerGroup) => (
+              <Tr key={headerGroup.id} height="inherit">
+                {headerGroup.headers.map((header) => {
+                  const v = columnExpandedVersion(header.id, expandedColumns);
+                  const colIsExpanded = !!v && v > 0;
+                  return (
+                    <Th
+                      key={header.id}
+                      borderColor="gray.200"
+                      borderTopWidth="1px"
+                      borderBottomWidth="1px"
+                      borderRightWidth="1px"
+                      _last={{
+                        borderRightWidth: 0,
+                      }}
+                      colSpan={header.colSpan}
+                      data-testid={`column-${header.id}`}
+                      id={`column-${header.id}`}
+                      sx={{
+                        padding: 0,
+                        width: `calc(var(--header-${header.id}-size) * 1px)`,
+                        overflowX: "auto",
+                      }}
+                      textTransform="unset"
+                      position="relative"
+                      _hover={{
+                        "& .resizer": {
+                          opacity: 1,
+                        },
+                      }}
+                      {...header.column.columnDef.meta?.cellProps}
+                    >
+                      <HeaderContent
+                        header={header}
+                        onGroupAll={handleColumnCollapse}
+                        onExpandAll={handleColumnExpand}
+                        onWrapToggle={handleColumnWrap}
+                        isExpandAll={colIsExpanded}
+                        isWrapped={
+                          !!wrappedColumns.find((c) => header.id === c)
                         }
+                        enableSorting={enableSorting}
                       />
-                    ) : null}
-                  </Th>
-                );
-              })}
-            </Tr>
-          ))}
-        </Thead>
-        {tableInstance.getState().columnSizingInfo.isResizingColumn ? (
-          <MemoizedTableBody
-            tableInstance={tableInstance}
-            rowActionBar={rowActionBar}
-            onRowClick={onRowClick}
-            getRowIsClickable={getRowIsClickable}
-            renderRowTooltipLabel={renderRowTooltipLabel}
-            expandedColumns={expandedColumns}
-            wrappedColumns={wrappedColumns}
-            emptyTableNotice={emptyTableNotice}
-          />
-        ) : (
-          <TableBody
-            tableInstance={tableInstance}
-            rowActionBar={rowActionBar}
-            onRowClick={onRowClick}
-            getRowIsClickable={getRowIsClickable}
-            renderRowTooltipLabel={renderRowTooltipLabel}
-            expandedColumns={expandedColumns}
-            wrappedColumns={wrappedColumns}
-            emptyTableNotice={emptyTableNotice}
-          />
-        )}
-        {footer}
-      </Table>
-    </TableContainer>
+                      {/* Capture area to render resizer cursor */}
+                      {header.column.getCanResize() ? (
+                        <Box
+                          onDoubleClick={() => header.column.resetSize()}
+                          onMouseDown={header.getResizeHandler()}
+                          position="absolute"
+                          height="100%"
+                          top="0"
+                          right="0"
+                          width="5px"
+                          cursor="col-resize"
+                          userSelect="none"
+                          // eslint-disable-next-line tailwindcss/no-custom-classname
+                          className="resizer"
+                          opacity={0}
+                          backgroundColor={
+                            header.column.getIsResizing()
+                              ? "complimentary.500"
+                              : "gray.200"
+                          }
+                        />
+                      ) : null}
+                    </Th>
+                  );
+                })}
+              </Tr>
+            ))}
+          </Thead>
+          {tableInstance.getState().columnSizingInfo.isResizingColumn ? (
+            <MemoizedTableBody
+              tableInstance={tableInstance}
+              rowActionBar={rowActionBar}
+              onRowClick={onRowClick}
+              getRowIsClickable={getRowIsClickable}
+              renderRowTooltipLabel={renderRowTooltipLabel}
+              expandedColumns={expandedColumns}
+              wrappedColumns={wrappedColumns}
+              emptyTableNotice={emptyTableNotice}
+            />
+          ) : (
+            <TableBody
+              tableInstance={tableInstance}
+              rowActionBar={rowActionBar}
+              onRowClick={onRowClick}
+              getRowIsClickable={getRowIsClickable}
+              renderRowTooltipLabel={renderRowTooltipLabel}
+              expandedColumns={expandedColumns}
+              wrappedColumns={wrappedColumns}
+              emptyTableNotice={emptyTableNotice}
+            />
+          )}
+          {footer}
+        </Table>
+      </TableContainer>
+    </Spin>
   );
 };

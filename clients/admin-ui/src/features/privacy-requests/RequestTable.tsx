@@ -5,6 +5,8 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntFlex as Flex,
+  AntPagination as Pagination,
   Box,
   BoxProps,
   HStack,
@@ -13,25 +15,21 @@ import {
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectToken } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import {
   FidesTableV2,
   GlobalFilterV2,
-  PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
-  useServerSidePagination,
 } from "~/features/common/table/v2";
 import {
   clearSortKeys,
-  requestCSVDownload,
   selectPrivacyRequestFilters,
-  setFuzzySearchStr,
   setSortDirection,
   setSortKey,
   useGetAllPrivacyRequestsQuery,
@@ -40,28 +38,22 @@ import { getRequestTableColumns } from "~/features/privacy-requests/RequestTable
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
+import { useAntPagination } from "../common/pagination/useAntPagination";
+import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const { plus: hasPlus } = useFeatures();
-  const [fuzzySearchTerm, setFuzzySearchTerm] = useState<string>("");
+  const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
+    "search",
+    parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
+  );
   const filters = useSelector(selectPrivacyRequestFilters);
-  const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-    resetPageIndexToDefault,
-  } = useServerSidePagination();
+
+  const pagination = useAntPagination();
+  const { pageIndex, pageSize, resetPagination } = pagination;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -69,26 +61,28 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     ...filters,
     page: pageIndex,
     size: pageSize,
+    fuzzy_search_str: fuzzySearchTerm,
   });
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
-    setTotalPages(results.pages);
+
     return results;
-  }, [data, setTotalPages]);
+  }, [data]);
+
+  const { downloadReport } = useDownloadPrivacyRequestReport();
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
-      dispatch(setFuzzySearchStr(searchTerm));
-      setFuzzySearchTerm(searchTerm);
-      resetPageIndexToDefault();
+      setFuzzySearchTerm(searchTerm ?? "");
+      resetPagination();
     },
-    [dispatch, resetPageIndexToDefault, setFuzzySearchTerm],
+    [resetPagination, setFuzzySearchTerm],
   );
 
   const handleExport = async () => {
     let message;
     try {
-      await requestCSVDownload({ ...filters, token });
+      await downloadReport(filters);
     } catch (error) {
       if (error instanceof Error) {
         message = error.message;
@@ -113,13 +107,12 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const handleSort = (columnSort: ColumnSort) => {
     if (!columnSort) {
       dispatch(clearSortKeys());
-      resetPageIndexToDefault();
       return;
     }
     const { id, desc } = columnSort;
     dispatch(setSortKey(id));
     dispatch(setSortDirection(desc ? "desc" : "asc"));
-    resetPageIndexToDefault();
+    resetPagination();
   };
 
   const tableInstance = useReactTable<PrivacyRequestEntity>({
@@ -154,7 +147,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <RequestTableFilterModal
             isOpen={isOpen}
             onClose={onClose}
-            onFilterChange={resetPageIndexToDefault}
+            onFilterChange={resetPagination}
           />
         </Portal>
       </TableActionBar>
@@ -163,24 +156,22 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <TableSkeletonLoader rowHeight={26} numRows={10} />
         </Box>
       ) : (
-        <>
+        <Flex vertical gap="middle">
           <FidesTableV2<PrivacyRequestEntity>
             tableInstance={tableInstance}
             onRowClick={(row) => handleViewDetails(row.id)}
             onSort={handleSort}
+            loading={isFetching}
           />
-          <PaginationBar
-            totalRows={totalRows || 0}
-            pageSizes={PAGE_SIZES}
-            setPageSize={setPageSize}
-            onPreviousPageClick={onPreviousPageClick}
-            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-            onNextPageClick={onNextPageClick}
-            isNextPageDisabled={isNextPageDisabled || isFetching}
-            startRange={startRange}
-            endRange={endRange}
+          <Pagination
+            {...pagination.paginationProps}
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+            }
+            total={totalRows ?? 0}
+            align="end"
           />
-        </>
+        </Flex>
       )}
     </Box>
   );

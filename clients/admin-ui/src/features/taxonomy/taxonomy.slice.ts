@@ -1,103 +1,98 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { DataCategory } from "~/types/api";
+
+import { TaxonomyEntity } from "./types";
+
+type TaxonomySummary = { fides_key: string; name: string };
 
 const taxonomyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllDataCategories: build.query<DataCategory[], void>({
-      query: () => ({ url: `data_category` }),
-      providesTags: () => ["Data Categories"],
-      transformResponse: (categories: DataCategory[]) =>
-        categories.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
+    getCustomTaxonomies: build.query<TaxonomySummary[], void>({
+      query: () => ({ url: `taxonomies` }),
     }),
-    updateDataCategory: build.mutation<
-      DataCategory,
-      Partial<DataCategory> & Pick<DataCategory, "fides_key">
+    getTaxonomy: build.query<TaxonomyEntity[], string>({
+      query: (taxonomyType) => ({ url: `taxonomies/${taxonomyType}` }),
+      providesTags: (result, error, taxonomyType) => [
+        { type: "Taxonomy", id: taxonomyType },
+      ],
+      // Ensure parents are listed before children so the tree can link edges correctly
+      transformResponse: (items: TaxonomyEntity[]) => {
+        const result: TaxonomyEntity[] = [];
+        const remaining = [...items];
+
+        // Add all root items first (no parent)
+        const rootItems = remaining.filter((i) => i.parent_key === null);
+        rootItems.sort((a, b) => a.fides_key.localeCompare(b.fides_key));
+        result.push(...rootItems);
+
+        // Work through children ensuring their parent already exists in result
+        let pending = remaining.filter((i) => i.parent_key !== null);
+        while (pending.length > 0) {
+          const toAdd = pending.filter((i) =>
+            result.some((r) => r.fides_key === i.parent_key),
+          );
+
+          if (toAdd.length === 0) {
+            // Fallback: break potential cycles by appending remaining items alphabetically
+            result.push(
+              ...pending.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
+            );
+            break;
+          }
+
+          toAdd.sort((a, b) => a.fides_key.localeCompare(b.fides_key));
+          result.push(...toAdd);
+          pending = pending.filter((i) => !toAdd.includes(i));
+        }
+
+        return result;
+      },
+    }),
+    createTaxonomy: build.mutation<
+      TaxonomyEntity,
+      { taxonomyType: string } & Partial<TaxonomyEntity>
     >({
-      query: (dataCategory) => ({
-        url: `data_category`,
-        params: { resource_type: "data_category" },
-        method: "PUT",
-        body: dataCategory,
-      }),
-      invalidatesTags: ["Data Categories"],
-    }),
-
-    createDataCategory: build.mutation<DataCategory, Partial<DataCategory>>({
-      query: (dataCategory) => ({
-        url: `data_category`,
+      query: ({ taxonomyType, ...body }) => ({
+        url: `taxonomies/${taxonomyType}`,
         method: "POST",
-        body: dataCategory,
+        body,
       }),
-      invalidatesTags: ["Data Categories"],
+      invalidatesTags: (result, error, { taxonomyType }) => [
+        { type: "Taxonomy", id: taxonomyType },
+      ],
     }),
-
-    deleteDataCategory: build.mutation<string, string>({
-      query: (key) => ({
-        url: `data_category/${key}`,
-        params: { resource_type: "data_category" },
+    updateTaxonomy: build.mutation<
+      TaxonomyEntity,
+      { taxonomyType: string } & Partial<TaxonomyEntity> &
+        Pick<TaxonomyEntity, "fides_key">
+    >({
+      query: ({ taxonomyType, ...body }) => ({
+        url: `taxonomies/${taxonomyType}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (result, error, { taxonomyType }) => [
+        { type: "Taxonomy", id: taxonomyType },
+      ],
+    }),
+    deleteTaxonomy: build.mutation<
+      string,
+      { taxonomyType: string; key: string }
+    >({
+      query: ({ taxonomyType, key }) => ({
+        url: `taxonomies/${taxonomyType}/${key}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Data Categories"],
+      invalidatesTags: (result, error, { taxonomyType }) => [
+        { type: "Taxonomy", id: taxonomyType },
+      ],
     }),
   }),
 });
 
 export const {
-  useGetAllDataCategoriesQuery,
-  useLazyGetAllDataCategoriesQuery,
-  useUpdateDataCategoryMutation,
-  useDeleteDataCategoryMutation,
-  useCreateDataCategoryMutation,
+  useGetCustomTaxonomiesQuery,
+  useLazyGetTaxonomyQuery,
+  useCreateTaxonomyMutation,
+  useUpdateTaxonomyMutation,
+  useDeleteTaxonomyMutation,
 } = taxonomyApi;
-
-export interface State {
-  isAddFormOpen: boolean;
-}
-
-const initialState: State = {
-  isAddFormOpen: false,
-};
-
-export const taxonomySlice = createSlice({
-  name: "taxonomy",
-  initialState,
-  reducers: {
-    setIsAddFormOpen: (draftState, action: PayloadAction<boolean>) => {
-      draftState.isAddFormOpen = action.payload;
-    },
-  },
-});
-
-export const { setIsAddFormOpen } = taxonomySlice.actions;
-
-const emptyDataCategories: DataCategory[] = [];
-export const selectDataCategories: (state: RootState) => DataCategory[] =
-  createSelector(
-    taxonomyApi.endpoints.getAllDataCategories.select(),
-    ({ data }) => data ?? emptyDataCategories,
-  );
-
-export const selectEnabledDataCategories: (state: RootState) => DataCategory[] =
-  createSelector(
-    taxonomyApi.endpoints.getAllDataCategories.select(),
-    ({ data }) => data?.filter((dc) => dc.active) ?? emptyDataCategories,
-  );
-
-export const selectDataCategoriesMap: (
-  state: RootState,
-) => Map<string, DataCategory> = createSelector(
-  selectDataCategories,
-  (dataCategories) => new Map(dataCategories.map((dc) => [dc.fides_key, dc])),
-);
-
-const selectTaxonomy = (state: RootState) => state.taxonomy;
-
-export const selectIsAddFormOpen = createSelector(
-  selectTaxonomy,
-  (state) => state.isAddFormOpen,
-);
-
-export const { reducer } = taxonomySlice;
