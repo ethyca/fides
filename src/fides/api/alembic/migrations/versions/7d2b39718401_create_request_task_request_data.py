@@ -2,7 +2,7 @@
 
 
 Revision ID: 7d2b39718401
-Revises: 30369bb8ae01
+Revises: 5fa78b1f324d
 Create Date: 2025-09-09 12:56:24.287281
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
 revision = "7d2b39718401"
-down_revision = "30369bb8ae01"
+down_revision = "5fa78b1f324d"
 branch_labels = None
 depends_on = None
 
