@@ -405,10 +405,6 @@ describe("System management page", () => {
       cy.getAntTab("Data uses").click({ force: true });
     });
 
-    it("shows data uses in the data use tab", () => {
-      cy.getByTestId("row-functional.service.improve");
-    });
-
     it.skip("warns when a data use and processing activity is being added that is already used", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {

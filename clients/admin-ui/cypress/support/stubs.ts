@@ -104,6 +104,24 @@ export const stubSystemCrud = () => {
   }).as("bulkAssignSteward");
 };
 
+export const stubGVLSystem = () => {
+  cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+    cy.fixture("systems/system.json").then((origSystem) => {
+      cy.intercept(
+        { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+        {
+          body: {
+            ...origSystem,
+            ...dictSystem,
+            fides_key: origSystem.fides_key,
+            customFieldValues: undefined,
+          },
+        },
+      ).as("getDictSystem");
+    });
+  });
+};
+
 export const stubVendorList = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system*", {
     fixture: "dictionary-entries.json",

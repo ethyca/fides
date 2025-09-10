@@ -1,5 +1,6 @@
 import {
   stubDatasetCrud,
+  stubGVLSystem,
   stubPlus,
   stubSystemAssets,
   stubSystemCrud,
@@ -34,11 +35,12 @@ describe("System Data Uses Tab", () => {
   });
 
   it("allowed changes to data uses for GVL vendors", () => {
+    stubGVLSystem();
     // TODO: create reusable GVL vendor
     cy.getByTestId("vendor-name-select").find("input").type("Aniview");
     cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
     cy.getByTestId("save-btn").click();
-    cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+    cy.wait(["@postSystem", "@getDictSystem", "@getSystems"]);
 
     cy.getAntTab("Data uses").click();
 
