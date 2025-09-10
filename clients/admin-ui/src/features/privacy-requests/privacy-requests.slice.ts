@@ -5,11 +5,14 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
-  PrivacyCenterConfig,
+  DenyPrivacyRequests,
+  fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
+  Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
+  ReviewPrivacyRequestIds,
 } from "~/types/api";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
@@ -17,12 +20,10 @@ import type { RootState } from "../../app/store";
 import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
-  DenyPrivacyRequest,
   GetUploadedManualWebhookDataRequest,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
   PrivacyRequestParams,
-  PrivacyRequestResponse,
   RetryRequests,
 } from "./types";
 
@@ -248,33 +249,28 @@ export const privacyRequestApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     approveRequest: build.mutation<
       PrivacyRequestEntity,
-      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
+      ReviewPrivacyRequestIds
     >({
-      query: ({ id }) => ({
+      query: (body) => ({
         url: "privacy-request/administrate/approve",
         method: "PATCH",
-        body: {
-          request_ids: [id],
-        },
+        body,
       }),
       invalidatesTags: ["Request"],
     }),
     bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
-      query: (values) => ({
+      query: (body) => ({
         url: `privacy-request/bulk/retry`,
         method: "POST",
-        body: values,
+        body,
       }),
       invalidatesTags: ["Request"],
     }),
-    denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequest>({
-      query: ({ id, reason }) => ({
+    denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequests>({
+      query: (body) => ({
         url: "privacy-request/administrate/deny",
         method: "PATCH",
-        body: {
-          request_ids: [id],
-          reason,
-        },
+        body,
       }),
       invalidatesTags: ["Request"],
     }),
@@ -289,7 +285,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       invalidatesTags: ["Request"],
     }),
     getAllPrivacyRequests: build.query<
-      PrivacyRequestResponse,
+      Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
@@ -317,7 +313,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       },
     }),
     postPrivacyRequest: build.mutation<
-      PrivacyRequestResponse,
+      PrivacyRequestEntity,
       PrivacyRequestCreate[]
     >({
       query: (payload) => ({

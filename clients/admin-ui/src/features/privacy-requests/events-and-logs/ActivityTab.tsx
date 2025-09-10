@@ -2,14 +2,13 @@ import { AntButton as Button, AntFlex as Flex } from "fidesui";
 import { useState } from "react";
 
 import Restrict from "~/features/common/Restrict";
-import { ScopeRegistryEnum } from "~/types/api";
+import { PrivacyRequestVerboseResponse, ScopeRegistryEnum } from "~/types/api";
 
-import { PrivacyRequestEntity } from "../types";
 import ActivityTimeline from "./ActivityTimeline";
 import { CommentInput } from "./CommentInput";
 
 type ActivityTabProps = {
-  subjectRequest: PrivacyRequestEntity;
+  subjectRequest: PrivacyRequestVerboseResponse;
 };
 
 const ActivityTab = ({ subjectRequest }: ActivityTabProps) => {

@@ -13,4 +13,8 @@ export type CollectionMeta = {
   skip_processing?: boolean | null;
   masking_strategy_override?: MaskingStrategyOverride | null;
   partitioning?: null;
+  /**
+   * Specify 'name' to indicate the collection name should be redacted.
+   */
+  redact?: "name" | null;
 };

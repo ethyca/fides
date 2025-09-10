@@ -46,7 +46,7 @@ export type FidesMeta = {
    */
   masking_strategy_override?: FieldMaskingStrategyOverride | null;
   /**
-   * Optionally specify that this entity's name should be redacted in DSR reports. When set to "name", the entity will be redacted using the indexed format (e.g., "dataset_1", "collection_1", "field_1").
+   * Specify 'name' to indicate the field name should be redacted.
    */
   redact?: "name" | null;
 };

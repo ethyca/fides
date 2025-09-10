@@ -33,6 +33,7 @@ export type DatamapReport = {
   legal_basis_for_transfers?: Array<string> | null;
   legal_name?: string | null;
   legitimate_interest_disclosure_url?: string | null;
+  link_to_processor_contract?: string | null;
   privacy_policy?: string | null;
   processes_personal_data: boolean;
   reason_for_exemption?: string | null;

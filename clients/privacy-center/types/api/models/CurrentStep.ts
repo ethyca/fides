@@ -12,4 +12,5 @@ export enum CurrentStep {
   FINALIZE_CONSENT = "finalize_consent",
   EMAIL_POST_SEND = "email_post_send",
   POST_WEBHOOKS = "post_webhooks",
+  FINALIZATION = "finalization",
 }
