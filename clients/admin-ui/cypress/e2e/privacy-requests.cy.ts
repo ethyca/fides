@@ -46,8 +46,8 @@ describe("Privacy Requests", () => {
     it("allows navigation to the details of request", () => {
       // Add small delay until we find a solution to the 'nextjs cancelling route' issue with hashes in the url
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(200);
-      cy.get("@rowsNew").first().click({ force: true });
+      cy.wait(500);
+      cy.get("@rowsNew").first().click();
       cy.location("pathname").should("match", /^\/privacy-requests\/pri.+/);
     });
 
