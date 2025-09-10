@@ -61,7 +61,7 @@ class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
         """Process JSON response data."""
         result = pydash.get(response.json(), self.result_path)
         if result is None:
-            return []
+            return result
         if isinstance(result, list):
             return result
         elif isinstance(result, dict):
