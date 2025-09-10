@@ -38,12 +38,6 @@ def upgrade():
         sa.Column("dataset_fides_key", sa.String(), nullable=False),
         sa.Column("resource_urn", sa.String(), nullable=False),
         sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=True,
-        ),
-        sa.Column(
             "overall_metrics",
             postgresql.JSONB(astext_type=sa.Text()),
             nullable=False,

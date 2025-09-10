@@ -44,7 +44,7 @@ class ClassificationBenchmark(Base):
         ARRAY(JSONB),
         nullable=False,
         server_default="{}",
-        default=dict,
+        default=list,
     )
 
     @classmethod
