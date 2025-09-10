@@ -283,22 +283,18 @@ class TestPrivacyCenterConfig:
     def test_discriminator_function_with_model_instances(self):
         """Test that the discriminator function works with model instances (not just dicts)"""
         from fides.api.schemas.privacy_center_config import (
-            get_field_type_discriminator,
             CustomPrivacyRequestField,
             LocationCustomPrivacyRequestField,
+            get_field_type_discriminator,
         )
 
         # Test with model instances directly (not dicts)
         location_model = LocationCustomPrivacyRequestField(
-            label="Test Location",
-            ip_geolocation_hint=True,
-            required=True
+            label="Test Location", ip_geolocation_hint=True, required=True
         )
 
         text_model = CustomPrivacyRequestField(
-            label="Test Text",
-            field_type="text",
-            required=False
+            label="Test Text", field_type="text", required=False
         )
 
         # Test discriminator with model instances
@@ -306,7 +302,9 @@ class TestPrivacyCenterConfig:
         assert get_field_type_discriminator(text_model) == "custom"
 
         # Test with a model that has no field_type attribute
-        from fides.api.schemas.privacy_center_config import BaseCustomPrivacyRequestField
+        from fides.api.schemas.privacy_center_config import (
+            BaseCustomPrivacyRequestField,
+        )
 
         # Create a minimal model instance without field_type
         class MinimalField(BaseCustomPrivacyRequestField):
