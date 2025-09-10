@@ -23,13 +23,13 @@ import {
   useDeleteSystemMutation,
   useGetSystemsQuery,
 } from "~/features/system/system.slice";
-import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import {
   useCreateSystemGroupMutation,
   useGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
-} from "~/features/system/system-groups/system-groups.slice";
+} from "~/features/system/system-groups.slice";
+import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   BasicSystemResponseExtended,
@@ -40,13 +40,7 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-interface UseSystemsTableParams {
-  isAlphaSystemGroupsEnabled?: boolean;
-}
-
-const useSystemsTable = ({
-  isAlphaSystemGroupsEnabled,
-}: UseSystemsTableParams) => {
+const useSystemsTable = () => {
   // ancillary data
   const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
 
@@ -243,7 +237,7 @@ const useSystemsTable = ({
           />
         ),
         title: "Groups",
-        hidden: !plusIsEnabled || !isAlphaSystemGroupsEnabled,
+        hidden: !plusIsEnabled,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -360,7 +354,6 @@ const useSystemsTable = ({
     ];
   }, [
     plusIsEnabled,
-    isAlphaSystemGroupsEnabled,
     allSystemGroups,
     columnFilters?.system_groups,
     columnFilters?.data_steward,

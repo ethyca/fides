@@ -28,8 +28,8 @@ import LoginWithOIDC from "./login/[provider]";
 dayjs.extend(utc);
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
-  // eslint-disable-next-line global-require
-  require("../mocks");
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  import("../mocks").then(({ initMocks }) => initMocks());
 }
 
 const SafeHydrate = ({ children }: { children: ReactNode }) => (
