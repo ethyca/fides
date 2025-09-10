@@ -94,11 +94,10 @@ class TestAsyncDsrRequest:
         assert call_args.path == "/api/v1/user"
         # Check that we are storing properly the async type and the data
         assert request_task.async_type == AsyncTaskType.polling
-        assert request_task.get_access_data() == [
-            {
-                "request_id": "123",
-            }
-        ]
+        assert request_task.request_data.request_data == {
+            "request_id": "123",
+        }
+
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
@@ -140,30 +139,28 @@ class TestAsyncDsrRequest:
             assert pr.status == PrivacyRequestStatus.in_processing
             assert pr.access_tasks[0].status == ExecutionLogStatus.complete
             # Saas Polling task was marked as needing async results, so the Request
-            # Task was put in a paused state
-            assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            polling_task = pr.access_tasks[1]
+            assert polling_task.status == ExecutionLogStatus.awaiting_processing
             assert (
-                pr.access_tasks[1].collection_address
+                polling_task.collection_address
                 == "saas_async_polling_config:user"
             )
 
             mock_send().json.return_value = {"request_complete": False}
             # Requeue the polling task
-            execute_polling_task(db, pr.access_tasks[1])
+            execute_polling_task(pr.id, polling_task.id)
             db.refresh(pr)
             # We are still awaiting for processing and data should be the base response data
-            assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            assert pr.access_tasks[1].get_access_data() == [
-                {
-                    "id": "123",
-                }
-            ]
+            assert polling_task.status == ExecutionLogStatus.awaiting_processing
+            assert polling_task.request_data.request_data == {
+                "request_id": "123",
+            }
+
 
             mock_send().json.return_value = {"request_complete": True}
             # Requeue the polling task
-            execute_polling_task(db, pr.access_tasks[1])
-            time.sleep(10)
-            db.refresh(pr)
+            execute_polling_task(pr.id, polling_task.id)
+            db.refresh(polling_task)
             # We are still awaiting for processing and data should be the base response data
-            assert pr.access_tasks[1].status == ExecutionLogStatus.complete
+            assert polling_task.status == ExecutionLogStatus.complete
             # Access Data tests require a MockAuthenticatedClient thats on Fidesplus to chain return values.

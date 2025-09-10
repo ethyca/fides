@@ -177,7 +177,7 @@ def execute_result_request(
         )
 
     polling_task.callback_succeeded = True  # Setting this task as successful, finished
-    polling_task.update_status(db, ExecutionLogStatus.pending)
+    polling_task.update_status(db, ExecutionLogStatus.complete)
     polling_task.save(db)
     log_task_queued(polling_task, "polling success")
     queue_request_task(polling_task, privacy_request_proceed=True)

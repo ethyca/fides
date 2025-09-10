@@ -358,7 +358,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 id_source = request_id_config["id_source"]
                 if id_source == IdSource.path.value:
                     request_data = {
-                        "request_id": pydash.get(rows[0], request_id_config.id_path)
+                        "request_id": pydash.get(rows[0], request_id_config["id_path"])
                     }
                     self._save_request_data(request_task, request_data)
 
