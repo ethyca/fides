@@ -31,6 +31,8 @@ import SystemInformationForm from "~/features/system/SystemInformationForm";
 import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
 
+import useOAuthStatusHandler from "./useOAuthStatusHandler";
+
 enum SystemTabKeys {
   INFORMATION = "information",
   DATA_USES = "data-uses",
@@ -71,7 +73,11 @@ const useSystemFormTabs = ({
 }) => {
   const router = useRouter();
 
-  const { activeTab, onTabChange: baseOnTabChange } = useURLHashedTabs({
+  const {
+    activeTab,
+    onTabChange: baseOnTabChange,
+    setActiveTab,
+  } = useURLHashedTabs({
     tabKeys: Object.values(SystemTabKeys),
   });
 
@@ -153,13 +159,8 @@ const useSystemFormTabs = ({
     [attemptAction, baseOnTabChange],
   );
 
-  useEffect(() => {
-    const { status } = router.query;
-    if (status) {
-      // Navigate to integrations tab when status parameter is present
-      baseOnTabChange("integrations");
-    }
-  }, [router.query, baseOnTabChange]);
+  // Handle OAuth status parameters (e.g., ?status=succeeded)
+  useOAuthStatusHandler({ setActiveTab });
 
   const tabData: NonNullable<TabsProps["items"]> = [
     {

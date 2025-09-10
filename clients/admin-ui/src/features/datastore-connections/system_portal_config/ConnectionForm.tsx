@@ -3,19 +3,10 @@ import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
 import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
-import {
-  AntButton as Button,
-  Box,
-  Flex,
-  Stack,
-  useDisclosure,
-  useToast,
-} from "fidesui";
-import { useRouter } from "next/router";
+import { AntButton as Button, Box, Flex, Stack, useDisclosure } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import {
@@ -48,9 +39,6 @@ const hiddenConnectionTypes = [
 ];
 
 const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
-  const router = useRouter();
-  const toast = useToast();
-
   const {
     dropDownOptions,
     selectedValue: selectedConnectionOption,
@@ -79,17 +67,6 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       setOrphanedConnectionConfigs(filteredOrphanedConnections);
     }
   }, [data]);
-
-  // Handle OAuth integration status toasts
-  useEffect(() => {
-    if (router.query.status) {
-      if (router.query.status === "succeeded") {
-        toast(successToastParams(`Integration successfully authorized.`));
-      } else {
-        toast(errorToastParams(`Failed to authorize integration.`));
-      }
-    }
-  }, [router.query.status, toast]);
 
   const uploadTemplateModal = useDisclosure();
 
