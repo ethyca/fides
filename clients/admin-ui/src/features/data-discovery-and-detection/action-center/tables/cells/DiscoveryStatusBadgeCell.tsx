@@ -44,7 +44,7 @@ export const DiscoveryStatusBadgeCell = ({
             closeIcon={<Icons.Information style={{ width: 12, height: 12 }} />}
             closeButtonLabel="View details"
             onClose={handleClick}
-            data-testid="status-badge_without-consent"
+            data-testid="status-badge_pre-consent"
           >
             {DiscoveryStatusDisplayNames.PRE_CONSENT}
           </Tag>
