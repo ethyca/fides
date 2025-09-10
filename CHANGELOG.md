@@ -39,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
 - Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
 - Fix bug in oauth authorization success toast [#6572](https://github.com/ethyca/fides/pull/6572)
+- Fix expadable tag cell for locations in notices page of admin-ui [#6559](https://github.com/ethyca/fides/pull/6559)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
