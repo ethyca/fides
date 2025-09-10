@@ -15,9 +15,6 @@ import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
 import {
-  ConfigMessagingDetailsRequest,
-  ConfigMessagingRequest,
-  ConfigMessagingSecretsRequest,
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,
@@ -460,43 +457,6 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.details,
       }),
     }),
-    getActiveMessagingProvider: build.query<any, void>({
-      query: () => ({
-        url: `messaging/default/active`,
-      }),
-    }),
-    getMessagingConfigurationDetails: build.query<any, ConfigMessagingRequest>({
-      query: (params) => ({
-        url: `messaging/default/${params.type}`,
-      }),
-    }),
-    createMessagingConfiguration: build.mutation<
-      any,
-      ConfigMessagingDetailsRequest
-    >({
-      query: (params) => ({
-        url: `messaging/default`,
-        method: "PUT",
-        body: params,
-      }),
-    }),
-    createMessagingConfigurationSecrets: build.mutation<
-      any,
-      ConfigMessagingSecretsRequest
-    >({
-      query: (params) => ({
-        url: `messaging/default/${params.service_type}/secret`,
-        method: "PUT",
-        body: params.details,
-      }),
-    }),
-    createTestConnectionMessage: build.mutation<any, any>({
-      query: (params) => ({
-        url: `messaging/config/test`,
-        method: "POST",
-        body: params,
-      }),
-    }),
     uploadManualAccessWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -588,12 +548,7 @@ export const {
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
-  useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
-  useCreateMessagingConfigurationMutation,
-  useCreateMessagingConfigurationSecretsMutation,
-  useCreateTestConnectionMessageMutation,
   useGetPrivacyRequestAccessResultsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
