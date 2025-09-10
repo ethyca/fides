@@ -1,7 +1,7 @@
 """adding default system groups
 
 Revision ID: 4d8c0fcc5771
-Revises: fd7571bef683
+Revises: 5fa78b1f324d
 Create Date: 2025-09-10 05:40:19.064377
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "4d8c0fcc5771"
-down_revision = "fd7571bef683"
+down_revision = "5fa78b1f324d"
 branch_labels = None
 depends_on = None
 
