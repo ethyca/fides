@@ -359,10 +359,7 @@ def get_unique_custom_field_columns(
 
 
 def with_prefix(prefix: str, items: List[str]) -> List[str]:
-    prefixed = []
-    for item in items:
-        prefixed.append(f"{prefix} {item}")
-    return prefixed
+    return [f"{prefix} {item}" for item in items]
 
 
 def extract_custom_field_cells(
