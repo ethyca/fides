@@ -326,36 +326,27 @@ def privacy_request_csv_download(
     return response
 
 
-def get_variable_columns(
-    privacy_request_query: Query,
-) -> tuple[List[str], Dict[str, str]]:
+def get_variable_columns(privacy_request_query: Query) -> tuple[List[str], Dict[str, str]]:
     identity_columns: Set[str] = set()
     custom_field_columns: Dict[str, str] = {}
+
     for pr in privacy_request_query:
-        get_unique_identity_columns(
-            identity_columns, pr.get_persisted_identity().dict()
-        )
-        get_unique_custom_field_columns(
-            custom_field_columns, pr.get_persisted_custom_privacy_request_fields()
-        )
+        identity_columns.update(extract_identity_column_names(pr.get_persisted_identity().dict()))
+        custom_field_columns.update(extract_custom_field_column_names(pr.get_persisted_custom_privacy_request_fields()))
 
     return list(identity_columns), custom_field_columns
 
+def extract_identity_column_names(identities: dict[str, Any]) -> Set[str]:
+    """Extract column names from identity data that have non-empty values."""
+    return {key for key, value in identities.items() if value}
 
-def get_unique_identity_columns(
-    existing_columns: Set[str], identities: dict[str, Any]
-) -> None:
-    for key, value in identities.items():
-        if value:
-            existing_columns.add(key)
-
-
-def get_unique_custom_field_columns(
-    existing_custom_fields: Dict[str, str], custom_fields: dict[str, Any]
-) -> None:
-    for key, value in custom_fields.items():
-        if value["value"]:
-            existing_custom_fields[key] = value["label"]
+def extract_custom_field_column_names(custom_fields: dict[str, Any]) -> Dict[str, str]:
+    """Extract column names and labels from custom field data that have non-empty values."""
+    return {
+        key: value["label"]
+        for key, value in custom_fields.items()
+        if value.get("value")
+}
 
 
 def with_prefix(prefix: str, items: List[str]) -> List[str]:
@@ -367,7 +358,7 @@ def extract_custom_field_cells(
 ) -> List[str]:
     custom_fields = pr.get_persisted_custom_privacy_request_fields()
     return [
-        custom_fields.get(custom_field_column, {}).get("value") 
+        custom_fields.get(custom_field_column, {}).get("value")
         for custom_field_column in custom_field_columns
     ]
 
@@ -377,7 +368,9 @@ def extract_identity_cells(
 ) -> List[str]:
     identity = pr.get_persisted_identity()
     identity_dict = identity.dict()
-    return [identity_dict.get(identity_column) for identity_column in identity_columns]
+    return [
+        identity_dict.get(identity_column)  # type: ignore
+        for identity_column in identity_columns]
 
 
 def execution_and_audit_logs_by_dataset_name(
