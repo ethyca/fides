@@ -262,22 +262,6 @@ def create_privacy_request_authenticated(
     )
 
 
-def unique_identity_columns(
-    existing_columns: Set[str], identities: dict[str, Any]
-) -> None:
-    for key, value in identities.items():
-        if value:
-            existing_columns.add(key)
-
-
-def unique_custom_field_columns(
-    existing_custom_fields: Dict[str, str], custom_fields: dict[str, Any]
-) -> None:
-    for key, value in custom_fields.items():
-        if value["value"]:
-            existing_custom_fields[key] = value["label"]
-
-
 def with_prefix(prefix: str, items: List[str]) -> List[str]:
     prefixed = []
     for item in items:
@@ -348,6 +332,34 @@ def privacy_request_csv_download(
     )
     return response
 
+def get_variable_columns(
+    privacy_request_query: Query,
+) -> tuple[List[str], Dict[str, str]]:
+    identity_columns: Set[str] = set()
+    custom_field_columns: Dict[str, str] = {}
+    for pr in privacy_request_query:
+        get_unique_identity_columns(identity_columns, pr.get_persisted_identity().dict())
+        get_unique_custom_field_columns(
+            custom_field_columns, pr.get_persisted_custom_privacy_request_fields()
+        )
+
+    return list(identity_columns), custom_field_columns
+
+def get_unique_identity_columns(
+    existing_columns: Set[str], identities: dict[str, Any]
+) -> None:
+    for key, value in identities.items():
+        if value:
+            existing_columns.add(key)
+
+
+def get_unique_custom_field_columns(
+    existing_custom_fields: Dict[str, str], custom_fields: dict[str, Any]
+) -> None:
+    for key, value in custom_fields.items():
+        if value["value"]:
+            existing_custom_fields[key] = value["label"]
+
 
 def extract_custom_field_cells(
     custom_field_columns: Dict[str, str], pr: PrivacyRequest
@@ -370,20 +382,6 @@ def extract_identity_cells(
     for identity_column in identity_columns:
         identity_cells.append(identity_dict.get(identity_column))  # type: ignore
     return identity_cells
-
-
-def get_variable_columns(
-    privacy_request_query: Query,
-) -> tuple[List[str], Dict[str, str]]:
-    identity_columns: Set[str] = set()
-    custom_field_columns: Dict[str, str] = {}
-    for pr in privacy_request_query:
-        unique_identity_columns(identity_columns, pr.get_persisted_identity().dict())
-        unique_custom_field_columns(
-            custom_field_columns, pr.get_persisted_custom_privacy_request_fields()
-        )
-
-    return list(identity_columns), custom_field_columns
 
 
 def execution_and_audit_logs_by_dataset_name(
