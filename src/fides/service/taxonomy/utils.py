@@ -121,21 +121,36 @@ def check_for_taxonomy_reactivation(
     Check if this is a reactivation case for existing disabled elements.
     Returns the disabled element if it exists and should be reactivated.
     """
-    # Only check for reactivation if no fides_key is provided but name is
-    if element_data.get("fides_key") or not element_data.get("name"):
+    # Must have either fides_key or name to check for reactivation
+    if not element_data.get("fides_key") and not element_data.get("name"):
         return None
 
-    # Check the specific model table for disabled elements
     model_class = handler.get_model()
-    disabled_element = (
-        db.query(model_class)
-        .filter(
-            model_class.active.is_(False),
-            model_class.name == element_data["name"],
-        )
-        .first()
-    )
-    return disabled_element
+
+    # Build query to find inactive elements that match by fides_key or name
+    query = db.query(model_class).filter(model_class.active.is_(False))
+
+    # For TaxonomyElement, also filter by taxonomy_type
+    if hasattr(model_class, 'taxonomy_type'):
+        query = query.filter(model_class.taxonomy_type == taxonomy_type)
+
+    # Check by name first (more reliable than fides_key for reactivation)
+    # because fides_key might be auto-generated differently on recreation
+    if element_data.get("name"):
+        name_query = query.filter(model_class.name == element_data["name"])
+        disabled_element = name_query.first()
+        if disabled_element:
+            return disabled_element
+
+    # Fallback to fides_key if name search didn't work
+    if element_data.get("fides_key"):
+        if hasattr(model_class, 'fides_key'):
+            key_query = query.filter(model_class.fides_key == element_data["fides_key"])
+            disabled_element = key_query.first()
+            if disabled_element:
+                return disabled_element
+
+    return None
 
 
 def handle_taxonomy_reactivation(
@@ -144,16 +159,38 @@ def handle_taxonomy_reactivation(
     """
     Handle reactivation of a disabled taxonomy element.
     """
-    # Generate fides_key if not provided (needed for reactivation)
+    # For reactivation, preserve the existing fides_key structure to maintain
+    # foreign key relationships with domain models (like SystemGroup)
     updated_data = element_data.copy()
-    if not updated_data.get("fides_key") and updated_data.get("name"):
-        updated_data["fides_key"] = generate_taxonomy_fides_key(
-            taxonomy_type, updated_data["name"], updated_data.get("parent_key"), handler
-        )
+
+    # CRITICAL: Always preserve the existing fides_key during reactivation
+    # The existing element already has the correct key that domain models reference
+    if hasattr(element, 'fides_key'):
+        # Keep the original fides_key to preserve foreign key relationships
+        updated_data["fides_key"] = element.fides_key
 
     # Ensure it's marked as active and activate parents accordingly
     updated_data["active"] = True
-    activate_taxonomy_parents(element, db)
+
+    # Activate parents - handle both legacy models and TaxonomyElement
+    if hasattr(element, 'parent') and element.parent:
+        # Legacy models (DataCategory, DataUse, DataSubject)
+        activate_taxonomy_parents(element, db)
+    elif hasattr(element, 'parent_key') and element.parent_key:
+        # TaxonomyElement - find and activate parent
+        model_class = handler.get_model()
+        parent_query = db.query(model_class).filter(model_class.fides_key == element.parent_key)
+
+        # For TaxonomyElement, also filter by taxonomy_type
+        if hasattr(model_class, 'taxonomy_type'):
+            parent_query = parent_query.filter(model_class.taxonomy_type == taxonomy_type)
+
+        parent_element = parent_query.first()
+        if parent_element and not parent_element.active:
+            parent_element.active = True
+            db.flush()
+            # Recursively activate parent's parents
+            handle_taxonomy_reactivation(db, taxonomy_type, parent_element, {"active": True}, handler)
 
     # Update the element with new data
     element.update(db, data=updated_data)
