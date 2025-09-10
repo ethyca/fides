@@ -5,16 +5,18 @@ import {
 } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
-import { CoreTaxonomiesEnum } from "../constants";
-import { FormValues, TaxonomyEntity } from "../types";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
+import { FormValues, TaxonomyEntity } from "~/features/taxonomy/types";
+
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
+import SystemGroupEditForm from "./SystemGroupEditForm";
 
 interface TaxonomyEditFormProps {
   initialValues: TaxonomyEntity;
   onSubmit: (updatedTaxonomy: TaxonomyEntity) => void;
   formId: string;
   form: FormInstance;
-  taxonomyType: CoreTaxonomiesEnum;
+  taxonomyType: string;
   isDisabled?: boolean;
 }
 
@@ -26,6 +28,23 @@ const TaxonomyEditForm = ({
   taxonomyType,
   isDisabled,
 }: TaxonomyEditFormProps) => {
+  const isDataSubjectType = taxonomyType === TaxonomyTypeEnum.DATA_SUBJECT;
+  const isSystemGroupType = taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP;
+
+  // For system groups, use the dedicated SystemGroupEditForm
+  if (isSystemGroupType) {
+    return (
+      <SystemGroupEditForm
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        form={form}
+        formId={formId}
+        isDisabled={isDisabled}
+      />
+    );
+  }
+
+  // Standard taxonomy form logic
   const handleFinish = (formValues: FormValues) => {
     const updatedTaxonomy: TaxonomyEntity = {
       ...initialValues,
@@ -39,8 +58,6 @@ const TaxonomyEditForm = ({
     }
     onSubmit(updatedTaxonomy);
   };
-
-  const isDataSubjectType = taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS;
 
   return (
     <Form

@@ -58,6 +58,9 @@ export enum COLUMN_IDS {
   SYSTEM_UNDECLARED_DATA_CATEGORIES = "system_undeclared_data_categories",
   DATA_USE_UNDECLARED_DATA_CATEGORIES = "data_use_undeclared_data_categories",
   PROCESSES_SPECIAL_CATEGORY_DATA = "processes_special_category_data",
+  SYSTEM_GROUPS = "system_groups",
+  SYSTEM_GROUP = "system_group_fides_key",
+  SYSTEM_GROUP_DATA_USES = "system_group_data_uses",
 }
 
 export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
@@ -112,4 +115,7 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.USES_PROFILING]: "Uses profiling",
   [COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA]:
     "Processes special category data",
+  [COLUMN_IDS.SYSTEM_GROUPS]: "System groups",
+  [COLUMN_IDS.SYSTEM_GROUP]: "System group",
+  [COLUMN_IDS.SYSTEM_GROUP_DATA_USES]: "Data uses",
 };

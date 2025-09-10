@@ -41,9 +41,9 @@ import { privacyExperienceConfigSlice } from "~/features/privacy-experience/priv
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { propertySlice } from "~/features/properties";
-import { systemSlice } from "~/features/system";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
-import { taxonomySlice } from "~/features/taxonomy";
+import { systemGroupSlice } from "~/features/system/system-groups.slice";
+import { dataCategorySlice } from "~/features/taxonomy/data-category.slice";
 import { datasetTestSlice } from "~/features/test-datasets";
 import { userManagementSlice } from "~/features/user-management";
 
@@ -96,8 +96,8 @@ const reducer = {
   [privacyExperienceConfigSlice.name]: privacyExperienceConfigSlice.reducer,
   [propertySlice.name]: propertySlice.reducer,
   [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
-  [systemSlice.name]: systemSlice.reducer,
-  [taxonomySlice.name]: taxonomySlice.reducer,
+  [dataCategorySlice.name]: dataCategorySlice.reducer,
+  [systemGroupSlice.name]: systemGroupSlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
 };

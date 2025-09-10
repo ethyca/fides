@@ -1,6 +1,5 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector } from "@reduxjs/toolkit";
 
-import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutConnectionConfiguration,
@@ -226,31 +225,6 @@ export interface State {
   activeClassifySystemFidesKey?: string;
   systemsToClassify?: System[];
 }
-const initialState: State = {};
-
-export const systemSlice = createSlice({
-  name: "system",
-  initialState,
-  reducers: {
-    setActiveSystem: (
-      draftState,
-      action: PayloadAction<System | undefined>,
-    ) => {
-      draftState.activeSystem = action.payload;
-    },
-  },
-});
-
-export const { setActiveSystem } = systemSlice.actions;
-
-export const { reducer } = systemSlice;
-
-const selectSystem = (state: RootState) => state.system;
-
-export const selectActiveSystem = createSelector(
-  selectSystem,
-  (state) => state.activeSystem,
-);
 
 /**
  * Selects the number of systems
