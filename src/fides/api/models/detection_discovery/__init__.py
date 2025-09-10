@@ -1,3 +1,4 @@
+from .classification_benchmark import ClassificationBenchmark
 from .core import (
     DiffStatus,
     MonitorConfig,
@@ -18,6 +19,7 @@ from .monitor_task import (
 )
 
 __all__ = [
+    "ClassificationBenchmark",
     "DiffStatus",
     "MonitorConfig",
     "MonitorExecution",
