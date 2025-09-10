@@ -98,7 +98,12 @@ class TestSmartOpenStreamingStorageAttachments:
             ],
         }
 
-        result = storage._collect_and_validate_attachments(data)
+        result = storage._collect_and_validate_attachments(
+            data,
+            used_filenames_data=set(),
+            used_filenames_attachments=set(),
+            processed_attachments={},
+        )
 
         assert len(result) == 2
         # Check that direct attachments are processed
@@ -124,7 +129,12 @@ class TestSmartOpenStreamingStorageAttachments:
             ]
         }
 
-        result = storage._collect_and_validate_attachments(data)
+        result = storage._collect_and_validate_attachments(
+            data,
+            used_filenames_data=set(),
+            used_filenames_attachments=set(),
+            processed_attachments={},
+        )
 
         assert len(result) == 2
         assert result[0].attachment.file_name == "doc1.pdf"
@@ -142,7 +152,12 @@ class TestSmartOpenStreamingStorageAttachments:
             ]
         }
 
-        result = storage._collect_and_validate_attachments(data)
+        result = storage._collect_and_validate_attachments(
+            data,
+            used_filenames_data=set(),
+            used_filenames_attachments=set(),
+            processed_attachments={},
+        )
 
         # Attachments without file_name are skipped by the processing logic
         assert len(result) == 0
@@ -165,7 +180,12 @@ class TestSmartOpenStreamingStorageAttachments:
             ]
         }
 
-        result = storage._collect_and_validate_attachments(data)
+        result = storage._collect_and_validate_attachments(
+            data,
+            used_filenames_data=set(),
+            used_filenames_attachments=set(),
+            processed_attachments={},
+        )
 
         assert len(result) == 1
         assert result[0].attachment.file_name == "doc1.pdf"
@@ -320,7 +340,12 @@ class TestSmartOpenStreamingStorageAttachments:
             ]
         }
 
-        result = storage._collect_and_validate_attachments(data)
+        result = storage._collect_and_validate_attachments(
+            data,
+            used_filenames_data=set(),
+            used_filenames_attachments=set(),
+            processed_attachments={},
+        )
 
         assert len(result) == 1
         assert result[0].attachment.file_name == "doc1.pdf"
