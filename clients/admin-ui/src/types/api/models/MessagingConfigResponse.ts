@@ -20,5 +20,7 @@ export type MessagingConfigResponse = {
     | MessagingServiceDetailsAWS_SES
     | null;
   name: string;
+  last_test_timestamp: string;
+  last_test_succeeded: boolean;
   key: string;
 };
