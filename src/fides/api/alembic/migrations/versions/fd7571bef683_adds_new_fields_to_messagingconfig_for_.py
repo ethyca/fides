@@ -1,7 +1,7 @@
 """Adds new fields to MessagingConfig for test info
 
 Revision ID: fd7571bef683
-Revises: 30369bb8ae01
+Revises: b9bfa12c167b
 Create Date: 2024-10-09 23:08:01.901592
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "fd7571bef683"
-down_revision = "30369bb8ae01"
+down_revision = "b9bfa12c167b"
 branch_labels = None
 depends_on = None
 
