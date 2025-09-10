@@ -150,6 +150,9 @@ export interface FidesInitOptions {
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
 
+  // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
+  fidesDisabledSystems: string[] | null;
+
   // Determines how non-applicable privacy notices are handled (omit or include)
   fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode | null;
 
@@ -853,6 +856,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentOverride"
   | "otFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
   | "fidesInitializedEventMode"

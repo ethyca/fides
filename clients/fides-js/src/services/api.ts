@@ -30,6 +30,8 @@ interface FetchExperienceOptions {
   propertyId: string | null | undefined;
   requestMinimalTCF?: boolean;
   missingExperienceHandler?: (error: unknown) => Record<string, never>;
+  /** Optional CSV string or array of systems whose assets should be excluded from responses */
+  excludeNoticeAssetsBySystems?: string | string[] | null;
 }
 
 /**
@@ -52,6 +54,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
   propertyId,
   requestMinimalTCF,
   missingExperienceHandler = createEmptyExperience,
+  excludeNoticeAssetsBySystems,
 }: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   if (apiOptions?.getPrivacyExperienceFn) {
     fidesDebugger("Calling custom fetch experience fn");
@@ -94,6 +97,12 @@ export const fetchExperience = async <T = PrivacyExperience>({
     include_non_applicable_notices: "true",
     ...(requestMinimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
+    ...(excludeNoticeAssetsBySystems && {
+      exclude_notice_assets_by_systems:
+        Array.isArray(excludeNoticeAssetsBySystems)
+          ? excludeNoticeAssetsBySystems.join(",")
+          : excludeNoticeAssetsBySystems,
+    }),
   };
   params = new URLSearchParams(params);
 
