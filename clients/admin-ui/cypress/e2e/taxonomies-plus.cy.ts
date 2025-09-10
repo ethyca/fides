@@ -127,64 +127,8 @@ describe("Taxonomy management with Plus features", () => {
   });
 
   describe("System groups", () => {
-    describe("When alpha flag is disabled", () => {
+    describe("With Plus enabled", () => {
       beforeEach(() => {
-        // Mock flags with alphaSystemGroups disabled by setting Redux persist state
-        cy.window().then((win) => {
-          const existingState = win.localStorage.getItem("persist:root");
-          const parsedState = existingState ? JSON.parse(existingState) : {};
-
-          // Set the features slice with the disabled flag
-          parsedState.features = JSON.stringify({
-            flags: {
-              alphaSystemGroups: {
-                development: false,
-                test: false,
-                production: false,
-              },
-            },
-            showNotificationBanner: true,
-          });
-
-          win.localStorage.setItem("persist:root", JSON.stringify(parsedState));
-        });
-        cy.visit("/taxonomy");
-      });
-
-      it("Does not show system groups in taxonomy selector", () => {
-        cy.getByTestId("taxonomy-type-selector").click();
-
-        // System groups should not be available
-        cy.contains("System groups").should("not.exist");
-
-        // Core taxonomies should still be available
-        cy.contains("Data categories").should("exist");
-        cy.contains("Data uses").should("exist");
-        cy.contains("Data subjects").should("exist");
-      });
-    });
-
-    describe("When alpha flag is enabled", () => {
-      beforeEach(() => {
-        // Mock flags with alphaSystemGroups enabled by setting Redux persist state
-        cy.window().then((win) => {
-          const existingState = win.localStorage.getItem("persist:root");
-          const parsedState = existingState ? JSON.parse(existingState) : {};
-
-          // Set the features slice with the enabled flag
-          parsedState.features = JSON.stringify({
-            flags: {
-              alphaSystemGroups: {
-                development: true,
-                test: true,
-                production: true,
-              },
-            },
-            showNotificationBanner: true,
-          });
-
-          win.localStorage.setItem("persist:root", JSON.stringify(parsedState));
-        });
         cy.visit("/taxonomy");
       });
 

@@ -9,15 +9,13 @@ import {
 } from "fidesui";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
 import useSystemsTable from "~/features/system/useSystemsTable";
 
 const SystemsTable = () => {
-  const {
-    flags: { alphaSystemGroups: isAlphaSystemGroupsEnabled },
-  } = useFlags();
+  const { plus: isPlusEnabled } = useFeatures();
 
   const {
     // table
@@ -42,9 +40,7 @@ const SystemsTable = () => {
     groupMenuItems,
     messageContext,
     selectedSystemForDelete,
-  } = useSystemsTable({
-    isAlphaSystemGroupsEnabled,
-  });
+  } = useSystemsTable();
 
   return (
     <>
@@ -56,7 +52,7 @@ const SystemsTable = () => {
           data-testid="system-search"
         />
         <Flex gap="small">
-          {isAlphaSystemGroupsEnabled && (
+          {isPlusEnabled && (
             <>
               <Dropdown
                 trigger={["click"]}

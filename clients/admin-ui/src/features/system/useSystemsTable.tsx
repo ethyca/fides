@@ -40,13 +40,7 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-interface UseSystemsTableParams {
-  isAlphaSystemGroupsEnabled?: boolean;
-}
-
-const useSystemsTable = ({
-  isAlphaSystemGroupsEnabled,
-}: UseSystemsTableParams) => {
+const useSystemsTable = () => {
   // ancillary data
   const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
 
@@ -238,7 +232,7 @@ const useSystemsTable = ({
           />
         ),
         title: "Groups",
-        hidden: !plusIsEnabled || !isAlphaSystemGroupsEnabled,
+        hidden: !plusIsEnabled,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -355,7 +349,6 @@ const useSystemsTable = ({
     ];
   }, [
     plusIsEnabled,
-    isAlphaSystemGroupsEnabled,
     allSystemGroups,
     columnFilters?.system_groups,
     columnFilters?.data_steward,
