@@ -96,7 +96,6 @@ const reducer = {
   [privacyExperienceConfigSlice.name]: privacyExperienceConfigSlice.reducer,
   [propertySlice.name]: propertySlice.reducer,
   [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
-  [systemSlice.name]: systemSlice.reducer,
   [dataCategorySlice.name]: dataCategorySlice.reducer,
   [systemGroupSlice.name]: systemGroupSlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
