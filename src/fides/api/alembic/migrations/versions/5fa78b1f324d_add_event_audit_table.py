@@ -1,7 +1,7 @@
 """add event audit table
 
 Revision ID: 5fa78b1f324d
-Revises: 30369bb8ae01
+Revises: fd7571bef683
 Create Date: 2025-09-09 17:51:15.715976
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "5fa78b1f324d"
-down_revision = "30369bb8ae01"
+down_revision = "fd7571bef683"
 branch_labels = None
 depends_on = None
 
