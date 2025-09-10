@@ -280,6 +280,50 @@ class TestPrivacyCenterConfig:
                     "ip_geolocation_hint" not in field_data
                 ), f"Non-location field '{field_name}' should not have ip_geolocation_hint"
 
+    def test_discriminator_function_with_model_instances(self):
+        """Test that the discriminator function works with model instances (not just dicts)"""
+        from fides.api.schemas.privacy_center_config import (
+            get_field_type_discriminator,
+            CustomPrivacyRequestField,
+            LocationCustomPrivacyRequestField,
+        )
+
+        # Test with model instances directly (not dicts)
+        location_model = LocationCustomPrivacyRequestField(
+            label="Test Location",
+            ip_geolocation_hint=True,
+            required=True
+        )
+
+        text_model = CustomPrivacyRequestField(
+            label="Test Text",
+            field_type="text",
+            required=False
+        )
+
+        # Test discriminator with model instances
+        assert get_field_type_discriminator(location_model) == "location"
+        assert get_field_type_discriminator(text_model) == "custom"
+
+        # Test with a model that has no field_type attribute
+        from fides.api.schemas.privacy_center_config import BaseCustomPrivacyRequestField
+
+        # Create a minimal model instance without field_type
+        class MinimalField(BaseCustomPrivacyRequestField):
+            pass
+
+        minimal_model = MinimalField(label="Minimal")
+        assert get_field_type_discriminator(minimal_model) == "custom"
+
+        # Also test the dict path for completeness
+        location_dict = {"field_type": "location", "label": "Dict Location"}
+        text_dict = {"field_type": "text", "label": "Dict Text"}
+        no_type_dict = {"label": "No Type"}
+
+        assert get_field_type_discriminator(location_dict) == "location"
+        assert get_field_type_discriminator(text_dict) == "custom"
+        assert get_field_type_discriminator(no_type_dict) == "custom"
+
     def test_privacy_center_config_location_field_validation_in_config(self):
         """Test that location field validation works within PrivacyCenterConfig"""
         config_data = json.loads(
