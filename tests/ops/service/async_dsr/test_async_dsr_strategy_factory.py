@@ -4,10 +4,7 @@ from fides.api.common_exceptions import NoSuchStrategyException, ValidationError
 from fides.api.service.async_dsr.async_dsr_strategy_callback import (
     CallbackAsyncDSRStrategy,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_factory import (
-    get_strategy,
-)
-
+from fides.api.service.async_dsr.async_dsr_strategy_factory import get_strategy
 from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import (
     PollingAsyncDSRAccessDataStrategy,
 )
@@ -34,13 +31,12 @@ class TestAsyncDSRStrategyFactory:
                 "path": "/result/<request_id>",
             },
             "result_path": "data.users",
-            "request_id_config": {
-                "id_source": "path",
-                "id_path": "request_id"
-            },
-            "data_type": "json"
+            "request_id_config": {"id_source": "path", "id_path": "request_id"},
+            "data_type": "json",
         }
-        strategy = get_strategy(strategy_name="polling_access_data", configuration=config)
+        strategy = get_strategy(
+            strategy_name="polling_access_data", configuration=config
+        )
         assert isinstance(strategy, PollingAsyncDSRAccessDataStrategy)
         assert strategy.name == "polling_access_data"
 
@@ -58,13 +54,12 @@ class TestAsyncDSRStrategyFactory:
                 "path": "/download/<request_id>",
             },
             "result_path": "download_url",
-            "request_id_config": {
-                "id_source": "generated",
-                "format": "uuid4"
-            },
-            "download_type": "link"
+            "request_id_config": {"id_source": "generated", "format": "uuid4"},
+            "download_type": "link",
         }
-        strategy = get_strategy(strategy_name="polling_access_download", configuration=config)
+        strategy = get_strategy(
+            strategy_name="polling_access_download", configuration=config
+        )
         assert isinstance(strategy, PollingAsyncAccessDownloadStrategy)
         assert strategy.name == "polling_access_download"
 
@@ -82,10 +77,7 @@ class TestAsyncDSRStrategyFactory:
                 "path": "/erasure-result/<request_id>",
             },
             "result_path": "status",
-            "request_id_config": {
-                "id_source": "path",
-                "id_path": "erasure_id"
-            }
+            "request_id_config": {"id_source": "path", "id_path": "erasure_id"},
         }
         strategy = get_strategy(strategy_name="polling_erasure", configuration=config)
         assert isinstance(strategy, PollingAsyncErasureStrategy)
@@ -124,15 +116,12 @@ class TestAsyncDSRStrategyFactory:
                 "method": "GET",
                 "path": "/result",
             },
-            "request_id_config": {
-                "id_source": "path",
-                "id_path": "id"
-            }
+            "request_id_config": {"id_source": "path", "id_path": "id"},
         }
         with pytest.raises(ValidationError):
             get_strategy(strategy_name="polling_access_data", configuration=config)
 
-    #TODO: parametrize different invalid request id config cases
+    # TODO: parametrize different invalid request id config cases
     def test_get_strategy_invalid_request_id_config(self):
         """Test that invalid request_id_config raises ValidationError"""
         # Missing id_path when id_source is 'path'
@@ -150,7 +139,7 @@ class TestAsyncDSRStrategyFactory:
             "request_id_config": {
                 "id_source": "path"
                 # Missing id_path
-            }
+            },
         }
         with pytest.raises(ValidationError):
             get_strategy(strategy_name="polling_access_data", configuration=config)
@@ -169,13 +158,12 @@ class TestAsyncDSRStrategyFactory:
                 "path": "/csv-result/<request_id>",
             },
             "result_path": "csv_data",
-            "request_id_config": {
-                "id_source": "generated",
-                "format": "random_string"
-            },
-            "data_type": "csv"
+            "request_id_config": {"id_source": "generated", "format": "random_string"},
+            "data_type": "csv",
         }
-        strategy = get_strategy(strategy_name="polling_access_data", configuration=config)
+        strategy = get_strategy(
+            strategy_name="polling_access_data", configuration=config
+        )
         assert isinstance(strategy, PollingAsyncDSRAccessDataStrategy)
         assert strategy.data_type.value == "csv"
 
@@ -192,12 +180,11 @@ class TestAsyncDSRStrategyFactory:
                 "path": "/file-download/<request_id>",
             },
             "result_path": "file_content",
-            "request_id_config": {
-                "id_source": "path",
-                "id_path": "download_id"
-            },
-            "download_type": "file"
+            "request_id_config": {"id_source": "path", "id_path": "download_id"},
+            "download_type": "file",
         }
-        strategy = get_strategy(strategy_name="polling_access_download", configuration=config)
+        strategy = get_strategy(
+            strategy_name="polling_access_download", configuration=config
+        )
         assert isinstance(strategy, PollingAsyncAccessDownloadStrategy)
         assert strategy.download_type.value == "file"
