@@ -104,6 +104,24 @@ export const stubSystemCrud = () => {
   }).as("bulkAssignSteward");
 };
 
+export const stubGVLSystem = () => {
+  cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+    cy.fixture("systems/system.json").then((origSystem) => {
+      cy.intercept(
+        { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+        {
+          body: {
+            ...origSystem,
+            ...dictSystem,
+            fides_key: origSystem.fides_key,
+            customFieldValues: undefined,
+          },
+        },
+      ).as("getDictSystem");
+    });
+  });
+};
+
 export const stubVendorList = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system*", {
     fixture: "dictionary-entries.json",
@@ -222,6 +240,28 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
     fixture: "/privacy-requests/privacy-center-config.json",
   }).as("getPrivacyCenterConfig");
+};
+
+export const stubMessagingProvidersCrud = (options?: {
+  listItems?: any[];
+  createStatus?: number;
+  createResponse?: any;
+  getByKeyResponse?: any;
+}) => {
+  cy.intercept("GET", "/api/v1/messaging/config", {
+    statusCode: 200,
+    body: { items: options?.listItems ?? [] },
+  }).as("getMessagingConfigs");
+
+  cy.intercept("POST", "/api/v1/messaging/config", {
+    statusCode: options?.createStatus ?? 200,
+    body: options?.createResponse ?? { key: "new_config_key" },
+  }).as("postMessagingConfig");
+
+  cy.intercept("GET", "/api/v1/messaging/config/*", {
+    statusCode: 200,
+    body: options?.getByKeyResponse ?? {},
+  }).as("getMessagingConfigByKey");
 };
 
 export const stubPrivacyNoticesCrud = () => {
