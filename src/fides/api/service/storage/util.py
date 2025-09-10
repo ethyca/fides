@@ -317,9 +317,9 @@ def is_attachment_field(field_value: Any) -> bool:
 
 def process_attachments_contextually(
     data: dict[str, Any],
-    used_filenames_data: set[str] = None,
-    used_filenames_attachments: set[str] = None,
-    processed_attachments: dict[tuple[str, str], str] = None,
+    used_filenames_data: set[str],
+    used_filenames_attachments: set[str],
+    processed_attachments: dict[tuple[str, str], str],
     enable_streaming: bool = False,
     callback: Optional[Callable] = None,
 ) -> list[dict[str, Any]]:
