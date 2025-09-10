@@ -23,6 +23,8 @@ interface SystemGroupEditFormProps {
   isDisabled?: boolean;
 }
 
+const ALL_SUGGESTED_VALUE = "all-suggested";
+
 const SystemGroupEditForm = ({
   initialValues,
   onSubmit,
@@ -87,6 +89,18 @@ const SystemGroupEditForm = ({
     [allSystems],
   );
 
+  const handleDataUseChange = (value: string[]) => {
+    if (value.includes(ALL_SUGGESTED_VALUE)) {
+      const newValue = uniq([
+        ...suggestedDataUses,
+        ...value.filter((v) => v !== ALL_SUGGESTED_VALUE),
+      ]);
+      form.setFieldsValue({ data_uses: newValue });
+    } else {
+      form.setFieldsValue({ data_uses: value });
+    }
+  };
+
   const dataUseOptionsGrouped = useMemo(() => {
     const suggestedOptions: { label: string; value: string }[] = [];
     const allOptions: { label: string; value: string }[] = [];
@@ -99,6 +113,10 @@ const SystemGroupEditForm = ({
     });
 
     return [
+      {
+        label: "Select all suggested",
+        value: ALL_SUGGESTED_VALUE,
+      },
       {
         label: (
           <span className="flex items-center gap-2">
@@ -166,6 +184,7 @@ const SystemGroupEditForm = ({
           allowClear
           loading={isLoadingDataUses}
           disabled={isDisabled}
+          onChange={handleDataUseChange}
           data-testid="edit-taxonomy-form_data_uses"
         />
       </Form.Item>

@@ -67,10 +67,14 @@ const SystemsTable = () => {
                       label: "Create new group +",
                       onClick: () => setCreateModalIsOpen(true),
                     },
-                    {
-                      type: "divider",
-                    },
-                    ...groupMenuItems,
+                    ...(groupMenuItems.length > 0
+                      ? [
+                          {
+                            type: "divider" as const,
+                          },
+                          ...groupMenuItems,
+                        ]
+                      : []),
                   ],
                 }}
               >

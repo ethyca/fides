@@ -4,6 +4,7 @@ import { isArray, map, snakeCase } from "lodash";
 import { ReactNode } from "react";
 
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
+import { TagExpandableCell } from "~/features/common/table/cells";
 import {
   BadgeCellExpandable,
   EditableHeaderCell,
@@ -516,30 +517,25 @@ export const getDatamapReportColumns = ({
         if (!value || (Array.isArray(value) && value.length === 0)) {
           return null;
         }
-        // Convert to display names and get appropriate color
-        const groupNames = Array.isArray(value)
-          ? value.map(
-              (groupKey) =>
-                systemGroups.find((sg) => sg.fides_key === groupKey)?.name ||
-                groupKey,
-            )
-          : [systemGroups.find((sg) => sg.fides_key === value)?.name || value];
 
         const groupKeys = Array.isArray(value) ? value : [value];
-        const dominantColor = getDominantColor(groupKeys);
-
-        return (
-          <GroupCountBadgeCell
-            suffix="system groups"
-            ignoreZero
-            value={groupNames}
-            tagProps={{
-              color: dominantColor || "white",
+        const values = groupKeys.map((groupKey) => {
+          const systemGroup = systemGroups.find(
+            (sg) => sg.fides_key === groupKey,
+          );
+          return {
+            label: systemGroup?.name || groupKey,
+            key: groupKey,
+            tagProps: {
+              color: systemGroup?.label_color
+                ? COLOR_VALUE_MAP[systemGroup.label_color]
+                : "default",
               bordered: false,
-            }}
-            {...props}
-          />
-        );
+            },
+          };
+        });
+
+        return <TagExpandableCell values={values} />;
       },
       meta: {
         width: "auto",
@@ -590,6 +586,7 @@ export const getDatamapReportColumns = ({
         },
         meta: {
           width: "auto",
+          showHeaderMenu: !isRenaming,
         },
       }),
       columnHelper.accessor((row) => row.system_group_data_uses, {
@@ -615,6 +612,7 @@ export const getDatamapReportColumns = ({
         },
         meta: {
           width: "auto",
+          showHeaderMenu: !isRenaming,
         },
       }),
     );
