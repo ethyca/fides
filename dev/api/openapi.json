@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.69.3b1.post0.dev8"
+    "version": "2.69.3b1.post0.dev9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -11489,14 +11489,80 @@
         }
       }
     },
-    "/api/v1/messaging/config/test": {
+    "/api/v1/messaging/test/{service_type}": {
       "post": {
         "tags": [
           "Messaging"
         ],
         "summary": "Send Test Message",
-        "description": "Sends a test message.",
-        "operationId": "send_test_message_api_v1_messaging_config_test_post",
+        "description": "Sends a test message to the provided email or phone number.",
+        "operationId": "send_test_message_api_v1_messaging_test__service_type__post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingServiceType"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingTestBodyParams"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Send Test Message Api V1 Messaging Test  Service Type  Post"
+                },
+                "example": {
+                  "details": "Test message successfully sent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messaging/config/test": {
+      "post": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Send Test Message Deprecated",
+        "description": "This endpoint is deprecated. Please use the `POST /messaging/test/{service_type}`",
+        "operationId": "send_test_message_deprecated_api_v1_messaging_config_test_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -11513,11 +11579,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
                   "type": "object",
-                  "title": "Response Send Test Message Api V1 Messaging Config Test Post"
+                  "title": "Response Send Test Message Deprecated Api V1 Messaging Config Test Post"
                 },
                 "example": {
                   "details": "Test message successfully sent"
@@ -11536,6 +11599,7 @@
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -19751,6 +19815,37 @@
         "title": "Identity",
         "description": "Some PII grouping pertaining to a human"
       },
+      "IdentityBase": {
+        "properties": {
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "IdentityBase",
+        "description": "The minimum fields required to represent an identity."
+      },
       "IdentityTypes": {
         "properties": {
           "email": {
@@ -20281,7 +20376,14 @@
             "title": "Details"
           },
           "name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Name"
           },
           "key": {
@@ -20294,13 +20396,35 @@
               }
             ],
             "title": "Key"
+          },
+          "secrets": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingSecretsTwilioSMSDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceSecretsAWS_SESDocs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secrets"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "service_type",
-          "name"
+          "service_type"
         ],
         "title": "MessagingConfigRequest",
         "description": "Messaging Config Request Schema"
@@ -20371,6 +20495,29 @@
           "key": {
             "type": "string",
             "title": "Key"
+          },
+          "last_test_timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Timestamp"
+          },
+          "last_test_succeeded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Succeeded"
           }
         },
         "additionalProperties": false,
@@ -20424,8 +20571,7 @@
         "type": "string",
         "enum": [
           "succeeded",
-          "failed",
-          "skipped"
+          "failed"
         ],
         "title": "MessagingConnectionTestStatus",
         "description": "Enum for supplying statuses of validating credentials for a messaging Config"
@@ -20777,6 +20923,19 @@
           "content"
         ],
         "title": "MessagingTemplateWithPropertiesDetail"
+      },
+      "MessagingTestBodyParams": {
+        "properties": {
+          "to_identity": {
+            "$ref": "#/components/schemas/IdentityBase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "to_identity"
+        ],
+        "title": "MessagingTestBodyParams",
+        "description": "Body params required for testing messaging service"
       },
       "MinimalProperty": {
         "properties": {
