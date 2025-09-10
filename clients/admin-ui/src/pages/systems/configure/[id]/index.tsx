@@ -15,10 +15,7 @@ import {
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
-import {
-  setActiveSystem,
-  useGetSystemByFidesKeyQuery,
-} from "~/features/system";
+import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import {
   selectLockedForGVL,
   setLockedForGVL,
@@ -28,6 +25,7 @@ import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
 
 const ConfigureSystem: NextPage = () => {
   const router = useRouter();
+
   const dispatch = useAppDispatch();
 
   let systemId = "";
@@ -37,9 +35,7 @@ const ConfigureSystem: NextPage = () => {
       : router.query.id;
   }
 
-  const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId, {
-    skip: !systemId,
-  });
+  const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId);
 
   const { error: dictionaryError, isLoading: isDictionaryLoading } =
     useGetAllDictionaryEntriesQuery();
@@ -49,7 +45,6 @@ const ConfigureSystem: NextPage = () => {
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   useEffect(() => {
-    dispatch(setActiveSystem(system));
     if (system) {
       const locked =
         isTCFEnabled &&

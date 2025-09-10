@@ -134,12 +134,6 @@ export type RetryRequests = {
   errorRequests: string[];
 };
 
-export interface MessagingConfigResponse {
-  storage: {
-    active_default_storage_type: string;
-  };
-}
-
 export interface StorageConfigResponse {
   notifications: {
     notification_service_type: string;

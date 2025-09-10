@@ -41,7 +41,6 @@ import { privacyExperienceConfigSlice } from "~/features/privacy-experience/priv
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { propertySlice } from "~/features/properties";
-import { systemSlice } from "~/features/system";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { taxonomySlice } from "~/features/taxonomy";
 import { datasetTestSlice } from "~/features/test-datasets";
@@ -96,7 +95,6 @@ const reducer = {
   [privacyExperienceConfigSlice.name]: privacyExperienceConfigSlice.reducer,
   [propertySlice.name]: propertySlice.reducer,
   [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
-  [systemSlice.name]: systemSlice.reducer,
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,

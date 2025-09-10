@@ -111,6 +111,11 @@ const useSystemsTable = ({
       isLoading,
       isFetching,
       getRowKey: (record: BasicSystemResponseExtended) => record.fides_key,
+      customTableProps: {
+        locale: {
+          emptyText: <div>No systems found</div>,
+        },
+      },
     }),
     [systemsResponse, isLoading, isFetching],
   );

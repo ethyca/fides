@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import get_key_from_data
+from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataCategory,
     DataSubject,
@@ -11,6 +12,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 from fides.api.models.taxonomy import Taxonomy, TaxonomyUsage
 from fides.api.service.deps import get_taxonomy_service
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
+from fides.service.event_audit_service import EventAuditService
 from fides.service.taxonomy.handlers.legacy_handler import LegacyTaxonomyHandler
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.taxonomy.utils import generate_taxonomy_fides_key
@@ -39,7 +41,8 @@ def _model_for_taxonomy(taxonomy_type: str):
 
 @pytest.fixture
 def taxonomy_service(db):
-    return TaxonomyService(db)
+    event_audit_service = EventAuditService(db)
+    return TaxonomyService(db, event_audit_service)
 
 
 class TestTaxonomyServiceGetters:
@@ -732,6 +735,200 @@ class TestTaxonomyServiceCreateOrUpdateReactivation:
         model_cls = _model_for_taxonomy(taxonomy_type)
         expected_child = get_key_from_data({"name": base_name}, model_cls.__name__)
         assert reactivated.fides_key == f"{parent.fides_key}.{expected_child}"
+
+
+class TestTaxonomyServiceAuditEvents:
+    """Tests that TaxonomyService creates appropriate audit events."""
+
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    def test_create_element_creates_audit_event(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that creating taxonomy elements creates audit events."""
+        # Count audit events before operation
+        initial_count = db.query(EventAudit).count()
+
+        element_data = {"fides_key": "audit_test", "name": "Audit Test"}
+        element = taxonomy_service.create_element(taxonomy_type, element_data)
+        db.flush()
+
+        # Verify audit event was created
+        audit_events = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_created.value
+            )
+            .all()
+        )
+        assert len(audit_events) == initial_count + 1
+
+        # Verify audit event details
+        audit_event = audit_events[-1]  # Get the most recent one
+        assert audit_event.resource_type == "taxonomy_element"
+        assert audit_event.resource_identifier == element.fides_key
+        assert audit_event.status == EventAuditStatus.succeeded
+        assert (
+            f"Created {taxonomy_type} element: {element.fides_key}"
+            in audit_event.description
+        )
+        assert audit_event.event_details["taxonomy_type"] == taxonomy_type
+        assert audit_event.event_details["fides_key"] == element.fides_key
+        assert audit_event.event_details["name"] == element_data["name"]
+
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    def test_update_element_creates_audit_event(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating taxonomy elements creates audit events."""
+        # Create element first
+        element = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "update_test", "name": "Update Test"}
+        )
+        db.flush()
+
+        # Count audit events before update
+        initial_count = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_updated.value
+            )
+            .count()
+        )
+
+        # Update the element
+        update_data = {
+            "name": "Updated Test Name",
+            "description": "Updated description",
+        }
+        updated_element = taxonomy_service.update_element(
+            taxonomy_type, element.fides_key, update_data
+        )
+        db.flush()
+
+        # Verify audit event was created
+        audit_events = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_updated.value
+            )
+            .all()
+        )
+        assert len(audit_events) == initial_count + 1
+
+        # Verify audit event details
+        audit_event = audit_events[-1]  # Get the most recent one
+        assert audit_event.resource_type == "taxonomy_element"
+        assert audit_event.resource_identifier == element.fides_key
+        assert audit_event.status == EventAuditStatus.succeeded
+        assert (
+            f"Updated {taxonomy_type} element: {element.fides_key}"
+            in audit_event.description
+        )
+        assert audit_event.event_details["taxonomy_type"] == taxonomy_type
+        assert audit_event.event_details["name"] == update_data["name"]
+        assert audit_event.event_details["description"] == update_data["description"]
+
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    def test_delete_element_creates_audit_event(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that deleting taxonomy elements creates audit events."""
+        # Create element first
+        element = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "delete_test", "name": "Delete Test"}
+        )
+        db.flush()
+
+        # Count audit events before delete
+        initial_count = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_deleted.value
+            )
+            .count()
+        )
+
+        # Delete the element
+        taxonomy_service.delete_element(taxonomy_type, element.fides_key)
+
+        # Verify audit event was created
+        audit_events = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_deleted.value
+            )
+            .all()
+        )
+        assert len(audit_events) == initial_count + 1
+
+        # Verify audit event details
+        audit_event = audit_events[-1]  # Get the most recent one
+        assert audit_event.resource_type == "taxonomy_element"
+        assert audit_event.resource_identifier == element.fides_key
+        assert audit_event.status == EventAuditStatus.succeeded
+        assert (
+            f"Deleted {taxonomy_type} element: {element.fides_key}"
+            in audit_event.description
+        )
+        assert audit_event.event_details["taxonomy_type"] == taxonomy_type
+
+    def test_multiple_operations_create_multiple_audit_events(
+        self, db, taxonomy_service
+    ):
+        """Test that multiple operations create separate audit events."""
+        taxonomy_type = "data_categories"
+
+        # Track initial audit event count
+        initial_count = db.query(EventAudit).count()
+
+        # Create element
+        element = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "multi_test", "name": "Multi Test"}
+        )
+        db.flush()
+
+        # Update element
+        taxonomy_service.update_element(
+            taxonomy_type, element.fides_key, {"name": "Multi Test Updated"}
+        )
+        db.flush()
+
+        # Delete element
+        taxonomy_service.delete_element(taxonomy_type, element.fides_key)
+
+        # Verify we have 3 new audit events
+        final_count = db.query(EventAudit).count()
+        assert final_count == initial_count + 3
+
+        # Verify we have one of each type of event
+        created_events = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_created.value,
+                EventAudit.resource_identifier == element.fides_key,
+            )
+            .count()
+        )
+        updated_events = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_updated.value,
+                EventAudit.resource_identifier == element.fides_key,
+            )
+            .count()
+        )
+        deleted_events = (
+            db.query(EventAudit)
+            .filter(
+                EventAudit.event_type == EventAuditType.taxonomy_element_deleted.value,
+                EventAudit.resource_identifier == element.fides_key,
+            )
+            .count()
+        )
+
+        assert created_events == 1
+        assert updated_events == 1
+        assert deleted_events == 1
 
 
 class TestTaxonomyServiceCascadesAndHierarchy:
