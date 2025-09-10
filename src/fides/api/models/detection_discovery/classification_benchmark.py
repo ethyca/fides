@@ -5,13 +5,11 @@ Database model for classification benchmark results.
 from datetime import datetime
 from typing import Optional
 
-from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.sqlalchemy import paginate as sqlalchemy_paginate
 from sqlalchemy import ARRAY, Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.db.base_class import Base, FidesBase
 
@@ -53,25 +51,23 @@ class ClassificationBenchmark(Base, FidesBase):
     def list_benchmarks(
         cls,
         db: Session,
-        params: Params,
         monitor_config_key: Optional[str] = None,
         dataset_fides_key: Optional[str] = None,
         created_after: Optional[datetime] = None,
         created_before: Optional[datetime] = None,
-    ) -> Page["ClassificationBenchmark"]:
+    ) -> Query:
         """
-        List benchmarks with filtering and pagination.
+        Get a filtered query for benchmarks.
 
         Args:
             db: Database session
-            params: Pagination parameters
             monitor_config_key: Filter by monitor config key
             dataset_fides_key: Filter by dataset fides key
             created_after: Filter by creation date (inclusive)
             created_before: Filter by creation date (exclusive)
 
         Returns:
-            Page of benchmark database objects
+            Filtered query (not executed)
         """
         # Build the query with filters
         query = db.query(cls)
@@ -89,5 +85,4 @@ class ClassificationBenchmark(Base, FidesBase):
         # Apply sorting
         query = query.order_by(cls.created_at.desc())
 
-        # Use sqlalchemy_paginate for pagination
-        return sqlalchemy_paginate(query, params, unique=False)
+        return query

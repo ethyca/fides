@@ -4,7 +4,6 @@ Tests for the ClassificationBenchmark database model.
 
 from datetime import datetime, timedelta
 
-from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 
 from fides.api.models.detection_discovery.classification_benchmark import (
@@ -202,8 +201,12 @@ class TestClassificationBenchmark:
         assert retrieved_benchmark.field_accuracy_details[1]["is_correct"] is True
         assert retrieved_benchmark.field_accuracy_details[0]["is_correct"] is False
 
+
+class TestClassificationBenchmarkList:
+    """Test cases for listing classification benchmarks."""
+
     def test_list_benchmarks_basic(self, db: Session) -> None:
-        """Test basic listing of benchmarks with pagination."""
+        """Test basic listing of benchmarks with query filtering."""
         # Create test benchmarks
         benchmark_data_1 = {
             "monitor_config_key": "list_test_monitor_1",
@@ -225,24 +228,16 @@ class TestClassificationBenchmark:
         benchmark_2 = ClassificationBenchmark.create(db, data=benchmark_data_2)
         db.commit()
 
-        # Test listing with default pagination
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(db, params)
+        # Test listing with query
+        query = ClassificationBenchmark.list_benchmarks(db)
+        results = query.all()
 
-        assert page.total >= 2
-        assert len(page.items) >= 2
-        assert page.page == 1
-        assert page.size == 10
+        assert len(results) >= 2
 
         # Verify benchmarks are in the results
-        benchmark_ids = [b.id for b in page.items]
+        benchmark_ids = [b.id for b in results]
         assert benchmark_1.id in benchmark_ids
         assert benchmark_2.id in benchmark_ids
-
-        # Clean up
-        db.delete(benchmark_1)
-        db.delete(benchmark_2)
-        db.commit()
 
     def test_list_benchmarks_with_monitor_filter(self, db: Session) -> None:
         """Test listing benchmarks filtered by monitor config key."""
@@ -268,23 +263,17 @@ class TestClassificationBenchmark:
         db.commit()
 
         # Test filtering by monitor config key
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(
-            db, params, monitor_config_key="filter_monitor_1"
+        query = ClassificationBenchmark.list_benchmarks(
+            db, monitor_config_key="filter_monitor_1"
         )
+        results = query.all()
 
-        assert page.total >= 1
-        assert len(page.items) >= 1
+        assert len(results) >= 1
 
         # Verify only the correct benchmark is returned
-        benchmark_ids = [b.id for b in page.items]
+        benchmark_ids = [b.id for b in results]
         assert benchmark_1.id in benchmark_ids
         assert benchmark_2.id not in benchmark_ids
-
-        # Clean up
-        db.delete(benchmark_1)
-        db.delete(benchmark_2)
-        db.commit()
 
     def test_list_benchmarks_with_dataset_filter(self, db: Session) -> None:
         """Test listing benchmarks filtered by dataset fides key."""
@@ -310,29 +299,22 @@ class TestClassificationBenchmark:
         db.commit()
 
         # Test filtering by dataset fides key
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(
-            db, params, dataset_fides_key="filter_dataset_1"
+        query = ClassificationBenchmark.list_benchmarks(
+            db, dataset_fides_key="filter_dataset_1"
         )
+        results = query.all()
 
-        assert page.total >= 1
-        assert len(page.items) >= 1
+        assert len(results) >= 1
 
         # Verify only the correct benchmark is returned
-        benchmark_ids = [b.id for b in page.items]
+        benchmark_ids = [b.id for b in results]
         assert benchmark_1.id in benchmark_ids
         assert benchmark_2.id not in benchmark_ids
-
-        # Clean up
-        db.delete(benchmark_1)
-        db.delete(benchmark_2)
-        db.commit()
 
     def test_list_benchmarks_with_date_filters(self, db: Session) -> None:
         """Test listing benchmarks filtered by date range."""
         now = datetime.utcnow()
         yesterday = now - timedelta(days=1)
-        tomorrow = now + timedelta(days=1)
 
         # Create benchmarks with different dates
         benchmark_data_1 = {
@@ -358,32 +340,26 @@ class TestClassificationBenchmark:
         db.commit()
 
         # Test filtering by created_after
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(db, params, created_after=now)
+        query = ClassificationBenchmark.list_benchmarks(db, created_after=now)
+        results = query.all()
 
-        assert page.total >= 1
-        assert len(page.items) >= 1
+        assert len(results) >= 1
 
         # Verify only the recent benchmark is returned
-        benchmark_ids = [b.id for b in page.items]
+        benchmark_ids = [b.id for b in results]
         assert benchmark_2.id in benchmark_ids
         assert benchmark_1.id not in benchmark_ids
 
         # Test filtering by created_before
-        page = ClassificationBenchmark.list_benchmarks(db, params, created_before=now)
+        query = ClassificationBenchmark.list_benchmarks(db, created_before=now)
+        results = query.all()
 
-        assert page.total >= 1
-        assert len(page.items) >= 1
+        assert len(results) >= 1
 
         # Verify only the older benchmark is returned
-        benchmark_ids = [b.id for b in page.items]
+        benchmark_ids = [b.id for b in results]
         assert benchmark_1.id in benchmark_ids
         assert benchmark_2.id not in benchmark_ids
-
-        # Clean up
-        db.delete(benchmark_1)
-        db.delete(benchmark_2)
-        db.commit()
 
     def test_list_benchmarks_with_combined_filters(self, db: Session) -> None:
         """Test listing benchmarks with multiple filters combined."""
@@ -413,81 +389,30 @@ class TestClassificationBenchmark:
         db.commit()
 
         # Test with multiple filters
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(
+        query = ClassificationBenchmark.list_benchmarks(
             db,
-            params,
             monitor_config_key="combined_monitor_1",
             dataset_fides_key="combined_dataset_1",
             created_after=now - timedelta(hours=1),
         )
+        results = query.all()
 
-        assert page.total >= 1
-        assert len(page.items) >= 1
+        assert len(results) >= 1
 
         # Verify only the matching benchmark is returned
-        benchmark_ids = [b.id for b in page.items]
+        benchmark_ids = [b.id for b in results]
         assert benchmark_1.id in benchmark_ids
         assert benchmark_2.id not in benchmark_ids
-
-        # Clean up
-        db.delete(benchmark_1)
-        db.delete(benchmark_2)
-        db.commit()
-
-    def test_list_benchmarks_pagination(self, db: Session) -> None:
-        """Test pagination functionality."""
-        # Create multiple benchmarks
-        benchmarks = []
-        for i in range(5):
-            benchmark_data = {
-                "monitor_config_key": f"pagination_monitor_{i}",
-                "dataset_fides_key": f"pagination_dataset_{i}",
-                "resource_urn": f"pagination.test.{i}",
-                "overall_metrics": {"precision": 0.8 + i * 0.02},
-                "field_accuracy_details": [],
-            }
-            benchmark = ClassificationBenchmark.create(db, data=benchmark_data)
-            benchmarks.append(benchmark)
-
-        db.commit()
-
-        # Test first page
-        params = Params(page=1, size=2)
-        page = ClassificationBenchmark.list_benchmarks(db, params)
-
-        assert page.total >= 5
-        assert len(page.items) == 2
-        assert page.page == 1
-        assert page.size == 2
-        assert page.pages >= 3
-
-        # Test second page
-        params = Params(page=2, size=2)
-        page = ClassificationBenchmark.list_benchmarks(db, params)
-
-        assert page.total >= 5
-        assert len(page.items) == 2
-        assert page.page == 2
-
-        # Clean up
-        for benchmark in benchmarks:
-            db.delete(benchmark)
-        db.commit()
 
     def test_list_benchmarks_empty_result(self, db: Session) -> None:
         """Test listing benchmarks when no results match filters."""
         # Test with non-existent monitor config key
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(
-            db, params, monitor_config_key="non_existent_monitor"
+        query = ClassificationBenchmark.list_benchmarks(
+            db, monitor_config_key="non_existent_monitor"
         )
+        results = query.all()
 
-        assert page.total == 0
-        assert len(page.items) == 0
-        assert page.page == 1
-        assert page.size == 10
-        assert page.pages == 0
+        assert len(results) == 0
 
     def test_list_benchmarks_ordering(self, db: Session) -> None:
         """Test that benchmarks are ordered by created_at desc."""
@@ -517,17 +442,11 @@ class TestClassificationBenchmark:
         db.commit()
 
         # Test ordering
-        params = Params(page=1, size=10)
-        page = ClassificationBenchmark.list_benchmarks(db, params)
+        query = ClassificationBenchmark.list_benchmarks(db)
+        results = query.all()
 
-        assert page.total >= 2
-        assert len(page.items) >= 2
+        assert len(results) >= 2
 
         # Verify ordering (newest first)
-        created_times = [b.created_at for b in page.items]
+        created_times = [b.created_at for b in results]
         assert created_times == sorted(created_times, reverse=True)
-
-        # Clean up
-        db.delete(benchmark_1)
-        db.delete(benchmark_2)
-        db.commit()
