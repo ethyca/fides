@@ -369,12 +369,10 @@ def extract_custom_field_cells(
     custom_field_columns: Dict[str, str], pr: PrivacyRequest
 ) -> List[str]:
     custom_fields = pr.get_persisted_custom_privacy_request_fields()
-    custom_field_cells = []
-    for custom_field_column in custom_field_columns:
-        custom_field_cells.append(
-            custom_fields.get(custom_field_column, {}).get("value")
-        )
-    return custom_field_cells
+    return [
+        custom_fields.get(custom_field_column, {}).get("value") 
+        for custom_field_column in custom_field_columns
+    ]
 
 
 def extract_identity_cells(
