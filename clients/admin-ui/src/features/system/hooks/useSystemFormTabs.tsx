@@ -16,11 +16,7 @@ import {
 } from "~/features/common/nav/routes";
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import {
-  DEFAULT_TOAST_PARAMS,
-  errorToastParams,
-  successToastParams,
-} from "~/features/common/toast";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
@@ -150,43 +146,20 @@ const useSystemFormTabs = ({
     (key: string) => {
       attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
-          const { status } = router.query;
-          if (status) {
-            if (status === "succeeded") {
-              toast(successToastParams(`Integration successfully authorized.`));
-            } else {
-              toast(errorToastParams(`Failed to authorize integration.`));
-            }
-          }
-
-          // Update URL if router is ready
-          if (router.isReady) {
-            const newQuery = { ...router.query };
-            delete newQuery.status;
-
-            await router.replace(
-              {
-                pathname: router.pathname,
-                query: newQuery,
-              },
-              undefined,
-              { shallow: true },
-            );
-          }
-
           baseOnTabChange(key);
         }
       });
     },
-    [attemptAction, router, toast, baseOnTabChange],
+    [attemptAction, baseOnTabChange],
   );
 
   useEffect(() => {
     const { status } = router.query;
     if (status) {
-      onTabChange("integrations");
+      // Navigate to integrations tab when status parameter is present
+      baseOnTabChange("integrations");
     }
-  }, [router.query, onTabChange]);
+  }, [router.query, baseOnTabChange]);
 
   const tabData: NonNullable<TabsProps["items"]> = [
     {
