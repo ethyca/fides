@@ -113,11 +113,7 @@ const useSystemsTable = ({
       getRowKey: (record: BasicSystemResponseExtended) => record.fides_key,
       customTableProps: {
         locale: {
-          emptyText: (
-            <div>
-              <div>No systems found</div>
-            </div>
-          ),
+          emptyText: <div>No systems found</div>,
         },
       },
     }),
