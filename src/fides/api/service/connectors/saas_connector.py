@@ -391,21 +391,23 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         request_task: RequestTask,
         input_data: Dict[str, Any],
     ) -> None:
-        if (
-            read_request.async_config is None
-            or read_request.async_config.configuration is None
-        ):
-            raise FidesopsException("Async request configuration is not set")
+        """
+        Handles the setup for asynchronous read requests.
+        """
+        if read_request.async_config is None:
+            raise FidesopsException("Async request strategy is not set")
 
         # Validate async strategy with proper enum value checking
         strategy = get_async_strategy(
             read_request.async_config.strategy, read_request.async_config.configuration
         )
+        logger.info(strategy.type)
 
         request_task.async_type = AsyncTaskType(strategy.type)
 
         if request_task.async_type == AsyncTaskType.polling:
-
+            if read_request.async_config.configuration is None:
+                raise FidesopsException("Async request configuration is not set")
             async_config_dict: dict = read_request.async_config.configuration
             # Check if request id config for polling async requests is generated
             request_id_config = async_config_dict["request_id_config"]
