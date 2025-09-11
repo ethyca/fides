@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import ValidationError
 
@@ -43,7 +43,7 @@ class SupportedAsyncDSRStrategies(Enum):
 
 def get_strategy(
     strategy_name: str,
-    configuration: Dict[str, Any],
+    configuration: Optional[Dict[str, Any]] = None,
 ) -> AsyncDSRStrategy:
     """
     Returns the strategy given the name and configuration.
