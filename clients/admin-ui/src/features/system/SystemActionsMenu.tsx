@@ -6,8 +6,9 @@ import {
   AntTypography as Typography,
   Icons,
 } from "fidesui";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
   useBulkAssignStewardMutation,
@@ -27,6 +28,8 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
+  const { plus: isPlusEnabled } = useFeatures();
+
   const {
     createModalIsOpen,
     setCreateModalIsOpen,
@@ -43,22 +46,28 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
 
   const [bulkDeleteSystems] = useBulkDeleteSystemsMutation();
 
-  const handleAssignSteward = async (data_steward: string) => {
-    const result = await bulkAssignSteward({
-      data_steward,
-      system_keys: selectedRowKeys as string[],
-    });
+  const handleAssignSteward = useCallback(
+    async (data_steward: string) => {
+      const result = await bulkAssignSteward({
+        data_steward,
+        system_keys: selectedRowKeys as string[],
+      });
 
-    if (isErrorResult(result)) {
-      messageApi.error(
-        getErrorMessage(result.error, "A problem occurred assigning stewards"),
-      );
-    } else {
-      messageApi.success(
-        `${selectedRowKeys.length} systems assigned to ${data_steward} successfully`,
-      );
-    }
-  };
+      if (isErrorResult(result)) {
+        messageApi.error(
+          getErrorMessage(
+            result.error,
+            "A problem occurred assigning stewards",
+          ),
+        );
+      } else {
+        messageApi.success(
+          `${selectedRowKeys.length} systems assigned to ${data_steward} successfully`,
+        );
+      }
+    },
+    [bulkAssignSteward, selectedRowKeys, messageApi],
+  );
 
   const handleDelete = async () => {
     const result = await bulkDeleteSystems(selectedRowKeys as string[]);
@@ -72,6 +81,73 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
       );
     }
   };
+
+  const menuItems = useMemo(() => {
+    const items = [];
+    if (groupMenuItems.length && isPlusEnabled) {
+      items.push(
+        selectedRowKeys.length
+          ? {
+              key: "add-to-system-group",
+              label: "Add to system group",
+              children: [
+                {
+                  key: "new-group",
+                  label: "Create new group +",
+                  onClick: () => setCreateModalIsOpen(true),
+                },
+                {
+                  type: "divider" as const,
+                },
+                ...groupMenuItems.map((group) => ({
+                  key: group.key,
+                  label: group.label,
+                  onClick: () => handleBulkAddToGroup(group.key),
+                })),
+              ],
+            }
+          : {
+              key: "new-group",
+              label: "Create system group +",
+              onClick: () => setCreateModalIsOpen(true),
+            },
+      );
+    }
+    if (allUsers?.items.length) {
+      items.push(
+        {
+          key: "assign-data-steward",
+          label: "Assign data steward",
+          disabled: !selectedRowKeys.length,
+          children: allUsers.items.map((user) => ({
+            key: user.username,
+            label: user.username,
+            onClick: () => handleAssignSteward(user.username),
+          })),
+        },
+        {
+          type: "divider" as const,
+        },
+      );
+    }
+    items.push({
+      key: "delete",
+      label: "Delete",
+      disabled: !selectedRowKeys.length,
+      onClick: () => {
+        setDeleteModalIsOpen(true);
+      },
+    });
+    return items;
+  }, [
+    groupMenuItems,
+    isPlusEnabled,
+    allUsers?.items,
+    selectedRowKeys.length,
+    setCreateModalIsOpen,
+    handleBulkAddToGroup,
+    handleAssignSteward,
+  ]);
 
   return (
     <>
@@ -105,42 +181,7 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
       <Dropdown
         trigger={["click"]}
         menu={{
-          items: [
-            {
-              key: "add-to-system-group",
-              label: "Add to system group",
-              children: groupMenuItems.map((group) => ({
-                key: group.key,
-                label: group.label,
-                onClick: () => handleBulkAddToGroup(group.key),
-              })),
-            },
-            ...(allUsers?.items && allUsers.items.length > 0
-              ? [
-                  {
-                    key: "assign-data-steward",
-                    label: "Assign data steward",
-                    disabled: !selectedRowKeys.length,
-                    children: allUsers.items.map((user) => ({
-                      key: user.username,
-                      label: user.username,
-                      onClick: () => handleAssignSteward(user.username),
-                    })),
-                  },
-                  {
-                    type: "divider" as const,
-                  },
-                ]
-              : []),
-            {
-              key: "delete",
-              label: "Delete",
-              disabled: !selectedRowKeys.length,
-              onClick: () => {
-                setDeleteModalIsOpen(true);
-              },
-            },
-          ],
+          items: menuItems,
         }}
       >
         <Button icon={<Icons.ChevronDown />}>Actions</Button>
