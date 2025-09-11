@@ -9,6 +9,7 @@ import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -22,9 +23,11 @@ import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/ac
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
+import { ConnectionType } from "~/types/api";
 
 const ActionCenterPage = () => {
   const toast = useToast();
+  const { flags } = useFeatures();
   const {
     PAGE_SIZES,
     pageSize,
@@ -77,7 +80,14 @@ const ActionCenterPage = () => {
     }
   }, [data, setTotalPages]);
 
-  const results = data?.items || [];
+  const results =
+    (flags.alphaFullActionCenter
+      ? data?.items.filter(
+          (item) =>
+            item.connection_type !== ConnectionType.WEBSITE &&
+            item.connection_type !== ConnectionType.TEST_WEBSITE,
+        )
+      : data?.items) || [];
   const loadingResults = isFetching
     ? (Array.from({ length: pageSize }, (_, index) => ({
         key: index.toString(),

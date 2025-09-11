@@ -1,16 +1,21 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import ActionCenterFields from "~/features/data-discovery-and-detection/action-center/fields/page";
 import { DiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredSystemAggregateTable";
 
 const MonitorResultSystems: NextPage = () => {
   const router = useRouter();
+  const { flags } = useFeatures();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
 
-  return (
+  return flags.alphaFullActionCenter ? (
+    <ActionCenterFields />
+  ) : (
     <FixedLayout title="Action center - Discovered assets by system">
       <PageHeader
         heading="Action center"
