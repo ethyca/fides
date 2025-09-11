@@ -34,6 +34,7 @@ export const baseApi = createApi({
     "Custom Fields",
     "Custom Reports",
     "Data Categories",
+    "System Groups",
     "Datamap",
     "Data Subjects",
     "Data Uses",
@@ -79,6 +80,7 @@ export const baseApi = createApi({
     "Configuration Settings",
     "TCF Purpose Override",
     "OpenID Provider",
+    "Taxonomy",
   ],
   endpoints: () => ({}),
 });

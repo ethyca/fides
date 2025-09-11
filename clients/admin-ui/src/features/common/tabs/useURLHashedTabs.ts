@@ -56,7 +56,7 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
     [router, tabKeys],
   );
 
-  return { activeTab, onTabChange };
+  return { activeTab, onTabChange, setActiveTab };
 };
 
 export default useURLHashedTabs;

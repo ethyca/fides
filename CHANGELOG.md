@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.69.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.70.0...main)
+
+## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added
 - Added new `WebMonitorGroupJob` model and table to store web monitor scan data [#6542](https://github.com/ethyca/fides/pull/6542) https://github.com/ethyca/fides/labels/db-migration
@@ -29,6 +31,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
+- Request manager screen now shows loader while waiting for sets of results [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen now persists pagination parameters to URL [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen no longer persists search to local storage and instead populates URL parameters [#6552](https://github.com/ethyca/fides/pull/6552)
 
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
@@ -38,6 +43,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557)
 - Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
 - Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
+- Fix bug in oauth authorization success toast [#6572](https://github.com/ethyca/fides/pull/6572)
+- Fix expadable tag cell for locations in notices page of admin-ui [#6559](https://github.com/ethyca/fides/pull/6559)
+- Request manager screen date range now respects timezones [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen will no longer silently filter results by prior searches [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager CSV download link is now cleaned up making memory leaks in Admin UI less likely [#6552](https://github.com/ethyca/fides/pull/6552)
+- Fix custom logos in external task portal [#6573](https://github.com/ethyca/fides/pull/6573)
+
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
