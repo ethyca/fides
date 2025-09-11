@@ -98,11 +98,10 @@ def get_field_type_discriminator(v: Any) -> str:
     """Discriminator function for CustomPrivacyRequestFieldUnion"""
     if isinstance(v, dict):
         field_type = v.get("field_type")
-        if field_type == "location":
-            return "location"
-        return "custom"
-    # For model instances, get field_type attribute
-    field_type = getattr(v, "field_type", None)
+    else:
+        # For model instances, get field_type attribute
+        field_type = getattr(v, "field_type", None)
+
     if field_type == "location":
         return "location"
     return "custom"
