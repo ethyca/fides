@@ -356,20 +356,14 @@ export const DatamapReportTable = () => {
 
   // Get the proper name for dropdown options (no lower-casing)
   const getSystemGroupOptionName = () => {
-    // 1. Priority: Custom column name from user overrides
+    // Priority: Custom column name from user overrides
     const customSystemGroupName =
       columnNameMapOverrides[COLUMN_IDS.SYSTEM_GROUP];
     if (customSystemGroupName) {
       return customSystemGroupName;
     }
 
-    // 2. Priority: Use actual system group taxonomy name if available
-    if (systemGroups && systemGroups.length > 0) {
-      const firstGroup = systemGroups[0];
-      return firstGroup.name || "System group";
-    }
-
-    // 3. Fallback: Generic "System group"
+    // Fallback: Generic "System group"
     return "System group";
   };
 
