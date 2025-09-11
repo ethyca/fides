@@ -1,7 +1,14 @@
 from abc import ABC
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
-from pydantic import ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    ConfigDict,
+    Discriminator,
+    Field,
+    Tag,
+    field_validator,
+    model_validator,
+)
 
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
@@ -86,9 +93,26 @@ class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
         return values
 
 
-# Create a simple union type - Pydantic will use the field_type to determine which model to use
-CustomPrivacyRequestFieldUnion = Union[
-    LocationCustomPrivacyRequestField, CustomPrivacyRequestField
+# Create a discriminated union type using the field_type to properly distinguish between types
+def get_field_type_discriminator(v: Any) -> str:
+    """Discriminator function for CustomPrivacyRequestFieldUnion"""
+    if isinstance(v, dict):
+        field_type = v.get("field_type")
+    else:
+        # For model instances, get field_type attribute
+        field_type = getattr(v, "field_type", None)
+
+    if field_type == "location":
+        return "location"
+    return "custom"
+
+
+CustomPrivacyRequestFieldUnion = Annotated[
+    Union[
+        Annotated[LocationCustomPrivacyRequestField, Tag("location")],
+        Annotated[CustomPrivacyRequestField, Tag("custom")],
+    ],
+    Discriminator(get_field_type_discriminator),
 ]
 
 
