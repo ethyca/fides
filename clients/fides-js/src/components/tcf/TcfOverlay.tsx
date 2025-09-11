@@ -283,14 +283,10 @@ export const TcfOverlay = () => {
         // English (default) GVL translations are already included in the full experience,
         // so we can directly load them from the
         loadGVLMessagesFromExperience(i18n, experienceFull);
-        console.log("loaded messages from experience123");
       }
 
-      if (!shouldUseEnglish) {
-        setCurrentLocale(bestLocale);
-        if (!isGVLLangLoading) {
-          setIsI18nLoading(false);
-        }
+      if (!shouldUseEnglish && !isGVLLangLoading) {
+        setIsI18nLoading(false);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
