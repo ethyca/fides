@@ -7,5 +7,6 @@
   "static.other.cookies": "Cookies",
   "static.other.back": "Tillbaka",
   "static.other.vendors": "Leverantörer",
-  "static.other.retention": "Lagring"
+  "static.other.retention": "Lagring",
+  "static.other.description": "Beskrivning"
 }

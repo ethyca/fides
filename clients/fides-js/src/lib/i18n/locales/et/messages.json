@@ -7,5 +7,6 @@
   "static.other.cookies": "Küpsised",
   "static.other.back": "Tagasi",
   "static.other.vendors": "Kaupmehed",
-  "static.other.retention": "Säilitamine"
+  "static.other.retention": "Säilitamine",
+  "static.other.description": "Kirjeldus"
 }

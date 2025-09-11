@@ -27,7 +27,7 @@ const VendorAssetDisclosure = ({
         type="button"
         className="fides-link-button"
         onClick={onBack}
-        aria-label="Back"
+        aria-label={i18n.t("static.other.back")}
       >
         <span
           className="fides-flex-center fides-back-link"
@@ -73,7 +73,7 @@ const VendorAssetDisclosure = ({
                     <thead>
                       <tr>
                         <th width={hasRetentionInfo ? "80%" : undefined}>
-                          Cookies
+                            {i18n.t("static.other.cookies")}
                         </th>
                         {hasRetentionInfo ? (
                           <th width="20%" style={{ textAlign: "right" }}>
@@ -90,7 +90,7 @@ const VendorAssetDisclosure = ({
                           >
                             <div>{ck.name}</div>
                             {ck.description ? (
-                              <div>Description: {ck.description}</div>
+                              <div>{i18n.t("static.other.description")}: {ck.description}</div>
                             ) : null}
                           </td>
                           {hasRetentionInfo ? (

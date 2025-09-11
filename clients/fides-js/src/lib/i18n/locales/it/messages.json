@@ -7,5 +7,6 @@
   "static.other.cookies": "Cookie",
   "static.other.back": "Indietro",
   "static.other.vendors": "Fornitori",
-  "static.other.retention": "Conservazione"
+  "static.other.retention": "Conservazione",
+  "static.other.description": "Descrizione"
 }

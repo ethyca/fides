@@ -7,5 +7,6 @@
   "static.other.cookies": "Cookie",
   "static.other.back": "返回",
   "static.other.vendors": "供應商",
-  "static.other.retention": "保留期"
+  "static.other.retention": "保留期",
+  "static.other.description": "描述"
 }

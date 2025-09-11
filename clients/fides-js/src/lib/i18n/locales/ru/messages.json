@@ -7,5 +7,6 @@
   "static.other.cookies": "Файлы cookie",
   "static.other.back": "Назад",
   "static.other.vendors": "Поставщики услуг",
-  "static.other.retention": "Хранение"
+  "static.other.retention": "Хранение",
+  "static.other.description": "Описание"
 }
