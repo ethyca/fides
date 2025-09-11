@@ -27,31 +27,83 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def build_uri(self) -> str:
         """
-        Builds URI of format mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]
+        Builds URI of format:
+        - mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]
+        - mongodb+srv://[username:password@]host[/[defaultauthdb][?options]] (for SRV)
         """
 
         config = MongoDBSchema(**self.configuration.secrets or {})
 
+        # Determine scheme based on SRV setting
+        scheme = "mongodb+srv" if config.use_srv else "mongodb"
+
+        # Build authentication part
         user_pass: str = ""
-        default_auth_db: str = ""
         if config.username and config.password:
             user_pass = f"{quote_plus(config.username)}:{quote_plus(config.password)}@"
-            if config.defaultauthdb:
-                default_auth_db = f"/{config.defaultauthdb}"
 
-        port: str = f":{config.port}" if config.port else ""
-        url = f"mongodb://{user_pass}{config.host}{port}{default_auth_db}"
+        # Build host/port part
+        if config.use_srv:
+            # SRV connections use hostname only, no port
+            host_part = config.host
+        else:
+            # Standard connections include port if specified
+            port = f":{config.port}" if config.port else ""
+            host_part = f"{config.host}{port}"
+
+        # Build database path
+        default_auth_db = f"/{config.defaultauthdb}" if config.defaultauthdb else ""
+
+        # Build query parameters
+        params = []
+
+        # Determine SSL behavior
+        ssl_active = self._determine_ssl_enabled(config)
+        if ssl_active is True:
+            params.append("ssl=true")
+        elif ssl_active is False and config.use_srv:
+            # Explicitly disable SSL for SRV (override default)
+            params.append("ssl=false")
+
+        query = f"?{'&'.join(params)}" if params else ""
+
+        url = f"{scheme}://{user_pass}{host_part}{default_auth_db}{query}"
         return url
+
+    def _determine_ssl_enabled(self, config: MongoDBSchema) -> Optional[bool]:
+        """Determine if SSL should be enabled based on configuration"""
+        if config.ssl_enabled is not None:
+            # Explicit setting takes precedence
+            return config.ssl_enabled
+        elif config.use_srv:
+            # SRV defaults to SSL enabled
+            return True
+        else:
+            # Standard connections default to SSL disabled
+            return False
 
     def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
         uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+
+        # Log connection details (without credentials) for debugging
+        config = MongoDBSchema(**self.configuration.secrets or {})
+        scheme = "mongodb+srv" if config.use_srv else "mongodb"
+        ssl_status = "enabled" if self._determine_ssl_enabled(config) else "disabled"
+        logger.info(
+            "Connecting to MongoDB using {} scheme with SSL {}",
+            scheme,
+            ssl_status
+        )
+
         try:
             return MongoClient(
                 uri, serverSelectionTimeoutMS=5000, uuidRepresentation="standard"
             )
-        except ValueError:
-            raise ConnectionException("Value Error connecting to MongoDB.")
+        except ValueError as exc:
+            raise ConnectionException(f"Value Error connecting to MongoDB: {exc}")
+        except Exception as exc:
+            raise ConnectionException(f"Error connecting to MongoDB: {exc}")
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Query wrapper corresponding to the input traversal_node."""

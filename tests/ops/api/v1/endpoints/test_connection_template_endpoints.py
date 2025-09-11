@@ -991,7 +991,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "defaultauthdb": {
-                    "title": "Default Auth DB",
+                    "title": "Default auth DB",
                     "description": "Used to specify the default authentication database.",
                     "type": "string",
                 },
