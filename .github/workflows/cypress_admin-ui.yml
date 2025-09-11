@@ -20,7 +20,7 @@ jobs:
       spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set matrix
         id: set-matrix
@@ -82,7 +82,7 @@ jobs:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
