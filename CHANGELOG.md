@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.70.0...main)
 
+### Fixed
+- TCF alert rendering incorrectly during react lifecycle [#6582](https://github.com/ethyca/fides/pull/6582)
+
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added
