@@ -1,0 +1,108 @@
+name: Notify on Workflow Failure
+
+on:
+  workflow_run:
+    workflows:
+      - "Backend Code Checks"
+      - "Frontend Code Checks"
+      - "Cypress E2E Tests"
+      - "Admin UI Cypress Tests"
+      - "Privacy Center/FidesJS Cypress Tests"
+      - "CLI Checks"
+      - "Static Checks"
+    types:
+      - completed
+    branches:
+      - main
+
+env:
+  SLACK_CHANNEL_ID: ${{ secrets.ETHYCA_ENGINEERING_SLACK_CHANNEL_ID }}
+  OAUTH_TOKEN: ${{ secrets.CI_NOTIFIER_SLACK_OAUTH_TOKEN }}
+
+jobs:
+  notify-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Find or create commit thread
+        id: commit_thread
+        run: |
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+
+          # Search for existing thread for this commit
+          SEARCH_RESPONSE=$(curl -s -X GET "https://slack.com/api/conversations.history" \
+            -H "Authorization: Bearer ${{ env.OAUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -G \
+            -d "channel=${{ env.SLACK_CHANNEL_ID }}" \
+            -d "limit=100")
+
+          # Look for existing thread with this commit SHA
+          EXISTING_TS=$(echo "$SEARCH_RESPONSE" | jq -r --arg sha "$SHORT_SHA" '.messages[]? | select(.text? and (.text | contains("Commit") and contains($sha))) | .ts' | head -n 1)
+
+          if [ -n "$EXISTING_TS" ] && [ "$EXISTING_TS" != "null" ]; then
+            echo "thread_ts=$EXISTING_TS" >> $GITHUB_OUTPUT
+            echo "✅ Found existing commit thread: $EXISTING_TS"
+          else
+            # Create new thread for this commit
+            COMMIT_MESSAGE=$(echo '${{ github.event.workflow_run.head_commit.message }}' | head -n 1)
+            COMMIT_AUTHOR="${{ github.event.workflow_run.head_commit.author.name }}"
+            COMMIT_URL="${{ github.event.workflow_run.head_commit.url }}"
+
+            # Build JSON payload safely using jq
+            JSON_PAYLOAD=$(jq -n \
+              --arg channel "${{ env.SLACK_CHANNEL_ID }}" \
+              --arg short_sha "$SHORT_SHA" \
+              --arg author "$COMMIT_AUTHOR" \
+              --arg message "$COMMIT_MESSAGE" \
+              --arg url "$COMMIT_URL" \
+              '{
+                channel: $channel,
+                text: ("Commit `" + $short_sha + "` by " + $author + ": " + $message + " 🧵"),
+                blocks: [
+                  {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: ("One or more workflows have failed on fides main\n\n*Commit `" + $short_sha + "`* by *" + $author + "*\n" + $message + "\n\n<" + $url + "|View commit>")
+                    }
+                  }
+                ]
+              }')
+
+            CREATE_RESPONSE=$(curl -s -X POST "https://slack.com/api/chat.postMessage" \
+              -H "Authorization: Bearer ${{ env.OAUTH_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d "$JSON_PAYLOAD")
+
+            NEW_TS=$(echo "$CREATE_RESPONSE" | jq -r '.ts')
+            if [ -n "$NEW_TS" ] && [ "$NEW_TS" != "null" ]; then
+              echo "thread_ts=$NEW_TS" >> $GITHUB_OUTPUT
+            else
+              echo "Failed to create new thread"
+              echo "Check Slack API permissions and channel access"
+              exit 1
+            fi
+          fi
+
+      - name: Post failure notification to thread
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          method: chat.postMessage
+          token: ${{ env.OAUTH_TOKEN }}
+          payload: |
+            channel: "${{ env.SLACK_CHANNEL_ID }}"
+            thread_ts: "${{ steps.commit_thread.outputs.thread_ts }}"
+            text: "Workflow failure"
+            attachments:
+              - color: "#ff0000"
+                blocks:
+                  - type: section
+                    text:
+                      type: mrkdwn
+                      text: "*Workflow:* `${{ github.event.workflow_run.name }}`\n*Branch:* `${{ github.event.workflow_run.head_branch }}`\n*Repository:* `fides`"
+                  - type: section
+                    text:
+                      type: mrkdwn
+                      text: "<${{ github.event.workflow_run.html_url }}|View failed workflow run>"
