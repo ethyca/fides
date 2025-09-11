@@ -93,7 +93,8 @@ const useSystemsTable = () => {
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    system_group: columnFilters?.system_groups?.[0]?.toString(),
+    system_groups: columnFilters?.system_groups as string[] | undefined,
+    data_stewards: columnFilters?.data_steward as string[] | undefined,
     ...columnFilters,
   });
 
