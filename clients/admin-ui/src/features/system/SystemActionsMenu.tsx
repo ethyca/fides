@@ -13,6 +13,8 @@ import {
   useBulkAssignStewardMutation,
   useBulkDeleteSystemsMutation,
 } from "~/features/system/system.slice";
+import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
+import useSystemsTable from "~/features/system/useSystemsTable";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import { isErrorResult } from "~/types/errors";
 
@@ -24,6 +26,14 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
+
+  const {
+    createModalIsOpen,
+    setCreateModalIsOpen,
+    handleCreateSystemGroup,
+    groupMenuItems,
+    handleBulkAddToGroup,
+  } = useSystemsTable();
 
   const { data: allUsers } = useGetAllUsersQuery({
     page: 1,
@@ -78,15 +88,39 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
           Delete {selectedRowKeys.length} systems? This action cannot be undone.
         </Typography.Paragraph>
       </Modal>
+      <Modal
+        open={createModalIsOpen}
+        destroyOnHidden
+        onCancel={() => setCreateModalIsOpen(false)}
+        centered
+        width={768}
+        footer={null}
+      >
+        <CreateSystemGroupForm
+          selectedSystemKeys={selectedRowKeys.map((key) => key.toString())}
+          onSubmit={handleCreateSystemGroup}
+          onCancel={() => setCreateModalIsOpen(false)}
+        />
+      </Modal>
       <Dropdown
         trigger={["click"]}
         menu={{
           items: [
+            {
+              key: "add-to-system-group",
+              label: "Add to system group",
+              children: groupMenuItems.map((group) => ({
+                key: group.key,
+                label: group.label,
+                onClick: () => handleBulkAddToGroup(group.key),
+              })),
+            },
             ...(allUsers?.items && allUsers.items.length > 0
               ? [
                   {
                     key: "assign-data-steward",
                     label: "Assign data steward",
+                    disabled: !selectedRowKeys.length,
                     children: allUsers.items.map((user) => ({
                       key: user.username,
                       label: user.username,
@@ -101,6 +135,7 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
             {
               key: "delete",
               label: "Delete",
+              disabled: !selectedRowKeys.length,
               onClick: () => {
                 setDeleteModalIsOpen(true);
               },
@@ -108,12 +143,7 @@ const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
           ],
         }}
       >
-        <Button
-          disabled={selectedRowKeys.length === 0}
-          icon={<Icons.ChevronDown />}
-        >
-          Actions
-        </Button>
+        <Button icon={<Icons.ChevronDown />}>Actions</Button>
       </Dropdown>
     </>
   );

@@ -254,7 +254,6 @@ const useSystemsTable = () => {
           (group) => systemGroupMap[group]?.name ?? group,
         ),
         filteredValue: columnFilters?.system_groups || null,
-        filterMultiple: false,
       },
       {
         title: "Data uses",
