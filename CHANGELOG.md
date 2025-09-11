@@ -55,6 +55,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Request manager CSV download link is now cleaned up making memory leaks in Admin UI less likely [#6552](https://github.com/ethyca/fides/pull/6552)
 - Fix custom logos in external task portal [#6573](https://github.com/ethyca/fides/pull/6573)
 
+### Removed
+- Remove "expand/collapse all" menu on privacy notice locations [#6581](https://github.com/ethyca/fides/pull/6581)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
