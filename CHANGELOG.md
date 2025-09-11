@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.70.0...main)
 
+### Fixed
+- TCF alert rendering incorrectly during react lifecycle [#6582](https://github.com/ethyca/fides/pull/6582)
+
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added
@@ -34,6 +37,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Request manager screen now shows loader while waiting for sets of results [#6552](https://github.com/ethyca/fides/pull/6552)
 - Request manager screen now persists pagination parameters to URL [#6552](https://github.com/ethyca/fides/pull/6552)
 - Request manager screen no longer persists search to local storage and instead populates URL parameters [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager CSV Download now flattens the subject identity object to comma separated columns [#6563](https://github.com/ethyca/fides/pull/6563)
+- Request manager CSV Download now flattens the custom privacy request fields object to comma separated columns [#6563](https://github.com/ethyca/fides/pull/6563)
 
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
@@ -50,6 +55,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Request manager CSV download link is now cleaned up making memory leaks in Admin UI less likely [#6552](https://github.com/ethyca/fides/pull/6552)
 - Fix custom logos in external task portal [#6573](https://github.com/ethyca/fides/pull/6573)
 
+### Removed
+- Remove "expand/collapse all" menu on privacy notice locations [#6581](https://github.com/ethyca/fides/pull/6581)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
