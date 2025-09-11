@@ -15,7 +15,7 @@ import { DiffStatus } from "~/types/api";
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredSystemAggregateTable } from "../hooks/useDiscoveredSystemAggregateTable";
-import { InProgressMonitorTasksTable } from "./InProgressMonitorTasksTable";
+import { InProgressMonitorTasksList } from "../components/InProgressMonitorTasksList";
 
 interface DiscoveredSystemAggregateTableProps {
   monitorId: string;
@@ -70,7 +70,7 @@ export const DiscoveredSystemAggregateTable = ({
         data-testid="asset-state-filter"
       />
       {activeTab === ActionCenterTabHash.IN_PROGRESS ? (
-        <InProgressMonitorTasksTable monitorId={monitorId} />
+        <InProgressMonitorTasksList monitorId={monitorId} />
       ) : (
         <>
           <Flex justify="space-between" align="center" className="mb-4">
