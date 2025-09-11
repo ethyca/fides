@@ -1,10 +1,9 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncDSRBaseConfiguration,
 )
@@ -12,7 +11,6 @@ from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
     PollingAsyncDSRBaseStrategy,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
 
 
@@ -24,9 +22,6 @@ class PollingAsyncErasureStrategy(PollingAsyncDSRBaseStrategy):
 
     name = "polling_erasure"
     configuration_model = PollingAsyncDSRBaseConfiguration
-
-    def __init__(self, configuration: PollingAsyncDSRBaseConfiguration):
-        super().__init__(configuration)
 
     def get_result_request(
         self,

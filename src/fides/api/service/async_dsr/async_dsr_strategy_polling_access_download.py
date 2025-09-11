@@ -1,12 +1,9 @@
-from io import BytesIO
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import pydash
 from requests import Response
-from typing_extensions import override
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncAccessDownloadConfiguration,
     SupportedDownloadType,
@@ -48,12 +45,12 @@ class PollingAsyncAccessDownloadStrategy(PollingAsyncDSRBaseStrategy):
         if response.ok:
             if self.download_type == SupportedDownloadType.link:
                 return self._process_download_link(response)
-            elif self.download_type == SupportedDownloadType.file:
+            if self.download_type == SupportedDownloadType.file:
                 return self._process_direct_file(response)
-            else:
-                raise PrivacyRequestError(
-                    f"Unsupported download type: {self.download_type}"
-                )
+
+            raise PrivacyRequestError(
+                f"Unsupported download type: {self.download_type}"
+            )
 
         raise PrivacyRequestError(
             f"Result request failed with status code {response.status_code}"

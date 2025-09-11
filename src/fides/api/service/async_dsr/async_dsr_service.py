@@ -208,7 +208,7 @@ def _get_request_id_from_storage(request_task: RequestTask) -> Optional[str]:
         if stored_data and "request_id" in stored_data:
             return stored_data["request_id"]
 
-    logger.error(f"Request ID not found in stored data")
+    logger.error("Request ID not found in stored data")
     return None
 
 

@@ -6,7 +6,6 @@ import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncDSRAccessDataConfiguration,
     SupportedDataType,
@@ -48,10 +47,10 @@ class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
         if response.ok:
             if self.data_type == SupportedDataType.json:
                 return self._process_json_response(response)
-            elif self.data_type == SupportedDataType.csv:
+            if self.data_type == SupportedDataType.csv:
                 return self._process_csv_response(response)
-            else:
-                raise PrivacyRequestError(f"Unsupported data type: {self.data_type}")
+
+            raise PrivacyRequestError(f"Unsupported data type: {self.data_type}")
 
         raise PrivacyRequestError(
             f"Result request failed with status code {response.status_code}"
@@ -64,12 +63,12 @@ class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
             return result
         if isinstance(result, list):
             return result
-        elif isinstance(result, dict):
+        if isinstance(result, dict):
             return [result]
-        else:
-            raise PrivacyRequestError(
-                f"Expected list or dict at path '{self.result_path}', got {type(result)}"
-            )
+
+        raise PrivacyRequestError(
+            f"Expected list or dict at path '{self.result_path}', got {type(result)}"
+        )
 
     def _process_csv_response(self, response: Response) -> List[Row]:
         """Process CSV response data."""

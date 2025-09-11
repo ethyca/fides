@@ -1,19 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import Any, Dict, Optional
 
 import pydash
-from loguru import logger
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.saas.strategy_configuration import (
-    IdSource,
     PollingAsyncDSRBaseConfiguration,
 )
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
 
 
@@ -80,4 +77,3 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
         self, client: AuthenticatedClient, param_values: Dict[str, Any]
     ) -> Optional[Any]:
         """Execute result request and return parsed data."""
-        pass
