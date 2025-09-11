@@ -1,6 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
+import { buildArrayQueryParams } from "~/features/common/utils";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
@@ -47,11 +48,18 @@ const systemApi = baseApi.injectEndpoints({
       Page_BasicSystemResponseExtended_,
       PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
     >({
-      query: (params) => ({
-        method: "GET",
-        url: `system`,
-        params,
-      }),
+      query: ({ data_stewards, system_groups, ...params }) => {
+        const urlParams = buildArrayQueryParams({
+          data_stewards,
+          system_groups,
+        });
+
+        return {
+          method: "GET",
+          url: `system?${urlParams.toString()}`,
+          params,
+        };
+      },
       providesTags: () => ["System"],
     }),
     getAllSystems: build.query<SystemResponse[], void>({

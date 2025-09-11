@@ -15,19 +15,25 @@ const SystemsTable = () => {
     tableProps,
     selectionProps,
     columns,
+
     // search
     searchQuery,
     updateSearch,
 
     // modals
+    createModalIsOpen,
+    setCreateModalIsOpen,
     deleteModalIsOpen,
     setDeleteModalIsOpen,
 
     // actions
     handleDelete,
+    handleCreateSystemGroup,
+    handleBulkAddToGroup,
 
     // utils
     messageContext,
+    groupMenuItems,
     selectedSystemForDelete,
   } = useSystemsTable();
 
@@ -43,6 +49,11 @@ const SystemsTable = () => {
         <Flex gap="small">
           <SystemActionsMenu
             selectedRowKeys={selectionProps?.selectedRowKeys ?? []}
+            createModalIsOpen={createModalIsOpen}
+            setCreateModalIsOpen={setCreateModalIsOpen}
+            handleCreateSystemGroup={handleCreateSystemGroup}
+            handleBulkAddToGroup={handleBulkAddToGroup}
+            groupMenuItems={groupMenuItems}
           />
           <Modal
             open={deleteModalIsOpen}

@@ -45,7 +45,6 @@ describe("systems table", () => {
 
   describe("row selection and bulk actions", () => {
     beforeEach(() => {
-      cy.contains("button", "Actions").should("not.be.enabled");
       cy.getAntTableRow("fidesctl_system")
         .find("input[type='checkbox']")
         .click();

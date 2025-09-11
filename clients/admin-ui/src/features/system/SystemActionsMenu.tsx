@@ -15,28 +15,32 @@ import {
   useBulkDeleteSystemsMutation,
 } from "~/features/system/system.slice";
 import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
-import useSystemsTable from "~/features/system/useSystemsTable";
 import { useGetAllUsersQuery } from "~/features/user-management";
+import { SystemGroupCreate } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface SystemActionsMenuProps {
   selectedRowKeys: React.Key[];
+  createModalIsOpen: boolean;
+  setCreateModalIsOpen: (open: boolean) => void;
+  handleCreateSystemGroup: (systemGroup: SystemGroupCreate) => void;
+  handleBulkAddToGroup: (groupKey: string) => void;
+  groupMenuItems: { key: string; label?: string; onClick: () => void }[];
 }
 
-const SystemActionsMenu = ({ selectedRowKeys }: SystemActionsMenuProps) => {
+const SystemActionsMenu = ({
+  selectedRowKeys,
+  createModalIsOpen,
+  setCreateModalIsOpen,
+  handleCreateSystemGroup,
+  handleBulkAddToGroup,
+  groupMenuItems,
+}: SystemActionsMenuProps) => {
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
   const { plus: isPlusEnabled } = useFeatures();
-
-  const {
-    createModalIsOpen,
-    setCreateModalIsOpen,
-    handleCreateSystemGroup,
-    groupMenuItems,
-    handleBulkAddToGroup,
-  } = useSystemsTable();
 
   const { data: allUsers } = useGetAllUsersQuery({
     page: 1,
