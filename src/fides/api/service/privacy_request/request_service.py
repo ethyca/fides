@@ -735,8 +735,6 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
                     execute_polling_task,
                 )
 
-                logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
-
                 for async_task in async_tasks:
                     celery_task = execute_polling_task.apply_async(
                         queue=DSR_QUEUE_NAME,
