@@ -334,7 +334,7 @@ def get_variable_columns(
 
     for pr in privacy_request_query:
         identity_columns.update(
-            extract_identity_column_names(pr.get_persisted_identity().dict())
+            extract_identity_column_names(pr.get_persisted_identity().model_dump())
         )
         custom_field_columns.update(
             extract_custom_field_column_names(
@@ -377,7 +377,7 @@ def extract_identity_cells(
     identity_columns: List[str], pr: PrivacyRequest
 ) -> List[str]:
     identity = pr.get_persisted_identity()
-    identity_dict = identity.dict()
+    identity_dict = identity.model_dump()
     return [
         identity_dict.get(identity_column)  # type: ignore
         for identity_column in identity_columns
