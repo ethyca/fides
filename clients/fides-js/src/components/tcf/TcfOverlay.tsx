@@ -285,6 +285,9 @@ export const TcfOverlay = () => {
         loadGVLMessagesFromExperience(i18n, experienceFull);
         setIsI18nLoading(false);
       }
+      if (!shouldUseEnglish && !isGVLLangLoading) {
+        setIsI18nLoading(false);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experienceFull]);
