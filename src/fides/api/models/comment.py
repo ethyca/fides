@@ -127,12 +127,19 @@ class Comment(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
-        # Delete the comment
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.comment
+        from fides.service.attachment import AttachmentService
+
+        # Use AttachmentService for attachment cleanup
+        attachment_service = AttachmentService(db)
+        attachment_service.delete_attachments_for_entity(
+            self.id, AttachmentReferenceType.comment
         )
+
+        # Delete comment references
         for reference in self.references:
             reference.delete(db)
+
+        # Delete the comment itself
         db.delete(self)
 
     @staticmethod

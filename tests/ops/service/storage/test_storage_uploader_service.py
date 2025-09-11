@@ -23,7 +23,6 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.service.storage.storage_uploader_service import get_extension, upload
 from fides.api.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
@@ -33,6 +32,10 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt_combined_nonce_and_message,
 )
 from fides.config import CONFIG
+from fides.service.storage.privacy_request_storage_service import get_extension
+from fides.service.storage.privacy_request_storage_service import (
+    upload_privacy_request_data as upload,
+)
 
 
 class TestS3Uploader:
