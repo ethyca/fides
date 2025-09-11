@@ -3,5 +3,9 @@
   "static.gpc.description": "Mēs esam izpildījuši jūsu prasību kontrolēt globālo privātumu. Pēc noklusējuma esat noņemts no datu lietojuma pieteikumiem, kas atbilst globālajai privātuma kontrolei.",
   "static.gpc.status.applied": "Pielietots",
   "static.gpc.status.overridden": "Ignorēts",
-  "static.gpc.title": "Konstatēta globālā privātuma kontrole"
+  "static.gpc.title": "Konstatēta globālā privātuma kontrole",
+  "static.other.cookies": "Sīkdatnes",
+  "static.other.back": "Atpakaļ",
+  "static.other.vendors": "Preču pārdevēji/pakalpojumu sniedzēji",
+  "static.other.retention": "Ieturēšana"
 }

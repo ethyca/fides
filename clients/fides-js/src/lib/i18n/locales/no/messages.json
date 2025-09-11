@@ -3,5 +3,9 @@
   "static.gpc.description": "Preferansene dine vedrørende de globale personverninnstilingene dine er godtatt. Du har automatisk takket nei til databruksaker som følger globale personverninnstillinger.",
   "static.gpc.status.applied": "Anvendt",
   "static.gpc.status.overridden": "Overstyrt",
-  "static.gpc.title": "Globale personverninnstillinger er oppdaget"
+  "static.gpc.title": "Global personvernkontroll oppdaget",
+  "static.other.cookies": "Informasjonskapsler",
+  "static.other.back": "Tilbake",
+  "static.other.vendors": "Leverandører",
+  "static.other.retention": "Oppbevaring"
 }

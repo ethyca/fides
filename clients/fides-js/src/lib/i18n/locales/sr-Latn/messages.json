@@ -3,5 +3,9 @@
   "static.gpc.description": "Vaša globalna postavka kontrole privatnosti se poštuje. Automatski ste isključeni iz slučajeva korišćenja podataka koji podležu globalnoj kontroli privatnosti.",
   "static.gpc.status.applied": "Primenjeno",
   "static.gpc.status.overridden": "Zaobiđeno",
-  "static.gpc.title": "Otkrivena je globalna kontrola privatnosti"
+  "static.gpc.title": "Otkrivena je globalna kontrola privatnosti",
+  "static.other.cookies": "Kolačići",
+  "static.other.back": "Nazad",
+  "static.other.vendors": "Dobavljači",
+  "static.other.retention": "Zadržavanje"
 }

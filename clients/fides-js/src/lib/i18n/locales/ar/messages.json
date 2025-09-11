@@ -3,5 +3,9 @@
   "static.gpc.description": "تم تطبيق تفضيلك للتحكم العالمي في الخصوصية. لقد ألغي اشتراكك تلقائيًا في حالات استخدام البيانات التي تلتزم بالتحكم العالمي في الخصوصية.",
   "static.gpc.status.applied": "تم التطبيق",
   "static.gpc.status.overridden": "تم التجاوز",
-  "static.gpc.title": "تم اكتشاف التحكم العالمي في الخصوصية"
+  "static.gpc.title": "تم اكتشاف التحكم العالمي في الخصوصية",
+  "static.other.cookies": "ملفات تعريف الارتباط",
+  "static.other.back": "رجوع",
+  "static.other.vendors": "الموردون",
+  "static.other.retention": "الحفظ"
 }

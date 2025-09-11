@@ -3,5 +3,9 @@
   "static.gpc.description": "Preferința dvs. de control global al confidențialității a fost onorată. Ați fost exclus(ă) automat de la cazurile de utilizare a datelor care respectă controlul global al confidențialității.",
   "static.gpc.status.applied": "Aplicat",
   "static.gpc.status.overridden": "Suprascris",
-  "static.gpc.title": "A fost detectat un control global al confidențialității"
+  "static.gpc.title": "S-a detectat controlul global al confidențialității",
+  "static.other.cookies": "Cookie-uri",
+  "static.other.back": "Înapoi",
+  "static.other.vendors": "Furnizori",
+  "static.other.retention": "Păstrare"
 }
