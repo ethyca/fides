@@ -544,31 +544,9 @@ def _process_attachment_list(
     return processed_attachments_list
 
 
-def extract_storage_key_from_attachment(attachment: dict[str, Any]) -> str:
-    """
-    Extract storage key from attachment data with fallback logic.
-
-    This function provides a consistent way to extract storage keys from
-    attachment dictionaries across different components.
-
-    Args:
-        attachment: The attachment dictionary
-
-    Returns:
-        The storage key (URL or filename) for the attachment
-    """
-    if original_url := attachment.get("original_download_url"):
-        return original_url
-
-    if download_url := attachment.get("download_url"):
-        return download_url
-
-    file_name = attachment.get("file_name")
-    return file_name if file_name is not None else ""
-
-
-def resolve_base_path_from_context(
-    attachment: dict[str, Any], default_base_path: str = "attachments"
+def resolve_path_from_context(
+    attachment: dict[str, Any],
+    default_path: str = "attachments",
 ) -> str:
     """
     Resolve the base path for an attachment based on its context.
@@ -578,93 +556,24 @@ def resolve_base_path_from_context(
 
     Args:
         attachment: The attachment dictionary
-        default_base_path: Default base path if no context is found
+        default_path: Default path if no context is found
 
     Returns:
-        The resolved base path for the attachment
+        The resolved path for the attachment
     """
     if not attachment.get("_context"):
-        return default_base_path
+        return default_path
 
     context = attachment["_context"]
     context_type = context.get("type")
 
-    if context_type == "direct":
-        return f"data/{context['dataset']}/{context['collection']}/attachments"
-    if context_type == "nested":
-        return f"data/{context['dataset']}/{context['collection']}/attachments"
+    if context_type in ["direct", "nested"]:
+        dataset = context.get("dataset", "")
+        collection = context.get("collection", "")
+        return f"data/{dataset}/{collection}/attachments"
     if context_type == "top_level":
         return "attachments"
-    # Handle old context format
     if context.get("key") and context.get("item_id"):
         return f"{context['key']}/{context['item_id']}/attachments"
-    # Fallback for unknown context types
-    return "unknown/unknown/attachments"
 
-
-def resolve_directory_from_context(
-    attachment: dict[str, Any], default_directory: str = "attachments"
-) -> str:
-    """
-    Resolve the directory path for an attachment based on its context.
-
-    This function provides consistent directory resolution logic for DSR report builder.
-
-    Args:
-        attachment: The attachment dictionary
-        default_directory: Default directory if no context is found
-
-    Returns:
-        The resolved directory path for the attachment
-    """
-    if not attachment.get("_context"):
-        return default_directory
-
-    context = attachment["_context"]
-    context_type = context.get("type")
-
-    if context_type == "direct":
-        return f"data/{context['dataset']}/{context['collection']}"
-    if context_type == "nested":
-        return f"data/{context['dataset']}/{context['collection']}"
-    if context_type == "top_level":
-        return "attachments"
-    if context.get("key") and context.get("item_id"):
-        return f"{context['key']}/{context['item_id']}"
-
-    return default_directory
-
-
-def convert_processed_attachments_to_attachment_processing_info(
-    processed_attachments_list: list[dict[str, Any]], validate_attachment_func: Callable
-) -> list[Any]:
-    """
-    Convert processed attachments list to AttachmentProcessingInfo objects.
-
-    This is a shared utility function to avoid duplication between different
-    attachment collection methods.
-
-    Args:
-        processed_attachments_list: List of processed attachment dictionaries
-        validate_attachment_func: Function to validate individual attachments
-                                 Signature: validate_attachment_func(attachment_with_context) -> AttachmentProcessingInfo | None
-
-    Returns:
-        List of validated AttachmentProcessingInfo objects
-    """
-    validated_attachments = []
-
-    for processed_attachment in processed_attachments_list:
-        attachment_data = processed_attachment["attachment"]
-
-        # Add context information to the attachment data
-        attachment_with_context = attachment_data.copy()
-        attachment_with_context["_context"] = processed_attachment["context"]
-
-        # Validate and convert to AttachmentProcessingInfo
-        if validate_attachment_func is not None:
-            validated = validate_attachment_func(attachment_with_context)
-            if validated:
-                validated_attachments.append(validated)
-
-    return validated_attachments
+    return default_path
