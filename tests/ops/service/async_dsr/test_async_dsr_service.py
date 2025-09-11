@@ -5,7 +5,6 @@ Tests the core service methods that handle asynchronous data subject requests.
 
 from unittest.mock import Mock, patch
 
-from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 import pytest
 from sqlalchemy.orm import Session
 
@@ -15,14 +14,18 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTaskRequestData
+from fides.api.models.privacy_request.request_task import (
+    AsyncTaskType,
+    RequestTaskRequestData,
+)
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.service.async_dsr.async_dsr_service import (
+    execute_polling_task,
     execute_read_polling_requests,
     execute_result_request,
-    execute_polling_task,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
     PollingAsyncDSRBaseStrategy,
@@ -35,6 +38,7 @@ from fides.api.service.connectors.saas_connector import SaaSConnector
 @pytest.mark.integration_saas
 class TestAsyncDSRService:
     """Test suite for async DSR service methods"""
+
     @pytest.fixture
     def param_values(self):
         """Create sample param values"""
@@ -46,6 +50,7 @@ class TestAsyncDSRService:
             "user_id": "123",
             "phone": "+1234567890",
         }
+
     @pytest.fixture
     def mock_request_task_data(self):
         """Create a mock RequestTaskRequestData with proper attributes"""
@@ -120,7 +125,9 @@ class TestAsyncDSRService:
         in_processing_privacy_request.save(db)
 
         with pytest.raises(PrivacyRequestError) as exc_info:
-            execute_polling_task(in_processing_privacy_request.id, polling_request_task.id)
+            execute_polling_task(
+                in_processing_privacy_request.id, polling_request_task.id
+            )
 
         assert "Cannot execute Polling Task" in str(exc_info.value)
         assert "with status complete" in str(exc_info.value)

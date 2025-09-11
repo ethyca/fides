@@ -81,7 +81,6 @@ class TestAsyncDsrRequest:
             "request_id": "123",
         }
 
-
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
         "dsr_version",
@@ -124,10 +123,7 @@ class TestAsyncDsrRequest:
             # Saas Polling task was marked as needing async results, so the Request
             polling_task = pr.access_tasks[1]
             assert polling_task.status == ExecutionLogStatus.awaiting_processing
-            assert (
-                polling_task.collection_address
-                == "saas_async_polling_config:user"
-            )
+            assert polling_task.collection_address == "saas_async_polling_config:user"
 
             mock_send().json.return_value = {"request_complete": False}
             # Requeue the polling task
@@ -138,7 +134,6 @@ class TestAsyncDsrRequest:
             assert polling_task.request_data.request_data == {
                 "request_id": "123",
             }
-
 
             mock_send().json.return_value = {"request_complete": True}
             # Requeue the polling task

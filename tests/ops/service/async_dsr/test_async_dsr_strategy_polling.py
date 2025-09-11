@@ -12,8 +12,9 @@ from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncIdRequestConfiguration,
     SupportedDataType,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import PollingAsyncDSRAccessDataStrategy
-
+from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import (
+    PollingAsyncDSRAccessDataStrategy,
+)
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
 
@@ -39,7 +40,7 @@ class TestPollingAsyncDSRStrategy:
                 id_source=IdSource.path.value,
                 id_path="request_id",
             ),
-            data_type=SupportedDataType.json.value
+            data_type=SupportedDataType.json.value,
         )
         return PollingAsyncDSRAccessDataStrategy(configuration=config)
 
@@ -225,7 +226,7 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
                 id_source=IdSource.path.value,
                 id_path="request_id",
             ),
-            data_type=SupportedDataType.json.value
+            data_type=SupportedDataType.json.value,
         )
         return PollingAsyncDSRAccessDataStrategy(configuration=config)
 
@@ -248,7 +249,7 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
                 id_source=IdSource.path.value,
                 id_path="request_id",
             ),
-            data_type=SupportedDataType.json.value
+            data_type=SupportedDataType.json.value,
         )
         return PollingAsyncDSRAccessDataStrategy(configuration=config)
 
@@ -268,7 +269,6 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
             "user_id": "123",
             "phone": "+1234567890",
         }
-
 
     def test_status_path_boolean_true(
         self, polling_strategy_with_string_status, mock_client, param_values
