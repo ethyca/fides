@@ -77,8 +77,7 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
 
     @abstractmethod
     def get_result_request(
-        self,
-        client: AuthenticatedClient,
-        param_values: Dict[str, Any],
-    ) -> Union[List[Row], str, bytes, Dict[str, Any]]:
-        """Execute result request - implementation varies by strategy type."""
+        self, client: AuthenticatedClient, param_values: Dict[str, Any]
+    ) -> Optional[Any]:
+        """Execute result request and return parsed data."""
+        pass

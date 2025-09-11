@@ -264,4 +264,3 @@ class PollingAsyncAccessDownloadConfiguration(PollingAsyncDSRBaseConfiguration):
     """
 
     download_type: SupportedDownloadType = SupportedDownloadType.link
-    result_path: Optional[str] = None  # Placeholder in case we need a result path

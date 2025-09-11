@@ -44,7 +44,10 @@ from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
 )
-from fides.api.schemas.saas.strategy_configuration import IdSource
+from fides.api.schemas.saas.strategy_configuration import (
+    IdSource,
+    PollingAsyncDSRBaseConfiguration,
+)
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
     get_strategy as get_async_strategy,
 )
@@ -352,9 +355,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
             # Saving the request task access data to use it on the polling status request
             if request_task.async_type == AsyncTaskType.polling:
-                request_id_config = read_request.async_config.configuration[
-                    "request_id_config"
-                ]
+                if (
+                    read_request.async_config is None
+                    or read_request.async_config.configuration is None
+                ):
+                    raise FidesopsException(
+                        "Polling async request configuration is not set"
+                    )
+
+                async_config_dict: dict = read_request.async_config.configuration
+
+                request_id_config = async_config_dict["request_id_config"]
                 id_source = request_id_config["id_source"]
                 if id_source == IdSource.path.value:
                     request_data = {
@@ -373,6 +384,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         request_task: RequestTask,
         input_data: Dict[str, Any],
     ) -> None:
+        if (
+            read_request.async_config is None
+            or read_request.async_config.configuration is None
+        ):
+            raise FidesopsException("Async request configuration is not set")
 
         # Validate async strategy with proper enum value checking
         strategy = get_async_strategy(
@@ -382,10 +398,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         request_task.async_type = AsyncTaskType(strategy.type)
 
         if request_task.async_type == AsyncTaskType.polling:
+
+            async_config_dict: dict = read_request.async_config.configuration
             # Check if request id config for polling async requests is generated
-            request_id_config = read_request.async_config.configuration[
-                "request_id_config"
-            ]
+            request_id_config = async_config_dict["request_id_config"]
             if request_id_config["id_source"] == IdSource.generated.value:
 
                 request_data = {"request_id": str(uuid4())}

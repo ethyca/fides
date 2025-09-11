@@ -1,7 +1,5 @@
-from ast import List
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
-from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -12,6 +10,7 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
     PollingAsyncDSRBaseStrategy,
@@ -46,7 +45,14 @@ def execute_polling_task(
 ) -> None:
     """Executes a polling request task from the status onward"""
     with self.get_new_session() as db:
-        polling_task: RequestTask = RequestTask.get(db, object_id=polling_task_id)
+        polling_task: Optional[RequestTask] = RequestTask.get(
+            db, object_id=polling_task_id
+        )
+        if not polling_task:
+            raise PrivacyRequestError(
+                f"RequestTask with id {polling_task_id} not found"
+            )
+
         privacy_request: PrivacyRequest = polling_task.privacy_request
         # Check that the privacy request is in processing
         if privacy_request.status != PrivacyRequestStatus.in_processing:
@@ -119,9 +125,7 @@ def execute_read_polling_requests(
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
     logger.info(f"Executing read polling requests for {polling_task}")
-    read_requests: List[ReadSaaSRequest] = (
-        query_config.get_read_requests_by_identity()
-    )
+    read_requests: List[ReadSaaSRequest] = query_config.get_read_requests_by_identity()
     logger.info(f"Read requests: {read_requests}")
     for read_request in read_requests:
         if read_request.async_config:

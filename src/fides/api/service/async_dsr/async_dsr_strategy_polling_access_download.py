@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pydash
 from requests import Response
+from typing_extensions import override
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request.request_task import RequestTask

@@ -36,7 +36,7 @@ class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
         self,
         client: AuthenticatedClient,
         param_values: Dict[str, Any],
-    ) -> List[Row]:
+    ) -> Optional[List[Row]]:
         """Execute result request and return parsed data."""
 
         prepared_result_request = map_param_values(
@@ -57,7 +57,7 @@ class PollingAsyncDSRAccessDataStrategy(PollingAsyncDSRBaseStrategy):
             f"Result request failed with status code {response.status_code}"
         )
 
-    def _process_json_response(self, response: Response) -> List[Row]:
+    def _process_json_response(self, response: Response) -> Optional[List[Row]]:
         """Process JSON response data."""
         result = pydash.get(response.json(), self.result_path)
         if result is None:
