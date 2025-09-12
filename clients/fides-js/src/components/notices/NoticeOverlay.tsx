@@ -201,7 +201,7 @@ const NoticeOverlay = () => {
       return null;
     }
     return privacyNoticeItems.find(
-      (item) => item.notice.notice_key === selectedNoticeKey
+      (item) => item.notice.notice_key === selectedNoticeKey,
     );
   }, [selectedNoticeKey, privacyNoticeItems]);
 

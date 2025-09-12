@@ -73,11 +73,11 @@ const VendorAssetDisclosure = ({
                     <thead>
                       <tr>
                         <th width={hasRetentionInfo ? "80%" : undefined}>
-                            {i18n.t("static.other.cookies")}
+                          {i18n.t("static.other.cookies")}
                         </th>
                         {hasRetentionInfo ? (
                           <th width="20%" style={{ textAlign: "right" }}>
-                              {i18n.t("static.other.retention")}
+                            {i18n.t("static.other.retention")}
                           </th>
                         ) : null}
                       </tr>
@@ -90,7 +90,10 @@ const VendorAssetDisclosure = ({
                           >
                             <div>{ck.name}</div>
                             {ck.description ? (
-                              <div>{i18n.t("static.other.description")}: {ck.description}</div>
+                              <div>
+                                {i18n.t("static.other.description")}:{" "}
+                                {ck.description}
+                              </div>
                             ) : null}
                           </td>
                           {hasRetentionInfo ? (

@@ -48,8 +48,8 @@ import {
   LimitedPrivacyNoticeResponseSchema,
   Property,
   RejectAllMechanism,
-  SupportedLanguage,
   StagedResourceTypeValue,
+  SupportedLanguage,
 } from "~/types/api";
 
 import { useFeatures } from "../common/features";
