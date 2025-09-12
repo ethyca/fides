@@ -281,7 +281,7 @@ export const TcfOverlay = () => {
       const shouldUseEnglish = bestLocale === DEFAULT_LOCALE;
       if (shouldUseEnglish) {
         // English (default) GVL translations are already included in the full experience,
-        // so we can directly load them from the
+        // so we can directly load them from the full experience
         loadGVLMessagesFromExperience(i18n, experienceFull);
         setIsI18nLoading(false);
       }
