@@ -206,7 +206,6 @@ describe("Privacy experiences", () => {
             auto_detect_language: true,
             auto_subdomain_cookie_deletion: true,
             allow_vendor_asset_disclosure: false,
-            asset_disclosure_include_types: [],
             component: "banner_and_modal",
             disabled: true,
             dismissable: true,
