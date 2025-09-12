@@ -1,0 +1,46 @@
+name: Trigger Fidesplus Slack Notifier
+
+on:
+  workflow_run:
+    workflows:
+      - "Backend Code Checks"
+      - "Frontend Code Checks"
+      - "Cypress E2E Tests"
+      - "Admin UI Cypress Tests"
+      - "Privacy Center/FidesJS Cypress Tests"
+      - "CLI Checks"
+      - "Static Checks"
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  dispatch-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Send Repository Dispatch Event (Fidesplus)
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          client-payload: |
+            {
+              "repo_name": "fides",
+              "workflow_name": "${{ github.event.workflow_run.name }}",
+              "workflow_url": "${{ github.event.workflow_run.html_url }}",
+              "commit_sha": "${{ github.event.workflow_run.head_sha }}",
+              "commit_message": "${{ github.event.workflow_run.head_commit.message }}",
+              "commit_author": "${{ github.event.workflow_run.head_commit.author.name }}",
+              "branch_name": "${{ github.event.workflow_run.head_branch }}"
+            }
+          event-type: fides-workflow-failure
+          repository: ethyca/fidesplus
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "Dispatched workflow failure notification to fidesplus for:"
+          echo "Workflow: ${{ github.event.workflow_run.name }}"
+          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
+          echo "Author: ${{ github.event.workflow_run.head_commit.author.name }}"
+          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
