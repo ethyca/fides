@@ -3,7 +3,7 @@ import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
-from typing import Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
 
@@ -118,7 +118,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
-
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
 
@@ -495,7 +494,7 @@ def property_b(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def https_connection_config(db: Session) -> Generator:
+def https_connection_config(db: Session) -> Generator[ConnectionConfig, None, None]:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
@@ -1859,6 +1858,20 @@ def privacy_request_with_consent_policy(
         db,
         consent_policy,
     )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_location(
+    db: Session, policy: Policy
+) -> Generator[PrivacyRequest, Any, None]:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.location = "US"
+    privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
 
