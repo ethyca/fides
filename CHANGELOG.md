@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - TCF alert rendering incorrectly during react lifecycle [#6582](https://github.com/ethyca/fides/pull/6582)
 
+### Developer Experience
+- Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
+
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added
@@ -45,7 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fix search within language picker in admin-ui [#6550](https://github.com/ethyca/fides/pull/6550)
-- Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557)
+- Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557) [#6587](https://github.com/ethyca/fides/pull/6587)
 - Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
 - Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
 - Fix bug in oauth authorization success toast [#6572](https://github.com/ethyca/fides/pull/6572)
