@@ -27,7 +27,6 @@ const useActionCenterTabs = (systemId?: string) => {
         hash: ActionCenterTabHash.ATTENTION_REQUIRED,
       },
       {
-        label: "Added",
         label: "In progress",
         params: {
           diff_status: [
@@ -43,7 +42,7 @@ const useActionCenterTabs = (systemId?: string) => {
         params: {
           diff_status: [DiffStatus.MONITORED],
         },
-        hash: ActionCenterTabHash.ADDED,
+        hash: ActionCenterTabHash.RECENT_ACTIVITY,
       },
       {
         label: "Ignored",
