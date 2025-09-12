@@ -7,6 +7,7 @@ import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
+import { useShowCompletedState } from "../hooks/useShowCompletedState";
 import { InProgressMonitorTaskItem } from "./InProgressMonitorTaskItem";
 
 interface InProgressMonitorTasksListProps {
@@ -16,6 +17,8 @@ interface InProgressMonitorTasksListProps {
 export const InProgressMonitorTasksList = ({
   monitorId,
 }: InProgressMonitorTasksListProps) => {
+  const { showCompleted } = useShowCompletedState();
+
   const {
     // List state and data
     searchQuery,
@@ -27,7 +30,7 @@ export const InProgressMonitorTasksList = ({
     // Loading states
     isLoading,
     isFetching,
-  } = useInProgressMonitorTasksList({ monitorId });
+  } = useInProgressMonitorTasksList({ monitorId, showCompleted });
 
   return (
     <>

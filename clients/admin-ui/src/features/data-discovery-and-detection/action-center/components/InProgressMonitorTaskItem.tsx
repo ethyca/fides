@@ -20,7 +20,7 @@ export const InProgressMonitorTaskItem = ({
   task,
   ...props
 }: InProgressMonitorTaskItemProps) => {
-  const getTaskTypeColor = (taskType: string) => {
+  const getTaskTypeColor = (taskType?: string) => {
     switch (taskType) {
       case "classification":
         return "blue";
@@ -31,7 +31,7 @@ export const InProgressMonitorTaskItem = ({
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "pending":
         return "orange";
@@ -46,6 +46,11 @@ export const InProgressMonitorTaskItem = ({
     }
   };
 
+  const formatText = (text?: string) => {
+    if (!text) return "Unknown";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
   return (
     <div {...props}>
       <Row gutter={[16, 8]}>
@@ -57,10 +62,10 @@ export const InProgressMonitorTaskItem = ({
               </Title>
               <Flex gap={8} align="center">
                 <Tag color={getTaskTypeColor(task.action_type)}>
-                  {task.action_type.charAt(0).toUpperCase() + task.action_type.slice(1)}
+                  {formatText(task.action_type)}
                 </Tag>
                 <Tag color={getStatusColor(task.status)}>
-                  {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                  {formatText(task.status)}
                 </Tag>
                 {task.connection_type && (
                   <Text type="secondary" style={{ fontSize: "12px" }}>

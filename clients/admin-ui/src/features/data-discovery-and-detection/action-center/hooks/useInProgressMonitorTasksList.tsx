@@ -7,10 +7,12 @@ import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
 interface UseInProgressMonitorTasksListConfig {
   monitorId?: string; // Optional since this shows tasks from all monitors
+  showCompleted?: boolean;
 }
 
 export const useInProgressMonitorTasksList = ({
   monitorId,
+  showCompleted = false,
 }: UseInProgressMonitorTasksListConfig = {}) => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(20);
@@ -25,6 +27,7 @@ export const useInProgressMonitorTasksList = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    show_completed: showCompleted,
   });
 
   const listProps = useMemo(

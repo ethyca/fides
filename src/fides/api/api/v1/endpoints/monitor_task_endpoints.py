@@ -30,35 +30,41 @@ def get_in_progress_monitor_tasks(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     search: Optional[str] = Query(None, description="Search by monitor name"),
+    show_completed: Optional[bool] = Query(False, description="Include completed tasks"),
 ) -> Page[MonitorTaskInProgressResponse]:
     """
-    Get all monitor tasks that are currently in progress (classification and promotion).
+    Get monitor tasks (classification and promotion).
 
-    This endpoint retrieves tasks that are actively being processed, including:
+    By default, this endpoint retrieves tasks that are actively being processed:
     - Classification tasks with status: pending, in_processing
     - Promotion tasks with status: pending, in_processing
+
+    When show_completed=true, it includes all tasks regardless of status.
 
     The response includes monitor name, task type, last updated date, current status,
     associated staged resources, and connection type.
     """
 
-    # Build base query for in-progress classification and promotion tasks
+    # Build base query for classification and promotion tasks
     query = (
         db.query(MonitorTask)
         .options(joinedload(MonitorTask.monitor_config).joinedload(MonitorConfig.connection_config))
         .filter(
-            and_(
-                MonitorTask.action_type.in_([
-                    MonitorTaskType.CLASSIFICATION.value,
-                    MonitorTaskType.PROMOTION.value
-                ]),
-                MonitorTask.status.in_([
-                    ExecutionLogStatus.pending.value,
-                    ExecutionLogStatus.in_processing.value
-                ])
-            )
+            MonitorTask.action_type.in_([
+                MonitorTaskType.CLASSIFICATION.value,
+                MonitorTaskType.PROMOTION.value
+            ])
         )
     )
+
+    # Add status filter unless we want to show completed tasks
+    if not show_completed:
+        query = query.filter(
+            MonitorTask.status.in_([
+                ExecutionLogStatus.pending.value,
+                ExecutionLogStatus.in_processing.value
+            ])
+        )
 
     # Add search filter if provided
     if search:
@@ -84,14 +90,15 @@ def get_in_progress_monitor_tasks(
         response_items.append(
             MonitorTaskInProgressResponse(
                 id=task.id,
-                monitor_name=task.monitor_config.name if task.monitor_config else "Unknown",
-                task_type=task.action_type,
-                last_updated=task.updated_at,
+                created_at=task.created_at,
+                updated_at=task.updated_at,
+                monitor_config_id=task.monitor_config_id,
+                monitor_name=task.monitor_config.name if task.monitor_config else None,
+                action_type=task.action_type,
                 status=task.status,
+                message=task.message,
                 staged_resource_urns=task.staged_resource_urns,
                 connection_type=connection_type,
-                monitor_config_id=task.monitor_config_id,
-                message=task.message,
             )
         )
 

@@ -7,12 +7,13 @@
  */
 export type MonitorTaskInProgressResponse = {
   id: string;
-  monitor_name: string;
-  task_type: string;
-  last_updated: string;
+  created_at: string;
+  updated_at: string;
+  monitor_config_id?: string | null;
+  monitor_name?: string | null;
+  action_type: string;
   status: string;
+  message?: string | null;
   staged_resource_urns?: Array<string> | null;
   connection_type?: string | null;
-  monitor_config_id: string;
-  message?: string | null;
 };
