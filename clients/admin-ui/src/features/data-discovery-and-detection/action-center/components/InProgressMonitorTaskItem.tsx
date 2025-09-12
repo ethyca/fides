@@ -58,6 +58,12 @@ export const InProgressMonitorTaskItem = ({
             {task.monitor_name || "Unknown Monitor"}
           </Title>
 
+          {task.connection_type && (
+            <Tag color="default">
+              {task.connection_type}
+            </Tag>
+          )}
+
           <Tag color={getTaskTypeColor(task.action_type)}>
             {formatText(task.action_type)}
           </Tag>
@@ -65,12 +71,6 @@ export const InProgressMonitorTaskItem = ({
           <Tag color={getStatusColor(task.status)}>
             {formatText(task.status)}
           </Tag>
-
-          {task.connection_type && (
-            <Tag color="default">
-              {task.connection_type}
-            </Tag>
-          )}
 
           {task.staged_resource_urns && task.staged_resource_urns.length > 0 && (
             <Tag color="orange">
