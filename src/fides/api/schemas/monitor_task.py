@@ -10,14 +10,15 @@ class MonitorTaskInProgressResponse(FidesSchema):
     """
 
     id: str
-    monitor_name: str
-    task_type: str  # classification or promotion
-    last_updated: datetime
+    created_at: datetime
+    updated_at: datetime
+    monitor_config_id: Optional[str]
+    monitor_name: Optional[str]
+    action_type: str  # MonitorTaskType
     status: str
-    staged_resource_urns: Optional[List[str]] = None
-    connection_type: Optional[str] = None
-    monitor_config_id: str
-    message: Optional[str] = None
+    message: Optional[str]
+    staged_resource_urns: Optional[List[str]]
+    connection_type: Optional[str]
 
 
 class MonitorTaskInProgressFilter(FidesSchema):
