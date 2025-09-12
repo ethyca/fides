@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /**
  * External Auth Layout Component
  *
@@ -10,7 +11,6 @@ import {
   AntSpace as Space,
   AntTypography as Typography,
 } from "fidesui";
-import Image from "next/image";
 import React from "react";
 
 import { useConfig } from "~/features/common/config.slice";
@@ -41,12 +41,11 @@ export const ExternalAuthLayout = ({
         <Space direction="vertical" size={64} style={{ width: "100%" }}>
           {/* Fides Logo */}
           <Flex justify="center">
-            <Image
+            <img
               src={config?.logo_path || "/logo.svg"}
-              alt="Fides logo"
+              alt="Logo"
               width={205}
               height={46}
-              priority
             />
           </Flex>
 
