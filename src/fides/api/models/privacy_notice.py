@@ -203,11 +203,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             or_(*[text(query) for query in or_queries]),
         )
 
-        query_a = db.query(Asset).filter(
-            Asset.asset_type == "Cookie",
-            or_(*[text(query) for query in or_queries]),
-            )
-
         return query.all()
 
     @property
