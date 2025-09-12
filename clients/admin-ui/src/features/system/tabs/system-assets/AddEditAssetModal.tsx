@@ -130,6 +130,10 @@ const AddEditAssetModal = ({
         validationSchema={validationSchema}
       >
         {({ values, isValid, dirty }) => {
+          const isCookieAsset =
+            !!values.asset_type && values.asset_type === AssetType.COOKIE;
+          const isNotCookieAsset =
+            !!values.asset_type && values.asset_type !== AssetType.COOKIE;
           return (
             <Form>
               <Flex vertical className="pb-6 pt-4">
@@ -173,38 +177,22 @@ const AddEditAssetModal = ({
                     label="Description"
                     variant="stacked"
                   />
-                  <Collapse
-                    in={
-                      !!values.asset_type &&
-                      values.asset_type === AssetType.COOKIE
-                    }
-                  >
+                  <Collapse in={isCookieAsset}>
                     <CustomTextInput
                       id="duration"
                       name="duration"
                       label="Duration"
                       variant="stacked"
-                      isRequired={
-                        !!values.asset_type &&
-                        values.asset_type === AssetType.COOKIE
-                      }
+                      isRequired={isCookieAsset}
                     />
                   </Collapse>
-                  <Collapse
-                    in={
-                      !!values.asset_type &&
-                      values.asset_type !== AssetType.COOKIE
-                    }
-                  >
+                  <Collapse in={isNotCookieAsset}>
                     <CustomTextInput
                       id="base_url"
                       name="base_url"
                       label="Base URL"
                       variant="stacked"
-                      isRequired={
-                        !!values.asset_type &&
-                        values.asset_type !== AssetType.COOKIE
-                      }
+                      isRequired={isNotCookieAsset}
                     />
                   </Collapse>
                 </Flex>

@@ -208,9 +208,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             or_(*[text(query) for query in or_queries]),
             )
 
-        # log results of query_a for debugging
-        results = query_a.all()
-
         return query.all()
 
     @property

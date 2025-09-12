@@ -191,7 +191,7 @@ const NoticeOverlay = () => {
     };
   });
 
-  const [isVendorAssetDiscloserView, setIsVendorAssetDisclosureView] =
+  const [isVendorAssetDisclosureView, setIsVendorAssetDisclosureView] =
     useState(false);
   const [selectedNoticeKey, setSelectedNoticeKey] = useState<string | null>(
     null,
@@ -397,7 +397,7 @@ const NoticeOverlay = () => {
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
       headerContent={
-        isVendorAssetDiscloserView && selectedNotice
+        isVendorAssetDisclosureView && selectedNotice
           ? {
               title:
                 selectedNotice.bestTranslation?.title ||
@@ -461,7 +461,7 @@ const NoticeOverlay = () => {
       }}
       renderModalContent={() => (
         <div>
-          {isVendorAssetDiscloserView ? (
+          {isVendorAssetDisclosureView ? (
             <VendorAssetDisclosure
               cookiesByNotice={cookiesBySelectedNotice}
               onBack={() => {

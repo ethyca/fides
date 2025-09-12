@@ -25,7 +25,7 @@ export type ExperienceConfigResponse = {
   /** Enable Vendor / Asset Disclosure */
   allow_vendor_asset_disclosure?: boolean | null;
   /** Asset types to disclose */
-  asset_disclosure_include_types?: Array<string>;
+  asset_disclosure_include_types?: Array<string> | null;
   regions: Array<PrivacyNoticeRegion>;
   tcf_configuration_id?: string | null;
   id: string;
