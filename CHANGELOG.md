@@ -22,7 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.70.0...main)
 
 ### Added
-- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593)
+- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
 
 ### Fixed
 - TCF alert rendering incorrectly during react lifecycle [#6582](https://github.com/ethyca/fides/pull/6582)
