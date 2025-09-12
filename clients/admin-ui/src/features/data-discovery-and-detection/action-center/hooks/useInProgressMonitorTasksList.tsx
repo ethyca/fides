@@ -17,7 +17,7 @@ export const useInProgressMonitorTasksList = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [connectionNameFilters, setConnectionNameFilters] = useState<string[]>([]);
   const [taskTypeFilters, setTaskTypeFilters] = useState<string[]>([]);
-  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing"]); // Default to "in progress" states
+  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "awaiting_processing", "retrying"]); // Default to all "in progress" states (active, waiting, retrying)
 
   const updateSearch = useCallback((newSearch: string) => {
     setSearchQuery(newSearch);
@@ -39,11 +39,11 @@ export const useInProgressMonitorTasksList = ({
     setPageIndex(1);
   }, []);
 
-  // Default button: Reset to "In Progress" states only
+  // Default button: Reset to all "In Progress" states (pending, in_processing, awaiting_processing, retrying)
   const resetToDefault = useCallback(() => {
     setConnectionNameFilters([]);
     setTaskTypeFilters([]);
-    setStatusFilters(["pending", "in_processing"]);
+    setStatusFilters(["pending", "in_processing", "awaiting_processing", "retrying"]);
     setPageIndex(1);
   }, []);
 
@@ -66,12 +66,15 @@ export const useInProgressMonitorTasksList = ({
     "skipped"
   ];
 
+  // Define what we consider "in progress" states
+  const inProgressStates = ["pending", "in_processing", "awaiting_processing", "retrying"];
+
   // Determine if we need to use show_completed=true
   // Use show_completed=true if:
   // - No status filters (show all)
-  // - Status filters include anything other than just pending/in_processing
+  // - Status filters include anything other than just the "in progress" states
   const needsShowCompleted = statusFilters.length === 0 ||
-    statusFilters.some(status => !["pending", "in_processing"].includes(status));
+    statusFilters.some(status => !inProgressStates.includes(status));
 
   const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery({
     page: pageIndex,
