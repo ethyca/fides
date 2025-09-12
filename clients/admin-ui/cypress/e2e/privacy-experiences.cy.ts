@@ -341,7 +341,7 @@ describe("Privacy experiences", () => {
         cy.intercept(
           {
             method: "GET",
-            pathname: "/api/v1/system",
+            pathname: "/api/v1/plus/system/consent-management/report",
             query: {
               page: "1",
               size: "1",
