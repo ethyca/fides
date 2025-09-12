@@ -10,6 +10,7 @@ on:
     branches:
       - main
   workflow_dispatch: # allow manual invocations
+  pull_request: # just for testing! remove before merge
 
 env:
   FIDESPLUS_REPO: ethyca/fidesplus
