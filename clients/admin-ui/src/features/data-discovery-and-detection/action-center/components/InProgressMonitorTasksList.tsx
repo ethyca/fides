@@ -13,10 +13,17 @@ import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
-import { useShowCompletedState } from "../hooks/useShowCompletedState";
 import { InProgressMonitorTaskItem } from "./InProgressMonitorTaskItem";
 
 const { Text } = Typography;
+
+// Helper function to format status names for display
+const formatStatusForDisplay = (status: string): string => {
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 interface InProgressMonitorTasksListProps {
   monitorId?: string;
@@ -25,7 +32,6 @@ interface InProgressMonitorTasksListProps {
 export const InProgressMonitorTasksList = ({
   monitorId,
 }: InProgressMonitorTasksListProps) => {
-  const { showCompleted } = useShowCompletedState();
   const [showFilters, setShowFilters] = useState(false);
 
   const {
@@ -41,6 +47,10 @@ export const InProgressMonitorTasksList = ({
     updateTaskTypeFilters,
     updateStatusFilters,
 
+    // Filter actions
+    resetToDefault,
+    clearAllFilters,
+
     // Available filter options
     availableConnectionNames,
     availableTaskTypes,
@@ -52,7 +62,7 @@ export const InProgressMonitorTasksList = ({
     // Loading states
     isLoading,
     isFetching,
-  } = useInProgressMonitorTasksList({ monitorId, showCompleted });
+  } = useInProgressMonitorTasksList({ monitorId });
 
   // Count active filters
   const activeFilterCount = connectionNameFilters.length + taskTypeFilters.length + statusFilters.length;
@@ -72,37 +82,41 @@ export const InProgressMonitorTasksList = ({
           style={{ minWidth: "300px" }}
         />
 
-        {/* Filters Toggle Button */}
-        <Button
-          type="text"
-          onClick={toggleFilters}
-          style={{
-            padding: "4px 8px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            color: "#666"
-          }}
-        >
-          <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span style={{
-                background: "#1890ff",
-                color: "white",
-                borderRadius: "10px",
-                padding: "2px 6px",
-                fontSize: "10px",
-                minWidth: "16px",
-                textAlign: "center",
-                lineHeight: "1"
-              }}>
-                {activeFilterCount}
-              </span>
-            )}
-          </span>
-          {showFilters ? <Icons.ChevronDown /> : <Icons.ChevronRight />}
-        </Button>
+        {/* Filter Buttons */}
+        <Space>
+          <Button
+            onClick={toggleFilters}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>Filter</span>
+              {activeFilterCount > 0 && (
+                <span style={{
+                  background: "#1890ff",
+                  color: "white",
+                  borderRadius: "10px",
+                  padding: "2px 6px",
+                  fontSize: "10px",
+                  minWidth: "16px",
+                  textAlign: "center",
+                  lineHeight: "1",
+                  fontWeight: "600"
+                }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </span>
+            {showFilters ? <Icons.ChevronDown /> : <Icons.ChevronRight />}
+          </Button>
+
+          <Button onClick={resetToDefault}>
+            Default
+          </Button>
+
+          <Button onClick={clearAllFilters}>
+            Clear
+          </Button>
+        </Space>
       </Flex>
 
       {/* Collapsible Filter Section */}
@@ -115,11 +129,6 @@ export const InProgressMonitorTasksList = ({
           marginBottom: "16px"
         }}>
           <Flex gap={16} align="center" wrap="wrap">
-            <div>
-              <Text strong style={{ fontSize: "12px", color: "#8c8c8c", marginRight: "8px" }}>
-                FILTERS:
-              </Text>
-            </div>
 
             <Select
               mode="multiple"
@@ -154,7 +163,7 @@ export const InProgressMonitorTasksList = ({
               onChange={updateStatusFilters}
               style={{ minWidth: "150px" }}
               options={availableStatuses.map(status => ({
-                label: status.charAt(0).toUpperCase() + status.slice(1),
+                label: formatStatusForDisplay(status),
                 value: status,
               }))}
               allowClear
