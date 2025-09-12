@@ -893,9 +893,13 @@ class PrivacyRequest(
         To respond, the service should send a request to one of the reply-to URLs with the reply-to-token.
         """
         # temp fix for circular dependency
-        from fides.api.service.connectors import HTTPSConnector, get_connector
+        from fides.api.service.connectors import (
+            HTTPSConnector,
+            HTTPSOAuth2Connector,
+            get_connector,
+        )
 
-        https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
+        https_connector: Union[HTTPSConnector | HTTPSOAuth2Connector] = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
             privacy_request_status=self.status,

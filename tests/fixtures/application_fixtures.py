@@ -24,6 +24,7 @@ from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentType
+from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -512,6 +513,76 @@ def https_connection_config(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def https_connection_config_with_oauth(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_webhook_oauth2_config",
+            "connection_type": ConnectionType.https,
+            "access": AccessLevel.read,
+            "secrets": {
+                "url": "https://example.com",
+                "authorization": "test_authorization",
+            },
+        },
+    )
+    oauth2_config = OAuthConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "grant_type": "client_credentials",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "token_url": "https://example.com/token",
+            "scope": "read write",
+        },
+    )
+
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def policy_pre_execution_webhooks_oauth2(
+    db: Session, https_connection_config_with_oauth, policy
+) -> Generator:
+    pre_webhook = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config_with_oauth.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_one_way_webhook_oauth2",
+            "order": 0,
+        },
+    )
+    pre_webhook_two = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config_with_oauth.id,
+            "policy_id": policy.id,
+            "direction": "two_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_two_way_webhook_oauth2",
+            "order": 1,
+        },
+    )
+    db.commit()
+    yield [pre_webhook, pre_webhook_two]
+    try:
+        pre_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        pre_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture(scope="function")

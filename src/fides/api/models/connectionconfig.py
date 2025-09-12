@@ -51,6 +51,7 @@ class ConnectionType(enum.Enum):
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
+    https_oauth2 = "https_oauth2"
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     manual_task = "manual_task"  # Manual task integration
@@ -259,6 +260,13 @@ class ConnectionConfig(Base):
     # Identifies the privacy actions needed from this connection by the associated system.
     enabled_actions = Column(
         ARRAY(Enum(ActionType, native_enum=False)), unique=False, nullable=True
+    )
+
+    oauth_config = relationship(  # type: ignore[misc]
+        "OAuthConfig",
+        back_populates="connection_config",
+        cascade="all, delete-orphan",
+        uselist=False,
     )
 
     @property
