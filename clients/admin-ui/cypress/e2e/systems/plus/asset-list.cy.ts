@@ -61,6 +61,7 @@ describe("Plus Asset List", () => {
         cy.getByTestId("input-domain").type("example.com");
         cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
         cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        cy.getByTestId("input-duration").type("A couple seconds");
         cy.getByTestId("save-btn").click({ force: true });
       });
       cy.wait("@addSystemAsset");
