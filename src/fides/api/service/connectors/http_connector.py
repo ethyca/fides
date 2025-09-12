@@ -3,6 +3,9 @@ from typing import Any, Dict, List, Optional
 
 import requests
 from loguru import logger
+from oauthlib.oauth2 import BackendApplicationClient
+from requests.auth import HTTPBasicAuth
+from requests_oauthlib import OAuth2Session
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
@@ -41,13 +44,50 @@ class HTTPSConnector(BaseConnector[None]):
     ) -> Optional[Dict[str, Any]]:
         """Calls a client-defined endpoint and returns the data that it responds with"""
         config = HttpsSchema(**self.configuration.secrets or {})
-        headers = self.build_authorization_header()
-        headers.update(additional_headers)
 
-        try:
-            response = requests.post(url=config.url, headers=headers, json=request_body)
-        except requests.ConnectionError:
-            logger.info("Requests connection error received.")
+        oauth_config = self.configuration.oauth_config
+
+        if oauth_config is not None:
+            client_id = oauth_config.client_id
+            client_secret = oauth_config.client_secret
+            scopes = oauth_config.scope or []
+            auth = HTTPBasicAuth(client_id, client_secret)
+            client = BackendApplicationClient(client_id=client_id)
+            session_client = OAuth2Session(client=client, scope=scopes)
+            # Fetch the access token from the token URL
+            try:
+                session_client.fetch_token(token_url=oauth_config.token_url, auth=auth)
+
+                try:
+                    response = session_client.post(
+                        url=config.url, headers=additional_headers, json=request_body
+                    )
+                except requests.ConnectionError:
+                    logger.error("HTTPS+OAuth2 client received an error.")
+                    raise ClientUnsuccessfulException(
+                        status_code=HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+            except Exception as e:
+                logger.error(f"Error fetching OAuth2 token: {e}")
+                raise ClientUnsuccessfulException(
+                    status_code=HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        else:
+            headers = self.build_authorization_header()
+            headers.update(additional_headers)
+
+            try:
+                response = requests.post(
+                    url=config.url, headers=headers, json=request_body
+                )
+            except requests.ConnectionError:
+                logger.info("Requests connection error received.")
+                raise ClientUnsuccessfulException(
+                    status_code=HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+        if response is None:
+            logger.error("No response received from webhook.")
             raise ClientUnsuccessfulException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR
             )

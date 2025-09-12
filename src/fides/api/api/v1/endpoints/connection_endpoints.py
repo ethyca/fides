@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Dict, List, Optional
 
-from fastapi import Depends
+import sqlalchemy
+from fastapi import Depends, HTTPException
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -13,9 +14,15 @@ from pydantic import Field
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fides.api.api import deps
+from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
@@ -24,6 +31,9 @@ from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
     ConnectionConfigurationResponseWithSystemKey,
     CreateConnectionConfigurationWithSecrets,
+)
+from fides.api.schemas.connection_configuration.connection_oauth_config import (
+    OAuthConfigSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
@@ -45,6 +55,7 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
+    CONNECTION_OAUTH,
     CONNECTION_SECRETS,
     CONNECTION_TEST,
     CONNECTIONS,
@@ -312,3 +323,145 @@ def test_connection_config_secrets(
     connection_config = get_connection_config_or_error(db, connection_key)
     msg = f"Test completed for ConnectionConfig with key: {connection_key}."
     return connection_status(connection_config, msg, db)
+
+
+@router.put(
+    CONNECTION_OAUTH,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+)
+def put_connection_oauth_config(
+    connection_key: FidesKey,
+    *,
+    oauth_config: OAuthConfigSchema,
+    db: Session = Depends(deps.get_db),
+    verify: Optional[bool] = True,
+) -> TestStatusMessage:
+    """
+    Create or update the OAuth2 configuration for a given connection.
+    """
+    connection_config = get_connection_config_or_error(db, connection_key)
+
+    if connection_config.connection_type != ConnectionType.https:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="OAuth2 configuration can only be set for HTTPS connections.",
+        )
+
+    logger.info("Updating OAuth2 config for '{}'", connection_key)
+    connection_config.oauth_config = OAuthConfig(
+        **oauth_config.model_dump(mode="json")  # type: ignore[arg-type]
+    )
+    connection_config.save(db=db)
+
+    msg = (
+        f"OAuth2 configuration updated for ConnectionConfig with key: {connection_key}."
+    )
+
+    if verify:
+        return connection_status(connection_config, msg, db)
+
+    return TestStatusMessage(msg=msg, test_status=None)
+
+
+@router.delete(
+    CONNECTION_OAUTH,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    status_code=HTTP_204_NO_CONTENT,
+    response_model=None,
+)
+def delete_connection_oauth_config(
+    connection_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> None:
+    """
+    Delete the OAuth2 configuration for a given connection.
+    """
+    connection_config = get_connection_config_or_error(db, connection_key)
+
+    if connection_config.connection_type != ConnectionType.https:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="OAuth2 configuration can only be deleted for HTTPS connections",
+        )
+
+    if not connection_config.oauth_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No OAuth2 configuration found to delete.",
+        )
+
+    logger.info("Deleting OAuth2 config for '{}'", connection_key)
+    connection_config.oauth_config = None
+    connection_config.save(db=db)
+
+    return None
+
+
+@router.patch(
+    CONNECTION_OAUTH,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+)
+def patch_connection_oauth_config(
+    connection_key: FidesKey,
+    *,
+    oauth_config: OAuthConfigSchema,
+    db: Session = Depends(deps.get_db),
+    verify: Optional[bool] = True,
+) -> TestStatusMessage:
+    """
+    Partially update the OAuth2 configuration for a given connection.
+    """
+    connection_config = get_connection_config_or_error(db, connection_key)
+
+    if connection_config.connection_type != ConnectionType.https:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="OAuth2 configuration can only be set for HTTPS connections.",
+        )
+
+    existing_oauth_config: Optional[Dict[str, Any]] = (
+        {
+            "grant_type": connection_config.oauth_config.grant_type.value,
+            "token_url": connection_config.oauth_config.token_url,
+            "scope": connection_config.oauth_config.scope,
+            "client_id": connection_config.oauth_config.client_id,
+            "client_secret": connection_config.oauth_config.client_secret,
+        }
+        if connection_config.oauth_config
+        else None
+    )
+
+    # Combine the existing config with the new config overlaid
+    patched_oauth_config = {}
+    if existing_oauth_config:
+        patched_oauth_config = {**existing_oauth_config}
+
+    patched_oauth_config = {
+        **patched_oauth_config,
+        **{k: v for (k, v) in oauth_config.model_dump(mode="json").items() if v},  # type: ignore[dict-item]
+    }
+
+    logger.info("Patching OAuth2 config for '{}'", connection_key)
+    validated_config = OAuthConfigSchema.model_validate(patched_oauth_config)
+    try:
+        connection_config.oauth_config = OAuthConfig(
+            **validated_config.model_dump(mode="json")
+        )
+        connection_config.save(db=db)
+    except sqlalchemy.exc.IntegrityError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid OAuth2 configuration.",
+        ) from exc
+
+    msg = (
+        f"OAuth2 configuration updated for ConnectionConfig with key: {connection_key}."
+    )
+
+    if verify:
+        return connection_status(connection_config, msg, db)
+
+    return TestStatusMessage(msg=msg, test_status=None)
