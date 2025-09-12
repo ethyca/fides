@@ -975,3 +975,45 @@ class TestErrorHandling:
             SQLTranslationError, match="No valid SQLAlchemy models found"
         ):
             translator.build_sqlalchemy_query(condition)
+
+    def test_property_condition_provides_helpful_error(self, mock_db):
+        """Test that property conditions provide helpful error messages"""
+        translator = SQLConditionTranslator(db=mock_db)
+
+        # Create a mock model with a property
+        mock_model = Mock()
+        mock_model.__name__ = "MockModel"
+
+        # Mock the property
+        mock_property = property(lambda self: "computed_value")
+
+        # Mock the mapper inspection
+        mock_mapper = Mock()
+        mock_mapper.columns.keys.return_value = ["id", "name", "email"]
+        mock_mapper.relationships.keys.return_value = ["references", "logs"]
+
+        with patch(
+            "fides.api.task.conditional_dependencies.sql_translator.inspect"
+        ) as mock_inspect:
+            mock_inspect.return_value = mock_mapper
+
+            condition = ConditionLeaf(
+                field_address="computed_property",
+                operator=Operator.eq,
+                value="test_value",
+            )
+
+            # Test that the error message is helpful and generic
+            with pytest.raises(ValueError) as exc_info:
+                translator._handle_property_condition(
+                    mock_model, "computed_property", mock_property, condition
+                )
+
+            error_msg = str(exc_info.value)
+            assert "computed_property" in error_msg
+            assert "MockModel" in error_msg
+            assert "cannot be translated to SQL" in error_msg
+            assert "Properties are computed at runtime" in error_msg
+            assert "Available columns: ['id', 'name', 'email']" in error_msg
+            assert "Available relationships: ['references', 'logs']" in error_msg
+            assert "consider using the relationship directly" in error_msg

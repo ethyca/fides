@@ -1,8 +1,9 @@
+from collections import deque
 from typing import Optional
 
-from collections import deque
 from loguru import logger
 from sqlalchemy import and_, or_
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Query, RelationshipProperty, Session
 
@@ -24,7 +25,7 @@ from fides.api.task.conditional_dependencies.sql_schemas import (
 class SQLConditionTranslator:
     """Translates conditional dependencies into SQLAlchemy queries using relationship traversal"""
 
-    def __init__(self, db: Session, orm_registry=None):
+    def __init__(self, db: Session, orm_registry: Optional[Base] = None):
         """
         Initialize the SQL translator using SQLAlchemy's relationship traversal
 
@@ -38,9 +39,9 @@ class SQLConditionTranslator:
             db: SQLAlchemy database session for query execution
             orm_registry: Optional SQLAlchemy registry or Base class for ORM introspection
         """
-        self.db = db
-        self.orm_registry = orm_registry or Base
-        self._model_cache = {}
+        self.db: Session = db
+        self.orm_registry: Base = orm_registry or Base
+        self._model_cache: dict[str, type] = {}
 
     def extract_field_addresses(self, condition: Condition) -> list[FieldAddress]:
         """Extracts all field addresses from a condition tree in order.
@@ -95,7 +96,7 @@ class SQLConditionTranslator:
 
         return tables_to_fields
 
-    def get_orm_model_by_table_name(self, table_name: str):
+    def get_orm_model_by_table_name(self, table_name: str) -> Optional[type]:
         """
         Find the ORM model class for a given table name (with caching)
 
@@ -111,43 +112,18 @@ class SQLConditionTranslator:
         if table_name in self._model_cache:
             return self._model_cache[table_name]
 
-        # This approach works for SQLAlchemy 1.4+ using the registry.
-        if hasattr(self.orm_registry, 'registry') and hasattr(self.orm_registry.registry, '_class_registry'):
-            try:
-                # SQLAlchemy 1.4+ uses registry.mappers or registry._class_registry
-                if hasattr(self.orm_registry.registry, 'mappers'):
-                    for mapper in self.orm_registry.registry.mappers:
-                        if mapper.class_.__tablename__ == table_name:
-                            self._model_cache[table_name] = mapper.class_
-                            return mapper.class_
-                # else:
-                #     # Try the _class_registry approach
-                #     for model_class in self.orm_registry.registry._class_registry.data.values():
-                #         if (hasattr(model_class, '__tablename__')
-                #             and getattr(model_class, '__tablename__', None) == table_name):
-                #             self._model_cache[table_name] = model_class
-                #             return model_class
-            except (AttributeError, TypeError) as e:
-                logger.debug(f"Registry approach failed: {e}")
+        try:
+            # SQLAlchemy 1.4+ uses registry.mappers or registry._class_registry
+            for mapper in self.orm_registry.registry.mappers:
+                if mapper.class_.__tablename__ == table_name:
+                    self._model_cache[table_name] = mapper.class_
+                    return mapper.class_
+        except (AttributeError, TypeError) as e:
+            logger.debug(f"Registry approach failed: {e}")
 
         # If not found, cache None and return
         self._model_cache[table_name] = None
         return None
-
-    def _get_all_subclasses(self, cls):
-        """
-        Recursively get all subclasses of a class
-
-        Args:
-            cls: The base class
-
-        Returns:
-            Set of all subclasses
-        """
-        subclasses = set(cls.__subclasses__())
-        for subclass in list(subclasses):
-            subclasses.update(self._get_all_subclasses(subclass))
-        return subclasses
 
     def build_sqlalchemy_query(self, condition: Condition) -> Query:
         """
@@ -171,9 +147,9 @@ class SQLConditionTranslator:
         """
         # Analyze which tables/models are needed
         tables_to_fields = self.analyze_tables_in_condition(condition)
-        model_classes = {}
+        model_classes: dict[str, type] = {}
 
-        for table_name in tables_to_fields.keys():
+        for table_name in tables_to_fields:
             model_class = self.get_orm_model_by_table_name(table_name)
             if model_class:
                 model_classes[table_name] = model_class
@@ -219,46 +195,15 @@ class SQLConditionTranslator:
         3. Use the table with the most fields in conditions
         4. Fall back to first alphabetically
         """
-        # Strategy 1: Use the table from the first condition
+        # Use the table from the first condition
         # This makes the query intent clear and predictable for users
         if tables_to_fields:
             first_table_name = next(iter(tables_to_fields.keys()))
             if first_table_name in model_classes:
-                logger.debug(f"Using first condition table '{first_table_name}' as primary table")
-                return first_table_name
-
-        # Common patterns for join/reference table names
-        join_table_patterns = ["_reference", "_join", "_link", "_assoc", "_association"]
-
-        # Separate main tables from potential join tables
-        main_tables = []
-        join_tables = []
-
-        for table_name in tables_to_fields.keys():
-            if table_name in model_classes:
-                is_join_table = any(
-                    pattern in table_name.lower() for pattern in join_table_patterns
+                logger.debug(
+                    f"Using first condition table '{first_table_name}' as primary table"
                 )
-                if is_join_table:
-                    join_tables.append(table_name)
-                else:
-                    main_tables.append(table_name)
-
-        # Prefer main tables over join tables
-        candidate_tables = main_tables if main_tables else join_tables
-
-        # Among candidates, use the table with the most fields in conditions
-        max_fields = 0
-        primary_table = None
-
-        for table_name in candidate_tables:
-            fields = tables_to_fields.get(table_name, [])
-            if len(fields) > max_fields:
-                max_fields = len(fields)
-                primary_table = table_name
-
-        # Fall back to first alphabetically from all available tables
-        return primary_table or sorted(model_classes.keys())[0]
+                return first_table_name
 
     def _expand_with_related_main_tables(
         self, model_classes: dict[str, type], tables_to_fields: dict[str, list]
@@ -303,7 +248,7 @@ class SQLConditionTranslator:
             mapper = inspect(join_model_class)
 
             # Look at relationships from the join table to find main tables
-            for relationship_name, relationship_prop in mapper.relationships.items():
+            for _, relationship_prop in mapper.relationships.items():
                 if hasattr(relationship_prop, "mapper"):
                     target_model = relationship_prop.mapper.class_
                     target_table_name = getattr(target_model, "__tablename__", None)
@@ -435,7 +380,7 @@ class SQLConditionTranslator:
                     # Try to find any model that can reach this one (fallback)
                     joined = False
                     for joined_table, joined_model in model_classes.items():
-                        if joined_table == table_name or joined_table == primary_table:
+                        if joined_table in [table_name, primary_table]:
                             continue
 
                         path = self._find_relationship_path_through_intermediates(
@@ -525,8 +470,8 @@ class SQLConditionTranslator:
 
         # Handle JSON path fields
         if field_addr.json_path:
-            if hasattr(model_class, field_addr.base_field_name):
-                column = getattr(model_class, field_addr.base_field_name)
+            if hasattr(model_class, field_addr.column_name):
+                column = getattr(model_class, field_addr.column_name)
                 # Use PostgreSQL JSON operators
                 json_expr = column[field_addr.json_path].astext
                 return self._apply_operator_to_column(
@@ -534,17 +479,19 @@ class SQLConditionTranslator:
                 )
         else:
             # Regular column or relationship
-            if hasattr(model_class, field_addr.base_field_name):
-                attr = getattr(model_class, field_addr.base_field_name)
+            if hasattr(model_class, field_addr.column_name):
+                attr = getattr(model_class, field_addr.column_name)
 
                 # Check what type of attribute this is and handle accordingly
                 return self._handle_model_attribute(
-                    model_class, field_addr.base_field_name, attr, condition
+                    model_class, field_addr.column_name, attr, condition
                 )
 
         return None
 
-    def _handle_model_attribute(self, model_class: type, field_name: str, attr, condition):
+    def _handle_model_attribute(
+        self, model_class: type, field_name: str, attr, condition
+    ):
         """
         Handle different types of model attributes (columns, relationships, properties)
 
@@ -557,35 +504,41 @@ class SQLConditionTranslator:
         Returns:
             SQLAlchemy expression or None
         """
-        from sqlalchemy.ext.hybrid import hybrid_property
-        from sqlalchemy.orm import RelationshipProperty
-        from sqlalchemy import inspect
 
         # Check if it's a SQLAlchemy column
-        if hasattr(attr, 'property') and hasattr(attr.property, 'columns'):
+        if hasattr(attr, "property") and hasattr(attr.property, "columns"):
             logger.debug(f"Found column {field_name} on {model_class.__name__}")
-            return self._apply_operator_to_column(attr, condition.operator, condition.value)
+            return self._apply_operator_to_column(
+                attr, condition.operator, condition.value
+            )
 
         # Check if it's a relationship
-        elif hasattr(attr, 'property') and isinstance(attr.property, RelationshipProperty):
+        if hasattr(attr, "property") and isinstance(
+            attr.property, RelationshipProperty
+        ):
             logger.debug(f"Found relationship {field_name} on {model_class.__name__}")
             return self._handle_relationship_condition(attr, condition)
 
         # Check if it's a hybrid property (can be translated to SQL)
-        elif isinstance(attr, hybrid_property):
-            logger.debug(f"Found hybrid property {field_name} on {model_class.__name__}")
-            return self._apply_operator_to_column(attr, condition.operator, condition.value)
+        if isinstance(attr, hybrid_property):
+            logger.debug(
+                f"Found hybrid property {field_name} on {model_class.__name__}"
+            )
+            return self._apply_operator_to_column(
+                attr, condition.operator, condition.value
+            )
 
         # Check if it's a regular property
-        elif isinstance(attr, property):
+        if isinstance(attr, property):
             logger.debug(f"Found property {field_name} on {model_class.__name__}")
             # Try to find a SQL equivalent for the property
-            return self._handle_property_condition(model_class, field_name, attr, condition)
+            return self._handle_property_condition(
+                model_class, field_name, attr, condition
+            )
 
         # Default: treat as a column
-        else:
-            logger.debug(f"Treating {field_name} as column on {model_class.__name__}")
-            return self._apply_operator_to_column(attr, condition.operator, condition.value)
+        logger.debug(f"Treating {field_name} as column on {model_class.__name__}")
+        return self._apply_operator_to_column(attr, condition.operator, condition.value)
 
     def _handle_relationship_condition(self, relationship_attr, condition):
         """
@@ -598,8 +551,6 @@ class SQLConditionTranslator:
         Returns:
             SQLAlchemy expression using any() or has()
         """
-        from sqlalchemy.orm import RelationshipProperty
-
         # For list_contains on relationships, we want to check if any related object matches
         if condition.operator == Operator.list_contains:
             # Use any() to check if any related object has the specified value
@@ -608,11 +559,12 @@ class SQLConditionTranslator:
         elif condition.operator == Operator.eq:
             # For equality, check if the relationship has an object with this value
             return relationship_attr.any(id=condition.value)
-        else:
-            logger.warning(f"Unsupported operator {condition.operator} for relationship")
-            return None
+        logger.warning(f"Unsupported operator {condition.operator} for relationship")
+        return None
 
-    def _handle_property_condition(self, model_class: type, field_name: str, prop, condition):
+    def _handle_property_condition(
+        self, model_class: type, field_name: str, prop, condition
+    ):
         """
         Handle conditions on Python properties by finding SQL equivalents
 
@@ -625,25 +577,33 @@ class SQLConditionTranslator:
         Returns:
             SQLAlchemy expression or raises an error
         """
-        # Special handling for known property patterns
-        if field_name == 'assigned_users':
-            # For assigned_users property, translate to a query on the references relationship
-            if hasattr(model_class, 'references'):
-                references_attr = getattr(model_class, 'references')
+        # Since Python properties are computed at runtime, we cannot automatically
+        # translate them to SQL without specific knowledge of their implementation.
+        # The field name alone doesn't provide enough information to determine
+        # the correct SQL translation.
 
-                if condition.operator == Operator.list_contains:
-                    # Check if any reference has this user ID and is an assigned_user type
-                    return references_attr.any(
-                        (references_attr.property.mapper.class_.reference_id == condition.value) &
-                        (references_attr.property.mapper.class_.reference_type == 'assigned_user')
-                    )
+        # If we can't find a SQL equivalent, provide a helpful error with suggestions
+        # Get available columns and relationships for better error messages
+        mapper = inspect(model_class)
+        available_columns = list(mapper.columns.keys())
+        available_relationships = list(mapper.relationships.keys())
 
-        # If we can't find a SQL equivalent, provide a helpful error
-        raise ValueError(
+        error_msg = (
             f"Property '{field_name}' on {model_class.__name__} cannot be translated to SQL. "
-            f"Consider using the underlying database fields instead. "
-            f"For assigned_users, use manual_task_reference.reference_id and manual_task_reference.reference_type."
+            f"Properties are computed at runtime and don't have direct database equivalents. "
+            f"Consider using the underlying database fields instead.\n"
+            f"Available columns: {available_columns}\n"
+            f"Available relationships: {available_relationships}"
         )
+
+        # Add specific suggestions for common patterns
+        if available_relationships:
+            error_msg += (
+                "\nIf this property is derived from a relationship, "
+                "consider using the relationship directly in your condition."
+            )
+
+        raise ValueError(error_msg)
 
     def _apply_operator_to_column(self, column, operator: Operator, value):
         """Apply the specified operator to a SQLAlchemy column"""
@@ -682,38 +642,3 @@ class SQLConditionTranslator:
             query = query.offset(offset)
 
         return query
-
-    def generate_count_query(self, condition: Condition) -> Query:
-        """
-        Generate a COUNT query from conditions
-
-        Args:
-            condition: The condition to translate
-
-        Returns:
-            SQLAlchemy Query object for counting
-        """
-        # Analyze tables in the condition
-        tables_to_fields = self.analyze_tables_in_condition(condition)
-        model_classes = {}
-
-        for table_name in tables_to_fields.keys():
-            model_class = self.get_orm_model_by_table_name(table_name)
-            if model_class:
-                model_classes[table_name] = model_class
-
-        if not model_classes:
-            raise SQLTranslationError(
-                "No valid SQLAlchemy models found for the specified tables"
-            )
-
-        # Use the primary model for COUNT
-        primary_table = self._determine_primary_table(model_classes, tables_to_fields)
-        primary_model = model_classes[primary_table]
-
-        # Build COUNT query
-        query = self.db.query(primary_model).filter(
-            self._build_filter_expression(condition, model_classes)
-        )
-
-        return query.count()

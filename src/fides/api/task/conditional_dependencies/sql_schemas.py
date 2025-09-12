@@ -1,25 +1,9 @@
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
+from sqlalchemy import Column
 
 from fides.api.task.conditional_dependencies.schemas import Operator
-
-
-def _handle_list_contains(col, val):
-    """
-    Handle list_contains operator for different scenarios:
-    - If val is a list: check if column value is IN the list
-    - If val is a single value: check if column contains the value (for arrays/JSON) or use LIKE (for strings)
-    """
-    if isinstance(val, list):
-        # Column value should be in the provided list
-        return col.in_(val)
-    else:
-        # Single value - check if column contains it
-        # For JSON/array columns, this would need special handling
-        # For now, fall back to LIKE for string matching
-        return col.like(f"%{val}%")
-
 
 OPERATOR_MAP = {
     Operator.eq: lambda col, val: col == val,
@@ -38,6 +22,28 @@ OPERATOR_MAP = {
 }
 
 
+def _handle_list_contains(col: Column, val: Any) -> Column:
+    """
+    Handle list_contains operator for different scenarios:
+    - If val is a list: check if column value is IN the list
+    - If val is a single value: check if column contains the value (for arrays/JSON) or use LIKE (for strings)
+
+    Args:
+        col: SQLAlchemy column
+        val: Value to compare against
+
+    Returns:
+        SQLAlchemy column
+    """
+    if isinstance(val, list):
+        # Column value should be in the provided list
+        return col.in_(val)
+    # Single value - check if column contains it
+    # For JSON/array columns, this would need special handling
+    # For now, fall back to LIKE for string matching
+    return col.like(f"%{val}%")
+
+
 class SQLTranslationError(Exception):
     """Error raised when SQL translation fails"""
 
@@ -52,11 +58,6 @@ class FieldAddress(BaseModel):
     )
     full_address: str = Field(description="Original field address string")
 
-    @property
-    def is_json_path(self) -> bool:
-        """Whether this field address includes a JSON path"""
-        return self.json_path is not None and len(self.json_path) > 0
-
     def __hash__(self) -> int:
         """Make FieldAddress hashable for use in sets"""
         return hash(
@@ -67,7 +68,7 @@ class FieldAddress(BaseModel):
             )
         )
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Enable equality comparison for FieldAddress objects"""
         if not isinstance(other, FieldAddress):
             return False
@@ -76,11 +77,6 @@ class FieldAddress(BaseModel):
             and self.column_name == other.column_name
             and self.json_path == other.json_path
         )
-
-    @property
-    def base_field_name(self) -> str:
-        """Get the base field name for SELECT clause (without JSON path operators)"""
-        return self.column_name
 
     def to_sql_column(self, enable_json_operators: bool = True) -> str:
         """
@@ -92,11 +88,16 @@ class FieldAddress(BaseModel):
         Returns:
             SQL column reference string
         """
-        if not self.is_json_path or not enable_json_operators:
+        is_json_path = self.json_path is not None and len(self.json_path) > 0
+        if not is_json_path or not enable_json_operators:
             return self.column_name
 
+        if self.json_path is None:
+            # This should never happen
+            raise SQLTranslationError("JSON path is required")
+
         # Build PostgreSQL JSON path: column->'path'->'path'->>'final_path'
-        if len(self.json_path) == 1:
+        if self.json_path and len(self.json_path) == 1:
             # Simple case: column->>'field'
             return f"{self.column_name}->>'{self.json_path[0]}'"
 
