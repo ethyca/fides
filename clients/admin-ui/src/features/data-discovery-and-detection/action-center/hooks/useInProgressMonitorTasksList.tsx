@@ -7,19 +7,17 @@ import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
 interface UseInProgressMonitorTasksListConfig {
   monitorId?: string; // Optional since this shows tasks from all monitors
-  showCompleted?: boolean;
 }
 
 export const useInProgressMonitorTasksList = ({
   monitorId,
-  showCompleted = false,
 }: UseInProgressMonitorTasksListConfig = {}) => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
   const [connectionNameFilters, setConnectionNameFilters] = useState<string[]>([]);
   const [taskTypeFilters, setTaskTypeFilters] = useState<string[]>([]);
-  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing"]); // Default to "in progress" states
 
   const updateSearch = useCallback((newSearch: string) => {
     setSearchQuery(newSearch);
@@ -41,11 +39,45 @@ export const useInProgressMonitorTasksList = ({
     setPageIndex(1);
   }, []);
 
+  // Default button: Reset to "In Progress" states only
+  const resetToDefault = useCallback(() => {
+    setConnectionNameFilters([]);
+    setTaskTypeFilters([]);
+    setStatusFilters(["pending", "in_processing"]);
+    setPageIndex(1);
+  }, []);
+
+  // Clear button: Remove all filters
+  const clearAllFilters = useCallback(() => {
+    setConnectionNameFilters([]);
+    setTaskTypeFilters([]);
+    setStatusFilters([]);
+    setPageIndex(1);
+  }, []);
+
+  // All possible status values from ExecutionLogStatus enum
+  const allPossibleStatuses = [
+    "pending",
+    "in_processing",
+    "complete",
+    "error",
+    "awaiting_processing",
+    "retrying",
+    "skipped"
+  ];
+
+  // Determine if we need to use show_completed=true
+  // Use show_completed=true if:
+  // - No status filters (show all)
+  // - Status filters include anything other than just pending/in_processing
+  const needsShowCompleted = statusFilters.length === 0 ||
+    statusFilters.some(status => !["pending", "in_processing"].includes(status));
+
   const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    show_completed: showCompleted,
+    show_completed: needsShowCompleted,
     connection_names: connectionNameFilters.length > 0 ? connectionNameFilters : undefined,
     task_types: taskTypeFilters.length > 0 ? taskTypeFilters : undefined,
     statuses: statusFilters.length > 0 ? statusFilters : undefined,
@@ -72,15 +104,8 @@ export const useInProgressMonitorTasksList = ({
     return Array.from(types).sort();
   }, [data?.items]);
 
-  const availableStatuses = useMemo(() => {
-    const statuses = new Set<string>();
-    data?.items?.forEach(item => {
-      if (item.status) {
-        statuses.add(item.status);
-      }
-    });
-    return Array.from(statuses).sort();
-  }, [data?.items]);
+  // Use all possible statuses instead of just what's in current data
+  const availableStatuses = allPossibleStatuses;
 
   const listProps = useMemo(
     () => ({
@@ -118,6 +143,10 @@ export const useInProgressMonitorTasksList = ({
     updateConnectionNameFilters,
     updateTaskTypeFilters,
     updateStatusFilters,
+
+    // Filter actions
+    resetToDefault,
+    clearAllFilters,
 
     // Available filter options
     availableConnectionNames,
