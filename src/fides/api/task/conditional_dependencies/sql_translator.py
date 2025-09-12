@@ -1,8 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Optional
 
-from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
+from sqlalchemy import and_, or_
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import Query, RelationshipProperty, Session
 
+from fides.api.db.base_class import Base
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
     ConditionGroup,
@@ -11,346 +13,428 @@ from fides.api.task.conditional_dependencies.schemas import (
     Operator,
 )
 from fides.api.task.conditional_dependencies.sql_schemas import (
-    SQLTranslationConfig,
+    OPERATOR_MAP,
+    FieldAddress,
     SQLTranslationError,
 )
 
 
 class SQLConditionTranslator:
-    """Translates conditional dependencies into SQL WHERE clauses"""
+    """Translates conditional dependencies into SQLAlchemy queries using relationship traversal"""
 
-    # Mapping of conditional dependency operators to SQL operators
-    OPERATOR_MAPPING = {
-        # Basic comparison operators
-        Operator.eq: "=",
-        Operator.neq: "!=",
-        # Numeric comparison operators
-        Operator.lt: "<",
-        Operator.lte: "<=",
-        Operator.gt: ">",
-        Operator.gte: ">=",
-        # Existence operators
-        Operator.exists: "IS NOT NULL",
-        Operator.not_exists: "IS NULL",
-        # List membership operators (handled specially)
-        Operator.list_contains: "= ANY",
-        Operator.not_in_list: "!= ALL",
-        # String operators
-        Operator.starts_with: "LIKE",
-        Operator.ends_with: "LIKE",
-        Operator.contains: "LIKE",
-        # List-to-list operators (PostgreSQL array operators)
-        Operator.list_intersects: "&&",  # Array overlap
-        Operator.list_subset: "<@",  # Array is contained by
-        Operator.list_superset: "@>",  # Array contains
-        Operator.list_disjoint: "NOT &&",  # Arrays do not overlap
-    }
-
-    # Logical operators mapping
-    LOGICAL_OPERATOR_MAPPING = {
-        GroupOperator.and_: "AND",
-        GroupOperator.or_: "OR",
-    }
-
-    def __init__(self, table_name: str, config: Optional[SQLTranslationConfig] = None):
+    def __init__(self, db: Session, orm_registry=None):
         """
-        Initialize the SQL translator for PostgreSQL
+        Initialize the SQL translator using SQLAlchemy's relationship traversal
+
+        This translator leverages SQLAlchemy's built-in relationship handling for:
+        - Automatic JOIN optimization
+        - Type-safe column references
+        - Built-in query caching
+        - Clean relationship traversal
 
         Args:
-            table_name: The name of the table to query
-            config: Optional configuration for translation behavior
+            db: SQLAlchemy database session for query execution
+            orm_registry: Optional SQLAlchemy registry or Base class for ORM introspection
         """
-        self.table_name = table_name
-        self.config = config or SQLTranslationConfig(table_name=table_name)
-        self._parameter_counter = 0
+        self.db = db
+        self.orm_registry = orm_registry or Base
+        self._model_cache = {}
 
-    def translate_condition_to_sql(
-        self, condition: Condition, field_mapping: Optional[Dict[str, str]] = None
-    ) -> tuple[str, Dict[str, Any]]:
+    def extract_field_addresses(self, condition: Condition) -> set[FieldAddress]:
         """
-        Translate a conditional dependency into PostgreSQL WHERE clause
+        Extract all field addresses from a condition tree
 
         Args:
-            condition: The condition to translate
-            field_mapping: Optional mapping from field addresses to column names
+            condition: The condition to analyze
 
         Returns:
-            Tuple of (SQL WHERE clause, parameter dictionary)
+            Set of FieldAddress objects
+        """
+        field_addresses = set()
+
+        if isinstance(condition, ConditionLeaf):
+            field_addr = FieldAddress.parse(condition.field_address)
+            field_addresses.add(field_addr)
+            return field_addresses
+
+        if isinstance(condition, ConditionGroup):
+            for sub_condition in condition.conditions:
+                field_addresses.update(self.extract_field_addresses(sub_condition))
+            return field_addresses
+
+        raise SQLTranslationError(f"Unknown condition type: {type(condition)}")
+
+    def analyze_tables_in_condition(
+        self, condition: Condition
+    ) -> dict[str, list[FieldAddress]]:
+        """
+        Analyze which tables are referenced in a condition and group field addresses by table
+
+        Args:
+            condition: The condition to analyze
+
+        Returns:
+            Dictionary mapping table names to lists of field addresses for that table
+        """
+        field_addresses = self.extract_field_addresses(condition)
+
+        # Group field addresses by table
+        tables_to_fields = {}
+        for field_addr in field_addresses:
+            if not field_addr.table_name:
+                raise SQLTranslationError(
+                    f"Table name not specified for field address: {field_addr.full_address}"
+                )
+
+            if field_addr.table_name not in tables_to_fields:
+                tables_to_fields[field_addr.table_name] = []
+            tables_to_fields[field_addr.table_name].append(field_addr)
+
+        return tables_to_fields
+
+    def get_orm_model_by_table_name(self, table_name: str):
+        """
+        Find the ORM model class for a given table name (with caching)
+
+        Uses the Base class's subclasses to find models - much simpler and cleaner
+        than accessing SQLAlchemy internals.
+
+        Args:
+            table_name: Database table name
+
+        Returns:
+            SQLAlchemy model class or None if not found
+        """
+        # Check cache first
+        if table_name in self._model_cache:
+            return self._model_cache[table_name]
+
+        # Only try to get subclasses if orm_registry is a real class (not a mock)
+        if hasattr(self.orm_registry, "__subclasses__"):
+            try:
+                # Search through all subclasses of the Base class
+                for subclass in self._get_all_subclasses(self.orm_registry):
+                    if (
+                        hasattr(subclass, "__tablename__")
+                        and subclass.__tablename__ == table_name
+                    ):
+                        self._model_cache[table_name] = subclass
+                        return subclass
+            except (AttributeError, TypeError):
+                # Handle cases where orm_registry is a mock or doesn't support subclasses
+                pass
+
+        # If not found or can't access subclasses, cache None and return
+        self._model_cache[table_name] = None
+        return None
+
+    def _get_all_subclasses(self, cls):
+        """
+        Recursively get all subclasses of a class
+
+        Args:
+            cls: The base class
+
+        Returns:
+            Set of all subclasses
+        """
+        subclasses = set(cls.__subclasses__())
+        for subclass in list(subclasses):
+            subclasses.update(self._get_all_subclasses(subclass))
+        return subclasses
+
+    def build_sqlalchemy_query(self, condition: Condition) -> Query:
+        """
+        Build SQLAlchemy Query object using relationship traversal
+
+        This leverages SQLAlchemy's built-in relationship handling instead of manual JOIN discovery.
+        Benefits:
+        - Automatic JOIN optimization
+        - Uses existing relationship() definitions
+        - Type safety and IDE support
+        - Handles complex relationship patterns
+
+        Args:
+            condition: The condition to translate into a Query
+
+        Returns:
+            SQLAlchemy Query object
 
         Raises:
-            SQLTranslationError: If translation fails
+            SQLTranslationError: If db is not provided or models not found
         """
-        self._parameter_counter = 0
-        field_mapping = field_mapping or {}
+        # Analyze which tables/models are needed
+        tables_to_fields = self.analyze_tables_in_condition(condition)
+        model_classes = {}
 
-        where_clause, parameters = self._translate_condition(condition, field_mapping)
+        for table_name in tables_to_fields.keys():
+            model_class = self.get_orm_model_by_table_name(table_name)
+            if model_class:
+                model_classes[table_name] = model_class
 
-        if not where_clause:
-            return "", {}
+        if not model_classes:
+            raise SQLTranslationError(
+                "No valid SQLAlchemy models found for the specified tables"
+            )
 
-        return f"WHERE {where_clause}", parameters
+        # Determine primary model (most connected or first alphabetically)
+        primary_table = self._determine_primary_table(model_classes, tables_to_fields)
+        primary_model = model_classes[primary_table]
 
-    def _translate_condition(
-        self, condition: Condition, field_mapping: Dict[str, str]
-    ) -> tuple[str, Dict[str, Any]]:
-        """Translate a single condition (leaf or group) to SQL"""
-        if isinstance(condition, ConditionLeaf):
-            return self._translate_leaf_condition(condition, field_mapping)
-        elif isinstance(condition, ConditionGroup):
-            return self._translate_group_condition(condition, field_mapping)
-        else:
-            raise SQLTranslationError(f"Unknown condition type: {type(condition)}")
+        # Build base query - select all fields mentioned in conditions
+        select_fields = self._build_select_fields(tables_to_fields, model_classes)
+        query = self.db.query(*select_fields)
 
-    def _translate_leaf_condition(
-        self, condition: ConditionLeaf, field_mapping: Dict[str, str]
-    ) -> tuple[str, Dict[str, Any]]:
-        """Translate a leaf condition to SQL"""
-        # Get the column name for this field
-        column_name = field_mapping.get(
-            condition.field_address, condition.field_address
+        # Add JOINs using relationships
+        query = self._add_relationship_joins(
+            query, primary_model, model_classes, primary_table
         )
 
-        # Handle field address with dots (nested fields) using PostgreSQL JSON operators
-        if "." in column_name and column_name not in field_mapping:
-            # Convert dot notation to PostgreSQL JSON path
-            parts = column_name.split(".")
-            if len(parts) == 2:
-                # Simple nested field: user.name -> user->>'name'
-                column_name = f"{parts[0]}->>'{parts[1]}'"
+        # Add WHERE conditions
+        query = self._add_condition_filters(query, condition, model_classes)
+
+        return query
+
+    def _determine_primary_table(
+        self,
+        model_classes: dict[str, type],
+        tables_to_fields: dict[str, list[FieldAddress]],
+    ) -> str:
+        """Determine which model should be the primary query target"""
+        # Strategy: Use the table with the most fields in conditions, or first alphabetically
+        max_fields = 0
+        primary_table = None
+
+        for table_name, fields in tables_to_fields.items():
+            if table_name in model_classes and len(fields) > max_fields:
+                max_fields = len(fields)
+                primary_table = table_name
+
+        return primary_table or sorted(model_classes.keys())[0]
+
+    def _build_select_fields(
+        self,
+        tables_to_fields: dict[str, list[FieldAddress]],
+        model_classes: dict[str, type],
+    ) -> list:
+        """Build list of fields to select in the query"""
+        select_fields = []
+
+        for table_name, field_addresses in tables_to_fields.items():
+            if table_name not in model_classes:
+                continue
+
+            model_class = model_classes[table_name]
+
+            for field_addr in field_addresses:
+                if hasattr(model_class, field_addr.base_field_name):
+                    column = getattr(model_class, field_addr.base_field_name)
+                    select_fields.append(column)
+
+        return select_fields or [
+            list(model_classes.values())[0]
+        ]  # Fallback to first model
+
+    def _add_relationship_joins(
+        self,
+        query: Query,
+        primary_model: type,
+        model_classes: dict[str, type],
+        primary_table: str,
+    ) -> Query:
+        """
+        Add JOINs using SQLAlchemy relationships
+
+        This is where SQLAlchemy shines - it automatically determines JOIN conditions
+        """
+        for table_name, model_class in model_classes.items():
+            if table_name == primary_table:
+                continue
+
+            # Try to find relationship path from primary to this model
+            join_path = self._find_relationship_path(primary_model, model_class)
+
+            if join_path:
+                # Apply JOINs using the relationship path
+                for relationship_attr in join_path:
+                    query = query.join(relationship_attr)
             else:
-                # Deeper nesting: user.billing.amount -> user->'billing'->>'amount'
-                # Build path: first part, then ->'part' for middle parts, then ->>'last_part'
-                json_path = f"'{parts[1]}'"
-                for part in parts[2:-1]:
-                    json_path += f"->'{part}'"
-                json_path += f"->>'{parts[-1]}'"
-                column_name = f"{parts[0]}->{json_path}"
+                # Try to find any model that can reach this one
+                joined = False
+                for joined_table, joined_model in model_classes.items():
+                    if joined_table == table_name or joined_table == primary_table:
+                        continue
 
-        # Get SQL operator
-        sql_operator = self.OPERATOR_MAPPING.get(condition.operator)
-        if not sql_operator:
-            raise SQLTranslationError(
-                f"Unsupported operator for SQL: {condition.operator}"
-            )
+                    path = self._find_relationship_path(joined_model, model_class)
+                    if path:
+                        for relationship_attr in path:
+                            query = query.join(relationship_attr)
+                        joined = True
+                        break
 
-        # Generate parameter name
-        param_name = f"param_{self._parameter_counter}"
-        self._parameter_counter += 1
+                if not joined:
+                    # Log warning but don't fail - the query might still work
+                    pass
 
-        # Handle different operator types
-        if condition.operator in [Operator.exists, Operator.not_exists]:
-            return f"{column_name} {sql_operator}", {}
+        return query
 
-        elif condition.operator in [
-            Operator.starts_with,
-            Operator.ends_with,
-            Operator.contains,
-        ]:
-            return self._translate_string_operator(
-                condition, column_name, sql_operator, param_name
-            )
+    def _find_relationship_path(
+        self, from_model: type, to_model: type
+    ) -> Optional[list]:
+        """
+        Find relationship path between two models using SQLAlchemy introspection
 
-        elif condition.operator in [Operator.list_contains, Operator.not_in_list]:
-            return self._translate_list_operator(
-                condition, column_name, sql_operator, param_name
-            )
+        This uses the relationship() definitions in the models to find traversal paths
+        """
+        if from_model == to_model:
+            return []
 
-        elif condition.operator in [
-            Operator.list_intersects,
-            Operator.list_subset,
-            Operator.list_superset,
-            Operator.list_disjoint,
-        ]:
-            return self._translate_list_to_list_operator(
-                condition, column_name, sql_operator, param_name
-            )
+        # Get mapper for the source model
+        mapper = inspect(from_model)
 
+        # Check direct relationships
+        for relationship_name, relationship_prop in mapper.relationships.items():
+            if isinstance(relationship_prop, RelationshipProperty):
+                target_mapper = relationship_prop.mapper
+                if target_mapper.class_ == to_model:
+                    # Direct relationship found
+                    return [getattr(from_model, relationship_name)]
+
+        # For now, only handle direct relationships
+        # Could be enhanced to handle multi-hop relationships
+        return None
+
+    def _add_condition_filters(
+        self, query: Query, condition: Condition, model_classes: dict[str, type]
+    ) -> Query:
+        """Add WHERE conditions to the SQLAlchemy query"""
+        filter_expression = self._build_filter_expression(condition, model_classes)
+        if filter_expression is not None:
+            query = query.filter(filter_expression)
+        return query
+
+    def _build_filter_expression(
+        self, condition: Condition, model_classes: dict[str, type]
+    ):
+        """Build SQLAlchemy filter expressions from conditions"""
+        if isinstance(condition, ConditionLeaf):
+            return self._build_leaf_filter(condition, model_classes)
+        if isinstance(condition, ConditionGroup):
+            sub_filters = []
+            for sub_cond in condition.conditions:
+                sub_filter = self._build_filter_expression(sub_cond, model_classes)
+                if sub_filter is not None:
+                    sub_filters.append(sub_filter)
+
+            if not sub_filters:
+                return None
+
+            if condition.logical_operator == GroupOperator.and_:
+                return and_(*sub_filters)
+            if condition.logical_operator == GroupOperator.or_:
+                return or_(*sub_filters)
+
+        return None
+
+    def _build_leaf_filter(
+        self, condition: ConditionLeaf, model_classes: dict[str, type]
+    ):
+        """Build filter expression for a single condition using SQLAlchemy column objects"""
+        field_addr = FieldAddress.parse(condition.field_address)
+
+        if not field_addr.table_name or field_addr.table_name not in model_classes:
+            return None
+
+        model_class = model_classes[field_addr.table_name]
+
+        # Handle JSON path fields
+        if field_addr.json_path:
+            if hasattr(model_class, field_addr.base_field_name):
+                column = getattr(model_class, field_addr.base_field_name)
+                # Use PostgreSQL JSON operators
+                json_expr = column[field_addr.json_path].astext
+                return self._apply_operator_to_column(
+                    json_expr, condition.operator, condition.value
+                )
         else:
-            # Basic comparison operators
-            return f"{column_name} {sql_operator} :{param_name}", {
-                param_name: condition.value
-            }
+            # Regular column
+            if hasattr(model_class, field_addr.base_field_name):
+                column = getattr(model_class, field_addr.base_field_name)
+                return self._apply_operator_to_column(
+                    column, condition.operator, condition.value
+                )
 
-    def _translate_string_operator(
-        self,
-        condition: ConditionLeaf,
-        column_name: str,
-        sql_operator: str,
-        param_name: str,
-    ) -> tuple[str, Dict[str, Any]]:
-        """Translate string operators (starts_with, ends_with, contains)"""
-        if not isinstance(condition.value, str):
-            raise SQLTranslationError(
-                f"String operator requires string value, got: {type(condition.value)}"
-            )
+        return None
 
-        if condition.operator == Operator.starts_with:
-            pattern = f"{condition.value}%"
-        elif condition.operator == Operator.ends_with:
-            pattern = f"%{condition.value}"
-        elif condition.operator == Operator.contains:
-            pattern = f"%{condition.value}%"
-        else:
-            raise SQLTranslationError(f"Unknown string operator: {condition.operator}")
+    def _apply_operator_to_column(self, column, operator: Operator, value):
+        """Apply the specified operator to a SQLAlchemy column"""
+        # Map operators to their corresponding SQLAlchemy expressions
 
-        return f"{column_name} {sql_operator} :{param_name}", {param_name: pattern}
+        if operator in OPERATOR_MAP:
+            return OPERATOR_MAP[operator](column, value)
+        # Add more operators as needed
+        raise SQLTranslationError(
+            f"Unsupported operator for SQLAlchemy query: {operator}"
+        )
 
-    def _translate_list_operator(
-        self,
-        condition: ConditionLeaf,
-        column_name: str,
-        sql_operator: str,
-        param_name: str,
-    ) -> tuple[str, Dict[str, Any]]:
-        """Translate list operators (list_contains, not_in_list) using PostgreSQL array operators"""
-        if condition.operator == Operator.list_contains:
-            # If user provides a list, check if column value is in that list
-            if isinstance(condition.value, list):
-                # Standard SQL IN operator for scalar column against list value
-                return f"{column_name} = ANY(:{param_name})", {
-                    param_name: condition.value
-                }
-            else:
-                # If column value is an array, check if user value is in it using PostgreSQL array contains
-                return f":{param_name} = ANY({column_name})", {
-                    param_name: condition.value
-                }
-        else:  # not_in_list
-            if isinstance(condition.value, list):
-                # Standard SQL NOT IN operator for scalar column against list value
-                return f"{column_name} != ALL(:{param_name})", {
-                    param_name: condition.value
-                }
-            else:
-                # Use PostgreSQL array not contains
-                return f":{param_name} != ALL({column_name})", {
-                    param_name: condition.value
-                }
-
-    def _translate_list_to_list_operator(
-        self,
-        condition: ConditionLeaf,
-        column_name: str,
-        sql_operator: str,
-        param_name: str,
-    ) -> tuple[str, Dict[str, Any]]:
-        """Translate list-to-list operators using PostgreSQL array operators"""
-        if not isinstance(condition.value, list):
-            raise SQLTranslationError(
-                f"List-to-list operator requires list value, got: {type(condition.value)}"
-            )
-
-        # Handle special case for disjoint operator
-        if condition.operator == Operator.list_disjoint:
-            return f"NOT ({column_name} && :{param_name})", {
-                param_name: condition.value
-            }
-
-        return f"{column_name} {sql_operator} :{param_name}", {
-            param_name: condition.value
-        }
-
-    def _translate_group_condition(
-        self, group: ConditionGroup, field_mapping: Dict[str, str]
-    ) -> tuple[str, Dict[str, Any]]:
-        """Translate a group condition to SQL"""
-        if not group.conditions:
-            raise SQLTranslationError("Group condition cannot be empty")
-
-        # Translate each sub-condition
-        sub_clauses = []
-        all_parameters = {}
-
-        for condition in group.conditions:
-            clause, params = self._translate_condition(condition, field_mapping)
-            if clause:
-                sub_clauses.append(f"({clause})")
-                all_parameters.update(params)
-
-        if not sub_clauses:
-            return "", {}
-
-        # Join with logical operator
-        logical_op = self.LOGICAL_OPERATOR_MAPPING[group.logical_operator]
-        where_clause = f" {logical_op} ".join(sub_clauses)
-
-        return where_clause, all_parameters
-
-    def generate_select_query(
+    def generate_query_from_condition(
         self,
         condition: Condition,
-        fields: List[str],
-        field_mapping: Optional[Dict[str, str]] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> tuple[TextClause, Dict[str, Any]]:
+    ) -> Query:
         """
-        Generate a complete PostgreSQL SELECT query with WHERE clause from conditional dependencies
+        Generate SQLAlchemy Query from conditions
 
         Args:
             condition: The condition to translate
-            fields: List of fields to select
-            field_mapping: Optional mapping from field addresses to column names
             limit: Optional LIMIT clause
             offset: Optional OFFSET clause
 
         Returns:
-            Tuple of (SQLAlchemy TextClause, parameter dictionary)
+            SQLAlchemy Query object
         """
-        field_mapping = field_mapping or {}
-
-        # Translate condition to WHERE clause
-        where_clause, parameters = self.translate_condition_to_sql(
-            condition, field_mapping
-        )
-
-        # Build SELECT query
-        fields_str = ", ".join(fields)
-        table_name = self.config.qualified_table_name
-        query_parts = [f"SELECT {fields_str}", f"FROM {table_name}"]
-
-        if where_clause:
-            query_parts.append(where_clause)
+        query = self.build_sqlalchemy_query(condition)
 
         if limit is not None:
-            query_parts.append(f"LIMIT {limit}")
+            query = query.limit(limit)
 
         if offset is not None:
-            query_parts.append(f"OFFSET {offset}")
+            query = query.offset(offset)
 
-        query_str = " ".join(query_parts)
+        return query
 
-        return text(query_str), parameters
-
-    def generate_count_query(
-        self,
-        condition: Condition,
-        field_mapping: Optional[Dict[str, str]] = None,
-    ) -> tuple[TextClause, Dict[str, Any]]:
+    def generate_count_query(self, condition: Condition) -> Query:
         """
-        Generate a PostgreSQL COUNT query with WHERE clause from conditional dependencies
+        Generate a COUNT query from conditions
 
         Args:
             condition: The condition to translate
-            field_mapping: Optional mapping from field addresses to column names
 
         Returns:
-            Tuple of (SQLAlchemy TextClause, parameter dictionary)
+            SQLAlchemy Query object for counting
         """
-        field_mapping = field_mapping or {}
+        # Analyze tables in the condition
+        tables_to_fields = self.analyze_tables_in_condition(condition)
+        model_classes = {}
 
-        # Translate condition to WHERE clause
-        where_clause, parameters = self.translate_condition_to_sql(
-            condition, field_mapping
-        )
+        for table_name in tables_to_fields.keys():
+            model_class = self.get_orm_model_by_table_name(table_name)
+            if model_class:
+                model_classes[table_name] = model_class
+
+        if not model_classes:
+            raise SQLTranslationError(
+                "No valid SQLAlchemy models found for the specified tables"
+            )
+
+        # Use the primary model for COUNT
+        primary_table = self._determine_primary_table(model_classes, tables_to_fields)
+        primary_model = model_classes[primary_table]
 
         # Build COUNT query
-        table_name = self.config.qualified_table_name
-        query_parts = ["SELECT COUNT(*)", f"FROM {table_name}"]
+        query = self.db.query(primary_model).filter(
+            self._build_filter_expression(condition, model_classes)
+        )
 
-        if where_clause:
-            query_parts.append(where_clause)
-
-        query_str = " ".join(query_parts)
-
-        return text(query_str), parameters
+        return query.count()
