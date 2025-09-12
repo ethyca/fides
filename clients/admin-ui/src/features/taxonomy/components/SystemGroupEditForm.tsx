@@ -112,6 +112,10 @@ const SystemGroupEditForm = ({
       }
     });
 
+    if (suggestedOptions.length === 0) {
+      return allOptions;
+    }
+
     return [
       {
         label: "Select all suggested",

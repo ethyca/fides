@@ -22,15 +22,19 @@ describe("systems table plus features", () => {
     });
 
     it("allows filtering by system groups", () => {
-      cy.intercept("/api/v1/system?**").as("getSystemsByGroup");
-      cy.applyTableFilter("Groups", "Blue Group");
-      cy.wait("@getSystemGroups");
-      cy.get(".ant-table-filter-dropdown").within(() => {
-        cy.get(".ant-btn-primary").click({ force: true });
-        cy.wait("@getSystemsByGroup").then((interception) => {
-          expect(interception.request.query.system_group).to.exist;
-        });
+      cy.get(".ant-table-column-title")
+        .contains("Groups")
+        .siblings(".ant-dropdown-trigger")
+        .click({ force: true });
+
+      cy.get(".ant-table-filter-dropdown:visible").within(() => {
+        cy.intercept("GET", "/api/v1/system?**").as("getSystemsByGroup");
+        cy.get(".ant-dropdown-menu-item").contains("Blue Group").click();
+        cy.get(".ant-dropdown-menu-item").contains("Green Group").click();
+        cy.get(".ant-table-filter-dropdown-btns .ant-btn-primary").click();
       });
+      cy.url().should("include", "blue_group");
+      cy.url().should("include", "green_group");
     });
 
     describe("bulk actions on groups", () => {
@@ -43,12 +47,14 @@ describe("systems table plus features", () => {
           .click();
       });
 
-      it("enables 'Add to group' button when systems are selected", () => {
-        cy.contains("button", "Add to group").should("be.enabled");
+      it("shows system group options in Actions menu when systems are selected", () => {
+        cy.contains("button", "Actions").click();
+        cy.contains("Add to system group").should("exist");
       });
 
       it("allows creating new group with selected systems", () => {
-        cy.contains("button", "Add to group").click();
+        cy.contains("button", "Actions").click();
+        cy.contains("Add to system group").trigger("mouseover");
         cy.contains("Create new group +").click();
 
         cy.getByTestId("input-name").type("Test Group");
@@ -65,12 +71,12 @@ describe("systems table plus features", () => {
       });
 
       it("allows adding systems to existing group", () => {
-        cy.contains("button", "Add to group").click();
-
-        cy.get(".ant-dropdown-menu-item").eq(1).click();
+        cy.contains("button", "Actions").click();
+        cy.contains("Add to system group").click();
+        cy.contains("Red Group").click();
 
         cy.wait("@updateSystemGroup").then((interception) => {
-          expect(interception.request.body.systems).to.have.length(4);
+          expect(interception.request.body.systems).to.have.length(3);
           expect(interception.request.body.fides_key).to.exist;
         });
       });
