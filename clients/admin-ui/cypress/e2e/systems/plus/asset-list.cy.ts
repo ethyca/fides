@@ -85,6 +85,10 @@ describe("Plus Asset List", () => {
           "essential",
         );
         cy.getByTestId("controlled-select-data_uses").antSelect(0);
+        cy.getByTestId("controlled-select-data_uses").within(() => {
+          // force select menu to close so it doesn't cover the input
+          cy.get("input").focus().blur();
+        });
         cy.getByTestId("input-domain")
           .should("have.value", ".doubleclick.net")
           .should("be.disabled");
@@ -92,6 +96,10 @@ describe("Plus Asset List", () => {
           .should("have.value", "This is a test description")
           .clear({ force: true })
           .type("Updating the description");
+
+        cy.getByTestId("input-duration")
+          .should("have.value", "")
+          .type("A few minutes");
 
         cy.getByTestId("save-btn").click();
       });
