@@ -1,5 +1,7 @@
 from typing import Optional
 
+from collections import deque
+from loguru import logger
 from sqlalchemy import and_, or_
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Query, RelationshipProperty, Session
@@ -40,26 +42,26 @@ class SQLConditionTranslator:
         self.orm_registry = orm_registry or Base
         self._model_cache = {}
 
-    def extract_field_addresses(self, condition: Condition) -> set[FieldAddress]:
-        """
-        Extract all field addresses from a condition tree
+    def extract_field_addresses(self, condition: Condition) -> list[FieldAddress]:
+        """Extracts all field addresses from a condition tree in order.
+        The order is important for determining the primary table.
 
         Args:
             condition: The condition to analyze
 
         Returns:
-            Set of FieldAddress objects
+            List of FieldAddress objects in the order they appear
         """
-        field_addresses = set()
+        field_addresses = []
 
         if isinstance(condition, ConditionLeaf):
             field_addr = FieldAddress.parse(condition.field_address)
-            field_addresses.add(field_addr)
+            field_addresses.append(field_addr)
             return field_addresses
 
         if isinstance(condition, ConditionGroup):
             for sub_condition in condition.conditions:
-                field_addresses.update(self.extract_field_addresses(sub_condition))
+                field_addresses.extend(self.extract_field_addresses(sub_condition))
             return field_addresses
 
         raise SQLTranslationError(f"Unknown condition type: {type(condition)}")
@@ -75,10 +77,11 @@ class SQLConditionTranslator:
 
         Returns:
             Dictionary mapping table names to lists of field addresses for that table
+            (preserves order of first appearance)
         """
         field_addresses = self.extract_field_addresses(condition)
 
-        # Group field addresses by table
+        # Group field addresses by table, preserving order of first appearance
         tables_to_fields = {}
         for field_addr in field_addresses:
             if not field_addr.table_name:
@@ -96,8 +99,7 @@ class SQLConditionTranslator:
         """
         Find the ORM model class for a given table name (with caching)
 
-        Uses the Base class's subclasses to find models - much simpler and cleaner
-        than accessing SQLAlchemy internals.
+        Uses SQLAlchemy's registry and metadata for efficient lookups.
 
         Args:
             table_name: Database table name
@@ -109,22 +111,26 @@ class SQLConditionTranslator:
         if table_name in self._model_cache:
             return self._model_cache[table_name]
 
-        # Only try to get subclasses if orm_registry is a real class (not a mock)
-        if hasattr(self.orm_registry, "__subclasses__"):
+        # This approach works for SQLAlchemy 1.4+ using the registry.
+        if hasattr(self.orm_registry, 'registry') and hasattr(self.orm_registry.registry, '_class_registry'):
             try:
-                # Search through all subclasses of the Base class
-                for subclass in self._get_all_subclasses(self.orm_registry):
-                    if (
-                        hasattr(subclass, "__tablename__")
-                        and subclass.__tablename__ == table_name
-                    ):
-                        self._model_cache[table_name] = subclass
-                        return subclass
-            except (AttributeError, TypeError):
-                # Handle cases where orm_registry is a mock or doesn't support subclasses
-                pass
+                # SQLAlchemy 1.4+ uses registry.mappers or registry._class_registry
+                if hasattr(self.orm_registry.registry, 'mappers'):
+                    for mapper in self.orm_registry.registry.mappers:
+                        if mapper.class_.__tablename__ == table_name:
+                            self._model_cache[table_name] = mapper.class_
+                            return mapper.class_
+                # else:
+                #     # Try the _class_registry approach
+                #     for model_class in self.orm_registry.registry._class_registry.data.values():
+                #         if (hasattr(model_class, '__tablename__')
+                #             and getattr(model_class, '__tablename__', None) == table_name):
+                #             self._model_cache[table_name] = model_class
+                #             return model_class
+            except (AttributeError, TypeError) as e:
+                logger.debug(f"Registry approach failed: {e}")
 
-        # If not found or can't access subclasses, cache None and return
+        # If not found, cache None and return
         self._model_cache[table_name] = None
         return None
 
@@ -172,6 +178,11 @@ class SQLConditionTranslator:
             if model_class:
                 model_classes[table_name] = model_class
 
+        # For join/reference tables, try to find their related main tables
+        model_classes = self._expand_with_related_main_tables(
+            model_classes, tables_to_fields
+        )
+
         if not model_classes:
             raise SQLTranslationError(
                 "No valid SQLAlchemy models found for the specified tables"
@@ -181,9 +192,8 @@ class SQLConditionTranslator:
         primary_table = self._determine_primary_table(model_classes, tables_to_fields)
         primary_model = model_classes[primary_table]
 
-        # Build base query - select all fields mentioned in conditions
-        select_fields = self._build_select_fields(tables_to_fields, model_classes)
-        query = self.db.query(*select_fields)
+        # Build base query - select from primary model (equivalent to SELECT *)
+        query = self.db.query(primary_model)
 
         # Add JOINs using relationships
         query = self._add_relationship_joins(
@@ -200,40 +210,193 @@ class SQLConditionTranslator:
         model_classes: dict[str, type],
         tables_to_fields: dict[str, list[FieldAddress]],
     ) -> str:
-        """Determine which model should be the primary query target"""
-        # Strategy: Use the table with the most fields in conditions, or first alphabetically
+        """
+        Determine which model should be the primary query target
+
+        Strategy:
+        1. Use the table from the first condition (most intuitive for users)
+        2. Prefer "main" entities over join/reference tables
+        3. Use the table with the most fields in conditions
+        4. Fall back to first alphabetically
+        """
+        # Strategy 1: Use the table from the first condition
+        # This makes the query intent clear and predictable for users
+        if tables_to_fields:
+            first_table_name = next(iter(tables_to_fields.keys()))
+            if first_table_name in model_classes:
+                logger.debug(f"Using first condition table '{first_table_name}' as primary table")
+                return first_table_name
+
+        # Common patterns for join/reference table names
+        join_table_patterns = ["_reference", "_join", "_link", "_assoc", "_association"]
+
+        # Separate main tables from potential join tables
+        main_tables = []
+        join_tables = []
+
+        for table_name in tables_to_fields.keys():
+            if table_name in model_classes:
+                is_join_table = any(
+                    pattern in table_name.lower() for pattern in join_table_patterns
+                )
+                if is_join_table:
+                    join_tables.append(table_name)
+                else:
+                    main_tables.append(table_name)
+
+        # Prefer main tables over join tables
+        candidate_tables = main_tables if main_tables else join_tables
+
+        # Among candidates, use the table with the most fields in conditions
         max_fields = 0
         primary_table = None
 
-        for table_name, fields in tables_to_fields.items():
-            if table_name in model_classes and len(fields) > max_fields:
+        for table_name in candidate_tables:
+            fields = tables_to_fields.get(table_name, [])
+            if len(fields) > max_fields:
                 max_fields = len(fields)
                 primary_table = table_name
 
+        # Fall back to first alphabetically from all available tables
         return primary_table or sorted(model_classes.keys())[0]
 
-    def _build_select_fields(
-        self,
-        tables_to_fields: dict[str, list[FieldAddress]],
-        model_classes: dict[str, type],
-    ) -> list:
-        """Build list of fields to select in the query"""
-        select_fields = []
+    def _expand_with_related_main_tables(
+        self, model_classes: dict[str, type], tables_to_fields: dict[str, list]
+    ) -> dict[str, type]:
+        """
+        For join/reference tables, find and include their related main tables
 
-        for table_name, field_addresses in tables_to_fields.items():
-            if table_name not in model_classes:
-                continue
+        This helps with relationship queries where conditions are on join tables
+        but we want to return records from the main entities.
+        """
+        join_table_patterns = ["_reference", "_join", "_link", "_assoc", "_association"]
+        expanded_model_classes = model_classes.copy()
 
-            model_class = model_classes[table_name]
+        for table_name, model_class in model_classes.items():
+            # Check if this looks like a join table
+            is_join_table = any(
+                pattern in table_name.lower() for pattern in join_table_patterns
+            )
 
-            for field_addr in field_addresses:
-                if hasattr(model_class, field_addr.base_field_name):
-                    column = getattr(model_class, field_addr.base_field_name)
-                    select_fields.append(column)
+            if is_join_table:
+                # Try to find related main tables through relationships
+                main_tables = self._find_related_main_tables(model_class, table_name)
+                for main_table_name, main_model_class in main_tables.items():
+                    if main_table_name not in expanded_model_classes:
+                        expanded_model_classes[main_table_name] = main_model_class
+                        # Add empty field list for the main table since it wasn't in conditions
+                        tables_to_fields[main_table_name] = []
 
-        return select_fields or [
-            list(model_classes.values())[0]
-        ]  # Fallback to first model
+        return expanded_model_classes
+
+    def _find_related_main_tables(
+        self, join_model_class: type, join_table_name: str
+    ) -> dict[str, type]:
+        """
+        Find main tables that have relationships to this join table
+
+        For example, if we have ManualTaskReference, find ManualTask
+        """
+        related_tables = {}
+
+        try:
+            mapper = inspect(join_model_class)
+
+            # Look at relationships from the join table to find main tables
+            for relationship_name, relationship_prop in mapper.relationships.items():
+                if hasattr(relationship_prop, "mapper"):
+                    target_model = relationship_prop.mapper.class_
+                    target_table_name = getattr(target_model, "__tablename__", None)
+
+                    if target_table_name and target_table_name != join_table_name:
+                        # Check if this looks like a main table (not another join table)
+                        join_patterns = [
+                            "_reference",
+                            "_join",
+                            "_link",
+                            "_assoc",
+                            "_association",
+                        ]
+                        is_main_table = not any(
+                            pattern in target_table_name.lower()
+                            for pattern in join_patterns
+                        )
+
+                        if is_main_table:
+                            related_tables[target_table_name] = target_model
+
+        except Exception:
+            # If inspection fails, continue without adding related tables
+            pass
+
+        return related_tables
+
+    def _find_relationship_path_through_intermediates(
+        self, from_model: type, to_model: type, max_depth: int = 3
+    ) -> Optional[list]:
+        """
+        Find relationship path between models, including through intermediate tables
+
+        Uses breadth-first search to find the shortest path through relationships.
+        This can discover paths like: ManualTask -> ManualTaskReference -> FidesUser
+
+        Args:
+            from_model: Source model class
+            to_model: Target model class
+            max_depth: Maximum relationship hops to explore
+
+        Returns:
+            List of relationship attributes to traverse, or None if no path found
+        """
+        if from_model == to_model:
+            return []
+
+        # Use BFS to find shortest relationship path
+        # Queue items: (current_model, path_so_far)
+        queue = deque([(from_model, [])])
+        visited = {from_model}
+
+        for _ in range(max_depth):
+            if not queue:
+                break
+
+            for _ in range(len(queue)):
+                current_model, current_path = queue.popleft()
+
+                try:
+
+                    mapper = inspect(current_model)
+
+                    # Explore all relationships from current model
+                    for (
+                        relationship_name,
+                        relationship_prop,
+                    ) in mapper.relationships.items():
+                        if hasattr(relationship_prop, "mapper"):
+                            next_model = relationship_prop.mapper.class_
+
+                            # Found target model!
+                            if next_model == to_model:
+                                return current_path + [
+                                    getattr(current_model, relationship_name)
+                                ]
+
+                            # Add to queue for further exploration if not visited
+                            if next_model not in visited:
+                                visited.add(next_model)
+                                queue.append(
+                                    (
+                                        next_model,
+                                        current_path
+                                        + [getattr(current_model, relationship_name)],
+                                    )
+                                )
+
+                except Exception:
+                    # Skip if inspection fails
+                    continue
+
+        return None
 
     def _add_relationship_joins(
         self,
@@ -251,30 +414,43 @@ class SQLConditionTranslator:
             if table_name == primary_table:
                 continue
 
-            # Try to find relationship path from primary to this model
+            # Try to find direct relationship path first
             join_path = self._find_relationship_path(primary_model, model_class)
 
             if join_path:
-                # Apply JOINs using the relationship path
+                # Apply JOINs using the direct relationship path
                 for relationship_attr in join_path:
                     query = query.join(relationship_attr)
             else:
-                # Try to find any model that can reach this one
-                joined = False
-                for joined_table, joined_model in model_classes.items():
-                    if joined_table == table_name or joined_table == primary_table:
-                        continue
+                # Try to find path through intermediate tables
+                join_path = self._find_relationship_path_through_intermediates(
+                    primary_model, model_class, max_depth=3
+                )
 
-                    path = self._find_relationship_path(joined_model, model_class)
-                    if path:
-                        for relationship_attr in path:
-                            query = query.join(relationship_attr)
-                        joined = True
-                        break
+                if join_path:
+                    # Apply JOINs using the intermediate relationship path
+                    for relationship_attr in join_path:
+                        query = query.join(relationship_attr)
+                else:
+                    # Try to find any model that can reach this one (fallback)
+                    joined = False
+                    for joined_table, joined_model in model_classes.items():
+                        if joined_table == table_name or joined_table == primary_table:
+                            continue
 
-                if not joined:
-                    # Log warning but don't fail - the query might still work
-                    pass
+                        path = self._find_relationship_path_through_intermediates(
+                            joined_model, model_class, max_depth=2
+                        )
+                        if path:
+                            for relationship_attr in path:
+                                query = query.join(relationship_attr)
+                            joined = True
+                            break
+
+                    if not joined:
+                        # Log warning but don't fail - the query might still work
+                        # This is where the cartesian product warning comes from
+                        pass
 
         return query
 
@@ -357,14 +533,117 @@ class SQLConditionTranslator:
                     json_expr, condition.operator, condition.value
                 )
         else:
-            # Regular column
+            # Regular column or relationship
             if hasattr(model_class, field_addr.base_field_name):
-                column = getattr(model_class, field_addr.base_field_name)
-                return self._apply_operator_to_column(
-                    column, condition.operator, condition.value
+                attr = getattr(model_class, field_addr.base_field_name)
+
+                # Check what type of attribute this is and handle accordingly
+                return self._handle_model_attribute(
+                    model_class, field_addr.base_field_name, attr, condition
                 )
 
         return None
+
+    def _handle_model_attribute(self, model_class: type, field_name: str, attr, condition):
+        """
+        Handle different types of model attributes (columns, relationships, properties)
+
+        Args:
+            model_class: SQLAlchemy model class
+            field_name: Name of the field
+            attr: The attribute from getattr(model_class, field_name)
+            condition: The condition being applied
+
+        Returns:
+            SQLAlchemy expression or None
+        """
+        from sqlalchemy.ext.hybrid import hybrid_property
+        from sqlalchemy.orm import RelationshipProperty
+        from sqlalchemy import inspect
+
+        # Check if it's a SQLAlchemy column
+        if hasattr(attr, 'property') and hasattr(attr.property, 'columns'):
+            logger.debug(f"Found column {field_name} on {model_class.__name__}")
+            return self._apply_operator_to_column(attr, condition.operator, condition.value)
+
+        # Check if it's a relationship
+        elif hasattr(attr, 'property') and isinstance(attr.property, RelationshipProperty):
+            logger.debug(f"Found relationship {field_name} on {model_class.__name__}")
+            return self._handle_relationship_condition(attr, condition)
+
+        # Check if it's a hybrid property (can be translated to SQL)
+        elif isinstance(attr, hybrid_property):
+            logger.debug(f"Found hybrid property {field_name} on {model_class.__name__}")
+            return self._apply_operator_to_column(attr, condition.operator, condition.value)
+
+        # Check if it's a regular property
+        elif isinstance(attr, property):
+            logger.debug(f"Found property {field_name} on {model_class.__name__}")
+            # Try to find a SQL equivalent for the property
+            return self._handle_property_condition(model_class, field_name, attr, condition)
+
+        # Default: treat as a column
+        else:
+            logger.debug(f"Treating {field_name} as column on {model_class.__name__}")
+            return self._apply_operator_to_column(attr, condition.operator, condition.value)
+
+    def _handle_relationship_condition(self, relationship_attr, condition):
+        """
+        Handle conditions on relationships using SQLAlchemy's any() method
+
+        Args:
+            relationship_attr: SQLAlchemy relationship attribute
+            condition: The condition being applied
+
+        Returns:
+            SQLAlchemy expression using any() or has()
+        """
+        from sqlalchemy.orm import RelationshipProperty
+
+        # For list_contains on relationships, we want to check if any related object matches
+        if condition.operator == Operator.list_contains:
+            # Use any() to check if any related object has the specified value
+            # This assumes the relationship points to objects with an 'id' field
+            return relationship_attr.any(id=condition.value)
+        elif condition.operator == Operator.eq:
+            # For equality, check if the relationship has an object with this value
+            return relationship_attr.any(id=condition.value)
+        else:
+            logger.warning(f"Unsupported operator {condition.operator} for relationship")
+            return None
+
+    def _handle_property_condition(self, model_class: type, field_name: str, prop, condition):
+        """
+        Handle conditions on Python properties by finding SQL equivalents
+
+        Args:
+            model_class: SQLAlchemy model class
+            field_name: Name of the property
+            prop: The property object
+            condition: The condition being applied
+
+        Returns:
+            SQLAlchemy expression or raises an error
+        """
+        # Special handling for known property patterns
+        if field_name == 'assigned_users':
+            # For assigned_users property, translate to a query on the references relationship
+            if hasattr(model_class, 'references'):
+                references_attr = getattr(model_class, 'references')
+
+                if condition.operator == Operator.list_contains:
+                    # Check if any reference has this user ID and is an assigned_user type
+                    return references_attr.any(
+                        (references_attr.property.mapper.class_.reference_id == condition.value) &
+                        (references_attr.property.mapper.class_.reference_type == 'assigned_user')
+                    )
+
+        # If we can't find a SQL equivalent, provide a helpful error
+        raise ValueError(
+            f"Property '{field_name}' on {model_class.__name__} cannot be translated to SQL. "
+            f"Consider using the underlying database fields instead. "
+            f"For assigned_users, use manual_task_reference.reference_id and manual_task_reference.reference_type."
+        )
 
     def _apply_operator_to_column(self, column, operator: Operator, value):
         """Apply the specified operator to a SQLAlchemy column"""

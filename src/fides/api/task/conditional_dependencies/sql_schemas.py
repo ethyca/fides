@@ -4,6 +4,23 @@ from pydantic import BaseModel, Field
 
 from fides.api.task.conditional_dependencies.schemas import Operator
 
+
+def _handle_list_contains(col, val):
+    """
+    Handle list_contains operator for different scenarios:
+    - If val is a list: check if column value is IN the list
+    - If val is a single value: check if column contains the value (for arrays/JSON) or use LIKE (for strings)
+    """
+    if isinstance(val, list):
+        # Column value should be in the provided list
+        return col.in_(val)
+    else:
+        # Single value - check if column contains it
+        # For JSON/array columns, this would need special handling
+        # For now, fall back to LIKE for string matching
+        return col.like(f"%{val}%")
+
+
 OPERATOR_MAP = {
     Operator.eq: lambda col, val: col == val,
     Operator.neq: lambda col, val: col != val,
@@ -16,6 +33,8 @@ OPERATOR_MAP = {
     Operator.ends_with: lambda col, val: col.like(f"%{val}"),
     Operator.exists: lambda col, val: col.isnot(None),
     Operator.not_exists: lambda col, val: col.is_(None),
+    Operator.list_contains: lambda col, val: _handle_list_contains(col, val),
+    Operator.not_in_list: lambda col, val: ~_handle_list_contains(col, val),
 }
 
 

@@ -6,8 +6,11 @@ This scenario demonstrates various SQL query generation capabilities without cre
 
 import sys
 import argparse
+import time
+import traceback
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from uuid import uuid4
 
 # Add project root and qa directory to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -24,19 +27,46 @@ from fides.api.db.ctl_session import sync_engine
 from fides.api.db.base import *
 from fides.api.db.database import seed_db
 from sqlalchemy.orm import Session, sessionmaker
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType, AccessLevel
 from fides.api.models.sql_models import FidesUser, ClientDetail
-from fides.api.models.policy import Policy
+from fides.api.models.policy import Policy, ActionType, Rule, RuleTarget
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.models.manual_task import (
+    ManualTaskConfig,
+    ManualTaskConfigurationType,
+    ManualTaskExecutionTiming,
+    ManualTaskInstance,
+    ManualTask,
+    ManualTaskReference,
+    ManualTaskReferenceType,
+    ManualTaskParentEntityType,
+    ManualTaskType
+)
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.sql_translator import SQLConditionTranslator
+from fides.api.task.conditional_dependencies.sql_schemas import OPERATOR_MAP
 from fides.api.task.conditional_dependencies.schemas import ConditionLeaf, Operator, ConditionGroup, GroupOperator
 from fides.config import get_config
 
+
+DATA_CATEGORIES = [
+    "user.contact.email",
+    "user.name",
+    "user.unique_id",
+    "user.contact.address.city",
+    "user.contact.address.street",
+    "user.contact.address.state",
+    "user.contact.address.postal_code"
+]
 
 class SQLTranslatorDemo(QATestScenario):
     """QA scenario for demonstrating SQLConditionTranslator functionality."""
 
     def __init__(self, base_url: str = "http://localhost:8080", **kwargs):
         super().__init__(base_url, **kwargs)
+        self.connection_key = 'connection_key'
+        self.test_manual_tasks = []
+        self.test_manual_task_references = []
 
     @property
     def description(self) -> str:
@@ -70,12 +100,16 @@ class SQLTranslatorDemo(QATestScenario):
             print("Step 4: Demonstrating complex conditions")
             self._demo_complex_conditions()
 
-            # Demo 4: All operators
-            print("Step 5: Demonstrating all available operators")
+            # Demo 4: Relationship queries
+            print("Step 5: Demonstrating relationship queries")
+            self._demo_relationship_queries()
+
+            # Demo 5: All operators
+            print("Step 6: Demonstrating all available operators")
             self._demo_all_operators()
 
-            # Demo 5: Real-world examples
-            print("Step 6: Real-world examples")
+            # Demo 6: Real-world examples
+            print("Step 7: Real-world examples")
             self._demo_real_world_examples()
 
             print("✅ SQLConditionTranslator demo completed successfully!")
@@ -83,7 +117,6 @@ class SQLTranslatorDemo(QATestScenario):
 
         except Exception as e:
             print(f"❌ Error during setup: {e}")
-            import traceback
             traceback.print_exc()
             return False
 
@@ -96,6 +129,21 @@ class SQLTranslatorDemo(QATestScenario):
             for pr in getattr(self, 'test_privacy_requests', []):
                 try:
                     pr.delete(db)
+                except Exception:
+                    pass
+
+            # Clean up manual task references first (due to foreign key constraints)
+            for ref in getattr(self, 'test_manual_task_references', []):
+                try:
+                    db.delete(ref)
+                    db.commit()
+                except Exception:
+                    pass
+
+            # Clean up manual tasks
+            for task in getattr(self, 'test_manual_tasks', []):
+                try:
+                    task.delete(db)
                 except Exception:
                     pass
 
@@ -133,7 +181,6 @@ class SQLTranslatorDemo(QATestScenario):
 
         # Create test users
         self.test_users = []
-        import time
         timestamp = int(time.time())
         for i, user_data in enumerate([
             {
@@ -152,6 +199,139 @@ class SQLTranslatorDemo(QATestScenario):
             )
             self.test_users.append(user)
 
+        # Store the first user's ID to avoid detached instance issues later
+        if self.test_users:
+            self.first_test_user_id = self.test_users[0].id
+
+        # Create test manual tasks and assign users
+        print("  Creating test manual tasks...")
+        self.test_manual_tasks = []
+        self.test_manual_task_references = []
+        connection = db.query(ConnectionConfig).filter_by(key=self.connection_key).first()
+        if connection:
+            self.success(f"Found existing connection: {self.connection_key}")
+            self.connection_config_id = connection.id
+
+        # Connection doesn't exist, create it
+        else:
+            self.info(f"Connection {self.connection_key} not found, creating it...")
+
+            connection_data = {
+                "name": "Manual Task Connection",
+                "key": self.connection_key,
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.write,
+                "secrets": {},  # ManualTask connections don't need secrets
+                "disabled": False,
+                "description": "ManualTask connection for testing ManualTask and ManualTaskConditionalDependencies",
+            }
+
+            connection = ConnectionConfig.create(db=db, data=connection_data)
+            self.connection_config_id = connection.id
+
+        try:
+            manual_task = db.query(ManualTask).filter_by(parent_entity_id=self.connection_config_id, parent_entity_type=ManualTaskParentEntityType.connection_config).first()
+            if manual_task:
+                self.test_manual_tasks.append(manual_task)
+                self.success(f"Found existing manual task: {manual_task.id}")
+                config_data = {
+                    "task_id": manual_task.id,
+                    "config_type": ManualTaskConfigurationType.access_privacy_request,
+                    "version": 1,
+                    "is_current": True,
+                    "execution_timing": ManualTaskExecutionTiming.post_execution
+                }
+
+                self.manual_task_config = ManualTaskConfig.create(db=db, data=config_data)
+            else:
+                manual_task = ManualTask.create(
+                    db=db,
+                    data={
+                        "task_type": ManualTaskType.privacy_request,
+                        "parent_entity_id": self.connection_config_id,
+                        "parent_entity_type": ManualTaskParentEntityType.connection_config
+                    }
+                )
+                self.test_manual_tasks.append(manual_task)
+                config_data = {
+                    "task_id": manual_task.id,
+                    "config_type": ManualTaskConfigurationType.access_privacy_request,
+                    "version": 1,
+                    "is_current": True,
+                    "execution_timing": ManualTaskExecutionTiming.post_execution
+                }
+
+                self.manual_task_config = ManualTaskConfig.create(db=db, data=config_data)
+
+            # Assign the first user to the manual task (whether new or existing)
+            # First check if this assignment already exists
+            existing_reference = db.query(ManualTaskReference).filter_by(
+                task_id=manual_task.id,
+                reference_id=self.first_test_user_id,
+                reference_type=ManualTaskReferenceType.assigned_user
+            ).first()
+
+            if not existing_reference:
+                reference = ManualTaskReference.create(
+                    db=db,
+                    data={
+                        "task_id": manual_task.id,
+                        "reference_id": self.first_test_user_id,
+                        "reference_type": ManualTaskReferenceType.assigned_user
+                    }
+                )
+                self.test_manual_task_references.append(reference)
+                print(f"    Assigned user {self.first_test_user_id} to manual task {manual_task.id}")
+            else:
+                self.test_manual_task_references.append(existing_reference)
+                print(f"    User {self.first_test_user_id} already assigned to manual task {manual_task.id}")
+
+            # Create a ManualTaskInstance for testing
+            try:
+                existing_instance = db.query(ManualTaskInstance).filter_by(task_id=manual_task.id).first()
+                if not existing_instance:
+                    # We need a ManualTaskConfig to create an instance
+                    config = db.query(ManualTaskConfig).first()
+                    if not config:
+                        print("    ⚠️  No ManualTaskConfig found, cannot create ManualTaskInstance")
+                    else:
+                        instance = ManualTaskInstance.create(
+                            db=db,
+                            data={
+                                "task_id": manual_task.id,
+                                "config_id": config.id,
+                                "entity_id": "test_entity_123",
+                                "entity_type": "privacy_request",
+                                "status": "pending"
+                            }
+                        )
+                        print(f"    Created ManualTaskInstance {instance.id} for task {manual_task.id}")
+                else:
+                    print(f"    Found existing ManualTaskInstance {existing_instance.id} for task {manual_task.id}")
+            except ImportError:
+                print("    ⚠️  ManualTaskInstance model not available")
+            except Exception as e:
+                print(f"    ⚠️  Could not create ManualTaskInstance: {e}")
+
+        except ImportError:
+            print("  ⚠️  Manual task models not available - skipping manual task creation")
+            self.test_manual_tasks = []
+            self.test_manual_task_references = []
+
+        storage_config = StorageConfig.create(
+            db=db,
+            data={
+                "name": f"Test Storage Config {str(uuid4())[:8]}",
+                "type": "local",
+                "details": {
+                    "naming": "request_id",
+                },
+                "key": f"test_storage_config_{str(uuid4())[:8]}",
+                "format": "json",
+            },
+        )
+        self.storage_config = storage_config
+
         print("  Creating test policy...")
         self.test_policy = Policy.create(
             db=db,
@@ -160,9 +340,29 @@ class SQLTranslatorDemo(QATestScenario):
                 "key": f"demo_policy_key_{timestamp}",
             },
         )
+        # Create access rule
+        self.access_rule = Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.access.value,
+                "name": f"Access Rule {str(uuid4())[:8]}",
+                "key": f"access_rule_{str(uuid4())[:8]}",
+                "policy_id": self.test_policy.id,
+                "storage_destination_id": self.storage_config.id,
+            },
+        )
+
+        # Create rule targets for all relevant data categories
+        for category in DATA_CATEGORIES:
+            RuleTarget.create(
+                db=db,
+                data={
+                    "data_category": category,
+                    "rule_id": self.access_rule.id,
+                },
+            )
 
         print("  Creating test privacy requests...")
-        from datetime import datetime, timezone, timedelta
         now = datetime.now(timezone.utc)
 
         self.test_privacy_requests = []
@@ -192,6 +392,37 @@ class SQLTranslatorDemo(QATestScenario):
         db.add(self.test_client)
         db.commit()
         db.refresh(self.test_client)
+
+        # Now create ManualTaskInstances linked to the Privacy Requests
+        print("  Linking Manual Tasks to Privacy Requests...")
+        try:
+            if self.test_manual_tasks and self.test_privacy_requests:
+                manual_task = self.test_manual_tasks[0]  # Use the first manual task
+
+                # Create ManualTaskInstances for each Privacy Request
+                for i, pr in enumerate(self.test_privacy_requests):
+                    existing_instance = db.query(ManualTaskInstance).filter_by(
+                        task_id=manual_task.id,
+                        entity_id=pr.id,
+                        entity_type="privacy_request"
+                    ).first()
+
+                    if not existing_instance:
+                        instance = ManualTaskInstance.create(
+                            db=db,
+                            data={
+                                "task_id": manual_task.id,
+                                "config_id": self.manual_task_config.id,
+                                "entity_id": pr.id,  # Link to actual Privacy Request ID
+                                "entity_type": "privacy_request",
+                                "status": "pending"
+                            }
+                        )
+                        print(f"    Created ManualTaskInstance {instance.id} linking task {manual_task.id} to Privacy Request {pr.id}")
+                    else:
+                        print(f"    Found existing ManualTaskInstance {existing_instance.id} for task {manual_task.id} and PR {pr.id}")
+        except Exception as e:
+            print(f"    ⚠️  Error linking Manual Tasks to Privacy Requests: {e}")
 
         print(f"  ✅ Created {len(self.test_users)} users, 1 policy, {len(self.test_privacy_requests)} privacy requests, and 1 client")
 
@@ -480,13 +711,182 @@ class SQLTranslatorDemo(QATestScenario):
             print(f"  ❌ Query execution failed: {e}")
         print()
 
+    def _demo_relationship_queries(self):
+        """Demonstrate queries involving table relationships and JOINs."""
+        print("  🔗 Relationship Queries Demo")
+        print("  " + "-" * 40)
+
+        # Demo 1: Manual Tasks assigned to specific users
+        print("  📝 Demo 1: Find Manual Task Instances assigned to a specific user")
+
+        db = self._get_db_session()
+
+        # Use the same user that we assigned the manual task to
+        if hasattr(self, 'first_test_user_id') and self.first_test_user_id:
+            user_id = self.first_test_user_id
+            print(f"  Using test user ID: {user_id} (same user assigned to manual task)")
+        else:
+            # Fallback to first user from database
+            first_user = db.query(FidesUser).first()
+            if not first_user:
+                print("  ⚠️  No users found in database - skipping Manual Task demo")
+                print()
+                return
+            user_id = first_user.id
+            print(f"  Using database user ID: {user_id}")
+
+        # ✅ First condition determines primary table
+        condition = ConditionGroup(
+            logical_operator=GroupOperator.and_,
+            conditions=[
+                # First condition determines the primary table - manual_task_instance
+                ConditionLeaf(
+                    field_address="manual_task_instance.status",
+                    operator=Operator.eq,
+                    value="pending"
+                ),
+                # Related condition: the associated manual task is assigned to the user
+                ConditionLeaf(
+                    field_address="manual_task.assigned_users",
+                    operator=Operator.list_contains,
+                    value=user_id
+                ),
+            ]
+        )
+
+        translator = SQLConditionTranslator(db)
+        # Check if the user assignment actually exists
+        try:
+            assignment_check = db.query(ManualTaskReference).filter_by(
+                reference_id=user_id,
+                reference_type=ManualTaskReferenceType.assigned_user
+            ).first()
+            if assignment_check:
+                print(f"    ✅ Found user assignment: task_id={assignment_check.task_id}, user_id={assignment_check.reference_id}")
+            else:
+                print(f"    ❌ No user assignment found for user {user_id}")
+
+            # Check if there are any ManualTaskInstance records
+            instance_count = db.query(ManualTaskInstance).count()
+            print(f"    📊 Total ManualTaskInstance records in database: {instance_count}")
+
+            # If no instances exist and we have a task assignment, create a test instance
+            if instance_count == 0 and assignment_check:
+                print(f"    🔧 Creating test ManualTaskInstance for task {assignment_check.task_id}")
+                try:
+                    # Create a minimal ManualTaskInstance for testing
+                    test_instance = ManualTaskInstance(
+                        task_id=assignment_check.task_id,
+                        config_id=None,  # We'll set this to None since no config exists
+                        entity_id="test_entity_for_demo",
+                        entity_type="privacy_request",
+                        status="pending"
+                    )
+                    db.add(test_instance)
+                    db.commit()
+                    print(f"    ✅ Created test instance {test_instance.id}")
+                    instance_count = 1
+                except Exception as e:
+                    print(f"    ❌ Failed to create test instance: {e}")
+                    db.rollback()
+
+            if instance_count > 0:
+                instances = db.query(ManualTaskInstance).limit(3).all()
+                for inst in instances:
+                    print(f"      - Instance {inst.id}: task_id={inst.task_id}, status={inst.status}")
+
+        except ImportError:
+            print("    ⚠️  Cannot import manual task models for debugging")
+        except Exception as e:
+            print(f"    ⚠️  Debug error: {e}")
+
+        try:
+            query = translator.generate_query_from_condition(condition)
+            print(f"  Condition: {condition}")
+            print(f"  SQL: {query}")
+
+            # Execute the query - it likely won't return results since we don't have manual task test data
+            # but it demonstrates the relationship handling and query generation
+            result = db.execute(query)
+            rows = result.fetchall()
+            print(f"  ✅ Query executed successfully - {len(rows)} Manual Task Instance records returned")
+            if rows:
+                print(f"  📊 Sample results: {[dict(row._mapping) for row in rows[:3]]}")
+                print(f"  🎉 SUCCESS: Found Manual Task Instances assigned to user {user_id}!")
+            else:
+                # Check if we created manual task test data
+                if hasattr(self, 'test_manual_tasks') and self.test_manual_tasks:
+                    print(f"  📊 No Manual Tasks found assigned to user {user_id}")
+                    print(f"  ℹ️  Note: Created {len(self.test_manual_tasks)} test manual tasks, but none assigned to this user")
+                else:
+                    print(f"  📊 No Manual Tasks found - no test manual task data was created")
+        except Exception as e:
+            print(f"  ⚠️  Query execution failed: {e}")
+            print(f"  📝 Note: This may be expected if Manual Task models aren't available in this environment")
+        print()
+
+        # Demo 2: Find Privacy Requests with status in_progress, pending, approved, or awaiting_input and Manual Tasks assigned to user
+        print("  📝 Demo 2: Find Privacy Request-related Manual Tasks assigned to a specific user")
+
+        # Debug: Check what's in the database
+        print("  🔍 Debug: Checking database state...")
+
+        # Check Privacy Requests
+        privacy_requests = db.query(PrivacyRequest).all()
+        print(f"    📊 Total PrivacyRequest records: {len(privacy_requests)}")
+        for pr in privacy_requests[:3]:
+            print(f"      - PR {pr.id}: status={pr.status}")
+
+        # Check Manual Task Instances and their links to Privacy Requests
+        manual_task_instances = db.query(ManualTaskInstance).all()
+        print(f"    📊 Total ManualTaskInstance records: {len(manual_task_instances)}")
+        for instance in manual_task_instances:
+            print(f"      - Instance {instance.id}: task_id={instance.task_id}, entity_id={instance.entity_id}, entity_type={instance.entity_type}")
+
+        # Check if any Privacy Requests are linked to Manual Task Instances
+        linked_instances = db.query(ManualTaskInstance).filter_by(entity_type="privacy_request").all()
+        print(f"    📊 ManualTaskInstance records linked to Privacy Requests: {len(linked_instances)}")
+        for instance in linked_instances:
+            pr = db.query(PrivacyRequest).filter_by(id=instance.entity_id).first()
+            if pr:
+                print(f"      - Instance {instance.id} → PR {pr.id} (status: {pr.status})")
+            else:
+                print(f"      - Instance {instance.id} → PR {instance.entity_id} (NOT FOUND!)")
+        print()
+        condition = ConditionGroup(
+            logical_operator=GroupOperator.and_,
+            conditions=[
+                ConditionLeaf(
+                    field_address="privacyrequest.status",
+                    operator=Operator.list_contains,
+                    value=[PrivacyRequestStatus.in_processing, PrivacyRequestStatus.pending, PrivacyRequestStatus.approved, PrivacyRequestStatus.requires_input, PrivacyRequestStatus.pending]
+                ),
+                ConditionLeaf(
+                    field_address="manual_task.assigned_users",
+                    operator=Operator.list_contains,
+                    value=user_id
+                )
+            ]
+        )
+
+        try:
+            query = translator.generate_query_from_condition(condition)
+            print(f"  Condition: {condition}")
+            print(f"  SQL: {query}")
+
+            result = db.execute(query)
+            rows = result.fetchall()
+            print(f"  ✅ Executed successfully - {len(rows)} rows returned")
+            if rows:
+                print(f"  📊 Sample results: {[dict(row._mapping) for row in rows[:3]]}")
+        except Exception as e:
+            print(f"  ❌ Query execution failed: {e}")
+        print()
+
     def _demo_all_operators(self):
         """Demonstrate all available operators."""
         print("  🔍 All Operators Demo")
         print("  " + "-" * 40)
-
-        from fides.api.task.conditional_dependencies.sql_schemas import OPERATOR_MAP
-        from fides.api.task.conditional_dependencies.schemas import Operator
 
         print("  📝 Available operators and their SQL generation:")
         print()

@@ -287,19 +287,6 @@ class TestSQLConditionTranslator:
         # Should choose fidesuser because it has more fields
         assert primary == "fidesuser"
 
-    def test_build_select_fields(self, translator):
-        """Test building select fields for queries"""
-        model_classes = {"fidesuser": MockUser, "privacyrequest": MockPrivacyRequest}
-
-        tables_to_fields = {
-            "fidesuser": [FieldAddress.parse("fidesuser.username")],
-            "privacyrequest": [FieldAddress.parse("privacyrequest.status")],
-        }
-
-        select_fields = translator._build_select_fields(tables_to_fields, model_classes)
-
-        assert len(select_fields) == 2  # Should have both fields
-
     def test_json_path_field_handling(self, translator):
         """Test handling of JSON path fields"""
         condition = ConditionLeaf(
@@ -768,43 +755,6 @@ class TestCoverageImprovements:
         # Check that it was cached
         assert "nonexistent_table" in translator._model_cache
         assert translator._model_cache["nonexistent_table"] is None
-
-    def test_build_select_fields_with_missing_model(self):
-        """Test _build_select_fields when model is missing from model_classes"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        tables_to_fields = {
-            "missing_table": [FieldAddress.parse("missing_table.field1")],
-            "existing_table": [FieldAddress.parse("existing_table.field2")],
-        }
-
-        mock_model = Mock()
-        mock_model.field2 = Mock()
-        model_classes = {"existing_table": mock_model}
-
-        # Should skip missing table and only include existing one
-        result = translator._build_select_fields(tables_to_fields, model_classes)
-        assert len(result) == 1
-        assert result[0] == mock_model.field2
-
-    def test_build_select_fields_fallback_to_first_model(self):
-        """Test _build_select_fields fallback when no valid fields are found"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        tables_to_fields = {
-            "test_table": [FieldAddress.parse("test_table.nonexistent_field")]
-        }
-
-        mock_model = Mock()
-        # Don't add the nonexistent_field attribute to mock_model
-        model_classes = {"test_table": mock_model}
-
-        # Should fallback to the first model when no valid fields are found,
-        # the result is not important, but it should not crash
-        result = translator._build_select_fields(tables_to_fields, model_classes)
-        assert len(result) == 1
 
     def test_find_relationship_path_same_model(self):
         """Test _find_relationship_path when from_model equals to_model"""
