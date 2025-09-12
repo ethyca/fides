@@ -64,6 +64,8 @@ export const TagExpandableCell = ({
       setDisplayValues(
         isCollapsed ? values.slice(0, displayThreshold) : values,
       );
+    } else {
+      setDisplayValues(values);
     }
   }, [isCollapsed, values]);
 
