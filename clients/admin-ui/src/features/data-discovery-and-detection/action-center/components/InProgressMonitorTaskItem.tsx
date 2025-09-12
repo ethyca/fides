@@ -14,6 +14,14 @@ import { MonitorTaskInProgressResponse } from "~/types/api";
 
 const { Text, Title } = Typography;
 
+// Helper function to format status names for display
+const formatStatusForDisplay = (status: string): string => {
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 interface InProgressMonitorTaskItemProps extends ListItemProps {
   task: MonitorTaskInProgressResponse;
 }
@@ -52,7 +60,7 @@ export const InProgressMonitorTaskItem = ({
 
   const formatText = (text?: string) => {
     if (!text) return "Unknown";
-    return text.charAt(0).toUpperCase() + text.slice(1);
+    return formatStatusForDisplay(text);
   };
 
   const handleSingleResourceClick = (urn: string) => {
