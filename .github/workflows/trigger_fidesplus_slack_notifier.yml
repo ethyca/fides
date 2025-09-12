@@ -1,4 +1,4 @@
-name: Dispatch Workflow Failure Notifications
+name: Trigger Fidesplus Slack Notifier
 
 on:
   workflow_run:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
-      - name: Send Repository Dispatch to FidesPlus
+      - name: Send Repository Dispatch Event (Fidesplus)
         uses: peter-evans/repository-dispatch@v3
         with:
           client-payload: |
