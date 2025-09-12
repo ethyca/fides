@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 from loguru import logger
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -183,6 +184,13 @@ class RequestTask(WorkerTask, Base):
         uselist=False,
     )
 
+    # Stores the request data for polling tasks
+    request_data = relationship(
+        "RequestTaskRequestData",
+        back_populates="request_task",
+        uselist=False,
+    )
+
     @property
     def request_task_address(self) -> CollectionAddress:
         """Convert the collection_address into Collection Address format"""
@@ -318,3 +326,32 @@ class RequestTask(WorkerTask, Base):
             )
 
         return task_in_flight
+
+
+class RequestTaskRequestData(Base):
+    """
+    Model for storing request data for middle steps during the execution of a request task.
+    Currently used for storing the request data for polling tasks
+    """
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "requesttask_request_data"
+
+    request_task_id = Column(
+        String(255),
+        ForeignKey(
+            "requesttask.id",
+            name="requesttask_request_data_request_task_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+
+    request_task = relationship(
+        "RequestTask",
+        back_populates="request_data",
+    )
+
+    request_data = Column(MutableDict.as_mutable(JSONB), nullable=False)

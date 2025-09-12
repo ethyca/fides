@@ -30,6 +30,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
+    cache_task_tracking_key,
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -731,8 +732,15 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
 
             if async_tasks:
                 from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                    requeue_polling_request,
+                    execute_polling_task,
                 )
 
                 for async_task in async_tasks:
-                    requeue_polling_request(db, async_task)
+                    celery_task = execute_polling_task.apply_async(
+                        queue=DSR_QUEUE_NAME,
+                        kwargs={
+                            "polling_task_id": async_task.id,
+                            "privacy_request_id": async_task.privacy_request_id,
+                        },
+                    )
+                    cache_task_tracking_key(async_task.id, celery_task.task_id)
