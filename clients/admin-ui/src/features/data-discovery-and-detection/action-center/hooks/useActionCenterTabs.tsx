@@ -5,9 +5,8 @@ import { DiffStatus } from "~/types/api";
 
 export enum ActionCenterTabHash {
   ATTENTION_REQUIRED = "attention-required",
-  ADDED = "added",
   IN_PROGRESS = "in-progress",
-  RECENT_ACTIVITY = "recent-activity",
+  ADDED = "added",
   IGNORED = "ignored",
 }
 
@@ -38,11 +37,11 @@ const useActionCenterTabs = (systemId?: string) => {
         hash: ActionCenterTabHash.IN_PROGRESS,
       },
       {
-        label: "Recent activity",
+        label: "Added",
         params: {
           diff_status: [DiffStatus.MONITORED],
         },
-        hash: ActionCenterTabHash.RECENT_ACTIVITY,
+        hash: ActionCenterTabHash.ADDED,
       },
       {
         label: "Ignored",
