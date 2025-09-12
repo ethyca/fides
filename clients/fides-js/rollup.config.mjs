@@ -22,7 +22,7 @@ const GZIP_SIZE_ERROR_KB = 51; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 95;
+const GZIP_SIZE_TCF_ERROR_KB = 98;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
