@@ -48,7 +48,7 @@ jobs:
             # Create new thread for this commit
             COMMIT_MESSAGE=$(echo '${{ github.event.workflow_run.head_commit.message }}' | head -n 1)
             COMMIT_AUTHOR="${{ github.event.workflow_run.head_commit.author.name }}"
-            COMMIT_URL="${{ github.event.workflow_run.head_commit.url }}"
+            COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}"
 
             # Build JSON payload safely using jq
             JSON_PAYLOAD=$(jq -n \
