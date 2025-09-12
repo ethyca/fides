@@ -27,18 +27,18 @@ const VendorAssetDisclosure = ({
         type="button"
         className="fides-link-button"
         onClick={onBack}
-        aria-label={i18n.t("static.other.back")}
+        aria-label="back"
       >
         <span
           className="fides-flex-center fides-back-link"
           style={{ marginBottom: "12px" }}
         >
-          Back
+          {i18n.t("static.other.back")}
         </span>
       </button>
       {cookiesByNotice.length >= 1 ? (
         <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-          <strong>{cookiesByNotice[0].title} {i18n.t("static.other.vendors")}</strong>
+          <strong>{i18n.t("static.other.vendors")}</strong>
         </div>
       ) : null}
       <div className="fides-modal-notices" style={{ marginTop: "12px" }}>

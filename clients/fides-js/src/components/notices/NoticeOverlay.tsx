@@ -196,6 +196,15 @@ const NoticeOverlay = () => {
     null,
   );
 
+  const selectedNotice = useMemo(() => {
+    if (!selectedNoticeKey) {
+      return null;
+    }
+    return privacyNoticeItems.find(
+      (item) => item.notice.notice_key === selectedNoticeKey
+    );
+  }, [selectedNoticeKey, privacyNoticeItems]);
+
   const noticesWithCookies = privacyNoticeItems
     .map((item) => ({
       noticeKey: item.notice.notice_key,
@@ -386,7 +395,17 @@ const NoticeOverlay = () => {
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
-      hideModalIntro={isVendorAssetDiscloserView}
+      headerContent={
+        isVendorAssetDiscloserView && selectedNotice
+          ? {
+              title:
+                selectedNotice.bestTranslation?.title ||
+                selectedNotice.notice.name ||
+                "",
+              description: selectedNotice.bestTranslation?.description || "",
+            }
+          : undefined
+      }
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({

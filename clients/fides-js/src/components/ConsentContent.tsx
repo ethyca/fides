@@ -12,7 +12,10 @@ export interface ConsentContentProps {
   className?: string;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
-  hideIntro?: boolean;
+  headerContent?: {
+    title: string;
+    description: string;
+  };
 }
 
 const ConsentContent = ({
@@ -21,11 +24,15 @@ const ConsentContent = ({
   renderModalFooter,
   children,
   onVendorPageClick,
-  hideIntro,
+  headerContent,
 }: ConsentContentProps) => {
   const { i18n } = useI18n();
-  const title = i18n.t("exp.title");
-  const description = i18n.t("exp.description");
+  const defaultTitle = i18n.t("exp.title");
+  const defaultDescription = i18n.t("exp.description");
+
+  const title = headerContent?.title ?? defaultTitle;
+  const description = headerContent?.description ?? defaultDescription;
+
   const showGpcInfo = getConsentContext().globalPrivacyControl;
   const gpcTitle = i18n.t("static.gpc.title");
   const gpcDescription = i18n.t("static.gpc.description");
@@ -38,31 +45,27 @@ const ConsentContent = ({
         className={className}
       >
         <div className="fides-modal-body">
-          {!hideIntro && (
-            <Fragment>
-              <div
-                data-testid="fides-modal-title"
-                {...titleProps} // adds role, aria-level, id
-                className="fides-modal-title"
-              >
-                {title}
-              </div>
-              <p
-                data-testid="fides-modal-description"
-                className="fides-modal-description"
-              >
-                <ExperienceDescription
-                  onVendorPageClick={onVendorPageClick}
-                  description={description}
-                  allowHTMLDescription={
-                    window.Fides?.options?.allowHTMLDescription
-                  }
-                />
-              </p>
-              {showGpcInfo && (
-                <GpcInfo title={gpcTitle} description={gpcDescription} />
-              )}
-            </Fragment>
+          <div
+            data-testid="fides-modal-title"
+            {...titleProps} // adds role, aria-level, id
+            className="fides-modal-title"
+          >
+            {title}
+          </div>
+          <p
+            data-testid="fides-modal-description"
+            className="fides-modal-description"
+          >
+            <ExperienceDescription
+              onVendorPageClick={onVendorPageClick}
+              description={description}
+              allowHTMLDescription={
+                window.Fides?.options?.allowHTMLDescription
+              }
+            />
+          </p>
+          {!headerContent && showGpcInfo && (
+            <GpcInfo title={gpcTitle} description={gpcDescription} />
           )}
           {children}
         </div>

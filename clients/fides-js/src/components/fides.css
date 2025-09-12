@@ -240,7 +240,8 @@ div#fides-banner-heading {
 .fides-modal-description a,
 .fides-banner-description .fides-link-button,
 .fides-modal-description .fides-link-button,
-.fides-link-button.fides-vendors-disclosure-link {
+.fides-link-button.fides-vendors-disclosure-link,
+.fides-link-button .fides-back-link {
   /*
   Used for HTML rendering when customer adds a link
   as well as vendor disclosure link
@@ -974,6 +975,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   transform: translateY(-1px) rotate(225deg);
   border-style: solid;
   border-width: 1.5px 1.5px 0 0;
+  border-color: var(--fides-overlay-primary-color);
 }
 
 .fides-primary-text-color {

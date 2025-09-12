@@ -570,7 +570,7 @@ export const PrivacyExperienceForm = ({
           <CustomSwitch
             name="allow_vendor_asset_disclosure"
             id="allow_vendor_asset_disclosure"
-            label="Enable Vendor Disclosure"
+            label="Enable vendor disclosure"
             variant="stacked"
             tooltip="If enabled, the consent banner will include a link beneath privacy notices to view the vendors and assets associated with the notice."
             onChange={(checked) => {
@@ -603,7 +603,7 @@ export const PrivacyExperienceForm = ({
           name="asset_disclosure_include_types"
           id="asset_disclosure_include_types"
           mode="multiple"
-          label="Asset Types to Disclose"
+          label="Asset types to disclose"
           layout="stacked"
           tooltip="Select the asset types to disclose. Only cookies are currently supported."
           options={[
