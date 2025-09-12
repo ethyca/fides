@@ -3,5 +3,10 @@
   "static.gpc.description": "グローバルプライバシーコントロールの設定は尊重されます。グローバルプライバシーコントロールに従うデータのユースケースからは自動的にオプトアウトされています。",
   "static.gpc.status.applied": "適用",
   "static.gpc.status.overridden": "変更",
-  "static.gpc.title": "グローバルプライバシーコントロールを検出しました"
+  "static.gpc.title": "グローバルプライバシー管理を検出しました",
+  "static.other.cookies": "クッキー",
+  "static.other.back": "戻る",
+  "static.other.vendors": "ベンダー",
+  "static.other.retention": "保持期間",
+  "static.other.description": "説明"
 }

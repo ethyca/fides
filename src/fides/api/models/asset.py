@@ -47,6 +47,7 @@ class Asset(Base):
     name = Column(String, index=True, nullable=False)
     asset_type = Column(String, index=True, nullable=False)
     domain = Column(String, index=True)
+    duration = Column(String, nullable=True)
     parent = Column(ARRAY(String), server_default="{}", nullable=False)
     parent_domain = Column(String)
     locations = Column(ARRAY(String), server_default="{}", nullable=False)
@@ -192,3 +193,12 @@ class Asset(Base):
 
         result = await async_session.execute(query)
         return result.scalars().all()
+
+    # Expose related System attributes for API serialization convenience
+    @property
+    def system_name(self) -> Optional[str]:
+        return self.system.name if getattr(self, "system", None) else None
+
+    @property
+    def system_fides_key(self) -> Optional[str]:
+        return self.system.fides_key if getattr(self, "system", None) else None

@@ -133,6 +133,8 @@ const loadEnvironmentVariables = () => {
         | ConsentMethod.REJECT) || null,
     FIDES_DISABLED_NOTICES:
       process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLED_NOTICES || null,
+    FIDES_DISABLED_SYSTEMS:
+      process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLED_SYSTEMS || null,
     FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
       (process.env
         .FIDES_PRIVACY_CENTER__FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE as ConsentNonApplicableFlagMode) ||

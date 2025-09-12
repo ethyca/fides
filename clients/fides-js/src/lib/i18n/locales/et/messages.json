@@ -3,5 +3,10 @@
   "static.gpc.description": "Teie üldist andmekaitse-eelistust on arvestatud. Teid on automaatselt välja arvatud andmete kasutamise juhtudest, mis järgivad üldist andmekaitsekontrolli.",
   "static.gpc.status.applied": "Rakendatud",
   "static.gpc.status.overridden": "Tühistatud",
-  "static.gpc.title": "Tuvastatud üldine andmekaitsekontroll"
+  "static.gpc.title": "Tuvastati globaalne privaatsuskontroll",
+  "static.other.cookies": "Küpsised",
+  "static.other.back": "Tagasi",
+  "static.other.vendors": "Kaupmehed",
+  "static.other.retention": "Säilitamine",
+  "static.other.description": "Kirjeldus"
 }
