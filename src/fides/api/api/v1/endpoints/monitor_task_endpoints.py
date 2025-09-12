@@ -31,6 +31,9 @@ def get_in_progress_monitor_tasks(
     params: Params = Depends(),
     search: Optional[str] = Query(None, description="Search by monitor name"),
     show_completed: Optional[bool] = Query(False, description="Include completed tasks"),
+    connection_names: Optional[List[str]] = Query(None, description="Filter by connection names"),
+    task_types: Optional[List[str]] = Query(None, description="Filter by task types (classification, promotion)"),
+    statuses: Optional[List[str]] = Query(None, description="Filter by task statuses"),
 ) -> Page[MonitorTaskInProgressResponse]:
     """
     Get monitor tasks (classification and promotion).
@@ -73,6 +76,24 @@ def get_in_progress_monitor_tasks(
                 MonitorConfig.name.ilike(f"%{search}%")
             )
         )
+
+    # Add connection name filter if provided
+    if connection_names:
+        query = query.filter(
+            MonitorTask.monitor_config.has(
+                MonitorConfig.connection_config.has(
+                    ConnectionConfig.name.in_(connection_names)
+                )
+            )
+        )
+
+    # Add task type filter if provided
+    if task_types:
+        query = query.filter(MonitorTask.action_type.in_(task_types))
+
+    # Add status filter if provided
+    if statuses:
+        query = query.filter(MonitorTask.status.in_(statuses))
 
     # Order by most recently updated first
     query = query.order_by(MonitorTask.updated_at.desc())

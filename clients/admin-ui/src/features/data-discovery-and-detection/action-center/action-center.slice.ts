@@ -322,11 +322,24 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     getInProgressMonitorTasks: build.query<
       { items: MonitorTaskInProgressResponse[]; total: number; page: number; pages: number; size: number },
-      SearchQueryParams & PaginationQueryParams & { show_completed?: boolean }
+      SearchQueryParams & PaginationQueryParams & {
+        show_completed?: boolean;
+        connection_names?: string[];
+        task_types?: string[];
+        statuses?: string[];
+      }
     >({
-      query: ({ page = 1, size = 20, search, show_completed }) => ({
+      query: ({ page = 1, size = 20, search, show_completed, connection_names, task_types, statuses }) => ({
         url: `/monitor-tasks/in-progress`,
-        params: { page, size, search, show_completed },
+        params: {
+          page,
+          size,
+          search,
+          show_completed,
+          connection_names,
+          task_types,
+          statuses,
+        },
       }),
       providesTags: ["Monitor Tasks"],
     }),
