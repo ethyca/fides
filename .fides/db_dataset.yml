@@ -1467,6 +1467,10 @@ dataset:
       data_categories: [system.operations]
     - name: tcf_configuration_id
       data_categories: [system.operations]
+    - name: allow_vendor_asset_disclosure
+      data_categories: [ system.operations ]
+    - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
   - name: privacynoticetemplate
     data_categories: []
     fields:
@@ -2353,6 +2357,10 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: allow_vendor_asset_disclosure
+      data_categories: [ system.operations ]
+    - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
   - name: experiencenotices
     description: 'The table that links Privacy Notices to Experience Configs (many-to-many)'
     fields:
