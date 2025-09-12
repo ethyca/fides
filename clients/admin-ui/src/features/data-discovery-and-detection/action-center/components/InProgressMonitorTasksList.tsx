@@ -41,6 +41,7 @@ export const InProgressMonitorTasksList = ({
           placeholder="Search by monitor name..."
         />
       </Flex>
+
       <List
         {...listProps}
         renderItem={(task: MonitorTaskInProgressResponse) => (

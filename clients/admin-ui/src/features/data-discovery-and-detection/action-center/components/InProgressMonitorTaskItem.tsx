@@ -1,8 +1,6 @@
 import {
-  AntCol as Col,
   AntFlex as Flex,
   AntListItemProps as ListItemProps,
-  AntRow as Row,
   AntTag as Tag,
   AntTypography as Typography,
 } from "fidesui";
@@ -52,50 +50,51 @@ export const InProgressMonitorTaskItem = ({
   };
 
   return (
-    <div {...props}>
-      <Row gutter={[16, 8]}>
-        <Col span={24}>
-          <Flex justify="space-between" align="flex-start">
-            <div>
-              <Title level={5} style={{ margin: 0, marginBottom: 4 }}>
-                {task.monitor_name || "Unknown Monitor"}
-              </Title>
-              <Flex gap={8} align="center">
-                <Tag color={getTaskTypeColor(task.action_type)}>
-                  {formatText(task.action_type)}
-                </Tag>
-                <Tag color={getStatusColor(task.status)}>
-                  {formatText(task.status)}
-                </Tag>
-                {task.connection_type && (
-                  <Text type="secondary" style={{ fontSize: "12px" }}>
-                    {task.connection_type}
-                  </Text>
-                )}
-              </Flex>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                {formatDate(task.updated_at)}
-              </Text>
-            </div>
-          </Flex>
-        </Col>
-        {task.message && (
-          <Col span={24}>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              {task.message}
-            </Text>
-          </Col>
-        )}
-        {task.staged_resource_urns && task.staged_resource_urns.length > 0 && (
-          <Col span={24}>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              Staged resources: {task.staged_resource_urns.length}
-            </Text>
-          </Col>
-        )}
-      </Row>
+    <div {...props} style={{ width: "100%" }}>
+      {/* Line 1: Monitor name + all tags */}
+      <div style={{ marginBottom: "4px" }}>
+        <Flex gap={8} align="center" wrap="wrap">
+          <Title level={5} style={{ margin: 0, marginRight: "8px" }}>
+            {task.monitor_name || "Unknown Monitor"}
+          </Title>
+
+          <Tag color={getTaskTypeColor(task.action_type)}>
+            {formatText(task.action_type)}
+          </Tag>
+
+          <Tag color={getStatusColor(task.status)}>
+            {formatText(task.status)}
+          </Tag>
+
+          {task.connection_type && (
+            <Tag color="default">
+              {task.connection_type}
+            </Tag>
+          )}
+
+          {task.staged_resource_urns && task.staged_resource_urns.length > 0 && (
+            <Tag color="orange">
+              Staged Resources: {task.staged_resource_urns.length}
+            </Tag>
+          )}
+        </Flex>
+      </div>
+
+      {/* Line 2: Date */}
+      <div>
+        <Text type="secondary" style={{ fontSize: "12px" }}>
+          {formatDate(task.updated_at)}
+        </Text>
+      </div>
+
+      {/* Message line - if present */}
+      {task.message && (
+        <div style={{ marginTop: "4px" }}>
+          <Text type="secondary" style={{ fontSize: "11px", fontStyle: "italic" }}>
+            {task.message}
+          </Text>
+        </div>
+      )}
     </div>
   );
 };
