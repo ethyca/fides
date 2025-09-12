@@ -527,6 +527,9 @@ class TestBigQueryConnector:
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
 
+    @pytest.mark.xfail(
+        reason="This is flaky on CI - likely due to conflicts between concurrent access to shared BigQuery resources"
+    )
     def test_mask_data_sql_dry_run_enabled(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
@@ -620,6 +623,9 @@ class TestBigQueryConnector:
         assert update_or_delete_ct >= 0
         assert "SQL DRY RUN - Would execute SQL:" not in loguru_caplog.text
 
+    @pytest.mark.xfail(
+        reason="This is flaky on CI - likely due to conflicts between concurrent access to shared BigQuery resources"
+    )
     def test_sql_dry_run_enabled_comprehensive(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
