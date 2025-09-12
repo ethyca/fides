@@ -1394,6 +1394,10 @@ dataset:
       data_categories: [system.operations]
     - name: tcf_configuration_id
       data_categories: [system.operations]
+    - name: allow_vendor_asset_disclosure
+      data_categories: [ system.operations ]
+    - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
@@ -2721,6 +2725,8 @@ dataset:
         data_categories: [system.operations]
       - name: parent_domain
         data_categories: [system.operations]
+      - name: duration
+        data_categories: [ system.operations ]
       - name: locations
         data_categories: [system.operations]
       - name: consent_status

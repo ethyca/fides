@@ -283,7 +283,7 @@ export interface FidesOptions {
    *
    * Defaults to `undefined`.
    */
-  fides_disabled_systems: string;
+  fides_disabled_systems?: string;
 
   /**
    * Controls when the deprecated FidesInitialized event should be dispatched.

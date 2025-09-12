@@ -151,7 +151,7 @@ export interface FidesInitOptions {
   fidesDisabledNotices: string[] | null;
 
   // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
-  fidesDisabledSystems: string[] | null;
+  fidesDisabledSystems?: string[] | null;
 
   // Determines how non-applicable privacy notices are handled (omit or include)
   fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode | null;
