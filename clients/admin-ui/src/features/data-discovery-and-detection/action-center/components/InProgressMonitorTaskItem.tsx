@@ -1,11 +1,15 @@
 import {
+  AntButton as Button,
   AntFlex as Flex,
   AntListItemProps as ListItemProps,
+  AntPopover as Popover,
   AntTag as Tag,
   AntTypography as Typography,
 } from "fidesui";
+import { useRouter } from "next/router";
 
 import { formatDate } from "~/features/common/utils";
+import { DATA_DISCOVERY_ROUTE_DETAIL } from "~/features/common/nav/routes";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
 const { Text, Title } = Typography;
@@ -18,6 +22,8 @@ export const InProgressMonitorTaskItem = ({
   task,
   ...props
 }: InProgressMonitorTaskItemProps) => {
+  const router = useRouter();
+
   const getTaskTypeColor = (taskType?: string) => {
     switch (taskType) {
       case "classification":
@@ -49,6 +55,51 @@ export const InProgressMonitorTaskItem = ({
     return text.charAt(0).toUpperCase() + text.slice(1);
   };
 
+  const handleSingleResourceClick = (urn: string) => {
+    router.push({
+      pathname: DATA_DISCOVERY_ROUTE_DETAIL,
+      query: { resourceUrn: encodeURIComponent(urn) },
+    });
+  };
+
+  const renderMultipleResourcesPopover = (urns: string[]) => {
+    const content = (
+      <div style={{ maxWidth: "300px" }}>
+        <Text strong style={{ marginBottom: "8px", display: "block" }}>
+          Staged Resources ({urns.length})
+        </Text>
+        <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+          {urns.map((urn, index) => (
+            <div key={urn} style={{ marginBottom: "4px" }}>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => handleSingleResourceClick(urn)}
+                style={{ padding: "0", height: "auto", textAlign: "left" }}
+              >
+                <Text style={{ fontSize: "12px" }} ellipsis={{ tooltip: urn }}>
+                  {urn.split("/").pop() || `Resource ${index + 1}`}
+                </Text>
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    return (
+      <Popover content={content} title={null} trigger="click" placement="bottom">
+        <Tag
+          color="orange"
+          style={{ cursor: "pointer" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          Staged Resources: {urns.length}
+        </Tag>
+      </Popover>
+    );
+  };
+
   return (
     <div {...props} style={{ width: "100%" }}>
       {/* Line 1: Monitor name + all tags */}
@@ -73,9 +124,17 @@ export const InProgressMonitorTaskItem = ({
           </Tag>
 
           {task.staged_resource_urns && task.staged_resource_urns.length > 0 && (
-            <Tag color="orange">
-              Staged Resources: {task.staged_resource_urns.length}
-            </Tag>
+            task.staged_resource_urns.length === 1 ? (
+              <Tag
+                color="orange"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSingleResourceClick(task.staged_resource_urns![0])}
+              >
+                Staged Resources: 1
+              </Tag>
+            ) : (
+              renderMultipleResourcesPopover(task.staged_resource_urns)
+            )
           )}
         </Flex>
       </div>
