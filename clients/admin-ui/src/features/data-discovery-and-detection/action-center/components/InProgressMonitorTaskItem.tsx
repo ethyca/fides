@@ -109,9 +109,9 @@ export const InProgressMonitorTaskItem = ({
             {task.monitor_name || "Unknown Monitor"}
           </Title>
 
-          {task.connection_type && (
+          {(task.connection_name || task.connection_type) && (
             <Tag color="default">
-              {task.connection_type}
+              {task.connection_name || task.connection_type}
             </Tag>
           )}
 

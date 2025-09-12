@@ -16,4 +16,5 @@ export type MonitorTaskInProgressResponse = {
   message?: string | null;
   staged_resource_urns?: Array<string> | null;
   connection_type?: string | null;
+  connection_name?: string | null;
 };

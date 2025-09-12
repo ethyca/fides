@@ -19,6 +19,7 @@ class MonitorTaskInProgressResponse(FidesSchema):
     message: Optional[str]
     staged_resource_urns: Optional[List[str]]
     connection_type: Optional[str]
+    connection_name: Optional[str]
 
 
 class MonitorTaskInProgressFilter(FidesSchema):

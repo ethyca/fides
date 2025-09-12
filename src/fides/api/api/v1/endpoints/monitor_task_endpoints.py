@@ -84,8 +84,10 @@ def get_in_progress_monitor_tasks(
     response_items = []
     for task in page_result.items:
         connection_type = None
+        connection_name = None
         if task.monitor_config and task.monitor_config.connection_config:
             connection_type = task.monitor_config.connection_config.connection_type.value
+            connection_name = task.monitor_config.connection_config.name
 
         response_items.append(
             MonitorTaskInProgressResponse(
@@ -99,6 +101,7 @@ def get_in_progress_monitor_tasks(
                 message=task.message,
                 staged_resource_urns=task.staged_resource_urns,
                 connection_type=connection_type,
+                connection_name=connection_name,
             )
         )
 
