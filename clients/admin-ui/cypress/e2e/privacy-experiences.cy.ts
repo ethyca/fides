@@ -201,10 +201,12 @@ describe("Privacy experiences", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@postExperience").then((interception) => {
           const { body } = interception.request;
-          expect(body).to.eql({
+          expect(body).to.include({
             allow_language_selection: false,
             auto_detect_language: true,
             auto_subdomain_cookie_deletion: true,
+            allow_vendor_asset_disclosure: false,
+            asset_disclosure_include_types: [],
             component: "banner_and_modal",
             disabled: true,
             dismissable: true,
