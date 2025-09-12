@@ -768,6 +768,14 @@ export enum ConsentMechanism {
   NOTICE_ONLY = "notice_only",
 }
 
+export enum AssetType {
+  COOKIE = "Cookie",
+  BROWSER_REQUEST = "Browser Request",
+  I_FRAME = "iFrame",
+  JAVASCRIPT_TAG = "Javascript tag",
+  IMAGE = "Image",
+}
+
 export enum UserConsentPreference {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",

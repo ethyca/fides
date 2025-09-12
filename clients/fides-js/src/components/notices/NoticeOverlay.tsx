@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import { FidesEvent } from "../../docs/fides-event";
 import { getConsentContext } from "../../lib/consent-context";
 import {
+  AssetType,
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
@@ -480,6 +481,10 @@ const NoticeOverlay = () => {
                     <div>
                       {props.description}
                       {hasCookies &&
+                      // only "Cookie" asset types are currently supported for vendor disclosure
+                      experience.experience_config?.asset_disclosure_include_types?.includes(
+                        AssetType.COOKIE,
+                      ) &&
                       experience.experience_config
                         ?.allow_vendor_asset_disclosure ? (
                         <div style={{ marginTop: "12px" }}>
