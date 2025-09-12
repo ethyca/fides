@@ -455,6 +455,42 @@ class TestPrivacyRequestTriggerWebhooks:
             with pytest.raises(ValidationError):
                 privacy_request.trigger_policy_webhook(webhook)
 
+    def test_webhook_with_oauth_connection_config(
+        self,
+        db,
+        https_connection_config_with_oauth,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks_oauth2,
+    ):
+        webhook = policy_pre_execution_webhooks_oauth2[1]
+        identity = Identity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config_with_oauth.oauth_config.token_url,
+                json={"access_token": "test_token", "token_type": "Bearer"},
+                status_code=200,
+            )
+
+            def request_contains_oauth_bearer_token(request):
+                assert request.headers["Authorization"] == f"Bearer test_token"
+                return True
+
+            mock_response.post(
+                https_connection_config_with_oauth.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identity": identity.model_dump(mode="json"),
+                    "halt": True,
+                },
+                status_code=200,
+                additional_matcher=request_contains_oauth_bearer_token,
+            )
+
 
 class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):

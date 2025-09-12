@@ -158,6 +158,7 @@ CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
 CONNECTIONS = "/connection"
 CONNECTION_BY_KEY = "/connection/{connection_key}"
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
+CONNECTION_OAUTH = "/connection/{connection_key}/oauth"
 CONNECTION_TEST = "/connection/{connection_key}/test"
 AUTHORIZE = "/connection/{connection_key}/authorize"
 
