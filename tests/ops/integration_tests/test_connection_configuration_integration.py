@@ -1073,6 +1073,8 @@ class TestMongoConnectionPutSecretsAPI:
             "username": "mongo_user",
             "password": "mongo_pass",
             "defaultauthdb": "mongo_test",
+            "use_srv": False,
+            "ssl_enabled": None,
         }
         resp = api_client.put(
             url,
@@ -1098,6 +1100,8 @@ class TestMongoConnectionPutSecretsAPI:
             "username": "mongo_user",
             "password": "mongo_pass",
             "defaultauthdb": "mongo_test",
+            "use_srv": False,
+            "ssl_enabled": None,
         }
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is False
@@ -1115,6 +1119,8 @@ class TestMongoConnectionPutSecretsAPI:
             "defaultauthdb": "mongo_test",
             "username": "mongo_user",
             "password": "mongo_pass",
+            "use_srv": False,
+            "ssl_enabled": None,
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -1139,6 +1145,8 @@ class TestMongoConnectionPutSecretsAPI:
             "username": "mongo_user",
             "password": "mongo_pass",
             "port": 27017,
+            "use_srv": False,
+            "ssl_enabled": None,
         }
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True

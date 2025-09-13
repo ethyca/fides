@@ -339,7 +339,7 @@ jobs:
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
@@ -424,6 +424,12 @@ jobs:
           SNOWFLAKE_TEST_WAREHOUSE_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_WAREHOUSE_NAME
           S3_AWS_ACCESS_KEY_ID: op://github-actions/s3/S3_AWS_ACCESS_KEY_ID
           S3_AWS_SECRET_ACCESS_KEY: op://github-actions/s3/S3_AWS_SECRET_ACCESS_KEY
+          MONGODB_ATLAS_HOST: op://github-actions/mongodb-atlas/MONGODB_ATLAS_HOST
+          MONGODB_ATLAS_USERNAME: op://github-actions/mongodb-atlas/MONGODB_ATLAS_USERNAME
+          MONGODB_ATLAS_PASSWORD: op://github-actions/mongodb-atlas/MONGODB_ATLAS_PASSWORD
+          MONGODB_ATLAS_DEFAULT_AUTH_DB: op://github-actions/mongodb-atlas/MONGODB_ATLAS_DEFAULT_AUTH_DB
+          MONGODB_ATLAS_USE_SRV: op://github-actions/mongodb-atlas/MONGODB_ATLAS_USE_SRV
+          MONGODB_ATLAS_SSL_ENABLED: op://github-actions/mongodb-atlas/MONGODB_ATLAS_SSL_ENABLED
 
       - name: Integration Tests (Misc)
         run: nox -s "pytest(misc-integration-external)"

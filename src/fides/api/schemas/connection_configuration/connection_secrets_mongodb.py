@@ -1,4 +1,4 @@
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -30,8 +30,20 @@ class MongoDBSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
     )
     defaultauthdb: str = Field(
-        title="Default Auth DB",
+        title="Default auth DB",
         description="Used to specify the default authentication database.",
+    )
+
+    use_srv: Optional[bool] = Field(
+        False,
+        title="Use SRV",
+        description="Enable SRV record lookup for service discovery (mongodb+srv://). Required for MongoDB Atlas. Enables SSL by default.",
+    )
+
+    ssl_enabled: Optional[bool] = Field(
+        None,
+        title="SSL enabled",
+        description="Enable SSL/TLS encryption. With SRV: defaults to enabled (can override). Without SRV: defaults to disabled.",
     )
 
     _required_components: ClassVar[List[str]] = [

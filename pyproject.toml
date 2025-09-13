@@ -191,6 +191,7 @@ markers = [
     "integration_mysql",
     "integration_postgres",
     "integration_mongodb",
+    "integration_mongodb_atlas",
     "integration_mssql",
     "integration_google_cloud_sql_mysql",
     "integration_google_cloud_sql_postgres",
