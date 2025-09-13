@@ -75,12 +75,12 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         if config.ssl_enabled is not None:
             # Explicit setting takes precedence
             return config.ssl_enabled
-        elif config.use_srv:
+        if config.use_srv:
             # SRV defaults to SSL enabled
             return True
-        else:
-            # Standard connections default to SSL disabled
-            return False
+
+        # Standard connections default to SSL disabled
+        return False
 
     def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
@@ -91,9 +91,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         scheme = "mongodb+srv" if config.use_srv else "mongodb"
         ssl_status = "enabled" if self._determine_ssl_enabled(config) else "disabled"
         logger.info(
-            "Connecting to MongoDB using {} scheme with SSL {}",
-            scheme,
-            ssl_status
+            "Connecting to MongoDB using {} scheme with SSL {}", scheme, ssl_status
         )
 
         try:
