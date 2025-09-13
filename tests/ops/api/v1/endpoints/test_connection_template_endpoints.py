@@ -995,6 +995,17 @@ class TestGetConnectionSecretSchema:
                     "description": "Used to specify the default authentication database.",
                     "type": "string",
                 },
+                "ssl_enabled": {
+                    "description": "Enable SSL/TLS encryption. With SRV: defaults to enabled (can override). Without SRV: defaults to disabled.",
+                    "title": "SSL enabled",
+                    "type": "boolean",
+                },
+                "use_srv": {
+                    "default": False,
+                    "description": "Enable SRV record lookup for service discovery (mongodb+srv://). Required for MongoDB Atlas. Enables SSL by default.",
+                    "title": "Use SRV",
+                    "type": "boolean",
+                },
             },
             "required": ["host", "username", "password", "defaultauthdb"],
         }
