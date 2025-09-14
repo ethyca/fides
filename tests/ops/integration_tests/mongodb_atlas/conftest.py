@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Generator, List
+from typing import Any, Dict, Generator
 
 import pytest
 from pymongo import MongoClient
@@ -12,15 +12,18 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.connectors import MongoDBConnector
-from tests.fixtures.application_fixtures import faker, integration_secrets
 from tests.fixtures.integration_fixtures import (
     generate_integration_records,
     generate_mongo_specific_records,
-    mongo_delete,
-    mongo_insert,
+    mongo_dataset_dict,
 )
 from tests.ops.integration_tests.mongodb_atlas.mongo_sample import mongo_sample_data
-from tests.ops.task.traversal_data import mongo_dataset_dict
+
+
+@pytest.fixture(scope="function")
+def unique_database_name() -> str:
+    """Generate a unique PostgreSQL dataset name per-test to avoid duplicate key errors."""
+    return "mongo_test_1234567890"
 
 
 # Helper functions
@@ -77,15 +80,20 @@ def integration_mongodb_atlas_config(db) -> Generator[ConnectionConfig, None, No
 
 @pytest.fixture(scope="function")
 def integration_mongodb_atlas_config_with_dataset(
-    db, integration_mongodb_atlas_config, integration_postgres_config_with_dataset
+    db,
+    integration_mongodb_atlas_config,
+    integration_postgres_config_with_dataset,
+    unique_database_name,
 ) -> Generator[ConnectionConfig, None, None]:
     """MongoDB Atlas connection config with associated dataset"""
     connection_config = integration_mongodb_atlas_config
 
-    # The postgres config is used to generate the dataset references in `mongo_dataset_dict`
+    # The postgres config is used to generate the dataset references in `mongo_atlas_dataset_dict`
     ctl_dataset = CtlDataset.create_from_dataset_dict(
         db,
-        mongo_dataset_dict("mongo_test", integration_postgres_config_with_dataset.key),
+        mongo_dataset_dict(
+            unique_database_name, integration_postgres_config_with_dataset.key
+        ),
     )
     dataset = DatasetConfig.create(
         db=db,
@@ -97,10 +105,6 @@ def integration_mongodb_atlas_config_with_dataset(
     )
 
     yield connection_config
-
-    connection_config.delete(db)
-    dataset.delete(db)
-    ctl_dataset.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -114,25 +118,25 @@ def integration_mongodb_atlas_connector(
 @pytest.fixture(scope="function")
 def seed_mongo_sample_data(
     integration_mongodb_atlas_connector,
+    unique_database_name,
 ) -> Generator[None, None, None]:
-    """Load sample data into mongo_test database"""
-
+    """Load sample data into MongoDB Atlas database"""
     records = mongo_sample_data
 
     for table_name, record_list in records.items():
         for record in record_list:
             mongodb_atlas_insert(
-                integration_mongodb_atlas_connector, "mongo_test", table_name, record
+                integration_mongodb_atlas_connector,
+                unique_database_name,
+                table_name,
+                record,
             )
     yield records
-    for table_name in records.keys():
-        mongodb_atlas_delete(
-            integration_mongodb_atlas_connector, "mongo_test", table_name
-        )
+    integration_mongodb_atlas_connector.drop_database(unique_database_name)
 
 
 @pytest.fixture(scope="function")
-def mongodb_atlas_inserts(integration_mongodb_atlas_connector):
+def mongodb_atlas_inserts(integration_mongodb_atlas_connector, unique_database_name):
     """Insert test data into MongoDB Atlas and clean up afterwards"""
 
     # Use the same data generation as standard MongoDB tests
@@ -141,10 +145,13 @@ def mongodb_atlas_inserts(integration_mongodb_atlas_connector):
     for table_name, record_list in records.items():
         for record in record_list:
             mongodb_atlas_insert(
-                integration_mongodb_atlas_connector, "mongo_test", table_name, record
+                integration_mongodb_atlas_connector,
+                unique_database_name,
+                table_name,
+                record,
             )
     yield records
     for table_name in records.keys():
         mongodb_atlas_delete(
-            integration_mongodb_atlas_connector, "mongo_test", table_name
+            integration_mongodb_atlas_connector, unique_database_name, table_name
         )

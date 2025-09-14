@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 
 import pytest
@@ -30,6 +31,39 @@ from tests.ops.task.traversal_data import (
 empty_policy = Policy()
 
 
+def create_atlas_datasets(
+    example_datasets, unique_database_name, postgres_config, mongo_config
+):
+    """Helper function to create datasets using actual YAML files but with dynamic MongoDB database name"""
+
+    # Use actual postgres_example_test_dataset.yml
+    dataset_postgres = Dataset(**example_datasets[0])
+    postgres_graph = convert_dataset_to_graph(dataset_postgres, postgres_config.key)
+
+    # Use actual mongo_example_test_dataset.yml but replace "mongo_test" with unique_database_name
+    mongo_dataset_data = copy.deepcopy(example_datasets[1])
+    mongo_dataset_data["fides_key"] = unique_database_name
+
+    # Recursively replace all "mongo_test" references with unique_database_name
+    def replace_dataset_references(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if key == "dataset" and value == "mongo_test":
+                    obj[key] = unique_database_name
+                else:
+                    replace_dataset_references(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                replace_dataset_references(item)
+
+    replace_dataset_references(mongo_dataset_data)
+
+    dataset_mongo = Dataset(**mongo_dataset_data)
+    mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_config.key)
+
+    return mongo_graph, postgres_graph
+
+
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
@@ -48,6 +82,7 @@ async def test_combined_erasure_task_atlas(
     mongodb_atlas_inserts,
     dsr_version,
     request,
+    unique_database_name,
 ):
     """Includes examples of mongo atlas nested and array erasures"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -58,7 +93,9 @@ async def test_combined_erasure_task_atlas(
     privacy_request_with_erasure_policy.save(db)
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_atlas_config
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
+        unique_database_name,
     )
 
     field([postgres_dataset], "postgres_example", "address", "city").data_categories = [
@@ -73,51 +110,62 @@ async def test_combined_erasure_task_atlas(
     field(
         [postgres_dataset], "postgres_example", "customer", "name"
     ).data_categories = ["user.name"]
-    field([mongo_dataset], "mongo_test", "address", "city").data_categories = [
+    field([mongo_dataset], unique_database_name, "address", "city").data_categories = [
         "user.name"
     ]
-    field([mongo_dataset], "mongo_test", "address", "state").data_categories = [
+    field([mongo_dataset], unique_database_name, "address", "state").data_categories = [
         "user.contact"
     ]
-    field([mongo_dataset], "mongo_test", "address", "zip").data_categories = [
+    field([mongo_dataset], unique_database_name, "address", "zip").data_categories = [
         "user.email"
     ]
     field(
-        [mongo_dataset], "mongo_test", "customer_details", "workplace_info", "position"
+        [mongo_dataset],
+        unique_database_name,
+        "customer_details",
+        "workplace_info",
+        "position",
     ).data_categories = ["user.name"]
     field(
-        [mongo_dataset], "mongo_test", "customer_details", "emergency_contacts", "phone"
+        [mongo_dataset],
+        unique_database_name,
+        "customer_details",
+        "emergency_contacts",
+        "phone",
     ).data_categories = ["user.contact"]
     field(
-        [mongo_dataset], "mongo_test", "customer_details", "children"
+        [mongo_dataset], unique_database_name, "customer_details", "children"
     ).data_categories = ["user.contact"]
-    field(
-        [mongo_dataset], "mongo_test", "internal_customer_profile", "derived_interests"
-    ).data_categories = ["user.contact"]
-    field([mongo_dataset], "mongo_test", "employee", "email").data_categories = [
-        "user.contact"
-    ]
     field(
         [mongo_dataset],
-        "mongo_test",
+        unique_database_name,
+        "internal_customer_profile",
+        "derived_interests",
+    ).data_categories = ["user.contact"]
+    field(
+        [mongo_dataset], unique_database_name, "employee", "email"
+    ).data_categories = ["user.contact"]
+    field(
+        [mongo_dataset],
+        unique_database_name,
         "customer_feedback",
         "customer_information",
         "phone",
     ).data_categories = ["user.name"]
 
     field(
-        [mongo_dataset], "mongo_test", "conversations", "thread", "chat_name"
+        [mongo_dataset], unique_database_name, "conversations", "thread", "chat_name"
     ).data_categories = ["user.contact"]
     field(
         [mongo_dataset],
-        "mongo_test",
+        unique_database_name,
         "flights",
         "passenger_information",
         "passenger_ids",
     ).data_categories = ["user.name"]
-    field([mongo_dataset], "mongo_test", "aircraft", "planes").data_categories = [
-        "user.name"
-    ]
+    field(
+        [mongo_dataset], unique_database_name, "aircraft", "planes"
+    ).data_categories = ["user.name"]
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -142,19 +190,19 @@ async def test_combined_erasure_task_atlas(
 
     assert x == {
         "postgres_example:customer": 1,
-        "mongo_test:employee": 2,
-        "mongo_test:customer_feedback": 1,
-        "mongo_test:internal_customer_profile": 1,
+        f"{unique_database_name}:employee": 2,
+        f"{unique_database_name}:customer_feedback": 1,
+        f"{unique_database_name}:internal_customer_profile": 1,
         "postgres_example:payment_card": 0,
         "postgres_example:orders": 0,
-        "mongo_test:customer_details": 1,
-        "mongo_test:address": 1,
+        f"{unique_database_name}:customer_details": 1,
+        f"{unique_database_name}:address": 1,
         "postgres_example:address": 2,
-        "mongo_test:orders": 0,
-        "mongo_test:flights": 1,
-        "mongo_test:conversations": 2,
-        "mongo_test:aircraft": 1,
-        "mongo_test:rewards": 0,
+        f"{unique_database_name}:orders": 0,
+        f"{unique_database_name}:flights": 1,
+        f"{unique_database_name}:conversations": 2,
+        f"{unique_database_name}:aircraft": 1,
+        f"{unique_database_name}:rewards": 0,
     }
 
     rerun_access = access_runner_tester(
@@ -168,40 +216,51 @@ async def test_combined_erasure_task_atlas(
 
     # Nested resource deleted
     assert (
-        rerun_access["mongo_test:customer_details"][0]["workplace_info"]["position"]
+        rerun_access[f"{unique_database_name}:customer_details"][0]["workplace_info"][
+            "position"
+        ]
         is None
     )
     # Untargeted nested resource is not deleted
     assert (
-        rerun_access["mongo_test:customer_details"][0]["workplace_info"]["employer"]
+        rerun_access[f"{unique_database_name}:customer_details"][0]["workplace_info"][
+            "employer"
+        ]
         is not None
     )
     # Every element in array field deleted
-    assert rerun_access["mongo_test:customer_details"][0]["children"] == [None, None]
+    assert rerun_access[f"{unique_database_name}:customer_details"][0]["children"] == [
+        None,
+        None,
+    ]
 
     # Nested resource deleted
     assert (
-        rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["phone"]
+        rerun_access[f"{unique_database_name}:customer_feedback"][0][
+            "customer_information"
+        ]["phone"]
         is None
     )
     # Untarged nested resource is not deleted
     assert (
-        rerun_access["mongo_test:customer_feedback"][0]["customer_information"]["email"]
+        rerun_access[f"{unique_database_name}:customer_feedback"][0][
+            "customer_information"
+        ]["email"]
         is not None
     )
 
     # Every element in array field deleted
-    assert rerun_access["mongo_test:internal_customer_profile"][0][
+    assert rerun_access[f"{unique_database_name}:internal_customer_profile"][0][
         "derived_interests"
     ] == [None, None]
 
     # Untargeted nested resource not deleted
-    assert rerun_access["mongo_test:internal_customer_profile"][0][
+    assert rerun_access[f"{unique_database_name}:internal_customer_profile"][0][
         "customer_identifiers"
     ] == {"internal_id": "cust_014"}
 
     # Only the chat name in the matched array elements are masked (reference field)
-    mongo_db = integration_mongodb_atlas_connector["mongo_test"]
+    mongo_db = integration_mongodb_atlas_connector[unique_database_name]
     thread_one = mongo_db.conversations.find_one({"id": "thread_1"})
     thread_two = mongo_db.conversations.find_one({"id": "thread_2"})
     assert thread_one["thread"] == [
@@ -277,6 +336,7 @@ async def test_mongodb_atlas_erasure_task(
     dsr_version,
     request,
     privacy_request_with_erasure_policy,
+    unique_database_name,
 ):
     """Test erasure functionality with MongoDB Atlas"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -287,14 +347,20 @@ async def test_mongodb_atlas_erasure_task(
     privacy_request_with_erasure_policy.save(db)
 
     dataset, graph = integration_db_mongo_graph(
-        "mongo_test", integration_mongodb_atlas_config.key
+        unique_database_name, integration_mongodb_atlas_config.key
     )
-    field([dataset], "mongo_test", "address", "city").data_categories = ["user.name"]
-    field([dataset], "mongo_test", "address", "state").data_categories = [
+    field([dataset], unique_database_name, "address", "city").data_categories = [
+        "user.name"
+    ]
+    field([dataset], unique_database_name, "address", "state").data_categories = [
         "user.contact"
     ]
-    field([dataset], "mongo_test", "address", "zip").data_categories = ["user.email"]
-    field([dataset], "mongo_test", "customer", "name").data_categories = ["user.name"]
+    field([dataset], unique_database_name, "address", "zip").data_categories = [
+        "user.email"
+    ]
+    field([dataset], unique_database_name, "customer", "name").data_categories = [
+        "user.name"
+    ]
 
     access_runner_tester(
         privacy_request_with_erasure_policy,
@@ -324,10 +390,10 @@ async def test_mongodb_atlas_erasure_task(
 
     # Verify erasure results
     assert erasure_results == {
-        "mongo_test:customer": 1,
-        "mongo_test:payment_card": 0,
-        "mongo_test:orders": 0,
-        "mongo_test:address": 2,
+        f"{unique_database_name}:customer": 1,
+        f"{unique_database_name}:payment_card": 0,
+        f"{unique_database_name}:orders": 0,
+        f"{unique_database_name}:address": 2,
     }
 
 
@@ -345,6 +411,7 @@ async def test_access_mongodb_atlas_task(
     dsr_version,
     privacy_request,
     request,
+    unique_database_name,
 ) -> None:
     """Test data access functionality with MongoDB Atlas"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -352,30 +419,35 @@ async def test_access_mongodb_atlas_task(
     access_results = access_runner_tester(
         privacy_request,
         empty_policy,
-        integration_db_graph("mongo_test", integration_mongodb_atlas_config.key),
+        integration_db_graph(
+            unique_database_name, integration_mongodb_atlas_config.key
+        ),
         [integration_mongodb_atlas_config],
         {"email": "customer-1@example.com"},
         db,
     )
 
     assert_rows_match(
-        access_results["mongo_test:orders"],
+        access_results[f"{unique_database_name}:orders"],
         min_size=2,
         keys=["id", "customer_id", "payment_card_id"],
     )
     assert_rows_match(
-        access_results["mongo_test:payment_card"],
+        access_results[f"{unique_database_name}:payment_card"],
         min_size=2,
         keys=["id", "name", "ccn", "customer_id"],
     )
     assert_rows_match(
-        access_results["mongo_test:customer"],
+        access_results[f"{unique_database_name}:customer"],
         min_size=1,
         keys=["id", "name", "email"],
     )
 
     # Verify data linkage
-    assert access_results["mongo_test:customer"][0]["email"] == "customer-1@example.com"
+    assert (
+        access_results[f"{unique_database_name}:customer"][0]["email"]
+        == "customer-1@example.com"
+    )
 
 
 @pytest.mark.integration_mongodb_atlas
@@ -394,6 +466,7 @@ async def test_composite_key_erasure_atlas(
     privacy_request_with_erasure_policy,
     dsr_version,
     request,
+    unique_database_name,
 ) -> None:
     """Test composite key erasure with MongoDB Atlas (parity with mongo test)"""
 
@@ -436,13 +509,15 @@ async def test_composite_key_erasure_atlas(
             ScalarField(
                 name="customer_id",
                 data_type_converter=IntTypeConverter(),
-                references=[(FieldAddress("mongo_test", "customer", "id"), "from")],
+                references=[
+                    (FieldAddress(unique_database_name, "customer", "id"), "from")
+                ],
             ),
         ],
     )
 
     dataset = GraphDataset(
-        name="mongo_test",
+        name=unique_database_name,
         collections=[customer, composite_pk_test],
         connection_key=integration_mongodb_atlas_config.key,
     )
@@ -456,8 +531,8 @@ async def test_composite_key_erasure_atlas(
         db,
     )
 
-    customer_data = access_request_data["mongo_test:customer"][0]
-    composite_data = access_request_data["mongo_test:composite_pk_test"][0]
+    customer_data = access_request_data[f"{unique_database_name}:customer"][0]
+    composite_data = access_request_data[f"{unique_database_name}:composite_pk_test"][0]
 
     assert customer_data["id"] == 1
     assert composite_data["customer_id"] == 1
@@ -474,8 +549,8 @@ async def test_composite_key_erasure_atlas(
     )
 
     assert erasure_results == {
-        "mongo_test:customer": 0,
-        "mongo_test:composite_pk_test": 1,
+        f"{unique_database_name}:customer": 0,
+        f"{unique_database_name}:composite_pk_test": 1,
     }
 
 
@@ -493,6 +568,7 @@ async def test_access_erasure_type_conversion_atlas(
     privacy_request_with_erasure_policy,
     dsr_version,
     request,
+    unique_database_name,
 ) -> None:
     """Retrieve data from the type_link table using MongoDB Atlas. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
@@ -526,7 +602,10 @@ async def test_access_erasure_type_conversion_atlas(
                 primary_key=True,
                 data_type_converter=ObjectIdTypeConverter(),
                 references=[
-                    (FieldAddress("mongo_test", "employee", "foreign_id"), "from")
+                    (
+                        FieldAddress(unique_database_name, "employee", "foreign_id"),
+                        "from",
+                    )
                 ],
             ),
             ScalarField(
@@ -539,7 +618,7 @@ async def test_access_erasure_type_conversion_atlas(
     )
 
     dataset = GraphDataset(
-        name="mongo_test",
+        name=unique_database_name,
         collections=[employee, type_link],
         connection_key=integration_mongodb_atlas_config.key,
     )
@@ -553,8 +632,8 @@ async def test_access_erasure_type_conversion_atlas(
         db,
     )
 
-    employee = access_request_data["mongo_test:employee"][0]
-    link = access_request_data["mongo_test:type_link_test"][0]
+    employee = access_request_data[f"{unique_database_name}:employee"][0]
+    link = access_request_data[f"{unique_database_name}:type_link_test"][0]
 
     assert employee["foreign_id"] == "000000000000000000000001"
     assert link["_id"] == ObjectId("000000000000000000000001")
@@ -570,7 +649,10 @@ async def test_access_erasure_type_conversion_atlas(
         db,
     )
 
-    assert erasure == {"mongo_test:employee": 0, "mongo_test:type_link_test": 1}
+    assert erasure == {
+        f"{unique_database_name}:employee": 0,
+        f"{unique_database_name}:type_link_test": 1,
+    }
 
 
 @pytest.mark.integration_mongodb_atlas
@@ -590,20 +672,19 @@ async def test_object_querying_mongo_atlas(
     seed_mongo_sample_data,
     dsr_version,
     request,
+    unique_database_name,
 ):
     """Test cross-database querying with MongoDB Atlas and Postgres"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-    import copy
-
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = Dataset(**example_datasets[0])
-    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = Dataset(**example_datasets[1])
-    mongo_graph = convert_dataset_to_graph(
-        dataset_mongo, integration_mongodb_atlas_config.key
+    mongo_dataset, postgres_dataset = create_atlas_datasets(
+        example_datasets,
+        unique_database_name,
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
     )
-    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+    dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
     access_request_results = access_runner_tester(
         privacy_request,
@@ -613,6 +694,8 @@ async def test_object_querying_mongo_atlas(
         {"email": "customer-1@example.com"},
         db,
     )
+
+    pg_dataset_name = postgres_dataset.name
 
     target_categories = {
         "user.demographic.gender",
@@ -624,9 +707,9 @@ async def test_object_querying_mongo_atlas(
         access_request_results, target_categories, dataset_graph
     )
 
-    # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
+    # Mongo results obtained via customer_id relationship from Postgres dataset customer.id
     assert filtered_results == {
-        "mongo_test:customer_details": [
+        f"{unique_database_name}:customer_details": [
             {
                 "gender": "male",
                 "birthday": datetime(1988, 1, 10, 0, 0),
@@ -634,10 +717,10 @@ async def test_object_querying_mongo_atlas(
                 "customer_uuid": "3b241101-e2bb-4255-8caf-4136c566a962",
             }
         ],
-        "mongo_test:employee": [{"id": "1"}, {"id": "2"}],
-        "mongo_test:payment_card": [{"customer_id": 1}],
-        "postgres_example_test_dataset:customer": [{"id": 1}],
-        "postgres_example_test_dataset:login": [
+        f"{unique_database_name}:employee": [{"id": "1"}, {"id": "2"}],
+        f"{unique_database_name}:payment_card": [{"customer_id": 1}],
+        f"{pg_dataset_name}:customer": [{"id": 1}],
+        f"{pg_dataset_name}:login": [
             {"customer_id": 1},
             {"customer_id": 1},
             {"customer_id": 1},
@@ -645,23 +728,23 @@ async def test_object_querying_mongo_atlas(
             {"customer_id": 1},
             {"customer_id": 1},
         ],
-        "postgres_example_test_dataset:orders": [
+        f"{pg_dataset_name}:orders": [
             {"customer_id": 1},
             {"customer_id": 1},
             {"customer_id": 1},
         ],
-        "postgres_example_test_dataset:payment_card": [{"customer_id": 1}],
-        "postgres_example_test_dataset:service_request": [{"employee_id": 1}],
+        f"{pg_dataset_name}:payment_card": [{"customer_id": 1}],
+        f"{pg_dataset_name}:service_request": [{"employee_id": 1}],
     }
 
-    # mongo_test:customer_feedback collection reached via nested identity
+    # customer_feedback collection reached via nested identity
     target_categories = {"user.contact.phone_number"}
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
         dataset_graph,
     )
-    assert filtered_results["mongo_test:customer_feedback"][0] == {
+    assert filtered_results[f"{unique_database_name}:customer_feedback"][0] == {
         "customer_information": {"phone": "333-333-3333"}
     }
 
@@ -672,23 +755,35 @@ async def test_object_querying_mongo_atlas(
         target_categories,
         dataset_graph,
     )
-    assert len(filtered_results["mongo_test:customer_details"]) == 1
+    assert len(filtered_results[f"{unique_database_name}:customer_details"]) == 1
 
     # Array of embedded emergency contacts returned, array of children, nested array of workplace_info.direct_reports
-    assert filtered_results["mongo_test:customer_details"][0]["birthday"] == datetime(
-        1988, 1, 10, 0, 0
+    assert filtered_results[f"{unique_database_name}:customer_details"][0][
+        "birthday"
+    ] == datetime(1988, 1, 10, 0, 0)
+    assert (
+        filtered_results[f"{unique_database_name}:customer_details"][0]["gender"]
+        == "male"
     )
-    assert filtered_results["mongo_test:customer_details"][0]["gender"] == "male"
-    assert filtered_results["mongo_test:customer_details"][0]["customer_id"] == 1.0
-    assert filtered_results["mongo_test:customer_details"][0]["children"] == [
+    assert (
+        filtered_results[f"{unique_database_name}:customer_details"][0]["customer_id"]
+        == 1.0
+    )
+    assert filtered_results[f"{unique_database_name}:customer_details"][0][
+        "children"
+    ] == [
         "Christopher Customer",
         "Courtney Customer",
     ]
-    assert filtered_results["mongo_test:customer_details"][0]["emergency_contacts"] == [
+    assert filtered_results[f"{unique_database_name}:customer_details"][0][
+        "emergency_contacts"
+    ] == [
         {"name": "June Customer", "phone": "444-444-4444"},
         {"name": "Josh Customer", "phone": "111-111-111"},
     ]
-    assert filtered_results["mongo_test:customer_details"][0]["workplace_info"] == {
+    assert filtered_results[f"{unique_database_name}:customer_details"][0][
+        "workplace_info"
+    ] == {
         "position": "Chief Strategist",
         "direct_reports": ["Robbie Margo", "Sully Hunter"],
     }
@@ -702,7 +797,7 @@ async def test_object_querying_mongo_atlas(
     )
 
     # Test for accessing array
-    assert filtered_results["mongo_test:internal_customer_profile"][0] == {
+    assert filtered_results[f"{unique_database_name}:internal_customer_profile"][0] == {
         "derived_interests": ["marketing", "food"]
     }
 
@@ -713,16 +808,20 @@ async def test_object_querying_mongo_atlas(
 async def test_get_cached_data_for_erasures_atlas(
     integration_postgres_config,
     integration_mongodb_atlas_config,
+    example_datasets,
     policy,
     db,
     use_dsr_2_0,
     privacy_request,
     seed_mongo_sample_data,
+    unique_database_name,
 ) -> None:
     """Test DSR 2.0 cached data functionality with MongoDB Atlas"""
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_atlas_config
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
+        unique_database_name,
     )
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -738,7 +837,9 @@ async def test_get_cached_data_for_erasures_atlas(
     cached_data_for_erasures = get_cached_data_for_erasures(privacy_request.id)
 
     # Cached raw results preserve the indices
-    assert cached_data_for_erasures["mongo_test:conversations"][0]["thread"] == [
+    assert cached_data_for_erasures[f"{unique_database_name}:conversations"][0][
+        "thread"
+    ] == [
         {
             "comment": "com_0001",
             "message": "hello, testing in-flight chat feature",
@@ -749,7 +850,9 @@ async def test_get_cached_data_for_erasures_atlas(
     ]
 
     # The access request results are filtered on array data, because it was an entrypoint into the node.
-    assert access_request_results["mongo_test:conversations"][0]["thread"] == [
+    assert access_request_results[f"{unique_database_name}:conversations"][0][
+        "thread"
+    ] == [
         {
             "comment": "com_0001",
             "message": "hello, testing in-flight chat feature",
@@ -765,15 +868,19 @@ async def test_get_cached_data_for_erasures_atlas(
 async def test_get_saved_data_for_erasures_3_0_atlas(
     integration_postgres_config,
     integration_mongodb_atlas_config,
+    example_datasets,
     policy,
     db,
     privacy_request,
     seed_mongo_sample_data,
+    unique_database_name,
 ) -> None:
     """Test DSR 3.0 saved data functionality with MongoDB Atlas"""
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_atlas_config
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
+        unique_database_name,
     )
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -787,7 +894,7 @@ async def test_get_saved_data_for_erasures_3_0_atlas(
     )
 
     conversations_task = privacy_request.access_tasks.filter(
-        RequestTask.collection_address == "mongo_test:conversations"
+        RequestTask.collection_address == f"{unique_database_name}:conversations"
     ).first()
 
     # Assert access task saved data in erasure format, that will be copied over to the erasure
@@ -831,26 +938,24 @@ async def test_return_all_elements_config_access_request_atlas(
     seed_mongo_sample_data,
     dsr_version,
     request,
+    unique_database_name,
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
     queried data and used to locate data in other collections with MongoDB Atlas
 
-    mongo_test:internal_customer_profile.customer_identifiers.derived_phone field and mongo_test:rewards.owner field
+    internal_customer_profile.customer_identifiers.derived_phone field and rewards.owner field
     have return_all_elements set to True
     """
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    import copy
-
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = Dataset(**example_datasets[0])
-    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = Dataset(**example_datasets[1])
-    mongo_graph = convert_dataset_to_graph(
-        dataset_mongo, integration_mongodb_atlas_config.key
+    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
+        unique_database_name,
     )
-    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+    dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
     access_request_results = access_runner_tester(
         privacy_request,
@@ -861,19 +966,19 @@ async def test_return_all_elements_config_access_request_atlas(
         db,
     )
 
-    # Both indices in mongo_test:internal_customer_profile.customer_identifiers.derived_phone are returned from the node
-    assert access_request_results["mongo_test:internal_customer_profile"][0][
-        "customer_identifiers"
-    ]["derived_phone"] == ["530-486-6983", "254-344-9868"]
+    # Both indices in internal_customer_profile.customer_identifiers.derived_phone are returned from the node
+    assert access_request_results[f"{unique_database_name}:internal_customer_profile"][
+        0
+    ]["customer_identifiers"]["derived_phone"] == ["530-486-6983", "254-344-9868"]
 
     # Assert both phone numbers are then used to locate records in rewards collection.
     # All nested documents are returned because return_all_elements=true also specified
-    assert len(access_request_results["mongo_test:rewards"]) == 2
-    assert access_request_results["mongo_test:rewards"][0]["owner"] == [
+    assert len(access_request_results[f"{unique_database_name}:rewards"]) == 2
+    assert access_request_results[f"{unique_database_name}:rewards"][0]["owner"] == [
         {"phone": "530-486-6983", "shopper_name": "janec"},
         {"phone": "818-695-1881", "shopper_name": "janec"},
     ]
-    assert access_request_results["mongo_test:rewards"][1]["owner"] == [
+    assert access_request_results[f"{unique_database_name}:rewards"][1]["owner"] == [
         {"phone": "254-344-9868", "shopper_name": "janec"}
     ]
 
@@ -892,9 +997,11 @@ async def test_return_all_elements_config_erasure_atlas(
     integration_mongodb_atlas_config,
     integration_postgres_config,
     integration_mongodb_atlas_connector,
+    example_datasets,
     dsr_version,
     request,
     privacy_request,
+    unique_database_name,
 ):
     """Includes examples of mongo atlas nested and array erasures with return_all_elements config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -904,15 +1011,17 @@ async def test_return_all_elements_config_erasure_atlas(
     privacy_request.save(db)
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_atlas_config
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
+        unique_database_name,
     )
 
     field(
-        [mongo_dataset], "mongo_test", "rewards", "owner", "phone"
+        [mongo_dataset], unique_database_name, "rewards", "owner", "phone"
     ).data_categories = ["user.name"]
     field(
         [mongo_dataset],
-        "mongo_test",
+        unique_database_name,
         "internal_customer_profile",
         "customer_identifiers",
         "derived_phone",
@@ -942,10 +1051,10 @@ async def test_return_all_elements_config_erasure_atlas(
         db,
     )
 
-    assert x["mongo_test:internal_customer_profile"] == 1
-    assert x["mongo_test:rewards"] == 2
+    assert x[f"{unique_database_name}:internal_customer_profile"] == 1
+    assert x[f"{unique_database_name}:rewards"] == 2
 
-    mongo_db = integration_mongodb_atlas_connector["mongo_test"]
+    mongo_db = integration_mongodb_atlas_connector[unique_database_name]
 
     reward_one = mongo_db.rewards.find_one({"id": "rew_1"})
     # All phone numbers masked because return_all_elements is True
@@ -984,21 +1093,21 @@ async def test_array_querying_mongo_atlas(
     seed_mongo_sample_data,
     dsr_version,
     request,
+    unique_database_name,
 ):
     """Test complex array querying scenarios with MongoDB Atlas"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    import copy
-
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = Dataset(**example_datasets[0])
-    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = Dataset(**example_datasets[1])
-    mongo_graph = convert_dataset_to_graph(
-        dataset_mongo, integration_mongodb_atlas_config.key
+    mongo_dataset, postgres_dataset = create_atlas_datasets(
+        example_datasets,
+        unique_database_name,
+        integration_postgres_config,
+        integration_mongodb_atlas_config,
     )
-    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+    pg_dataset_name = postgres_dataset.name
+    dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
     access_request_results = access_runner_tester(
         privacy_request,
@@ -1016,14 +1125,14 @@ async def test_array_querying_mongo_atlas(
         target_categories,
         dataset_graph,
     )
-    # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity
+    # Array field internal_customer_profile.customer_identifiers contains identity
     # Only matching identity returned
-    assert filtered_results["mongo_test:internal_customer_profile"][0][
+    assert filtered_results[f"{unique_database_name}:internal_customer_profile"][0][
         "customer_identifiers"
     ]["derived_emails"] == ["jane@example.com"]
 
     # # Entire derived_interests array returned - this is not an identity or "to" reference field
-    assert filtered_results["mongo_test:internal_customer_profile"][0][
+    assert filtered_results[f"{unique_database_name}:internal_customer_profile"][0][
         "derived_interests"
     ] == ["interior design", "travel", "photography"]
 
@@ -1035,17 +1144,27 @@ async def test_array_querying_mongo_atlas(
     )
 
     # Includes array field
-    assert filtered_identifiable["mongo_test:customer_details"][0][
+    assert filtered_identifiable[f"{unique_database_name}:customer_details"][0][
         "birthday"
     ] == datetime(1990, 2, 28, 0, 0)
-    assert filtered_identifiable["mongo_test:customer_details"][0]["customer_id"] == 3.0
-    assert filtered_identifiable["mongo_test:customer_details"][0]["gender"] == "female"
-    assert filtered_identifiable["mongo_test:customer_details"][0]["children"] == [
-        "Erica Example"
-    ]
+    assert (
+        filtered_identifiable[f"{unique_database_name}:customer_details"][0][
+            "customer_id"
+        ]
+        == 3.0
+    )
+    assert (
+        filtered_identifiable[f"{unique_database_name}:customer_details"][0]["gender"]
+        == "female"
+    )
+    assert filtered_identifiable[f"{unique_database_name}:customer_details"][0][
+        "children"
+    ] == ["Erica Example"]
 
     customer_detail_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test", collection_name="customer_details", status="complete"
+        dataset_name=unique_database_name,
+        collection_name="customer_details",
+        status="complete",
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
@@ -1053,66 +1172,66 @@ async def test_array_querying_mongo_atlas(
         customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]
     ) == [
         {
-            "path": "mongo_test:customer_details:birthday",
+            "path": f"{unique_database_name}:customer_details:birthday",
             "field_name": "birthday",
             "data_categories": ["user.demographic.date_of_birth"],
         },
         {
-            "path": "mongo_test:customer_details:children",
+            "path": f"{unique_database_name}:customer_details:children",
             "field_name": "children",
             "data_categories": ["user.childrens"],
         },
         {
-            "path": "mongo_test:customer_details:customer_id",
+            "path": f"{unique_database_name}:customer_details:customer_id",
             "field_name": "customer_id",
             "data_categories": ["user.unique_id"],
         },
         {
             "data_categories": ["user.unique_id"],
             "field_name": "customer_uuid",
-            "path": "mongo_test:customer_details:customer_uuid",
+            "path": f"{unique_database_name}:customer_details:customer_uuid",
         },
         {
-            "path": "mongo_test:customer_details:emergency_contacts.name",
+            "path": f"{unique_database_name}:customer_details:emergency_contacts.name",
             "field_name": "emergency_contacts.name",
             "data_categories": ["user.name"],
         },
         {
-            "path": "mongo_test:customer_details:emergency_contacts.phone",
+            "path": f"{unique_database_name}:customer_details:emergency_contacts.phone",
             "field_name": "emergency_contacts.phone",
             "data_categories": ["user.contact.phone_number"],
         },
         {
-            "path": "mongo_test:customer_details:gender",
+            "path": f"{unique_database_name}:customer_details:gender",
             "field_name": "gender",
             "data_categories": ["user.demographic.gender"],
         },
         {
-            "path": "mongo_test:customer_details:workplace_info.direct_reports",
+            "path": f"{unique_database_name}:customer_details:workplace_info.direct_reports",
             "field_name": "workplace_info.direct_reports",
             "data_categories": ["user.name"],
         },
         {
-            "path": "mongo_test:customer_details:workplace_info.position",
+            "path": f"{unique_database_name}:customer_details:workplace_info.position",
             "field_name": "workplace_info.position",
             "data_categories": ["user.job_title"],
         },
     ]
 
-    # items in array mongo_test:customer_details.travel_identifiers used to lookup matching array elements
-    # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant
+    # items in array customer_details.travel_identifiers used to lookup matching array elements
+    # in flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant
     # data category.
-    assert len(filtered_identifiable["mongo_test:flights"]) == 1
-    assert filtered_identifiable["mongo_test:flights"][0] == {
+    assert len(filtered_identifiable[f"{unique_database_name}:flights"]) == 1
+    assert filtered_identifiable[f"{unique_database_name}:flights"][0] == {
         "passenger_information": {"full_name": "Jane Customer"}
     }
     completed_flight_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test", collection_name="flights", status="complete"
+        dataset_name=unique_database_name, collection_name="flights", status="complete"
     )
     assert completed_flight_logs.count() == 1
     assert completed_flight_logs[0].fields_affected == [
         {
-            "path": "mongo_test:flights:passenger_information.full_name",
+            "path": f"{unique_database_name}:flights:passenger_information.full_name",
             "field_name": "passenger_information.full_name",
             "data_categories": ["user.name"],
         }
@@ -1120,7 +1239,7 @@ async def test_array_querying_mongo_atlas(
 
     # Nested customer_details:comments.comment_id field used to find embedded objects conversations.thread.comment
     # fields. Only matching embedded documents queried for relevant data categories
-    assert filtered_identifiable["mongo_test:conversations"] == [
+    assert filtered_identifiable[f"{unique_database_name}:conversations"] == [
         {"thread": [{"chat_name": "Jane C", "ccn": "987654321"}]},
         {
             "thread": [
@@ -1130,61 +1249,65 @@ async def test_array_querying_mongo_atlas(
         },
     ]
     conversation_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test", collection_name="conversations", status="complete"
+        dataset_name=unique_database_name,
+        collection_name="conversations",
+        status="complete",
     )
     assert conversation_logs.count() == 1
     assert {
-        "path": "mongo_test:conversations:thread.chat_name",
+        "path": f"{unique_database_name}:conversations:thread.chat_name",
         "field_name": "thread.chat_name",
         "data_categories": ["user.name"],
     } in conversation_logs[0].fields_affected
 
     assert {
-        "path": "mongo_test:conversations:thread.ccn",
+        "path": f"{unique_database_name}:conversations:thread.ccn",
         "field_name": "thread.ccn",
         "data_categories": ["user.financial.bank_account"],
     } in conversation_logs[0].fields_affected
 
-    # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
-    assert access_request_results["mongo_test:aircraft"][0]["planes"] == ["30005"]
+    # Integer field flights.plane used to locate only matching elem in aircraft:planes array field
+    assert access_request_results[f"{unique_database_name}:aircraft"][0]["planes"] == [
+        "30005"
+    ]
     # Filtered out, however, because there's no relevant matched data category
-    assert filtered_identifiable["mongo_test:aircraft"] == []
+    assert filtered_identifiable[f"{unique_database_name}:aircraft"] == []
     aircraft_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test", collection_name="aircraft", status="complete"
+        dataset_name=unique_database_name, collection_name="aircraft", status="complete"
     )
     assert aircraft_logs.count() == 1
     assert aircraft_logs[0].fields_affected == []
 
-    # Values in mongo_test:flights:pilots array field used to locate scalar field in mongo_test:employee.id
-    assert filtered_identifiable["mongo_test:employee"] == [
+    # Values in flights:pilots array field used to locate scalar field in employee.id
+    assert filtered_identifiable[f"{unique_database_name}:employee"] == [
         {"email": "employee-2@example.com", "name": "Jane Employee", "id": "2"}
     ]
     employee_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test", collection_name="employee", status="complete"
+        dataset_name=unique_database_name, collection_name="employee", status="complete"
     )
     assert employee_logs.count() == 1
     assert employee_logs[0].fields_affected == [
         {
-            "path": "mongo_test:employee:email",
+            "path": f"{unique_database_name}:employee:email",
             "field_name": "email",
             "data_categories": ["user.contact.email"],
         },
         {
-            "path": "mongo_test:employee:id",
+            "path": f"{unique_database_name}:employee:id",
             "field_name": "id",
             "data_categories": ["user.unique_id"],
         },
         {
-            "path": "mongo_test:employee:name",
+            "path": f"{unique_database_name}:employee:name",
             "field_name": "name",
             "data_categories": ["user.name"],
         },
     ]
 
     # No data for identity in this collection
-    assert access_request_results["mongo_test:customer_feedback"] == []
+    assert access_request_results[f"{unique_database_name}:customer_feedback"] == []
     customer_feedback_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test",
+        dataset_name=unique_database_name,
         collection_name="customer_feedback",
         status="complete",
     )
@@ -1192,24 +1315,24 @@ async def test_array_querying_mongo_atlas(
     # Returns all possible fields affected, even though there is no associated data for this collection
     assert customer_feedback_logs[0].fields_affected == [
         {
-            "path": "mongo_test:customer_feedback:customer_information.phone",
+            "path": f"{unique_database_name}:customer_feedback:customer_information.phone",
             "field_name": "customer_information.phone",
             "data_categories": ["user.contact.phone_number"],
         },
         {
-            "path": "mongo_test:customer_feedback:message",
+            "path": f"{unique_database_name}:customer_feedback:message",
             "field_name": "message",
             "data_categories": ["user"],
         },
         {
-            "path": "mongo_test:customer_feedback:rating",
+            "path": f"{unique_database_name}:customer_feedback:rating",
             "field_name": "rating",
             "data_categories": ["user"],
         },
     ]
 
-    # Only matched embedded document in mongo_test:conversations.thread.ccn used to locate mongo_test:payment_card
-    assert filtered_identifiable["mongo_test:payment_card"] == [
+    # Only matched embedded document in conversations.thread.ccn used to locate payment_card
+    assert filtered_identifiable[f"{unique_database_name}:payment_card"] == [
         {
             "code": "123",
             "name": "Example Card 2",
@@ -1219,32 +1342,34 @@ async def test_array_querying_mongo_atlas(
         }
     ]
     payment_logs = privacy_request.execution_logs.filter_by(
-        dataset_name="mongo_test", collection_name="payment_card", status="complete"
+        dataset_name=unique_database_name,
+        collection_name="payment_card",
+        status="complete",
     )
     assert payment_logs.count() == 1
     assert payment_logs[0].fields_affected == [
         {
-            "path": "mongo_test:payment_card:ccn",
+            "path": f"{unique_database_name}:payment_card:ccn",
             "field_name": "ccn",
             "data_categories": ["user.financial.bank_account"],
         },
         {
-            "path": "mongo_test:payment_card:code",
+            "path": f"{unique_database_name}:payment_card:code",
             "field_name": "code",
             "data_categories": ["user.financial"],
         },
         {
-            "path": "mongo_test:payment_card:name",
+            "path": f"{unique_database_name}:payment_card:name",
             "field_name": "name",
             "data_categories": ["user.financial"],
         },
         {
-            "path": "mongo_test:payment_card:customer_id",
+            "path": f"{unique_database_name}:payment_card:customer_id",
             "field_name": "customer_id",
             "data_categories": ["user.unique_id"],
         },
         {
-            "path": "mongo_test:payment_card:preferred",
+            "path": f"{unique_database_name}:payment_card:preferred",
             "field_name": "preferred",
             "data_categories": ["user"],
         },
@@ -1265,14 +1390,14 @@ async def test_array_querying_mongo_atlas(
         dataset_graph,
     )
 
-    # Two values in mongo_test:flights:pilots array field mapped to mongo_test:employee ids
-    assert filtered_identifiable["mongo_test:employee"] == [
+    # Two values in flights:pilots array field mapped to employee ids
+    assert filtered_identifiable[f"{unique_database_name}:employee"] == [
         {"email": "employee-1@example.com", "name": "Jack Employee", "id": "1"},
         {"email": "employee-2@example.com", "name": "Jane Employee", "id": "2"},
     ]
 
-    # Only embedded documents matching mongo_test:conversations.thread.comment returned
-    assert filtered_identifiable["mongo_test:conversations"] == [
+    # Only embedded documents matching conversations.thread.comment returned
+    assert filtered_identifiable[f"{unique_database_name}:conversations"] == [
         {"thread": [{"ccn": "123456789", "chat_name": "John C"}]},
         {
             "thread": [
@@ -1298,31 +1423,37 @@ class TestRetrievingDataMongoDBAtlas:
         return mongodb_atlas_inserts
 
     @pytest.fixture
-    def execution_node(self, example_datasets, integration_mongodb_atlas_config):
+    def execution_node(
+        self,
+        integration_mongodb_atlas_config,
+        integration_postgres_config,
+        unique_database_name,
+        example_datasets,
+    ):
 
-        dataset = Dataset(**example_datasets[1])
-        graph = convert_dataset_to_graph(dataset, integration_mongodb_atlas_config.key)
+        mongo_dataset, _ = combined_mongo_postgresql_graph(
+            integration_postgres_config,
+            integration_mongodb_atlas_config,
+            unique_database_name,
+        )
         customer_details_collection = None
-        for collection in graph.collections:
+        for collection in mongo_dataset.collections:
             if collection.name == "customer_details":
                 customer_details_collection = collection
                 break
-        node = Node(graph, customer_details_collection)
+        node = Node(mongo_dataset, customer_details_collection)
         traversal_node = TraversalNode(node)
         return traversal_node.to_mock_execution_node()
 
     def test_retrieving_data_atlas(
-        self,
-        privacy_request,
-        connector,
-        execution_node,
+        self, privacy_request, connector, execution_node, unique_database_name
     ):
         """Test data retrieval through MongoDB Atlas connector"""
 
         execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "id"),
-                FieldAddress("mongo_test", "customer_details", "customer_id"),
+                FieldAddress(unique_database_name, "customer_details", "customer_id"),
             )
         }
 
@@ -1337,17 +1468,14 @@ class TestRetrievingDataMongoDBAtlas:
         assert results[0]["customer_id"] == 10000
 
     def test_retrieving_data_no_input_atlas(
-        self,
-        privacy_request,
-        connector,
-        execution_node,
+        self, privacy_request, connector, execution_node, unique_database_name
     ):
         """Test edge cases when no input data is provided"""
 
         execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
-                FieldAddress("mongo_test", "customer_details", "customer_id"),
+                FieldAddress(unique_database_name, "customer_details", "customer_id"),
             )
         }
 
@@ -1385,17 +1513,14 @@ class TestRetrievingDataMongoDBAtlas:
         assert results == []
 
     def test_retrieving_data_input_not_in_table_atlas(
-        self,
-        privacy_request,
-        connector,
-        execution_node,
+        self, privacy_request, connector, execution_node, unique_database_name
     ):
         """Test edge case when input data doesn't exist in the table"""
 
         execution_node.incoming_edges = {
             Edge(
                 FieldAddress("fake_dataset", "fake_collection", "email"),
-                FieldAddress("mongo_test", "customer_details", "customer_id"),
+                FieldAddress(unique_database_name, "customer_details", "customer_id"),
             )
         }
 
