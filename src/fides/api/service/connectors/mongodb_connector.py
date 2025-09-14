@@ -84,12 +84,27 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
-        uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+        secrets = self.configuration.secrets or {}
+        uri = secrets.get("url") or self.build_uri()
 
         # Log connection details (without credentials) for debugging
-        config = MongoDBSchema(**self.configuration.secrets or {})
-        scheme = "mongodb+srv" if config.use_srv else "mongodb"
-        ssl_status = "enabled" if self._determine_ssl_enabled(config) else "disabled"
+        if secrets.get("url"):
+            # URL-based connection - determine scheme and SSL from URL or defaults
+            scheme = "mongodb+srv" if "mongodb+srv://" in uri else "mongodb"
+            # For URL connections, SSL is determined by the URI scheme or explicit setting
+            ssl_status = (
+                "enabled"
+                if "ssl=true" in uri or secrets.get("ssl_enabled")
+                else "disabled"
+            )
+        else:
+            # Individual parameter connection - validate using schema
+            config = MongoDBSchema(**secrets)
+            scheme = "mongodb+srv" if config.use_srv else "mongodb"
+            ssl_status = (
+                "enabled" if self._determine_ssl_enabled(config) else "disabled"
+            )
+
         logger.info(
             "Connecting to MongoDB using {} scheme with SSL {}", scheme, ssl_status
         )
