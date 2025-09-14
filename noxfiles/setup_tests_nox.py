@@ -160,7 +160,7 @@ def pytest_ops(
             pytest_path=OPS_TEST_DIR,
         )
     elif mark == "external_datastores":
-        session.run(*START_APP, external=True)
+        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
             "docker",
             "exec",
