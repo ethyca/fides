@@ -784,10 +784,28 @@ def run_privacy_request(
                                     privacy_request.property_id,
                                     privacy_request.id,
                                 )
+                                # Add success log for completion email
+                                privacy_request.add_success_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Privacy request completion email",
+                                    collection_name=None,
+                                    message="Privacy request completion email sent successfully.",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                )
                             except (
                                 IdentityNotFoundException,
                                 MessageDispatchException,
                             ) as e:
+                                # Add error log for completion email failure
+                                privacy_request.add_error_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Privacy request completion email",
+                                    collection_name=None,
+                                    message=f"Privacy request completion email failed: {str(e)}",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                )
                                 privacy_request.error_processing(db=session)
                                 # If dev mode, log traceback
                                 _log_exception(e, CONFIG.dev_mode)

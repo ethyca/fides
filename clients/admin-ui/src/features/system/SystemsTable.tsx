@@ -1,29 +1,21 @@
 import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
   AntFlex as Flex,
   AntModal as Modal,
   AntTable as Table,
   AntTypography as Typography,
-  Icons,
 } from "fidesui";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { useFlags } from "~/features/common/features";
-import CreateSystemGroupForm from "~/features/system/system-groups/components/CreateSystemGroupForm";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
 import useSystemsTable from "~/features/system/useSystemsTable";
 
 const SystemsTable = () => {
   const {
-    flags: { alphaSystemGroups: isAlphaSystemGroupsEnabled },
-  } = useFlags();
-
-  const {
     // table
     tableProps,
     selectionProps,
     columns,
+
     // search
     searchQuery,
     updateSearch,
@@ -35,16 +27,15 @@ const SystemsTable = () => {
     setDeleteModalIsOpen,
 
     // actions
-    handleCreateSystemGroup,
     handleDelete,
+    handleCreateSystemGroup,
+    handleBulkAddToGroup,
 
     // utils
-    groupMenuItems,
     messageContext,
+    groupMenuItems,
     selectedSystemForDelete,
-  } = useSystemsTable({
-    isAlphaSystemGroupsEnabled,
-  });
+  } = useSystemsTable();
 
   return (
     <>
@@ -56,51 +47,13 @@ const SystemsTable = () => {
           data-testid="system-search"
         />
         <Flex gap="small">
-          {isAlphaSystemGroupsEnabled && (
-            <>
-              <Dropdown
-                trigger={["click"]}
-                menu={{
-                  items: [
-                    {
-                      key: "new-group",
-                      label: "Create new group +",
-                      onClick: () => setCreateModalIsOpen(true),
-                    },
-                    {
-                      type: "divider",
-                    },
-                    ...groupMenuItems,
-                  ],
-                }}
-              >
-                <Button
-                  disabled={selectionProps?.selectedRowKeys.length === 0}
-                  icon={<Icons.ChevronDown />}
-                >
-                  Add to group
-                </Button>
-              </Dropdown>
-              <Modal
-                open={createModalIsOpen}
-                destroyOnHidden
-                onCancel={() => setCreateModalIsOpen(false)}
-                centered
-                width={768}
-                footer={null}
-              >
-                <CreateSystemGroupForm
-                  selectedSystemKeys={selectionProps?.selectedRowKeys.map(
-                    (key) => key.toString(),
-                  )}
-                  onSubmit={handleCreateSystemGroup}
-                  onCancel={() => setCreateModalIsOpen(false)}
-                />
-              </Modal>
-            </>
-          )}
           <SystemActionsMenu
             selectedRowKeys={selectionProps?.selectedRowKeys ?? []}
+            createModalIsOpen={createModalIsOpen}
+            setCreateModalIsOpen={setCreateModalIsOpen}
+            handleCreateSystemGroup={handleCreateSystemGroup}
+            handleBulkAddToGroup={handleBulkAddToGroup}
+            groupMenuItems={groupMenuItems}
           />
           <Modal
             open={deleteModalIsOpen}

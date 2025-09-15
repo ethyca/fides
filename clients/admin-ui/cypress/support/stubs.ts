@@ -12,6 +12,27 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_use", {
     fixture: "taxonomy/data_uses.json",
   }).as("getDataUses");
+
+  // Generic taxonomy endpoints
+  cy.intercept("GET", "/api/v1/taxonomies", {
+    body: [], // No custom taxonomies by default
+  }).as("getCustomTaxonomies");
+
+  // Generic taxonomy endpoint for system groups (if accessed via taxonomy API)
+  cy.intercept("GET", "/api/v1/taxonomies/system_group", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroupTaxonomy");
+
+  // Generic taxonomy CRUD operations
+  cy.intercept("POST", "/api/v1/taxonomies/*", {
+    statusCode: 201,
+  }).as("createTaxonomyItem");
+  cy.intercept("PUT", "/api/v1/taxonomies/*", {
+    statusCode: 200,
+  }).as("updateTaxonomyItem");
+  cy.intercept("DELETE", "/api/v1/taxonomies/*/*", {
+    statusCode: 204,
+  }).as("deleteTaxonomyItem");
   cy.intercept(
     {
       method: "GET",
@@ -102,6 +123,24 @@ export const stubSystemCrud = () => {
   cy.intercept("POST", "/api/v1/system/assign-steward", {
     statusCode: 200,
   }).as("bulkAssignSteward");
+};
+
+export const stubGVLSystem = () => {
+  cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+    cy.fixture("systems/system.json").then((origSystem) => {
+      cy.intercept(
+        { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+        {
+          body: {
+            ...origSystem,
+            ...dictSystem,
+            fides_key: origSystem.fides_key,
+            customFieldValues: undefined,
+          },
+        },
+      ).as("getDictSystem");
+    });
+  });
 };
 
 export const stubVendorList = () => {
@@ -222,6 +261,28 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
     fixture: "/privacy-requests/privacy-center-config.json",
   }).as("getPrivacyCenterConfig");
+};
+
+export const stubMessagingProvidersCrud = (options?: {
+  listItems?: any[];
+  createStatus?: number;
+  createResponse?: any;
+  getByKeyResponse?: any;
+}) => {
+  cy.intercept("GET", "/api/v1/messaging/config", {
+    statusCode: 200,
+    body: { items: options?.listItems ?? [] },
+  }).as("getMessagingConfigs");
+
+  cy.intercept("POST", "/api/v1/messaging/config", {
+    statusCode: options?.createStatus ?? 200,
+    body: options?.createResponse ?? { key: "new_config_key" },
+  }).as("postMessagingConfig");
+
+  cy.intercept("GET", "/api/v1/messaging/config/*", {
+    statusCode: 200,
+    body: options?.getByKeyResponse ?? {},
+  }).as("getMessagingConfigByKey");
 };
 
 export const stubPrivacyNoticesCrud = () => {

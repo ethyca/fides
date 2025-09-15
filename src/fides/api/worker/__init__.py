@@ -8,6 +8,7 @@ from loguru import logger
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import (
+    CONSENT_WEBHOOK_QUEUE_NAME,
     DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
     DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
     DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
@@ -39,6 +40,7 @@ def start_worker(
         MESSAGING_QUEUE_NAME,
         PRIVACY_PREFERENCES_QUEUE_NAME,
         DSR_QUEUE_NAME,
+        CONSENT_WEBHOOK_QUEUE_NAME,
         DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
         DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
         DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,

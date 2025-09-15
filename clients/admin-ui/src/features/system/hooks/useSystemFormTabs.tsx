@@ -3,7 +3,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
@@ -16,11 +16,7 @@ import {
 } from "~/features/common/nav/routes";
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import {
-  DEFAULT_TOAST_PARAMS,
-  errorToastParams,
-  successToastParams,
-} from "~/features/common/toast";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
@@ -30,14 +26,12 @@ import {
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import SystemHistoryTable from "~/features/system/history/SystemHistoryTable";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
-import {
-  selectActiveSystem,
-  setActiveSystem,
-  useGetSystemByFidesKeyQuery,
-} from "~/features/system/system.slice";
+import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
 import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
+
+import useOAuthStatusHandler from "./useOAuthStatusHandler";
 
 enum SystemTabKeys {
   INFORMATION = "information",
@@ -79,7 +73,11 @@ const useSystemFormTabs = ({
 }) => {
   const router = useRouter();
 
-  const { activeTab, onTabChange: baseOnTabChange } = useURLHashedTabs({
+  const {
+    activeTab,
+    onTabChange: baseOnTabChange,
+    setActiveTab,
+  } = useURLHashedTabs({
     tabKeys: Object.values(SystemTabKeys),
   });
 
@@ -87,22 +85,16 @@ const useSystemFormTabs = ({
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
-  const { plus: hasPlus } = useFeatures();
+  const showNewIntegrationNotice = isPlusEnabled;
 
-  // Once we have saved the system basics, subscribe to the query so that activeSystem
-  // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
-  const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
-    activeSystem?.fides_key,
-    { skip: !activeSystem },
-  );
+  const systemFidesKey = router.query.id as string;
 
-  useEffect(() => {
-    dispatch(setActiveSystem(systemFromApi));
-  }, [systemFromApi, dispatch]);
+  const { data: activeSystem } = useGetSystemByFidesKeyQuery(systemFidesKey, {
+    skip: !systemFidesKey || isCreate,
+  });
 
   useEffect(() => {
     if (activeSystem) {
@@ -116,7 +108,6 @@ const useSystemFormTabs = ({
       if (activeSystem === undefined) {
         setShowSaveMessage(true);
       }
-      dispatch(setActiveSystem(system));
       router.push({
         pathname: EDIT_SYSTEM_ROUTE,
         query: { id: system.fides_key },
@@ -140,14 +131,7 @@ const useSystemFormTabs = ({
       };
       toast({ ...toastParams });
     },
-    [
-      activeSystem,
-      dispatch,
-      router,
-      systemOrDatamapRoute,
-      toast,
-      baseOnTabChange,
-    ],
+    [activeSystem, router, systemOrDatamapRoute, toast, baseOnTabChange],
   );
 
   useEffect(() => {
@@ -157,14 +141,9 @@ const useSystemFormTabs = ({
      * When navigating not through a URL path, the return unmount should handle resetting the system
      */
     if (isCreate) {
-      dispatch(setActiveSystem(undefined));
       dispatch(setSuggestions("initial"));
       dispatch(setLockedForGVL(false));
     }
-    return () => {
-      // on unmount, unset the active system
-      dispatch(setActiveSystem(undefined));
-    };
   }, [dispatch, isCreate]);
 
   const { attemptAction } = useIsAnyFormDirty();
@@ -173,45 +152,15 @@ const useSystemFormTabs = ({
     (key: string) => {
       attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
-          const { status } = router.query;
-          if (status) {
-            if (status === "succeeded") {
-              toast(successToastParams(`Integration successfully authorized.`));
-            } else {
-              toast(errorToastParams(`Failed to authorize integration.`));
-            }
-          }
-
-          // Update URL if router is ready
-          if (router.isReady) {
-            const newQuery = { ...router.query };
-            delete newQuery.status;
-
-            await router.replace(
-              {
-                pathname: router.pathname,
-                query: newQuery,
-              },
-              undefined,
-              { shallow: true },
-            );
-          }
-
           baseOnTabChange(key);
         }
       });
     },
-    [attemptAction, router, toast, baseOnTabChange],
+    [attemptAction, baseOnTabChange],
   );
 
-  useEffect(() => {
-    const { status } = router.query;
-    if (status) {
-      onTabChange("integrations");
-    }
-  }, [router.query, onTabChange]);
-
-  const showNewIntegrationNotice = hasPlus;
+  // Handle OAuth status parameters (e.g., ?status=succeeded)
+  useOAuthStatusHandler({ setActiveTab });
 
   const tabData: NonNullable<TabsProps["items"]> = [
     {

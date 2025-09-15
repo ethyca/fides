@@ -336,6 +336,43 @@ describe("Privacy experiences", () => {
         );
       });
 
+      it("shows a notification when vendor count is zero for TCF overlay", () => {
+        // Mock vendor report with zero vendors
+        cy.intercept(
+          {
+            method: "GET",
+            pathname: "/api/v1/plus/system/consent-management/report",
+            query: {
+              page: "1",
+              size: "1",
+            },
+          },
+          {
+            items: [],
+            total: 0,
+            page: 1,
+            size: 1,
+          },
+        ).as("getVendorReportEmpty");
+
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri*", {
+            ...data,
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+
+        cy.wait("@getTCFExperience");
+        cy.wait("@getVendorReportEmpty");
+
+        // Check that the notification appears
+        cy.get(".ant-notification-notice")
+          .should("be.visible")
+          .within(() => {
+            cy.contains("No vendors available");
+          });
+      });
+
       it("can edit the TCF configuration for a TCF experience", () => {
         cy.intercept("GET", "/api/v1/config*", {
           body: {

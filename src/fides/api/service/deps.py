@@ -8,6 +8,7 @@ from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
 from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetService
+from fides.service.event_audit_service import EventAuditService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 from fides.service.storage.privacy_request_storage_service import (
@@ -50,8 +51,15 @@ def get_user_service(
     return UserService(db, config, config_proxy)
 
 
-def get_taxonomy_service(db: Session = Depends(get_db)) -> TaxonomyService:
-    return TaxonomyService(db)
+def get_event_audit_service(db: Session = Depends(get_db)) -> EventAuditService:
+    return EventAuditService(db)
+
+
+def get_taxonomy_service(
+    db: Session = Depends(get_db),
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+) -> TaxonomyService:
+    return TaxonomyService(db, event_audit_service)
 
 
 def get_system_service(db: AsyncSession = Depends(get_async_db)) -> SystemService:
