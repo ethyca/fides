@@ -695,7 +695,7 @@ async def test_object_querying_mongo_atlas(
         db,
     )
 
-    pg_dataset_name = postgres_dataset.name
+    postgres_database_name = postgres_dataset.name
 
     target_categories = {
         "user.demographic.gender",
@@ -719,8 +719,8 @@ async def test_object_querying_mongo_atlas(
         ],
         f"{unique_database_name}:employee": [{"id": "1"}, {"id": "2"}],
         f"{unique_database_name}:payment_card": [{"customer_id": 1}],
-        f"{pg_dataset_name}:customer": [{"id": 1}],
-        f"{pg_dataset_name}:login": [
+        f"{postgres_database_name}:customer": [{"id": 1}],
+        f"{postgres_database_name}:login": [
             {"customer_id": 1},
             {"customer_id": 1},
             {"customer_id": 1},
@@ -728,13 +728,13 @@ async def test_object_querying_mongo_atlas(
             {"customer_id": 1},
             {"customer_id": 1},
         ],
-        f"{pg_dataset_name}:orders": [
+        f"{postgres_database_name}:orders": [
             {"customer_id": 1},
             {"customer_id": 1},
             {"customer_id": 1},
         ],
-        f"{pg_dataset_name}:payment_card": [{"customer_id": 1}],
-        f"{pg_dataset_name}:service_request": [{"employee_id": 1}],
+        f"{postgres_database_name}:payment_card": [{"customer_id": 1}],
+        f"{postgres_database_name}:service_request": [{"employee_id": 1}],
     }
 
     # customer_feedback collection reached via nested identity
@@ -1106,7 +1106,6 @@ async def test_array_querying_mongo_atlas(
         integration_mongodb_atlas_config,
     )
 
-    pg_dataset_name = postgres_dataset.name
     dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
     access_request_results = access_runner_tester(
@@ -1430,7 +1429,6 @@ class TestRetrievingDataMongoDBAtlas:
         unique_database_name,
         example_datasets,
     ):
-
         mongo_dataset, _ = combined_mongo_postgresql_graph(
             integration_postgres_config,
             integration_mongodb_atlas_config,
