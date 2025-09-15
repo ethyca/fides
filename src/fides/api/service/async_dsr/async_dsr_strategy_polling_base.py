@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Tuple
+from sqlite3 import Row
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 import pydash
@@ -95,5 +96,5 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
     @abstractmethod
     def get_result_request(
         self, client: AuthenticatedClient, param_values: Dict[str, Any]
-    ) -> Optional[Any]:
+    ) -> Union[Optional[List[Row]], Optional[str], Optional[bytes]]:
         """Execute result request and return parsed data."""

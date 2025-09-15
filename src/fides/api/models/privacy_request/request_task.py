@@ -10,7 +10,8 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, Session, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -184,11 +185,13 @@ class RequestTask(WorkerTask, Base):
         uselist=False,
     )
 
-    # Stores the request data for polling tasks
-    request_data = relationship(
-        "RequestTaskRequestData",
+    # Stores the  sub-requests data for async polling tasks
+    sub_requests: RelationshipProperty[AppenderQuery] = relationship(
+        "RequestTaskSubRequest",
         back_populates="request_task",
-        uselist=False,
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+        order_by="RequestTaskSubRequest.created_at",
     )
 
     @property
@@ -328,16 +331,17 @@ class RequestTask(WorkerTask, Base):
         return task_in_flight
 
 
-class RequestTaskRequestData(Base):
+class RequestTaskSubRequest(Base):
     """
-    Model for storing request data for middle steps during the execution of a request task.
-    Currently used for storing the request data for polling tasks
+    Model for storing individual sub-request data during the execution of a request task.
+    Supports 1:N relationship - each RequestTask can have multiple sub-requests.
+    Currently used for storing request data for polling tasks.
     """
 
     @declared_attr
     def __tablename__(cls) -> str:
         """Overriding base class method to set the table name."""
-        return "requesttask_request_data"
+        return "requesttask_sub_request"
 
     request_task_id = Column(
         String(255),
@@ -351,7 +355,21 @@ class RequestTaskRequestData(Base):
 
     request_task = relationship(
         "RequestTask",
-        back_populates="request_data",
+        back_populates="sub_requests",
     )
 
-    request_data = Column(MutableDict.as_mutable(JSONB), nullable=False)
+    # Individual sub-request data (e.g., request_id, status, result data)
+    # Additional fields for enhanced sub-request tracking
+    param_values = Column(MutableDict.as_mutable(JSONB), nullable=False)
+    sub_request_status = Column(String, nullable=False)
+
+    def get_request_id(self) -> Optional[str]:
+        """Helper method to extract request_id from param_values."""
+        if self.param_values and "request_id" in self.param_values:
+            return self.param_values["request_id"]
+        return None
+
+    def update_status(self, db: Session, status: str) -> None:
+        """Helper method to update the status of this sub-request."""
+        self.sub_request_status = status
+        self.save(db)

@@ -1,5 +1,7 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
+from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -28,6 +30,7 @@ from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
+from fides.api.util.collection_util import Row
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -126,39 +129,57 @@ def execute_read_polling_requests(
     """Execute the read polling requests for a given privacy request"""
     logger.info(f"Executing read polling requests for {polling_task}")
     read_requests: List[ReadSaaSRequest] = query_config.get_read_requests_by_identity()
-    logger.info(f"Read requests: {read_requests}")
+    rows: List[Row] = []
+    pending_requests = False
     for read_request in read_requests:
         if read_request.async_config:
+
             strategy: PollingAsyncDSRBaseStrategy = AsyncDSRStrategy.get_strategy(  # type: ignore
                 read_request.async_config.strategy,
                 read_request.async_config.configuration,
             )
             client: AuthenticatedClient = connector.create_client()
+            sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
+            for sub_request in sub_requests:
+                if sub_request.status == ExecutionLogStatus.complete:
+                    logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. ")
+                    continue
+                param_values = sub_request.request_data
+                logger.info(f"Param values: {param_values}")
 
-            # Get missing parameters from available context
-            privacy_request: PrivacyRequest = polling_task.privacy_request
-            secrets: Dict[str, Any] = connector.secrets
+                status = strategy.get_status_request(client, param_values)
+                if status:
+                    result = execute_result_request(
+                        db,
+                        polling_task,
+                        strategy,
+                        client,
+                        param_values)
+                    if isinstance(result, list[Row]):
+                        rows.extend(result)
+                    elif isinstance(result, str):
+                        raise PrivacyRequestError(f"Link Support not yet implemented")
+                    elif isinstance(result, bytes):
+                        raise PrivacyRequestError(f"File Support not yet implemented")
+                    else:
+                        raise PrivacyRequestError(f"Unsupported result type: {type(result)}")
+                else:
+                    logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} still not Ready. ")
+                    pending_requests = True
+                    continue
 
-            identity_data = {
-                **privacy_request.get_persisted_identity().labeled_dict(),
-                **privacy_request.get_cached_identity_data(),
-            }
+    if pending_requests:
+        #Save results for future polling
+        polling_task.access_data = rows.extend(polling_task.access_data)
+        polling_task.save(db)
+        logger.info(f"Polling task - {polling_task.id} still has pending requests. ")
+        return
 
-            param_values = _prepare_param_values_for_polling(
-                secrets,
-                identity_data,
-                polling_task,
-            )
-
-            logger.info(f"Param values: {param_values}")
-            status = strategy.get_status_request(client, param_values)
-
-            if status:
-                execute_result_request(db, polling_task, strategy, client, param_values)
-            else:
-                logger.info(f"Polling request - {polling_task.id} still not Ready. ")
-                continue
-
+    polling_task.access_data = rows.extend(polling_task.access_data)
+    polling_task.update_status(db, ExecutionLogStatus.complete)
+    polling_task.save(db)
+    log_task_queued(polling_task, "polling success")
+    queue_request_task(polling_task, privacy_request_proceed=True)
 
 def execute_result_request(
     db: Session,
@@ -166,28 +187,11 @@ def execute_result_request(
     strategy: PollingAsyncDSRBaseStrategy,
     client: AuthenticatedClient,
     param_values: Dict[str, Any],
-) -> None:
+) -> Union[List[Row], str, bytes]:
     """Execute the result request of a successfull polling task"""
     result = strategy.get_result_request(client, param_values)
     logger.info(f"Result: {result}")
-    if result:
-        # Save updated data back to the request task.
-        polling_task.access_data = result
-        logger.info(
-            f"Polling request - {polling_task.id} is ready. Added {len(result) if isinstance(result, list) else 1} results"
-        )
-
-    else:
-        polling_task.access_data = []
-        logger.info(
-            f"Polling request - {polling_task.id} is ready but returned no results"
-        )
-
-    polling_task.callback_succeeded = True  # Setting this task as successful, finished
-    polling_task.update_status(db, ExecutionLogStatus.complete)
-    polling_task.save(db)
-    log_task_queued(polling_task, "polling success")
-    queue_request_task(polling_task, privacy_request_proceed=True)
+    return result
 
 
 def execute_erasure_polling_requests(
@@ -198,27 +202,3 @@ def execute_erasure_polling_requests(
     """Execute the erasure polling requests for a given privacy request"""
     # TODO: Implement erasure polling logic. Or consider if we can generalize polling for all tasks
     logger.info(f"Erasure polling not yet implemented. Task {polling_task.id} passed")
-
-
-def _get_request_id_from_storage(request_task: RequestTask) -> Optional[str]:
-    """Helper method to get request_id from stored data or param_values."""
-    # Try to get from stored request_data first
-    if request_task and request_task.request_data:
-        stored_data = request_task.request_data.request_data
-        if stored_data and "request_id" in stored_data:
-            return stored_data["request_id"]
-
-    logger.error("Request ID not found in stored data")
-    return None
-
-
-def _prepare_param_values_for_polling(
-    secrets: Dict[str, Any], identity_data: Dict[str, Any], request_task: RequestTask
-) -> Dict[str, Any]:
-    """Prepare parameter values including request_id from various sources."""
-    param_values = secrets.copy()
-    param_values.update(identity_data)
-
-    param_values.update({"request_id": _get_request_id_from_storage(request_task)})
-
-    return param_values
