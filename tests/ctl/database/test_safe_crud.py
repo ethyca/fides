@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -426,6 +426,41 @@ class TestSafeCrudDeleteResource:
             await safe_crud.delete_resource(System, system.fides_key, async_session)
 
         assert "Foreign key constraint" in str(exc_info.value.detail)
+
+    async def test_delete_resource_integrity_error_non_fk(
+        self, created_test_system: System, async_session: AsyncSession, monkeypatch
+    ):
+        """Test handling IntegrityError that is not a foreign key constraint"""
+        # Mock get_resource call (first) to return the resource
+        mock_get_result = MagicMock()
+        mock_get_scalars = MagicMock()
+        mock_get_scalars.first.return_value = created_test_system
+        mock_get_result.scalars.return_value = mock_get_scalars
+
+        # Create a mock IntegrityError with non-foreign key message
+        # Using MagicMock for orig to avoid complex psycopg2 error mocking
+        mock_integrity_error = IntegrityError(
+            "Test integrity error", orig=MagicMock(), params=None
+        )
+        mock_integrity_error.orig.args = ["unique constraint violation"]
+
+        # Use side_effect to return different results for sequential calls
+        mock_execute = AsyncMock(
+            side_effect=[
+                mock_get_result,  # First call: get_resource succeeds
+                mock_integrity_error,  # Second call: delete fails with non-FK integrity error
+            ]
+        )
+
+        monkeypatch.setattr(async_session, "execute", mock_execute)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await safe_crud.delete_resource(
+                System, created_test_system.fides_key, async_session
+            )
+
+        assert exc_info.value.status_code == 422
+        assert exc_info.value.detail == "Failed to delete resource!"
 
     async def test_delete_resource_sqlalchemy_error(
         self, created_test_system: System, async_session: AsyncSession, monkeypatch
