@@ -1,6 +1,7 @@
 from abc import abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 import pydash
 from requests import Response
 
@@ -22,12 +23,31 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
     type = AsyncTaskType.polling
 
     def __init__(self, configuration: PollingAsyncDSRBaseConfiguration):
+        self.initial_request = configuration.initial_request
+        self.correlation_id_path = configuration.correlation_id_path
         self.status_request = configuration.status_request
         self.status_path = configuration.status_path
         self.status_completed_value = configuration.status_completed_value
         self.result_request = configuration.result_request
         self.result_path = configuration.result_path
         self.request_id_config = configuration.request_id_config
+
+    def execute_initial_request(
+        self,
+        client:AuthenticatedClient,
+        prepared_initial_request: SaaSRequestParams
+    ) -> Tuple[Response, Any]:
+        """Execute initial request and return completion status."""
+
+        response: Response = client.send(prepared_initial_request)
+        if response.ok:
+            correlation_id = pydash.get(response.json(), self.correlation_id_path)
+            return response, correlation_id
+        else:
+            raise PrivacyRequestError(
+                f"Initial request failed with status code {response.status_code}"
+            )
+
 
     def get_status_request(
         self, client: AuthenticatedClient, param_values: Dict[str, Any]

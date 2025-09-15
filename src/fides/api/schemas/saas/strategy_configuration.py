@@ -180,59 +180,17 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
 
 
-class IdSource(Enum):
-    """
-    Source for the request id.
-    """
-
-    path = "path"
-    generated = "generated"
-
-
-class AcceptedFormats(Enum):
-    """
-    Format for the request id.
-    """
-
-    uuid4 = "uuid4"
-    random_string = "random_string"
-
-
-class PollingAsyncIdRequestConfiguration(StrategyConfiguration):
-    """
-    Configuration for polling async requests.
-    """
-
-    id_source: IdSource
-    id_path: Optional[str] = None
-    format: Optional[str] = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        id_source = values.get("id_source")
-        if id_source == IdSource.path.value and values.get("id_path") is None:
-            raise ValueError(
-                "The 'id_path' value must be specified when accessing the request id from the path"
-            )
-        if id_source == IdSource.generated.value and values.get("format") is None:
-            raise ValueError(
-                "The 'format' value must be specified when generating the request id"
-            )
-        return values
-
-
 class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
     """
     Base configuration for polling async DSR requests.
     """
-
+    initial_request: SaaSRequest
+    correlation_id_path:  str
     status_request: SaaSRequest
     status_path: str
     status_completed_value: Optional[str] = None
     result_request: SaaSRequest
     result_path: str
-    request_id_config: PollingAsyncIdRequestConfiguration
 
 
 class SupportedDataType(Enum):
