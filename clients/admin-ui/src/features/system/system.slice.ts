@@ -1,7 +1,7 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector } from "@reduxjs/toolkit";
 
-import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
+import { buildArrayQueryParams } from "~/features/common/utils";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
@@ -38,8 +38,8 @@ export type ConnectionConfigSecretsRequest = {
 };
 
 export type GetSystemsQueryParams = {
-  data_steward?: string;
-  system_group?: string;
+  data_stewards?: string[];
+  system_groups?: string[];
 };
 
 const systemApi = baseApi.injectEndpoints({
@@ -48,24 +48,23 @@ const systemApi = baseApi.injectEndpoints({
       Page_BasicSystemResponseExtended_,
       PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
     >({
-      query: (params) => ({
-        method: "GET",
-        url: `system`,
-        params,
-      }),
+      query: ({ data_stewards, system_groups, ...params }) => {
+        const urlParams = buildArrayQueryParams({
+          data_stewards,
+          system_groups,
+        });
+
+        return {
+          method: "GET",
+          url: `system?${urlParams.toString()}`,
+          params,
+        };
+      },
       providesTags: () => ["System"],
     }),
     getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system` }),
       providesTags: () => ["System"],
-      transformResponse: (systems: SystemResponse[]) =>
-        systems.sort((a, b) => {
-          const displayName = (system: SystemResponse) =>
-            system.name === "" || system.name == null
-              ? system.fides_key
-              : system.name;
-          return displayName(a).localeCompare(displayName(b));
-        }),
     }),
     getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}` }),
@@ -226,31 +225,6 @@ export interface State {
   activeClassifySystemFidesKey?: string;
   systemsToClassify?: System[];
 }
-const initialState: State = {};
-
-export const systemSlice = createSlice({
-  name: "system",
-  initialState,
-  reducers: {
-    setActiveSystem: (
-      draftState,
-      action: PayloadAction<System | undefined>,
-    ) => {
-      draftState.activeSystem = action.payload;
-    },
-  },
-});
-
-export const { setActiveSystem } = systemSlice.actions;
-
-export const { reducer } = systemSlice;
-
-const selectSystem = (state: RootState) => state.system;
-
-export const selectActiveSystem = createSelector(
-  selectSystem,
-  (state) => state.activeSystem,
-);
 
 /**
  * Selects the number of systems

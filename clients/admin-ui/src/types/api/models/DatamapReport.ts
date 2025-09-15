@@ -43,6 +43,9 @@ export type DatamapReport = {
   shared_categories?: Array<string> | null;
   special_category_legal_basis?: string | null;
   system_name: string;
+  system_group_data_uses?: Array<string> | null;
+  system_group_fides_key?: string | null;
+  system_groups?: Array<string> | null;
   third_parties?: string | null;
   uses_cookies: boolean;
   uses_non_cookie_access: boolean;

@@ -1,5 +1,6 @@
 import {
   stubDatasetCrud,
+  stubGVLSystem,
   stubPlus,
   stubSystemAssets,
   stubSystemCrud,
@@ -29,6 +30,7 @@ describe("System Information Tab", () => {
     stubSystemVendors();
     stubVendorList();
     stubSystemAssets();
+    stubGVLSystem();
     cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
     cy.wait(["@getDictionaryEntries", "@getSystems"]);
   });
@@ -59,21 +61,6 @@ describe("System Information Tab", () => {
 
   it("can refresh suggestions when editing a saved system", () => {
     cy.getByTestId("vendor-name-select").find("input").type("A{enter}");
-    cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
-      cy.fixture("systems/system.json").then((origSystem) => {
-        cy.intercept(
-          { method: "GET", url: "/api/v1/system/demo_analytics_system" },
-          {
-            body: {
-              ...origSystem,
-              ...dictSystem,
-              fides_key: origSystem.fides_key,
-              customFieldValues: undefined,
-            },
-          },
-        ).as("getDictSystem");
-      });
-    });
     cy.getByTestId("save-btn").click();
     cy.wait("@postDictSystem");
     cy.wait("@getDictSystem");

@@ -24,11 +24,11 @@ import {
   selectDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
-import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
-} from "~/features/taxonomy/taxonomy.slice";
+} from "~/features/taxonomy/data-category.slice";
+import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 
 import { DatamapReportFilterSelections } from "../types";
 

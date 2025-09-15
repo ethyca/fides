@@ -52,6 +52,35 @@ const DataUseSelectWithSuggestions = ({
     };
   }, [options, suggestedDataUses]);
 
+  const optionsToRender = optionsGroups.suggested.length
+    ? [
+        {
+          label: "Select all suggested",
+          value: ALL_SUGGESTED_VALUE,
+        },
+        {
+          label: (
+            <Flex gap="small" align="center">
+              <SparkleIcon />
+              <strong>Suggested data uses</strong>
+            </Flex>
+          ),
+          value: "suggested",
+          options: optionsGroups.suggested,
+        },
+        {
+          label: (
+            <Flex gap="small" align="center">
+              <Icons.Document />
+              <strong>All data uses</strong>
+            </Flex>
+          ),
+          value: "all",
+          options: optionsGroups.all,
+        },
+      ]
+    : optionsGroups.all;
+
   return (
     <Flex vertical gap="small">
       <Flex align="center">
@@ -60,32 +89,7 @@ const DataUseSelectWithSuggestions = ({
         </Label>
       </Flex>
       <Select
-        options={[
-          {
-            label: "Select all suggested",
-            value: ALL_SUGGESTED_VALUE,
-          },
-          {
-            label: (
-              <Flex gap="small" align="center">
-                <SparkleIcon />
-                <strong>Suggested data uses</strong>
-              </Flex>
-            ),
-            value: "suggested",
-            options: optionsGroups.suggested,
-          },
-          {
-            label: (
-              <Flex gap="small" align="center">
-                <Icons.Document />
-                <strong>All data uses</strong>
-              </Flex>
-            ),
-            value: "all",
-            options: optionsGroups.all,
-          },
-        ]}
+        options={optionsToRender}
         mode="multiple"
         placeholder="Select data uses"
         allowClear
