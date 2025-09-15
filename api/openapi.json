@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.69.2"
+    "version": "2.70.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2760,14 +2760,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "type": "boolean",
               "default": false,
               "title": "Show Deleted"
             }
@@ -2976,6 +2969,110 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/system/bulk-delete": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "System Bulk Delete",
+        "description": "Delete multiple systems by their fides_keys.",
+        "operationId": "system_bulk_delete_api_v1_system_bulk_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "title": "Fides Keys"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response System Bulk Delete Api V1 System Bulk Delete Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/assign-steward": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Bulk Assign Steward",
+        "description": "Assign the given `data_steward` (username) as a system manager for the list of `system_keys`.\n\nThis mirrors the behavior of the user permissions endpoint that assigns systems to a given user but\nfrom the perspective of the System API. It validates that:\n\n1. The provided user exists.\n2. The user already has permissions (cannot be None).\n3. The user is not an approver (approvers are explicitly disallowed from being system managers).\n4. All provided `system_keys` resolve to existing System records.\n5. There are no duplicate keys in the payload.",
+        "operationId": "bulk_assign_steward_api_v1_system_assign_steward_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignStewardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Bulk Assign Steward Api V1 System Assign Steward Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/hidden": {
@@ -11392,14 +11489,80 @@
         }
       }
     },
-    "/api/v1/messaging/config/test": {
+    "/api/v1/messaging/test/{service_type}": {
       "post": {
         "tags": [
           "Messaging"
         ],
         "summary": "Send Test Message",
-        "description": "Sends a test message.",
-        "operationId": "send_test_message_api_v1_messaging_config_test_post",
+        "description": "Sends a test message to the provided email or phone number.",
+        "operationId": "send_test_message_api_v1_messaging_test__service_type__post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingServiceType"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingTestBodyParams"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Send Test Message Api V1 Messaging Test  Service Type  Post"
+                },
+                "example": {
+                  "details": "Test message successfully sent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messaging/config/test": {
+      "post": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Send Test Message Deprecated",
+        "description": "This endpoint is deprecated. Please use the `POST /messaging/test/{service_type}`",
+        "operationId": "send_test_message_deprecated_api_v1_messaging_config_test_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -11416,11 +11579,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
                   "type": "object",
-                  "title": "Response Send Test Message Api V1 Messaging Config Test Post"
+                  "title": "Response Send Test Message Deprecated Api V1 Messaging Config Test Post"
                 },
                 "example": {
                   "details": "Test message successfully sent"
@@ -11439,6 +11599,7 @@
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -12168,7 +12329,7 @@
           "Users"
         ],
         "summary": "Update User",
-        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
+        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the user:update scope",
         "operationId": "update_user_api_v1_user__user_id__put",
         "security": [
           {
@@ -12265,7 +12426,7 @@
           "Users"
         ],
         "summary": "Get User",
-        "description": "Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data.",
+        "description": "Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data.",
         "operationId": "get_user_api_v1_user__user_id__get",
         "security": [
           {
@@ -14459,27 +14620,27 @@
         "title": "ApplicationConfig",
         "description": "Application config settings update body is an arbitrary dict (JSON object)\nWe describe it in a schema to enforce some restrictions on the keys passed.\n\nTODO: Eventually this should be driven by a more formal validation schema for this\nthe application config that is properly hooked up to the global pydantic config module."
       },
-      "AsyncConfig": {
+      "AssignStewardRequest": {
         "properties": {
-          "strategy": {
-            "$ref": "#/components/schemas/AsyncStrategy"
+          "data_steward": {
+            "type": "string",
+            "title": "Data Steward"
+          },
+          "system_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "System Keys"
           }
         },
         "type": "object",
         "required": [
-          "strategy"
+          "data_steward",
+          "system_keys"
         ],
-        "title": "AsyncConfig",
-        "description": "Async config only has strategy for now, but could be\nextended with other configuration options when we add polling"
-      },
-      "AsyncStrategy": {
-        "type": "string",
-        "enum": [
-          "callback"
-        ],
-        "const": "callback",
-        "title": "AsyncStrategy",
-        "description": "Async strategies: supports callback for now, but could be\nextended to polling as well in the future"
+        "title": "AssignStewardRequest",
+        "description": "Request schema for assigning a data steward to one or more systems."
       },
       "AuditLogAction": {
         "type": "string",
@@ -19654,6 +19815,37 @@
         "title": "Identity",
         "description": "Some PII grouping pertaining to a human"
       },
+      "IdentityBase": {
+        "properties": {
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "IdentityBase",
+        "description": "The minimum fields required to represent an identity."
+      },
       "IdentityTypes": {
         "properties": {
           "email": {
@@ -20184,7 +20376,14 @@
             "title": "Details"
           },
           "name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Name"
           },
           "key": {
@@ -20197,13 +20396,35 @@
               }
             ],
             "title": "Key"
+          },
+          "secrets": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingSecretsTwilioSMSDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceSecretsAWS_SESDocs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secrets"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "service_type",
-          "name"
+          "service_type"
         ],
         "title": "MessagingConfigRequest",
         "description": "Messaging Config Request Schema"
@@ -20274,6 +20495,29 @@
           "key": {
             "type": "string",
             "title": "Key"
+          },
+          "last_test_timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Timestamp"
+          },
+          "last_test_succeeded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Succeeded"
           }
         },
         "additionalProperties": false,
@@ -20327,8 +20571,7 @@
         "type": "string",
         "enum": [
           "succeeded",
-          "failed",
-          "skipped"
+          "failed"
         ],
         "title": "MessagingConnectionTestStatus",
         "description": "Enum for supplying statuses of validating credentials for a messaging Config"
@@ -20680,6 +20923,19 @@
           "content"
         ],
         "title": "MessagingTemplateWithPropertiesDetail"
+      },
+      "MessagingTestBodyParams": {
+        "properties": {
+          "to_identity": {
+            "$ref": "#/components/schemas/IdentityBase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "to_identity"
+        ],
+        "title": "MessagingTestBodyParams",
+        "description": "Body params required for testing messaging service"
       },
       "MinimalProperty": {
         "properties": {
@@ -24918,7 +25174,7 @@
           "async_config": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AsyncConfig"
+                "$ref": "#/components/schemas/Strategy"
               },
               {
                 "type": "null"
@@ -25818,7 +26074,7 @@
           "async_config": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AsyncConfig"
+                "$ref": "#/components/schemas/Strategy"
               },
               {
                 "type": "null"
@@ -26874,14 +27130,20 @@
             "title": "Strategy"
           },
           "configuration": {
-            "type": "object",
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Configuration"
           }
         },
         "type": "object",
         "required": [
-          "strategy",
-          "configuration"
+          "strategy"
         ],
         "title": "Strategy",
         "description": "General shape for swappable strategies (ex: auth, processors, pagination, etc.)"
