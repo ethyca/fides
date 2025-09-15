@@ -172,9 +172,7 @@ export const PrivacyNoticesTable = () => {
           ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
-            showHeaderMenu: true,
             disableRowClick: true,
-            width: "auto",
           },
         }),
         columnHelper.accessor((row) => row.disabled, {

@@ -163,7 +163,10 @@ const Preview = ({
   }, [initialValues, noticesOnConfig, values.component]);
 
   useEffect(() => {
-    if (vendorCount === 0 && values.component === ComponentType.TCF_OVERLAY) {
+    if (
+      vendorReport?.total === 0 &&
+      values.component === ComponentType.TCF_OVERLAY
+    ) {
       notification.warning({
         message: "No vendors available",
         description:
@@ -172,7 +175,7 @@ const Preview = ({
         key: "vendor-warning", // Prevent duplicate messages
       });
     }
-  }, [vendorCount, values.component]);
+  }, [vendorReport?.total, values.component]);
 
   useEffect(() => {
     if (
