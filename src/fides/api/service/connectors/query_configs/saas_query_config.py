@@ -51,6 +51,7 @@ from fides.api.util.saas_util import (
     REPLY_TO_TOKEN,
     UUID,
     get_identities,
+    PRIVACY_REQUEST_OBJECT,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 
@@ -343,6 +344,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
+        privacy_request_object = input_data.get(PRIVACY_REQUEST_OBJECT)
+        if (
+            isinstance(privacy_request_object, list)
+            and len(privacy_request_object) > 0
+            and isinstance(privacy_request_object[0], dict)
+        ):
+            param_values[PRIVACY_REQUEST_OBJECT] = privacy_request_object[0]
+
+        # TODO: why / why only the first?
         custom_privacy_request_fields = input_data.get(CUSTOM_PRIVACY_REQUEST_FIELDS)
         if (
             isinstance(custom_privacy_request_fields, list)
@@ -462,6 +472,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+
+        if privacy_request:
+            param_values[PRIVACY_REQUEST_OBJECT] = privacy_request.to_safe_dict()
 
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         param_values[UUID] = str(uuid4())
