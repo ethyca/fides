@@ -1,4 +1,7 @@
+from unittest.mock import Mock, patch
+
 import pytest
+from pytest import param
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -7,153 +10,181 @@ from fides.api.task.conditional_dependencies.sql_schemas import (
     OPERATOR_MAP,
     FieldAddress,
     SQLTranslationError,
+    _handle_list_contains,
 )
+
+# Create a test base for SQLAlchemy columns
+TestBase = declarative_base()
+
+
+class TestSQLTranslationError:
+    """Test SQLTranslationError exception"""
+
+    def test_sql_translation_error_creation(self):
+        """Test SQLTranslationError can be created and raised"""
+        error_msg = "Test error message"
+
+        with pytest.raises(SQLTranslationError) as exc_info:
+            raise SQLTranslationError(error_msg)
+
+        assert str(exc_info.value) == error_msg
+
+    def test_sql_translation_error_inheritance(self):
+        """Test SQLTranslationError inherits from Exception"""
+        error = SQLTranslationError("test")
+        assert isinstance(error, Exception)
+
+
+class TestHandleListContains:
+    """Test the _handle_list_contains function edge cases"""
+
+    test_column = Column(String, name="test_column")
+
+    @pytest.mark.parametrize(
+        "test_list",
+        [
+            param(["value1", "value2", "value3"], id="list"),
+            param("test_value", id="single_value"),
+            param([], id="empty_list"),
+            param(None, id="none"),
+        ],
+    )
+    def test_handle_list_contains_with_list_value(self, test_list):
+        """Test _handle_list_contains with list value"""
+        result = _handle_list_contains(self.test_column, test_list)
+
+        # Should use IN operator for lists
+        assert result is not None
+        if isinstance(test_list, list):
+            assert "IN" in str(result).upper()
+
+    def test_handle_list_contains_exception_fallback(self):
+        """Test _handle_list_contains fallback to LIKE when contains() fails"""
+        # Mock a column that raises an exception on contains()
+        mock_column = Mock()
+        mock_column.contains.side_effect = Exception("Contains not supported")
+        mock_column.like.return_value = "LIKE result"
+
+        result = _handle_list_contains(mock_column, "test_value")
+
+        # Should fallback to LIKE
+        mock_column.contains.assert_called_once_with("test_value")
+        mock_column.like.assert_called_once_with("%test_value%")
+        assert result == "LIKE result"
 
 
 class TestFieldAddress:
     """Test the FieldAddress parsing and SQL generation functionality"""
 
-    def test_parse_simple_table_column(self):
+    @pytest.mark.parametrize(
+        "field_address, expected_table_name, expected_column_name, expected_json_path, expected_full_address, expected_sql_column_true, expected_sql_column_false",
+        [
+            param(
+                "users.email",
+                "users",
+                "email",
+                None,
+                "users.email",
+                "email",
+                "email",
+                id="simple_table_column",
+            ),
+            param(
+                "users.profile.verified",
+                "users",
+                "profile",
+                ["verified"],
+                "users.profile.verified",
+                "profile->>'verified'",
+                "profile",
+                id="simple_table_column_with_json_path",
+            ),
+            param(
+                "users.metadata.preferences.theme",
+                "users",
+                "metadata",
+                ["preferences", "theme"],
+                "users.metadata.preferences.theme",
+                "metadata->'preferences'->>'theme'",
+                "metadata",
+                id="simple_table_column_with_json_path_deep",
+            ),
+            param(
+                "users:email",
+                "users",
+                "email",
+                None,
+                "users:email",
+                "email",
+                "email",
+                id="simple_table_column_with_colon",
+            ),
+            param(
+                "dataset:collection:field",
+                "dataset",
+                "collection:field",
+                None,
+                "dataset:collection:field",
+                "collection:field",
+                "collection:field",
+                id="simple_table_column_with_colons",
+            ),
+            param(
+                "dataset:collection.field",
+                "dataset",
+                "collection.field",
+                None,
+                "dataset:collection.field",
+                "collection.field",
+                "collection.field",
+                id="simple_table_column_with_colons_dots",
+            ),
+            param(
+                "email",
+                "",
+                "email",
+                None,
+                "email",
+                "email",
+                "email",
+                id="simple_column",
+            ),
+        ],
+    )
+    def test_parse_table_column(
+        self,
+        field_address,
+        expected_table_name,
+        expected_column_name,
+        expected_json_path,
+        expected_full_address,
+        expected_sql_column_true,
+        expected_sql_column_false,
+    ):
         """Test parsing simple table.column format"""
-        field_addr = FieldAddress.parse("users.email")
+        field_addr = FieldAddress.parse(field_address)
 
-        assert field_addr.table_name == "users"
-        assert field_addr.column_name == "email"
-        assert field_addr.json_path is None
-        assert not field_addr.is_json_path
-        assert field_addr.base_field_name == "email"
-        assert field_addr.full_address == "users.email"
+        assert field_addr.table_name == expected_table_name
+        assert field_addr.column_name == expected_column_name
+        assert field_addr.json_path == expected_json_path
+        assert field_addr.full_address == expected_full_address
+        assert field_addr.to_sql_column(True) == expected_sql_column_true
+        assert field_addr.to_sql_column(False) == expected_sql_column_false
 
-    def test_parse_json_path_simple(self):
-        """Test parsing JSON path with single level"""
-        field_addr = FieldAddress.parse("users.profile.verified")
-
-        assert field_addr.table_name == "users"
-        assert field_addr.column_name == "profile"
-        assert field_addr.json_path == ["verified"]
-        assert field_addr.is_json_path
-        assert field_addr.base_field_name == "profile"
-        assert field_addr.full_address == "users.profile.verified"
-
-    def test_parse_json_path_deep(self):
-        """Test parsing deep JSON path"""
-        field_addr = FieldAddress.parse("users.metadata.preferences.theme")
-
-        assert field_addr.table_name == "users"
-        assert field_addr.column_name == "metadata"
-        assert field_addr.json_path == ["preferences", "theme"]
-        assert field_addr.is_json_path
-        assert field_addr.base_field_name == "metadata"
-        assert field_addr.full_address == "users.metadata.preferences.theme"
-
-    def test_parse_colon_format(self):
-        """Test parsing colon-separated format"""
-        field_addr = FieldAddress.parse("users:email")
-
-        assert field_addr.table_name == "users"
-        assert field_addr.column_name == "email"
-        assert field_addr.json_path is None
-        assert not field_addr.is_json_path
-        assert field_addr.base_field_name == "email"
-        assert field_addr.full_address == "users:email"
-
-    def test_parse_colon_format_complex(self):
-        """Test parsing colon format with multiple parts"""
-        field_addr = FieldAddress.parse("dataset:collection:field")
-
-        assert field_addr.table_name == "dataset"
-        assert field_addr.column_name == "collection:field"
-        assert field_addr.json_path is None
-        assert not field_addr.is_json_path
-        assert field_addr.base_field_name == "collection:field"
-
-    def test_parse_column_only(self):
-        """Test parsing column name without table"""
-        field_addr = FieldAddress.parse("email")
-
-        assert field_addr.table_name == ""
-        assert field_addr.column_name == "email"
-        assert field_addr.json_path is None
-        assert not field_addr.is_json_path
-        assert field_addr.base_field_name == "email"
-        assert field_addr.full_address == "email"
-
-    def test_to_sql_column_simple(self):
-        """Test SQL column generation for simple fields"""
-        field_addr = FieldAddress.parse("users.email")
-
-        assert field_addr.to_sql_column(True) == "email"
-        assert field_addr.to_sql_column(False) == "email"
-
-    def test_to_sql_column_json_simple(self):
-        """Test SQL column generation for simple JSON path"""
-        field_addr = FieldAddress.parse("users.profile.verified")
-
-        assert field_addr.to_sql_column(True) == "profile->>'verified'"
-        assert field_addr.to_sql_column(False) == "profile"
-
-    def test_to_sql_column_json_deep(self):
-        """Test SQL column generation for deep JSON path"""
-        field_addr = FieldAddress.parse("users.metadata.preferences.theme")
-
-        expected = "metadata->'preferences'->>'theme'"
-        assert field_addr.to_sql_column(True) == expected
-        assert field_addr.to_sql_column(False) == "metadata"
-
-    def test_to_sql_column_json_very_deep(self):
-        """Test SQL column generation for very deep JSON path"""
-        field_addr = FieldAddress.parse("users.data.user.billing.subscription.status")
-
-        expected = "data->'user'->'billing'->'subscription'->>'status'"
-        assert field_addr.to_sql_column(True) == expected
-        assert field_addr.to_sql_column(False) == "data"
-
-    def test_json_path_disabled(self):
-        """Test that JSON operators are disabled when requested"""
-        field_addr = FieldAddress.parse("users.profile.verified")
-
-        # With JSON operators disabled, should return base column name
-        assert field_addr.to_sql_column(False) == "profile"
-
-    def test_edge_cases(self):
+    @pytest.mark.parametrize(
+        "field_address, expected_table_name, expected_column_name",
+        [
+            param("", "", "", id="empty_string"),
+            param("...", "", "", id="just_dots"),
+            param(".", "", "", id="single_dot"),
+        ],
+    )
+    def test_edge_cases(self, field_address, expected_table_name, expected_column_name):
         """Test edge cases in field address parsing"""
         # Empty string
-        field_addr = FieldAddress.parse("")
-        assert field_addr.table_name == ""
-        assert field_addr.column_name == ""
-
-        # Just dots
-        field_addr = FieldAddress.parse("...")
-        assert field_addr.table_name == ""
-        assert field_addr.column_name == ""
-
-        # Single dot
-        field_addr = FieldAddress.parse(".")
-        assert field_addr.table_name == ""
-        assert field_addr.column_name == ""
-
-
-# SQLTranslationConfig was removed as it's no longer needed in the new SQLAlchemy-only approach
-
-
-class TestSQLTranslationError:
-    """Test the SQLTranslationError exception"""
-
-    def test_sql_translation_error(self):
-        """Test that SQLTranslationError can be raised and caught"""
-        with pytest.raises(SQLTranslationError) as exc_info:
-            raise SQLTranslationError("Test error message")
-
-        assert str(exc_info.value) == "Test error message"
-
-    def test_sql_translation_error_inheritance(self):
-        """Test that SQLTranslationError inherits from Exception"""
-        error = SQLTranslationError("Test")
-        assert isinstance(error, Exception)
-
-
-# Create a test base for SQLAlchemy columns
-TestBase = declarative_base()
+        field_addr = FieldAddress.parse(field_address)
+        assert field_addr.table_name == expected_table_name
+        assert field_addr.column_name == expected_column_name
 
 
 class TestOperatorMap:
@@ -181,67 +212,60 @@ class TestOperatorMap:
             Operator.ends_with,
             Operator.exists,
             Operator.not_exists,
+            Operator.list_contains,
+            Operator.not_in_list,
         }
 
         assert set(OPERATOR_MAP.keys()) == expected_operators
 
-    def test_equality_operators(self):
+    @pytest.mark.parametrize(
+        "operator, expected_result",
+        [
+            param(Operator.eq, "test_column = :test_column_1", id="eq"),
+            param(Operator.neq, "test_column != :test_column_1", id="neq"),
+            param(Operator.lt, "test_column < :test_column_1", id="lt"),
+            param(Operator.lte, "test_column <= :test_column_1", id="lte"),
+            param(Operator.gt, "test_column > :test_column_1", id="gt"),
+            param(Operator.gte, "test_column >= :test_column_1", id="gte"),
+            param(Operator.contains, "test_column LIKE :test_column_1", id="contains"),
+            param(
+                Operator.starts_with,
+                "test_column LIKE :test_column_1",
+                id="starts_with",
+            ),
+            param(
+                Operator.ends_with, "test_column LIKE :test_column_1", id="ends_with"
+            ),
+            param(Operator.exists, "test_column IS NOT NULL", id="exists"),
+            param(Operator.not_exists, "test_column IS NULL", id="not_exists"),
+            param(
+                Operator.list_contains,
+                "test_column LIKE '%' || :test_column_1 || '%'",
+                id="list_contains",
+            ),
+            param(
+                Operator.not_in_list,
+                "test_column NOT LIKE '%' || :test_column_1 || '%'",
+                id="not_in_list",
+            ),
+        ],
+    )
+    def test_operators(self, operator, expected_result):
         """Test equality and inequality operators"""
-        # Test equality
-        eq_result = OPERATOR_MAP[Operator.eq](self.test_column, self.test_value)
-        assert str(eq_result) == "test_column = :test_column_1"
+        result = OPERATOR_MAP[operator](self.test_column, self.test_value)
+        assert str(result) == expected_result
 
-        # Test inequality
-        neq_result = OPERATOR_MAP[Operator.neq](self.test_column, self.test_value)
-        assert str(neq_result) == "test_column != :test_column_1"
+    def test_list_operators_with_list_values(self):
+        """Test list_contains and not_in_list operators with actual list values"""
+        test_list = ["value1", "value2", "value3"]
 
-    def test_comparison_operators(self):
-        """Test comparison operators (lt, lte, gt, gte)"""
-        # Test less than
-        lt_result = OPERATOR_MAP[Operator.lt](self.test_column, self.test_value)
-        assert str(lt_result) == "test_column < :test_column_1"
+        # Test list_contains with list value
+        result = OPERATOR_MAP[Operator.list_contains](self.test_column, test_list)
+        assert "IN" in str(result).upper()
 
-        # Test less than or equal
-        lte_result = OPERATOR_MAP[Operator.lte](self.test_column, self.test_value)
-        assert str(lte_result) == "test_column <= :test_column_1"
-
-        # Test greater than
-        gt_result = OPERATOR_MAP[Operator.gt](self.test_column, self.test_value)
-        assert str(gt_result) == "test_column > :test_column_1"
-
-        # Test greater than or equal
-        gte_result = OPERATOR_MAP[Operator.gte](self.test_column, self.test_value)
-        assert str(gte_result) == "test_column >= :test_column_1"
-
-    def test_string_operators(self):
-        """Test string pattern matching operators"""
-        # Test contains
-        contains_result = OPERATOR_MAP[Operator.contains](
-            self.test_column, self.test_value
-        )
-        assert str(contains_result) == "test_column LIKE :test_column_1"
-
-        # Test starts_with
-        starts_with_result = OPERATOR_MAP[Operator.starts_with](
-            self.test_column, self.test_value
-        )
-        assert str(starts_with_result) == "test_column LIKE :test_column_1"
-
-        # Test ends_with
-        ends_with_result = OPERATOR_MAP[Operator.ends_with](
-            self.test_column, self.test_value
-        )
-        assert str(ends_with_result) == "test_column LIKE :test_column_1"
-
-    def test_existence_operators(self):
-        """Test existence operators (exists, not_exists)"""
-        # Test exists
-        exists_result = OPERATOR_MAP[Operator.exists](self.test_column, None)
-        assert str(exists_result) == "test_column IS NOT NULL"
-
-        # Test not_exists
-        not_exists_result = OPERATOR_MAP[Operator.not_exists](self.test_column, None)
-        assert str(not_exists_result) == "test_column IS NULL"
+        # Test not_in_list with list value
+        result = OPERATOR_MAP[Operator.not_in_list](self.test_column, test_list)
+        assert "NOT" in str(result).upper() and "IN" in str(result).upper()
 
     def test_operator_functions_are_callable(self):
         """Test that all operator functions are callable"""
@@ -301,3 +325,75 @@ class TestOperatorMap:
         # Verify the original is unchanged
         assert set(OPERATOR_MAP.keys()) == original_keys
         assert len(OPERATOR_MAP) == original_size
+
+
+class TestFieldAddressEdgeCases:
+    """Test FieldAddress edge cases and error conditions"""
+
+    def test_field_address_hash_consistency(self):
+        """Test that FieldAddress hashing is consistent"""
+        addr1 = FieldAddress(
+            table_name="users",
+            column_name="email",
+            json_path=None,
+            full_address="users.email",
+        )
+        addr2 = FieldAddress(
+            table_name="users",
+            column_name="email",
+            json_path=None,
+            full_address="users.email",
+        )
+        addr3 = FieldAddress(
+            table_name="users",
+            column_name="email",
+            json_path=["nested"],
+            full_address="users.email.nested",
+        )
+
+        # Same addresses should have same hash
+        assert hash(addr1) == hash(addr2)
+        # Different addresses should have different hash
+        assert hash(addr1) != hash(addr3)
+
+        # Should be usable in sets
+        addr_set = {addr1, addr2, addr3}
+        assert len(addr_set) == 2  # addr1 and addr2 are the same
+
+    def test_field_address_equality_with_different_types(self):
+        """Test FieldAddress equality with different types"""
+        addr = FieldAddress(
+            table_name="users",
+            column_name="email",
+            json_path=None,
+            full_address="users.email",
+        )
+
+        # Should not equal non-FieldAddress objects
+        assert addr != "users.email"
+        assert addr != {"table_name": "users", "column_name": "email"}
+        assert addr != None
+
+    def test_field_address_equality_with_json_path(self):
+        """Test FieldAddress equality with JSON paths"""
+        addr1 = FieldAddress(
+            table_name="users",
+            column_name="profile",
+            json_path=["name"],
+            full_address="users.profile.name",
+        )
+        addr2 = FieldAddress(
+            table_name="users",
+            column_name="profile",
+            json_path=["name"],
+            full_address="users.profile.name",
+        )
+        addr3 = FieldAddress(
+            table_name="users",
+            column_name="profile",
+            json_path=["age"],
+            full_address="users.profile.age",
+        )
+
+        assert addr1 == addr2
+        assert addr1 != addr3

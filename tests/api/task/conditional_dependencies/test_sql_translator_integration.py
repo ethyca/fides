@@ -18,12 +18,19 @@ from fides.api.task.conditional_dependencies.sql_translator import (
 )
 
 
+@pytest.fixture
+def translator(db):
+    """Create a translator instance with mocked dependencies"""
+    translator = SQLConditionTranslator(db)
+
+    return translator
+
+
 class TestSQLTranslatorIntegration:
     """Integration tests for SQL translator against real database using existing fixtures"""
 
-    def test_basic_user_query(self, db, user):
+    def test_basic_user_query(self, translator, user):
         """Test basic user query with existing user fixture"""
-        translator = SQLConditionTranslator(db)
         condition = ConditionLeaf(
             field_address="fidesuser.email_address",
             operator=Operator.eq,
@@ -36,9 +43,8 @@ class TestSQLTranslatorIntegration:
         # Should find exactly one user
         assert len(results) >= 1
 
-    def test_privacy_request_query(self, db, privacy_request):
+    def test_privacy_request_query(self, translator, privacy_request):
         """Test privacy request query with existing fixture"""
-        translator = SQLConditionTranslator(db)
         condition = ConditionLeaf(
             field_address="privacyrequest.id",
             operator=Operator.eq,
@@ -51,9 +57,8 @@ class TestSQLTranslatorIntegration:
         # Should find exactly one privacy request
         assert len(results) == 1
 
-    def test_string_operations(self, db, user):
+    def test_string_operations(self, translator, user):
         """Test string operations with user data"""
-        translator = SQLConditionTranslator(db)
 
         # Test contains
         condition = ConditionLeaf(
@@ -68,9 +73,8 @@ class TestSQLTranslatorIntegration:
         # Should find users with email addresses containing @
         assert len(results) >= 1
 
-    def test_existence_operators(self, db, user):
+    def test_existence_operators(self, translator, user):
         """Test existence operators"""
-        translator = SQLConditionTranslator(db)
 
         # Test exists - should find users with email addresses
         condition = ConditionLeaf(
@@ -83,23 +87,8 @@ class TestSQLTranslatorIntegration:
         # Should find users with email addresses
         assert len(results) >= 1
 
-    def test_count_query(self, db, privacy_request):
-        """Test COUNT query functionality"""
-        translator = SQLConditionTranslator(db)
-        condition = ConditionLeaf(
-            field_address="privacyrequest.id",
-            operator=Operator.eq,
-            value=privacy_request.id,
-        )
-
-        count = translator.generate_count_query(condition)
-
-        # Should count exactly one privacy request
-        assert count == 1
-
-    def test_group_conditions(self, db, privacy_request):
+    def test_group_conditions(self, translator, privacy_request):
         """Test group conditions with AND/OR logic"""
-        translator = SQLConditionTranslator(db)
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
@@ -122,9 +111,8 @@ class TestSQLTranslatorIntegration:
         # Should find exactly one privacy request matching both conditions
         assert len(results) == 1
 
-    def test_limit_and_offset(self, db, user):
+    def test_limit_and_offset(self, translator, user):
         """Test LIMIT and OFFSET functionality"""
-        translator = SQLConditionTranslator(db)
         condition = ConditionLeaf(
             field_address="fidesuser.email_address", operator=Operator.exists
         )
@@ -143,9 +131,8 @@ class TestSQLTranslatorIntegration:
         # Should return some results
         assert len(results) >= 0
 
-    def test_no_matches_query(self, db):
+    def test_no_matches_query(self, translator):
         """Test query that returns no matches"""
-        translator = SQLConditionTranslator(db)
         condition = ConditionLeaf(
             field_address="fidesuser.email_address",
             operator=Operator.eq,
@@ -158,12 +145,10 @@ class TestSQLTranslatorIntegration:
         # Should find no users
         assert len(results) == 0
 
-    def test_complex_nested_conditions(self, db, privacy_requests):
+    def test_complex_nested_conditions(self, translator, privacy_requests):
         """Test complex nested conditions with multiple privacy requests"""
         if not privacy_requests or len(privacy_requests) < 2:
             pytest.skip("Need at least 2 privacy requests for this test")
-
-        translator = SQLConditionTranslator(db)
 
         # Complex nested condition: (id = pr1 AND status = pr1.status) OR (id = pr2)
         condition = ConditionGroup(
@@ -198,10 +183,8 @@ class TestSQLTranslatorIntegration:
         # Should find both privacy requests
         assert len(results) == 2
 
-    def test_error_handling(self, db):
+    def test_error_handling(self, translator):
         """Test error handling for invalid queries"""
-        translator = SQLConditionTranslator(db)
-
         # Test with field address that doesn't have table name
         condition = ConditionLeaf(
             field_address="invalid_field", operator=Operator.eq, value="test"
@@ -210,10 +193,8 @@ class TestSQLTranslatorIntegration:
         with pytest.raises(SQLTranslationError, match="Table name not specified"):
             translator.analyze_tables_in_condition(condition)
 
-    def test_sql_injection_protection(self, db):
+    def test_sql_injection_protection(self, translator):
         """Test that SQL injection attempts are properly handled"""
-        translator = SQLConditionTranslator(db)
-
         # Test with potentially malicious input
         malicious_input = "'; DROP TABLE fidesuser; --"
         condition = ConditionLeaf(
@@ -227,10 +208,8 @@ class TestSQLTranslatorIntegration:
         results = query.all()
         assert len(results) == 0
 
-    def test_multi_table_analysis(self, db, user, privacy_request):
+    def test_multi_table_analysis(self, translator, user, privacy_request):
         """Test analysis of multi-table conditions"""
-        translator = SQLConditionTranslator(db)
-
         # Create a condition that spans multiple tables
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
@@ -265,10 +244,8 @@ class TestSQLTranslatorIntegration:
 class TestEmailNotificationUseCase:
     """Test the complex email notification use case we discussed"""
 
-    def test_email_notification_condition_structure(self, db):
+    def test_email_notification_condition_structure(self, translator):
         """Test the structure of the email notification condition"""
-        translator = SQLConditionTranslator(db)
-
         # Simulate the email notification condition:
         # Find users who should be notified about privacy requests due within 5 days
         five_days_from_now = datetime.now(timezone.utc) + timedelta(days=5)
@@ -318,9 +295,8 @@ class TestEmailNotificationUseCase:
         assert len(tables_to_fields["manual_task_instance"]) == 1  # entity_type
         assert len(tables_to_fields["manual_task_reference"]) == 1  # reference_type
 
-    def test_email_notification_field_extraction(self, db):
+    def test_email_notification_field_extraction(self, translator):
         """Test field extraction for the email notification use case"""
-        translator = SQLConditionTranslator(db)
 
         # Simplified version focusing on field extraction
         condition = ConditionGroup(
@@ -346,11 +322,10 @@ class TestEmailNotificationUseCase:
         # Verify field parsing
         for field_addr in field_addresses:
             assert field_addr.table_name in ["privacyrequest", "manual_task_instance"]
-            assert field_addr.base_field_name in ["due_date", "entity_id"]
+            assert field_addr.column_name in ["due_date", "entity_id"]
 
-    def test_multi_table_query_capability(self, db):
+    def test_multi_table_query_capability(self, translator):
         """Test that the translator can handle multi-table scenarios"""
-        translator = SQLConditionTranslator(db)
 
         # Test a condition that would require JOINs across multiple tables
         condition = ConditionGroup(

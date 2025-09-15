@@ -5,21 +5,9 @@ from sqlalchemy import Column
 
 from fides.api.task.conditional_dependencies.schemas import Operator
 
-OPERATOR_MAP = {
-    Operator.eq: lambda col, val: col == val,
-    Operator.neq: lambda col, val: col != val,
-    Operator.lt: lambda col, val: col < val,
-    Operator.lte: lambda col, val: col <= val,
-    Operator.gt: lambda col, val: col > val,
-    Operator.gte: lambda col, val: col >= val,
-    Operator.contains: lambda col, val: col.like(f"%{val}%"),
-    Operator.starts_with: lambda col, val: col.like(f"{val}%"),
-    Operator.ends_with: lambda col, val: col.like(f"%{val}"),
-    Operator.exists: lambda col, val: col.isnot(None),
-    Operator.not_exists: lambda col, val: col.is_(None),
-    Operator.list_contains: lambda col, val: _handle_list_contains(col, val),
-    Operator.not_in_list: lambda col, val: ~_handle_list_contains(col, val),
-}
+
+class SQLTranslationError(Exception):
+    """Error raised when SQL translation fails"""
 
 
 def _handle_list_contains(col: Column, val: Any) -> Column:
@@ -33,19 +21,36 @@ def _handle_list_contains(col: Column, val: Any) -> Column:
         val: Value to compare against
 
     Returns:
-        SQLAlchemy column
+        SQLAlchemy expression for the comparison
     """
     if isinstance(val, list):
-        # Column value should be in the provided list
+        # If value is a list, check if column value is IN the list
         return col.in_(val)
-    # Single value - check if column contains it
-    # For JSON/array columns, this would need special handling
-    # For now, fall back to LIKE for string matching
-    return col.like(f"%{val}%")
+    # For single values, assume it's checking if column contains the value
+    # This works for JSON arrays, ARRAY columns, or string LIKE operations
+    try:
+        # Try JSON containment first (PostgreSQL)
+        return col.contains(val)
+    except Exception:
+        # Fallback to LIKE for string columns
+        return col.like(f"%{val}%")
 
 
-class SQLTranslationError(Exception):
-    """Error raised when SQL translation fails"""
+OPERATOR_MAP = {
+    Operator.eq: lambda col, val: col == val,
+    Operator.neq: lambda col, val: col != val,
+    Operator.lt: lambda col, val: col < val,
+    Operator.lte: lambda col, val: col <= val,
+    Operator.gt: lambda col, val: col > val,
+    Operator.gte: lambda col, val: col >= val,
+    Operator.contains: lambda col, val: col.like(f"%{val}%"),
+    Operator.starts_with: lambda col, val: col.like(f"{val}%"),
+    Operator.ends_with: lambda col, val: col.like(f"%{val}"),
+    Operator.exists: lambda col, val: col.isnot(None),
+    Operator.not_exists: lambda col, val: col.is_(None),
+    Operator.list_contains: _handle_list_contains,
+    Operator.not_in_list: lambda col, val: ~_handle_list_contains(col, val),
+}
 
 
 class FieldAddress(BaseModel):
@@ -94,7 +99,7 @@ class FieldAddress(BaseModel):
 
         if self.json_path is None:
             # This should never happen
-            raise SQLTranslationError("JSON path is required")
+            raise SQLTranslationError("Field address internal error.")
 
         # Build PostgreSQL JSON path: column->'path'->'path'->>'final_path'
         if self.json_path and len(self.json_path) == 1:
