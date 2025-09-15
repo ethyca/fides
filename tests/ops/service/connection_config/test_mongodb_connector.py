@@ -1,4 +1,5 @@
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from sqlalchemy.orm import Session
@@ -33,9 +34,10 @@ class TestMongoDBConnector:
         uri = connector.build_uri()
 
         # Should use mongodb+srv scheme and not include port
-        assert uri.startswith("mongodb+srv://")
-        assert "cluster.example.com" in uri
-        assert ":27017" not in uri  # Port should not be in the URI for SRV
+        parsed = urlparse(uri)
+        assert parsed.scheme == "mongodb+srv"
+        assert parsed.hostname == "cluster.example.com"
+        assert parsed.port is None  # Port should not be in the URI for SRV
 
     def test_build_uri_standard_connection_with_port(
         self, mongo_connection_config: ConnectionConfig, db: Session
@@ -56,8 +58,10 @@ class TestMongoDBConnector:
         uri = connector.build_uri()
 
         # Should use standard mongodb scheme and include port
-        assert uri.startswith("mongodb://")
-        assert "localhost:27017" in uri
+        parsed = urlparse(uri)
+        assert parsed.scheme == "mongodb"
+        assert parsed.hostname == "localhost"
+        assert parsed.port == 27017
 
     def test_build_uri_ssl_enabled_explicitly(
         self, mongo_connection_config: ConnectionConfig, db: Session
@@ -77,7 +81,10 @@ class TestMongoDBConnector:
         connector = MongoDBConnector(configuration=mongo_connection_config)
         uri = connector.build_uri()
 
-        assert "ssl=true" in uri
+        # Parse URL and check SSL parameter properly
+        parsed = urlparse(uri)
+        query_params = parse_qs(parsed.query)
+        assert query_params.get("ssl") == ["true"]
 
     def test_build_uri_ssl_disabled_with_srv(
         self, mongo_connection_config: ConnectionConfig, db: Session
@@ -96,7 +103,10 @@ class TestMongoDBConnector:
         connector = MongoDBConnector(configuration=mongo_connection_config)
         uri = connector.build_uri()
 
-        assert "ssl=false" in uri
+        # Parse URL and check SSL parameter properly
+        parsed = urlparse(uri)
+        query_params = parse_qs(parsed.query)
+        assert query_params.get("ssl") == ["false"]
 
     def test_determine_ssl_enabled_explicit_setting(
         self, mongo_connection_config: ConnectionConfig
@@ -210,8 +220,11 @@ class TestMongoDBConnector:
         }
         mongo_connection_config.save(db)
         uri = connector.build_uri()
-        assert "mongodb://" in uri
-        assert "ssl=true" in uri
+        # Parse URL and validate scheme and SSL parameter properly
+        parsed = urlparse(uri)
+        assert parsed.scheme == "mongodb"
+        query_params = parse_qs(parsed.query)
+        assert query_params.get("ssl") == ["true"]
 
         # Test 2: SRV connection, SSL enabled (default)
         mongo_connection_config.secrets = {
@@ -224,8 +237,13 @@ class TestMongoDBConnector:
         }
         mongo_connection_config.save(db)
         uri = connector.build_uri()
-        assert "mongodb+srv://" in uri
-        assert "ssl=true" in uri  # Should be added because SRV defaults to SSL enabled
+        # Parse URL and validate scheme and SSL parameter properly
+        parsed = urlparse(uri)
+        assert parsed.scheme == "mongodb+srv"
+        query_params = parse_qs(parsed.query)
+        assert query_params.get("ssl") == [
+            "true"
+        ]  # Should be added because SRV defaults to SSL enabled
 
         # Test 3: SRV connection, SSL explicitly disabled
         mongo_connection_config.secrets = {
@@ -238,5 +256,10 @@ class TestMongoDBConnector:
         }
         mongo_connection_config.save(db)
         uri = connector.build_uri()
-        assert "mongodb+srv://" in uri
-        assert "ssl=false" in uri  # Should be added to override SRV default
+        # Parse URL and validate scheme and SSL parameter properly
+        parsed = urlparse(uri)
+        assert parsed.scheme == "mongodb+srv"
+        query_params = parse_qs(parsed.query)
+        assert query_params.get("ssl") == [
+            "false"
+        ]  # Should be added to override SRV default
