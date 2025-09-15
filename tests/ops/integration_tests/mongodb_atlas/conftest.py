@@ -1,7 +1,9 @@
 import os
 from typing import Any, Dict, Generator
+from uuid import uuid4
 
 import pytest
+from loguru import logger
 from pymongo import MongoClient
 
 from fides.api.models.connectionconfig import (
@@ -23,7 +25,7 @@ from tests.ops.integration_tests.mongodb_atlas.mongo_sample import mongo_sample_
 @pytest.fixture(scope="function")
 def unique_database_name() -> str:
     """Generate a unique PostgreSQL dataset name per-test to avoid duplicate key errors."""
-    return "mongo_test_1234567890"
+    return f"mongo_test_{str(uuid4()).replace('-', '')[:8]}"
 
 
 # Helper functions
@@ -95,7 +97,7 @@ def integration_mongodb_atlas_config_with_dataset(
             unique_database_name, integration_postgres_config_with_dataset.key
         ),
     )
-    dataset = DatasetConfig.create(
+    DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
@@ -120,7 +122,8 @@ def seed_mongo_sample_data(
     integration_mongodb_atlas_connector,
     unique_database_name,
 ) -> Generator[None, None, None]:
-    """Load sample data into MongoDB Atlas database"""
+    """Load sample data into a new MongoDB Atlas database then drop the database after the test is complete"""
+
     records = mongo_sample_data
 
     for table_name, record_list in records.items():
@@ -132,7 +135,15 @@ def seed_mongo_sample_data(
                 record,
             )
     yield records
-    integration_mongodb_atlas_connector.drop_database(unique_database_name)
+    try:
+        logger.info(f"Dropping database: {unique_database_name}")
+        integration_mongodb_atlas_connector.drop_database(unique_database_name)
+        logger.info(f"Successfully dropped database: {unique_database_name}")
+    except Exception as exc:
+        logger.error(
+            "Make sure the MongoDB Atlas user credentials have the Atlas Admin role to be able to drop databases."
+        )
+        raise exc
 
 
 @pytest.fixture(scope="function")
