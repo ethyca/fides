@@ -63,7 +63,7 @@ class HTTPSConnector(BaseConnector[None]):
                         url=config.url, headers=additional_headers, json=request_body
                     )
                 except requests.ConnectionError:
-                    logger.warn("HTTPS+OAuth2 client received an error.")
+                    logger.error("HTTPS+OAuth2 client received an error.")
                     raise ClientUnsuccessfulException(
                         status_code=HTTP_500_INTERNAL_SERVER_ERROR
                     )

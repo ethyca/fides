@@ -895,7 +895,6 @@ class PrivacyRequest(
         # temp fix for circular dependency
         from fides.api.service.connectors import (
             HTTPSConnector,
-            HTTPSOAuth2Connector,
             get_connector,
         )
 

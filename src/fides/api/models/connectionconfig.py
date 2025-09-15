@@ -51,7 +51,6 @@ class ConnectionType(enum.Enum):
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
-    https_oauth2 = "https_oauth2"
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     manual_task = "manual_task"  # Manual task integration
