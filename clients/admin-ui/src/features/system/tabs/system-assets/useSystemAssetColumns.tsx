@@ -12,6 +12,7 @@ import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCel
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
 import { Asset, PrivacyNoticeRegion } from "~/types/api";
+import { isoStringToEntry, formatIsoLocation } from "fidesui"
 
 const useSystemAssetColumns = ({
   systemKey,
@@ -96,10 +97,15 @@ const useSystemAssetColumns = ({
       id: "locations",
       cell: (props) => (
         <BadgeCellExpandable
-          values={props.getValue().map((location: PrivacyNoticeRegion) => ({
-            label: PRIVACY_NOTICE_REGION_RECORD[location],
-            key: location,
-          }))}
+          values={props.getValue().map((location: PrivacyNoticeRegion) => {
+            const isoEntry = isoStringToEntry(location);
+
+            return {
+              label: isoEntry
+                ? formatIsoLocation({ isoEntry, showFlag: true }) : PRIVACY_NOTICE_REGION_RECORD[location],
+              key: location,
+            }
+          })}
         />
       ),
       header: "Locations",
