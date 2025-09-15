@@ -1,4 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { formatIsoLocation, isoStringToEntry } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
@@ -12,7 +13,6 @@ import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCel
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
 import { Asset, PrivacyNoticeRegion } from "~/types/api";
-import { isoStringToEntry, formatIsoLocation } from "fidesui"
 
 const useSystemAssetColumns = ({
   systemKey,
@@ -102,9 +102,10 @@ const useSystemAssetColumns = ({
 
             return {
               label: isoEntry
-                ? formatIsoLocation({ isoEntry, showFlag: true }) : PRIVACY_NOTICE_REGION_RECORD[location],
+                ? formatIsoLocation({ isoEntry, showFlag: true })
+                : PRIVACY_NOTICE_REGION_RECORD[location],
               key: location,
-            }
+            };
           })}
         />
       ),
