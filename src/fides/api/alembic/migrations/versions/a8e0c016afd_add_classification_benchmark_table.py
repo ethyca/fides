@@ -1,7 +1,7 @@
 """Add classification benchmark table
 
 Revision ID: a8e0c016afd
-Revises: 5fa78b1f324d
+Revises: 4d8c0fcc5771
 Create Date: 2024-12-19 12:00:00.000000
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "a8e0c016afd"
-down_revision = "5fa78b1f324d"
+down_revision = "4d8c0fcc5771"
 branch_labels = None
 depends_on = None
 
@@ -34,9 +34,24 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("monitor_config_key", sa.String(), nullable=False),
-        sa.Column("dataset_fides_key", sa.String(), nullable=False),
-        sa.Column("resource_urn", sa.String(), nullable=False),
+        sa.Column(
+            "monitor_config_key",
+            sa.String(),
+            sa.ForeignKey("monitorconfig.key", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "dataset_fides_key",
+            sa.String(),
+            sa.ForeignKey("ctl_datasets.fides_key", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "resource_urns",
+            postgresql.ARRAY(sa.String()),
+            nullable=False,
+            server_default="{}",
+        ),
         sa.Column(
             "overall_metrics",
             postgresql.JSONB(astext_type=sa.Text()),

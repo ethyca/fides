@@ -2,19 +2,23 @@
 Database model for classification benchmark results.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import ARRAY, Column, String
+from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
+from fides.api.models.detection_discovery.core import MonitorConfig
+from fides.api.models.sql_models import Dataset  # type: ignore[attr-defined]
 
 
-class ClassificationBenchmark(Base):
+class ClassificationBenchmark(Base, FidesBase):
     """
     Database model for storing classification benchmark results.
 
@@ -26,10 +30,27 @@ class ClassificationBenchmark(Base):
     def __tablename__(self) -> str:
         return "classification_benchmark"
 
-    # Basic benchmark information
-    monitor_config_key = Column(String, nullable=False, index=True)
-    dataset_fides_key = Column(String, nullable=False, index=True)
-    resource_urn = Column(String, nullable=False)
+    # Foreign key relationships
+    monitor_config_key = Column(
+        String,
+        ForeignKey(MonitorConfig.key, ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    dataset_fides_key = Column(
+        String,
+        ForeignKey(Dataset.fides_key, ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Resource URNs (array of strings)
+    resource_urns = Column(
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=list,
+    )
 
     # Overall accuracy metrics stored as JSONB
     overall_metrics = Column(
@@ -45,6 +66,19 @@ class ClassificationBenchmark(Base):
         nullable=False,
         server_default="{}",
         default=list,
+    )
+
+    # Relationships
+    monitor_config: RelationshipProperty[MonitorConfig] = relationship(
+        MonitorConfig,
+        foreign_keys=[monitor_config_key],
+        primaryjoin="ClassificationBenchmark.monitor_config_key == MonitorConfig.key",
+    )
+
+    dataset: RelationshipProperty[Dataset] = relationship(
+        Dataset,
+        foreign_keys=[dataset_fides_key],
+        primaryjoin="ClassificationBenchmark.dataset_fides_key == Dataset.fides_key",
     )
 
     @classmethod
