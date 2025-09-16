@@ -394,18 +394,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         client: AuthenticatedClient = self.create_client()
 
         for next_request, param_value_map in prepared_requests:
-            logger.info(f"Next request: {next_request}")
-            logger.info(f"Param value map: {param_value_map}")
-            logger.info(f"request param body: {next_request.body}")
-            ## Entonces aca por cada Request que tenemos, toca revisar de crear la ID
 
             response, correlation_id = strategy.execute_initial_request(  # type: ignore
                 client,
                 next_request
             )
 
-            logger.info(f"Response obtained from initial request: {response}")
-            logger.info(f"Correlation id obtained from initial request: {correlation_id}")
             param_value_map["correlation_id"] = correlation_id
             # Si es que es async,m tambien nos vamos pa atras
             self._save_subrequest_data(request_task, param_value_map)

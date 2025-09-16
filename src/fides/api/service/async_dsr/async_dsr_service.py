@@ -141,14 +141,15 @@ def execute_read_polling_requests(
             client: AuthenticatedClient = connector.create_client()
             sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
             for sub_request in sub_requests:
-                if sub_request.status == ExecutionLogStatus.complete:
+                if sub_request.sub_request_status == ExecutionLogStatus.complete:
                     logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. ")
                     continue
-                param_values = sub_request.request_data
+                param_values = sub_request.param_values
                 logger.info(f"Param values: {param_values}")
 
                 status = strategy.get_status_request(client, param_values)
                 if status:
+                    sub_request.update_status(db, ExecutionLogStatus.complete)
                     result = execute_result_request(
                         db,
                         polling_task,
