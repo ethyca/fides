@@ -13,7 +13,9 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
-from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.async_dsr.async_dsr_strategy_factory import (
+    get_strategy as get_async_strategy,
+)
 from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
     PollingAsyncDSRBaseStrategy,
 )
@@ -133,12 +135,12 @@ def execute_read_polling_requests(
     for read_request in read_requests:
         if read_request.async_config:
 
-            strategy: PollingAsyncDSRBaseStrategy = AsyncDSRStrategy.get_strategy(  # type: ignore
+            strategy: PollingAsyncDSRBaseStrategy = get_async_strategy(  # type: ignore
                 read_request.async_config.strategy,
                 read_request.async_config.configuration,
             )
             client: AuthenticatedClient = connector.create_client()
-            sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
+            sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
             for sub_request in sub_requests:
                 if sub_request.sub_request_status == ExecutionLogStatus.complete:
                     logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. ")

@@ -16,7 +16,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import (
     AsyncTaskType,
-    RequestTaskRequestData,
+    RequestTaskSubRequest,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
@@ -53,9 +53,9 @@ class TestAsyncDSRService:
 
     @pytest.fixture
     def mock_request_task_data(self):
-        """Create a mock RequestTaskRequestData with proper attributes"""
-        mock_data = Mock(spec=RequestTaskRequestData)
-        mock_data.request_data = {
+        """Create a mock RequestTaskSubRequest with proper attributes"""
+        mock_data = Mock(spec=RequestTaskSubRequest)
+        mock_data.param_values = {
             "request_id": "req_12345",
         }
         return mock_data
@@ -77,7 +77,9 @@ class TestAsyncDSRService:
         mock_task.upstream_tasks_objects.return_value = []
         mock_task.save = Mock()
         mock_task.update_status = Mock()
-        mock_task.request_data = mock_request_task_data
+        # Mock the 1:N relationship for sub_requests
+        mock_task.sub_requests = Mock()
+        mock_task.sub_requests.all.return_value = [mock_request_task_data]
         return mock_task
 
     @pytest.fixture

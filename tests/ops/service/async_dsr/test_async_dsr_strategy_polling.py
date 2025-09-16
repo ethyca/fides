@@ -7,9 +7,8 @@ from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.schemas.saas.strategy_configuration import (
-    IdSource,
+
     PollingAsyncDSRAccessDataConfiguration,
-    PollingAsyncIdRequestConfiguration,
     SupportedDataType,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import (
@@ -26,6 +25,11 @@ class TestPollingAsyncDSRStrategy:
     def polling_strategy(self):
         """Create a PollingAsyncDSRStrategy with basic configuration"""
         config = PollingAsyncDSRAccessDataConfiguration(
+            initial_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/initial/<request_id>",
+            ),
+            correlation_id_path="correlation_id",
             status_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/status/<request_id>",
@@ -36,10 +40,6 @@ class TestPollingAsyncDSRStrategy:
                 path="/api/result/<request_id>",
             ),
             result_path=self.RESULT_PATH,
-            request_id_config=PollingAsyncIdRequestConfiguration(
-                id_source=IdSource.path.value,
-                id_path="request_id",
-            ),
             data_type=SupportedDataType.json.value,
         )
         return PollingAsyncDSRAccessDataStrategy(configuration=config)
@@ -211,6 +211,11 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
     def polling_strategy_with_string_status(self):
         """Create a strategy that expects string status values"""
         config = PollingAsyncDSRAccessDataConfiguration(
+            initial_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/initial/<request_id>",
+            ),
+            correlation_id_path="correlation_id",
             status_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/status/<request_id>",
@@ -222,10 +227,6 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
                 path="/api/result/<request_id>",
             ),
             result_path="data.results",
-            request_id_config=PollingAsyncIdRequestConfiguration(
-                id_source=IdSource.path.value,
-                id_path="request_id",
-            ),
             data_type=SupportedDataType.json.value,
         )
         return PollingAsyncDSRAccessDataStrategy(configuration=config)
@@ -234,6 +235,11 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
     def polling_strategy_with_list_status(self):
         """Create a strategy that expects list status values"""
         config = PollingAsyncDSRAccessDataConfiguration(
+            initial_request=SaaSRequest(
+                method=HTTPMethod.GET,
+                path="/api/initial/<request_id>",
+            ),
+            correlation_id_path="correlation_id",
             status_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/status/<request_id>",
@@ -245,10 +251,6 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
                 path="/api/result/<request_id>",
             ),
             result_path="data.results",
-            request_id_config=PollingAsyncIdRequestConfiguration(
-                id_source=IdSource.path.value,
-                id_path="request_id",
-            ),
             data_type=SupportedDataType.json.value,
         )
         return PollingAsyncDSRAccessDataStrategy(configuration=config)
@@ -451,4 +453,4 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
 
         assert "Status request returned an unexpected value: None" in str(
             exc_info.value
-        )
+            )
