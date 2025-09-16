@@ -298,6 +298,13 @@ describe("Privacy Requests", () => {
         cy.wait("@getPrivacyRequests");
         cy.getByTestId("submit-request-btn").should("not.exist");
       });
+
+      it("shows the option to create for approver role", () => {
+        cy.assumeRole(RoleRegistryEnum.APPROVER);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+        cy.getByTestId("submit-request-btn").should("exist");
+      });
     });
 
     describe("submitting a request", () => {

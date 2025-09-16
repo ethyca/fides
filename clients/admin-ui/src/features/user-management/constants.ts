@@ -33,7 +33,7 @@ export const ROLES = [
     permissions_label: "Approver",
     roleKey: RoleRegistryEnum.APPROVER,
     description:
-      "Approvers can only access the Privacy Requests portal to manage requests",
+      "Approvers can only access the Privacy Requests portal to review, approve, and create new requests",
   },
   {
     label: "Internal respondent",
