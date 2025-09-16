@@ -348,7 +348,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         strategy,
                         input_data,
                         policy,
-                    )
+                    )  # type: arg-type
 
             # This allows us to build an output object even if we didn't generate and execute
             # any HTTP requests. This is useful if we just want to select specific input_data
@@ -369,16 +369,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # We'll instead use the data received in the callback URL later.
 
             # Use the existing session that the privacy_request is attached to
-            existing_session = Session.object_session(privacy_request)
-            if existing_session:
-                # Set the privacy request status to requires_input to avoid erroring out in requeue_interrupted_tasks
-                privacy_request.status = PrivacyRequestStatus.requires_input
-                privacy_request.save(existing_session)
-            else:
-                # Fallback to creating a new session if no existing session found
-                with get_db() as db:
-                    privacy_request.status = PrivacyRequestStatus.requires_input
-                    privacy_request.save(db)
+
 
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
             raise AwaitingAsyncTask()
@@ -409,14 +400,24 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         client: AuthenticatedClient = self.create_client()
 
         for next_request, param_value_map in prepared_requests:
-
-            response, correlation_id = strategy.execute_initial_request(  # type: ignore
+            logger.info(f"Executing initial request: {next_request}")
+            correlation_id = strategy.execute_initial_request(  # type: ignore
                 client, next_request
             )
 
             param_value_map["correlation_id"] = correlation_id
-            # Si es que es async,m tambien nos vamos pa atras
             self._save_subrequest_data(request_task, param_value_map)
+
+            # Set the privacy request status to requires_input to avoid erroring out in requeue_interrupted_tasks
+            existing_session = Session.object_session(privacy_request)
+            if existing_session:
+                privacy_request.status = PrivacyRequestStatus.requires_input
+                privacy_request.save(existing_session)
+            else:
+                # Fallback to creating a new session if no existing session found
+                with get_db() as db:
+                    privacy_request.status = PrivacyRequestStatus.requires_input
+                    privacy_request.save(db)
 
     def _save_subrequest_data(
         self,

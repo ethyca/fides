@@ -40,11 +40,11 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
         response: Response = client.send(prepared_initial_request)
         if response.ok:
             correlation_id = pydash.get(response.json(), self.correlation_id_path)
-            return response, correlation_id
-        else:
-            raise PrivacyRequestError(
-                f"Initial request failed with status code {response.status_code}"
-            )
+            return correlation_id
+
+        raise PrivacyRequestError(
+            f"Initial request failed with status code {response.status_code}"
+        )
 
     def get_status_request(
         self, client: AuthenticatedClient, param_values: Dict[str, Any]
@@ -92,5 +92,5 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
     @abstractmethod
     def get_result_request(
         self, client: AuthenticatedClient, param_values: Dict[str, Any]
-    ) -> Union[Optional[List[Row]], Optional[str], Optional[bytes]]:
+    ) -> Any:
         """Execute result request and return parsed data."""
