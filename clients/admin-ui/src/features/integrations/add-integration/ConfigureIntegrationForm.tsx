@@ -80,13 +80,13 @@ const FormStateHandler = ({
 const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
-  onCancel,
+  onClose,
   description,
   onFormStateChange,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
-  onCancel: () => void;
+  onClose: () => void;
   description: React.ReactNode;
   onFormStateChange?: (formState: {
     dirty: boolean;
@@ -228,7 +228,7 @@ const ConfigureIntegrationForm = ({
           isEditing ? "updated" : "created"
         } successfully`,
       });
-      onCancel();
+      onClose();
       return;
     }
 
@@ -268,7 +268,7 @@ const ConfigureIntegrationForm = ({
       });
     }
 
-    onCancel();
+    onClose();
 
     if (
       connectionPayload &&
