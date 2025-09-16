@@ -2996,7 +2996,7 @@ dataset:
         data_categories: [system.operations]
       - name: dataset_fides_key
         data_categories: [system.operations]
-      - name: resource_urn
+      - name: resource_urns
         data_categories: [system.operations]
       - name: overall_metrics
         data_categories: [system.operations]
