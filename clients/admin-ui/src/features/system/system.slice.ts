@@ -40,6 +40,7 @@ export type ConnectionConfigSecretsRequest = {
 export type GetSystemsQueryParams = {
   data_stewards?: string[];
   system_groups?: string[];
+  show_deleted?: boolean;
 };
 
 const systemApi = baseApi.injectEndpoints({
@@ -48,7 +49,7 @@ const systemApi = baseApi.injectEndpoints({
       Page_BasicSystemResponseExtended_,
       PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
     >({
-      query: ({ data_stewards, system_groups, ...params }) => {
+      query: ({ data_stewards, system_groups, show_deleted, ...params }) => {
         const urlParams = buildArrayQueryParams({
           data_stewards,
           system_groups,
@@ -57,7 +58,10 @@ const systemApi = baseApi.injectEndpoints({
         return {
           method: "GET",
           url: `system?${urlParams.toString()}`,
-          params,
+          params: {
+            ...params,
+            ...(show_deleted !== undefined && { show_deleted }),
+          },
         };
       },
       providesTags: () => ["System"],
