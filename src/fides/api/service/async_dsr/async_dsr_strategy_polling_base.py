@@ -1,6 +1,5 @@
 from abc import abstractmethod
-from sqlite3 import Row
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Tuple
 
 import pydash
 from requests import Response

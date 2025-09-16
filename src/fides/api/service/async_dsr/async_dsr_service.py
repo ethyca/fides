@@ -12,7 +12,6 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
     get_strategy as get_async_strategy,
 )
@@ -142,7 +141,7 @@ def execute_read_polling_requests(
             client: AuthenticatedClient = connector.create_client()
             sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
             for sub_request in sub_requests:
-                if sub_request.sub_request_status == ExecutionLogStatus.complete:
+                if sub_request.sub_request_status == ExecutionLogStatus.complete.value:
                     logger.info(
                         f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. "
                     )
@@ -151,16 +150,16 @@ def execute_read_polling_requests(
 
                 status = strategy.get_status_request(client, param_values)
                 if status:
-                    sub_request.update_status(db, ExecutionLogStatus.complete)
+                    sub_request.update_status(db, ExecutionLogStatus.complete.value)
                     result = execute_result_request(
                         db, polling_task, strategy, client, param_values
                     )
-                    if isinstance(result, list[Row]):
+                    if isinstance(result, list):
                         rows.extend(result)
                     elif isinstance(result, str):
-                        raise PrivacyRequestError(f"Link Support not yet implemented")
+                        raise PrivacyRequestError("Link Support not yet implemented")
                     elif isinstance(result, bytes):
-                        raise PrivacyRequestError(f"File Support not yet implemented")
+                        raise PrivacyRequestError("File Support not yet implemented")
                     else:
                         raise PrivacyRequestError(
                             f"Unsupported result type: {type(result)}"
@@ -174,16 +173,22 @@ def execute_read_polling_requests(
 
     if pending_requests:
         # Save results for future polling
-        polling_task.access_data = rows.extend(polling_task.access_data)
-        polling_task.save(db)
+        save_polling_task_data(db, polling_task, rows)
         logger.info(f"Polling task - {polling_task.id} still has pending requests. ")
         return
-
-    polling_task.access_data = rows.extend(polling_task.access_data)
     polling_task.update_status(db, ExecutionLogStatus.complete)
-    polling_task.save(db)
+    save_polling_task_data(db, polling_task, rows)
     log_task_queued(polling_task, "polling success")
     queue_request_task(polling_task, privacy_request_proceed=True)
+
+
+def save_polling_task_data(
+    db: Session, polling_task: RequestTask, rows: List[Row]
+) -> None:
+    """Save the polling task data"""
+    rows.extend(polling_task.access_data)
+    polling_task.access_data = rows
+    polling_task.save(db)
 
 
 def execute_result_request(

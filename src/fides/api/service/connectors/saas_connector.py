@@ -345,10 +345,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         privacy_request,
                         request_task,
                         query_config,
-                        strategy,
+                        strategy,  # type: ignore
                         input_data,
                         policy,
-                    )  # type: arg-type
+                    )
 
             # This allows us to build an output object even if we didn't generate and execute
             # any HTTP requests. This is useful if we just want to select specific input_data
@@ -369,7 +369,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # We'll instead use the data received in the callback URL later.
 
             # Use the existing session that the privacy_request is attached to
-
 
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
             raise AwaitingAsyncTask()
