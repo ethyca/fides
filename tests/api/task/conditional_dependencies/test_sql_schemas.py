@@ -61,7 +61,6 @@ class TestHandleListContains:
     def test_handle_list_contains_exception_fallback(self):
         """Test _handle_list_contains fallback to LIKE when contains() fails"""
         # Use a real SQLAlchemy column to avoid Mock attribute issues
-        from sqlalchemy import String
 
         real_column = Column(String, name="test_column")
 

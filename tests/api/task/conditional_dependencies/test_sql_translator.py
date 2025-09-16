@@ -8,9 +8,11 @@ from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 from pytest import param
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Query, Session, relationship
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList, Grouping
 from sqlalchemy.sql.selectable import Exists
 
@@ -255,8 +257,6 @@ class TestBuildFilterExpression:
 
     def test_json_path_field_handling(self, translator):
         """Test handling of JSON path fields"""
-        from sqlalchemy import JSON, Column
-        from sqlalchemy.dialects.postgresql import JSONB
 
         # Create a model with JSON column
         class MockModelWithJSON(TestBase):
@@ -304,7 +304,6 @@ class TestBuildFilterExpression:
 
     def test_hybrid_property_handling(self, translator):
         """Test handling of hybrid properties"""
-        from sqlalchemy.ext.hybrid import hybrid_property
 
         class MockModelWithHybrid(TestBase):
             __tablename__ = "hybrid_table"
@@ -330,7 +329,6 @@ class TestBuildFilterExpression:
 
     def test_relationship_condition_unsupported_operator(self, translator):
         """Test relationship condition with unsupported operator"""
-        from sqlalchemy.orm import relationship
 
         class MockParent2(TestBase):
             __tablename__ = "parent_table2"
@@ -357,7 +355,6 @@ class TestBuildFilterExpression:
 
     def test_property_condition_with_relationships_suggestion(self, translator):
         """Test property condition error message includes relationship suggestions"""
-        from sqlalchemy.orm import relationship
 
         class MockParent3(TestBase):
             __tablename__ = "parent_table3"
