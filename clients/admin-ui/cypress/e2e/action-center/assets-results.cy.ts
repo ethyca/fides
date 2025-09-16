@@ -580,7 +580,7 @@ describe("Action center Asset Results", () => {
         // Check "Pre-consent" badge
         cy.getAntTableRow(rowUrns[2]).within(() => {
           cy.contains("Pre-consent").should("exist");
-          cy.getByTestId("status-badge_without-consent").should(
+          cy.getByTestId("status-badge_pre-consent").should(
             "have.attr",
             "data-color",
             "error",
