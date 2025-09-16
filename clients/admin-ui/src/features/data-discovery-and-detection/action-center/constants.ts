@@ -3,6 +3,9 @@ export enum DiscoveryStatusDisplayNames {
   WITHOUT_CONSENT = "Without consent",
   EXEMPT = "Exempt",
   UNKNOWN = "Unknown",
+  PRE_CONSENT = "Pre-consent",
+  CMP_ERROR = "CMP error",
+  NOT_APPLICABLE = "Not applicable",
 }
 
 export enum DiscoveredAssetsColumnKeys {
