@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
 - Systems inventory page now displays GVL deleted systems [#6602](https://github.com/ethyca/fides/pull/6602)
+- Add permission for "Approver" role to create privacy requests via the Admin UI [#6603](https://github.com/ethyca/fides/pull/6606)
 
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
