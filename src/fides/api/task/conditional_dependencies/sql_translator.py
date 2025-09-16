@@ -25,7 +25,10 @@ from fides.api.task.conditional_dependencies.sql_schemas import (
 class SQLConditionTranslator:
     """Translates conditional dependencies into SQLAlchemy queries using relationship traversal"""
 
-    def __init__(self, db: Session, orm_registry: Optional[Any] = None):
+    MAX_RELATIONSHIP_DEPTH = 15
+    DEFAULT_PRIMARY_KEY = "id"
+
+    def __init__(self, db: Session, orm_registry: Optional[Base] = None):
         """
         Initialize the SQL translator using SQLAlchemy's relationship traversal
 
@@ -41,7 +44,9 @@ class SQLConditionTranslator:
         """
         self.db: Session = db
         self.orm_registry: Any = orm_registry if orm_registry else Base
-        self._model_cache: dict[str, Optional[type]] = {}
+        self._model_cache: dict[str, Optional[type]] = (
+            self._build_table_to_model_mapping()
+        )
 
     def generate_query_from_condition(
         self,
@@ -94,7 +99,7 @@ class SQLConditionTranslator:
         model_classes: dict[str, type] = {
             table_name: model_class
             for table_name in tables_to_fields
-            if (model_class := self.get_orm_model_by_table_name(table_name)) is not None
+            if (model_class := self._model_cache.get(table_name)) is not None
         }
 
         if not model_classes:
@@ -105,8 +110,6 @@ class SQLConditionTranslator:
         # Determine primary model - first table in the model_classes dictionary (first condition)
         # This makes the query intent clear and predictable for users
         primary_table, primary_model = next(iter(model_classes.items()))
-        if not primary_table or not primary_model:
-            raise SQLTranslationError("No primary table found for the specified tables")
 
         # If there are multiple tables, expand the model classes to include related main tables
         # This is necessary for join/reference tables
@@ -125,7 +128,7 @@ class SQLConditionTranslator:
 
         # Add JOINs using relationships
         query = self._add_relationship_joins(
-            query, primary_model, model_classes, primary_table
+            query, primary_model, model_classes, primary_table, tables_to_fields
         )
 
         # Add WHERE conditions
@@ -187,30 +190,14 @@ class SQLConditionTranslator:
 
         raise SQLTranslationError(f"Unknown condition type: {type(condition)}")
 
-    def get_orm_model_by_table_name(self, table_name: str) -> Optional[type]:
-        """Finds the ORM model class for a given table name (with caching)
-
-        Uses SQLAlchemy's registry and metadata for efficient lookups.
-
-        Args:
-            table_name: Database table name
-
-        Returns:
-            SQLAlchemy model class or None if not found
-        """
-        # Check cache first
-        if table_name in self._model_cache:
-            return self._model_cache[table_name]
-
-        # SQLAlchemy 1.4+ uses registry.mappers or registry._class_registry
-        for mapper in self.orm_registry.registry.mappers:  # type: ignore[attr-defined]
-            if mapper.class_.__tablename__ == table_name:
-                self._model_cache[table_name] = mapper.class_
-                return mapper.class_
-
-        # If not found, cache None and return
-        self._model_cache[table_name] = None
-        return None
+    def _build_table_to_model_mapping(self) -> dict[str, Optional[type]]:
+        """Build complete table name to model mapping once"""
+        mapping = {}
+        for mapper in self.orm_registry.registry.mappers:
+            table_name = getattr(mapper.class_, "__tablename__", None)
+            if table_name:
+                mapping[table_name] = mapper.class_
+        return mapping
 
     def _apply_operator_to_column(
         self, column: Any, operator: Operator, value: Any
@@ -225,7 +212,7 @@ class SQLConditionTranslator:
     def _expand_with_related_main_tables(
         self, model_classes: dict[str, type], tables_to_fields: dict[str, list]
     ) -> dict[str, type]:
-        """Finds and includes related main tables for join/reference tables
+        """Finds and includes related tables for join/reference tables
 
         This helps with relationship queries where conditions are on join tables
         but we want to return records from the main entities.
@@ -257,6 +244,9 @@ class SQLConditionTranslator:
                 for main_table_name, main_model_class in main_tables.items():
                     if main_table_name not in expanded_model_classes:
                         expanded_model_classes[main_table_name] = main_model_class
+                        logger.debug(
+                            f"Added related main table: {main_table_name} -> {main_model_class.__name__}"
+                        )
 
         return expanded_model_classes
 
@@ -292,7 +282,7 @@ class SQLConditionTranslator:
         return related_tables
 
     def _find_relationship_path_through_intermediates(
-        self, from_model: type, to_model: type, max_depth: int = 3
+        self, from_model: type, to_model: type, max_depth: Optional[int] = None
     ) -> list:
         """Finds a relationship path between models, including through intermediate tables
 
@@ -310,6 +300,10 @@ class SQLConditionTranslator:
         if from_model == to_model:
             return []
 
+        # Use the class constant if no max_depth provided
+        if max_depth is None:
+            max_depth = self.MAX_RELATIONSHIP_DEPTH
+
         # Use BFS to find shortest relationship path
         # Queue items: (current_model, path_so_far)
         queue: deque[tuple[type, list]] = deque([(from_model, [])])
@@ -324,7 +318,6 @@ class SQLConditionTranslator:
 
                 try:
                     mapper = inspect(current_model)
-
                 except NoInspectionAvailable:
                     continue
 
@@ -345,13 +338,10 @@ class SQLConditionTranslator:
                         # Add to queue for further exploration if not visited
                         if next_model not in visited:
                             visited.add(next_model)
-                            queue.append(
-                                (
-                                    next_model,
-                                    current_path
-                                    + [getattr(current_model, relationship_name)],
-                                )
-                            )
+                            current = current_path + [
+                                getattr(current_model, relationship_name)
+                            ]
+                            queue.append((next_model, current))
         return []
 
     def _fetch_join_path(
@@ -379,13 +369,19 @@ class SQLConditionTranslator:
         # Try to find direct relationship path first
         join_path = self._find_relationship_path(primary_model, model_class)
         if join_path:
+            logger.debug(
+                f"Found direct relationship path from {primary_model.__name__} to {model_class.__name__}: {[str(attr) for attr in join_path]}"
+            )
             return join_path
 
         # Try to find path through intermediate tables
         join_path = self._find_relationship_path_through_intermediates(
-            primary_model, model_class, max_depth=3
+            primary_model, model_class
         )
         if join_path:
+            logger.debug(
+                f"Found intermediate relationship path from {primary_model.__name__} to {model_class.__name__}: {[str(attr) for attr in join_path]}"
+            )
             return join_path
 
         # Try to find any model that can reach this one (fallback)
@@ -394,7 +390,7 @@ class SQLConditionTranslator:
                 continue
 
             join_path = self._find_relationship_path_through_intermediates(
-                joined_model, model_class, max_depth=2
+                joined_model, model_class
             )
             if join_path:
                 return join_path
@@ -407,6 +403,7 @@ class SQLConditionTranslator:
         primary_model: type,
         model_classes: dict[str, type],
         primary_table: str,
+        tables_to_fields: dict[str, list],
     ) -> Query:
         """Adds JOINs using SQLAlchemy relationships
 
@@ -415,12 +412,17 @@ class SQLConditionTranslator:
             primary_model: The primary model class
             model_classes: Dictionary of table names to model classes
             primary_table: The primary table name
+            tables_to_fields: Dictionary of table names to lists of field addresses
 
         Returns:
             The SQLAlchemy query with the JOINs added or the original query if no join paths found
         """
         for table_name, model_class in model_classes.items():
             if table_name == primary_table:
+                continue
+            # Only join tables that have actual field references (conditions)
+            # Skip auto-discovered related tables that aren't referenced in conditions
+            if table_name not in tables_to_fields or not tables_to_fields[table_name]:
                 continue
             join_path = self._fetch_join_path(
                 model_class,
@@ -431,9 +433,48 @@ class SQLConditionTranslator:
             )
             if join_path:
                 for relationship_attr in join_path:
-                    query = query.join(relationship_attr)
-                return query
+                    # Check if this is a reverse relationship (target model has relationship to primary model)
+                    if (
+                        hasattr(relationship_attr, "property")
+                        and hasattr(relationship_attr.property, "mapper")
+                        and relationship_attr.property.mapper.class_ == primary_model
+                    ):
+                        query = self._apply_reverse_join(
+                            query, relationship_attr, primary_model
+                        )
+                    else:
+                        query = query.join(relationship_attr)
+        return query
 
+    def _apply_reverse_join(
+        self, query: Query, relationship_attr: Any, primary_model: Any
+    ) -> Query:
+        """Applies a reverse join to the query
+        For reverse relationships, we need to join using the relationship but in reverse
+        The relationship contains the correct primaryjoin condition
+
+        Args:
+            query: The SQLAlchemy query to add the JOINs to
+            relationship_attr: The relationship attribute to join
+            primary_model: The primary model class
+
+        Returns:
+            The SQLAlchemy query with the JOINs added or the original query if no join paths found
+        """
+        logger.debug(
+            f"Reverse relationship detected: {relationship_attr} points back to primary table {primary_model.__name__}"
+        )
+        target_model = relationship_attr.class_
+        if (
+            hasattr(relationship_attr.property, "primaryjoin")
+            and relationship_attr.property.primaryjoin is not None
+        ):
+            join_condition = relationship_attr.property.primaryjoin
+            query = query.join(target_model, join_condition)
+        else:
+            raise SQLTranslationError(
+                f"No primaryjoin found for {primary_model.__name__}, {target_model.__name__}"
+            )
         return query
 
     def _find_relationship_path(self, from_model: type, to_model: type) -> list:
@@ -450,22 +491,49 @@ class SQLConditionTranslator:
         Returns:
             The list of relationship attributes to join, or empty list if no path found
         """
+        join_path: dict[type, list[Any]] = {}
         if from_model == to_model:
             return []
+
+        logger.debug(
+            f"Looking for relationship path from {from_model.__name__} to {to_model.__name__}"
+        )
 
         # Get mapper for the source model
         try:
             mapper = inspect(from_model)
+            target_mapper = inspect(to_model)
         except NoInspectionAvailable:
+            logger.debug(
+                f"Could not inspect models {from_model.__name__} or {to_model.__name__}"
+            )
             return []
-        # Check direct relationships
-        for relationship_name, relationship_prop in mapper.relationships.items():
-            if isinstance(relationship_prop, RelationshipProperty):
-                target_mapper = relationship_prop.mapper
-                if target_mapper.class_ == to_model:
-                    # Direct relationship found
-                    return [getattr(from_model, relationship_name)]
-        return []
+        # Check direct relationships bi-directional
+        for m, t in [(mapper, to_model), (target_mapper, from_model)]:
+            join_path[m.class_] = []
+            logger.debug(
+                f"Checking {m.class_.__name__} for relationships to {t.__name__}"
+            )
+            for relationship_name, relationship_prop in m.relationships.items():
+                if isinstance(relationship_prop, RelationshipProperty):
+                    relationship_target_mapper = relationship_prop.mapper
+                    if relationship_target_mapper.class_ == t:
+                        # Direct relationship found
+                        logger.debug(
+                            f"Found direct relationship: {m.class_.__name__}.{relationship_name} -> {relationship_target_mapper.class_.__name__}"
+                        )
+                        join_path[m.class_].append(getattr(m.class_, relationship_name))
+
+        # Return non-empty path if it exists
+        from_model_path = join_path[mapper.class_]
+        to_model_path = join_path[target_mapper.class_]
+        logger.debug(f"Join path: {join_path[mapper.class_]}")
+        logger.debug(f"Join path: {join_path[target_mapper.class_]}")
+
+        # Prefer forward relationships (from source to target) over reverse relationships
+        if len(from_model_path) > 0:
+            return from_model_path
+        return to_model_path
 
     def _build_filter_expression(
         self, condition: Condition, model_classes: dict[str, type]
@@ -522,12 +590,11 @@ class SQLConditionTranslator:
         if hasattr(model_class, field_addr.column_name):
             attr = getattr(model_class, field_addr.column_name)
 
-            # Check if it's a relationship first, even if we have json_path
+            # Check if it's a relationship first
             # This handles cases like "fidesuser.permissions.role" where permissions is a relationship
             if hasattr(attr, "property") and isinstance(
                 attr.property, RelationshipProperty
             ):
-                # This is a relationship - handle it as such
                 logger.debug(f"Found relationship {field_name} on {model_name}")
                 return self._handle_relationship_condition(attr, condition)
 
@@ -539,13 +606,15 @@ class SQLConditionTranslator:
                     model_class, field_name, attr, condition
                 )
 
-            # Handle JSON path fields (only if it's not a relationship)
-            # Use PostgreSQL JSON operators
-            if field_addr.json_path:
+            if field_addr.json_path and len(field_addr.json_path) > 0:
                 logger.debug(
                     f"Found JSON path {field_name}.{field_addr.json_path} on {model_name}"
                 )
-                json_expr = attr[field_addr.json_path].astext
+                # Build JSON path expression safely using SQLAlchemy's chained [] operators
+                json_expr = attr
+                for path_component in field_addr.json_path:
+                    json_expr = json_expr[path_component]
+                json_expr = json_expr.astext
                 return self._apply_operator_to_column(
                     json_expr, condition.operator, condition.value
                 )
@@ -573,7 +642,6 @@ class SQLConditionTranslator:
         Returns:
             SQLAlchemy expression using any() or has(), or None if unsupported
         """
-        # Parse the field address to extract the target field
         field_address = FieldAddress.parse(condition.field_address)
         target_field = self._extract_relationship_target_field(
             field_address, relationship_attr
@@ -586,11 +654,10 @@ class SQLConditionTranslator:
             # Get the target column from the related model
             related_model = rel_property.mapper.class_
             target_column = getattr(related_model, target_field)
-        except Exception as e:
+        except (AttributeError, NoInspectionAvailable) as e:
             logger.error(f"Error getting relationship property: {e}")
             return None
 
-        # Handle existence operators specially (they don't need a target column)
         if condition.operator in [Operator.exists, Operator.not_exists]:
             # For existence checks, call any()/has() with no arguments
             if is_collection:
@@ -598,13 +665,11 @@ class SQLConditionTranslator:
             else:
                 result = relationship_attr.has()
 
-            # Handle negation for not_exists
             if condition.operator == Operator.not_exists:
                 return not_(result)
 
             return result
 
-        # Use existing operator handling to create the comparison
         try:
             comparison = self._apply_operator_to_column(
                 target_column, condition.operator, condition.value
@@ -650,9 +715,9 @@ class SQLConditionTranslator:
             primary_keys = inspector.primary_key
             if primary_keys:
                 return primary_keys[0].name
-            return "id"  # Fallback to 'id'
+            return self.DEFAULT_PRIMARY_KEY  # Fallback to 'id'
         except NoInspectionAvailable:
-            return "id"  # Safe fallback
+            return self.DEFAULT_PRIMARY_KEY  # Safe fallback
 
     def _handle_property_condition(
         self, model_class: type, field_name: str, prop: Any, condition: ConditionLeaf

@@ -873,232 +873,121 @@ class SQLTranslatorDemo(QATestScenario):
 
     def _demo_simple_condition(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a simple condition."""
-        # Create a simple condition: fidesuser.username = 'demo_owner_user'
         condition = ConditionLeaf(
             field_address="fidesuser.username",
             operator=Operator.eq,
             value="demo_owner_user"
         )
 
-        print(f"📝 Condition:")
-        print(f"   Field: {condition.field_address}")
-        print(f"   Operator: {condition.operator.value}")
-        print(f"   Value: '{condition.value}'")
+        print(f"📝 Condition: {condition.field_address} {condition.operator.value} '{condition.value}'")
         print(f"   Description: Find user with username 'demo_owner_user'")
 
-        # Translate to SQL
+        self._execute_and_display_query(translator, condition, "1 user (demo_owner_user)")
+
+    def _execute_and_display_query(self, translator: SQLConditionTranslator, condition: Condition, expected: str) -> None:
+        """Helper method to execute query and display results."""
         try:
             query = translator.generate_query_from_condition(condition)
             sql_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
-            print(f"\n🔍 Generated SQL:")
-            print(f"   {sql_str}")
+            print(f"\n🔍 Generated SQL:\n   {sql_str}")
 
-            # Execute query and show results
             results = query.all()
-            print(f"\n📊 Results:")
-            print(f"   Found: {len(results)} record(s)")
+            print(f"\n📊 Results: Found {len(results)} record(s)")
             if results:
-                for result in results:
-                    print(f"   - User: {result.username} (ID: {result.id})")
+                for result in results[:3]:  # Limit to first 3 for brevity
+                    if hasattr(result, 'username'):
+                        print(f"   - User: {result.username} ({result.email_address})")
+                    else:
+                        print(f"   - {type(result).__name__} (ID: {result.id})")
+                if len(results) > 3:
+                    print(f"   ... and {len(results) - 3} more")
 
-            # Expected vs Actual
-            print(f"\n✅ Expected: 1 user (demo_owner_user)")
-            print(f"✅ Actual: {len(results)} user(s)")
+            print(f"\n✅ Expected: {expected}")
+            print(f"✅ Actual: {len(results)} record(s)")
 
         except Exception as e:
             print(f"❌ Error executing query: {e}")
 
     def _demo_group_condition(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a group condition with AND operator."""
-        # Create a group condition: fidesuser.username starts_with 'demo_' AND fidesuser.email_address contains '@example.com'
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(
-                    field_address="fidesuser.username",
-                    operator=Operator.starts_with,
-                    value="demo_"
-                ),
-                ConditionLeaf(
-                    field_address="fidesuser.email_address",
-                    operator=Operator.contains,
-                    value="@example.com"
-                )
+                ConditionLeaf(field_address="fidesuser.username", operator=Operator.starts_with, value="demo_"),
+                ConditionLeaf(field_address="fidesuser.email_address", operator=Operator.contains, value="@example.com")
             ]
         )
 
-        print(f"📝 Condition:")
-        print(f"   Group Operator: {condition.logical_operator.value.upper()}")
-        print(f"   Condition 1: fidesuser.username starts_with 'demo_'")
-        print(f"   Condition 2: fidesuser.email_address contains '@example.com'")
+        print(f"📝 Condition: {condition.logical_operator.value.upper()} group")
+        print(f"   - fidesuser.username starts_with 'demo_'")
+        print(f"   - fidesuser.email_address contains '@example.com'")
         print(f"   Description: Find demo users with example.com email addresses")
 
-        # Translate to SQL
-        try:
-            query = translator.generate_query_from_condition(condition)
-            sql_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
-            print(f"\n🔍 Generated SQL:")
-            print(f"   {sql_str}")
-
-            # Execute query and show results
-            results = query.all()
-            print(f"\n📊 Results:")
-            print(f"   Found: {len(results)} record(s)")
-            if results:
-                for result in results:
-                    print(f"   - User: {result.username} ({result.email_address})")
-
-            # Expected vs Actual
-            print(f"\n✅ Expected: 5 users (all demo users)")
-            print(f"✅ Actual: {len(results)} user(s)")
-
-        except Exception as e:
-            print(f"❌ Error executing query: {e}")
+        self._execute_and_display_query(translator, condition, "5 users (all demo users)")
 
     def _demo_nested_condition(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a nested condition with AND and OR operators."""
-        # Create nested condition:
-        # (fidesuser.username = 'demo_owner_user' OR fidesuser.username = 'demo_viewer_user')
-        # AND fidesuser.email_address contains '@example.com'
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionGroup(
                     logical_operator=GroupOperator.or_,
                     conditions=[
-                        ConditionLeaf(
-                            field_address="fidesuser.username",
-                            operator=Operator.eq,
-                            value="demo_owner_user"
-                        ),
-                        ConditionLeaf(
-                            field_address="fidesuser.username",
-                            operator=Operator.eq,
-                            value="demo_viewer_user"
-                        )
+                        ConditionLeaf(field_address="fidesuser.username", operator=Operator.eq, value="demo_owner_user"),
+                        ConditionLeaf(field_address="fidesuser.username", operator=Operator.eq, value="demo_viewer_user")
                     ]
                 ),
-                ConditionLeaf(
-                    field_address="fidesuser.email_address",
-                    operator=Operator.contains,
-                    value="@example.com"
-                )
+                ConditionLeaf(field_address="fidesuser.email_address", operator=Operator.contains, value="@example.com")
             ]
         )
 
-        print(f"📝 Condition:")
-        print(f"   Outer Group: AND")
-        print(f"     Inner Group: OR")
-        print(f"       - fidesuser.username = 'demo_owner_user'")
-        print(f"       - fidesuser.username = 'demo_viewer_user'")
-        print(f"     AND fidesuser.email_address contains '@example.com'")
+        print(f"📝 Condition: Nested AND/OR")
+        print(f"   (username = 'demo_owner_user' OR username = 'demo_viewer_user')")
+        print(f"   AND email contains '@example.com'")
         print(f"   Description: Find owner or viewer users with example.com emails")
 
-        # Translate to SQL
-        try:
-            query = translator.generate_query_from_condition(condition)
-            sql_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
-            print(f"\n🔍 Generated SQL:")
-            print(f"   {sql_str}")
-
-            # Execute query and show results
-            results = query.all()
-            print(f"\n📊 Results:")
-            print(f"   Found: {len(results)} record(s)")
-            if results:
-                for result in results:
-                    print(f"   - User: {result.username} ({result.email_address})")
-
-            # Expected vs Actual
-            print(f"\n✅ Expected: 2 users (demo_owner_user and demo_viewer_user)")
-            print(f"✅ Actual: {len(results)} user(s)")
-
-        except Exception as e:
-            print(f"❌ Error executing query: {e}")
+        self._execute_and_display_query(translator, condition, "2 users (demo_owner_user and demo_viewer_user)")
 
     def _demo_manual_task_query(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a complex multi-table query for manual task business logic."""
-        # Create complex condition: Find all manual task instances that are:
-        # 1. Assigned to a specific user (demo_owner_user)
-        # 2. Privacy request is not completed (status != 'complete')
-        # 3. Manual task instance is not completed (status != 'complete')
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
-                # Manual task instance is not complete (PRIMARY TABLE - this determines what we return)
-                ConditionLeaf(
-                    field_address="manual_task_instance.status",
-                    operator=Operator.neq,
-                    value="complete"
-                ),
-                # Manual task is assigned to demo_owner_user
-                ConditionLeaf(
-                    field_address="manual_task.references.reference_id",
-                    operator=Operator.eq,
-                    value=self._get_demo_user_id("demo_owner_user")
-                ),
-                # Privacy request is not complete
-                ConditionLeaf(
-                    field_address="privacyrequest.status",
-                    operator=Operator.neq,
-                    value="complete"
-                )
+                ConditionLeaf(field_address="manual_task_instance.status", operator=Operator.neq, value="complete"),
+                ConditionLeaf(field_address="manual_task.references.reference_id", operator=Operator.eq, value=self._get_demo_user_id("demo_owner_user")),
+                ConditionLeaf(field_address="privacyrequest.status", operator=Operator.neq, value="complete")
             ]
         )
 
-        print(f"📝 Condition:")
-        print(f"   Business Logic: Find pending manual tasks assigned to demo_owner_user")
-        print(f"   Complex Query involving 4 tables:")
-        print(f"     1. manualtaskinstance.status != 'complete' (PRIMARY - determines return type)")
-        print(f"     2. manualtaskreference.reference_id = <demo_owner_user_id>")
-        print(f"     3. manualtaskreference.reference_type = 'assigned_user'")
-        print(f"     4. privacyrequest.status != 'complete'")
-        print(f"   Description: Real-world query to find actionable manual task instances for a user")
+        print(f"📝 Condition: Complex Multi-Table Query")
+        print(f"   - manual_task_instance.status != 'complete' (PRIMARY)")
+        print(f"   - manual_task.references.reference_id = demo_owner_user_id")
+        print(f"   - privacyrequest.status != 'complete'")
+        print(f"   Description: Find actionable manual task instances for demo_owner_user")
 
-        # Translate to SQL
         try:
             query = translator.generate_query_from_condition(condition)
             sql_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
-            print(f"\n🔍 Generated SQL:")
-            print(f"   {sql_str}")
+            print(f"\n🔍 Generated SQL:\n   {sql_str}")
 
-            # Execute query and show results
             results = query.all()
-            print(f"\n📊 Results:")
-            print(f"   Found: {len(results)} record(s)")
+            expected_count = self._get_expected_manual_task_count(translator.db)
 
+            print(f"\n📊 Results: Found {len(results)} record(s)")
             if results:
-                print(f"   Manual Task Instances assigned to demo_owner_user:")
-                for result in results:
-                    # The result should be from the primary table (first in the query)
-                    print(f"   - Primary Result: {type(result).__name__} (ID: {result.id})")
+                for result in results[:2]:  # Limit display
+                    print(f"   - {type(result).__name__} (ID: {result.id})")
+                    if hasattr(result, 'status'): print(f"     └── Status: {result.status}")
 
-                    # Try to get related information if available
-                    try:
-                        if hasattr(result, 'privacy_request_id'):
-                            print(f"     └── Privacy Request ID: {result.privacy_request_id}")
-                        if hasattr(result, 'status'):
-                            print(f"     └── Status: {result.status}")
-                        if hasattr(result, 'task_id'):
-                            print(f"     └── Task ID: {result.task_id}")
-                    except Exception as detail_error:
-                        print(f"     └── (Details unavailable: {detail_error})")
-
-            # Get expected count by querying manually for comparison
-            db = translator.db
-            expected_count = self._get_expected_manual_task_count(db)
-
-            print(f"\n✅ Expected: {expected_count} manual task instance(s) for demo_owner_user")
-            print(f"✅ Actual: {len(results)} record(s)")
-
+            print(f"\n✅ Expected: {expected_count} | Actual: {len(results)}")
             if len(results) == expected_count:
-                print(f"🎉 Perfect match! SQL translator correctly handled complex multi-table query")
+                print(f"🎉 Perfect match! Complex multi-table query handled correctly")
             else:
-                print(f"⚠️  Count mismatch - may indicate complex relationship handling")
+                print(f"⚠️  Count difference may indicate complex relationship handling")
 
         except Exception as e:
-            print(f"❌ Error executing complex query: {e}")
-            print(f"   This demonstrates the complexity of multi-table relationship queries")
+            print(f"❌ Error: {e}")
+            print(f"   (Complex multi-table relationships can be challenging)")
 
     def _get_demo_user_id(self, username: str) -> str:
         """Get the ID of a demo user by username."""

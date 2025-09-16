@@ -40,9 +40,7 @@ class TestSQLTranslatorIntegration:
         query = translator.generate_query_from_condition(condition)
 
         # Let's also check what users actually exist in the database
-        all_users_query = translator.db.query(
-            translator.get_orm_model_by_table_name("fidesuser")
-        )
+        all_users_query = translator.db.query(translator._model_cache["fidesuser"])
         all_users = all_users_query.all()
         results = query.all()
 

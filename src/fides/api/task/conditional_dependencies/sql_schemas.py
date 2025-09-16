@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, text
+from sqlalchemy import Column, bindparam
 
 from fides.api.task.conditional_dependencies.schemas import Operator
 
@@ -30,12 +30,12 @@ def _handle_list_contains(col: Column, val: Any) -> Column:
     # For single values, we need to handle different column types
     # Check if this is a PostgreSQL array column
     if hasattr(col.type, "item_type") or str(col.type).startswith("ARRAY"):
-        # This is a PostgreSQL array - use the @> containment operator
-        # @> checks if the left array contains the right array/element
-        # Create a PostgreSQL array literal with proper type casting
-        # Cast to character varying[] to match the column type
-        array_literal = text(f"ARRAY['{val}']::character varying[]")
-        return col.op("@>")(array_literal)
+        # This is a PostgreSQL array - use the ANY operator with proper parameter binding
+        # This is safer and prevents SQL injection
+        from sqlalchemy import any_
+
+        param = bindparam("array_val", val)
+        return param == any_(col)
 
     # Try JSON containment for JSONB/JSON columns
     try:
@@ -108,7 +108,7 @@ class FieldAddress(BaseModel):
 
         if self.json_path is None:
             # This should never happen
-            raise SQLTranslationError("Field address internal error.")
+            raise SQLTranslationError("Field address internal error.")  # pragma: no cover
 
         # Build PostgreSQL JSON path: column->'path'->'path'->>'final_path'
         if self.json_path and len(self.json_path) == 1:
@@ -126,6 +126,26 @@ class FieldAddress(BaseModel):
         return f"{self.column_name}{''.join(path_parts)}"
 
     @classmethod
+    def _parse_parts_to_components(cls, parts: list[str]) -> tuple[str, str, Optional[list[str]]]:
+        """
+        Parse a list of parts into table_name, column_name, and json_path components.
+
+        Args:
+            parts: List of address parts (e.g., ["table", "column", "path1", "path2"])
+
+        Returns:
+            Tuple of (table_name, column_name, json_path)
+        """
+        if len(parts) < 2:
+            return "", parts[0] if parts else "", None
+
+        table_name = parts[0]
+        column_name = parts[1]
+        json_path = parts[2:] if len(parts) > 2 else None
+
+        return table_name, column_name, json_path
+
+    @classmethod
     def parse(cls, field_address: str) -> "FieldAddress":
         """
         Parse a field address into components
@@ -138,30 +158,22 @@ class FieldAddress(BaseModel):
         """
         if ":" in field_address:
             # Format: table:column or dataset:collection:field
-            parts = field_address.split(":")
-            if len(parts) >= 2:
-                table_name = parts[0]
-                column_name = ":".join(parts[1:])  # Join remaining parts
-                return cls(
-                    table_name=table_name,
-                    column_name=column_name,
-                    json_path=None,
-                    full_address=field_address,
-                )
+            # Handle colon-separated format first, then check for dots in the remaining parts
+            colon_parts = field_address.split(":")
+            if len(colon_parts) >= 2:
+                table_name = colon_parts[0]
+                remaining = ":".join(colon_parts[1:])  # Join remaining parts
 
-        if "." in field_address:
-            # Format: table.column or table.json_column.path.subpath
-            parts = field_address.split(".")
-            if len(parts) >= 2:
-                table_name = parts[0]
-                if len(parts) == 2:
-                    # Simple: table.column
-                    column_name = parts[1]
-                    json_path = None
+                # Check if the remaining part has dots (JSON path)
+                if "." in remaining:
+                    # Mixed format: table:column.path1.path2
+                    dot_parts = remaining.split(".")
+                    parts = [table_name] + dot_parts
                 else:
-                    # JSON path: table.json_column.path.subpath
-                    column_name = parts[1]  # Base column name
-                    json_path = parts[2:]  # JSON path components
+                    # Pure colon format: table:column or table:column:path1:path2
+                    parts = colon_parts
+
+                table_name, column_name, json_path = cls._parse_parts_to_components(parts)
 
                 return cls(
                     table_name=table_name,
@@ -169,6 +181,18 @@ class FieldAddress(BaseModel):
                     json_path=json_path,
                     full_address=field_address,
                 )
+
+        if "." in field_address:
+            # Format: table.column or table.json_column.path.subpath
+            parts = field_address.split(".")
+            table_name, column_name, json_path = cls._parse_parts_to_components(parts)
+
+            return cls(
+                table_name=table_name,
+                column_name=column_name,
+                json_path=json_path,
+                full_address=field_address,
+            )
 
         # Simple column name without table
         return cls(

@@ -130,21 +130,21 @@ class TestFieldAddress:
             param(
                 "dataset:collection:field",
                 "dataset",
-                "collection:field",
-                None,
+                "collection",
+                ["field"],
                 "dataset:collection:field",
-                "collection:field",
-                "collection:field",
+                "collection->>'field'",
+                "collection",
                 id="simple_table_column_with_colons",
             ),
             param(
                 "dataset:collection.field",
                 "dataset",
-                "collection.field",
-                None,
+                "collection",
+                ["field"],
                 "dataset:collection.field",
-                "collection.field",
-                "collection.field",
+                "collection->>'field'",
+                "collection",
                 id="simple_table_column_with_colons_dots",
             ),
             param(
@@ -193,6 +193,53 @@ class TestFieldAddress:
         field_addr = FieldAddress.parse(field_address)
         assert field_addr.table_name == expected_table_name
         assert field_addr.column_name == expected_column_name
+
+    def test_parse_parts_to_components_empty_list(self):
+        """Test _parse_parts_to_components with empty list"""
+        table_name, column_name, json_path = FieldAddress._parse_parts_to_components([])
+        assert table_name == ""
+        assert column_name == ""
+        assert json_path is None
+
+    def test_parse_parts_to_components_single_part(self):
+        """Test _parse_parts_to_components with single part"""
+        table_name, column_name, json_path = FieldAddress._parse_parts_to_components(["column"])
+        assert table_name == ""
+        assert column_name == "column"
+        assert json_path is None
+
+    def test_parse_parts_to_components_two_parts(self):
+        """Test _parse_parts_to_components with two parts"""
+        table_name, column_name, json_path = FieldAddress._parse_parts_to_components(["table", "column"])
+        assert table_name == "table"
+        assert column_name == "column"
+        assert json_path is None
+
+    def test_parse_parts_to_components_multiple_parts(self):
+        """Test _parse_parts_to_components with multiple parts"""
+        table_name, column_name, json_path = FieldAddress._parse_parts_to_components(["table", "column", "path1", "path2"])
+        assert table_name == "table"
+        assert column_name == "column"
+        assert json_path == ["path1", "path2"]
+
+    @pytest.mark.parametrize(
+        "field_address, expected_table_name, expected_column_name, expected_json_path",
+        [
+            param(":", "", "", None, id="single_colon"),
+            param("table:", "table", "", None, id="table_with_trailing_colon"),
+            param(":column", "", "column", None, id="leading_colon"),
+            param("table:column:path1:path2:path3", "table", "column", ["path1", "path2", "path3"], id="many_colons"),
+            param("table:column.path1.path2", "table", "column", ["path1", "path2"], id="colon_then_dots"),
+            param("table:column.path1:path2", "table", "column", ["path1:path2"], id="mixed_colon_dot_colon"),
+        ],
+    )
+    def test_complex_parsing_edge_cases(self, field_address, expected_table_name, expected_column_name, expected_json_path):
+        """Test complex parsing edge cases"""
+        field_addr = FieldAddress.parse(field_address)
+        assert field_addr.table_name == expected_table_name
+        assert field_addr.column_name == expected_column_name
+        assert field_addr.json_path == expected_json_path
+        assert field_addr.full_address == field_address
 
 
 class TestOperatorMap:
