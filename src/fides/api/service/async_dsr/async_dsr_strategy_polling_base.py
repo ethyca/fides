@@ -31,7 +31,6 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
         self.status_completed_value = configuration.status_completed_value
         self.result_request = configuration.result_request
         self.result_path = configuration.result_path
-        self.request_id_config = configuration.request_id_config
 
     def execute_initial_request(
         self,
