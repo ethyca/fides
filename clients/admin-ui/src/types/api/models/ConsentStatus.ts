@@ -12,7 +12,5 @@ export enum ConsentStatus {
   WITHOUT_CONSENT = "without_consent",
   EXEMPT = "exempt",
   UNKNOWN = "unknown",
-  PRE_CONSENT = "pre_consent",
-  CMP_ERROR = "cmp_error",
   NOT_APPLICABLE = "not_applicable",
 }
