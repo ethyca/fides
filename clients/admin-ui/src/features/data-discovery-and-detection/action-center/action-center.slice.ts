@@ -343,6 +343,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Monitor Tasks"],
     }),
+    retryMonitorTask: build.mutation<
+      { message: string; task_id: string; new_celery_id: string; status: string },
+      { taskId: string }
+    >({
+      query: ({ taskId }) => ({
+        url: `/monitor-tasks/${taskId}/retry`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Monitor Tasks"],
+    }),
   }),
 });
 
@@ -361,4 +371,5 @@ export const {
   useGetConsentBreakdownQuery,
   useGetWebsiteMonitorResourceFiltersQuery,
   useGetInProgressMonitorTasksQuery,
+  useRetryMonitorTaskMutation,
 } = actionCenterApi;

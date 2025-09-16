@@ -5,12 +5,15 @@ import {
   AntPopover as Popover,
   AntTag as Tag,
   AntTypography as Typography,
+  useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
 
 import { formatDate } from "~/features/common/utils";
 import { DATA_DISCOVERY_ROUTE_DETAIL } from "~/features/common/nav/routes";
 import { MonitorTaskInProgressResponse } from "~/types/api";
+
+import { useRetryMonitorTaskMutation } from "../action-center.slice";
 
 const { Text, Title } = Typography;
 
@@ -31,6 +34,8 @@ export const InProgressMonitorTaskItem = ({
   ...props
 }: InProgressMonitorTaskItemProps) => {
   const router = useRouter();
+  const toast = useToast();
+  const [retryMonitorTask, { isLoading: isRetrying }] = useRetryMonitorTaskMutation();
 
   const getTaskTypeColor = (taskType?: string) => {
     switch (taskType) {
@@ -61,6 +66,22 @@ export const InProgressMonitorTaskItem = ({
   const formatText = (text?: string) => {
     if (!text) return "Unknown";
     return formatStatusForDisplay(text);
+  };
+
+  const handleRetryTask = async () => {
+    try {
+      await retryMonitorTask({ taskId: task.id }).unwrap();
+      toast({
+        status: "success",
+        description: "Task retry initiated successfully",
+      });
+    } catch (error: any) {
+      const errorMessage = error?.data?.detail || error?.message || "Unknown error occurred";
+      toast({
+        status: "error",
+        description: `Failed to retry task: ${errorMessage}`,
+      });
+    }
   };
 
   const handleSingleResourceClick = (urn: string) => {
@@ -144,10 +165,23 @@ export const InProgressMonitorTaskItem = ({
               renderMultipleResourcesPopover(task.staged_resource_urns)
             )
           )}
-        </Flex>
-      </div>
 
-      {/* Line 2: Date */}
+          {/* Retry button for error tasks */}
+          {task.status === "error" && (
+            <Button
+              size="small"
+              type="primary"
+              loading={isRetrying}
+              onClick={handleRetryTask}
+              style={{ marginLeft: "8px" }}
+            >
+              Retry
+            </Button>
+          )}
+                </Flex>
+              </div>
+
+              {/* Line 2: Date */}
       <div>
         <Text type="secondary" style={{ fontSize: "12px" }}>
           {formatDate(task.updated_at)}
