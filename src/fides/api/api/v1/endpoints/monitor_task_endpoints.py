@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, Security
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import and_, or_
@@ -13,6 +13,8 @@ from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.detection_discovery.monitor_task import (
     MonitorTask,
     MonitorTaskType,
+    TaskRunType,
+    update_monitor_task_with_execution_log,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.utils import verify_oauth_client
@@ -146,3 +148,63 @@ def get_in_progress_monitor_tasks(
         total=page_result.total,
         params=params,
     )
+
+
+@router.post(
+    "/monitor-tasks/{task_id}/retry",
+    dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_READ])],
+    status_code=HTTP_200_OK,
+)
+def retry_monitor_task(
+    task_id: str,
+    db: Session = Depends(deps.get_db),
+) -> dict:
+    """
+    Retry a failed monitor task.
+
+    This will:
+    1. Find the task by ID
+    2. Verify it's in an error state
+    3. Reset it to pending status with a new execution ID
+    4. Allow the worker system to pick it up again
+    """
+
+    # Find the task
+    task_record = MonitorTask.get_by(db=db, field="id", value=task_id)
+    if not task_record:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Monitor task with ID {task_id} not found"
+        )
+
+    # Check if task is in an error state
+    # Handle both string and enum representations
+    task_status_str = str(task_record.status)
+    is_error = (
+        task_record.status == ExecutionLogStatus.error.value or
+        task_record.status == ExecutionLogStatus.error or
+        task_status_str == "error" or
+        "error" in task_status_str.lower()
+    )
+
+    if not is_error:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Task is not in error state. Current status: {repr(task_record.status)}"
+        )
+
+    # Retry the task by updating it without a celery_id (creates new execution)
+    updated_task = update_monitor_task_with_execution_log(
+        db=db,
+        status=ExecutionLogStatus.pending,
+        task_record=task_record,
+        message="Task retried manually",
+        run_type=TaskRunType.MANUAL,
+    )
+
+    return {
+        "message": "Task retry initiated successfully",
+        "task_id": updated_task.id,
+        "new_celery_id": updated_task.celery_id,
+        "status": updated_task.status,
+    }
