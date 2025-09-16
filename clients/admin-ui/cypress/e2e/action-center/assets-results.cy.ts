@@ -577,7 +577,7 @@ describe("Action center Asset Results", () => {
           );
         });
 
-        // Check "Without consent" badge for another asset
+        // Check "Pre-consent" badge
         cy.getAntTableRow(rowUrns[2]).within(() => {
           cy.contains("Pre-consent").should("exist");
           cy.getByTestId("status-badge_without-consent").should(
