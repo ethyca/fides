@@ -10,7 +10,7 @@ from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
-
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     AwaitingAsyncTask,
@@ -364,6 +364,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if awaiting_async_processing:
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
+
+            # Use the existing session that the privacy_request is attached to
+            existing_session = Session.object_session(privacy_request)
+            if existing_session:
+                # Set the privacy request status to requires_input to avoid erroring out in requeue_interrupted_tasks
+                privacy_request.status = PrivacyRequestStatus.requires_input
+                privacy_request.save(existing_session)
+            else:
+                # Fallback to creating a new session if no existing session found
+                with get_db() as db:
+                    privacy_request.status = PrivacyRequestStatus.requires_input
+                    privacy_request.save(db)
 
             # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
             raise AwaitingAsyncTask()

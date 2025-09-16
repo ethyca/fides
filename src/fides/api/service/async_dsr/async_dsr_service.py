@@ -127,7 +127,6 @@ def execute_read_polling_requests(
     connector: SaaSConnector,
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
-    logger.info(f"Executing read polling requests for {polling_task}")
     read_requests: List[ReadSaaSRequest] = query_config.get_read_requests_by_identity()
     rows: List[Row] = []
     pending_requests = False
@@ -145,7 +144,6 @@ def execute_read_polling_requests(
                     logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. ")
                     continue
                 param_values = sub_request.param_values
-                logger.info(f"Param values: {param_values}")
 
                 status = strategy.get_status_request(client, param_values)
                 if status:
