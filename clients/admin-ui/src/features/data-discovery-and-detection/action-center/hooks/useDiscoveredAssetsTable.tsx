@@ -3,6 +3,8 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntSpace as Space,
   AntText as Text,
+  formatIsoLocation,
+  isoStringToEntry,
   useToast,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -279,27 +281,37 @@ export const useDiscoveredAssetsTable = ({
             }
           },
         },
-        filters: convertToAntFilters(
-          filterOptions?.locations,
-          (location) =>
-            PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
-            location,
-        ),
+        filters: convertToAntFilters(filterOptions?.locations, (location) => {
+          const isoEntry = isoStringToEntry(location);
+
+          return isoEntry
+            ? formatIsoLocation({ isoEntry })
+            : (PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+                location);
+        }),
         filteredValue: columnFilters?.locations || null,
-        render: (locations: PrivacyNoticeRegion[]) => (
-          <TagExpandableCell
-            values={
-              locations?.map((location) => ({
-                label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
-                key: location,
-              })) ?? []
-            }
-            columnState={{
-              isExpanded: isLocationsExpanded,
-              version: locationsVersion,
-            }}
-          />
-        ),
+        render: (locations: PrivacyNoticeRegion[]) => {
+          return (
+            <TagExpandableCell
+              values={
+                locations?.map((location) => {
+                  const isoEntry = isoStringToEntry(location);
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry })
+                      : (PRIVACY_NOTICE_REGION_RECORD[location] ??
+                        location) /* fallback on internal list for now */,
+                    key: location,
+                  };
+                }) ?? []
+              }
+              columnState={{
+                isExpanded: isLocationsExpanded,
+                version: locationsVersion,
+              }}
+            />
+          );
+        },
       },
       {
         title: "Domain",
