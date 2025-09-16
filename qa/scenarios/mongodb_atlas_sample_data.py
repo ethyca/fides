@@ -14,7 +14,11 @@ import yaml
 from bson import Binary
 from pymongo import MongoClient
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../tests/ops/integration_tests/mongodb_atlas'))
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__), "../../tests/ops/integration_tests/mongodb_atlas"
+    )
+)
 from mongo_sample import mongo_sample_data
 from utils import QATestScenario
 
@@ -25,18 +29,22 @@ def load_dataset_configs():
     script_dir = Path(__file__).parent
     fides_root = script_dir.parent.parent
 
-    postgres_dataset_path = fides_root / "data" / "dataset" / "postgres_example_test_dataset.yml"
-    mongo_dataset_path = fides_root / "data" / "dataset" / "mongo_example_test_dataset.yml"
+    postgres_dataset_path = (
+        fides_root / "data" / "dataset" / "postgres_example_test_dataset.yml"
+    )
+    mongo_dataset_path = (
+        fides_root / "data" / "dataset" / "mongo_example_test_dataset.yml"
+    )
 
     # Load postgres dataset
-    with open(postgres_dataset_path, 'r') as f:
+    with open(postgres_dataset_path, "r") as f:
         postgres_data = yaml.safe_load(f)
 
     # Load mongo dataset
-    with open(mongo_dataset_path, 'r') as f:
+    with open(mongo_dataset_path, "r") as f:
         mongo_data = yaml.safe_load(f)
 
-    return postgres_data['dataset'][0], mongo_data['dataset'][0]
+    return postgres_data["dataset"][0], mongo_data["dataset"][0]
 
 
 def create_qa_datasets(postgres_dataset_key, mongo_dataset_key):
@@ -50,13 +58,17 @@ def create_qa_datasets(postgres_dataset_key, mongo_dataset_key):
     postgres_dataset_config = copy.deepcopy(postgres_dataset_config)
     postgres_dataset_config["fides_key"] = postgres_dataset_key
     postgres_dataset_config["name"] = f"QA {postgres_dataset_config['name']}"
-    postgres_dataset_config["description"] = f"QA version of {postgres_dataset_config['description']}"
+    postgres_dataset_config[
+        "description"
+    ] = f"QA version of {postgres_dataset_config['description']}"
 
     # Update mongo dataset with QA key and replace all references
     mongo_dataset_config = copy.deepcopy(mongo_dataset_config)
     mongo_dataset_config["fides_key"] = mongo_dataset_key
     mongo_dataset_config["name"] = f"QA {mongo_dataset_config['name']}"
-    mongo_dataset_config["description"] = f"QA version of {mongo_dataset_config['description']}"
+    mongo_dataset_config[
+        "description"
+    ] = f"QA version of {mongo_dataset_config['description']}"
 
     # Recursively replace all dataset references with QA keys
     def replace_dataset_references(obj):
@@ -135,7 +147,6 @@ class MongoDBAtlasSampleData(QATestScenario):
         try:
             if lock_file_path.exists():
                 lock_file_path.unlink()
-                print("Removed lock file after successful cleanup")
         except Exception as e:
             print(f"Could not remove lock file: {e}")
 
@@ -163,7 +174,9 @@ class MongoDBAtlasSampleData(QATestScenario):
                 env_config[var] = value
 
         if missing_vars:
-            error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
+            error_msg = (
+                f"Missing required environment variables: {', '.join(missing_vars)}"
+            )
             self.error(error_msg)
             raise ValueError(error_msg)
 
@@ -221,10 +234,14 @@ class MongoDBAtlasSampleData(QATestScenario):
             if documents:  # Only insert if there are documents
                 result = collection.insert_many(documents)
                 inserted_counts[collection_name] = len(result.inserted_ids)
-                self.info(f"  Inserted {len(result.inserted_ids)} documents into '{collection_name}'")
+                self.info(
+                    f"  Inserted {len(result.inserted_ids)} documents into '{collection_name}'"
+                )
             else:
                 inserted_counts[collection_name] = 0
-                self.info(f"  No documents to insert for collection '{collection_name}'")
+                self.info(
+                    f"  No documents to insert for collection '{collection_name}'"
+                )
 
         return inserted_counts
 
@@ -237,7 +254,7 @@ class MongoDBAtlasSampleData(QATestScenario):
             "description": "Test PostgreSQL system to support MongoDB Atlas graph references",
             "system_type": "Database",
             "privacy_declarations": [],
-            "system_dependencies": []
+            "system_dependencies": [],
         }
 
         try:
@@ -250,7 +267,9 @@ class MongoDBAtlasSampleData(QATestScenario):
 
     def _create_postgres_dataset(self):
         """Create PostgreSQL dataset using actual YAML configuration."""
-        postgres_dataset, _ = create_qa_datasets(self.postgres_dataset_key, self.mongo_dataset_key)
+        postgres_dataset, _ = create_qa_datasets(
+            self.postgres_dataset_key, self.mongo_dataset_key
+        )
         postgres_dataset["organization_fides_key"] = "default_organization"
 
         try:
@@ -274,13 +293,17 @@ class MongoDBAtlasSampleData(QATestScenario):
                 "port": 6432,
                 "dbname": "postgres_example",
                 "username": "postgres",
-                "password": "postgres"
-            }
+                "password": "postgres",
+            },
         }
 
         try:
-            response = self.api.create_system_connection(self.postgres_system_name, postgres_connection)
-            self.success(f"PostgreSQL connection '{self.postgres_connection_key}' created and linked to system")
+            response = self.api.create_system_connection(
+                self.postgres_system_name, postgres_connection
+            )
+            self.success(
+                f"PostgreSQL connection '{self.postgres_connection_key}' created and linked to system"
+            )
             return response
         except Exception as e:
             self.error(f"Failed to create PostgreSQL connection: {e}")
@@ -295,7 +318,7 @@ class MongoDBAtlasSampleData(QATestScenario):
             "description": f"QA MongoDB Atlas system with sample data (Database: {self.unique_db_name})",
             "system_type": "Database",
             "privacy_declarations": [],
-            "system_dependencies": []
+            "system_dependencies": [],
         }
 
         try:
@@ -308,7 +331,9 @@ class MongoDBAtlasSampleData(QATestScenario):
 
     def _create_mongo_dataset(self):
         """Create MongoDB dataset using actual YAML configuration."""
-        _, mongo_dataset = create_qa_datasets(self.postgres_dataset_key, self.mongo_dataset_key)
+        _, mongo_dataset = create_qa_datasets(
+            self.postgres_dataset_key, self.mongo_dataset_key
+        )
         mongo_dataset["organization_fides_key"] = "default_organization"
 
         try:
@@ -334,12 +359,16 @@ class MongoDBAtlasSampleData(QATestScenario):
                 "defaultauthdb": os.getenv("MONGODB_ATLAS_DEFAULT_AUTH_DB"),
                 "use_srv": True,
                 "ssl_enabled": True,
-            }
+            },
         }
 
         try:
-            response = self.api.create_system_connection(self.system_name, connection_data)
-            self.success(f"Connection '{self.connection_key}' created and linked to system")
+            response = self.api.create_system_connection(
+                self.system_name, connection_data
+            )
+            self.success(
+                f"Connection '{self.connection_key}' created and linked to system"
+            )
             return response
         except Exception as e:
             self.error(f"Failed to create connection: {e}")
@@ -349,12 +378,20 @@ class MongoDBAtlasSampleData(QATestScenario):
         """Link datasets to their respective connections."""
         try:
             # Link MongoDB dataset to MongoDB connection
-            self.api.link_datasets_to_connection(self.connection_key, [self.mongo_dataset_key])
-            self.success(f"MongoDB dataset '{self.mongo_dataset_key}' linked to connection '{self.connection_key}'")
+            self.api.link_datasets_to_connection(
+                self.connection_key, [self.mongo_dataset_key]
+            )
+            self.success(
+                f"MongoDB dataset '{self.mongo_dataset_key}' linked to connection '{self.connection_key}'"
+            )
 
             # Link PostgreSQL dataset to PostgreSQL connection
-            self.api.link_datasets_to_connection(self.postgres_connection_key, [self.postgres_dataset_key])
-            self.success(f"PostgreSQL dataset '{self.postgres_dataset_key}' linked to connection '{self.postgres_connection_key}'")
+            self.api.link_datasets_to_connection(
+                self.postgres_connection_key, [self.postgres_dataset_key]
+            )
+            self.success(
+                f"PostgreSQL dataset '{self.postgres_dataset_key}' linked to connection '{self.postgres_connection_key}'"
+            )
 
         except Exception as e:
             self.warning(f"Failed to link datasets to connections: {e}")
@@ -365,7 +402,9 @@ class MongoDBAtlasSampleData(QATestScenario):
 
         unique_suffix = self._create_unique_suffix()
         self.unique_db_name = f"mongo_qa_{unique_suffix}"
-        print(f"Setting up MongoDB Atlas integration using actual YAML datasets and sample data (MongoDB Atlas Database: {self.unique_db_name})")
+        print(
+            f"Setting up MongoDB Atlas integration using actual YAML datasets and sample data (MongoDB Atlas Database: {self.unique_db_name})"
+        )
 
         try:
             # Step 1: Validate environment variables
@@ -382,12 +421,19 @@ class MongoDBAtlasSampleData(QATestScenario):
 
             # Step 3: Seed sample data using the actual mongo_sample.py data
             self.mongo_dataset_key = self.unique_db_name
-            self.step(3, f"Seeding sample data from mongo_sample.py into database: {self.unique_db_name}")
+            self.step(
+                3,
+                f"Seeding sample data from mongo_sample.py into database: {self.unique_db_name}",
+            )
             sample_data = self._get_sample_data()
-            inserted_counts = self._seed_sample_data(self.mongo_client, self.unique_db_name, sample_data)
+            inserted_counts = self._seed_sample_data(
+                self.mongo_client, self.unique_db_name, sample_data
+            )
 
             total_documents = sum(inserted_counts.values())
-            self.success(f"Successfully seeded {total_documents} total documents across {len(inserted_counts)} collections")
+            self.success(
+                f"Successfully seeded {total_documents} total documents across {len(inserted_counts)} collections"
+            )
 
             # Step 4: Create PostgreSQL system (needed for graph references)
             self.step(4, "Creating PostgreSQL system")
@@ -423,8 +469,12 @@ class MongoDBAtlasSampleData(QATestScenario):
             self.info(f"Connection: {self.connection_key}")
             self.info(f"MongoDB Dataset: {self.mongo_dataset_key}")
             self.info(f"PostgreSQL Dataset: {self.postgres_dataset_key}")
-            self.info(f"Lock file: ~/.fides_mongodb_atlas_qa.lock (preserves unique suffix for teardown)")
-            self.info(f"You can now run access and erasure requests for jane@example.com")
+            self.info(
+                f"Lock file: ~/.fides_mongodb_atlas_qa.lock (preserves unique suffix for teardown)"
+            )
+            self.info(
+                f"You can now run access and erasure requests for jane@example.com"
+            )
 
             return True
 
@@ -488,9 +538,13 @@ class MongoDBAtlasSampleData(QATestScenario):
                 if unique_suffix:
                     unique_mongo_dataset_key = f"mongo_qa_{unique_suffix}"
                     self.api.delete_dataset(unique_mongo_dataset_key)
-                    self.success(f"MongoDB dataset '{unique_mongo_dataset_key}' deleted")
+                    self.success(
+                        f"MongoDB dataset '{unique_mongo_dataset_key}' deleted"
+                    )
                 else:
-                    self.warning(" No unique suffix found, skipping MongoDB dataset cleanup")
+                    self.warning(
+                        " No unique suffix found, skipping MongoDB dataset cleanup"
+                    )
             except Exception as e:
                 self.warning(f"Failed to delete MongoDB dataset: {e}")
                 success = False
@@ -515,19 +569,21 @@ class MongoDBAtlasSampleData(QATestScenario):
 
             try:
                 self.api.delete_system(self.postgres_system_name)
-                self.success(
-                    f"PostgreSQL system '{self.postgres_system_name}' deleted"
-                )
+                self.success(f"PostgreSQL system '{self.postgres_system_name}' deleted")
             except Exception as e:
                 self.warning(f"Failed to delete PostgreSQL system: {e}")
                 success = False
 
             if success:
-                self.success("✅ All MongoDB Atlas QA resources cleaned up successfully!")
+                self.success(
+                    "✅ All MongoDB Atlas QA resources cleaned up successfully!"
+                )
                 # Remove lock file after successful cleanup
                 self._remove_lock_file()
             else:
-                self.warning("⚠️ Some cleanup operations failed - manual cleanup may be required")
+                self.warning(
+                    "⚠️ Some cleanup operations failed - manual cleanup may be required"
+                )
                 self.warning("Lock file preserved for potential retry")
 
             return success
