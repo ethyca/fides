@@ -29,15 +29,21 @@ def translator(db):
 class TestSQLTranslatorIntegration:
     """Integration tests for SQL translator against real database using existing fixtures"""
 
-    def test_basic_user_query(self, translator, user):
+    def test_basic_user_query(self, translator, respondent):
         """Test basic user query with existing user fixture"""
         condition = ConditionLeaf(
             field_address="fidesuser.email_address",
             operator=Operator.eq,
-            value=user.email_address,
+            value=respondent.email_address,
         )
 
         query = translator.generate_query_from_condition(condition)
+
+        # Let's also check what users actually exist in the database
+        all_users_query = translator.db.query(
+            translator.get_orm_model_by_table_name("fidesuser")
+        )
+        all_users = all_users_query.all()
         results = query.all()
 
         # Should find exactly one user
@@ -57,7 +63,7 @@ class TestSQLTranslatorIntegration:
         # Should find exactly one privacy request
         assert len(results) == 1
 
-    def test_string_operations(self, translator, user):
+    def test_string_operations(self, translator, respondent):
         """Test string operations with user data"""
 
         # Test contains
@@ -73,7 +79,7 @@ class TestSQLTranslatorIntegration:
         # Should find users with email addresses containing @
         assert len(results) >= 1
 
-    def test_existence_operators(self, translator, user):
+    def test_existence_operators(self, translator, respondent):
         """Test existence operators"""
 
         # Test exists - should find users with email addresses
@@ -111,7 +117,7 @@ class TestSQLTranslatorIntegration:
         # Should find exactly one privacy request matching both conditions
         assert len(results) == 1
 
-    def test_limit_and_offset(self, translator, user):
+    def test_limit_and_offset(self, translator, respondent):
         """Test LIMIT and OFFSET functionality"""
         condition = ConditionLeaf(
             field_address="fidesuser.email_address", operator=Operator.exists
@@ -191,7 +197,7 @@ class TestSQLTranslatorIntegration:
         )
 
         with pytest.raises(SQLTranslationError, match="Table name not specified"):
-            translator.analyze_tables_in_condition(condition)
+            translator.map_tables_to_fields(condition)
 
     def test_sql_injection_protection(self, translator):
         """Test that SQL injection attempts are properly handled"""
@@ -208,14 +214,16 @@ class TestSQLTranslatorIntegration:
         results = query.all()
         assert len(results) == 0
 
-    def test_multi_table_analysis(self, translator, user, privacy_request):
+    def test_multi_table_analysis(self, translator, respondent, privacy_request):
         """Test analysis of multi-table conditions"""
         # Create a condition that spans multiple tables
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
-                    field_address="fidesuser.id", operator=Operator.eq, value=user.id
+                    field_address="fidesuser.id",
+                    operator=Operator.eq,
+                    value=respondent.id,
                 ),
                 ConditionLeaf(
                     field_address="privacyrequest.id",
@@ -226,7 +234,7 @@ class TestSQLTranslatorIntegration:
         )
 
         # Test table analysis
-        tables_to_fields = translator.analyze_tables_in_condition(condition)
+        tables_to_fields = translator.map_tables_to_fields(condition)
 
         assert "fidesuser" in tables_to_fields
         assert "privacyrequest" in tables_to_fields
@@ -280,8 +288,8 @@ class TestEmailNotificationUseCase:
             ],
         )
 
-        # Test that we can analyze this complex condition
-        tables_to_fields = translator.analyze_tables_in_condition(email_condition)
+        # Test that we can map this complex condition
+        tables_to_fields = translator.map_tables_to_fields(email_condition)
 
         expected_tables = {
             "privacyrequest",
@@ -345,7 +353,7 @@ class TestEmailNotificationUseCase:
         )
 
         # This should not raise an error during analysis
-        tables_to_fields = translator.analyze_tables_in_condition(condition)
+        tables_to_fields = translator.map_tables_to_fields(condition)
         assert "fidesuser" in tables_to_fields
         assert "privacyrequest" in tables_to_fields
 

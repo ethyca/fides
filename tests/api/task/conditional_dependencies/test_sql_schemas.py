@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 from pytest import param
@@ -60,17 +60,26 @@ class TestHandleListContains:
 
     def test_handle_list_contains_exception_fallback(self):
         """Test _handle_list_contains fallback to LIKE when contains() fails"""
-        # Mock a column that raises an exception on contains()
-        mock_column = Mock()
-        mock_column.contains.side_effect = Exception("Contains not supported")
-        mock_column.like.return_value = "LIKE result"
+        # Use a real SQLAlchemy column to avoid Mock attribute issues
+        from sqlalchemy import String
 
-        result = _handle_list_contains(mock_column, "test_value")
+        real_column = Column(String, name="test_column")
 
-        # Should fallback to LIKE
-        mock_column.contains.assert_called_once_with("test_value")
-        mock_column.like.assert_called_once_with("%test_value%")
-        assert result == "LIKE result"
+        # Mock the contains and like methods on the real column
+        with (
+            patch.object(real_column, "contains") as mock_contains,
+            patch.object(real_column, "like") as mock_like,
+        ):
+
+            mock_contains.side_effect = Exception("Contains not supported")
+            mock_like.return_value = "LIKE result"
+
+            result = _handle_list_contains(real_column, "test_value")
+
+            # Should fallback to LIKE
+            mock_contains.assert_called_once_with("test_value")
+            mock_like.assert_called_once_with("%test_value%")
+            assert result == "LIKE result"
 
 
 class TestFieldAddress:

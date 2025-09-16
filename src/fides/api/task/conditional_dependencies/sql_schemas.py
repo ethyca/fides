@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Column
+from sqlalchemy import Column, text
 
 from fides.api.task.conditional_dependencies.schemas import Operator
 
@@ -26,10 +26,19 @@ def _handle_list_contains(col: Column, val: Any) -> Column:
     if isinstance(val, list):
         # If value is a list, check if column value is IN the list
         return col.in_(val)
-    # For single values, assume it's checking if column contains the value
-    # This works for JSON arrays, ARRAY columns, or string LIKE operations
+
+    # For single values, we need to handle different column types
+    # Check if this is a PostgreSQL array column
+    if hasattr(col.type, "item_type") or str(col.type).startswith("ARRAY"):
+        # This is a PostgreSQL array - use the @> containment operator
+        # @> checks if the left array contains the right array/element
+        # Create a PostgreSQL array literal with proper type casting
+        # Cast to character varying[] to match the column type
+        array_literal = text(f"ARRAY['{val}']::character varying[]")
+        return col.op("@>")(array_literal)
+
+    # Try JSON containment for JSONB/JSON columns
     try:
-        # Try JSON containment first (PostgreSQL)
         return col.contains(val)
     except Exception:
         # Fallback to LIKE for string columns

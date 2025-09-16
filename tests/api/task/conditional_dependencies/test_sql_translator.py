@@ -4,7 +4,7 @@ Tests for the enhanced SQLAlchemy-based SQLConditionTranslator
 
 import operator
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, Mock, create_autospec, patch
+from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 from pytest import param
@@ -12,7 +12,11 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList, Grouping
+from sqlalchemy.sql.selectable import Exists
 
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
@@ -25,94 +29,36 @@ from fides.api.task.conditional_dependencies.sql_translator import (
     SQLTranslationError,
 )
 
-# Mock models for testing
 TestBase = declarative_base()
 
-
-@pytest.fixture
-def mock_db():
-    """Create a mock SQLAlchemy session"""
-    db = create_autospec(Session, spec_set=True)
-    return db
-
-
-class MockUser(TestBase):
-    __tablename__ = "fidesuser"
-    id = Column(String, primary_key=True)
-    username = Column(String)
-    email_address = Column(String)
-    disabled = Column(Boolean)
-    role = Column(String)
-    status = Column(String)
-
-
-class MockPrivacyRequest(TestBase):
-    __tablename__ = "privacyrequest"
-    id = Column(String, primary_key=True)
-    due_date = Column(DateTime)
-    status = Column(String)
-    client_id = Column(String)
-
-
-class MockProfile(TestBase):
-    __tablename__ = "profile"
-    id = Column(String, primary_key=True)
-    verified = Column(Boolean)
-    age = Column(Integer)
-    country = Column(String)
+MOCK_QUERY = Mock()
+MOCK_PRIMARY_MODEL = Mock()
+MOCK_MODEL_CLASS = Mock()
 
 
 @pytest.fixture
-def mock_registry():
-    """Create a mock ORM registry with test models"""
-    registry = Mock()
-
-    # Mock mappers for our test models
-    user_mapper = Mock()
-    user_mapper.class_ = MockUser
-
-    privacy_request_mapper = Mock()
-    privacy_request_mapper.class_ = MockPrivacyRequest
-
-    profile_mapper = Mock()
-    profile_mapper.class_ = MockProfile
-
-    registry.mappers = [
-        user_mapper,
-        privacy_request_mapper,
-        profile_mapper,
-    ]
-
-    return registry
-
-
-@pytest.fixture
-def translator(mock_db, mock_registry):
+def translator(db):
     """Create a translator instance with mocked dependencies"""
-    translator = SQLConditionTranslator(db=mock_db)
-
-    # Mock the registry access
-    translator.orm_registry = Mock()
-    translator.orm_registry.registry = mock_registry
-
-    return translator
+    return SQLConditionTranslator(db=db)
 
 
 @pytest.fixture
 def condition_leaf_role():
+    """Condition leaf for role - this is a relationship condition"""
     return ConditionLeaf(
-        field_address="fidesuser.role",
-        operator=Operator.eq,
-        value="admin",
+        field_address="fidesuser.permissions.roles",
+        operator=Operator.list_contains,
+        value="approver",
     )
 
 
 @pytest.fixture
 def condition_leaf_user_status():
+    """Condition leaf for disabled - this is a regular column condition"""
     return ConditionLeaf(
-        field_address="fidesuser.status",
+        field_address="fidesuser.disabled",
         operator=Operator.eq,
-        value="active",
+        value=False,
     )
 
 
@@ -137,15 +83,29 @@ def condition_leaf_email_address():
 class TestSQLConditionTranslator:
     """Test the enhanced SQLAlchemy-based SQLConditionTranslator"""
 
-    def test_constructor_requires_db(self, mock_db):
+    def test_constructor_requires_db(self, db):
         """Test that constructor requires a db session"""
-        translator = SQLConditionTranslator(db=mock_db)
-        assert translator.db == mock_db
+        translator = SQLConditionTranslator(db=db)
+        assert translator.db == db
+        assert translator.orm_registry is not None
 
         with pytest.raises(TypeError) as exc_info:
             SQLConditionTranslator()
 
         assert "db" in str(exc_info.value)
+
+    def test_init_with_custom_orm_registry(self, db):
+        """Test SQLConditionTranslator initialization with custom ORM registry"""
+        custom_registry = {"custom_table": Mock()}
+
+        translator = SQLConditionTranslator(db, orm_registry=custom_registry)
+
+        assert translator.db == db
+        assert translator.orm_registry == custom_registry
+
+
+class TestExtractFieldAddresses:
+    """Test extracting field addresses from a condition"""
 
     def test_extract_field_addresses_single_condition(
         self, translator, condition_leaf_role
@@ -156,7 +116,8 @@ class TestSQLConditionTranslator:
         assert len(field_addresses) == 1
         field_addr = list(field_addresses)[0]
         assert field_addr.table_name == "fidesuser"
-        assert field_addr.column_name == "role"
+        assert field_addr.column_name == "permissions"
+        assert field_addr.json_path == ["roles"]
 
     def test_extract_field_addresses_group_condition(
         self, translator, condition_leaf_role, condition_leaf_request_status
@@ -173,7 +134,26 @@ class TestSQLConditionTranslator:
         table_names = {addr.table_name for addr in field_addresses}
         assert table_names == {"fidesuser", "privacyrequest"}
 
-    def test_analyze_tables_in_condition(
+    def test_json_path_field_handling(self, translator):
+        """Test handling of JSON path fields"""
+        condition = ConditionLeaf(
+            field_address="fidesuser.profile.name",
+            operator=Operator.eq,
+            value="John Doe",
+        )
+
+        field_addresses = translator.extract_field_addresses(condition)
+        field_addr = list(field_addresses)[0]
+
+        assert field_addr.table_name == "fidesuser"
+        assert field_addr.column_name == "profile"
+        assert field_addr.json_path == ["name"]
+
+
+class TestMapTablesToFields:
+    """Test mapping tables to fields"""
+
+    def test_map_tables_to_fields(
         self,
         translator,
         condition_leaf_role,
@@ -190,7 +170,7 @@ class TestSQLConditionTranslator:
             ],
         )
 
-        tables_to_fields = translator.analyze_tables_in_condition(condition)
+        tables_to_fields = translator.map_tables_to_fields(condition)
 
         assert len(tables_to_fields) == 2
         assert "fidesuser" in tables_to_fields
@@ -198,31 +178,59 @@ class TestSQLConditionTranslator:
         assert len(tables_to_fields["fidesuser"]) == 2
         assert len(tables_to_fields["privacyrequest"]) == 1
 
+    def test_field_address_without_table_raises_error(self, translator):
+        """Test that field addresses without table names raise errors"""
+        condition = ConditionLeaf(
+            field_address="username",  # No table specified
+            operator=Operator.eq,
+            value="approver",
+        )
+
+        with pytest.raises(SQLTranslationError, match="Table name not specified"):
+            translator.map_tables_to_fields(condition)
+
+
+class TestGetOrmModelByTableName:
+    """Test getting ORM model by table name"""
+
     def test_get_orm_model_by_table_name(self, translator):
         """Test getting ORM model by table name"""
         # Populate the model cache for testing
-        translator._model_cache["fidesuser"] = MockUser
+        translator._model_cache["fidesuser"] = FidesUser
 
         # Test successful lookup
         model = translator.get_orm_model_by_table_name("fidesuser")
-        assert model == MockUser
+        assert model == FidesUser
 
         # Test caching
         model2 = translator.get_orm_model_by_table_name("privacyrequest")
-        assert model2 == MockPrivacyRequest
+        assert model2 == PrivacyRequest
         assert "privacyrequest" in translator._model_cache
 
+
+class TestBuildFilterExpression:
+
     def test_build_filter_expression_leaf_condition(
-        self, translator, condition_leaf_role
+        self, translator, condition_leaf_role, condition_leaf_user_status
     ):
         """Test building filter expressions for leaf conditions"""
-        model_classes = {"fidesuser": MockUser}
+        model_classes = {
+            "fidesuser": FidesUser,
+            "fidesuserpermissions": FidesUserPermissions,
+        }
 
+        # This is a relationship condition should return an Exists expression
         filter_expr = translator._build_filter_expression(
             condition_leaf_role, model_classes
         )
+        # The filter should be a SQLAlchemy Exists expression for
+        # relationship conditions with a 1:1 relationship
+        assert isinstance(filter_expr, Exists)
 
-        # The filter should be a SQLAlchemy comparison
+        # This is a regular column condition should return a BinaryExpression
+        filter_expr = translator._build_filter_expression(
+            condition_leaf_user_status, model_classes
+        )
         assert isinstance(filter_expr, BinaryExpression)
 
     def test_build_filter_expression_group_condition(
@@ -234,7 +242,7 @@ class TestSQLConditionTranslator:
             conditions=[condition_leaf_role, condition_leaf_request_status],
         )
 
-        model_classes = {"fidesuser": MockUser, "privacyrequest": MockPrivacyRequest}
+        model_classes = {"fidesuser": FidesUser, "privacyrequest": PrivacyRequest}
 
         filter_expr = translator._build_filter_expression(condition, model_classes)
 
@@ -244,306 +252,6 @@ class TestSQLConditionTranslator:
             assert filter_expr.operator is operator.and_
         else:
             assert str(filter_expr.operator) == "and_"
-
-    @pytest.mark.parametrize(
-        "operator",
-        [
-            Operator.eq,
-            Operator.neq,
-            Operator.contains,
-            Operator.starts_with,
-            Operator.exists,
-            Operator.not_exists,
-            Operator.list_contains,
-            Operator.not_in_list,
-            Operator.starts_with,
-            Operator.ends_with,
-            Operator.contains,
-            Operator.lt,
-            Operator.lte,
-            Operator.gt,
-            Operator.gte,
-        ],
-    )
-    def test_apply_operator_to_column(self, translator, operator):
-        """Test applying different operators to columns"""
-        column = MockUser.username
-
-        expr = translator._apply_operator_to_column(column, operator, "admin")
-        assert isinstance(expr, BinaryExpression)
-
-    def test_unsupported_operator_raises_error(self, translator):
-        """Test that unsupported operators raise appropriate errors"""
-        column = MockUser.username
-
-        # Create a mock operator that doesn't exist
-        with pytest.raises(SQLTranslationError, match="Unsupported operator"):
-            # This should raise an error for an unsupported operator
-            translator._apply_operator_to_column(
-                column, "unsupported_operator", "value"
-            )
-
-    def test_determine_primary_table(self, translator):
-        """Test determining the primary table for queries"""
-        model_classes = {"fidesuser": MockUser, "privacyrequest": MockPrivacyRequest}
-
-        # Create mock field addresses - more fields for fidesuser
-        tables_to_fields = {
-            "fidesuser": [
-                FieldAddress.parse("fidesuser.username"),
-                FieldAddress.parse("fidesuser.email_address"),
-            ],
-            "privacyrequest": [FieldAddress.parse("privacyrequest.status")],
-        }
-
-        primary = translator._determine_primary_table(model_classes, tables_to_fields)
-
-        # Should choose fidesuser because it is the first table in the condition
-        assert primary == "fidesuser"
-
-    @pytest.mark.parametrize(
-        "model_classes, tables_to_fields",
-        [
-            param({}, {}, id="empty_inputs"),
-            param({}, {"test_table": []}, id="no_fields_in_tables"),
-            param({}, {"other_table": []}, id="model_not_in_classes"),
-        ],
-    )
-    def test_determine_primary_table_edge_cases(
-        self, translator, model_classes, tables_to_fields
-    ):
-        """Test _determine_primary_table edge cases"""
-        result = translator._determine_primary_table(model_classes, tables_to_fields)
-        assert result is None
-
-    def test_json_path_field_handling(self, translator):
-        """Test handling of JSON path fields"""
-        condition = ConditionLeaf(
-            field_address="fidesuser.profile.name",
-            operator=Operator.eq,
-            value="John Doe",
-        )
-
-        field_addresses = translator.extract_field_addresses(condition)
-        field_addr = list(field_addresses)[0]
-
-        assert field_addr.table_name == "fidesuser"
-        assert field_addr.column_name == "profile"
-        assert field_addr.json_path == ["name"]
-
-    def test_field_address_without_table_raises_error(self, translator):
-        """Test that field addresses without table names raise errors"""
-        condition = ConditionLeaf(
-            field_address="username",  # No table specified
-            operator=Operator.eq,
-            value="admin",
-        )
-
-        with pytest.raises(SQLTranslationError, match="Table name not specified"):
-            translator.analyze_tables_in_condition(condition)
-
-
-class TestDeepNestingBehavior:
-    """Test how the translator handles deeply nested conditions"""
-
-    @pytest.fixture
-    def nested_condition(self, condition_leaf_user_status, condition_leaf_role):
-        """Creates a deeplynested condition
-
-        (user.status = 'active' AND user.role = 'admin') OR
-        (profile.verified = true AND (profile.age > 18 OR profile.country = 'US'))
-        """
-        return ConditionGroup(
-            logical_operator=GroupOperator.or_,
-            conditions=[
-                ConditionGroup(
-                    logical_operator=GroupOperator.and_,
-                    conditions=[
-                        condition_leaf_user_status,
-                        condition_leaf_role,
-                    ],
-                ),
-                ConditionGroup(
-                    logical_operator=GroupOperator.and_,
-                    conditions=[
-                        ConditionLeaf(
-                            field_address="profile.verified",
-                            operator=Operator.eq,
-                            value=True,
-                        ),
-                        ConditionGroup(
-                            logical_operator=GroupOperator.or_,
-                            conditions=[
-                                ConditionLeaf(
-                                    field_address="profile.age",
-                                    operator=Operator.gt,
-                                    value=18,
-                                ),
-                                ConditionLeaf(
-                                    field_address="profile.country",
-                                    operator=Operator.eq,
-                                    value="US",
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
-            ],
-        )
-
-    def test_analyze_tables_flattens_nested_structure(
-        self, translator, nested_condition
-    ):
-        """Test that analyze_tables_in_condition flattens nested logical structure"""
-
-        # Analyze tables - this should flatten the structure
-        tables_to_fields = translator.analyze_tables_in_condition(nested_condition)
-
-        # The method flattens all field addresses regardless of nesting
-        assert len(tables_to_fields) == 2  # fidesuser and profile tables
-        assert "fidesuser" in tables_to_fields
-        assert "profile" in tables_to_fields
-
-        # All fields are collected, but logical nesting is lost
-        fidesuser_fields = [f.column_name for f in tables_to_fields["fidesuser"]]
-        profile_fields = [f.column_name for f in tables_to_fields["profile"]]
-
-        assert set(fidesuser_fields) == {"status", "role"}
-        assert set(profile_fields) == {"verified", "age", "country"}
-
-    def test_build_filter_expression_preserves_nesting(
-        self, translator, nested_condition
-    ):
-        """Test that build_filter_expression preserves the logical nesting structure"""
-
-        # Use existing mock models
-        model_classes = {"fidesuser": MockUser, "profile": MockProfile}
-
-        # Build filter expression - this SHOULD preserve nesting
-        filter_expr = translator._build_filter_expression(
-            nested_condition, model_classes
-        )
-
-        # Verify the exact structure preserves nesting:
-        # Should be: (user.status = 'active' AND user.role = 'admin') OR
-        #           (profile.verified = true AND (profile.age > 18 OR profile.country = 'US'))
-        # OR (BooleanClauseList)
-        # ├── AND (BooleanClauseList) - exactly 2 conditions
-        # │   ├── user.status = 'active'
-        # │   └── user.role = 'admin'
-        # └── AND (BooleanClauseList) - exactly 2 conditions
-        #     ├── profile.verified = true
-        #     └── Grouping (preserves parentheses)
-        #         └── OR (BooleanClauseList) - exactly 2 conditions
-        #             ├── profile.age > 18
-        #             └── profile.country = 'US'
-
-        # Top level should be an OR with exactly 2 clauses
-        assert isinstance(filter_expr, BooleanClauseList)
-        assert filter_expr.operator is operator.or_
-        clauses = list(filter_expr.clauses)
-        assert len(clauses) == 2
-
-        # First clause: (user.status = 'active' AND user.role = 'admin')
-        left_group = clauses[0]
-        assert isinstance(left_group, BooleanClauseList)
-        assert left_group.operator is operator.and_
-        left_conditions = list(left_group.clauses)
-        assert len(left_conditions) == 2  # status and role conditions
-
-        # Second clause: (profile.verified = true AND (profile.age > 18 OR profile.country = 'US'))
-        right_group = clauses[1]
-        assert isinstance(right_group, BooleanClauseList)
-        assert right_group.operator is operator.and_
-        right_conditions = list(right_group.clauses)
-        assert len(right_conditions) == 2  # verified and nested OR conditions
-
-        # The second condition in the right group should be another OR (age > 18 OR country = 'US')
-        # wrapped in a Grouping object to preserve parentheses
-        nested_or_grouping = right_conditions[1]
-        assert isinstance(nested_or_grouping, Grouping)
-
-        # Unwrap the Grouping to get the actual BooleanClauseList
-        nested_or = nested_or_grouping.element
-        assert isinstance(nested_or, BooleanClauseList)
-        assert nested_or.operator is operator.or_
-        nested_conditions = list(nested_or.clauses)
-        assert len(nested_conditions) == 2  # age and country conditions
-
-    def test_build_sqlalchemy_query_nested_condition(self, nested_condition):
-        """Test that build_sqlalchemy_query builds a query for a nested condition"""
-        from sqlalchemy import MetaData, create_engine
-        from sqlalchemy.orm import sessionmaker
-
-        # Create a real in-memory SQLite database for this test
-        engine = create_engine("sqlite:///:memory:")
-
-        # Create the tables
-        metadata = MetaData()
-        MockUser.metadata = metadata
-        MockProfile.metadata = metadata
-        metadata.create_all(engine)
-
-        # Create a real session
-        Session = sessionmaker(bind=engine)
-        session = Session()
-
-        # Create translator with real session
-        translator = SQLConditionTranslator(db=session)
-        translator._model_cache = {
-            "fidesuser": MockUser,
-            "profile": MockProfile,
-        }
-
-        query = translator.build_sqlalchemy_query(nested_condition)
-
-        # Verify the query was built successfully
-        assert query is not None
-
-        # Convert the query to SQL string to verify the structure
-        query_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
-
-        # Verify the query contains the expected elements:
-        # 1. SELECT from the primary table (fidesuser)
-        assert "SELECT" in query_str
-        assert "fidesuser" in query_str
-
-        # 2. Contains the WHERE clause with our conditions
-        assert "WHERE" in query_str
-
-        # 3. Contains the logical operators (OR and AND)
-        assert "OR" in query_str
-        assert "AND" in query_str
-
-        # 4. Contains our specific field conditions
-        assert "status" in query_str
-        assert "role" in query_str
-        assert "verified" in query_str
-        assert "age" in query_str
-        assert "country" in query_str
-
-        # 5. Contains our specific values
-        assert "'active'" in query_str
-        assert "'admin'" in query_str
-        assert "18" in query_str
-        assert "'US'" in query_str
-
-        # 6. Verify parentheses are present (indicating proper grouping)
-        assert "(" in query_str and ")" in query_str
-
-        expected_parts = [
-            "SELECT fidesuser.id, fidesuser.username, fidesuser.email_address, fidesuser.disabled, fidesuser.role, fidesuser.status",
-            "FROM fidesuser, profile",
-            "WHERE fidesuser.status = 'active' AND fidesuser.role = 'admin' OR profile.verified = true AND (profile.age > 18 OR profile.country = 'US')",
-        ]
-
-        for part in expected_parts:
-            assert (
-                part in query_str
-            ), f"Expected '{part}' not found in generated SQL: {query_str}"
-
-        # Clean up
-        session.close()
 
     def test_json_path_field_handling(self, translator):
         """Test handling of JSON path fields"""
@@ -568,22 +276,6 @@ class TestDeepNestingBehavior:
         result = translator._build_filter_expression(condition, model_classes)
         # JSON path handling is database-specific, so we just test it doesn't crash
         assert result is not None or result is None
-
-    def test_colon_format_field_address(self):
-        """Test field addresses with colon format"""
-        from fides.api.task.conditional_dependencies.sql_schemas import FieldAddress
-
-        # Test colon format parsing
-        field_addr = FieldAddress.parse("table:column")
-        assert field_addr.table_name == "table"
-        assert field_addr.column_name == "column"
-        assert field_addr.json_path is None
-
-        # Test dataset:collection:field format
-        field_addr2 = FieldAddress.parse("dataset:collection:field")
-        assert field_addr2.table_name == "dataset"
-        assert field_addr2.column_name == "collection:field"
-        assert field_addr2.json_path is None
 
     def test_property_condition_handling(self, translator):
         """Test handling of Python properties on models"""
@@ -636,51 +328,6 @@ class TestDeepNestingBehavior:
         result = translator._build_filter_expression(condition, model_classes)
         assert result is not None
 
-    def test_join_table_expansion(self, translator):
-        """Test expansion of join tables to include main tables"""
-
-        class MockJoinReference(TestBase):
-            __tablename__ = "user_reference"
-            id = Column(String, primary_key=True)
-            user_id = Column(String)
-
-        model_classes = {"user_reference": MockJoinReference}
-        tables_to_fields = {"user_reference": []}
-
-        # This should identify join tables and try to expand
-        result = translator._expand_with_related_main_tables(
-            model_classes, tables_to_fields
-        )
-
-        # Should at least return the original model classes
-        assert "user_reference" in result
-
-    def test_json_path_complex_case(self):
-        """Test JSON path handling for complex multi-level paths"""
-        from fides.api.task.conditional_dependencies.sql_schemas import FieldAddress
-
-        # Test complex JSON path with multiple levels
-        field_addr = FieldAddress.parse("table.json_column.level1.level2.level3")
-
-        assert field_addr.table_name == "table"
-        assert field_addr.column_name == "json_column"
-        assert field_addr.json_path == ["level1", "level2", "level3"]
-
-        # Test the complex case SQL generation
-        sql_column = field_addr.to_sql_column(enable_json_operators=True)
-        expected = "json_column->'level1'->'level2'->>'level3'"
-        assert sql_column == expected
-
-    def test_simple_column_address_parsing(self):
-        """Test parsing of simple column addresses without table"""
-        from fides.api.task.conditional_dependencies.sql_schemas import FieldAddress
-
-        # Test simple column name without table
-        field_addr = FieldAddress.parse("column_name")
-        assert field_addr.table_name == ""
-        assert field_addr.column_name == "column_name"
-        assert field_addr.json_path is None
-
     def test_relationship_condition_unsupported_operator(self, translator):
         """Test relationship condition with unsupported operator"""
         from sqlalchemy.orm import relationship
@@ -707,20 +354,6 @@ class TestDeepNestingBehavior:
         result = translator._build_filter_expression(condition, model_classes)
         # The method logs a warning and returns None for unsupported operators
         assert result is None
-
-    def test_find_related_main_tables_exception_handling(self, translator):
-        """Test exception handling in _find_related_main_tables"""
-
-        class MockBrokenModel:
-            """Model that will cause inspection to fail"""
-
-            pass
-
-        # This should handle the exception gracefully
-        result = translator._find_related_main_tables(MockBrokenModel, "broken_table")
-
-        # Should return empty dict when inspection fails
-        assert result == {}
 
     def test_property_condition_with_relationships_suggestion(self, translator):
         """Test property condition error message includes relationship suggestions"""
@@ -754,233 +387,306 @@ class TestDeepNestingBehavior:
         ):
             translator._build_filter_expression(condition, model_classes)
 
-    def test_handle_model_attribute_relationship_detection(self, translator):
-        """Test _handle_model_attribute correctly detects and handles relationships"""
-        from unittest.mock import Mock, patch
+    def test_build_filter_expression_with_none_condition(self, translator):
+        """Test _build_filter_expression with None condition"""
+        assert translator._build_filter_expression(None, {}) is None
 
-        from sqlalchemy.orm import RelationshipProperty, relationship
-
-        class MockParentModel(TestBase):
-            __tablename__ = "parent_model_table"
-            id = Column(String, primary_key=True)
-
-        class MockModelWithRelationship(TestBase):
-            __tablename__ = "model_with_rel_table"
-            id = Column(String, primary_key=True)
-            parent_id = Column(String, ForeignKey("parent_model_table.id"))
-            parent = relationship("MockParentModel")
-
+    def test_build_leaf_filter_missing_table_in_model_classes(self, translator):
+        """Test _build_leaf_filter when table is not in model_classes"""
         condition = ConditionLeaf(
-            field_address="model_with_rel_table.parent",
+            field_address="missing_table.field",
             operator=Operator.eq,
             value="test_value",
         )
 
-        # Get the actual relationship attribute
-        rel_attr = MockModelWithRelationship.parent
+        model_classes = {"other_table": Mock()}
 
-        # Verify it's detected as a relationship
-        assert hasattr(rel_attr, "property")
-        assert isinstance(rel_attr.property, RelationshipProperty)
+        result = translator._build_leaf_filter(condition, model_classes)
 
-        # Mock _handle_relationship_condition to verify it's called
-        with patch.object(
-            translator, "_handle_relationship_condition"
-        ) as mock_handle_rel:
-            mock_handle_rel.return_value = Mock()
+        assert result is None
 
-            result = translator._handle_model_attribute(
-                MockModelWithRelationship, "parent", rel_attr, condition
-            )
-
-            # Should call _handle_relationship_condition
-            mock_handle_rel.assert_called_once_with(rel_attr, condition)
-            assert result is not None
-
-    def test_handle_model_attribute_regular_property_detection(self, translator):
-        """Test _handle_model_attribute correctly detects and handles regular properties"""
-        from unittest.mock import Mock, patch
-
-        class MockModelWithProperty(TestBase):
-            __tablename__ = "model_with_prop_table"
-            id = Column(String, primary_key=True)
-
-            @property
-            def computed_field(self):
-                return "computed"
-
+    def test_build_leaf_filter_invalid_field_address(self, translator):
+        """Test _build_leaf_filter with invalid field address"""
         condition = ConditionLeaf(
-            field_address="model_with_prop_table.computed_field",
+            field_address="invalid_format",  # No table.field format
             operator=Operator.eq,
             value="test_value",
         )
 
-        # Get the actual property attribute
-        prop_attr = MockModelWithProperty.computed_field
+        model_classes = {"": Mock()}  # Empty table name
 
-        # Verify it's detected as a property
-        assert isinstance(prop_attr, property)
+        result = translator._build_leaf_filter(condition, model_classes)
 
-        # Mock _handle_property_condition to verify it's called
-        with patch.object(translator, "_handle_property_condition") as mock_handle_prop:
-            mock_handle_prop.side_effect = ValueError("Property cannot be translated")
+        # Should handle gracefully and return None or raise appropriate error
+        # The exact behavior depends on implementation
+        assert result is None or isinstance(result, Exception)
 
-            with pytest.raises(ValueError, match="Property cannot be translated"):
-                translator._handle_model_attribute(
-                    MockModelWithProperty, "computed_field", prop_attr, condition
-                )
 
-            # Should call _handle_property_condition
-            mock_handle_prop.assert_called_once_with(
-                MockModelWithProperty, "computed_field", prop_attr, condition
+class TestApplyOperatorToColumn:
+    """Test applying different operators to columns"""
+
+    @pytest.mark.parametrize(
+        "operator",
+        [
+            Operator.eq,
+            Operator.neq,
+            Operator.contains,
+            Operator.starts_with,
+            Operator.exists,
+            Operator.not_exists,
+            Operator.list_contains,
+            Operator.not_in_list,
+            Operator.starts_with,
+            Operator.ends_with,
+            Operator.contains,
+            Operator.lt,
+            Operator.lte,
+            Operator.gt,
+            Operator.gte,
+        ],
+    )
+    def test_apply_operator_to_column(self, translator, operator):
+        """Test applying different operators to columns"""
+        column = FidesUser.username
+
+        expr = translator._apply_operator_to_column(column, operator, "approver")
+        assert isinstance(expr, BinaryExpression)
+
+    def test_unsupported_operator_raises_error(self, translator):
+        """Test that unsupported operators raise appropriate errors"""
+        column = FidesUser.username
+
+        # Create a mock operator that doesn't exist
+        with pytest.raises(SQLTranslationError, match="Unsupported operator"):
+            # This should raise an error for an unsupported operator
+            translator._apply_operator_to_column(
+                column, "unsupported_operator", "value"
             )
 
-    def test_handle_model_attribute_column_detection(self, translator):
-        """Test _handle_model_attribute correctly detects and handles regular columns"""
-        from unittest.mock import Mock, patch
 
-        class MockModelWithColumn(TestBase):
-            __tablename__ = "model_with_col_table"
-            id = Column(String, primary_key=True)
-            name = Column(String)
+class TestDeepNestingBehavior:
+    """Test how the translator handles deeply nested conditions"""
 
-        condition = ConditionLeaf(
-            field_address="model_with_col_table.name",
-            operator=Operator.eq,
-            value="test_value",
+    @pytest.fixture
+    def nested_condition(self, condition_leaf_user_status, condition_leaf_role):
+        """Creates a deeplynested condition
+
+        (user.disabled = False AND user.permissions.roles = 'approver') OR
+        (permissions.roles = approver AND (user.password_login_enabled = true OR user.totp_secret is not null))
+        """
+        return ConditionGroup(
+            logical_operator=GroupOperator.or_,
+            conditions=[
+                ConditionGroup(
+                    logical_operator=GroupOperator.and_,
+                    conditions=[
+                        condition_leaf_user_status,
+                        condition_leaf_role,
+                    ],
+                ),
+                ConditionGroup(
+                    logical_operator=GroupOperator.and_,
+                    conditions=[
+                        condition_leaf_role,
+                        ConditionGroup(
+                            logical_operator=GroupOperator.or_,
+                            conditions=[
+                                ConditionLeaf(
+                                    field_address="fidesuser.password_login_enabled",
+                                    operator=Operator.eq,
+                                    value=True,
+                                ),
+                                ConditionLeaf(
+                                    field_address="fidesuser.totp_secret",
+                                    operator=Operator.exists,
+                                    value=None,
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
         )
 
-        # Get the actual column attribute
-        col_attr = MockModelWithColumn.name
+    def test_map_tables_to_fields_flattens_nested_structure(
+        self, translator, nested_condition
+    ):
+        """Test that map_tables_to_fields flattens nested logical structure"""
 
-        # Verify it has the expected column properties
-        assert hasattr(col_attr, "property")
-        assert hasattr(col_attr.property, "columns")
+        # Map tables to fields - this should flatten the structure
+        tables_to_fields = translator.map_tables_to_fields(nested_condition)
 
-        # Mock _apply_operator_to_column to verify it's called
-        with patch.object(translator, "_apply_operator_to_column") as mock_apply_op:
-            mock_result = Mock()
-            mock_apply_op.return_value = mock_result
+        # The method flattens all field addresses regardless of nesting
+        assert len(tables_to_fields) == 1  # only fidesuser table
+        assert "fidesuser" in tables_to_fields
 
-            result = translator._handle_model_attribute(
-                MockModelWithColumn, "name", col_attr, condition
-            )
+        # All fields are collected, but logical nesting is lost
+        fidesuser_fields = [f.column_name for f in tables_to_fields["fidesuser"]]
 
-            # Should call _apply_operator_to_column
-            mock_apply_op.assert_called_once_with(
-                col_attr, condition.operator, condition.value
-            )
-            assert result == mock_result
+        assert set(fidesuser_fields) == {
+            "disabled",
+            "permissions",
+            "password_login_enabled",
+            "totp_secret",
+        }
 
-    def test_handle_model_attribute_hybrid_property_detection(self, translator):
-        """Test _handle_model_attribute correctly handles hybrid properties"""
-        from unittest.mock import Mock, patch
+    def test_build_filter_expression_preserves_nesting(
+        self, translator, nested_condition
+    ):
+        """Test that build_filter_expression preserves the logical nesting structure"""
 
-        from sqlalchemy.ext.hybrid import hybrid_property
+        # Use existing models
+        model_classes = {
+            "fidesuser": FidesUser,
+            "fidesuserpermissions": FidesUserPermissions,
+        }
 
-        class MockModelWithHybridProperty(TestBase):
-            __tablename__ = "model_with_hybrid_table"
-            id = Column(String, primary_key=True)
-            first_name = Column(String)
-            last_name = Column(String)
-
-            @hybrid_property
-            def full_name(self):
-                return self.first_name + " " + self.last_name
-
-        condition = ConditionLeaf(
-            field_address="model_with_hybrid_table.full_name",
-            operator=Operator.eq,
-            value="test_value",
+        # Build filter expression - this SHOULD preserve nesting
+        filter_expr = translator._build_filter_expression(
+            nested_condition, model_classes
         )
 
-        # Get the actual hybrid property attribute
-        hybrid_attr = MockModelWithHybridProperty.full_name
+        # Verify the exact structure preserves nesting:
+        # Should be: (user.disabled = False AND user.permissions.roles = 'approver') OR
+        #           (user.permissions.roles = 'approver' AND (user.totp_secret is not null OR user.password_login_enabled = true))
+        # OR (BooleanClauseList)
+        # ├── AND (BooleanClauseList) - exactly 2 conditions
+        # │   ├── user.disabled = False
+        # │   └── user.permissions.roles = 'approver'
+        # └── AND (BooleanClauseList) - exactly 2 conditions
+        #     ├── user.permissions.roles = 'approver'
+        #     └── Grouping (preserves parentheses)
+        #         └── OR (BooleanClauseList) - exactly 2 conditions
+        #             ├── user.totp_secret is not null
+        #             └── user.password_login_enabled = true
 
-        # Mock _apply_operator_to_column to verify it's called
-        with patch.object(translator, "_apply_operator_to_column") as mock_apply_op:
-            mock_result = Mock()
-            mock_apply_op.return_value = mock_result
+        # Top level should be an OR with exactly 2 clauses
+        assert isinstance(filter_expr, BooleanClauseList)
+        assert filter_expr.operator is operator.or_
+        clauses = list(filter_expr.clauses)
+        assert len(clauses) == 2
 
-            result = translator._handle_model_attribute(
-                MockModelWithHybridProperty, "full_name", hybrid_attr, condition
-            )
+        # First clause: (user.disabled = False AND user.permissions.roles = 'approver')
+        left_group = clauses[0]
+        print(type(left_group))
+        assert isinstance(left_group, BooleanClauseList)
+        assert left_group.operator is operator.and_
+        left_conditions = list(left_group.clauses)
+        assert len(left_conditions) == 2  # disabled and permissions.roles conditions
 
-            # Should call _apply_operator_to_column (hybrid properties are handled like columns)
-            mock_apply_op.assert_called_once_with(
-                hybrid_attr, condition.operator, condition.value
-            )
-            assert result == mock_result
+        # Second clause: (user.permissions.roles = 'approver' AND (user.totp_secret is not null OR user.password_login_enabled = true))
+        right_group = clauses[1]
+        assert isinstance(right_group, BooleanClauseList)
+        assert right_group.operator is operator.and_
+        right_conditions = list(right_group.clauses)
+        assert len(right_conditions) == 2  # permissions.roles and nested OR conditions
 
-    def test_handle_model_attribute_default_column_handling(self, translator):
-        """Test _handle_model_attribute default case treats unknown attributes as columns"""
-        from unittest.mock import Mock, patch
+        # The second condition in the right group should be another OR (user.totp_secret is not null OR user.password_login_enabled = true)
+        # wrapped in a Grouping object to preserve parentheses
+        nested_or_grouping = right_conditions[1]
+        assert isinstance(nested_or_grouping, Grouping)
 
-        class MockModelWithUnknownAttr(TestBase):
-            __tablename__ = "model_with_unknown_table"
-            id = Column(String, primary_key=True)
+        # Unwrap the Grouping to get the actual BooleanClauseList
+        nested_or = nested_or_grouping.element
+        assert isinstance(nested_or, BooleanClauseList)
+        assert nested_or.operator is operator.or_
+        nested_conditions = list(nested_or.clauses)
+        assert (
+            len(nested_conditions) == 2
+        )  # totp_secret and password_login_enabled conditions
 
-        # Create a mock attribute that doesn't fit other categories
-        mock_attr = Mock()
-        # Ensure it doesn't have the properties that would make it a relationship or column
-        if hasattr(mock_attr, "property"):
-            del mock_attr.property  # Remove property attribute if it exists
+    def test_build_sqlalchemy_query_nested_condition(
+        self, db, translator, nested_condition
+    ):
+        """Test that build_sqlalchemy_query builds a query for a nested condition"""
 
-        condition = ConditionLeaf(
-            field_address="model_with_unknown_table.unknown_field",
-            operator=Operator.eq,
-            value="test_value",
+        # Create translator with real session
+        translator._model_cache = {
+            "fidesuser": FidesUser,
+            "fidesuserpermissions": FidesUserPermissions,
+        }
+
+        query = translator.build_sqlalchemy_query(nested_condition)
+
+        # Verify the query was built successfully
+        assert query is not None
+
+        # Convert the query to SQL string to verify the structure
+        query_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
+
+        # Verify the query contains the expected elements:
+        # 1. SELECT from the primary table (fidesuser)
+        assert "SELECT" in query_str
+        assert "fidesuser" in query_str
+
+        # 2. Contains the WHERE clause with our conditions
+        assert "WHERE" in query_str
+
+        # 3. Contains the logical operators (OR and AND)
+        assert "OR" in query_str
+        assert "AND" in query_str
+
+        # 4. Contains our specific field conditions
+        assert "disabled" in query_str
+        assert "permissions" in query_str
+        assert "roles" in query_str
+        assert "password_login_enabled" in query_str
+        assert "totp_secret" in query_str
+
+        # 5. Contains our specific values
+        assert "false" in query_str
+        assert "approver" in query_str
+        assert "EX" in query_str
+        assert "true" in query_str
+
+        # 6. Verify parentheses are present (indicating proper grouping)
+        assert "(" in query_str and ")" in query_str
+        print(query_str)
+        # 7. Verify the query is valid SQL
+        expected_parts = [
+            "SELECT fidesuser.id, fidesuser.created_at, fidesuser.updated_at, fidesuser.username, fidesuser.email_address, fidesuser.first_name, fidesuser.last_name, fidesuser.hashed_password, fidesuser.salt, fidesuser.disabled, fidesuser.disabled_reason, fidesuser.last_login_at, fidesuser.password_reset_at, fidesuser.password_login_enabled, fidesuser.totp_secret ",
+            "FROM fidesuser ",
+            "WHERE fidesuser.disabled = false AND (EXISTS (SELECT 1 ",
+            "FROM fidesuserpermissions ",
+            "WHERE fidesuser.id = fidesuserpermissions.user_id AND (fidesuserpermissions.roles @> ARRAY['approver']::character varying[]))) OR (EXISTS (SELECT 1 ",
+            "FROM fidesuserpermissions ",
+            "WHERE fidesuser.id = fidesuserpermissions.user_id AND (fidesuserpermissions.roles @> ARRAY['approver']::character varying[]))) AND (fidesuser.password_login_enabled = true OR fidesuser.totp_secret IS NOT NULL)",
+        ]
+
+        for part in expected_parts:
+            assert (
+                part in query_str
+            ), f"Expected '{part}' not found in generated SQL: {query_str}"
+
+
+class TestExpandWithRelatedMainTables:
+    """Test expansion of join tables to include main tables"""
+
+    def test_join_table_expansion(self, translator):
+        """Test expansion of join tables to include main tables"""
+
+        model_classes = {"fidesuserpermissions": FidesUserPermissions}
+        tables_to_fields = {"fidesuserpermissions": []}
+
+        # This should identify join tables and try to expand
+        result = translator._expand_with_related_main_tables(
+            model_classes, tables_to_fields
         )
+        assert "fidesuser" in result
 
-        # Mock _apply_operator_to_column to verify it's called
-        with patch.object(translator, "_apply_operator_to_column") as mock_apply_op:
-            mock_result = Mock()
-            mock_apply_op.return_value = mock_result
+    def test_find_related_main_tables_exception_handling(self, translator):
+        """Test exception handling in _find_related_main_tables"""
 
-            result = translator._handle_model_attribute(
-                MockModelWithUnknownAttr, "unknown_field", mock_attr, condition
-            )
+        class MockBrokenModel:
+            """Model that will cause inspection to fail"""
 
-            # Should call _apply_operator_to_column as default
-            mock_apply_op.assert_called_once_with(
-                mock_attr, condition.operator, condition.value
-            )
-            assert result == mock_result
+            pass
 
-    def test_handle_model_attribute_model_name_extraction(self, translator):
-        """Test _handle_model_attribute handles models without __name__ attribute"""
-        from unittest.mock import Mock, patch
+        # This should handle the exception gracefully
+        result = translator._find_related_main_tables(MockBrokenModel, "broken_table")
 
-        # Create a mock model class without __name__ attribute
-        mock_model = Mock()
-        if hasattr(mock_model, "__name__"):
-            del mock_model.__name__  # Remove __name__ if it exists
-        mock_model.__str__ = Mock(return_value="<MockModelClass>")
-
-        mock_attr = Mock()
-        if hasattr(mock_attr, "property"):
-            del mock_attr.property  # Ensure it goes to default case
-
-        condition = ConditionLeaf(
-            field_address="mock_table.field",
-            operator=Operator.eq,
-            value="test_value",
-        )
-
-        # Mock _apply_operator_to_column to verify it's called
-        with patch.object(translator, "_apply_operator_to_column") as mock_apply_op:
-            mock_result = Mock()
-            mock_apply_op.return_value = mock_result
-
-            result = translator._handle_model_attribute(
-                mock_model, "field", mock_attr, condition
-            )
-
-            # Should still work and call _apply_operator_to_column
-            mock_apply_op.assert_called_once_with(
-                mock_attr, condition.operator, condition.value
-            )
-            assert result == mock_result
+        # Should return empty dict when inspection fails
+        assert result == {}
 
 
 class TestErrorHandling:
@@ -994,15 +700,8 @@ class TestErrorHandling:
         with pytest.raises(SQLTranslationError, match="Unknown condition type"):
             translator.extract_field_addresses(unknown_condition)
 
-    def test_no_models_found_raises_error(self, mock_db):
+    def test_no_models_found_raises_error(self, translator):
         """Test error when no models are found for tables"""
-        translator = SQLConditionTranslator(db=mock_db)
-
-        # Mock empty registry
-        translator.orm_registry = Mock()
-        translator.orm_registry.registry = Mock()
-        translator.orm_registry.registry.mappers = []
-
         condition = ConditionLeaf(
             field_address="nonexistent.field", operator=Operator.eq, value="value"
         )
@@ -1012,9 +711,8 @@ class TestErrorHandling:
         ):
             translator.build_sqlalchemy_query(condition)
 
-    def test_property_condition_provides_helpful_error(self, mock_db):
+    def test_property_condition_provides_helpful_error(self, translator):
         """Test that property conditions provide helpful error messages"""
-        translator = SQLConditionTranslator(db=mock_db)
 
         # Create a mock model with a property
         mock_model = Mock()
@@ -1058,36 +756,8 @@ class TestErrorHandling:
 class TestSQLTranslatorEdgeCases:
     """Test edge cases and error conditions in SQLConditionTranslator"""
 
-    def test_init_with_custom_orm_registry(self):
-        """Test SQLConditionTranslator initialization with custom ORM registry"""
-        mock_session = create_autospec(Session, spec_set=True)
-        custom_registry = {"custom_table": Mock()}
-
-        translator = SQLConditionTranslator(mock_session, orm_registry=custom_registry)
-
-        assert translator.db == mock_session
-        assert translator.orm_registry == custom_registry
-
-    def test_init_without_orm_registry(self):
-        """Test SQLConditionTranslator initialization without ORM registry"""
-        mock_session = create_autospec(Session, spec_set=True)
-
-        translator = SQLConditionTranslator(mock_session)
-
-        assert translator.db == mock_session
-        # Should default to Base when no orm_registry provided
-        assert translator.orm_registry is not None
-
-    def test_find_related_main_tables_no_relationships(self):
+    def test_find_related_main_tables_no_relationships(self, translator):
         """Test _find_related_main_tables with model that has no relationships"""
-        from unittest.mock import patch
-
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        # Mock model with no relationships
-        mock_model = Mock()
-
         # Mock the inspect function to return a mapper with no relationships
         mock_mapper = Mock()
         mock_relationships = Mock()
@@ -1098,79 +768,14 @@ class TestSQLTranslatorEdgeCases:
             "fides.api.task.conditional_dependencies.sql_translator.inspect",
             return_value=mock_mapper,
         ):
-            result = translator._find_related_main_tables(mock_model, "join_table")
+            result = translator._find_related_main_tables(
+                MOCK_MODEL_CLASS, "join_table"
+            )
 
         assert result == {}
 
-    def test_find_relationship_path_same_model(self):
-        """Test _find_relationship_path when from and to models are the same"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        mock_model = Mock()
-
-        result = translator._find_relationship_path(mock_model, mock_model)
-
-        # Should return empty list for same model
-        assert result == []
-
-    def test_find_relationship_path_no_relationships(self):
-        """Test _find_relationship_path with model that has no relationships"""
-        from unittest.mock import patch
-
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        mock_from_model = Mock()
-        mock_to_model = Mock()
-
-        # Mock the inspect function to return a mapper with no relationships
-        mock_mapper = Mock()
-        mock_relationships = Mock()
-        mock_relationships.items.return_value = []
-        mock_mapper.relationships = mock_relationships
-
-        with patch(
-            "fides.api.task.conditional_dependencies.sql_translator.inspect",
-            return_value=mock_mapper,
-        ):
-            result = translator._find_relationship_path(mock_from_model, mock_to_model)
-
-        assert result is None
-
-    def test_find_relationship_path_through_intermediates_max_depth_zero(self):
-        """Test _find_relationship_path_through_intermediates with max_depth=0"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        mock_from_model = Mock()
-        mock_to_model = Mock()
-
-        result = translator._find_relationship_path_through_intermediates(
-            mock_from_model, mock_to_model, max_depth=0
-        )
-
-        assert result is None
-
-    def test_find_relationship_path_through_intermediates_same_model(self):
-        """Test _find_relationship_path_through_intermediates when from and to models are the same"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        mock_model = Mock()
-
-        result = translator._find_relationship_path_through_intermediates(
-            mock_model, mock_model, max_depth=3
-        )
-
-        # Should return empty list for same model
-        assert result == []
-
-    def test_robust_relationship_handling_collection_vs_scalar(self):
+    def test_robust_relationship_handling_collection_vs_scalar(self, translator):
         """Test that the robust relationship handler correctly distinguishes collections from scalars"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
         # Test collection relationship (one-to-many)
         mock_collection_rel = Mock()
         mock_collection_property = Mock()
@@ -1257,84 +862,6 @@ class TestSQLTranslatorEdgeCases:
         result = translator._handle_relationship_condition(mock_relationship, condition)
         assert result is None
 
-    def test_relationship_handling_with_apply_operator(self):
-        """Test that simplified relationship handling correctly uses _apply_operator_to_column"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        # Mock relationship and related model
-        mock_relationship = Mock()
-        mock_property = Mock()
-        mock_property.uselist = True  # Collection
-        mock_related_model = Mock()
-        mock_target_column = Mock()
-        mock_related_model.status = mock_target_column
-        mock_property.mapper.class_ = mock_related_model
-        mock_relationship.property = mock_property
-        mock_relationship.any.return_value = Mock()
-
-        condition = ConditionLeaf(
-            field_address="user.orders.status",
-            operator=Operator.eq,
-            value="completed",
-        )
-
-        # Mock _apply_operator_to_column to return a comparison
-        with patch.object(translator, "_apply_operator_to_column") as mock_apply_op:
-            mock_comparison = Mock()
-            mock_apply_op.return_value = mock_comparison
-
-            result = translator._handle_relationship_condition(
-                mock_relationship, condition
-            )
-
-            # Verify _apply_operator_to_column was called with correct parameters
-            mock_apply_op.assert_called_once_with(
-                mock_target_column, Operator.eq, "completed"
-            )
-            # Verify any() was called with the comparison result
-            mock_relationship.any.assert_called_once_with(mock_comparison)
-            assert result is not None
-
-    def test_build_filter_expression_with_none_condition(self):
-        """Test _build_filter_expression with None condition"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        result = translator._build_filter_expression(None, {})
-
-        assert result is None
-
-    def test_build_leaf_filter_missing_table_in_model_classes(self, translator):
-        """Test _build_leaf_filter when table is not in model_classes"""
-        condition = ConditionLeaf(
-            field_address="missing_table.field",
-            operator=Operator.eq,
-            value="test_value",
-        )
-
-        model_classes = {"other_table": Mock()}
-
-        result = translator._build_leaf_filter(condition, model_classes)
-
-        assert result is None
-
-    def test_build_leaf_filter_invalid_field_address(self, translator):
-        """Test _build_leaf_filter with invalid field address"""
-        condition = ConditionLeaf(
-            field_address="invalid_format",  # No table.field format
-            operator=Operator.eq,
-            value="test_value",
-        )
-
-        model_classes = {"": Mock()}  # Empty table name
-
-        result = translator._build_leaf_filter(condition, model_classes)
-
-        # Should handle gracefully and return None or raise appropriate error
-        # The exact behavior depends on implementation
-        assert result is None or isinstance(result, Exception)
-
     def test_generate_query_from_condition_with_none_condition(self, translator):
         """Test generate_query_from_condition with None condition"""
 
@@ -1363,31 +890,31 @@ class TestSQLTranslatorEdgeCases:
 class TestSQLTranslatorRelationshipHandling:
     """Test relationship handling and join logic in SQLConditionTranslator"""
 
-    MOCK_QUERY = Mock()
-    MOCK_PRIMARY_MODEL = Mock()
-    MOCK_MODEL_CLASS = Mock()
-
     def test_add_relationship_joins_no_models(self, translator):
         """Test _add_relationship_joins with empty model_classes"""
         # Should return the original query unchanged
         assert (
             translator._add_relationship_joins(
-                self.MOCK_QUERY, self.MOCK_PRIMARY_MODEL, {}, "primary_table"
+                MOCK_QUERY, MOCK_PRIMARY_MODEL, {}, "primary_table"
             )
-            == self.MOCK_QUERY
+            == MOCK_QUERY
         )
 
     def test_add_relationship_joins_only_primary_table(self, translator):
         """Test _add_relationship_joins with only primary table in model_classes"""
-        model_classes = {"primary_table": self.MOCK_PRIMARY_MODEL}
+        model_classes = {"primary_table": MOCK_PRIMARY_MODEL}
 
         # Should return the original query unchanged since only primary table
         assert (
             translator._add_relationship_joins(
-                self.MOCK_QUERY, self.MOCK_PRIMARY_MODEL, model_classes, "primary_table"
+                MOCK_QUERY, MOCK_PRIMARY_MODEL, model_classes, "primary_table"
             )
-            == self.MOCK_QUERY
+            == MOCK_QUERY
         )
+
+
+class TestFindRelationshipPath:
+    """Test finding relationship paths in SQLConditionTranslator"""
 
     def test_fetch_join_path_with_successful_direct_path(self, translator):
         """Test _fetch_join_path when direct relationship path is found"""
@@ -1396,8 +923,8 @@ class TestSQLTranslatorRelationshipHandling:
         translator._find_relationship_path = Mock(return_value=[mock_relationship])
 
         result = translator._fetch_join_path(
-            self.MOCK_MODEL_CLASS,
-            self.MOCK_PRIMARY_MODEL,
+            MOCK_MODEL_CLASS,
+            MOCK_PRIMARY_MODEL,
             {},
             "table_name",
             "primary_table",
@@ -1406,7 +933,7 @@ class TestSQLTranslatorRelationshipHandling:
         # Should return the relationship path
         assert result == [mock_relationship]
         translator._find_relationship_path.assert_called_once_with(
-            self.MOCK_PRIMARY_MODEL, self.MOCK_MODEL_CLASS
+            MOCK_PRIMARY_MODEL, MOCK_MODEL_CLASS
         )
 
     def test_fetch_join_path_with_intermediate_path(self, translator):
@@ -1421,11 +948,11 @@ class TestSQLTranslatorRelationshipHandling:
 
         # Mock query.join to return new queries - the query is modified in place
         # but returns itself each time
-        self.MOCK_QUERY.join.return_value = self.MOCK_QUERY
+        MOCK_QUERY.join.return_value = MOCK_QUERY
 
         result = translator._fetch_join_path(
-            self.MOCK_MODEL_CLASS,
-            self.MOCK_PRIMARY_MODEL,
+            MOCK_MODEL_CLASS,
+            MOCK_PRIMARY_MODEL,
             {},
             "table_name",
             "primary_table",
@@ -1434,10 +961,10 @@ class TestSQLTranslatorRelationshipHandling:
         # Should return the intermediate relationship path
         assert result == [mock_relationship1, mock_relationship2]
         translator._find_relationship_path.assert_called_once_with(
-            self.MOCK_PRIMARY_MODEL, self.MOCK_MODEL_CLASS
+            MOCK_PRIMARY_MODEL, MOCK_MODEL_CLASS
         )
         translator._find_relationship_path_through_intermediates.assert_called_once_with(
-            self.MOCK_PRIMARY_MODEL, self.MOCK_MODEL_CLASS, max_depth=3
+            MOCK_PRIMARY_MODEL, MOCK_MODEL_CLASS, max_depth=3
         )
 
     def test_fetch_join_path_fallback_to_other_models(self, translator):
@@ -1451,8 +978,8 @@ class TestSQLTranslatorRelationshipHandling:
         # Mock other models in model_classes
         mock_other_model = Mock()
         model_classes = {
-            "table_name": self.MOCK_MODEL_CLASS,
-            "primary_table": self.MOCK_PRIMARY_MODEL,
+            "table_name": MOCK_MODEL_CLASS,
+            "primary_table": MOCK_PRIMARY_MODEL,
             "other_table": mock_other_model,
         }
 
@@ -1463,11 +990,11 @@ class TestSQLTranslatorRelationshipHandling:
         )
 
         mock_joined_query = Mock()
-        self.MOCK_QUERY.join.return_value = mock_joined_query
+        MOCK_QUERY.join.return_value = mock_joined_query
 
         result = translator._fetch_join_path(
-            self.MOCK_MODEL_CLASS,
-            self.MOCK_PRIMARY_MODEL,
+            MOCK_MODEL_CLASS,
+            MOCK_PRIMARY_MODEL,
             model_classes,
             "table_name",
             "primary_table",
@@ -1485,43 +1012,59 @@ class TestSQLTranslatorRelationshipHandling:
         )
 
         model_classes = {
-            "table_name": self.MOCK_MODEL_CLASS,
-            "primary_table": self.MOCK_PRIMARY_MODEL,
+            "table_name": MOCK_MODEL_CLASS,
+            "primary_table": MOCK_PRIMARY_MODEL,
         }
 
         result = translator._fetch_join_path(
-            self.MOCK_MODEL_CLASS,
-            self.MOCK_PRIMARY_MODEL,
+            MOCK_MODEL_CLASS,
+            MOCK_PRIMARY_MODEL,
             model_classes,
             "table_name",
             "primary_table",
         )
 
         # Should return None when no path found
-        assert result is None
+        assert result == []
 
-    @pytest.mark.parametrize(
-        "scenario",
-        [
-            "no_valid_models",
-            "no_primary_table",
-        ],
-    )
-    def test_build_sqlalchemy_query_not_valid(self, scenario):
+    def test_find_relationship_path_same_model(self, translator):
+        """Test _find_relationship_path when from and to models are the same"""
+        # Should return empty list for same model
+        assert (
+            translator._find_relationship_path(MOCK_MODEL_CLASS, MOCK_MODEL_CLASS) == []
+        )
+        assert (
+            translator._find_relationship_path_through_intermediates(
+                MOCK_MODEL_CLASS, MOCK_MODEL_CLASS, max_depth=3
+            )
+            == []
+        )
+
+    def test_find_relationship_path_no_relationships(self, translator):
+        """Test _find_relationship_path with model that has no relationships"""
+        # Mock the inspect function to return a mapper with no relationships
+        mock_mapper = Mock()
+        mock_relationships = Mock()
+        mock_relationships.items.return_value = []
+        mock_mapper.relationships = mock_relationships
+
+        with patch(
+            "fides.api.task.conditional_dependencies.sql_translator.inspect",
+            return_value=mock_mapper,
+        ):
+            result = translator._find_relationship_path(
+                MOCK_MODEL_CLASS, MOCK_PRIMARY_MODEL
+            )
+
+        assert result == []
+
+    def test_build_sqlalchemy_query_not_valid(self, translator):
         """Test build_sqlalchemy_query when no valid SQLAlchemy models are found"""
-        mock_session = create_autospec(Session, spec_set=True)
-        translator = SQLConditionTranslator(mock_session)
-
-        # Mock analyze_tables_in_condition to return tables
-        translator.analyze_tables_in_condition = Mock(return_value={"test_table": []})
+        # Mock map_tables_to_fields to return tables
+        translator.map_tables_to_fields = Mock(return_value={"test_table": []})
 
         # Mock get_orm_model_by_table_name to return None (no model found)
-        if scenario == "no_valid_models":
-            translator.get_orm_model_by_table_name = Mock(return_value=None)
-        elif scenario == "no_primary_table":
-            translator.get_orm_model_by_table_name = Mock(return_value=Mock())
-            # Mock _determine_primary_table to return None
-            translator._determine_primary_table = Mock(return_value=None)
+        translator.get_orm_model_by_table_name = Mock(return_value=None)
 
         condition = ConditionLeaf(
             field_address="test_table.field", operator=Operator.eq, value="test_value"
@@ -1530,6 +1073,4 @@ class TestSQLTranslatorRelationshipHandling:
         with pytest.raises(SQLTranslationError) as exc_info:
             translator.build_sqlalchemy_query(condition)
 
-        assert "No valid SQLAlchemy models found" in str(
-            exc_info.value
-        ) or "No primary table found" in str(exc_info.value)
+        assert "No valid SQLAlchemy models found" in str(exc_info.value)
