@@ -258,6 +258,8 @@ const ConfigureIntegrationForm = ({
       } successfully`,
     });
 
+    onClose();
+
     // Redirect to the newly created integration detail page
     if (!isEditing) {
       router.push({
@@ -267,8 +269,6 @@ const ConfigureIntegrationForm = ({
         },
       });
     }
-
-    onClose();
 
     if (
       connectionPayload &&
