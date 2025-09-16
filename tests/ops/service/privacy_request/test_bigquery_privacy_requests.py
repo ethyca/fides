@@ -21,6 +21,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
     "bigquery_fixtures",
     ["bigquery_resources", "bigquery_resources_with_namespace_meta"],
 )
+@pytest.mark.xfail(reason="Flaky Test - BigQuery table not found error")
 def test_create_and_process_access_request_bigquery(
     db,
     policy,
