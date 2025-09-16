@@ -108,7 +108,9 @@ class FieldAddress(BaseModel):
 
         if self.json_path is None:
             # This should never happen
-            raise SQLTranslationError("Field address internal error.")  # pragma: no cover
+            raise SQLTranslationError(
+                "Field address internal error."
+            )  # pragma: no cover
 
         # Build PostgreSQL JSON path: column->'path'->'path'->>'final_path'
         if self.json_path and len(self.json_path) == 1:
@@ -126,7 +128,9 @@ class FieldAddress(BaseModel):
         return f"{self.column_name}{''.join(path_parts)}"
 
     @classmethod
-    def _parse_parts_to_components(cls, parts: list[str]) -> tuple[str, str, Optional[list[str]]]:
+    def _parse_parts_to_components(
+        cls, parts: list[str]
+    ) -> tuple[str, str, Optional[list[str]]]:
         """
         Parse a list of parts into table_name, column_name, and json_path components.
 
@@ -173,7 +177,9 @@ class FieldAddress(BaseModel):
                     # Pure colon format: table:column or table:column:path1:path2
                     parts = colon_parts
 
-                table_name, column_name, json_path = cls._parse_parts_to_components(parts)
+                table_name, column_name, json_path = cls._parse_parts_to_components(
+                    parts
+                )
 
                 return cls(
                     table_name=table_name,

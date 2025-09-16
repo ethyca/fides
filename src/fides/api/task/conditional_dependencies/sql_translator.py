@@ -606,17 +606,19 @@ class SQLConditionTranslator:
                     model_class, field_name, attr, condition
                 )
 
-            if field_addr.json_path and len(field_addr.json_path) > 0:
+            if field_addr.json_path is not None and len(field_addr.json_path) > 0:
                 logger.debug(
                     f"Found JSON path {field_name}.{field_addr.json_path} on {model_name}"
                 )
                 # Build JSON path expression safely using SQLAlchemy's chained [] operators
-                json_expr = attr
-                for path_component in field_addr.json_path:
-                    json_expr = json_expr[path_component]
-                json_expr = json_expr.astext
+                json_path_components = field_addr.json_path
+                for (
+                    path_component
+                ) in json_path_components:  # pylint: disable=not-an-iterable
+                    attr = attr[path_component]
+                attr = attr.astext
                 return self._apply_operator_to_column(
-                    json_expr, condition.operator, condition.value
+                    attr, condition.operator, condition.value
                 )
             logger.debug(f"Found column {field_name} on {model_name}")
             return self._apply_operator_to_column(

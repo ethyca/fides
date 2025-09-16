@@ -666,7 +666,7 @@ class TestExpandWithRelatedMainTables:
         # Mock inspect to raise NoInspectionAvailable
         with patch(
             "fides.api.task.conditional_dependencies.sql_translator.inspect",
-            side_effect=NoInspectionAvailable("Cannot inspect mock model")
+            side_effect=NoInspectionAvailable("Cannot inspect mock model"),
         ):
             result = translator._expand_with_related_main_tables(
                 model_classes, tables_to_fields
@@ -768,9 +768,7 @@ class TestErrorHandling:
         """Test _build_filter_expression when filter expression is None"""
         # Create a condition that would return None filter expression
         condition = ConditionLeaf(
-            field_address="nonexistent_table.field",
-            operator=Operator.eq,
-            value="test"
+            field_address="nonexistent_table.field", operator=Operator.eq, value="test"
         )
 
         # Mock model_classes without the nonexistent_table
@@ -782,9 +780,7 @@ class TestErrorHandling:
     def test_build_leaf_filter_nonexistent_table(self, translator):
         """Test _build_leaf_filter when table doesn't exist in model_classes"""
         condition = ConditionLeaf(
-            field_address="nonexistent_table.field",
-            operator=Operator.eq,
-            value="test"
+            field_address="nonexistent_table.field", operator=Operator.eq, value="test"
         )
 
         model_classes = {"other_table": Mock()}
@@ -797,12 +793,12 @@ class TestErrorHandling:
         condition = ConditionLeaf(
             field_address="test_table.nonexistent_field",
             operator=Operator.eq,
-            value="test"
+            value="test",
         )
 
         mock_model = Mock()
         # Mock hasattr to return False for nonexistent field
-        with patch('builtins.hasattr', return_value=False):
+        with patch("builtins.hasattr", return_value=False):
             model_classes = {"test_table": mock_model}
             result = translator._build_leaf_filter(condition, model_classes)
             assert result is None
@@ -971,7 +967,9 @@ class TestSQLTranslatorRelationshipHandling:
 class TestFindRelationshipPath:
     """Test finding relationship paths in SQLConditionTranslator"""
 
-    def test_find_relationship_path_through_intermediates_no_inspection(self, translator):
+    def test_find_relationship_path_through_intermediates_no_inspection(
+        self, translator
+    ):
         """Test _find_relationship_path_through_intermediates when model inspection fails"""
         mock_model1 = Mock()
         mock_model1.__name__ = "MockModel1"
@@ -981,7 +979,7 @@ class TestFindRelationshipPath:
         # Mock inspect to raise NoInspectionAvailable
         with patch(
             "fides.api.task.conditional_dependencies.sql_translator.inspect",
-            side_effect=NoInspectionAvailable("Cannot inspect model")
+            side_effect=NoInspectionAvailable("Cannot inspect model"),
         ):
             result = translator._find_relationship_path_through_intermediates(
                 mock_model1, mock_model2
@@ -989,7 +987,9 @@ class TestFindRelationshipPath:
 
         assert result == []
 
-    def test_find_relationship_path_through_intermediates_with_custom_max_depth(self, translator):
+    def test_find_relationship_path_through_intermediates_with_custom_max_depth(
+        self, translator
+    ):
         """Test _find_relationship_path_through_intermediates with custom max_depth"""
         # Mock models with no relationships to test max_depth parameter
         mock_mapper = Mock()
@@ -997,7 +997,7 @@ class TestFindRelationshipPath:
 
         with patch(
             "fides.api.task.conditional_dependencies.sql_translator.inspect",
-            return_value=mock_mapper
+            return_value=mock_mapper,
         ):
             result = translator._find_relationship_path_through_intermediates(
                 MOCK_MODEL_CLASS, MOCK_PRIMARY_MODEL, max_depth=1
@@ -1014,7 +1014,7 @@ class TestFindRelationshipPath:
 
         with patch(
             "fides.api.task.conditional_dependencies.sql_translator.inspect",
-            return_value=mock_mapper
+            return_value=mock_mapper,
         ):
             result = translator._find_relationship_path_through_intermediates(
                 MOCK_MODEL_CLASS, MOCK_PRIMARY_MODEL, max_depth=1
@@ -1022,7 +1022,9 @@ class TestFindRelationshipPath:
 
         assert result == []
 
-    def test_extract_relationship_target_field_no_inspection_available(self, translator):
+    def test_extract_relationship_target_field_no_inspection_available(
+        self, translator
+    ):
         """Test _extract_relationship_target_field when inspection fails"""
         field_addr = FieldAddress.parse("table.relationship")
         mock_relationship = Mock()
@@ -1031,7 +1033,7 @@ class TestFindRelationshipPath:
         # Mock inspect to raise NoInspectionAvailable
         with patch(
             "fides.api.task.conditional_dependencies.sql_translator.inspect",
-            side_effect=NoInspectionAvailable("Cannot inspect")
+            side_effect=NoInspectionAvailable("Cannot inspect"),
         ):
             result = translator._extract_relationship_target_field(
                 field_addr, mock_relationship
@@ -1051,9 +1053,13 @@ class TestFindRelationshipPath:
         mock_primary_model.__name__ = "PrimaryModel"
 
         with pytest.raises(SQLTranslationError) as exc_info:
-            translator._apply_reverse_join(mock_query, mock_relationship_attr, mock_primary_model)
+            translator._apply_reverse_join(
+                mock_query, mock_relationship_attr, mock_primary_model
+            )
 
-        assert "No primaryjoin found for PrimaryModel, TargetModel" in str(exc_info.value)
+        assert "No primaryjoin found for PrimaryModel, TargetModel" in str(
+            exc_info.value
+        )
 
     def test_fetch_join_path_with_successful_direct_path(self, translator):
         """Test _fetch_join_path when direct relationship path is found"""
@@ -1193,7 +1199,9 @@ class TestFindRelationshipPath:
         mock_mapper.relationships = mock_relationships
 
         mock_target_mapper = Mock()
-        mock_target_mapper.class_ = MOCK_PRIMARY_MODEL  # Set the class_ attribute for target
+        mock_target_mapper.class_ = (
+            MOCK_PRIMARY_MODEL  # Set the class_ attribute for target
+        )
         mock_target_relationships = Mock()
         mock_target_relationships.items.return_value = []
         mock_target_mapper.relationships = mock_target_relationships
