@@ -2,7 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
-import { SystemColumnKeys } from "~/features/system/useSystemsTable";
+import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
@@ -45,6 +45,7 @@ export type ConnectionConfigSecretsRequest = {
 export type GetSystemsQueryParams = {
   data_stewards?: string[];
   system_groups?: string[];
+  show_deleted?: boolean;
 };
 
 const systemApi = baseApi.injectEndpoints({

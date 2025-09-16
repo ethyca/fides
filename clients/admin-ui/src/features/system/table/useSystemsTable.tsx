@@ -29,8 +29,9 @@ import {
   useGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
 } from "~/features/system/system-groups.slice";
-import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
+import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
+import SystemDataUseCell from "~/features/system/table/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/table/SystemGroupCell";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   BasicSystemResponseExtended,
@@ -40,15 +41,6 @@ import {
   SystemGroupCreate,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
-
-export enum SystemColumnKeys {
-  NAME = "name",
-  SYSTEM_GROUPS = "system_groups",
-  DATA_USES = "privacy_declarations",
-  DATA_STEWARDS = "data_stewards",
-  DESCRIPTION = "description",
-  ACTIONS = "actions",
-}
 
 const useSystemsTable = () => {
   // ancillary data
@@ -117,6 +109,7 @@ const useSystemsTable = () => {
     search: searchQuery,
     sort_by: sortKey,
     sort_asc: sortOrder === "ascend",
+    show_deleted: true,
     ...columnFilters,
   });
 
