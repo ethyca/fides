@@ -21,6 +21,20 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.70.0...main)
 
+### Added
+- Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
+
+### Changed
+- Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
+- Systems inventory page now displays GVL deleted systems [#6602](https://github.com/ethyca/fides/pull/6602)
+
+### Developer Experience
+- Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
+
+### Fixed
+- Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
+- Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
+
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added
@@ -34,13 +48,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Request manager screen now shows loader while waiting for sets of results [#6552](https://github.com/ethyca/fides/pull/6552)
 - Request manager screen now persists pagination parameters to URL [#6552](https://github.com/ethyca/fides/pull/6552)
 - Request manager screen no longer persists search to local storage and instead populates URL parameters [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager CSV Download now flattens the subject identity object to comma separated columns [#6563](https://github.com/ethyca/fides/pull/6563)
+- Request manager CSV Download now flattens the custom privacy request fields object to comma separated columns [#6563](https://github.com/ethyca/fides/pull/6563)
 
 ### Deprecated
 - DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
 
 ### Fixed
 - Fix search within language picker in admin-ui [#6550](https://github.com/ethyca/fides/pull/6550)
-- Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557)
+- Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557) [#6587](https://github.com/ethyca/fides/pull/6587)
 - Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
 - Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
 - Fix bug in oauth authorization success toast [#6572](https://github.com/ethyca/fides/pull/6572)
@@ -49,7 +65,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Request manager screen will no longer silently filter results by prior searches [#6552](https://github.com/ethyca/fides/pull/6552)
 - Request manager CSV download link is now cleaned up making memory leaks in Admin UI less likely [#6552](https://github.com/ethyca/fides/pull/6552)
 - Fix custom logos in external task portal [#6573](https://github.com/ethyca/fides/pull/6573)
+- TCF alert rendering incorrectly during react lifecycle [#6582](https://github.com/ethyca/fides/pull/6582)
 
+### Removed
+- Remove "expand/collapse all" menu on privacy notice locations [#6581](https://github.com/ethyca/fides/pull/6581)
 
 ## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
 
