@@ -504,8 +504,9 @@ describe("Action center Asset Results", () => {
     const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
     const rowUrns = [
       "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/11020051272",
-      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
       "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",
+      "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/anchor",
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
     ];
 
     beforeEach(() => {
@@ -566,23 +567,33 @@ describe("Action center Asset Results", () => {
           );
         });
 
-        // Check "With consent" badge
-        cy.getAntTableRow(rowUrns[1]).within(() => {
-          cy.contains("With consent").should("exist");
-          cy.getByTestId("status-badge_with-consent").should(
-            "have.attr",
-            "data-color",
-            "success",
-          );
-        });
-
         // Check "Without consent" badge for another asset
-        cy.getAntTableRow(rowUrns[2]).within(() => {
+        cy.getAntTableRow(rowUrns[1]).within(() => {
           cy.contains("Without consent").should("exist");
           cy.getByTestId("status-badge_without-consent").should(
             "have.attr",
             "data-color",
             "error",
+          );
+        });
+
+        // Check "Without consent" badge for another asset
+        cy.getAntTableRow(rowUrns[2]).within(() => {
+          cy.contains("Pre-consent").should("exist");
+          cy.getByTestId("status-badge_without-consent").should(
+            "have.attr",
+            "data-color",
+            "error",
+          );
+        });
+
+        // Check "With consent" badge
+        cy.getAntTableRow(rowUrns[3]).within(() => {
+          cy.contains("With consent").should("exist");
+          cy.getByTestId("status-badge_with-consent").should(
+            "have.attr",
+            "data-color",
+            "success",
           );
         });
       });
