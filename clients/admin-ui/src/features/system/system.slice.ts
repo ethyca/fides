@@ -49,7 +49,7 @@ const systemApi = baseApi.injectEndpoints({
       Page_BasicSystemResponseExtended_,
       PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
     >({
-      query: ({ data_stewards, system_groups, show_deleted, ...params }) => {
+      query: ({ data_stewards, system_groups, ...params }) => {
         const urlParams = buildArrayQueryParams({
           data_stewards,
           system_groups,
@@ -58,10 +58,7 @@ const systemApi = baseApi.injectEndpoints({
         return {
           method: "GET",
           url: `system?${urlParams.toString()}`,
-          params: {
-            ...params,
-            ...(show_deleted !== undefined && { show_deleted }),
-          },
+          params,
         };
       },
       providesTags: () => ["System"],
