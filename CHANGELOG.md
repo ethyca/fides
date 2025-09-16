@@ -31,6 +31,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
 
+### Fixed
+- Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
+
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added
