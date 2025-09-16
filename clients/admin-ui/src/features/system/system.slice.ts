@@ -40,6 +40,7 @@ export type ConnectionConfigSecretsRequest = {
 export type GetSystemsQueryParams = {
   data_stewards?: string[];
   system_groups?: string[];
+  show_deleted?: boolean;
 };
 
 const systemApi = baseApi.injectEndpoints({

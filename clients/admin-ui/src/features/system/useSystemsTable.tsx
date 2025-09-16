@@ -94,6 +94,7 @@ const useSystemsTable = () => {
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    show_deleted: true,
     ...columnFilters,
   });
 
