@@ -8837,9 +8837,15 @@ class TestResubmitPrivacyRequest:
         [
             ("owner_auth_header", HTTP_200_OK),
             ("contributor_auth_header", HTTP_200_OK),
-            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            (
+                "viewer_and_approver_auth_header",
+                HTTP_200_OK,
+            ),  # Updated: approvers now have create permissions
             ("viewer_auth_header", HTTP_403_FORBIDDEN),
-            ("approver_auth_header", HTTP_403_FORBIDDEN),
+            (
+                "approver_auth_header",
+                HTTP_200_OK,
+            ),  # Updated: approvers now have create permissions
         ],
     )
     def test_resubmit_privacy_request_with_roles(
