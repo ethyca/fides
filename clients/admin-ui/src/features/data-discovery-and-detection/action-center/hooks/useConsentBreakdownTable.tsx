@@ -60,7 +60,8 @@ export const useConsentBreakdownTable = ({
   const antTableConfig = useMemo(
     () => ({
       enableSelection: false,
-      getRowKey: (record: ConsentBreakdown) => record.location,
+      getRowKey: (record: ConsentBreakdown) =>
+        `${record.location}-${record.page}`,
       isLoading: isFetching,
       dataSource: items,
       totalRows: totalRows ?? 0,
