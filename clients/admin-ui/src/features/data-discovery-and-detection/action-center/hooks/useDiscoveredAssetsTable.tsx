@@ -368,6 +368,8 @@ export const useDiscoveredAssetsTable = ({
               without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
               exempt: DiscoveryStatusDisplayNames.EXEMPT,
               unknown: DiscoveryStatusDisplayNames.UNKNOWN,
+              pre_consent: DiscoveryStatusDisplayNames.PRE_CONSENT,
+              cmp_error: DiscoveryStatusDisplayNames.CMP_ERROR,
             };
             return statusMap[status] ?? status;
           },

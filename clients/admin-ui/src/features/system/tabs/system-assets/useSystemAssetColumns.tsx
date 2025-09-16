@@ -1,4 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { formatIsoLocation, isoStringToEntry } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
@@ -96,10 +97,16 @@ const useSystemAssetColumns = ({
       id: "locations",
       cell: (props) => (
         <BadgeCellExpandable
-          values={props.getValue().map((location: PrivacyNoticeRegion) => ({
-            label: PRIVACY_NOTICE_REGION_RECORD[location],
-            key: location,
-          }))}
+          values={props.getValue().map((location: PrivacyNoticeRegion) => {
+            const isoEntry = isoStringToEntry(location);
+
+            return {
+              label: isoEntry
+                ? formatIsoLocation({ isoEntry, showFlag: true })
+                : PRIVACY_NOTICE_REGION_RECORD[location],
+              key: location,
+            };
+          })}
         />
       ),
       header: "Locations",
