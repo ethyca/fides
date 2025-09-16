@@ -3,6 +3,7 @@ import {
   AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
+  AntMenu as Menu,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
@@ -18,13 +19,16 @@ import {
 } from "~/features/common/table/v2";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
+import useTopLevelActionCenterTabs, { TopLevelActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
 
 const ActionCenterPage = () => {
   const toast = useToast();
+  const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
   const {
     PAGE_SIZES,
     pageSize,
@@ -134,9 +138,28 @@ const ActionCenterPage = () => {
         breadcrumbItems={[{ title: "All activity" }]}
       />
 
-      <Flex className="justify-between py-6">
-        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
-      </Flex>
+      <Menu
+        aria-label="Action center tabs"
+        mode="horizontal"
+        items={tabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        selectedKeys={[activeTab]}
+        onClick={async (menuInfo) => {
+          await onTabChange(menuInfo.key as TopLevelActionCenterTabHash);
+        }}
+        className="mb-4"
+        data-testid="action-center-tabs"
+      />
+
+      {activeTab === TopLevelActionCenterTabHash.IN_PROGRESS ? (
+        <InProgressMonitorTasksList />
+      ) : (
+        <>
+          <Flex className="justify-between py-6">
+            <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
+          </Flex>
 
       <List
         loading={isLoading}
@@ -158,20 +181,22 @@ const ActionCenterPage = () => {
         }}
       />
 
-      {!!results && !!data?.total && data.total > pageSize && (
-        <>
-          <Divider className="mb-6 mt-0" />
-          <PaginationBar
-            totalRows={data?.total || 0}
-            pageSizes={PAGE_SIZES}
-            setPageSize={setPageSize}
-            onPreviousPageClick={onPreviousPageClick}
-            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-            onNextPageClick={onNextPageClick}
-            isNextPageDisabled={isNextPageDisabled || isFetching}
-            startRange={startRange}
-            endRange={endRange}
-          />
+          {!!results && !!data?.total && data.total > pageSize && (
+            <>
+              <Divider className="mb-6 mt-0" />
+              <PaginationBar
+                totalRows={data?.total || 0}
+                pageSizes={PAGE_SIZES}
+                setPageSize={setPageSize}
+                onPreviousPageClick={onPreviousPageClick}
+                isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+                onNextPageClick={onNextPageClick}
+                isNextPageDisabled={isNextPageDisabled || isFetching}
+                startRange={startRange}
+                endRange={endRange}
+              />
+            </>
+          )}
         </>
       )}
     </Layout>

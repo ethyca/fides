@@ -15,7 +15,6 @@ import { DiffStatus } from "~/types/api";
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredSystemAggregateTable } from "../hooks/useDiscoveredSystemAggregateTable";
-import { InProgressMonitorTasksList } from "../components/InProgressMonitorTasksList";
 
 interface DiscoveredSystemAggregateTableProps {
   monitorId: string;
@@ -69,61 +68,55 @@ export const DiscoveredSystemAggregateTable = ({
         className="mb-4"
         data-testid="asset-state-filter"
       />
-      {activeTab === ActionCenterTabHash.IN_PROGRESS ? (
-        <InProgressMonitorTasksList monitorId={monitorId} />
-      ) : (
-        <>
-          <Flex justify="space-between" align="center" className="mb-4">
-            <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
-            <Space size="large">
-              {hasSelectedRows && <SelectedText count={selectedRows.length} />}
-              <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: "add",
-                      label: (
-                        <Tooltip
-                          title={
-                            uncategorizedIsSelected
-                              ? "Uncategorized assets can't be added to the inventory"
-                              : null
-                          }
-                          placement="left"
-                        >
-                          Add
-                        </Tooltip>
-                      ),
-                      onClick: handleBulkAdd,
-                      disabled: uncategorizedIsSelected,
-                    },
-                    !activeParams.diff_status.includes(DiffStatus.MUTED)
-                      ? {
-                          key: "ignore",
-                          label: "Ignore",
-                          onClick: handleBulkIgnore,
-                        }
-                      : null,
-                  ],
-                }}
-                trigger={["click"]}
-              >
-                <Button
-                  type="primary"
-                  icon={<Icons.ChevronDown />}
-                  iconPosition="end"
-                  loading={anyBulkActionIsLoading}
-                  disabled={!hasSelectedRows}
-                  data-testid="bulk-actions-menu"
-                >
-                  Actions
-                </Button>
-              </Dropdown>
-            </Space>
-          </Flex>
-          <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
-        </>
-      )}
+      <Flex justify="space-between" align="center" className="mb-4">
+        <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
+        <Space size="large">
+          {hasSelectedRows && <SelectedText count={selectedRows.length} />}
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "add",
+                  label: (
+                    <Tooltip
+                      title={
+                        uncategorizedIsSelected
+                          ? "Uncategorized assets can't be added to the inventory"
+                          : null
+                      }
+                      placement="left"
+                    >
+                      Add
+                    </Tooltip>
+                  ),
+                  onClick: handleBulkAdd,
+                  disabled: uncategorizedIsSelected,
+                },
+                !activeParams.diff_status.includes(DiffStatus.MUTED)
+                  ? {
+                      key: "ignore",
+                      label: "Ignore",
+                      onClick: handleBulkIgnore,
+                    }
+                  : null,
+              ],
+            }}
+            trigger={["click"]}
+          >
+            <Button
+              type="primary"
+              icon={<Icons.ChevronDown />}
+              iconPosition="end"
+              loading={anyBulkActionIsLoading}
+              disabled={!hasSelectedRows}
+              data-testid="bulk-actions-menu"
+            >
+              Actions
+            </Button>
+          </Dropdown>
+        </Space>
+      </Flex>
+      <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
     </>
   );
 };
