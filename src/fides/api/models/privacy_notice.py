@@ -41,7 +41,7 @@ class UserConsentPreference(Enum):
     tcf = "tcf"  # Overall preference set for TCF where there are numerous preferences under the single notice
 
 
-class ConsentMechanism(Enum):
+class ConsentMechanism(str, Enum):
     """
     Enum is not formalized in the DB because it may be subject to frequent change
     """

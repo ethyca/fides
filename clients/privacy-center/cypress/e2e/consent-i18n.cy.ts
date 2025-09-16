@@ -1545,15 +1545,35 @@ describe("Consent i18n", () => {
           },
         ).as("getGvlTranslations500");
       });
+
       it("falls back to default locale", () => {
         visitDemoWithI18n({
           navigatorLanguage: FRENCH_LOCALE,
           options: { tcfEnabled: true },
         });
         cy.get("#fides-banner").should("be.visible");
-        cy.getByTestId("fides-tcf-banner-supplemental").contains(
-          ENGLISH_TCF_BANNER.purpose_example,
-        ); // english fallback
+
+        // Checking that the purposes from the full experience are displayed
+        // When using English, the translations from the full experience are used
+        cy.fixture("consent/experience_tcf.json").then((experienceFull) => {
+          const experience = experienceFull.items[0];
+
+          // Check that each TCF purpose consent is displayed
+          experience.tcf_purpose_consents.forEach((purpose: any) => {
+            cy.getByTestId("fides-tcf-banner-supplemental").should(
+              "contain",
+              purpose.name,
+            );
+          });
+
+          // Check that each TCF special feature is displayed
+          experience.tcf_special_features.forEach((feature: any) => {
+            cy.getByTestId("fides-tcf-banner-supplemental").should(
+              "contain",
+              feature.name,
+            );
+          });
+        });
       });
     });
   });
