@@ -64,6 +64,8 @@ export const TagExpandableCell = ({
       setDisplayValues(
         isCollapsed ? values.slice(0, displayThreshold) : values,
       );
+    } else {
+      setDisplayValues(values);
     }
   }, [isCollapsed, values]);
 
@@ -96,6 +98,7 @@ export const TagExpandableCell = ({
         vertical={!isCollapsed}
         gap="small"
         data-testid="tag-expandable-cell"
+        style={{ overflowX: "auto", ...props.style }}
         {...props}
       >
         {displayValues.map((value) => (

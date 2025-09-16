@@ -1,1 +1,1 @@
-pymssql==2.3.4
+pymssql==2.3.7

@@ -220,7 +220,7 @@ def get_cache() -> FidesopsRedis:
 
     if not connected:
         raise common_exceptions.RedisConnectionError(
-            "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
+            "Unable to establish Redis connection. Fides is unable to accept PrivacyRequests."
         )
 
     return _connection

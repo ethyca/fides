@@ -7,6 +7,7 @@ import {
   Flex,
   Icons,
 } from "fidesui";
+import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -23,13 +24,13 @@ import {
   useDeleteSystemMutation,
   useGetSystemsQuery,
 } from "~/features/system/system.slice";
-import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import {
   useCreateSystemGroupMutation,
   useGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
-} from "~/features/system/system-groups/system-groups.slice";
+} from "~/features/system/system-groups.slice";
+import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   BasicSystemResponseExtended,
@@ -40,13 +41,7 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-interface UseSystemsTableParams {
-  isAlphaSystemGroupsEnabled?: boolean;
-}
-
-const useSystemsTable = ({
-  isAlphaSystemGroupsEnabled,
-}: UseSystemsTableParams) => {
+const useSystemsTable = () => {
   // ancillary data
   const { data: allSystemGroups } = useGetAllSystemGroupsQuery();
 
@@ -99,7 +94,7 @@ const useSystemsTable = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    system_group: columnFilters?.system_groups?.[0]?.toString(),
+    show_deleted: true,
     ...columnFilters,
   });
 
@@ -177,10 +172,10 @@ const useSystemsTable = ({
       const currentGroup = systemGroupMap[groupKey];
       const result = await updateSystemGroup({
         ...currentGroup,
-        systems: [
+        systems: uniq([
           ...(currentGroup.systems ?? []),
           ...selectedRowKeys.map((key) => key.toString()),
-        ],
+        ]),
       });
       if (isErrorResult(result)) {
         messageApi.error(getErrorMessage(result.error));
@@ -243,7 +238,7 @@ const useSystemsTable = ({
           />
         ),
         title: "Groups",
-        hidden: !plusIsEnabled || !isAlphaSystemGroupsEnabled,
+        hidden: !plusIsEnabled,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
@@ -260,7 +255,6 @@ const useSystemsTable = ({
           (group) => systemGroupMap[group]?.name ?? group,
         ),
         filteredValue: columnFilters?.system_groups || null,
-        filterMultiple: false,
       },
       {
         title: "Data uses",
@@ -290,7 +284,7 @@ const useSystemsTable = ({
       {
         title: "Data stewards",
         dataIndex: "data_stewards",
-        key: "data_steward",
+        key: "data_stewards",
         render: (dataStewards: string[] | null) => (
           <ListExpandableCell values={dataStewards ?? []} valueSuffix="users" />
         ),
@@ -298,7 +292,6 @@ const useSystemsTable = ({
           allUsers?.items?.map((user) => user.username),
         ),
         filteredValue: columnFilters?.data_steward || null,
-        filterMultiple: false,
       },
       {
         title: "Description",
@@ -360,7 +353,6 @@ const useSystemsTable = ({
     ];
   }, [
     plusIsEnabled,
-    isAlphaSystemGroupsEnabled,
     allSystemGroups,
     columnFilters?.system_groups,
     columnFilters?.data_steward,
