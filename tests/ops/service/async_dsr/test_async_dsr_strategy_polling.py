@@ -7,7 +7,6 @@ from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.schemas.saas.strategy_configuration import (
-
     PollingAsyncDSRAccessDataConfiguration,
     SupportedDataType,
 )
@@ -453,4 +452,4 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
 
         assert "Status request returned an unexpected value: None" in str(
             exc_info.value
-            )
+        )

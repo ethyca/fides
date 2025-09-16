@@ -134,7 +134,9 @@ class TestRequestTaskSubRequest:
         assert "sub_req_2" in request_ids
         assert "sub_req_3" in request_ids
 
-    def test_multiple_tasks_separate_sub_requests(self, db, in_processing_privacy_request):
+    def test_multiple_tasks_separate_sub_requests(
+        self, db, in_processing_privacy_request
+    ):
         """Test that different RequestTasks have separate sub-requests"""
         # Create two request tasks
         task1 = RequestTask.create(
@@ -286,15 +288,27 @@ class TestSaaSConnectorSubRequestIntegration:
         connector = SaaSConnector(connection_config)
 
         # Save first sub-request
-        first_data = {"request_id": "first_sub_123", "status": "initiated", "endpoint": "/users"}
+        first_data = {
+            "request_id": "first_sub_123",
+            "status": "initiated",
+            "endpoint": "/users",
+        }
         connector._save_request_data(polling_request_task, first_data)
 
         # Save second sub-request
-        second_data = {"request_id": "second_sub_456", "status": "initiated", "endpoint": "/orders"}
+        second_data = {
+            "request_id": "second_sub_456",
+            "status": "initiated",
+            "endpoint": "/orders",
+        }
         connector._save_request_data(polling_request_task, second_data)
 
         # Save third sub-request
-        third_data = {"request_id": "third_sub_789", "status": "completed", "endpoint": "/profiles"}
+        third_data = {
+            "request_id": "third_sub_789",
+            "status": "completed",
+            "endpoint": "/profiles",
+        }
         connector._save_request_data(polling_request_task, third_data)
 
         # Verify all three entries exist as separate sub-requests
@@ -363,9 +377,21 @@ class TestSaaSConnectorSubRequestIntegration:
         connector = SaaSConnector(connection_config)
 
         # Save multiple sub-requests for both tasks
-        task1_data1 = {"request_id": "users_req_456", "endpoint": "/api/users", "batch": 1}
-        task1_data2 = {"request_id": "users_req_457", "endpoint": "/api/users", "batch": 2}
-        task2_data1 = {"request_id": "orders_req_789", "endpoint": "/api/orders", "batch": 1}
+        task1_data1 = {
+            "request_id": "users_req_456",
+            "endpoint": "/api/users",
+            "batch": 1,
+        }
+        task1_data2 = {
+            "request_id": "users_req_457",
+            "endpoint": "/api/users",
+            "batch": 2,
+        }
+        task2_data1 = {
+            "request_id": "orders_req_789",
+            "endpoint": "/api/orders",
+            "batch": 1,
+        }
 
         connector._save_request_data(task1, task1_data1)
         connector._save_request_data(task1, task1_data2)

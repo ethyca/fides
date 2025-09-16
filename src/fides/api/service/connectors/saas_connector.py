@@ -3,14 +3,13 @@ import json
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-from fides.api.service.async_dsr.async_dsr_strategy_polling_base import PollingAsyncDSRBaseStrategy
 import pydash
 from fideslang.validation import FidesKey
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
+
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     AwaitingAsyncTask,
@@ -32,6 +31,7 @@ from fides.api.schemas.consentable_item import (
 )
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
@@ -43,9 +43,11 @@ from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
 )
-
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
     get_strategy as get_async_strategy,
+)
+from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
+    PollingAsyncDSRBaseStrategy,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
@@ -331,7 +333,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
                 # Validate async strategy with proper enum value checking
                 strategy = get_async_strategy(
-                    read_request.async_config.strategy, read_request.async_config.configuration
+                    read_request.async_config.strategy,
+                    read_request.async_config.configuration,
                 )
 
                 request_task.async_type = AsyncTaskType(strategy.type)
@@ -344,7 +347,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         query_config,
                         strategy,
                         input_data,
-                        policy
+                        policy,
                     )
 
             # This allows us to build an output object even if we didn't generate and execute
@@ -408,15 +411,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         for next_request, param_value_map in prepared_requests:
 
             response, correlation_id = strategy.execute_initial_request(  # type: ignore
-                client,
-                next_request
+                client, next_request
             )
 
             param_value_map["correlation_id"] = correlation_id
             # Si es que es async,m tambien nos vamos pa atras
             self._save_subrequest_data(request_task, param_value_map)
-
-
 
     def _save_subrequest_data(
         self,

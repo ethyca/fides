@@ -1,7 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
 
-from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -9,10 +7,12 @@ from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
     get_strategy as get_async_strategy,
 )
@@ -30,9 +30,9 @@ from fides.api.task.execute_request_tasks import (
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
-from fides.api.util.collection_util import Row
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -143,7 +143,9 @@ def execute_read_polling_requests(
             sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
             for sub_request in sub_requests:
                 if sub_request.sub_request_status == ExecutionLogStatus.complete:
-                    logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. ")
+                    logger.info(
+                        f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. "
+                    )
                     continue
                 param_values = sub_request.param_values
 
@@ -151,11 +153,8 @@ def execute_read_polling_requests(
                 if status:
                     sub_request.update_status(db, ExecutionLogStatus.complete)
                     result = execute_result_request(
-                        db,
-                        polling_task,
-                        strategy,
-                        client,
-                        param_values)
+                        db, polling_task, strategy, client, param_values
+                    )
                     if isinstance(result, list[Row]):
                         rows.extend(result)
                     elif isinstance(result, str):
@@ -163,14 +162,18 @@ def execute_read_polling_requests(
                     elif isinstance(result, bytes):
                         raise PrivacyRequestError(f"File Support not yet implemented")
                     else:
-                        raise PrivacyRequestError(f"Unsupported result type: {type(result)}")
+                        raise PrivacyRequestError(
+                            f"Unsupported result type: {type(result)}"
+                        )
                 else:
-                    logger.info(f"Polling sub request - {sub_request.id}  for task {polling_task.id} still not Ready. ")
+                    logger.info(
+                        f"Polling sub request - {sub_request.id}  for task {polling_task.id} still not Ready. "
+                    )
                     pending_requests = True
                     continue
 
     if pending_requests:
-        #Save results for future polling
+        # Save results for future polling
         polling_task.access_data = rows.extend(polling_task.access_data)
         polling_task.save(db)
         logger.info(f"Polling task - {polling_task.id} still has pending requests. ")
@@ -181,6 +184,7 @@ def execute_read_polling_requests(
     polling_task.save(db)
     log_task_queued(polling_task, "polling success")
     queue_request_task(polling_task, privacy_request_proceed=True)
+
 
 def execute_result_request(
     db: Session,

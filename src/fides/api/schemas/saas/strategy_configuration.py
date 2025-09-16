@@ -184,8 +184,9 @@ class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
     """
     Base configuration for polling async DSR requests.
     """
+
     initial_request: SaaSRequest
-    correlation_id_path:  str
+    correlation_id_path: str
     status_request: SaaSRequest
     status_path: str
     status_completed_value: Optional[str] = None

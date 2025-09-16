@@ -2,12 +2,12 @@ from abc import abstractmethod
 from sqlite3 import Row
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 import pydash
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request.request_task import AsyncTaskType
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncDSRBaseConfiguration,
 )
@@ -33,9 +33,7 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
         self.result_path = configuration.result_path
 
     def execute_initial_request(
-        self,
-        client:AuthenticatedClient,
-        prepared_initial_request: SaaSRequestParams
+        self, client: AuthenticatedClient, prepared_initial_request: SaaSRequestParams
     ) -> Tuple[Response, Any]:
         """Execute initial request and return completion status."""
 
@@ -47,7 +45,6 @@ class PollingAsyncDSRBaseStrategy(AsyncDSRStrategy):
             raise PrivacyRequestError(
                 f"Initial request failed with status code {response.status_code}"
             )
-
 
     def get_status_request(
         self, client: AuthenticatedClient, param_values: Dict[str, Any]
