@@ -1,6 +1,7 @@
 import { Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -9,6 +10,7 @@ import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema"
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
+import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
@@ -78,13 +80,13 @@ const FormStateHandler = ({
 const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
-  onCancel,
+  onClose,
   description,
   onFormStateChange,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
-  onCancel: () => void;
+  onClose: () => void;
   description: React.ReactNode;
   onFormStateChange?: (formState: {
     dirty: boolean;
@@ -101,6 +103,7 @@ const ConfigureIntegrationForm = ({
     usePatchDatastoreConnectionMutation();
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
+  const router = useRouter();
 
   const [createUnlinkedSassConnectionConfigTrigger] =
     useCreateUnlinkedSassConnectionConfigMutation();
@@ -225,7 +228,7 @@ const ConfigureIntegrationForm = ({
           isEditing ? "updated" : "created"
         } successfully`,
       });
-      onCancel();
+      onClose();
       return;
     }
 
@@ -254,7 +257,18 @@ const ConfigureIntegrationForm = ({
         isEditing ? "updated" : "created"
       } successfully`,
     });
-    onCancel();
+
+    onClose();
+
+    // Redirect to the newly created integration detail page
+    if (!isEditing) {
+      router.push({
+        pathname: INTEGRATION_DETAIL_ROUTE,
+        query: {
+          id: connectionPayload.key,
+        },
+      });
+    }
 
     if (
       connectionPayload &&
