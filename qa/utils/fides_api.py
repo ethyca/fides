@@ -10,8 +10,13 @@ import requests
 class FidesAPI:
     """Helper class for interacting with the Fides API."""
 
-    def __init__(self, base_url: str = "http://localhost:8080", username: str = "root_user", password: str = "Testpassword1!"):
-        self.base_url = base_url.rstrip('/')
+    def __init__(
+        self,
+        base_url: str = "http://localhost:8080",
+        username: str = "root_user",
+        password: str = "Testpassword1!",
+    ):
+        self.base_url = base_url.rstrip("/")
         self.username = username
         self.password = password
         self.session = requests.Session()
@@ -24,23 +29,24 @@ class FidesAPI:
 
         try:
             auth_url = f"{self.base_url}/api/v1/login"
-            print("Authenticating with Fides API...")
+            # print("Authenticating with Fides API...")
             response = self.session.post(
-                auth_url,
-                json={"username": self.username, "password": self.password}
+                auth_url, json={"username": self.username, "password": self.password}
             )
             response.raise_for_status()
 
-            token_data = response.json().get('token_data', {})
-            self.access_token = token_data.get('access_token')
+            token_data = response.json().get("token_data", {})
+            self.access_token = token_data.get("access_token")
 
             if not self.access_token:
                 print("No access token in response")
                 return False
 
             # Set authorization header for future requests
-            self.session.headers.update({"Authorization": f"Bearer {self.access_token}"})
-            print("Authentication successful")
+            self.session.headers.update(
+                {"Authorization": f"Bearer {self.access_token}"}
+            )
+            # print("Authentication successful")
             return True
 
         except Exception as e:
@@ -84,24 +90,28 @@ class FidesAPI:
 
     def create_dataset(self, dataset_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new dataset."""
-        response = self._request('POST', '/api/v1/dataset', json=dataset_data)
+        response = self._request("POST", "/api/v1/dataset", json=dataset_data)
         return response.json()
 
     def create_system(self, system_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new system."""
-        response = self._request('POST', '/api/v1/system', json=system_data)
+        response = self._request("POST", "/api/v1/system", json=system_data)
         return response.json()
 
     def create_connection(self, connection_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new connection configuration."""
-        response = self._request('PATCH', '/api/v1/connection/', json=[connection_data])
+        response = self._request("PATCH", "/api/v1/connection/", json=[connection_data])
         return response.json()
 
-    def update_connection(self, connection_key: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
+    def update_connection(
+        self, connection_key: str, update_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update an existing connection configuration."""
         # First get the existing connection
         existing_connections = self.get_connections()
-        existing_connection = next((c for c in existing_connections if c.get('key') == connection_key), None)
+        existing_connection = next(
+            (c for c in existing_connections if c.get("key") == connection_key), None
+        )
 
         if not existing_connection:
             raise Exception(f"Connection {connection_key} not found")
@@ -110,24 +120,28 @@ class FidesAPI:
         connection_data = {**existing_connection, **update_data}
 
         # Use PATCH to update the connection
-        response = self._request('PATCH', '/api/v1/connection/', json=[connection_data])
+        response = self._request("PATCH", "/api/v1/connection/", json=[connection_data])
         return response.json()
 
-    def create_system_connection(self, system_key: str, connection_data: Dict[str, Any]) -> Dict[str, Any]:
+    def create_system_connection(
+        self, system_key: str, connection_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create a connection configuration linked to a specific system."""
-        response = self._request('PATCH', f'/api/v1/system/{system_key}/connection', json=[connection_data])
+        response = self._request(
+            "PATCH", f"/api/v1/system/{system_key}/connection", json=[connection_data]
+        )
         return response.json()
 
     def get_datasets(self) -> List[Dict[str, Any]]:
         """Get all datasets."""
-        response = self._request('GET', '/api/v1/dataset')
+        response = self._request("GET", "/api/v1/dataset")
         result = response.json()
         # Handle both paginated and non-paginated responses
         if isinstance(result, list):
             return result
         else:
             # Handle paginated response - return the items list
-            return result.get('items', [])
+            return result.get("items", [])
 
     def get_dataset(self, dataset_key: str) -> Dict[str, Any]:
         """Get a specific dataset by key."""
@@ -139,37 +153,37 @@ class FidesAPI:
 
     def get_systems(self) -> List[Dict[str, Any]]:
         """Get all systems."""
-        response = self._request('GET', '/api/v1/system')
+        response = self._request("GET", "/api/v1/system")
         result = response.json()
         # Handle both paginated and non-paginated responses
         if isinstance(result, list):
             return result
         else:
             # Handle paginated response - return the items list
-            return result.get('items', [])
+            return result.get("items", [])
 
     def get_connections(self) -> List[Dict[str, Any]]:
         """Get all connection configurations."""
-        response = self._request('GET', '/api/v1/connection/')
+        response = self._request("GET", "/api/v1/connection/")
         result = response.json()
         # Handle paginated response - return the items list
-        return result.get('items', [])
+        return result.get("items", [])
 
     def get_system_connections(self, system_key: str) -> List[Dict[str, Any]]:
         """Get all connections for a specific system."""
-        response = self._request('GET', f'/api/v1/system/{system_key}/connection')
+        response = self._request("GET", f"/api/v1/system/{system_key}/connection")
         result = response.json()
         # Handle both paginated and non-paginated responses
         if isinstance(result, list):
             return result
         else:
             # Handle paginated response - return the items list
-            return result.get('items', [])
+            return result.get("items", [])
 
     def get_system_by_key(self, system_key: str) -> Dict[str, Any]:
         """Get a system by its fides_key."""
         systems = self.get_systems()
-        system = next((s for s in systems if s.get('fides_key') == system_key), None)
+        system = next((s for s in systems if s.get("fides_key") == system_key), None)
         if not system:
             raise Exception(f"System {system_key} not found")
         return system
@@ -177,7 +191,7 @@ class FidesAPI:
     def delete_dataset(self, dataset_key: str) -> bool:
         """Delete a dataset by key. Returns True if deleted or already doesn't exist."""
         try:
-            self._request('DELETE', f'/api/v1/dataset/{dataset_key}')
+            self._request("DELETE", f"/api/v1/dataset/{dataset_key}")
             return True
         except requests.RequestException as e:
             # 404 means already deleted - that's success for our purposes
@@ -192,7 +206,7 @@ class FidesAPI:
     def delete_system(self, system_key: str) -> bool:
         """Delete a system by key. Returns True if deleted or already doesn't exist."""
         try:
-            self._request('DELETE', f'/api/v1/system/{system_key}')
+            self._request("DELETE", f"/api/v1/system/{system_key}")
             return True
         except requests.RequestException as e:
             # 404 means already deleted - that's success for our purposes
@@ -207,7 +221,7 @@ class FidesAPI:
     def delete_connection(self, connection_key: str) -> bool:
         """Delete a connection configuration by key. Returns True if deleted or already doesn't exist."""
         try:
-            self._request('DELETE', f'/api/v1/connection/{connection_key}')
+            self._request("DELETE", f"/api/v1/connection/{connection_key}")
             return True
         except requests.RequestException as e:
             # 404 means already deleted - that's success for our purposes
@@ -227,7 +241,9 @@ class FidesAPI:
         except requests.RequestException:
             return False
 
-    def link_datasets_to_connection(self, connection_key: str, dataset_keys: List[str]) -> Dict[str, Any]:
+    def link_datasets_to_connection(
+        self, connection_key: str, dataset_keys: List[str]
+    ) -> Dict[str, Any]:
         """Link multiple datasets to a connection using DatasetConfig."""
         # Create dataset pairs - each dataset links to itself as the CTL dataset
         dataset_pairs = [
@@ -235,7 +251,11 @@ class FidesAPI:
             for dataset_key in dataset_keys
         ]
 
-        response = self._request('PATCH', f'/api/v1/connection/{connection_key}/datasetconfig', json=dataset_pairs)
+        response = self._request(
+            "PATCH",
+            f"/api/v1/connection/{connection_key}/datasetconfig",
+            json=dataset_pairs,
+        )
         return response.json()
 
 
@@ -254,12 +274,24 @@ def generate_dataset(index: int) -> Dict[str, Any]:
                 "description": "User data",
                 "data_categories": [],
                 "fields": [
-                    {"name": "id", "description": "User ID", "data_categories": ["user.unique_id"]},
-                    {"name": "email", "description": "Email", "data_categories": ["user.contact.email"]},
-                    {"name": "name", "description": "Name", "data_categories": ["user.name"]}
-                ]
+                    {
+                        "name": "id",
+                        "description": "User ID",
+                        "data_categories": ["user.unique_id"],
+                    },
+                    {
+                        "name": "email",
+                        "description": "Email",
+                        "data_categories": ["user.contact.email"],
+                    },
+                    {
+                        "name": "name",
+                        "description": "Name",
+                        "data_categories": ["user.name"],
+                    },
+                ],
             }
-        ]
+        ],
     }
 
 
@@ -272,7 +304,7 @@ def generate_system(system_name: str, dataset_count: int) -> Dict[str, Any]:
         "description": f"Test system with {dataset_count} datasets for integration testing.",
         "system_type": "Service",
         "privacy_declarations": [],
-        "system_dependencies": []
+        "system_dependencies": [],
     }
 
 
@@ -292,7 +324,7 @@ def confirm_action(message: str) -> bool:
     """Ask user for confirmation. Returns True if confirmed."""
     try:
         response = input(f"{message} (y/N): ").strip().lower()
-        return response in ('y', 'yes')
+        return response in ("y", "yes")
     except (EOFError, KeyboardInterrupt):
         print("\nOperation cancelled")
         return False
