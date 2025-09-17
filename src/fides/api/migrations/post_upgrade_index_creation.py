@@ -153,6 +153,16 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_system_vendor_consent ON stagedresource (system_id, vendor_id, (meta->>'consent_aggregated'))",
             "type": "index",
         },
+        {
+            "name": "idx_stagedresource_user_categories_gin",
+            "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_user_categories_gin ON stagedresource USING GIN (user_assigned_data_categories);",
+            "type": "index",
+        },
+        {
+            "name": "idx_stagedresource_classifications_gin",
+            "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications);",
+            "type": "index",
+        },
     ],
 }
 
