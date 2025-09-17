@@ -5,13 +5,14 @@ Revises: 4d8c0fcc5771
 Create Date: 2025-09-15 20:23:15.715499
 
 """
-from alembic import op
+
 import sqlalchemy as sa
+from alembic import op
 from loguru import logger
 
 # revision identifiers, used by Alembic.
-revision = 'fcbca04460aa'
-down_revision = '4d8c0fcc5771'
+revision = "fcbca04460aa"
+down_revision = "4d8c0fcc5771"
 branch_labels = None
 depends_on = None
 
@@ -43,7 +44,9 @@ def upgrade():
         table_size = 0
 
     if table_size < 1000000:
-        logger.info(f"stagedresource table has {table_size} rows, creating GIN indices directly")
+        logger.info(
+            f"stagedresource table has {table_size} rows, creating GIN indices directly"
+        )
 
         # Create GIN index for user_assigned_data_categories array operations (&&, @>, <@)
         op.execute(
