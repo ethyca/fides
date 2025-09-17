@@ -309,7 +309,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Load secrets from 1Password
-        uses: 1password/load-secrets-action@v2
+        uses: 1password/load-secrets-action@v3
         with:
           # Export loaded secrets as environment variables
           export-env: true
@@ -371,7 +371,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Load secrets from 1Password
-        uses: 1password/load-secrets-action@v2
+        uses: 1password/load-secrets-action@v3
         with:
           # Export loaded secrets as environment variables
           export-env: true
