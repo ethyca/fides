@@ -191,7 +191,7 @@ class PollingAsyncDSRBaseConfiguration(StrategyConfiguration):
     status_path: str
     status_completed_value: Optional[str] = None
     result_request: SaaSRequest
-    result_path: str
+    result_path: Optional[str] = None
 
 
 class SupportedDataType(Enum):
