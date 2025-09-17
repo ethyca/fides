@@ -45,7 +45,7 @@ class TestSQLTranslatorIntegration:
         results = query.all()
 
         # Should find exactly one user
-        assert len(results) >= 1
+        assert len(results) == 1
 
     def test_privacy_request_query(self, translator, privacy_request):
         """Test privacy request query with existing fixture"""
