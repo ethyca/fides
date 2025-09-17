@@ -78,6 +78,20 @@ export const DiscoveryStatusBadgeCell = ({
           </Tag>
         </Tooltip>
       )}
+      {consentAggregated === ConsentStatus.CMP_ERROR && (
+        <Tooltip title="The Consent Management Platform (CMP) was not detected when the service ran. It likely failed to load or wasn't available.">
+          <Tag data-testid="status-badge_cmp-error">
+            {DiscoveryStatusDisplayNames.CMP_ERROR}
+          </Tag>
+        </Tooltip>
+      )}
+      {consentAggregated === ConsentStatus.PRE_CONSENT && (
+        <Tooltip title="Assets loaded before the user had a chance to give consent. This violates opt-in compliance requirements if your CMP is configured for explicit consent.">
+          <Tag data-testid="status-badge_pre-consent">
+            {DiscoveryStatusDisplayNames.PRE_CONSENT}
+          </Tag>
+        </Tooltip>
+      )}
     </>
   );
 };
