@@ -123,6 +123,13 @@ export const ConnectorParametersForm = ({
                 `${datasetReference.dataset}.${datasetReference.field}`;
             }
           }
+          // Convert boolean secret values to string so they correctly match ControlledSelect options
+          if (secretsSchema.properties[key]?.type === "boolean") {
+            const boolVal = initialValues.secrets[key];
+            if (typeof boolVal === "boolean") {
+              initialValues.secrets[key] = boolVal.toString();
+            }
+          }
         });
       }
       return initialValues;
