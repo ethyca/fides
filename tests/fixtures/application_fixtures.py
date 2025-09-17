@@ -515,7 +515,9 @@ def https_connection_config(db: Session) -> Generator[ConnectionConfig, None, No
 
 
 @pytest.fixture(scope="function")
-def https_connection_config_with_oauth(db: Session) -> Generator:
+def https_connection_config_with_oauth(
+    db: Session,
+) -> Generator[ConnectionConfig, None, None]:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,

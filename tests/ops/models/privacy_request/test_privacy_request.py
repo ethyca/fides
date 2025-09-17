@@ -495,6 +495,11 @@ class TestPrivacyRequestTriggerWebhooks:
                 additional_matcher=request_contains_oauth_bearer_token,
             )
 
+            with pytest.raises(PrivacyRequestPaused):
+                privacy_request.trigger_policy_webhook(webhook)
+
+            assert mock_response.call_count == 2
+
     def test_payload_contains_expected_fields(
         self,
         db,
