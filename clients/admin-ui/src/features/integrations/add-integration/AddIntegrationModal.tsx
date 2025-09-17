@@ -176,7 +176,7 @@ const AddIntegrationModal = ({
       {step === IntegrationModalStep.FORM && (
         <ConfigureIntegrationForm
           connectionOption={connectionOption!}
-          onCancel={handleCancel}
+          onClose={handleCancel}
           description={description}
           onFormStateChange={setFormState}
         />
