@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
+  AntPopover as Popover,
   AntSelect as Select,
   AntSpace as Space,
   AntTypography as Typography,
@@ -45,11 +46,7 @@ export const InProgressMonitorTasksList = ({
     updateSearch,
 
     // Filter states and controls
-    connectionNameFilters,
-    taskTypeFilters,
     statusFilters,
-    updateConnectionNameFilters,
-    updateTaskTypeFilters,
     updateStatusFilters,
 
     // Filter actions
@@ -57,8 +54,6 @@ export const InProgressMonitorTasksList = ({
     clearAllFilters,
 
     // Available filter options
-    availableConnectionNames,
-    availableTaskTypes,
     availableStatuses,
 
     // Ant Design list integration
@@ -70,11 +65,32 @@ export const InProgressMonitorTasksList = ({
   } = useInProgressMonitorTasksList({ monitorId });
 
   // Count active filters
-  const activeFilterCount = connectionNameFilters.length + taskTypeFilters.length + statusFilters.length;
+  const activeFilterCount = statusFilters.length;
 
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-  };
+  const filterContent = (
+    <div style={{ padding: "8px", minWidth: "200px" }}>
+      <Select
+        mode="multiple"
+        placeholder="Select status..."
+        value={statusFilters}
+        onChange={updateStatusFilters}
+        style={{ width: "100%", marginBottom: "12px" }}
+        options={availableStatuses.map(status => ({
+          label: formatStatusForDisplay(status),
+          value: status,
+        }))}
+        allowClear
+      />
+      <Space>
+        <Button size="small" onClick={resetToDefault}>
+          Default
+        </Button>
+        <Button size="small" onClick={clearAllFilters}>
+          Clear
+        </Button>
+      </Space>
+    </div>
+  );
 
   return (
     <>
@@ -87,12 +103,15 @@ export const InProgressMonitorTasksList = ({
           style={{ minWidth: "300px" }}
         />
 
-        {/* Filter Buttons */}
-        <Space>
-          <Button
-            onClick={toggleFilters}
-            style={{ display: "flex", alignItems: "center", gap: "6px" }}
-          >
+        {/* Filter Popover */}
+        <Popover
+          content={filterContent}
+          trigger="click"
+          placement="bottomRight"
+          open={showFilters}
+          onOpenChange={setShowFilters}
+        >
+          <Button style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span>Filter</span>
               {activeFilterCount > 0 && (
@@ -113,69 +132,8 @@ export const InProgressMonitorTasksList = ({
             </span>
             {showFilters ? <Icons.ChevronDown /> : <Icons.ChevronRight />}
           </Button>
-
-          <Button onClick={resetToDefault}>
-            Default
-          </Button>
-
-          <Button onClick={clearAllFilters}>
-            Clear
-          </Button>
-        </Space>
+        </Popover>
       </Flex>
-
-      {/* Collapsible Filter Section */}
-      {showFilters && (
-        <div style={{
-          background: "#fafafa",
-          border: "1px solid #f0f0f0",
-          borderRadius: "6px",
-          padding: "16px",
-          marginBottom: "16px"
-        }}>
-          <Flex gap={16} align="center" wrap="wrap">
-
-            <Select
-              mode="multiple"
-              placeholder="Connection"
-              value={connectionNameFilters}
-              onChange={updateConnectionNameFilters}
-              style={{ minWidth: "150px" }}
-              options={availableConnectionNames.map(name => ({
-                label: name,
-                value: name,
-              }))}
-              allowClear
-            />
-
-            <Select
-              mode="multiple"
-              placeholder="Task Type"
-              value={taskTypeFilters}
-              onChange={updateTaskTypeFilters}
-              style={{ minWidth: "150px" }}
-              options={availableTaskTypes.map(type => ({
-                label: type.charAt(0).toUpperCase() + type.slice(1),
-                value: type,
-              }))}
-              allowClear
-            />
-
-            <Select
-              mode="multiple"
-              placeholder="Status"
-              value={statusFilters}
-              onChange={updateStatusFilters}
-              style={{ minWidth: "150px" }}
-              options={availableStatuses.map(status => ({
-                label: formatStatusForDisplay(status),
-                value: status,
-              }))}
-              allowClear
-            />
-          </Flex>
-        </div>
-      )}
 
       <List
         {...listProps}

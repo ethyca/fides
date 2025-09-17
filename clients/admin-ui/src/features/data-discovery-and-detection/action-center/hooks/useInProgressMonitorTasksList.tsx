@@ -15,23 +15,11 @@ export const useInProgressMonitorTasksList = ({
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
-  const [connectionNameFilters, setConnectionNameFilters] = useState<string[]>([]);
-  const [taskTypeFilters, setTaskTypeFilters] = useState<string[]>([]);
   const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "paused", "retrying", "error"]); // Default to all "in progress" states plus error tasks
 
   const updateSearch = useCallback((newSearch: string) => {
     setSearchQuery(newSearch);
     setPageIndex(1); // Reset to first page when searching
-  }, []);
-
-  const updateConnectionNameFilters = useCallback((filters: string[]) => {
-    setConnectionNameFilters(filters);
-    setPageIndex(1);
-  }, []);
-
-  const updateTaskTypeFilters = useCallback((filters: string[]) => {
-    setTaskTypeFilters(filters);
-    setPageIndex(1);
   }, []);
 
   const updateStatusFilters = useCallback((filters: string[]) => {
@@ -41,16 +29,12 @@ export const useInProgressMonitorTasksList = ({
 
   // Default button: Reset to all "In Progress" states plus error tasks (pending, in_processing, paused, retrying, error)
   const resetToDefault = useCallback(() => {
-    setConnectionNameFilters([]);
-    setTaskTypeFilters([]);
     setStatusFilters(["pending", "in_processing", "paused", "retrying", "error"]);
     setPageIndex(1);
   }, []);
 
   // Clear button: Remove all filters
   const clearAllFilters = useCallback(() => {
-    setConnectionNameFilters([]);
-    setTaskTypeFilters([]);
     setStatusFilters([]);
     setPageIndex(1);
   }, []);
@@ -71,31 +55,8 @@ export const useInProgressMonitorTasksList = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    connection_names: connectionNameFilters.length > 0 ? connectionNameFilters : undefined,
-    task_types: taskTypeFilters.length > 0 ? taskTypeFilters : undefined,
     statuses: statusFilters.length > 0 ? statusFilters : undefined,
   });
-
-  // Extract unique values for filter options
-  const availableConnectionNames = useMemo(() => {
-    const names = new Set<string>();
-    data?.items?.forEach(item => {
-      if (item.connection_name) {
-        names.add(item.connection_name);
-      }
-    });
-    return Array.from(names).sort();
-  }, [data?.items]);
-
-  const availableTaskTypes = useMemo(() => {
-    const types = new Set<string>();
-    data?.items?.forEach(item => {
-      if (item.action_type) {
-        types.add(item.action_type);
-      }
-    });
-    return Array.from(types).sort();
-  }, [data?.items]);
 
   // Use all possible statuses instead of just what's in current data
   const availableStatuses = allPossibleStatuses;
@@ -130,11 +91,7 @@ export const useInProgressMonitorTasksList = ({
     updateSearch,
 
     // Filter states and controls
-    connectionNameFilters,
-    taskTypeFilters,
     statusFilters,
-    updateConnectionNameFilters,
-    updateTaskTypeFilters,
     updateStatusFilters,
 
     // Filter actions
@@ -142,8 +99,6 @@ export const useInProgressMonitorTasksList = ({
     clearAllFilters,
 
     // Available filter options
-    availableConnectionNames,
-    availableTaskTypes,
     availableStatuses,
 
     // Ant Design list integration
