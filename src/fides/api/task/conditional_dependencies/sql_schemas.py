@@ -1,7 +1,9 @@
+import types
+import uuid
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, bindparam
+from sqlalchemy import Column, any_, bindparam
 
 from fides.api.task.conditional_dependencies.schemas import Operator
 
@@ -32,9 +34,9 @@ def _handle_list_contains(col: Column, val: Any) -> Column:
     if hasattr(col.type, "item_type") or str(col.type).startswith("ARRAY"):
         # This is a PostgreSQL array - use the ANY operator with proper parameter binding
         # This is safer and prevents SQL injection
-        from sqlalchemy import any_
-
-        param = bindparam("array_val", val)
+        # Generate unique parameter name to avoid conflicts when multiple list operations exist in same query
+        unique_param_name = f"array_val_{uuid.uuid4().hex[:8]}"
+        param = bindparam(unique_param_name, val)
         return param == any_(col)
 
     # Try JSON containment for JSONB/JSON columns
@@ -45,21 +47,23 @@ def _handle_list_contains(col: Column, val: Any) -> Column:
         return col.like(f"%{val}%")
 
 
-OPERATOR_MAP = {
-    Operator.eq: lambda col, val: col == val,
-    Operator.neq: lambda col, val: col != val,
-    Operator.lt: lambda col, val: col < val,
-    Operator.lte: lambda col, val: col <= val,
-    Operator.gt: lambda col, val: col > val,
-    Operator.gte: lambda col, val: col >= val,
-    Operator.contains: lambda col, val: col.like(f"%{val}%"),
-    Operator.starts_with: lambda col, val: col.like(f"{val}%"),
-    Operator.ends_with: lambda col, val: col.like(f"%{val}"),
-    Operator.exists: lambda col, val: col.isnot(None),
-    Operator.not_exists: lambda col, val: col.is_(None),
-    Operator.list_contains: _handle_list_contains,
-    Operator.not_in_list: lambda col, val: ~_handle_list_contains(col, val),
-}
+OPERATOR_MAP = types.MappingProxyType(
+    {
+        Operator.eq: lambda col, val: col == val,
+        Operator.neq: lambda col, val: col != val,
+        Operator.lt: lambda col, val: col < val,
+        Operator.lte: lambda col, val: col <= val,
+        Operator.gt: lambda col, val: col > val,
+        Operator.gte: lambda col, val: col >= val,
+        Operator.contains: lambda col, val: col.like(f"%{val}%"),
+        Operator.starts_with: lambda col, val: col.like(f"{val}%"),
+        Operator.ends_with: lambda col, val: col.like(f"%{val}"),
+        Operator.exists: lambda col, val: col.isnot(None),
+        Operator.not_exists: lambda col, val: col.is_(None),
+        Operator.list_contains: _handle_list_contains,
+        Operator.not_in_list: lambda col, val: ~_handle_list_contains(col, val),
+    }
+)
 
 
 class FieldAddress(BaseModel):

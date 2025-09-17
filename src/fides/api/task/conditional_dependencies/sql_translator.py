@@ -571,7 +571,6 @@ class SQLConditionTranslator:
             return None
 
         model_class = model_classes[field_addr.table_name]
-        model_name = getattr(model_class, "__name__", str(model_class))
         field_name = field_addr.column_name
         # Always check if the column exists first
         if hasattr(model_class, field_addr.column_name):

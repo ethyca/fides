@@ -1,8 +1,10 @@
+import re
+import types
 from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 from pytest import param
-from sqlalchemy import Boolean, Column, String
+from sqlalchemy import ARRAY, Boolean, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from fides.api.task.conditional_dependencies.schemas import Operator
@@ -79,6 +81,42 @@ class TestHandleListContains:
             mock_contains.assert_called_once_with("test_value")
             mock_like.assert_called_once_with("%test_value%")
             assert result == "LIKE result"
+
+    def test_multiple_list_contains_unique_parameters(self):
+        """Test that multiple list_contains operations generate unique parameter names"""
+
+        # Create array columns to trigger the parameter binding path
+        array_column_1 = Column(ARRAY(Integer), name="array_col_1")
+        array_column_2 = Column(ARRAY(Integer), name="array_col_2")
+
+        # Call _handle_list_contains multiple times with single values
+        result_1 = _handle_list_contains(array_column_1, 42)
+        result_2 = _handle_list_contains(array_column_2, 99)
+
+        # Both should return valid expressions
+        assert result_1 is not None
+        assert result_2 is not None
+
+        # Convert to strings to inspect the generated SQL
+        sql_1 = str(result_1)
+        sql_2 = str(result_2)
+
+        # Both should contain different parameter names (no conflict)
+        # Extract parameter names from the SQL strings
+        param_pattern = r"array_val_[a-f0-9]{8}"
+
+        params_1 = re.findall(param_pattern, sql_1)
+        params_2 = re.findall(param_pattern, sql_2)
+
+        # Should have found parameters in both
+        assert len(params_1) > 0, f"No unique parameters found in: {sql_1}"
+        assert len(params_2) > 0, f"No unique parameters found in: {sql_2}"
+
+        # Parameters should be different to avoid conflicts
+        if params_1 and params_2:
+            assert (
+                params_1[0] != params_2[0]
+            ), f"Parameter names should be unique: {params_1[0]} vs {params_2[0]}"
 
 
 class TestFieldAddress:
@@ -394,22 +432,37 @@ class TestOperatorMap:
         assert callable(ends_with_func)
 
     def test_operator_map_immutability(self):
-        """Test that OPERATOR_MAP is not accidentally modified"""
+        """Test that OPERATOR_MAP is truly immutable"""
+        # Verify OPERATOR_MAP is a MappingProxyType (immutable)
+        assert isinstance(OPERATOR_MAP, types.MappingProxyType)
+
         original_keys = set(OPERATOR_MAP.keys())
         original_size = len(OPERATOR_MAP)
+        # Test the original behavior
+        original_eq_result = str(
+            OPERATOR_MAP[Operator.eq](self.test_column, "test_value")
+        )
 
-        # Try to modify (this should not affect the original)
-        try:
-            OPERATOR_MAP[Operator.eq] = (
-                lambda x, y: x == y
-            )  # This should work but not affect the original
-        except TypeError:
-            # If it's immutable, that's good
-            pass
+        # Try to modify - this should raise TypeError since it's immutable
+        with pytest.raises(TypeError, match="does not support item assignment"):
+            OPERATOR_MAP[Operator.eq] = lambda x, y: x == y
 
-        # Verify the original is unchanged
+        # Try to clear - this should also raise TypeError
+        with pytest.raises(AttributeError):
+            OPERATOR_MAP.clear()
+
+        # Try to update - this should also raise AttributeError
+        with pytest.raises(AttributeError):
+            OPERATOR_MAP.update({})
+
+        # Verify the original is unchanged (should be identical)
         assert set(OPERATOR_MAP.keys()) == original_keys
         assert len(OPERATOR_MAP) == original_size
+        # Verify the function behavior is the same
+        current_eq_result = str(
+            OPERATOR_MAP[Operator.eq](self.test_column, "test_value")
+        )
+        assert current_eq_result == original_eq_result
 
 
 class TestFieldAddressEdgeCases:

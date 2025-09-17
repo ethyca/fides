@@ -1081,7 +1081,12 @@ class TestFindRelationshipPath:
 
     def test_fetch_join_path_with_reverse_relationship(self, translator):
         """Test _fetch_join_path when reverse relationship path is found"""
-        translator._find_relationship_path(ManualTaskInstance, PrivacyRequest)
+        join_path = translator._find_relationship_path(
+            ManualTaskInstance, PrivacyRequest
+        )
+        assert join_path == translator._find_relationship_path(
+            PrivacyRequest, ManualTaskInstance
+        )
 
     def test_fetch_join_path_with_intermediate_path(self, translator):
         """Test _fetch_join_path when intermediate relationship path is found"""
