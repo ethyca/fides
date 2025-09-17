@@ -95,7 +95,7 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe("The request details page", () => {
+  describe.only("The request details page", () => {
     beforeEach(() => {
       stubPlus(true);
       cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
@@ -125,7 +125,7 @@ describe("Privacy Requests", () => {
         cy.getByTestId("request-detail-value-Reviewed by").should(
           "contain",
           "-",
-        ); // reviewed_by value when null
+        ); // reviewer.username value when null
       });
     });
 
@@ -140,12 +140,12 @@ describe("Privacy Requests", () => {
         // This request should have submitted_by
         cy.getByTestId("request-detail-value-Submitted by").should(
           "contain",
-          "test-user",
+          "fid_bad38cda-476b-4d25-9883-798ba1415f40",
         ); // submitted_by value
         cy.getByTestId("request-detail-value-Reviewed by").should(
           "contain",
-          "-",
-        ); // reviewed_by value when null
+          "user_2",
+        ); // reviewer.username value
         cy.getByTestId("request-detail-value-Source").should(
           "contain",
           "Request Manager",

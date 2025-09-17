@@ -64,7 +64,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           </RequestDetailsRow>
         )}
         <RequestDetailsRow label="Reviewed by">
-          <Typography.Text>{subjectRequest.reviewed_by || "-"}</Typography.Text>
+          <Typography.Text>
+            {subjectRequest.reviewer?.username || "-"}
+          </Typography.Text>
         </RequestDetailsRow>
 
         {Object.entries(identity)

@@ -398,10 +398,13 @@
       "id": "pri_request_manager_test-1234-5678-9abc-def012345678",
       "created_at": "2023-01-27T01:00:00.000000+00:00",
       "started_processing_at": null,
-      "reviewed_at": null,
-      "reviewed_by": null,
-      "submitted_by": "test-user",
-      "reviewer": null,
+      "reviewed_at": "2023-01-27T02:00:00.000000+00:00",
+      "reviewed_by": "fid_560cceb5-f567-4d76-a905-1e16ada1c143",
+      "submitted_by": "fid_bad38cda-476b-4d25-9883-798ba1415f40",
+      "reviewer": {
+        "id": "fid_560cceb5-f567-4d76-a905-1e16ada1c143",
+        "username": "user_2"
+      },
       "finished_processing_at": null,
       "identity_verified_at": null,
       "paused_at": null,
