@@ -236,17 +236,11 @@ class SQLConditionTranslator:
 
             # Consider it a potential join table if it matches name patterns OR has relationships
             if has_relationships:
-                logger.debug(
-                    f"Found potential join table: {table_name} (has_relationships: {mapper.relationships})"
-                )
                 # Try to find related main tables through relationships
                 main_tables = self._find_related_main_tables(model_class, table_name)
                 for main_table_name, main_model_class in main_tables.items():
                     if main_table_name not in expanded_model_classes:
                         expanded_model_classes[main_table_name] = main_model_class
-                        logger.debug(
-                            f"Added related main table: {main_table_name} -> {main_model_class.__name__}"
-                        )
 
         return expanded_model_classes
 
@@ -511,24 +505,17 @@ class SQLConditionTranslator:
         # Check direct relationships bi-directional
         for m, t in [(mapper, to_model), (target_mapper, from_model)]:
             join_path[m.class_] = []
-            logger.debug(
-                f"Checking {m.class_.__name__} for relationships to {t.__name__}"
-            )
+
             for relationship_name, relationship_prop in m.relationships.items():
                 if isinstance(relationship_prop, RelationshipProperty):
                     relationship_target_mapper = relationship_prop.mapper
                     if relationship_target_mapper.class_ == t:
                         # Direct relationship found
-                        logger.debug(
-                            f"Found direct relationship: {m.class_.__name__}.{relationship_name} -> {relationship_target_mapper.class_.__name__}"
-                        )
                         join_path[m.class_].append(getattr(m.class_, relationship_name))
 
         # Return non-empty path if it exists
         from_model_path = join_path[mapper.class_]
         to_model_path = join_path[target_mapper.class_]
-        logger.debug(f"Join path: {join_path[mapper.class_]}")
-        logger.debug(f"Join path: {join_path[target_mapper.class_]}")
 
         # Prefer forward relationships (from source to target) over reverse relationships
         if len(from_model_path) > 0:
@@ -595,21 +582,16 @@ class SQLConditionTranslator:
             if hasattr(attr, "property") and isinstance(
                 attr.property, RelationshipProperty
             ):
-                logger.debug(f"Found relationship {field_name} on {model_name}")
                 return self._handle_relationship_condition(attr, condition)
 
             # Check if it's a regular property
             if isinstance(attr, property):
-                logger.debug(f"Found property {field_name} on {model_name}")
                 # Try to find a SQL equivalent for the property - This currently raises an error.
                 return self._handle_property_condition(
                     model_class, field_name, attr, condition
                 )
 
             if field_addr.json_path is not None and len(field_addr.json_path) > 0:
-                logger.debug(
-                    f"Found JSON path {field_name}.{field_addr.json_path} on {model_name}"
-                )
                 # Build JSON path expression safely using SQLAlchemy's chained [] operators
                 json_path_components = field_addr.json_path
                 for (
@@ -620,7 +602,6 @@ class SQLConditionTranslator:
                 return self._apply_operator_to_column(
                     attr, condition.operator, condition.value
                 )
-            logger.debug(f"Found column {field_name} on {model_name}")
             return self._apply_operator_to_column(
                 attr, condition.operator, condition.value
             )
