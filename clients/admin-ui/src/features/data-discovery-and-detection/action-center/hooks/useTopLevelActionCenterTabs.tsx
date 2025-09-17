@@ -19,7 +19,7 @@ const useTopLevelActionCenterTabs = () => {
         hash: TopLevelActionCenterTabHash.ATTENTION_REQUIRED,
       },
       {
-        label: "In progress",
+        label: "Activity",
         hash: TopLevelActionCenterTabHash.IN_PROGRESS,
       },
     ],
