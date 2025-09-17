@@ -19,6 +19,11 @@ const { Text, Title } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
+  // Special case: "paused" should display as "Awaiting Processing"
+  if (status === "paused") {
+    return "Awaiting Processing";
+  }
+
   return status
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -58,6 +63,12 @@ export const InProgressMonitorTaskItem = ({
         return "green";
       case "error":
         return "red";
+      case "paused": // This is the actual enum value for "awaiting_processing"
+        return "purple";
+      case "retrying":
+        return "orange";
+      case "skipped":
+        return "gray";
       default:
         return "gray";
     }

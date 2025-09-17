@@ -19,6 +19,11 @@ const { Text } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
+  // Special case: "paused" should display as "Awaiting Processing"
+  if (status === "paused") {
+    return "Awaiting Processing";
+  }
+
   return status
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))

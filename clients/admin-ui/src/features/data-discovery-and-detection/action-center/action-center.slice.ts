@@ -320,39 +320,52 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       providesTags: ["Discovery Monitor Results"],
     }),
-    getInProgressMonitorTasks: build.query<
-      { items: MonitorTaskInProgressResponse[]; total: number; page: number; pages: number; size: number },
-      SearchQueryParams & PaginationQueryParams & {
-        show_completed?: boolean;
-        connection_names?: string[];
-        task_types?: string[];
-        statuses?: string[];
-      }
-    >({
-      query: ({ page = 1, size = 20, search, show_completed, connection_names, task_types, statuses }) => ({
-        url: `/monitor-tasks/in-progress`,
-        params: {
-          page,
-          size,
-          search,
-          show_completed,
-          connection_names,
-          task_types,
-          statuses,
-        },
-      }),
-      providesTags: ["Monitor Tasks"],
-    }),
-    retryMonitorTask: build.mutation<
-      { message: string; task_id: string; new_celery_id: string; status: string },
-      { taskId: string }
-    >({
-      query: ({ taskId }) => ({
-        url: `/monitor-tasks/${taskId}/retry`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Monitor Tasks"],
-    }),
+            getInProgressMonitorTasks: build.query<
+              { items: MonitorTaskInProgressResponse[]; total: number; page: number; pages: number; size: number },
+              SearchQueryParams & PaginationQueryParams & {
+                connection_names?: string[];
+                task_types?: string[];
+                statuses?: string[];
+              }
+            >({
+              query: ({ page = 1, size = 20, search, connection_names, task_types, statuses }) => {
+                const params = new URLSearchParams({
+                  page: page.toString(),
+                  size: size.toString(),
+                });
+
+                if (search) {
+                  params.append('search', search);
+                }
+
+                if (connection_names?.length) {
+                  connection_names.forEach(name => params.append('connection_names', name));
+                }
+
+                if (task_types?.length) {
+                  task_types.forEach(type => params.append('action_type', type));
+                }
+
+                if (statuses?.length) {
+                  statuses.forEach(status => params.append('status', status));
+                }
+
+                return {
+                  url: `/plus/discovery-monitor/tasks?${params.toString()}`,
+                };
+              },
+              providesTags: ["Monitor Tasks"],
+            }),
+            retryMonitorTask: build.mutation<
+              { id: string; monitor_config_id: string; action_type: string; status: string; celery_id: string },
+              { taskId: string }
+            >({
+              query: ({ taskId }) => ({
+                url: `/plus/discovery-monitor/tasks/${taskId}/retry`,
+                method: "POST",
+              }),
+              invalidatesTags: ["Monitor Tasks"],
+            }),
   }),
 });
 
