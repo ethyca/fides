@@ -2,7 +2,7 @@ import enum
 
 from sqlalchemy import Column, Enum, String, ForeignKey
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declared_attr
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -25,6 +25,11 @@ class OAuthConfig(Base):
     """
     Stores credentials to connect fidesops to anything that uses OAuth2 for authentication.
     """
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "oauth_config"
 
     connection_config_id = Column(
         String, ForeignKey(ConnectionConfig.id_field_path), nullable=False

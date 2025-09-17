@@ -9,10 +9,7 @@ from fides.api.schemas.base_class import NoValidationSchema
 class OAuthGrantType(str, Enum):
     """OAuth2 grant types supported by the system"""
 
-    authorization_code = "authorization_code"
     client_credentials = "client_credentials"
-    password = "password"
-    implicit = "implicit"
 
 
 class OAuthConfigSchema(BaseModel):
