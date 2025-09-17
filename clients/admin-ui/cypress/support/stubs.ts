@@ -382,6 +382,30 @@ export const stubPrivacyRequests = (
         },
         { fixture: "privacy-requests/list.json" },
       ).as("getPrivacyRequests");
+
+      // Add specific stub for Request Manager request
+      cy.intercept(
+        {
+          method: "GET",
+          pathname: "/api/v1/privacy-request",
+          query: {
+            include_identities: "true",
+            request_id: "pri_request_manager_test-1234-5678-9abc-def012345678",
+          },
+        },
+        {
+          body: {
+            items: [
+              privacyRequests.items.find(
+                (item) =>
+                  item.id ===
+                  "pri_request_manager_test-1234-5678-9abc-def012345678",
+              ),
+            ],
+            total: 1,
+          },
+        },
+      ).as("getPrivacyRequestManager");
     },
   );
 

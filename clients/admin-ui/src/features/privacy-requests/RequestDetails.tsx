@@ -58,6 +58,14 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
           )}
         </RequestDetailsRow>
+        {subjectRequest.submitted_by && (
+          <RequestDetailsRow label="Submitted by">
+            <Typography.Text>{subjectRequest.submitted_by}</Typography.Text>
+          </RequestDetailsRow>
+        )}
+        <RequestDetailsRow label="Reviewed by">
+          <Typography.Text>{subjectRequest.reviewed_by || "-"}</Typography.Text>
+        </RequestDetailsRow>
 
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)

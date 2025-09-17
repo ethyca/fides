@@ -38,7 +38,7 @@ describe("Privacy Requests", () => {
 
     // TODO: add multi-page stubs to test the pagination controls.
     it("shows the first page of results", () => {
-      cy.get("@rowsNew").should("have.length", 4);
+      cy.get("@rowsNew").should("have.length", 5); // Updated to include the new Request Manager request
       cy.get("@rowsCompleted").should("have.length", 3);
       cy.get("@rowsError").should("have.length", 1);
     });
@@ -97,6 +97,7 @@ describe("Privacy Requests", () => {
 
   describe("The request details page", () => {
     beforeEach(() => {
+      stubPlus(true);
       cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
         cy.visit(`/privacy-requests/${privacyRequest.id}`);
       });
@@ -109,6 +110,46 @@ describe("Privacy Requests", () => {
           .should("have.prop", "value")
           .should("match", /pri_/);
         cy.getByTestId("request-status-badge").contains("New");
+
+        // Core metadata assertions
+        cy.getByTestId("request-status-badge").should("exist");
+        cy.contains("Time remaining").should("exist");
+        cy.contains("Request type").should("exist");
+        cy.getByTestId("request-detail-value-Source").should(
+          "contain",
+          "Privacy Center",
+        ); // source value for Privacy Center requests
+        cy.contains("Subject email").should("exist");
+
+        // Reviewed by should always exist with proper value
+        cy.getByTestId("request-detail-value-Reviewed by").should(
+          "contain",
+          "-",
+        ); // reviewed_by value when null
+      });
+    });
+
+    it("shows submitted_by when source is Request Manager", () => {
+      // Navigate to the specific request that has submitted_by
+      cy.visit(
+        "/privacy-requests/pri_request_manager_test-1234-5678-9abc-def012345678",
+      );
+      cy.wait("@getPrivacyRequestManager");
+
+      cy.getByTestId("privacy-request-details").within(() => {
+        // This request should have submitted_by
+        cy.getByTestId("request-detail-value-Submitted by").should(
+          "contain",
+          "test-user",
+        ); // submitted_by value
+        cy.getByTestId("request-detail-value-Reviewed by").should(
+          "contain",
+          "-",
+        ); // reviewed_by value when null
+        cy.getByTestId("request-detail-value-Source").should(
+          "contain",
+          "Request Manager",
+        ); // source value for Request Manager requests
       });
     });
 

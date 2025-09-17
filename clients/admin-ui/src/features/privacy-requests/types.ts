@@ -100,6 +100,7 @@ export interface PrivacyRequestEntity {
   };
   created_at: string;
   reviewed_by: string;
+  submitted_by?: string;
   finalized_at?: string;
   finalized_by?: string;
   id: string;

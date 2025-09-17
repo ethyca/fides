@@ -17,6 +17,7 @@ export type PrivacyRequestResponse = {
   started_processing_at?: string | null;
   reviewed_at?: string | null;
   reviewed_by?: string | null;
+  submitted_by?: string | null;
   reviewer?: PrivacyRequestReviewer | null;
   finished_processing_at?: string | null;
   identity_verified_at?: string | null;

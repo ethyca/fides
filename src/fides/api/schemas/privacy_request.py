@@ -316,6 +316,7 @@ class PrivacyRequestResponse(FidesSchema):
     started_processing_at: Optional[datetime] = None
     reviewed_at: Optional[datetime] = None
     reviewed_by: Optional[str] = None
+    submitted_by: Optional[str] = None
     reviewer: Optional[PrivacyRequestReviewer] = None
     finished_processing_at: Optional[datetime] = None
     identity_verified_at: Optional[datetime] = None
