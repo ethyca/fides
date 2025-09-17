@@ -1,13 +1,11 @@
-# src/fides/api/models/conditional_dependency_base.py
 from enum import Enum
 from typing import Any, Optional
 
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import func
 
-from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
