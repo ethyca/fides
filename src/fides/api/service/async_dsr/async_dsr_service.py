@@ -59,7 +59,7 @@ def execute_polling_task(
 
         privacy_request: PrivacyRequest = polling_task.privacy_request
         # Check that the privacy request is in requires_input. Setting that status to avoid erroring out in requeue_interrupted_tasks
-        if privacy_request.status != PrivacyRequestStatus.requires_input:
+        if privacy_request.status != PrivacyRequestStatus.in_processing:
             polling_task.status = ExecutionLogStatus.error
             polling_task.save(db)
             raise PrivacyRequestError(

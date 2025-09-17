@@ -681,6 +681,26 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
+                            # Check if the Privacy request has a polling Rqeuest Task, that it exists
+                            polling_request_task_exists = db.query(
+                                db.query(RequestTask)
+                                .filter(
+                                    RequestTask.privacy_request_id == privacy_request.id,
+                                    RequestTask.async_type == AsyncTaskType.polling,
+                                )
+                                .exists()
+                            ).scalar()
+
+                            if polling_request_task_exists:
+                                # If the polling request task has no cached task ID, it's stuck
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) Contains polling tasks - "
+                                    f"keeping request in current status as it may be waiting for polling task to complete"
+                                )
+                                should_requeue = False
+                                break
+
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
                                 db,

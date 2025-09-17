@@ -407,16 +407,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             param_value_map["correlation_id"] = correlation_id
             self._save_subrequest_data(request_task, param_value_map)
 
-            # Set the privacy request status to requires_input to avoid erroring out in requeue_interrupted_tasks
-            existing_session = Session.object_session(privacy_request)
-            if existing_session:
-                privacy_request.status = PrivacyRequestStatus.requires_input
-                privacy_request.save(existing_session)
-            else:
-                # Fallback to creating a new session if no existing session found
-                with get_db() as db:
-                    privacy_request.status = PrivacyRequestStatus.requires_input
-                    privacy_request.save(db)
 
     def _save_subrequest_data(
         self,
