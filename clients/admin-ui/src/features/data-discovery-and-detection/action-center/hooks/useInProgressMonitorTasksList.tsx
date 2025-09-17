@@ -17,7 +17,7 @@ export const useInProgressMonitorTasksList = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [connectionNameFilters, setConnectionNameFilters] = useState<string[]>([]);
   const [taskTypeFilters, setTaskTypeFilters] = useState<string[]>([]);
-  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "paused", "retrying"]); // Default to all "in progress" states (active, waiting, retrying)
+  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "paused", "retrying", "error"]); // Default to all "in progress" states plus error tasks
 
   const updateSearch = useCallback((newSearch: string) => {
     setSearchQuery(newSearch);
@@ -39,11 +39,11 @@ export const useInProgressMonitorTasksList = ({
     setPageIndex(1);
   }, []);
 
-  // Default button: Reset to all "In Progress" states (pending, in_processing, paused, retrying)
+  // Default button: Reset to all "In Progress" states plus error tasks (pending, in_processing, paused, retrying, error)
   const resetToDefault = useCallback(() => {
     setConnectionNameFilters([]);
     setTaskTypeFilters([]);
-    setStatusFilters(["pending", "in_processing", "paused", "retrying"]);
+    setStatusFilters(["pending", "in_processing", "paused", "retrying", "error"]);
     setPageIndex(1);
   }, []);
 
