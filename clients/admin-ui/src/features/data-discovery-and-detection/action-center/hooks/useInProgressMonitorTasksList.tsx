@@ -17,7 +17,7 @@ export const useInProgressMonitorTasksList = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [connectionNameFilters, setConnectionNameFilters] = useState<string[]>([]);
   const [taskTypeFilters, setTaskTypeFilters] = useState<string[]>([]);
-  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "awaiting_processing", "retrying"]); // Default to all "in progress" states (active, waiting, retrying)
+  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "paused", "retrying"]); // Default to all "in progress" states (active, waiting, retrying)
 
   const updateSearch = useCallback((newSearch: string) => {
     setSearchQuery(newSearch);
@@ -39,11 +39,11 @@ export const useInProgressMonitorTasksList = ({
     setPageIndex(1);
   }, []);
 
-  // Default button: Reset to all "In Progress" states (pending, in_processing, awaiting_processing, retrying)
+  // Default button: Reset to all "In Progress" states (pending, in_processing, paused, retrying)
   const resetToDefault = useCallback(() => {
     setConnectionNameFilters([]);
     setTaskTypeFilters([]);
-    setStatusFilters(["pending", "in_processing", "awaiting_processing", "retrying"]);
+    setStatusFilters(["pending", "in_processing", "paused", "retrying"]);
     setPageIndex(1);
   }, []);
 
@@ -56,31 +56,21 @@ export const useInProgressMonitorTasksList = ({
   }, []);
 
   // All possible status values from ExecutionLogStatus enum
+  // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
   const allPossibleStatuses = [
     "pending",
     "in_processing",
     "complete",
     "error",
-    "awaiting_processing",
+    "paused", // This is the actual enum value for "awaiting_processing"
     "retrying",
     "skipped"
   ];
-
-  // Define what we consider "in progress" states
-  const inProgressStates = ["pending", "in_processing", "awaiting_processing", "retrying"];
-
-  // Determine if we need to use show_completed=true
-  // Use show_completed=true if:
-  // - No status filters (show all)
-  // - Status filters include anything other than just the "in progress" states
-  const needsShowCompleted = statusFilters.length === 0 ||
-    statusFilters.some(status => !inProgressStates.includes(status));
 
   const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    show_completed: needsShowCompleted,
     connection_names: connectionNameFilters.length > 0 ? connectionNameFilters : undefined,
     task_types: taskTypeFilters.length > 0 ? taskTypeFilters : undefined,
     statuses: statusFilters.length > 0 ? statusFilters : undefined,

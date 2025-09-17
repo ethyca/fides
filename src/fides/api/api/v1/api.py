@@ -11,7 +11,6 @@ from fides.api.api.v1.endpoints import (
     manual_webhook_endpoints,
     masking_endpoints,
     messaging_endpoints,
-    monitor_task_endpoints,
     oauth_endpoints,
     partitioning_endpoints,
     policy_endpoints,
@@ -52,6 +51,5 @@ api_router.include_router(partitioning_endpoints.router)
 api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
-api_router.include_router(monitor_task_endpoints.router)
 api_router.include_router(registration_endpoints.router)
 api_router.include_router(worker_endpoints.router)
