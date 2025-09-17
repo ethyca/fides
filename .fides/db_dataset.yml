@@ -2492,7 +2492,7 @@ dataset:
       data_categories: [system]
     - name: async_type
       data_categories: [system]
-  - name: requesttask_request_data
+  - name: requesttask_sub_request
     description: 'Model for storing request data for middle steps during the execution of a request task'
     fields:
     - name: id
@@ -2503,7 +2503,9 @@ dataset:
       data_categories: [system]
     - name: request_task_id
       data_categories: [system]
-    - name: request_data
+    - name: param_values
+      data_categories: [system]
+    - name: sub_request_status
       data_categories: [system]
   - name: monitorconfig
     fields:
