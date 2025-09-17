@@ -1,12 +1,14 @@
-export enum DiscoveryStatusDisplayNames {
-  WITH_CONSENT = "With consent",
-  WITHOUT_CONSENT = "Without consent",
-  EXEMPT = "Exempt",
-  UNKNOWN = "Unknown",
-  PRE_CONSENT = "Pre-Consent",
-  CMP_ERROR = "CMP failure",
-  NOT_APPLICABLE = "Not applicable",
-}
+import { ConsentStatus } from "~/types/api";
+
+export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
+  [ConsentStatus.WITH_CONSENT]: "With consent",
+  [ConsentStatus.WITHOUT_CONSENT]: "Without consent",
+  [ConsentStatus.EXEMPT]: "Exempt",
+  [ConsentStatus.UNKNOWN]: "Unknown",
+  [ConsentStatus.PRE_CONSENT]: "Pre-Consent",
+  [ConsentStatus.CMP_ERROR]: "CMP failure",
+  [ConsentStatus.NOT_APPLICABLE]: "Not applicable",
+};
 
 export enum DiscoveredAssetsColumnKeys {
   NAME = "name",

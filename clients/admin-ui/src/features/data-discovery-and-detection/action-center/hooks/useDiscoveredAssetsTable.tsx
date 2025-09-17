@@ -374,17 +374,8 @@ export const useDiscoveredAssetsTable = ({
             : null,
         filters: convertToAntFilters(
           filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
-          (status) => {
-            const statusMap: Record<string, string> = {
-              with_consent: DiscoveryStatusDisplayNames.WITH_CONSENT,
-              without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
-              exempt: DiscoveryStatusDisplayNames.EXEMPT,
-              unknown: DiscoveryStatusDisplayNames.UNKNOWN,
-              pre_consent: DiscoveryStatusDisplayNames.PRE_CONSENT,
-              cmp_error: DiscoveryStatusDisplayNames.CMP_ERROR,
-            };
-            return statusMap[status] ?? status;
-          },
+          (status) =>
+            DiscoveryStatusDisplayNames[status as ConsentStatus] ?? status,
         ),
         filteredValue:
           columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
