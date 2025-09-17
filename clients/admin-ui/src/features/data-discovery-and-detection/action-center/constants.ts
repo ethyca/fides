@@ -38,9 +38,9 @@ export const DiscoveryStatusTypeMapping: Record<
   [ConsentStatus.WITH_CONSENT]: ConsentStatusType.SUCCESS,
   [ConsentStatus.WITHOUT_CONSENT]: ConsentStatusType.ERROR,
   [ConsentStatus.PRE_CONSENT]: ConsentStatusType.ERROR,
+  [ConsentStatus.CMP_ERROR]: ConsentStatusType.ERROR,
   [ConsentStatus.EXEMPT]: ConsentStatusType.IGNORE,
   [ConsentStatus.UNKNOWN]: ConsentStatusType.IGNORE,
-  [ConsentStatus.CMP_ERROR]: ConsentStatusType.IGNORE,
   [ConsentStatus.NOT_APPLICABLE]: ConsentStatusType.IGNORE,
 };
 
