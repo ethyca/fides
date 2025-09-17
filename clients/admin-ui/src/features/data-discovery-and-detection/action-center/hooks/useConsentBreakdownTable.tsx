@@ -1,6 +1,8 @@
 import {
   AntColumnsType as ColumnsType,
   AntTypography as Typography,
+  formatIsoLocation,
+  isoStringToEntry,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -58,7 +60,8 @@ export const useConsentBreakdownTable = ({
   const antTableConfig = useMemo(
     () => ({
       enableSelection: false,
-      getRowKey: (record: ConsentBreakdown) => record.location,
+      getRowKey: (record: ConsentBreakdown) =>
+        `${record.location}-${record.page}`,
       isLoading: isFetching,
       dataSource: items,
       totalRows: totalRows ?? 0,
@@ -77,9 +80,15 @@ export const useConsentBreakdownTable = ({
         title: "Location",
         dataIndex: ConsentBreakdownColumnKeys.LOCATION,
         key: ConsentBreakdownColumnKeys.LOCATION,
-        render: (location: string) =>
-          PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
-          location,
+        render: (location: string) => {
+          const isoEntry = isoStringToEntry(location);
+
+          return isoEntry
+            ? formatIsoLocation({ isoEntry, showFlag: true })
+            : (PRIVACY_NOTICE_REGION_RECORD?.[
+                location as PrivacyNoticeRegion
+              ] ?? location);
+        },
       },
       {
         title: "Page",

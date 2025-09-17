@@ -1,3 +1,5 @@
+import json
+import re
 import warnings
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
@@ -6,6 +8,7 @@ from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
+import requests
 import requests_mock
 from pydantic import ValidationError
 from sqlalchemy import exc as sa_exc
@@ -25,6 +28,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.policy import Policy
+from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
@@ -292,6 +296,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 },
                 status_code=500,
             )
+
             privacy_request.trigger_policy_webhook(webhook)
             db.refresh(privacy_request)
             assert privacy_request.status == PrivacyRequestStatus.in_processing
@@ -455,6 +460,7 @@ class TestPrivacyRequestTriggerWebhooks:
             with pytest.raises(ValidationError):
                 privacy_request.trigger_policy_webhook(webhook)
 
+
     def test_webhook_with_oauth_connection_config(
         self,
         db,
@@ -490,7 +496,6 @@ class TestPrivacyRequestTriggerWebhooks:
                 status_code=200,
                 additional_matcher=request_contains_oauth_bearer_token,
             )
-
 
 class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):

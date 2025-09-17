@@ -1,6 +1,8 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
+import { buildArrayQueryParams } from "~/features/common/utils";
+import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
@@ -11,7 +13,11 @@ import {
   SystemSchemaExtended,
   TestStatusMessage,
 } from "~/types/api";
-import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
+import {
+  PaginationQueryParams,
+  SearchQueryParams,
+  SortQueryParams,
+} from "~/types/query-params";
 
 interface SystemDeleteResponse {
   message: string;
@@ -37,34 +43,44 @@ export type ConnectionConfigSecretsRequest = {
 };
 
 export type GetSystemsQueryParams = {
-  data_steward?: string;
-  system_group?: string;
+  data_stewards?: string[];
+  system_groups?: string[];
+  show_deleted?: boolean;
 };
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
       Page_BasicSystemResponseExtended_,
-      PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
+      PaginationQueryParams &
+        SearchQueryParams &
+        GetSystemsQueryParams &
+        SortQueryParams<SystemColumnKeys>
     >({
-      query: (params) => ({
-        method: "GET",
-        url: `system`,
-        params,
-      }),
+      query: ({
+        data_stewards,
+        system_groups,
+        sort_by = [SystemColumnKeys.NAME],
+        ...params
+      }) => {
+        const sortByArray = Array.isArray(sort_by) ? sort_by : [sort_by];
+        const urlParams = buildArrayQueryParams({
+          data_stewards,
+          system_groups,
+          sort_by: sortByArray,
+        });
+
+        return {
+          method: "GET",
+          url: `system?${urlParams.toString()}`,
+          params,
+        };
+      },
       providesTags: () => ["System"],
     }),
     getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system` }),
       providesTags: () => ["System"],
-      transformResponse: (systems: SystemResponse[]) =>
-        systems.sort((a, b) => {
-          const displayName = (system: SystemResponse) =>
-            system.name === "" || system.name == null
-              ? system.fides_key
-              : system.name;
-          return displayName(a).localeCompare(displayName(b));
-        }),
     }),
     getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}` }),

@@ -47,6 +47,7 @@ const TaxonomyPage: NextPage = () => {
     createTrigger,
     getAllTrigger,
     taxonomyItems = [],
+    isCreating,
   } = useTaxonomySlices({ taxonomyType });
   const searchParams = useSearchParams();
   const showDisabledItems = searchParams?.get("showDisabledItems") === "true";
@@ -199,6 +200,7 @@ const TaxonomyPage: NextPage = () => {
               taxonomyType={taxonomyType as any}
               onCancelDraftItem={() => setDraftNewItem(null)}
               onSubmitDraftItem={createNewLabel}
+              isCreating={isCreating}
             />
           )}
         </div>
