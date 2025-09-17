@@ -301,6 +301,8 @@ const plusApi = baseApi.injectEndpoints({
         "Datamap",
         "System History",
         "Privacy Notices",
+        // Ensure Action Center refetches so blue dots clear when linking vendors
+        "Discovery Monitor Results",
       ],
     }),
     getFidesCloudConfig: build.query<CloudConfig, void>({

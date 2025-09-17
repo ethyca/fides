@@ -100,6 +100,8 @@ const systemApi = baseApi.injectEndpoints({
         "Datastore Connection",
         "System Vendors",
         "Privacy Notices",
+        // Ensure Action Center data refreshes so "new system" indicators clear
+        "Discovery Monitor Results",
       ],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
@@ -142,6 +144,8 @@ const systemApi = baseApi.injectEndpoints({
         "Datastore Connection",
         "System History",
         "System Vendors",
+        // Keep Action Center in sync with system changes
+        "Discovery Monitor Results",
       ],
     }),
     updateSystem: build.mutation<
@@ -161,6 +165,8 @@ const systemApi = baseApi.injectEndpoints({
         "Datastore Connection",
         "System History",
         "System Vendors",
+        // Update Action Center aggregates if linkage changes
+        "Discovery Monitor Results",
       ],
     }),
     patchSystemConnectionConfigs: build.mutation<
