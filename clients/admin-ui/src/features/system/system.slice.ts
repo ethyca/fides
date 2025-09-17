@@ -2,6 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
+import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
@@ -12,7 +13,11 @@ import {
   SystemSchemaExtended,
   TestStatusMessage,
 } from "~/types/api";
-import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
+import {
+  PaginationQueryParams,
+  SearchQueryParams,
+  SortQueryParams,
+} from "~/types/query-params";
 
 interface SystemDeleteResponse {
   message: string;
@@ -46,12 +51,22 @@ const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
       Page_BasicSystemResponseExtended_,
-      PaginationQueryParams & SearchQueryParams & GetSystemsQueryParams
+      PaginationQueryParams &
+        SearchQueryParams &
+        GetSystemsQueryParams &
+        SortQueryParams<SystemColumnKeys>
     >({
-      query: ({ data_stewards, system_groups, ...params }) => {
+      query: ({
+        data_stewards,
+        system_groups,
+        sort_by = [SystemColumnKeys.NAME],
+        ...params
+      }) => {
+        const sortByArray = Array.isArray(sort_by) ? sort_by : [sort_by];
         const urlParams = buildArrayQueryParams({
           data_stewards,
           system_groups,
+          sort_by: sortByArray,
         });
 
         return {
