@@ -41,6 +41,7 @@ interface TaxonomyInteractiveTreeProps {
   onCancelDraftItem: () => void;
   onSubmitDraftItem: (label: string) => void;
   userCanAddLabels: boolean;
+  isCreating?: boolean;
 }
 
 const TaxonomyInteractiveTree = ({
@@ -54,6 +55,7 @@ const TaxonomyInteractiveTree = ({
   onCancelDraftItem,
   onSubmitDraftItem,
   userCanAddLabels,
+  isCreating = false,
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
 
@@ -147,6 +149,7 @@ const TaxonomyInteractiveTree = ({
         parentKey,
         onCancel: onCancelDraftItem,
         onSubmit: onSubmitDraftItem,
+        isLoading: isCreating,
       },
       hidden: !draftNewItem,
     };

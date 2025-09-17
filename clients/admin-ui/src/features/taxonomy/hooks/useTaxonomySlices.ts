@@ -42,6 +42,7 @@ export type UseTaxonomySlicesResult = {
   createTrigger: TriggerFn;
   isLoading: boolean;
   isError: boolean;
+  isCreating: boolean;
 };
 
 const useTaxonomySlices = ({
@@ -60,10 +61,14 @@ const useTaxonomySlices = ({
     useLazyGetAllSystemGroupsQuery();
 
   /* CREATE */
-  const [createDataCategoryMutationTrigger] = useCreateDataCategoryMutation();
-  const [createDataUseMutationTrigger] = useCreateDataUseMutation();
-  const [createDataSubjectMutationTrigger] = useCreateDataSubjectMutation();
-  const [createSystemGroupMutationTrigger] = useCreateSystemGroupMutation();
+  const [createDataCategoryMutationTrigger, createDataCategoryResult] =
+    useCreateDataCategoryMutation();
+  const [createDataUseMutationTrigger, createDataUseResult] =
+    useCreateDataUseMutation();
+  const [createDataSubjectMutationTrigger, createDataSubjectResult] =
+    useCreateDataSubjectMutation();
+  const [createSystemGroupMutationTrigger, createSystemGroupResult] =
+    useCreateSystemGroupMutation();
 
   /* UPDATE */
   const [updateDataCategoryMutationTrigger] = useUpdateDataCategoryMutation();
@@ -79,7 +84,8 @@ const useTaxonomySlices = ({
 
   /* Generic taxonomy hooks */
   const [lazyGetTaxonomyTrigger, taxonomyResult] = useLazyGetTaxonomyQuery();
-  const [createTaxonomyTrigger] = useCreateTaxonomyMutation();
+  const [createTaxonomyTrigger, createTaxonomyResult] =
+    useCreateTaxonomyMutation();
   const [updateTaxonomyTrigger] = useUpdateTaxonomyMutation();
   const [deleteTaxonomyTrigger] = useDeleteTaxonomyMutation();
 
@@ -125,6 +131,7 @@ const useTaxonomySlices = ({
       createTrigger: createDataCategoryMutationTrigger,
       isLoading: dataCategoriesResult.isLoading,
       isError: dataCategoriesResult.isError,
+      isCreating: createDataCategoryResult.isLoading,
     };
   }
 
@@ -138,6 +145,7 @@ const useTaxonomySlices = ({
       createTrigger: createDataUseMutationTrigger,
       isLoading: dataUsesResult.isLoading,
       isError: dataUsesResult.isError,
+      isCreating: createDataUseResult.isLoading,
     };
   }
 
@@ -151,6 +159,7 @@ const useTaxonomySlices = ({
       createTrigger: createDataSubjectMutationTrigger,
       isLoading: dataSubjectsResult.isLoading,
       isError: dataSubjectsResult.isError,
+      isCreating: createDataSubjectResult.isLoading,
     };
   }
 
@@ -164,6 +173,7 @@ const useTaxonomySlices = ({
       createTrigger: createSystemGroupMutationTrigger,
       isLoading: systemGroupsResult.isLoading,
       isError: systemGroupsResult.isError,
+      isCreating: createSystemGroupResult.isLoading,
     };
   }
 
@@ -176,6 +186,7 @@ const useTaxonomySlices = ({
     createTrigger: taxonomyCreateTrigger,
     isLoading: taxonomyResult?.isLoading || false,
     isError: taxonomyResult?.isError || false,
+    isCreating: createTaxonomyResult.isLoading,
   };
 };
 

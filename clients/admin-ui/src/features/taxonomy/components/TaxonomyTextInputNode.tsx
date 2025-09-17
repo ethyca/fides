@@ -1,5 +1,5 @@
 import { Node, NodeProps } from "@xyflow/react";
-import { AntInput as Input, InputRef } from "fidesui";
+import { AntInput as Input, AntSpin as Spin, InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";
@@ -11,6 +11,7 @@ export type TextInputNodeType = Node<
     onCancel: () => void;
     onSubmit: (label: string) => void;
     parentKey: string;
+    isLoading?: boolean;
   },
   "textInputNode"
 >;
@@ -20,7 +21,7 @@ const TaxonomyTextInputNode = ({
   positionAbsoluteX,
   positionAbsoluteY,
 }: NodeProps<TextInputNodeType>) => {
-  const { onCancel, onSubmit, parentKey } = data;
+  const { onCancel, onSubmit, parentKey, isLoading = false } = data;
   const inputRef = useRef<InputRef>(null);
   const [value, setValue] = useState("");
   const inputWidth = 200;
@@ -49,22 +50,39 @@ const TaxonomyTextInputNode = ({
     centerAndFocus();
   }, [parentKey, centerScreenOnNode, positionAbsoluteX, positionAbsoluteY]);
 
+  const handleSubmit = () => {
+    // Prevent submission if already loading or if value is empty
+    if (isLoading || !value.trim()) {
+      return;
+    }
+    onSubmit(value);
+  };
+
+  const handleCancel = () => {
+    // Prevent cancel if already loading
+    if (isLoading) {
+      return;
+    }
+    onCancel();
+  };
+
   return (
     <div style={{ width: inputWidth }} data-testid="taxonomy-text-input-node">
       <Input
         placeholder="Type label name..."
         ref={inputRef}
-        onBlur={onCancel}
-        onSubmit={() => onSubmit(value)}
+        onBlur={handleCancel}
+        onSubmit={handleSubmit}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyUp={(e) => {
           if (e.key === "Escape") {
-            onCancel();
+            handleCancel();
           }
         }}
-        onPressEnter={() => onSubmit(value)}
+        onPressEnter={handleSubmit}
         className={styles.input}
+        suffix={isLoading && <Spin size="small" />}
       />
       <TaxonomyTreeNodeHandle type="target" />
     </div>
