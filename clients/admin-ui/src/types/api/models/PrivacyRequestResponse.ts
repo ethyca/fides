@@ -4,7 +4,7 @@
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
 import type { PolicyResponse } from "./PolicyResponse";
-import type { PrivacyRequestReviewer } from "./PrivacyRequestReviewer";
+import type { PrivacyRequestUser } from "./PrivacyRequestUser";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
@@ -18,7 +18,8 @@ export type PrivacyRequestResponse = {
   reviewed_at?: string | null;
   reviewed_by?: string | null;
   submitted_by?: string | null;
-  reviewer?: PrivacyRequestReviewer | null;
+  reviewer?: PrivacyRequestUser | null;
+  submitter?: PrivacyRequestUser | null;
   finished_processing_at?: string | null;
   identity_verified_at?: string | null;
   paused_at?: string | null;
