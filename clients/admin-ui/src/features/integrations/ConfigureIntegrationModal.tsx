@@ -61,7 +61,7 @@ const ConfigureIntegrationModal = ({
       <ConfigureIntegrationForm
         connection={connection}
         connectionOption={connectionOption!}
-        onCancel={onClose}
+        onClose={onClose}
         description={description}
         onFormStateChange={setFormState}
       />

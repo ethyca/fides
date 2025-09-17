@@ -480,7 +480,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                                     "data_type": "string[]",
                                     "references": [
                                         {
-                                            "dataset": "mongo_test",
+                                            "dataset": mongo_db_name,
                                             "field": "customer_details.travel_identifiers",
                                             "direction": "from",
                                         }
@@ -809,13 +809,15 @@ def integration_scylladb_graph(db_name: str) -> DatasetGraph:
 
 
 def combined_mongo_postgresql_graph(
-    postgres_config: ConnectionConfig, mongo_config: ConnectionConfig
+    postgres_config: ConnectionConfig,
+    mongo_config: ConnectionConfig,
+    mongo_db_name: Optional[str] = "mongo_test",
 ) -> Tuple[GraphDataset, GraphDataset]:
     postgres_dataset = postgres_db_graph_dataset(
         "postgres_example", postgres_config.key
     )
     mongo_dataset = mongo_db_graph_dataset(
-        "mongo_test", "postgres_example", mongo_config.key
+        mongo_db_name, "postgres_example", mongo_config.key
     )
     return mongo_dataset, postgres_dataset
 
