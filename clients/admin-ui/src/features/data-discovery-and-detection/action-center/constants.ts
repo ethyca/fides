@@ -3,8 +3,8 @@ export enum DiscoveryStatusDisplayNames {
   WITHOUT_CONSENT = "Without consent",
   EXEMPT = "Exempt",
   UNKNOWN = "Unknown",
-  PRE_CONSENT = "Pre-consent",
-  CMP_ERROR = "CMP error",
+  PRE_CONSENT = "Pre-Consent",
+  CMP_ERROR = "CMP failure",
   NOT_APPLICABLE = "Not applicable",
 }
 
