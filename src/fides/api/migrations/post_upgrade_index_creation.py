@@ -155,12 +155,12 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
         },
         {
             "name": "idx_stagedresource_user_categories_gin",
-            "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_user_categories_gin ON stagedresource USING GIN (user_assigned_data_categories);",
+            "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_user_categories_gin ON stagedresource USING GIN (user_assigned_data_categories)",
             "type": "index",
         },
         {
             "name": "idx_stagedresource_classifications_gin",
-            "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications);",
+            "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications)",
             "type": "index",
         },
     ],

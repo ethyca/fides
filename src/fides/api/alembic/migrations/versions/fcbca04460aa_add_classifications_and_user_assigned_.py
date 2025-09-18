@@ -24,15 +24,11 @@ WARNING - Conditional migration based on table size
 def upgrade():
     # Check stagedresource table size
     connection = op.get_bind()
-    try:
-        result = connection.execute(
-            sa.text("SELECT COUNT(*) FROM stagedresource")
-        ).fetchone()
-        table_size = result[0] if result else 0
-    except Exception as e:
-        logger.warning(f"Could not check stagedresource table size: {e}")
-        logger.info("Proceeding with direct index creation")
-        table_size = 0
+
+    # Check stagedresource table size to decide if we should create indexes immediately
+    table_size = connection.execute(
+        sa.text("SELECT COUNT(*) FROM stagedresource")
+    ).scalar()
 
     if table_size < 1000000:
         logger.info(
