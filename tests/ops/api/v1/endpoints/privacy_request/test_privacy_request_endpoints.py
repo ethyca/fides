@@ -3281,7 +3281,7 @@ class TestPrivacyRequestSearch:
         privacy_request.created_at = created_at
         privacy_request.updated_at = updated_at
         privacy_request.completed_on = completed_on
-        
+
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
