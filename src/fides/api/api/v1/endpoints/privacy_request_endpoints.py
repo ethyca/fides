@@ -4,7 +4,7 @@ import csv
 import io
 import json
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import (
     Annotated,
     Any,
@@ -307,7 +307,7 @@ def privacy_request_csv_download(
 
         action_types: List[str] = []
         if pr and pr.policy:
-            for rule in pr.policy.rules or []: # type: ignore
+            for rule in pr.policy.rules or []:  # type: ignore
                 action_types.append(rule.action_type)
 
         deadline: Optional[datetime] = None
