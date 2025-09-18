@@ -59,7 +59,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           )}
         </RequestDetailsRow>
         {subjectRequest.submitted_by && (
-          <RequestDetailsRow label="Submitted by">
+          <RequestDetailsRow label="Created by">
             <Typography.Text>
               {subjectRequest.submitter?.username || "-"}
             </Typography.Text>

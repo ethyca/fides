@@ -138,7 +138,7 @@ describe("Privacy Requests", () => {
 
       cy.getByTestId("privacy-request-details").within(() => {
         // This request should have submitted_by
-        cy.getByTestId("request-detail-value-Submitted by").should(
+        cy.getByTestId("request-detail-value-Created by").should(
           "contain",
           "user_3",
         ); // submitter.username value
