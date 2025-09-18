@@ -18,10 +18,10 @@ depends_on = None
 
 
 def upgrade():
-    # Create digest_config table (if it doesn't exist)
+    connection = op.get_bind()
+
     # Check if table already exists
-    bind = op.get_bind()
-    inspector = sa.inspect(bind)
+    inspector = sa.inspect(connection)
     if "digest_config" not in inspector.get_table_names():
         op.create_table(
             "digest_config",
@@ -73,9 +73,6 @@ def upgrade():
 
         # Create indexes for performance
         op.create_index(
-            op.f("ix_digest_config_id"), "digest_config", ["id"], unique=False
-        )
-        op.create_index(
             op.f("ix_digest_config_digest_type"),
             "digest_config",
             ["digest_type"],
@@ -99,14 +96,15 @@ def upgrade():
 
 
 def downgrade():
-    # Drop indexes if they exist
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_messaging_service_type")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_next_scheduled_at")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_enabled")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_digest_type")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_id")
+
+    op.drop_index(
+        op.f("ix_digest_config_messaging_service_type"), table_name="digest_config"
+    )
+    op.drop_index(
+        op.f("ix_digest_config_next_scheduled_at"), table_name="digest_config"
+    )
+    op.drop_index(op.f("ix_digest_config_enabled"), table_name="digest_config")
+    op.drop_index(op.f("ix_digest_config_digest_type"), table_name="digest_config")
 
     # Drop table if it exists
-    op.execute("DROP TABLE IF EXISTS digest_config")
-
-    # Note: SQLAlchemy will handle enum cleanup automatically when the table is dropped
+    op.drop_table("digest_config")

@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from fides.api.models.digest.digest_config import DigestType
 from fides.api.schemas.messaging.messaging import MessagingMethod
@@ -31,3 +31,29 @@ class DigestConfigBase(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid")
+
+    @field_validator("cron_expression")
+    @classmethod
+    def validate_cron_expression(cls, value: Optional[str]) -> Optional[str]:
+        """Validate cron expression format."""
+        if value is None:
+            return value
+
+        # Basic cron validation (5 or 6 fields)
+        parts = value.strip().split()
+        if len(parts) not in [5, 6]:
+            raise ValueError("Cron expression must have 5 or 6 fields")
+
+        return value
+
+    @field_validator("timezone")
+    @classmethod
+    def validate_timezone(cls, value: str) -> str:
+        """Validate timezone string."""
+        import zoneinfo
+
+        try:
+            zoneinfo.ZoneInfo(value)
+        except zoneinfo.ZoneInfoNotFoundError:
+            raise ValueError(f"Invalid timezone: {value}")
+        return value
