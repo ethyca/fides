@@ -31,11 +31,6 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import {
-  EnableCustomFieldCell,
-  FieldTypeCell,
-  ResourceTypeCell,
-} from "~/features/custom-fields/cells";
 import { CustomFieldActions } from "~/features/custom-fields/CustomFieldActions";
 import { CustomFieldModal } from "~/features/custom-fields/CustomFieldModal";
 import {
@@ -138,20 +133,17 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
         }),
         columnHelper.accessor((row) => row.field_type, {
           id: "field_type",
-          cell: FieldTypeCell,
           header: (props) => (
             <DefaultHeaderCell value="Field Type" {...props} />
           ),
         }),
         columnHelper.accessor((row) => row.resource_type, {
           id: "resource_type",
-          cell: ResourceTypeCell,
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
         }),
         userCanUpdate &&
           columnHelper.accessor((row) => row.active, {
             id: "enable",
-            cell: EnableCustomFieldCell,
             header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
             meta: { disableRowClick: true },
           }),
