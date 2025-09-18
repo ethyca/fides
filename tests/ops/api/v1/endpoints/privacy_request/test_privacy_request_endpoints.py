@@ -1081,6 +1081,7 @@ class TestGetPrivacyRequests:
                     "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -1152,6 +1153,7 @@ class TestGetPrivacyRequests:
                     "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -1865,6 +1867,7 @@ class TestGetPrivacyRequests:
                     "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -2441,6 +2444,7 @@ class TestPrivacyRequestSearch:
                     "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -2512,6 +2516,7 @@ class TestPrivacyRequestSearch:
                     "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -3088,6 +3093,7 @@ class TestPrivacyRequestSearch:
                     "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -5060,7 +5066,9 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "submitted_by": None,
             "reviewer": None,
+            "submitter": None,
             "source": None,
             "location": None,
             "paused_at": None,
