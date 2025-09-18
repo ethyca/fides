@@ -256,6 +256,7 @@
     "comment:create",
     "comment:read",
     "manual_field:read-all",
+    "privacy-request:create",
     "privacy-request:read",
     "privacy-request:resume",
     "privacy-request:review",
