@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
+- Improved readability and maintainability around DSR packages and improved test coverage [#6540](https://github.com/ethyca/fides/pull/6540)
 
 ### Fixed
 - Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
