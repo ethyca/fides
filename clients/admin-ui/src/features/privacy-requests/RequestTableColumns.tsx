@@ -1,4 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import { formatIsoLocation, isoStringToEntry } from "fidesui";
 
 import {
   BadgeCell,
@@ -25,6 +26,7 @@ enum COLUMN_IDS {
   CREATED_BY = "created_by",
   REVIEWER = "reviewer",
   ID = "id",
+  LOCATION = "location",
   ACTIONS = "actions",
 }
 
@@ -35,6 +37,7 @@ export const getRequestTableColumns = (hasPlus = false) => [
     id: COLUMN_IDS.STATUS,
     cell: ({ getValue }) => <RequestStatusBadgeCell value={getValue()} />,
     header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+    size: 120,
   }),
   columnHelper.accessor((row) => row.days_left, {
     id: COLUMN_IDS.DAYS_LEFT,
@@ -46,6 +49,7 @@ export const getRequestTableColumns = (hasPlus = false) => [
       />
     ),
     header: (props) => <DefaultHeaderCell value="Days left" {...props} />,
+    size: 80,
   }),
   ...(hasPlus
     ? [
@@ -67,6 +71,7 @@ export const getRequestTableColumns = (hasPlus = false) => [
     cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
     header: (props) => <DefaultHeaderCell value="Request type" {...props} />,
     enableSorting: false,
+    size: 100,
   }),
   columnHelper.accessor(
     (row) =>
@@ -84,6 +89,7 @@ export const getRequestTableColumns = (hasPlus = false) => [
     id: COLUMN_IDS.TIME_RECEIVED,
     cell: ({ getValue }) => <DefaultCell value={formatDate(getValue())} />,
     header: (props) => <DefaultHeaderCell value="Time received" {...props} />,
+    size: 120,
   }),
   columnHelper.accessor((row) => row.reviewer?.username || "", {
     id: COLUMN_IDS.REVIEWER,
@@ -97,6 +103,19 @@ export const getRequestTableColumns = (hasPlus = false) => [
     id: COLUMN_IDS.ID,
     cell: ({ getValue }) => <DefaultCell value={getValue()} />,
     header: (props) => <DefaultHeaderCell value="Request ID" {...props} />,
+    enableSorting: false,
+  }),
+  columnHelper.accessor((row) => row.location, {
+    id: COLUMN_IDS.LOCATION,
+    cell: ({ getValue }) => {
+      const value = getValue();
+      const isoEntry = value ? isoStringToEntry(value) : undefined;
+      const formattedValue = isoEntry
+        ? formatIsoLocation({ isoEntry, showFlag: true })
+        : value;
+      return <DefaultCell value={formattedValue} />;
+    },
+    header: (props) => <DefaultHeaderCell value="Location" {...props} />,
     enableSorting: false,
   }),
   columnHelper.display({
