@@ -105,6 +105,7 @@ export interface PrivacyRequestEntity {
   id: string;
   days_left?: number;
   source?: string;
+  location?: string;
 }
 
 export interface PrivacyRequestResponse {
