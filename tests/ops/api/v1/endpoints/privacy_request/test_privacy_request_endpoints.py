@@ -991,6 +991,31 @@ class TestGetPrivacyRequests:
         assert user.username == reviewer["username"]
         privacy_request.delete(db)
 
+    def test_get_privacy_requests_displays_submitter(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        user,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        privacy_request.submitted_by = user.id
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?request_id={privacy_request.id}", headers=auth_header
+        )
+        assert 200 == response.status_code
+
+        submitter = response.json()["items"][0]["submitter"]
+        assert submitter
+        assert user.id == submitter["id"]
+        assert user.username == submitter["username"]
+        privacy_request.delete(db)
+
     def test_get_privacy_requests_accept_datetime(
         self,
         api_client: TestClient,
@@ -1053,8 +1078,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -1123,8 +1150,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -1835,8 +1864,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -2324,6 +2355,31 @@ class TestPrivacyRequestSearch:
         assert user.username == reviewer["username"]
         privacy_request.delete(db)
 
+    def test_privacy_request_search_displays_submitter(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        user,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        privacy_request.submitted_by = user.id
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(
+            url, headers=auth_header, json={"request_id": privacy_request.id}
+        )
+        assert 200 == response.status_code
+
+        submitter = response.json()["items"][0]["submitter"]
+        assert submitter
+        assert user.id == submitter["id"]
+        assert user.username == submitter["username"]
+        privacy_request.delete(db)
+
     def test_privacy_request_search_accept_datetime(
         self,
         api_client: TestClient,
@@ -2385,8 +2441,10 @@ class TestPrivacyRequestSearch:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -2455,8 +2513,10 @@ class TestPrivacyRequestSearch:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -3030,8 +3090,10 @@ class TestPrivacyRequestSearch:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
                     "location": None,
                     "policy": {
@@ -5004,7 +5066,9 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "submitted_by": None,
             "reviewer": None,
+            "submitter": None,
             "source": None,
             "location": None,
             "paused_at": None,
@@ -8837,9 +8901,15 @@ class TestResubmitPrivacyRequest:
         [
             ("owner_auth_header", HTTP_200_OK),
             ("contributor_auth_header", HTTP_200_OK),
-            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            (
+                "viewer_and_approver_auth_header",
+                HTTP_200_OK,
+            ),
             ("viewer_auth_header", HTTP_403_FORBIDDEN),
-            ("approver_auth_header", HTTP_403_FORBIDDEN),
+            (
+                "approver_auth_header",
+                HTTP_200_OK,
+            ),
         ],
     )
     def test_resubmit_privacy_request_with_roles(

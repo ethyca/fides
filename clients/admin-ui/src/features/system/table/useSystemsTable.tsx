@@ -29,8 +29,9 @@ import {
   useGetAllSystemGroupsQuery,
   useUpdateSystemGroupMutation,
 } from "~/features/system/system-groups.slice";
-import SystemDataUseCell from "~/features/system/system-groups/components/SystemDataUseCell";
-import SystemGroupCell from "~/features/system/system-groups/components/SystemGroupCell";
+import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
+import SystemDataUseCell from "~/features/system/table/SystemDataUseCell";
+import SystemGroupCell from "~/features/system/table/SystemGroupCell";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   BasicSystemResponseExtended,
@@ -78,13 +79,25 @@ const useSystemsTable = () => {
     useState<BasicSystemResponseExtended | null>(null);
 
   // main table state
-  const tableState = useTableState({
+  const tableState = useTableState<SystemColumnKeys>({
     pagination: { defaultPageSize: 25, pageSizeOptions: [25, 50, 100] },
     search: { defaultSearchQuery: "" },
+    sorting: {
+      defaultSortKey: SystemColumnKeys.NAME,
+      defaultSortOrder: "ascend",
+      validColumns: [SystemColumnKeys.NAME],
+    },
   });
 
-  const { columnFilters, pageIndex, pageSize, searchQuery, updateSearch } =
-    tableState;
+  const {
+    columnFilters,
+    pageIndex,
+    pageSize,
+    searchQuery,
+    updateSearch,
+    sortKey,
+    sortOrder,
+  } = tableState;
 
   const {
     data: systemsResponse,
@@ -94,6 +107,9 @@ const useSystemsTable = () => {
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    sort_by: sortKey,
+    sort_asc: sortOrder === "ascend",
+    show_deleted: true,
     ...columnFilters,
   });
 
@@ -202,7 +218,7 @@ const useSystemsTable = () => {
       {
         title: "Name",
         dataIndex: "name",
-        key: "name",
+        key: SystemColumnKeys.NAME,
         render: (name: string | null, record: BasicSystemResponseExtended) => (
           <LinkCell
             href={`/systems/configure/${record.fides_key}`}
@@ -213,10 +229,12 @@ const useSystemsTable = () => {
         ),
         ellipsis: true,
         fixed: "left",
+        sorter: true,
+        sortOrder: sortKey === SystemColumnKeys.NAME ? sortOrder : null,
       },
       {
         dataIndex: "system_groups",
-        key: "system_groups",
+        key: SystemColumnKeys.SYSTEM_GROUPS,
         render: (
           systemGroups: string[] | undefined,
           record: BasicSystemResponseExtended,
@@ -269,7 +287,7 @@ const useSystemsTable = () => {
           },
         },
         dataIndex: "privacy_declarations",
-        key: "privacy_declarations",
+        key: SystemColumnKeys.DATA_USES,
         render: (privacyDeclarations: PrivacyDeclaration[]) => (
           <SystemDataUseCell
             privacyDeclarations={privacyDeclarations}
@@ -283,7 +301,7 @@ const useSystemsTable = () => {
       {
         title: "Data stewards",
         dataIndex: "data_stewards",
-        key: "data_stewards",
+        key: SystemColumnKeys.DATA_STEWARDS,
         render: (dataStewards: string[] | null) => (
           <ListExpandableCell values={dataStewards ?? []} valueSuffix="users" />
         ),
@@ -295,7 +313,7 @@ const useSystemsTable = () => {
       {
         title: "Description",
         dataIndex: "description",
-        key: "description",
+        key: SystemColumnKeys.DESCRIPTION,
         render: (description: string | null) => (
           <div className="max-w-96">
             <Typography.Text ellipsis={{ tooltip: description }}>
@@ -307,7 +325,7 @@ const useSystemsTable = () => {
       },
       {
         title: "Actions",
-        key: "actions",
+        key: SystemColumnKeys.ACTIONS,
         render: (_: undefined, record: BasicSystemResponseExtended) => (
           <Flex justify="end">
             <Dropdown
@@ -351,6 +369,8 @@ const useSystemsTable = () => {
       },
     ];
   }, [
+    sortKey,
+    sortOrder,
     plusIsEnabled,
     allSystemGroups,
     columnFilters?.system_groups,
