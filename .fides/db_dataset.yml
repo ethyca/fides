@@ -3002,6 +3002,10 @@ dataset:
         data_categories: [system.operations]
       - name: field_accuracy_details
         data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: messages
+        data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
