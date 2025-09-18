@@ -1,6 +1,6 @@
 import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
 
-import { ConsentStatus } from "~/types/api";
+import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 
 import {
   DiscoveryErrorStatuses,
@@ -10,10 +10,12 @@ import {
 
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: ConsentStatus;
+  stagedResource: StagedResourceAPIResponse;
 }
 
 export const DiscoveryStatusBadgeCell = ({
   consentAggregated,
+  stagedResource,
 }: DiscoveryStatusBadgeCellProps) => {
   const isErrorStatus = DiscoveryErrorStatuses.includes(consentAggregated);
 
@@ -28,8 +30,23 @@ export const DiscoveryStatusBadgeCell = ({
     return `status-badge_${consentAggregated.replace(/_/g, "-")}`;
   };
 
+  // Check if the asset has categories of consent
+  const hasDataUses = stagedResource.data_uses
+    ? stagedResource.data_uses.length > 0
+    : false;
+
+  // Determine tooltip text from the consent status
+  let tagTooltip = DiscoveryStatusDescriptions[consentAggregated];
+
+  // One exception: if the status is unknown and the asset has no categories of consent,
+  // we want to nudge the user to add a category of consent instead of running the monitor
+  if (consentAggregated === ConsentStatus.UNKNOWN && !hasDataUses) {
+    tagTooltip =
+      "Add a category of consent to this asset to find consent information.";
+  }
+
   return (
-    <Tooltip title={DiscoveryStatusDescriptions[consentAggregated]}>
+    <Tooltip title={tagTooltip}>
       <Tag
         color={isErrorStatus ? "error" : undefined}
         data-testid={getTestId()}

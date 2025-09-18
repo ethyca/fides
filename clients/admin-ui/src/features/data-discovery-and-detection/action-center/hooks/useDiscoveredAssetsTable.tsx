@@ -380,9 +380,10 @@ export const useDiscoveredAssetsTable = ({
         filteredValue:
           columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
           null,
-        render: (consentAggregated: ConsentStatus) => (
+        render: (consentAggregated: ConsentStatus, record) => (
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
+            stagedResource={record}
           />
         ),
       });
