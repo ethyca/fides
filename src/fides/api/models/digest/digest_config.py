@@ -4,11 +4,11 @@ from typing import Optional, Union
 from sqlalchemy import Boolean, Column, DateTime, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
-from fides.api.models.digest.conditional_dependencies import DigestConditionType
+from fides.api.models.digest.conditional_dependencies import DigestConditionType, DigestCondition
 from fides.api.schemas.messaging.messaging import MessagingMethod
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -42,32 +42,51 @@ class DigestConfig(Base):
     messaging_service_type = Column(
         EnumColumn(MessagingMethod), nullable=False, default=MessagingMethod.EMAIL
     )
-    cron_expression = Column(String(100), nullable=True)
+    cron_expression = Column(String(100), nullable=False, default="0 9 * * 1")
     timezone = Column(String(50), nullable=False, default="US/Eastern")
     last_sent_at = Column(DateTime(timezone=True), nullable=True)
     next_scheduled_at = Column(DateTime(timezone=True), nullable=True)
     config_metadata = Column(JSONB, nullable=True, default={})
 
+    # Relationships
+    conditions = relationship(
+        "DigestCondition",
+        back_populates="digest_config",
+        cascade="all, delete-orphan",
+    )
+
     def get_receiver_conditions(
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get receiver conditions for this digest config."""
-        raise NotImplementedError("Conditions are not implemented for digests")
+        return DigestCondition.get_root_condition(
+            db, self.id, DigestConditionType.RECEIVER
+        )
 
     def get_content_conditions(
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get content conditions for this digest config."""
-        raise NotImplementedError("Conditions are not implemented for digests")
+        from fides.api.models.digest.conditional_dependencies import DigestCondition
+
+        return DigestCondition.get_root_condition(
+            db, self.id, DigestConditionType.CONTENT
+        )
 
     def get_priority_conditions(
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get priority conditions for this digest config."""
-        raise NotImplementedError("Conditions are not implemented for digests")
+        from fides.api.models.digest.conditional_dependencies import DigestCondition
+
+        return DigestCondition.get_root_condition(
+            db, self.id, DigestConditionType.PRIORITY
+        )
 
     def get_all_conditions(
         self, db: Session
     ) -> dict["DigestConditionType", Optional[Condition]]:
         """Get all condition types for this digest config."""
-        raise NotImplementedError("Conditions are not implemented for digests")
+        from fides.api.models.digest.conditional_dependencies import DigestCondition
+
+        return DigestCondition.get_all_root_conditions(db, self.id)

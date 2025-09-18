@@ -38,26 +38,30 @@ class DigestCondition(ConditionalDependencyBase):
 
     # Foreign key relationships
     digest_config_id = Column(
-        String(255), ForeignKey("digest_config.id"), nullable=False
+        String(255), ForeignKey("digest_config.id", ondelete="CASCADE"), nullable=False
     )
-    parent_id = Column(String(255), ForeignKey("digest_condition.id"), nullable=True)
+    parent_id = Column(
+        String(255),
+        ForeignKey("digest_condition.id", ondelete="CASCADE"),
+        nullable=True,
+    )
 
     # Digest-specific: condition category
     digest_condition_type = Column(EnumColumn(DigestConditionType), nullable=False)
 
     # Relationships
-    digest_config = relationship("DigestConfig", backref="conditions")
+    digest_config = relationship("DigestConfig", back_populates="conditions")
     parent = relationship(
         "DigestCondition",
         remote_side="DigestCondition.id",
-        backref="children",
+        back_populates="children",
         foreign_keys="DigestCondition.parent_id",
     )
-
-    __table_args__ = (
-        Index("ix_digest_condition_digest_config_id", "digest_config_id"),
-        Index("ix_digest_condition_parent_id", "parent_id"),
-        Index("ix_digest_condition_type", "digest_condition_type"),
+    children = relationship(
+        "DigestCondition",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        foreign_keys="DigestCondition.parent_id",
     )
 
     @classmethod

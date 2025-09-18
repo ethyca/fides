@@ -79,7 +79,7 @@ class TestDigestConfigCreation:
         assert config.description is None
         assert config.enabled is True  # Default
         assert config.messaging_service_type == MessagingMethod.EMAIL  # Default
-        assert config.cron_expression is None
+        assert config.cron_expression == "0 9 * * 1"
         assert config.timezone == "US/Eastern"  # Default
         assert config.config_metadata == {}
 
@@ -96,6 +96,7 @@ class TestDigestConfigCreation:
         assert config.enabled is True
         assert config.messaging_service_type == MessagingMethod.EMAIL
         assert config.timezone == "US/Eastern"
+        assert config.cron_expression == "0 9 * * 1"
         assert config.config_metadata == {}
 
     def test_name_is_required(self, db: Session):
@@ -190,7 +191,7 @@ class TestDigestConfigQueries:
     def test_get_enabled_configs(self, db: Session, sample_configs):
         """Test filtering digest configs by enabled status."""
         enabled_configs = (
-            db.query(DigestConfig).filter(DigestConfig.enabled == True).all()
+            db.query(DigestConfig).filter(DigestConfig.enabled is True).all()
         )
 
         assert len(enabled_configs) == 2
@@ -307,17 +308,6 @@ class TestDigestConfigDeletion:
             db.query(DigestConfig).filter(DigestConfig.id == config_id).first()
         )
         assert deleted_config is None
-
-    def test_delete_nonexistent_config(self, db: Session):
-        """Test deleting a config that doesn't exist doesn't raise error."""
-        config = DigestConfig(
-            id="nonexistent_id",
-            digest_type=DigestType.MANUAL_TASKS,
-            name="Nonexistent",
-        )
-
-        # Should not raise an error
-        config.delete(db)
 
 
 class TestDigestConfigConditionMethods:

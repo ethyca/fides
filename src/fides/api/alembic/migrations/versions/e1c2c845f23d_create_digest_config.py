@@ -18,26 +18,10 @@ depends_on = None
 
 
 def upgrade():
-    # Create enum types for digest configuration (if they don't exist)
-    bind = op.get_bind()
+    connection = op.get_bind()
 
-    # Check if digesttype enum exists
-    result = bind.execute(
-        sa.text("SELECT 1 FROM pg_type WHERE typname = 'digesttype'")
-    ).fetchone()
-    if not result:
-        op.execute("CREATE TYPE digesttype AS ENUM('manual_tasks', 'privacy_requests')")
-
-    # Check if messagingmethod enum exists
-    result = bind.execute(
-        sa.text("SELECT 1 FROM pg_type WHERE typname = 'messagingmethod'")
-    ).fetchone()
-    if not result:
-        op.execute("CREATE TYPE messagingmethod AS ENUM('email', 'sms')")
-
-    # Create digest_config table (if it doesn't exist)
     # Check if table already exists
-    inspector = sa.inspect(bind)
+    inspector = sa.inspect(connection)
     if "digest_config" not in inspector.get_table_names():
         op.create_table(
             "digest_config",
@@ -54,21 +38,22 @@ def upgrade():
                 server_default=sa.text("now()"),
                 nullable=True,
             ),
-            sa.Column(
-                "digest_type",
-                sa.Enum("manual_tasks", "privacy_requests", name="digesttype"),
-                nullable=False,
-            ),
+            sa.Column("digest_type", sa.String(length=255), nullable=False),
             sa.Column("name", sa.String(length=255), nullable=False),
             sa.Column("description", sa.Text(), nullable=True),
             sa.Column("enabled", sa.Boolean(), nullable=False, server_default="t"),
             sa.Column(
                 "messaging_service_type",
-                sa.Enum("email", "sms", name="messagingmethod"),
+                sa.String(length=255),
                 nullable=False,
                 server_default="email",
             ),
-            sa.Column("cron_expression", sa.String(length=100), nullable=True),
+            sa.Column(
+                "cron_expression",
+                sa.String(length=100),
+                nullable=False,
+                server_default="0 9 * * 1",
+            ),
             sa.Column(
                 "timezone",
                 sa.String(length=50),
@@ -87,9 +72,6 @@ def upgrade():
         )
 
         # Create indexes for performance
-        op.create_index(
-            op.f("ix_digest_config_id"), "digest_config", ["id"], unique=False
-        )
         op.create_index(
             op.f("ix_digest_config_digest_type"),
             "digest_config",
@@ -114,16 +96,15 @@ def upgrade():
 
 
 def downgrade():
-    # Drop indexes if they exist
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_messaging_service_type")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_next_scheduled_at")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_enabled")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_digest_type")
-    op.execute("DROP INDEX IF EXISTS ix_digest_config_id")
+
+    op.drop_index(
+        op.f("ix_digest_config_messaging_service_type"), table_name="digest_config"
+    )
+    op.drop_index(
+        op.f("ix_digest_config_next_scheduled_at"), table_name="digest_config"
+    )
+    op.drop_index(op.f("ix_digest_config_enabled"), table_name="digest_config")
+    op.drop_index(op.f("ix_digest_config_digest_type"), table_name="digest_config")
 
     # Drop table if it exists
-    op.execute("DROP TABLE IF EXISTS digest_config")
-
-    # Drop enum types if they exist
-    op.execute("DROP TYPE IF EXISTS messagingmethod")
-    op.execute("DROP TYPE IF EXISTS digesttype")
+    op.drop_table("digest_config")
