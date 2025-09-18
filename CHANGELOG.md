@@ -26,6 +26,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added SRV and SSL support for MongoDB [#6590](https://github.com/ethyca/fides/pull/6590)
 
+### Fixed
+- Location field submission and display for privacy requests [#6619](https://github.com/ethyca/fides/pull/6619)
+
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
 ### Added

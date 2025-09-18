@@ -129,6 +129,7 @@ const usePrivacyRequestForm = ({
         action.custom_privacy_request_fields
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
+                .filter(([, field]) => field.field_type !== "location")
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
@@ -172,6 +173,7 @@ const usePrivacyRequestForm = ({
           policy_key: action.policy_key,
           property_id: property?.id || null,
           source: PrivacyRequestSource.PRIVACY_CENTER,
+          location: values?.location,
         },
       ];
 
