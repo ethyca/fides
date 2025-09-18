@@ -219,7 +219,7 @@ export const CustomFieldsTableV2 = () => {
         <CustomFieldModalV2
           open={formModalIsOpen}
           field={activeField}
-          onCancel={handleCloseFormModal}
+          onClose={handleCloseFormModal}
           centered
         />
         <ConfirmationModal

@@ -18,7 +18,7 @@ export const FIELD_TYPE_OPTIONS_NEW = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
   { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
   { label: "Location select", value: FieldTypes.LOCATION_SELECT },
-  { label: "Open Text", value: FieldTypes.OPEN_TEXT },
+  { label: "Open text", value: FieldTypes.OPEN_TEXT },
 ];
 
 export const RESOURCE_TYPE_OPTIONS = [
