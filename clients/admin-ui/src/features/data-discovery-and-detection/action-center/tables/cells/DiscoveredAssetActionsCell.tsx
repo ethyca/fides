@@ -169,8 +169,7 @@ export const DiscoveredAssetActionsCell = ({
                 items: [
                   {
                     key: "view-compliance-details",
-                    label: "View compliance issue details",
-                    icon: <Icons.Information />,
+                    label: "View compliance issue",
                     onClick: handleViewComplianceDetails,
                   },
                 ],
