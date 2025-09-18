@@ -187,6 +187,8 @@ class TestClassificationBenchmark:
                     "extra_categories": [],
                 }
             ],
+            "status": "completed",
+            "messages": [],
         }
 
         stored_benchmark = ClassificationBenchmark.create(
@@ -205,6 +207,8 @@ class TestClassificationBenchmark:
             stored_benchmark.field_accuracy_details
             == benchmark_data["field_accuracy_details"]
         )
+        assert stored_benchmark.status == "completed"
+        assert stored_benchmark.messages == []
         assert stored_benchmark.id is not None
 
     def test_store_benchmark_with_minimal_data(
@@ -215,8 +219,10 @@ class TestClassificationBenchmark:
             "monitor_config_key": test_monitor_config.key,
             "dataset_fides_key": test_dataset.fides_key,
             "resource_urns": ["minimal.urn"],
-            "overall_metrics": {},
+            "overall_metrics": None,
             "field_accuracy_details": [],
+            "status": "failed",
+            "messages": ["Benchmark failed: Dataset not found"],
         }
 
         stored_benchmark = ClassificationBenchmark.create(
@@ -228,8 +234,10 @@ class TestClassificationBenchmark:
         assert stored_benchmark.monitor_config_key == test_monitor_config.key
         assert stored_benchmark.dataset_fides_key == test_dataset.fides_key
         assert stored_benchmark.resource_urns == minimal_data["resource_urns"]
-        assert stored_benchmark.overall_metrics == {}
+        assert stored_benchmark.overall_metrics is None
         assert stored_benchmark.field_accuracy_details == []
+        assert stored_benchmark.status == "failed"
+        assert stored_benchmark.messages == ["Benchmark failed: Dataset not found"]
 
     def test_get_benchmark_found(
         self, db: Session, test_monitor_config: MonitorConfig, test_dataset: Dataset

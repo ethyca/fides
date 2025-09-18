@@ -55,14 +55,29 @@ class ClassificationBenchmark(Base, FidesBase):
     # Overall accuracy metrics stored as JSONB
     overall_metrics = Column(
         MutableDict.as_mutable(JSONB),
-        nullable=False,
-        server_default="{}",
-        default=dict,
+        nullable=True,
+        server_default=None,
+        default=None,
     )
 
     # Field-level accuracy details stored as JSONB array
     field_accuracy_details = Column(
         ARRAY(JSONB),
+        nullable=False,
+        server_default="{}",
+        default=list,
+    )
+
+    # Status and messages for tracking benchmark execution
+    status = Column(
+        String,
+        nullable=False,
+        server_default="'pending'",
+        default="pending",
+        index=True,
+    )
+    messages = Column(
+        ARRAY(String),
         nullable=False,
         server_default="{}",
         default=list,
@@ -89,6 +104,7 @@ class ClassificationBenchmark(Base, FidesBase):
         dataset_fides_key: Optional[str] = None,
         created_after: Optional[datetime] = None,
         created_before: Optional[datetime] = None,
+        status: Optional[str] = None,
     ) -> Query:
         """
         Get a filtered query for benchmarks.
@@ -99,7 +115,7 @@ class ClassificationBenchmark(Base, FidesBase):
             dataset_fides_key: Filter by dataset fides key
             created_after: Filter by creation date (inclusive)
             created_before: Filter by creation date (exclusive)
-
+            status: Filter by status
         Returns:
             Filtered query (not executed)
         """
@@ -115,6 +131,8 @@ class ClassificationBenchmark(Base, FidesBase):
             query = query.filter(cls.created_at >= created_after)
         if created_before:
             query = query.filter(cls.created_at < created_before)
+        if status:
+            query = query.filter(cls.status == status)
 
         # Apply sorting
         query = query.order_by(cls.created_at.desc())
