@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntPopover as Popover,
@@ -48,6 +49,8 @@ export const InProgressMonitorTasksList = ({
     // Filter states and controls
     statusFilters,
     updateStatusFilters,
+    showDismissed,
+    updateShowDismissed,
 
     // Filter actions
     resetToDefault,
@@ -64,8 +67,8 @@ export const InProgressMonitorTasksList = ({
     isFetching,
   } = useInProgressMonitorTasksList({ monitorId });
 
-  // Count active filters
-  const activeFilterCount = statusFilters.length;
+  // Count active filters (status filters + whether dismissed is shown)
+  const activeFilterCount = statusFilters.length + (showDismissed ? 1 : 0);
 
   const filterContent = (
     <div style={{ padding: "8px", minWidth: "200px" }}>
@@ -81,14 +84,23 @@ export const InProgressMonitorTasksList = ({
         }))}
         allowClear
       />
-      <Space>
-        <Button size="small" onClick={resetToDefault}>
-          Default
-        </Button>
-        <Button size="small" onClick={clearAllFilters}>
-          Clear
-        </Button>
-      </Space>
+      <Checkbox
+        checked={showDismissed}
+        onChange={(e) => updateShowDismissed(e.target.checked)}
+        style={{ marginBottom: "12px" }}
+      >
+        Show dismissed tasks
+      </Checkbox>
+      <div>
+        <Space>
+          <Button size="small" onClick={resetToDefault}>
+            Default
+          </Button>
+          <Button size="small" onClick={clearAllFilters}>
+            Clear
+          </Button>
+        </Space>
+      </div>
     </div>
   );
 

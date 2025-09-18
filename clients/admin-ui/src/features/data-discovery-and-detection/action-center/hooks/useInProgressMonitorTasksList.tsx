@@ -16,6 +16,7 @@ export const useInProgressMonitorTasksList = ({
   const [pageSize] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "paused", "retrying", "error"]); // Default to all "in progress" states plus error tasks
+  const [showDismissed, setShowDismissed] = useState(false); // Default to not showing dismissed tasks
 
   const updateSearch = useCallback((newSearch: string) => {
     setSearchQuery(newSearch);
@@ -27,15 +28,22 @@ export const useInProgressMonitorTasksList = ({
     setPageIndex(1);
   }, []);
 
+  const updateShowDismissed = useCallback((show: boolean) => {
+    setShowDismissed(show);
+    setPageIndex(1);
+  }, []);
+
   // Default button: Reset to all "In Progress" states plus error tasks (pending, in_processing, paused, retrying, error)
   const resetToDefault = useCallback(() => {
     setStatusFilters(["pending", "in_processing", "paused", "retrying", "error"]);
+    setShowDismissed(false);
     setPageIndex(1);
   }, []);
 
   // Clear button: Remove all filters
   const clearAllFilters = useCallback(() => {
     setStatusFilters([]);
+    setShowDismissed(true); // When clearing all filters, show everything including dismissed
     setPageIndex(1);
   }, []);
 
@@ -56,6 +64,7 @@ export const useInProgressMonitorTasksList = ({
     size: pageSize,
     search: searchQuery,
     statuses: statusFilters.length > 0 ? statusFilters : undefined,
+    return_dismissed: showDismissed,
   });
 
   // Use all possible statuses instead of just what's in current data
@@ -93,6 +102,8 @@ export const useInProgressMonitorTasksList = ({
     // Filter states and controls
     statusFilters,
     updateStatusFilters,
+    showDismissed,
+    updateShowDismissed,
 
     // Filter actions
     resetToDefault,
