@@ -13,7 +13,7 @@ import { formatDate } from "~/features/common/utils";
 import { DATA_DISCOVERY_ROUTE_DETAIL } from "~/features/common/nav/routes";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
-import { useRetryMonitorTaskMutation } from "../action-center.slice";
+import { useRetryMonitorTaskMutation, useDismissMonitorTaskMutation } from "../action-center.slice";
 
 const { Text, Title } = Typography;
 
@@ -41,6 +41,8 @@ export const InProgressMonitorTaskItem = ({
   const router = useRouter();
   const toast = useToast();
   const [retryMonitorTask, { isLoading: isRetrying }] = useRetryMonitorTaskMutation();
+  const [dismissMonitorTask, { isLoading: isDismissing }] = useDismissMonitorTaskMutation();
+  const isDismissed = Boolean(task.dismissed_in_activity_view);
 
   const getTaskTypeColor = (taskType?: string) => {
     switch (taskType) {
@@ -91,6 +93,22 @@ export const InProgressMonitorTaskItem = ({
       toast({
         status: "error",
         description: `Failed to retry task: ${errorMessage}`,
+      });
+    }
+  };
+
+  const handleDismissTask = async () => {
+    try {
+      await dismissMonitorTask({ taskId: task.id }).unwrap();
+      toast({
+        status: "success",
+        description: "Task dismissed successfully",
+      });
+    } catch (error: any) {
+      const errorMessage = error?.data?.detail || error?.message || "Unknown error occurred";
+      toast({
+        status: "error",
+        description: `Failed to dismiss task: ${errorMessage}`,
       });
     }
   };
@@ -177,17 +195,29 @@ export const InProgressMonitorTaskItem = ({
             )
           )}
 
-          {/* Retry button for error tasks */}
+          {/* Retry and Dismiss buttons for error tasks */}
           {task.status === "error" && (
-            <Button
-              size="small"
-              type="primary"
-              loading={isRetrying}
-              onClick={handleRetryTask}
-              style={{ marginLeft: "8px" }}
-            >
-              Retry
-            </Button>
+            <>
+              <Button
+                size="small"
+                type="primary"
+                loading={isRetrying}
+                onClick={handleRetryTask}
+                style={{ marginLeft: "8px" }}
+              >
+                Retry
+              </Button>
+              {!isDismissed && (
+                <Button
+                  size="small"
+                  loading={isDismissing}
+                  onClick={handleDismissTask}
+                  style={{ marginLeft: "8px" }}
+                >
+                  Dismiss
+                </Button>
+              )}
+            </>
           )}
                 </Flex>
               </div>

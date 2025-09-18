@@ -326,12 +326,14 @@ const actionCenterApi = baseApi.injectEndpoints({
                 connection_names?: string[];
                 task_types?: string[];
                 statuses?: string[];
+                return_dismissed?: boolean;
               }
             >({
-              query: ({ page = 1, size = 20, search, connection_names, task_types, statuses }) => {
+              query: ({ page = 1, size = 20, search, connection_names, task_types, statuses, return_dismissed = false }) => {
                 const params = new URLSearchParams({
                   page: page.toString(),
                   size: size.toString(),
+                  return_dismissed: return_dismissed.toString(),
                 });
 
                 if (search) {
@@ -366,6 +368,26 @@ const actionCenterApi = baseApi.injectEndpoints({
               }),
               invalidatesTags: ["Monitor Tasks"],
             }),
+            dismissMonitorTask: build.mutation<
+              MonitorTaskInProgressResponse,
+              { taskId: string }
+            >({
+              query: ({ taskId }) => ({
+                url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+                method: "POST",
+              }),
+              invalidatesTags: ["Monitor Tasks"],
+            }),
+            undismissMonitorTask: build.mutation<
+              MonitorTaskInProgressResponse,
+              { taskId: string }
+            >({
+              query: ({ taskId }) => ({
+                url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+                method: "DELETE",
+              }),
+              invalidatesTags: ["Monitor Tasks"],
+            }),
   }),
 });
 
@@ -385,4 +407,6 @@ export const {
   useGetWebsiteMonitorResourceFiltersQuery,
   useGetInProgressMonitorTasksQuery,
   useRetryMonitorTaskMutation,
+  useDismissMonitorTaskMutation,
+  useUndismissMonitorTaskMutation,
 } = actionCenterApi;
