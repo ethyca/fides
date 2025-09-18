@@ -342,7 +342,7 @@ class PrivacyRequestResponse(FidesSchema):
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
-    updated_at: Optional[datetime] = None
+
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
