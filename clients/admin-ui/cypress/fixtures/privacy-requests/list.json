@@ -6,6 +6,8 @@
       "started_processing_at": null,
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": null,
       "identity_verified_at": null,
@@ -59,6 +61,8 @@
       "started_processing_at": null,
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": null,
       "identity_verified_at": null,
@@ -106,6 +110,8 @@
       "started_processing_at": null,
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": null,
       "identity_verified_at": null,
@@ -153,6 +159,8 @@
       "started_processing_at": null,
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": null,
       "identity_verified_at": null,
@@ -200,6 +208,8 @@
       "started_processing_at": "2023-01-27T00:31:15.978689+00:00",
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": "2023-01-27T00:31:19.237969+00:00",
       "identity_verified_at": "2023-01-27T00:31:15.958049+00:00",
@@ -247,6 +257,8 @@
       "started_processing_at": "2023-01-27T00:19:23.237680+00:00",
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": "2023-01-27T00:19:25.764529+00:00",
       "identity_verified_at": "2023-01-27T00:19:23.226101+00:00",
@@ -294,6 +306,8 @@
       "started_processing_at": "2023-01-27T00:17:42.956488+00:00",
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": "2023-01-27T00:17:46.143286+00:00",
       "identity_verified_at": "2023-01-27T00:17:42.943415+00:00",
@@ -341,6 +355,8 @@
       "started_processing_at": "2023-01-27T00:11:59.565780+00:00",
       "reviewed_at": null,
       "reviewed_by": null,
+      "submitted_by": null,
+      "submitter": null,
       "reviewer": null,
       "finished_processing_at": "2023-01-27T00:12:00.964637+00:00",
       "identity_verified_at": "2023-01-27T00:11:59.385923+00:00",
@@ -385,9 +401,68 @@
       "resume_endpoint": "/privacy-request/pri_4f87b8b0-f97e-45e7-8561-300a6a932d04/retry",
       "days_left": 45,
       "source": "Privacy Center"
+    },
+    {
+      "id": "pri_request_manager_test-1234-5678-9abc-def012345678",
+      "created_at": "2023-01-27T01:00:00.000000+00:00",
+      "started_processing_at": null,
+      "reviewed_at": "2023-01-27T02:00:00.000000+00:00",
+      "reviewed_by": "fid_560cceb5-f567-4d76-a905-1e16ada1c143",
+      "submitted_by": "fid_bad38cda-476b-4d25-9883-798ba1415f40",
+      "submitter": {
+        "id": "fid_bad38cda-476b-4d25-9883-798ba1415f40",
+        "username": "user_3"
+      },
+      "reviewer": {
+        "id": "fid_560cceb5-f567-4d76-a905-1e16ada1c143",
+        "username": "user_2"
+      },
+      "finished_processing_at": null,
+      "identity_verified_at": null,
+      "paused_at": null,
+      "status": "pending",
+      "external_id": null,
+      "identity": {
+        "phone_number": { "label": "Phone number", "value": null },
+        "email": { "label": "Email", "value": "admin-user@ethyca.com" }
+      },
+      "custom_privacy_request_fields": {
+        "account_id": { "label": "Account ID", "value": 999 },
+        "user_id": { "label": "User ID", "value": "admin-123" }
+      },
+      "policy": {
+        "name": "default_access_policy",
+        "key": "default_access_policy",
+        "drp_action": null,
+        "execution_timeframe": 45,
+        "rules": [
+          {
+            "name": "Example access Rule",
+            "key": "default_access_policy_rule",
+            "action_type": "access",
+            "storage_destination": {
+              "name": "s3_storage",
+              "type": "s3",
+              "details": {
+                "bucket": "fides-test-privacy-requests",
+                "naming": "request_id",
+                "auth_method": "secret_keys",
+                "max_retries": 0
+              },
+              "key": "s3_storage",
+              "format": "json"
+            },
+            "masking_strategy": null
+          }
+        ]
+      },
+      "action_required_details": null,
+      "resume_endpoint": null,
+      "days_left": 45,
+      "source": "Request Manager"
     }
   ],
-  "total": 8,
+  "total": 9,
   "page": 1,
   "size": 25
 }
