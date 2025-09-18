@@ -14,7 +14,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
-from fides.api.schemas.user import PrivacyRequestReviewer
+from fides.api.schemas.user import PrivacyRequestUser
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.api.util.enums import ColumnSort
@@ -316,7 +316,9 @@ class PrivacyRequestResponse(FidesSchema):
     started_processing_at: Optional[datetime] = None
     reviewed_at: Optional[datetime] = None
     reviewed_by: Optional[str] = None
-    reviewer: Optional[PrivacyRequestReviewer] = None
+    submitted_by: Optional[str] = None
+    reviewer: Optional[PrivacyRequestUser] = None
+    submitter: Optional[PrivacyRequestUser] = None
     finished_processing_at: Optional[datetime] = None
     identity_verified_at: Optional[datetime] = None
     paused_at: Optional[datetime] = None

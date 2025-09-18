@@ -529,3 +529,5 @@ class TestRolesToScopesMapping:
         viewer_and_approver_scopes = set(ROLES_TO_SCOPES_MAPPING[VIEWER_AND_APPROVER])
         assert approver_scopes.issubset(viewer_and_approver_scopes)
         assert not viewer_and_approver_scopes.issubset(approver_scopes)
+        # Verify approver role includes privacy request create scope (added in September 2025)
+        assert "privacy-request:create" in ROLES_TO_SCOPES_MAPPING[APPROVER]
