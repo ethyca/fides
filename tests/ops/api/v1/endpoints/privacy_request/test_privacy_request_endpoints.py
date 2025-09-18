@@ -3275,7 +3275,7 @@ class TestPrivacyRequestSearch:
         reviewed_at = datetime.now()
         created_at = datetime.now()
         updated_at = datetime.now()
-        completed_on = datetime.now()
+        finalized_at = datetime.now()
         deadline = created_at + timedelta(privacy_request.days_left)
 
         privacy_request.created_at = created_at
