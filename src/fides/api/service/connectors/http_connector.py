@@ -50,7 +50,7 @@ class HTTPSConnector(BaseConnector[None]):
         if oauth_config is not None:
             client_id = oauth_config.client_id
             client_secret = oauth_config.client_secret
-            scopes = oauth_config.scope or []
+            scopes = oauth_config.scope.split(" ") or []
             auth = HTTPBasicAuth(client_id, client_secret)
             client = BackendApplicationClient(client_id=client_id)
             session_client = OAuth2Session(client=client, scope=scopes)

@@ -441,7 +441,7 @@ def patch_connection_oauth_config(
 
     patched_oauth_config = {
         **patched_oauth_config,
-        **{k: v for (k, v) in oauth_config.model_dump(mode="json").items() if v},  # type: ignore[dict-item]
+        **{k: v for (k, v) in oauth_config.model_dump(mode="json").items() if v is not None},  # type: ignore[dict-item]
     }
 
     logger.info("Patching OAuth2 config for '{}'", connection_key)
