@@ -261,6 +261,12 @@ class PrivacyRequest(
         foreign_keys=[reviewed_by],
     )
 
+    submitter = relationship(
+        FidesUser,
+        backref=backref("submitted_privacy_requests", passive_deletes=True),
+        foreign_keys=[submitted_by],
+    )
+
     pre_approval_webhook_replies = relationship(
         PreApprovalWebhookReply,
         back_populates="privacy_request",
