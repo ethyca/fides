@@ -396,8 +396,6 @@ def delete_connection_oauth_config(
     connection_config.oauth_config = None
     connection_config.save(db=db)
 
-    return None
-
 
 @router.patch(
     CONNECTION_OAUTH,
