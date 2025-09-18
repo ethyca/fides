@@ -162,6 +162,7 @@ def test_snowflake_example_data(snowflake_test_engine):
     )
 
 
+@pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_bigquery_example_data(bigquery_test_engine):

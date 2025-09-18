@@ -57,6 +57,7 @@ export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";
 export const INTEGRATION_MANAGEMENT_ROUTE = "/integrations";
+export const INTEGRATION_DETAIL_ROUTE = "/integrations/[id]";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/settings/organization";
 export const LOCATIONS_ROUTE = "/settings/locations";
 export const REGULATIONS_ROUTE = "/settings/regulations";

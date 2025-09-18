@@ -26,4 +26,12 @@ export type MongoDBDocsSchema = {
    * Used to specify the default authentication database.
    */
   defaultauthdb: string;
+  /**
+   * Enable SRV record lookup for service discovery (mongodb+srv://). Required for MongoDB Atlas. Enables SSL by default.
+   */
+  use_srv?: boolean;
+  /**
+   * Enable SSL/TLS encryption. With SRV: defaults to enabled (can override). Without SRV: defaults to disabled.
+   */
+  ssl_enabled?: boolean;
 };

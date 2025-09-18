@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
@@ -36,6 +36,8 @@ class SystemService:
         size: Optional[int] = None,
         page: Optional[int] = None,
         show_deleted: bool = False,
+        sort_by: Optional[List[Literal["name"]]] = None,
+        sort_asc: Optional[bool] = True,
         **kwargs: Any,
     ) -> Union[List[System], Page[System]]:
         """
@@ -78,7 +80,20 @@ class SystemService:
         )
 
         # Ensure distinct results
-        query = query.distinct(System.id)
+        if sort_by:
+            for sort_column_name in sort_by:
+                if sort_column_name == "name":
+                    name_order = System.name.asc() if sort_asc else System.name.desc()
+                    # For name sorting, we need name first in ORDER BY, then id for uniqueness
+                    query = query.distinct(System.name, System.id).order_by(
+                        name_order, System.id
+                    )
+        else:
+            # Default to ascending name sort when no sorting parameters are provided
+            name_order = System.name.asc()
+            query = query.distinct(System.name, System.id).order_by(
+                name_order, System.id
+            )
 
         # Return paginated or non-paginated results
         if size or page:
