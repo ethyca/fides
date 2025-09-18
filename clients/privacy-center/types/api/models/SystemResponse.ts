@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
-import type { Cookies } from "./Cookies";
 import type { DataFlow } from "./DataFlow";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
@@ -178,10 +177,6 @@ export type SystemResponse = {
    * A URL that points to the system's publicly accessible legitimate interest disclosure.
    */
   legitimate_interest_disclosure_url?: string | null;
-  /**
-   * System-level cookies unassociated with a data use to deliver services and functionality
-   */
-  cookies?: Array<Cookies> | null;
   created_at: string;
   /**
    *

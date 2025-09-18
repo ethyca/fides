@@ -207,3 +207,29 @@ export const buildArrayQueryParams = (
 
   return urlParams;
 };
+
+export const renderValue = (value: unknown): string | null => {
+  if (Array.isArray(value)) {
+    return value.map((v) => renderValue(v)).join(", ");
+  }
+
+  switch (typeof value) {
+    /**
+     * We could have a standard way of returning objects as a string, but not now
+     */
+    case "object":
+      return null;
+    case "bigint":
+    case "number":
+      return value.toString();
+    case "string":
+      return value;
+    case "boolean":
+      return String(value);
+    case "undefined":
+    case "function":
+    case "symbol":
+    default:
+      return null;
+  }
+};

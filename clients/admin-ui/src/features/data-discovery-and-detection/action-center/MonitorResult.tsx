@@ -56,11 +56,13 @@ export const MonitorResult = ({
     return property ? getWebsiteIconUrl(property, 60) : undefined;
   }, [property]);
 
-  const assetCountString = Object.entries(updates)
-    .map((update) => {
-      return `${update[1]} ${update[0]}s`;
-    })
-    .join(", ");
+  const assetCountString =
+    updates &&
+    Object.entries(updates)
+      .map((update) => {
+        return `${update[1]} ${update[0]}s`;
+      })
+      .join(", ");
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))

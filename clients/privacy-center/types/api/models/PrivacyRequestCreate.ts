@@ -26,4 +26,5 @@ export type PrivacyRequestCreate = {
   property_id?: string | null;
   consent_preferences?: Array<Consent> | null;
   source?: PrivacyRequestSource | null;
+  location?: string | null;
 };

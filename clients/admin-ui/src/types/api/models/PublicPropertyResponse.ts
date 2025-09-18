@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { fides__api__schemas__privacy_center_config__PrivacyCenterConfig } from "./fides__api__schemas__privacy_center_config__PrivacyCenterConfig";
 import type { MinimalMessagingTemplate } from "./MinimalMessagingTemplate";
 import type { MinimalPrivacyExperienceConfig } from "./MinimalPrivacyExperienceConfig";
-import type { PrivacyCenterConfig } from "./PrivacyCenterConfig";
 import type { PropertyType } from "./PropertyType";
 
 /**
@@ -25,7 +25,7 @@ export type PublicPropertyResponse = {
   id?: string | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
-  privacy_center_config?: PrivacyCenterConfig | null;
+  privacy_center_config?: fides__api__schemas__privacy_center_config__PrivacyCenterConfig | null;
   stylesheet?: string | null;
   paths: Array<string>;
 };

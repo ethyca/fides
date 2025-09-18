@@ -34,5 +34,10 @@ export type PrivacyRequestVerboseResponse = {
   custom_privacy_request_fields_approved_by?: string | null;
   custom_privacy_request_fields_approved_at?: string | null;
   source?: PrivacyRequestSource | null;
+  location?: string | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
+  finalized_at?: string | null;
+  finalized_by?: string | null;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };

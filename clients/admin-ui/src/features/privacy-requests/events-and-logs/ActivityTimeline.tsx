@@ -7,11 +7,13 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
   ExecutionLog,
   ExecutionLogStatus,
-  PrivacyRequestEntity,
+  PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
+import { PrivacyRequestVerboseResponse } from "~/types/api";
 
 import ActivityTimelineEntry from "./ActivityTimelineEntry";
 import styles from "./ActivityTimelineEntry.module.scss";
@@ -23,9 +25,13 @@ import {
 import LogDrawer from "./LogDrawer";
 
 type ActivityTimelineProps = {
-  subjectRequest: PrivacyRequestEntity;
+  subjectRequest: PrivacyRequestVerboseResponse;
 };
 
+/**
+ * Look ye upon all of the type casting within and despair
+ * If you fill your apis with 'any' ol' types, anything is possible and nothing is real
+ */
 const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [currentLogs, setCurrentLogs] = useState<ExecutionLog[]>([]);
@@ -36,12 +42,17 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     ExecutionLogStatus.ERROR,
   );
 
-  const { results, id: privacyRequestId } = subjectRequest;
+  const { results = [], id: privacyRequestId } = subjectRequest;
 
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
+
   const { eventItems, isLoading: isResultsLoading } =
-    usePrivacyRequestEventLogs(results);
+    /*
+     * Another "the backend made me do it"
+     * Unfortunately not a regression since this is just casting to the previous type, just at a lower level
+     */
+    usePrivacyRequestEventLogs(results as PrivacyRequestResults);
   const {
     manualTaskItems,
     taskCommentIds,
@@ -52,8 +63,12 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     isCommentsLoading || isResultsLoading || isManualTasksLoading;
 
   useEffect(() => {
-    if (currentKey && results && results[currentKey]) {
-      setCurrentLogs(results[currentKey]);
+    if (
+      currentKey &&
+      results &&
+      (results as PrivacyRequestResults)[currentKey]
+    ) {
+      setCurrentLogs((results as PrivacyRequestResults)[currentKey]);
     }
   }, [results, currentKey]);
 
@@ -108,10 +123,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     const eventItemsWithClickHandler = eventItems.map((item) => {
       if (item.type === "Request update" && item.title && results) {
         const key = item.title;
-        if (results[key]) {
+        if ((results as PrivacyRequestResults)[key]) {
           return {
             ...item,
-            onClick: () => showLogs(key, results[key]),
+            onClick: () =>
+              showLogs(key, (results as PrivacyRequestResults)[key]),
           };
         }
       }
@@ -122,7 +138,9 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     const initialRequestItem = {
       author: "Fides",
       title: "Access request received",
-      date: new Date(subjectRequest.created_at),
+      date: subjectRequest.created_at
+        ? new Date(subjectRequest.created_at)
+        : null,
       type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
       showViewLog: false,
       isError: false,
@@ -140,7 +158,10 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
     // Sort by date (oldest first)
     return allItems.sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
+      const dateA = a.date ? new Date(a.date).getTime() : new Date().getTime();
+      const dateB = b.date ? new Date(b.date).getTime() : new Date().getTime();
+
+      return dateA - dateB;
     });
   }, [
     eventItems,
@@ -170,7 +191,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
             ? renderSkeletonItems()
             : timelineItems.map((item) => (
                 <li key={item.id}>
-                  <ActivityTimelineEntry item={item} />
+                  {/**
+                   * This should be double checked
+                   * Looks like different types of objects could be given here
+                   */}
+                  <ActivityTimelineEntry item={item as ActivityTimelineItem} />
                 </li>
               ))}
         </ul>
@@ -179,7 +204,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         isOpen={isOpen}
         onClose={closeDrawer}
         currentLogs={currentLogs}
-        allEventLogs={allEventLogs}
+        allEventLogs={allEventLogs as ExecutionLog[]}
         isViewingError={isViewingError}
         errorMessage={errorMessage}
         currentStatus={currentStatus}

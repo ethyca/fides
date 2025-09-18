@@ -17,7 +17,7 @@ export type GoogleCloudSQLPostgresDocsSchema = {
    * example: friendly-tower-424214-n8:us-central1:test-ethyca
    */
   instance_connection_name: string;
-  dbname: string;
+  dbname?: string | null;
   /**
    * The default schema to be used for the database connection (defaults to public).
    */
@@ -27,7 +27,7 @@ export type GoogleCloudSQLPostgresDocsSchema = {
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds;
   /**
-   * Specify the IP Address type required for the database (defaults to public).
+   * Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview
    */
   ip_type?: GoogleCloudSQLIPType | null;
 };

@@ -1,4 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import { formatIsoLocation, isoStringToEntry } from "fidesui";
 
 import {
   BadgeCell,
@@ -12,7 +13,8 @@ import {
   RequestStatusBadgeCell,
 } from "~/features/privacy-requests/cells";
 import { RequestTableActions } from "~/features/privacy-requests/RequestTableActions";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+
+import { LegacyPrivacyRequestEntity, PrivacyRequestEntity } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 enum COLUMN_IDS {
@@ -25,6 +27,7 @@ enum COLUMN_IDS {
   CREATED_BY = "created_by",
   REVIEWER = "reviewer",
   ID = "id",
+  LOCATION = "location",
   ACTIONS = "actions",
 }
 
@@ -40,8 +43,8 @@ export const getRequestTableColumns = (hasPlus = false) => [
     id: COLUMN_IDS.DAYS_LEFT,
     cell: ({ row, getValue }) => (
       <RequestDaysLeftCell
-        daysLeft={getValue()}
-        timeframe={row.original.policy.execution_timeframe}
+        daysLeft={getValue() ?? undefined}
+        timeframe={row.original.policy.execution_timeframe ?? undefined}
         status={row.original.status}
       />
     ),
@@ -64,13 +67,22 @@ export const getRequestTableColumns = (hasPlus = false) => [
     : []),
   columnHelper.accessor((row) => row.policy.rules, {
     id: COLUMN_IDS.REQUEST_TYPE,
-    cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
+    cell: ({ getValue }) => {
+      const value = getValue();
+      return value && <RequestActionTypeCell value={value} />;
+    },
     header: (props) => <DefaultHeaderCell value="Request type" {...props} />,
     enableSorting: false,
   }),
   columnHelper.accessor(
+    /**
+     * Casting because backend types are not correctly defined
+     * PLEASE DO NOT MAKE ME DO THIS
+     */
     (row) =>
-      row.identity?.email.value || row.identity?.phone_number.value || "",
+      (row as unknown as LegacyPrivacyRequestEntity)?.identity?.email.value ||
+      (row as unknown as LegacyPrivacyRequestEntity).identity?.phone_number ||
+      "",
     {
       id: COLUMN_IDS.SUBJECT_IDENTITY,
       cell: ({ getValue }) => <DefaultCell value={getValue()} />,
@@ -82,7 +94,10 @@ export const getRequestTableColumns = (hasPlus = false) => [
   ),
   columnHelper.accessor((row) => row.created_at, {
     id: COLUMN_IDS.TIME_RECEIVED,
-    cell: ({ getValue }) => <DefaultCell value={formatDate(getValue())} />,
+    cell: ({ getValue }) => {
+      const value = getValue();
+      return value && <DefaultCell value={formatDate(value)} />;
+    },
     header: (props) => <DefaultHeaderCell value="Time received" {...props} />,
   }),
   columnHelper.accessor((row) => row.reviewer?.username || "", {
@@ -97,6 +112,19 @@ export const getRequestTableColumns = (hasPlus = false) => [
     id: COLUMN_IDS.ID,
     cell: ({ getValue }) => <DefaultCell value={getValue()} />,
     header: (props) => <DefaultHeaderCell value="Request ID" {...props} />,
+    enableSorting: false,
+  }),
+  columnHelper.accessor((row) => row.location, {
+    id: COLUMN_IDS.LOCATION,
+    cell: ({ getValue }) => {
+      const value = getValue();
+      const isoEntry = value ? isoStringToEntry(value) : undefined;
+      const formattedValue = isoEntry
+        ? formatIsoLocation({ isoEntry, showFlag: true })
+        : value;
+      return <DefaultCell value={formattedValue} />;
+    },
+    header: (props) => <DefaultHeaderCell value="Location" {...props} />,
     enableSorting: false,
   }),
   columnHelper.display({
