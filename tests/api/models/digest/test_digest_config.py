@@ -191,7 +191,7 @@ class TestDigestConfigQueries:
     def test_get_enabled_configs(self, db: Session, sample_configs):
         """Test filtering digest configs by enabled status."""
         enabled_configs = (
-            db.query(DigestConfig).filter(DigestConfig.enabled == True).all()
+            db.query(DigestConfig).filter(DigestConfig.enabled is True).all()
         )
 
         assert len(enabled_configs) == 2

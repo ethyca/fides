@@ -1,3 +1,4 @@
+import zoneinfo
 from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -50,8 +51,6 @@ class DigestConfigBase(BaseModel):
     @classmethod
     def validate_timezone(cls, value: str) -> str:
         """Validate timezone string."""
-        import zoneinfo
-
         try:
             zoneinfo.ZoneInfo(value)
         except zoneinfo.ZoneInfoNotFoundError:
