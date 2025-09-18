@@ -42,7 +42,7 @@ class DigestConfig(Base):
     messaging_service_type = Column(
         EnumColumn(MessagingMethod), nullable=False, default=MessagingMethod.EMAIL
     )
-    cron_expression = Column(String(100), nullable=True)
+    cron_expression = Column(String(100), nullable=False, default="0 9 * * 1")
     timezone = Column(String(50), nullable=False, default="US/Eastern")
     last_sent_at = Column(DateTime(timezone=True), nullable=True)
     next_scheduled_at = Column(DateTime(timezone=True), nullable=True)
