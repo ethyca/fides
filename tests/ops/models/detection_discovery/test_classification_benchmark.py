@@ -538,6 +538,39 @@ class TestClassificationBenchmarkList:
         assert benchmark_1.id in benchmark_ids
         assert benchmark_2.id not in benchmark_ids
 
+    def test_list_benchmarks_with_status_filter(
+        self, db: Session, test_monitor_config: MonitorConfig, test_dataset: Dataset
+    ) -> None:
+        """Test listing benchmarks filtered by status."""
+        now = datetime.utcnow()
+        benchmark_data = {
+            "monitor_config_key": test_monitor_config.key,
+            "dataset_fides_key": test_dataset.fides_key,
+            "resource_urns": ["status.test"],
+            "status": "completed",
+            "created_at": now,
+            "overall_metrics": {"precision": 0.8},
+            "field_accuracy_details": [],
+        }
+
+        benchmark_data_2 = {
+            "monitor_config_key": test_monitor_config.key,
+            "dataset_fides_key": test_dataset.fides_key,
+            "resource_urns": ["status.test.2"],
+            "status": "failed",
+            "created_at": now,
+            "overall_metrics": {"precision": 0.9},
+            "field_accuracy_details": [],
+        }
+        benchmark = ClassificationBenchmark.create(db, data=benchmark_data)
+        benchmark_2 = ClassificationBenchmark.create(db, data=benchmark_data_2)
+        db.commit()
+        benchmark_id = benchmark.id
+        query = ClassificationBenchmark.list_benchmarks(db, status="completed")
+        results = query.all()
+        assert len(results) == 1
+        assert results[0].id == benchmark_id
+
     def test_list_benchmarks_with_combined_filters(
         self,
         db: Session,
