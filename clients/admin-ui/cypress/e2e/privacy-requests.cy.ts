@@ -38,7 +38,7 @@ describe("Privacy Requests", () => {
 
     // TODO: add multi-page stubs to test the pagination controls.
     it("shows the first page of results", () => {
-      cy.get("@rowsNew").should("have.length", 5); // Updated to include the new Request Manager request
+      cy.get("@rowsNew").should("have.length", 5);
       cy.get("@rowsCompleted").should("have.length", 3);
       cy.get("@rowsError").should("have.length", 1);
     });
@@ -151,9 +151,6 @@ describe("Privacy Requests", () => {
           "Request Manager",
         ); // source value for Request Manager requests
       });
-
-      // Take screenshot for "after" state
-      cy.screenshot("request_details_after");
     });
 
     describe("Activity Timeline", () => {
