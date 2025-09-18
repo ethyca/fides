@@ -75,7 +75,7 @@ class TestHttpOAuth2ConnectorMethods:
                 connector.configuration.oauth_config.token_url,
                 json={"axxess_token": "test_token", "token_type": "Bearer"},
                 status_code=200,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
 
             mock_response.post(
@@ -93,9 +93,18 @@ class TestHttpOAuth2ConnectorMethods:
     @pytest.mark.parametrize(
         "token_endpoint_status_code",
         [200, 401, 403, 404, 422, 500],
-        ids=["ok_no_token", "unauthorized", "forbidden", "not_found", "malformed_request", "server_error"]
+        ids=[
+            "ok_no_token",
+            "unauthorized",
+            "forbidden",
+            "not_found",
+            "malformed_request",
+            "server_error",
+        ],
     )
-    def test_access_token_endpoint_error_causes_error(self, token_endpoint_status_code, connector):
+    def test_access_token_endpoint_error_causes_error(
+        self, token_endpoint_status_code, connector
+    ):
         request_body = {"test": "response"}
 
         with requests_mock.Mocker() as mock_response:
@@ -103,7 +112,7 @@ class TestHttpOAuth2ConnectorMethods:
             mock_response.post(
                 connector.configuration.oauth_config.token_url,
                 status_code=token_endpoint_status_code,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
 
             mock_response.post(
@@ -113,7 +122,7 @@ class TestHttpOAuth2ConnectorMethods:
             )
 
             with pytest.raises(ClientUnsuccessfulException) as exc:
-               connector.execute(request_body, response_expected=True)
+                connector.execute(request_body, response_expected=True)
 
             assert exc.value.args[0] == "Client call failed with status code '500'"
 

@@ -9,12 +9,12 @@ from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.status import (
-    HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_200_OK,
-    HTTP_404_NOT_FOUND,
-    HTTP_403_FORBIDDEN,
-    HTTP_401_UNAUTHORIZED,
     HTTP_204_NO_CONTENT,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from starlette.testclient import TestClient
 
