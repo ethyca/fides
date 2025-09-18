@@ -1,6 +1,5 @@
 import {
   AntButton as Button,
-  AntDropdown as Dropdown,
   AntSpace as Space,
   AntTooltip as Tooltip,
   Icons,
@@ -163,26 +162,20 @@ export const DiscoveredAssetActionsCell = ({
             Ignore
           </Button>
           {isErrorStatus && (
-            <Dropdown
-              trigger={["click"]}
-              menu={{
-                items: [
-                  {
-                    key: "view-compliance-details",
-                    label: "View compliance issue",
-                    onClick: handleViewComplianceDetails,
-                  },
-                ],
-              }}
-            >
-              <Button
-                size="small"
-                icon={<Icons.OverflowMenuVertical />}
-                aria-label="More actions"
-                type="text"
-                data-testid="asset-compliance-actions-menu"
-              />
-            </Dropdown>
+            <Button
+              data-testid="view-compliance-details-btn"
+              size="small"
+              onClick={handleViewComplianceDetails}
+              disabled={anyActionIsLoading}
+              loading={isRestoringResults}
+              icon={
+                <Icons.WarningAltFilled
+                  style={{ color: "var(--fidesui-error)", width: 14 }}
+                />
+              }
+              title="View compliance issue"
+              aria-label="View compliance issue"
+            />
           )}
         </>
       )}
