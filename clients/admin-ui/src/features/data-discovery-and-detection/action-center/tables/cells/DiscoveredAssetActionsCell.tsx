@@ -1,7 +1,9 @@
 import {
   AntButton as Button,
+  AntDropdown as Dropdown,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  Icons,
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -9,7 +11,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { DiffStatus } from "~/types/api";
+import { ConsentStatus, DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 import {
@@ -17,17 +19,23 @@ import {
   useIgnoreMonitorResultAssetsMutation,
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
+import { ConsentStatusType, DiscoveryStatusTypeMapping } from "../../constants";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
 import { SuccessToastContent } from "../../SuccessToastContent";
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
+  showComplianceIssueDetails?: (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => void;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
   onTabChange,
+  showComplianceIssueDetails,
 }: DiscoveredAssetActionsCellProps) => {
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -52,7 +60,14 @@ export const DiscoveredAssetActionsCell = ({
     diff_status: diffStatus,
     system_key: systemKey,
     user_assigned_system_key: userAssignedSystemKey,
+    consent_aggregated: consentAggregated,
   } = asset;
+
+  // Check if the consent status is an error type
+  const statusType = consentAggregated
+    ? DiscoveryStatusTypeMapping[consentAggregated]
+    : null;
+  const isErrorStatus = statusType === ConsentStatusType.ERROR;
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -109,6 +124,13 @@ export const DiscoveredAssetActionsCell = ({
     }
   };
 
+  const handleViewComplianceDetails = () => {
+    showComplianceIssueDetails?.(
+      asset,
+      consentAggregated ?? ConsentStatus.UNKNOWN,
+    );
+  };
+
   // TODO [HJ-369] update disabled and tooltip logic once the categories of consent feature is implemented
   return (
     <Space>
@@ -140,6 +162,29 @@ export const DiscoveredAssetActionsCell = ({
           >
             Ignore
           </Button>
+          {isErrorStatus && (
+            <Dropdown
+              trigger={["click"]}
+              menu={{
+                items: [
+                  {
+                    key: "view-compliance-details",
+                    label: "View compliance issue details",
+                    icon: <Icons.Information />,
+                    onClick: handleViewComplianceDetails,
+                  },
+                ],
+              }}
+            >
+              <Button
+                size="small"
+                icon={<Icons.OverflowMenuVertical />}
+                aria-label="More actions"
+                type="text"
+                data-testid="asset-compliance-actions-menu"
+              />
+            </Dropdown>
+          )}
         </>
       )}
       {diffStatus === DiffStatus.MUTED && (

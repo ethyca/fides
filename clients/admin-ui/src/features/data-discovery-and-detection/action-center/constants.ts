@@ -1,8 +1,8 @@
 import { ConsentStatus } from "~/types/api";
 
 export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
-  [ConsentStatus.WITH_CONSENT]: "With consent",
-  [ConsentStatus.WITHOUT_CONSENT]: "Without consent",
+  [ConsentStatus.WITH_CONSENT]: "Consent respected",
+  [ConsentStatus.WITHOUT_CONSENT]: "Consent ignored",
   [ConsentStatus.EXEMPT]: "Exempt",
   [ConsentStatus.UNKNOWN]: "Unknown",
   [ConsentStatus.PRE_CONSENT]: "Pre-Consent",
@@ -14,7 +14,7 @@ export const DiscoveryStatusDescriptions: Record<ConsentStatus, string> = {
   [ConsentStatus.WITH_CONSENT]:
     "Asset was detected after the user gave consent",
   [ConsentStatus.WITHOUT_CONSENT]:
-    "Asset was detected without any consent. Click the info icon for more details.",
+    "The user explicitly opted out, but this asset still loaded. This is a serious compliance issue and may indicate that consent settings are not being enforced.",
   [ConsentStatus.EXEMPT]: "Asset is valid regardless of consent",
   [ConsentStatus.UNKNOWN]:
     "Did not find consent information for this asset. You may need to re-run the monitor.",

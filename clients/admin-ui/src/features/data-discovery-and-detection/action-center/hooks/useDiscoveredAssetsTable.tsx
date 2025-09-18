@@ -63,7 +63,7 @@ interface UseDiscoveredAssetsTableConfig {
   monitorId: string;
   systemId: string;
   onSystemName?: (name: string) => void;
-  onShowBreakdown?: (
+  onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
@@ -73,7 +73,7 @@ export const useDiscoveredAssetsTable = ({
   monitorId,
   systemId,
   onSystemName,
-  onShowBreakdown,
+  onShowComplianceIssueDetails,
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const toast = useToast();
@@ -384,7 +384,7 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
             stagedResource={record}
-            onShowBreakdown={onShowBreakdown}
+            showComplianceIssueDetails={onShowComplianceIssueDetails}
           />
         ),
       });
@@ -400,6 +400,7 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveredAssetActionsCell
             asset={record}
             onTabChange={onTabChange}
+            showComplianceIssueDetails={onShowComplianceIssueDetails}
           />
         ),
       });
@@ -421,7 +422,7 @@ export const useDiscoveredAssetsTable = ({
     locationsVersion,
     pagesVersion,
     firstItemConsentStatus,
-    onShowBreakdown,
+    onShowComplianceIssueDetails,
     onTabChange,
   ]);
 

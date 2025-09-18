@@ -12,7 +12,7 @@ import {
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: ConsentStatus;
   stagedResource: StagedResourceAPIResponse;
-  onShowBreakdown?: (
+  showComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
@@ -21,10 +21,10 @@ interface DiscoveryStatusBadgeCellProps {
 export const DiscoveryStatusBadgeCell = ({
   consentAggregated,
   stagedResource,
-  onShowBreakdown,
+  showComplianceIssueDetails,
 }: DiscoveryStatusBadgeCellProps) => {
   const handleClick = () => {
-    onShowBreakdown?.(stagedResource, consentAggregated);
+    showComplianceIssueDetails?.(stagedResource, consentAggregated);
   };
 
   const statusType = DiscoveryStatusTypeMapping[consentAggregated];
