@@ -18,15 +18,6 @@ depends_on = None
 
 """
 WARNING - Conditional migration based on table size
-
-This migration script checks the size of stagedresource table and performs:
-
-1. If the table has less than 1 million rows:
-   - Creates GIN indices directly for array operations
-
-2. If the table is too large (1 million rows or more):
-   - Logs non-blocking SQL commands using CREATE INDEX CONCURRENTLY
-   - These commands add the indices without blocking reads or writes
 """
 
 
