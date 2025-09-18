@@ -3274,8 +3274,14 @@ class TestPrivacyRequestSearch:
     ):
         reviewed_at = datetime.now()
         created_at = datetime.now()
+        updated_at = datetime.now()
+        completed_on = datetime.now()
+        deadline = created_at + timedelta(privacy_request.days_left)
 
         privacy_request.created_at = created_at
+        privacy_request.updated_at = updated_at
+        privacy_request.completed_on = completed_on
+        
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
@@ -3329,6 +3335,9 @@ class TestPrivacyRequestSearch:
             first_row[f"Custom Field {EXAMPLE_CUSTOM_FIELD_LABEL}"]
             == EXAMPLE_CUSTOM_FIELD_VALUE
         )
+        assert parse(first_row["Deadline"], ignoretz=True) == deadline
+        assert parse(first_row["Last Updated"], ignoretz=True) == updated_at
+        assert parse(first_row["Completed On"], ignoretz=True) == completed_on
 
         privacy_request.delete(db)
 
