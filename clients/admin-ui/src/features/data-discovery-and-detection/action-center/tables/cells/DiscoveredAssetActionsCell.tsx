@@ -18,7 +18,7 @@ import {
   useIgnoreMonitorResultAssetsMutation,
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
-import { ConsentStatusType, DiscoveryStatusTypeMapping } from "../../constants";
+import { DiscoveryErrorStatuses } from "../../constants";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
 import { SuccessToastContent } from "../../SuccessToastContent";
 
@@ -63,10 +63,9 @@ export const DiscoveredAssetActionsCell = ({
   } = asset;
 
   // Check if the consent status is an error type
-  const statusType = consentAggregated
-    ? DiscoveryStatusTypeMapping[consentAggregated]
-    : null;
-  const isErrorStatus = statusType === ConsentStatusType.ERROR;
+  const isErrorStatus = consentAggregated
+    ? DiscoveryErrorStatuses.includes(consentAggregated)
+    : false;
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({

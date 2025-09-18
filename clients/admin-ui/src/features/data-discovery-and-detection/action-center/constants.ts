@@ -25,24 +25,11 @@ export const DiscoveryStatusDescriptions: Record<ConsentStatus, string> = {
   [ConsentStatus.NOT_APPLICABLE]: "No privacy notices apply to this asset",
 };
 
-export enum ConsentStatusType {
-  SUCCESS = "success",
-  ERROR = "error",
-  IGNORE = "ignore",
-}
-
-export const DiscoveryStatusTypeMapping: Record<
-  ConsentStatus,
-  ConsentStatusType
-> = {
-  [ConsentStatus.WITH_CONSENT]: ConsentStatusType.SUCCESS,
-  [ConsentStatus.WITHOUT_CONSENT]: ConsentStatusType.ERROR,
-  [ConsentStatus.PRE_CONSENT]: ConsentStatusType.ERROR,
-  [ConsentStatus.CMP_ERROR]: ConsentStatusType.ERROR,
-  [ConsentStatus.EXEMPT]: ConsentStatusType.IGNORE,
-  [ConsentStatus.UNKNOWN]: ConsentStatusType.IGNORE,
-  [ConsentStatus.NOT_APPLICABLE]: ConsentStatusType.IGNORE,
-};
+export const DiscoveryErrorStatuses: ConsentStatus[] = [
+  ConsentStatus.WITHOUT_CONSENT,
+  ConsentStatus.PRE_CONSENT,
+  ConsentStatus.CMP_ERROR,
+];
 
 export enum DiscoveredAssetsColumnKeys {
   NAME = "name",

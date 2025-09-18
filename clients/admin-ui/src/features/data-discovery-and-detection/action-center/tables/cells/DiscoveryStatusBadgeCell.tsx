@@ -3,10 +3,9 @@ import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
 import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 
 import {
-  ConsentStatusType,
+  DiscoveryErrorStatuses,
   DiscoveryStatusDescriptions,
   DiscoveryStatusDisplayNames,
-  DiscoveryStatusTypeMapping,
 } from "../../constants";
 
 interface DiscoveryStatusBadgeCellProps {
@@ -27,19 +26,14 @@ export const DiscoveryStatusBadgeCell = ({
     showComplianceIssueDetails?.(stagedResource, consentAggregated);
   };
 
-  const statusType = DiscoveryStatusTypeMapping[consentAggregated];
-  const isErrorStatus = statusType === ConsentStatusType.ERROR;
+  const isErrorStatus = DiscoveryErrorStatuses.includes(consentAggregated);
 
-  const getTagColor = (): "success" | "error" | undefined => {
-    switch (statusType) {
-      case ConsentStatusType.SUCCESS:
-        return "success";
-      case ConsentStatusType.ERROR:
-        return "error";
-      default:
-        return undefined;
-    }
-  };
+  // We only want to show compliance issues or unknown statuses
+  // as the other statuses are not actionable
+  const showTag = isErrorStatus || consentAggregated === ConsentStatus.UNKNOWN;
+  if (!showTag) {
+    return null;
+  }
 
   const getTestId = (): string => {
     return `status-badge_${consentAggregated.replace(/_/g, "-")}`;
@@ -48,7 +42,7 @@ export const DiscoveryStatusBadgeCell = ({
   return (
     <Tooltip title={DiscoveryStatusDescriptions[consentAggregated]}>
       <Tag
-        color={getTagColor()}
+        color={isErrorStatus ? "error" : undefined}
         closeIcon={
           isErrorStatus ? (
             <Icons.Information style={{ width: 12, height: 12 }} />
