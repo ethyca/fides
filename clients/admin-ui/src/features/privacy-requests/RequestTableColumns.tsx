@@ -51,17 +51,6 @@ export const getRequestTableColumns = () => [
     header: (props) => <DefaultHeaderCell value="Days left" {...props} />,
     size: 80,
   }),
-  columnHelper.accessor((row) => row.source, {
-    id: COLUMN_IDS.SOURCE,
-    cell: (props) =>
-      props.getValue() ? (
-        <BadgeCell value={props.getValue()!} />
-      ) : (
-        <DefaultCell value={undefined} />
-      ),
-    header: (props) => <DefaultHeaderCell value="Source" {...props} />,
-    enableSorting: false,
-  }),
   columnHelper.accessor((row) => row.policy.rules, {
     id: COLUMN_IDS.REQUEST_TYPE,
     cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
