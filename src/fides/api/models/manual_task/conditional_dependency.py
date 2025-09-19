@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -47,6 +47,13 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
         back_populates="parent",
         cascade="all, delete-orphan",
         foreign_keys="ManualTaskConditionalDependency.parent_id",
+    )
+
+    __table_args__ = (
+        Index("ix_manual_task_conditional_dependency_manual_task_id", "manual_task_id"),
+        Index("ix_manual_task_conditional_dependency_parent_id", "parent_id"),
+        Index("ix_manual_task_conditional_dependency_condition_type", "condition_type"),
+        Index("ix_manual_task_conditional_dependency_sort_order", "sort_order"),
     )
 
     @classmethod
