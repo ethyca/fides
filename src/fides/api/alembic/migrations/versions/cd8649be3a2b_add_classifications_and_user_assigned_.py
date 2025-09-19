@@ -1,8 +1,8 @@
 """add classifications and user_assigned_data_categories indices
 
-Revision ID: fcbca04460aa
-Revises: 4d8c0fcc5771
-Create Date: 2025-09-15 20:23:15.715499
+Revision ID: cd8649be3a2b
+Revises: a8e0c016afd
+Create Date: 2025-09-19 13:49:02.762672
 
 """
 
@@ -11,8 +11,8 @@ from alembic import op
 from loguru import logger
 
 # revision identifiers, used by Alembic.
-revision = "fcbca04460aa"
-down_revision = "4d8c0fcc5771"
+revision = "cd8649be3a2b"
+down_revision = "a8e0c016afd"
 branch_labels = None
 depends_on = None
 
