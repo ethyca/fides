@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.70.1"
+    "version": "2.70.1b0.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -21005,7 +21005,7 @@
           "port": {
             "type": "integer",
             "title": "Port",
-            "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
+            "description": "The network port number on which the server is listening for incoming connections (default: 27017). Port will be ignored if using SRV.",
             "default": 27017
           },
           "username": {
@@ -24136,10 +24136,31 @@
             ],
             "title": "Reviewed By"
           },
+          "submitted_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted By"
+          },
           "reviewer": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PrivacyRequestReviewer"
+                "$ref": "#/components/schemas/PrivacyRequestUser"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submitter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestUser"
               },
               {
                 "type": "null"
@@ -24384,25 +24405,6 @@
         "title": "PrivacyRequestResumeFormat",
         "description": "Expected request body to resume a privacy request after it was paused by a webhook"
       },
-      "PrivacyRequestReviewer": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "username": {
-            "type": "string",
-            "title": "Username"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "username"
-        ],
-        "title": "PrivacyRequestReviewer",
-        "description": "Data we can expose via the PrivacyRequest.reviewer relation"
-      },
       "PrivacyRequestSource": {
         "type": "string",
         "enum": [
@@ -24490,6 +24492,25 @@
         "title": "PrivacyRequestTaskSchema",
         "description": "Schema for Privacy Request Tasks, which are individual nodes that are queued"
       },
+      "PrivacyRequestUser": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username"
+        ],
+        "title": "PrivacyRequestUser",
+        "description": "Data we can expose via PrivacyRequest user relations (reviewer, submitter, etc.)"
+      },
       "PrivacyRequestVerboseResponse": {
         "properties": {
           "id": {
@@ -24543,10 +24564,31 @@
             ],
             "title": "Reviewed By"
           },
+          "submitted_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted By"
+          },
           "reviewer": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PrivacyRequestReviewer"
+                "$ref": "#/components/schemas/PrivacyRequestUser"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submitter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestUser"
               },
               {
                 "type": "null"
