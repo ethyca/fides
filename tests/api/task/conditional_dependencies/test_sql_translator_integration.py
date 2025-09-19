@@ -212,6 +212,68 @@ class TestSQLTranslatorIntegration:
         results = query.all()
         assert len(results) == 0
 
+    def test_like_pattern_injection_protection(self, translator):
+        """Test that LIKE pattern injection attempts are properly escaped"""
+        # Test various LIKE injection attempts
+        malicious_patterns = [
+            "admin%",  # Wildcard injection
+            "user_",  # Underscore wildcard
+            "%' OR '1'='1",  # SQL injection attempt
+            "test%_attack",  # Multiple wildcards
+        ]
+
+        like_operators = [Operator.contains, Operator.starts_with, Operator.ends_with]
+
+        for pattern in malicious_patterns:
+            for operator in like_operators:
+                condition = ConditionLeaf(
+                    field_address="fidesuser.email_address",
+                    operator=operator,
+                    value=pattern,
+                )
+
+                # Should not raise an exception
+                query = translator.generate_query_from_condition(condition)
+
+                # Verify the query was created (even if it returns no results)
+                assert query is not None
+
+                # The query should be safe to execute
+                results = query.all()
+                # Results depend on actual data, but the query should not crash
+                assert isinstance(results, list)
+
+    def test_json_path_injection_protection(self, translator):
+        """Test that JSON path injection attempts are properly handled"""
+        # Test with malicious JSON path components
+        malicious_json_paths = [
+            "field'; DROP TABLE fidesuser; --",
+            "field' OR '1'='1",
+            "field'; SELECT password FROM users; --",
+        ]
+
+        for malicious_path in malicious_json_paths:
+            # Create a field address with malicious JSON path
+            field_address = f"fidesuser.permissions.{malicious_path}"
+            condition = ConditionLeaf(
+                field_address=field_address,
+                operator=Operator.eq,
+                value="test_value",
+            )
+
+            # The translation should handle this safely
+            # Either by escaping the content or raising a controlled error
+            try:
+                query = translator.generate_query_from_condition(condition)
+                # If it succeeds, the query should be safe
+                assert query is not None
+                # Test that it can be executed safely
+                results = query.all()
+                assert isinstance(results, list)
+            except SQLTranslationError:
+                # It's acceptable to reject malicious input with a controlled error
+                pass
+
     def test_multi_table_analysis(self, translator, respondent, privacy_request):
         """Test analysis of multi-table conditions"""
         # Create a condition that spans multiple tables

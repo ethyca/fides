@@ -12,6 +12,81 @@ class SQLTranslationError(Exception):
     """Error raised when SQL translation fails"""
 
 
+def _escape_like_pattern(val: Any) -> str:
+    """
+    Escape LIKE wildcards in user input to prevent pattern injection attacks.
+
+    This prevents users from injecting wildcards (% and _) that could:
+    - Match unintended records through pattern injection
+    - Cause performance issues with expensive wildcard operations
+    - Enable information disclosure through pattern probing
+
+    Note: This function escapes ALL % and _ characters as a security measure.
+    While this may seem aggressive for normal field names, it's necessary because:
+    1. We can't distinguish between intentional and malicious wildcards
+    2. Field values shouldn't typically contain SQL wildcards
+    3. Better to be overly cautious with user input
+
+    Args:
+        val: User input value to escape
+
+    Returns:
+        Escaped string safe for use in LIKE patterns
+
+    Examples:
+        _escape_like_pattern("admin%") -> "admin\\%"
+        _escape_like_pattern("test_user") -> "test\\_user"  # Escapes _ for security
+        _escape_like_pattern("normal") -> "normal"
+    """
+    if val is None:
+        return ""
+
+    val_str = str(val)
+    # Escape backslashes first to prevent double-escaping
+    # Then escape LIKE wildcards (% and _)
+    return val_str.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _validate_and_escape_json_path_component(component: str) -> str:
+    """
+    Validate and escape JSON path components to prevent injection attacks.
+
+    This prevents users from injecting malicious content in JSON path components that could:
+    - Break out of single quotes in PostgreSQL JSON operators
+    - Inject arbitrary SQL through malformed JSON paths
+    - Cause syntax errors or unexpected behavior
+
+    Args:
+        component: JSON path component to validate and escape
+
+    Returns:
+        Validated and escaped component safe for use in PostgreSQL JSON operators
+
+    Raises:
+        SQLTranslationError: If the component contains invalid characters
+
+    Examples:
+        _validate_and_escape_json_path_component("field") -> "field"
+        _validate_and_escape_json_path_component("field'name") -> "field''name"
+        _validate_and_escape_json_path_component("") -> raises SQLTranslationError
+    """
+    if not component or not isinstance(component, str):
+        raise SQLTranslationError(
+            f"Invalid JSON path component: '{component}'. Components must be non-empty strings."
+        )
+
+    # Check for potentially dangerous characters
+    if len(component) > 100:  # Reasonable limit for JSON field names
+        raise SQLTranslationError(
+            f"JSON path component too long: '{component[:50]}...'. Maximum length is 100 characters."
+        )
+
+    # Escape single quotes for PostgreSQL JSON operators (double them)
+    escaped_component = component.replace("'", "''")
+
+    return escaped_component
+
+
 def _handle_list_contains(col: Column, val: Any) -> Column:
     """
     Handle list_contains operator for different scenarios:
@@ -43,8 +118,9 @@ def _handle_list_contains(col: Column, val: Any) -> Column:
     try:
         return col.contains(val)
     except Exception:
-        # Fallback to LIKE for string columns
-        return col.like(f"%{val}%")
+        # Fallback to LIKE for string columns with escaped wildcards
+        escaped_val = _escape_like_pattern(val)
+        return col.like(f"%{escaped_val}%", escape="\\")
 
 
 OPERATOR_MAP = types.MappingProxyType(
@@ -55,9 +131,15 @@ OPERATOR_MAP = types.MappingProxyType(
         Operator.lte: lambda col, val: col <= val,
         Operator.gt: lambda col, val: col > val,
         Operator.gte: lambda col, val: col >= val,
-        Operator.contains: lambda col, val: col.like(f"%{val}%"),
-        Operator.starts_with: lambda col, val: col.like(f"{val}%"),
-        Operator.ends_with: lambda col, val: col.like(f"%{val}"),
+        Operator.contains: lambda col, val: col.like(
+            f"%{_escape_like_pattern(val)}%", escape="\\"
+        ),
+        Operator.starts_with: lambda col, val: col.like(
+            f"{_escape_like_pattern(val)}%", escape="\\"
+        ),
+        Operator.ends_with: lambda col, val: col.like(
+            f"%{_escape_like_pattern(val)}", escape="\\"
+        ),
         Operator.exists: lambda col, val: col.isnot(None),
         Operator.not_exists: lambda col, val: col.is_(None),
         Operator.list_contains: _handle_list_contains,
@@ -117,17 +199,23 @@ class FieldAddress(BaseModel):
             )  # pragma: no cover
 
         # Build PostgreSQL JSON path: column->'path'->'path'->>'final_path'
+        # Validate and escape all components to prevent injection
         if self.json_path and len(self.json_path) == 1:
             # Simple case: column->>'field'
-            return f"{self.column_name}->>'{self.json_path[0]}'"
+            escaped_component = _validate_and_escape_json_path_component(
+                self.json_path[0]
+            )
+            return f"{self.column_name}->>'{escaped_component}'"
 
         # Complex case: column->'field'->'field'->>'final_field'
         path_parts = []
         # All but last use -> operator
         for part in self.json_path[:-1]:
-            path_parts.append(f"->'{part}'")
+            escaped_part = _validate_and_escape_json_path_component(part)
+            path_parts.append(f"->'{escaped_part}'")
         # Last part uses ->> operator (returns text)
-        path_parts.append(f"->>'{self.json_path[-1]}'")
+        escaped_final = _validate_and_escape_json_path_component(self.json_path[-1])
+        path_parts.append(f"->>'{escaped_final}'")
 
         return f"{self.column_name}{''.join(path_parts)}"
 

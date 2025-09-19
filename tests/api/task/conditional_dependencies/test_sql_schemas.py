@@ -12,7 +12,9 @@ from fides.api.task.conditional_dependencies.sql_schemas import (
     OPERATOR_MAP,
     FieldAddress,
     SQLTranslationError,
+    _escape_like_pattern,
     _handle_list_contains,
+    _validate_and_escape_json_path_component,
 )
 
 # Create a test base for SQLAlchemy columns
@@ -77,9 +79,9 @@ class TestHandleListContains:
 
             result = _handle_list_contains(real_column, "test_value")
 
-            # Should fallback to LIKE
+            # Should fallback to LIKE with escaped pattern
             mock_contains.assert_called_once_with("test_value")
-            mock_like.assert_called_once_with("%test_value%")
+            mock_like.assert_called_once_with("%test\\_value%", escape="\\")
             assert result == "LIKE result"
 
     def test_multiple_list_contains_unique_parameters(self):
@@ -350,14 +352,20 @@ class TestOperatorMap:
             param(Operator.lte, "test_column <= :test_column_1", id="lte"),
             param(Operator.gt, "test_column > :test_column_1", id="gt"),
             param(Operator.gte, "test_column >= :test_column_1", id="gte"),
-            param(Operator.contains, "test_column LIKE :test_column_1", id="contains"),
+            param(
+                Operator.contains,
+                "test_column LIKE :test_column_1 ESCAPE '\\'",
+                id="contains",
+            ),
             param(
                 Operator.starts_with,
-                "test_column LIKE :test_column_1",
+                "test_column LIKE :test_column_1 ESCAPE '\\'",
                 id="starts_with",
             ),
             param(
-                Operator.ends_with, "test_column LIKE :test_column_1", id="ends_with"
+                Operator.ends_with,
+                "test_column LIKE :test_column_1 ESCAPE '\\'",
+                id="ends_with",
             ),
             param(Operator.exists, "test_column IS NOT NULL", id="exists"),
             param(Operator.not_exists, "test_column IS NULL", id="not_exists"),
@@ -535,3 +543,282 @@ class TestFieldAddressEdgeCases:
 
         assert addr1 == addr2
         assert addr1 != addr3
+
+
+class TestSecurityFeatures:
+    """Test security features for preventing injection attacks"""
+
+    class TestLikePatternEscaping:
+        """Test LIKE pattern escaping to prevent wildcard injection"""
+
+        test_column = Column(String, name="test_column")
+
+        @pytest.mark.parametrize(
+            "input_val,expected_escaped",
+            [
+                param("normal_text", "normal\\_text", id="normal_text"),
+                param("admin%", "admin\\%", id="wildcard_percent"),
+                param("test_user", "test\\_user", id="wildcard_underscore"),
+                param("admin%_attack", "admin\\%\\_attack", id="both_wildcards"),
+                param("path\\injection", "path\\\\injection", id="backslash_escape"),
+                param("complex%_\\test", "complex\\%\\_\\\\test", id="complex_pattern"),
+                param("", "", id="empty_string"),
+                param(None, "", id="none_value"),
+                param(123, "123", id="numeric_value"),
+                param("%%__%%", "\\%\\%\\_\\_\\%\\%", id="multiple_wildcards"),
+            ],
+        )
+        def test_escape_like_pattern(self, input_val, expected_escaped):
+            """Test that LIKE wildcards are properly escaped"""
+            result = _escape_like_pattern(input_val)
+            assert result == expected_escaped
+
+        @pytest.mark.parametrize(
+            "operator,malicious_input",
+            [
+                param(Operator.contains, "admin%", id="contains_wildcard_percent"),
+                param(Operator.contains, "user_", id="contains_wildcard_underscore"),
+                param(
+                    Operator.contains,
+                    "%' OR '1'='1",
+                    id="contains_sql_injection_attempt",
+                ),
+                param(Operator.starts_with, "admin%", id="starts_with_wildcard"),
+                param(Operator.starts_with, "test_", id="starts_with_underscore"),
+                param(Operator.ends_with, "%admin", id="ends_with_wildcard"),
+                param(Operator.ends_with, "_user", id="ends_with_underscore"),
+            ],
+        )
+        def test_operator_map_escapes_like_patterns(self, operator, malicious_input):
+            """Test that OPERATOR_MAP properly escapes malicious LIKE patterns"""
+            operator_func = OPERATOR_MAP[operator]
+            result = operator_func(self.test_column, malicious_input)
+
+            # Extract the pattern from the LIKE clause
+            like_pattern = str(result.right.value)
+
+            # Verify that wildcards are escaped
+            assert "\\%" in like_pattern or "%" not in malicious_input
+            assert "\\_" in like_pattern or "_" not in malicious_input
+
+            # Verify escape character is set
+            assert result.modifiers.get("escape") == "\\"
+
+        def test_like_escaping_prevents_unintended_matches(self):
+            """Test that escaping prevents unintended wildcard matching"""
+            # Test case where unescaped % would match everything
+            malicious_pattern = "admin%"
+            escaped_result = _escape_like_pattern(malicious_pattern)
+
+            # The escaped version should only match literal "admin%" not "admin*"
+            assert escaped_result == "admin\\%"
+
+            # Test case where unescaped _ would match any single character
+            malicious_underscore = "test_user"
+            escaped_underscore = _escape_like_pattern(malicious_underscore)
+
+            # The escaped version should only match literal "test_user" not "testXuser"
+            assert escaped_underscore == "test\\_user"
+
+        def test_handle_list_contains_escapes_like_fallback(self):
+            """Test that _handle_list_contains escapes LIKE patterns in fallback case"""
+            # Mock a column that doesn't support contains() to trigger LIKE fallback
+            mock_column = create_autospec(Column, instance=True)
+            mock_column.contains.side_effect = Exception("Not supported")
+
+            malicious_value = "admin%_attack"
+
+            # Mock the like method to capture what pattern is used
+            mock_like_result = Mock()
+            mock_column.like.return_value = mock_like_result
+
+            result = _handle_list_contains(mock_column, malicious_value)
+
+            # Verify like was called with escaped pattern
+            expected_escaped = "admin\\%\\_attack"
+            mock_column.like.assert_called_once_with(
+                f"%{expected_escaped}%", escape="\\"
+            )
+            assert result == mock_like_result
+
+    class TestJsonPathSecurity:
+        """Test JSON path component validation and escaping"""
+
+        @pytest.mark.parametrize(
+            "component,expected_escaped",
+            [
+                param("normal_field", "normal_field", id="normal_field"),
+                param("field'name", "field''name", id="single_quote_escape"),
+                param("field''name", "field''''name", id="double_quote_escape"),
+                param(
+                    "field'with'multiple'quotes",
+                    "field''with''multiple''quotes",
+                    id="multiple_quotes",
+                ),
+                param("field123", "field123", id="alphanumeric"),
+                param(
+                    "field_with_underscores", "field_with_underscores", id="underscores"
+                ),
+                param("field-with-dashes", "field-with-dashes", id="dashes"),
+            ],
+        )
+        def test_validate_and_escape_json_path_component_valid(
+            self, component, expected_escaped
+        ):
+            """Test that valid JSON path components are properly escaped"""
+            result = _validate_and_escape_json_path_component(component)
+            assert result == expected_escaped
+
+        @pytest.mark.parametrize(
+            "invalid_component,expected_error_pattern",
+            [
+                param("", "Invalid JSON path component.*non-empty", id="empty_string"),
+                param(None, "Invalid JSON path component.*non-empty", id="none_value"),
+                param(
+                    123, "Invalid JSON path component.*non-empty", id="numeric_value"
+                ),
+                param("a" * 101, "JSON path component too long", id="too_long"),
+            ],
+        )
+        def test_validate_and_escape_json_path_component_invalid(
+            self, invalid_component, expected_error_pattern
+        ):
+            """Test that invalid JSON path components raise appropriate errors"""
+            with pytest.raises(SQLTranslationError, match=expected_error_pattern):
+                _validate_and_escape_json_path_component(invalid_component)
+
+        def test_field_address_to_sql_column_escapes_json_paths(self):
+            """Test that FieldAddress.to_sql_column() properly escapes JSON path components"""
+            # Test single component with quote
+            addr1 = FieldAddress(
+                table_name="users",
+                column_name="profile",
+                json_path=["field'name"],
+                full_address="users.profile.field'name",
+            )
+            result1 = addr1.to_sql_column()
+            assert result1 == "profile->>'field''name'"
+
+            # Test multiple components with quotes
+            addr2 = FieldAddress(
+                table_name="users",
+                column_name="data",
+                json_path=["user'info", "contact'details", "email'address"],
+                full_address="users.data.user'info.contact'details.email'address",
+            )
+            result2 = addr2.to_sql_column()
+            expected = "data->'user''info'->'contact''details'->>'email''address'"
+            assert result2 == expected
+
+        def test_field_address_validates_json_path_components(self):
+            """Test that FieldAddress validates JSON path components during SQL generation"""
+            # Test with invalid component
+            addr = FieldAddress(
+                table_name="users",
+                column_name="profile",
+                json_path=[""],  # Empty component
+                full_address="users.profile.",
+            )
+
+            with pytest.raises(
+                SQLTranslationError, match="Invalid JSON path component"
+            ):
+                addr.to_sql_column()
+
+        def test_json_path_injection_prevention(self):
+            """Test that JSON path injection attempts are prevented"""
+            # Attempt to inject SQL through JSON path
+            malicious_paths = [
+                "field'; DROP TABLE users; --",
+                "field' OR '1'='1",
+                "field'; SELECT * FROM secrets; --",
+            ]
+
+            for malicious_path in malicious_paths:
+                addr = FieldAddress(
+                    table_name="users",
+                    column_name="data",
+                    json_path=[malicious_path],
+                    full_address=f"users.data.{malicious_path}",
+                )
+
+                # The escaped result should have quotes doubled, making injection impossible
+                result = addr.to_sql_column()
+
+                # Verify the malicious content is escaped (quotes are doubled)
+                assert malicious_path.replace("'", "''") in result
+                # Verify no unescaped single quotes remain that could break out
+                # The pattern should be: ->>'escaped_content'
+                assert re.match(
+                    r"data->>'[^']*(?:''[^']*)*'$", result
+                ), f"Malicious injection not properly escaped: {result}"
+
+    class TestIntegratedSecurityScenarios:
+        """Test security in realistic usage scenarios"""
+
+        def test_sql_injection_through_like_operators_prevented(self):
+            """Test that SQL injection attempts through LIKE operators are prevented"""
+            test_column = Column(String, name="email")
+
+            # Common SQL injection payloads that might be attempted through LIKE operators
+            injection_attempts = [
+                "'; DROP TABLE users; --",
+                "' OR '1'='1",
+                "' UNION SELECT password FROM users --",
+                "%' OR username='admin",
+                "_' OR '1'='1' --",
+            ]
+
+            for payload in injection_attempts:
+                # Test each LIKE-based operator
+                for operator in [
+                    Operator.contains,
+                    Operator.starts_with,
+                    Operator.ends_with,
+                ]:
+                    operator_func = OPERATOR_MAP[operator]
+                    result = operator_func(test_column, payload)
+
+                    # The result should be a proper SQLAlchemy expression with escaped pattern
+                    assert hasattr(result, "left")  # Column part
+                    assert hasattr(result, "right")  # Value part
+                    assert hasattr(
+                        result, "modifiers"
+                    )  # Should include escape character
+
+                    # Verify escape character is set
+                    assert result.modifiers.get("escape") == "\\"
+
+                    # The pattern should be escaped
+                    pattern = str(result.right.value)
+                    # Single quotes in the payload should be escaped as literals, not SQL
+                    if "'" in payload:
+                        # The quotes should be treated as literal characters in the LIKE pattern
+                        # They should not be able to break out of the parameter binding
+                        assert (
+                            "'" in pattern
+                        )  # The literal quotes should still be there
+                        # But they should be in a parameterized context, not as SQL syntax
+
+        def test_json_path_and_like_combination_security(self):
+            """Test security when JSON paths and LIKE operations are combined"""
+            # Create a field address with potentially malicious JSON path
+            malicious_json_path = "field'; DROP TABLE users; --"
+
+            addr = FieldAddress(
+                table_name="users",
+                column_name="profile",
+                json_path=[malicious_json_path],
+                full_address=f"users.profile.{malicious_json_path}",
+            )
+
+            # Generate the SQL column reference
+            sql_column = addr.to_sql_column()
+
+            # The malicious content should be escaped
+            expected_escaped = malicious_json_path.replace("'", "''")
+            assert expected_escaped in sql_column
+
+            # The final SQL should be safe - verify it follows expected pattern
+            expected_pattern = f"profile->>'{expected_escaped}'"
+            assert expected_pattern == sql_column
