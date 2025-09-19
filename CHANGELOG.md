@@ -53,6 +53,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new values to `ConsentStatus` enum [#6562](https://github.com/ethyca/fides/pull/6562) https://github.com/ethyca/fides/labels/db-migration
 - Added a messaging provider configuration page to the Admin UI [#6213](https://github.com/ethyca/fides/pull/6213)
 - Added event audits for taxonomy actions [#6564](https://github.com/ethyca/fides/pull/6564)
+- Added `ClassificationBenchmark` model and table to store classification benchmark records [#6569](https://github.com/ethyca/fides/pull/6569) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
