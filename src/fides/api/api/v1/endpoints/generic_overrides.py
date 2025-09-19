@@ -195,13 +195,13 @@ async def list_dataset_paginated(
 
     # If applicable, keep only unlinked datasets
     if only_unlinked_datasets:
-        linked_datasets = select([DatasetConfig.ctl_dataset_id])
+        linked_datasets = select(DatasetConfig.ctl_dataset_id)
         filtered_query = filtered_query.where(not_(CtlDataset.id.in_(linked_datasets)))
 
     # If applicable, remove saas config datasets
     if exclude_saas_datasets:
         saas_subquery = (
-            select([ConnectionConfig.saas_config["fides_key"].astext])
+            select(ConnectionConfig.saas_config["fides_key"].astext)
             .select_from(ConnectionConfig)  # type: ignore[arg-type]
             .where(ConnectionConfig.saas_config.is_not(None))  # type: ignore[attr-defined]
         )
