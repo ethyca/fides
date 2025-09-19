@@ -49,15 +49,15 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     task = relationship("ManualTask", back_populates="conditional_dependencies")
     parent = relationship(
         "ManualTaskConditionalDependency",
-        remote_side=[id],
+        remote_side="ManualTaskConditionalDependency.id",
         back_populates="children",
-        foreign_keys=[parent_id],
+        foreign_keys="ManualTaskConditionalDependency.parent_id",
     )
     children = relationship(
         "ManualTaskConditionalDependency",
         back_populates="parent",
         cascade="all, delete-orphan",
-        foreign_keys=[parent_id],
+        foreign_keys="ManualTaskConditionalDependency.parent_id",
     )
 
     @classmethod
