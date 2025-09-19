@@ -18,6 +18,9 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyType,
+)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -38,7 +41,6 @@ from fides.api.models.manual_task import (
 )
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
-    ManualTaskConditionalDependencyType,
 )
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -396,7 +398,7 @@ def _build_request_task(
         field_addresses = []
         for dependency in manual_task.conditional_dependencies:
             if (
-                dependency.condition_type == ManualTaskConditionalDependencyType.leaf
+                dependency.condition_type == ConditionalDependencyType.leaf
                 and dependency.field_address
             ):
                 field_addresses.append(dependency.field_address)
@@ -978,7 +980,7 @@ def create_condition_gt_18(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "condition_type": ConditionalDependencyType.leaf,
             "parent_id": parent_id,
             "field_address": "postgres_example:customer:profile.age",
             "operator": "gte",
@@ -995,7 +997,7 @@ def create_condition_age_lt_65(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "condition_type": ConditionalDependencyType.leaf,
             "parent_id": parent_id,
             "field_address": "postgres_example:customer:profile.age",
             "operator": "lt",
@@ -1012,7 +1014,7 @@ def create_condition_eq_active(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "condition_type": ConditionalDependencyType.leaf,
             "parent_id": parent_id,
             "field_address": "postgres_example:payment_card:subscription.status",
             "operator": "eq",
@@ -1029,7 +1031,7 @@ def create_condition_eq_admin(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "condition_type": ConditionalDependencyType.leaf,
             "field_address": "postgres_example:customer:role",
             "operator": "eq",
             "value": "admin",
@@ -1078,7 +1080,7 @@ def group_condition(db: Session, manual_task: ManualTask):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.group,
+            "condition_type": ConditionalDependencyType.group,
             "logical_operator": "and",
             "sort_order": 1,
         },
@@ -1096,7 +1098,7 @@ def nested_group_condition(db: Session, manual_task: ManualTask):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.group,
+            "condition_type": ConditionalDependencyType.group,
             "logical_operator": "and",
             "sort_order": 1,
         },
@@ -1105,7 +1107,7 @@ def nested_group_condition(db: Session, manual_task: ManualTask):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ManualTaskConditionalDependencyType.group,
+            "condition_type": ConditionalDependencyType.group,
             "parent_id": root_condition.id,
             "logical_operator": "or",
             "sort_order": 2,
