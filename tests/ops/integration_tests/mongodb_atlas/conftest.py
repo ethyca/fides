@@ -25,9 +25,7 @@ from tests.ops.integration_tests.mongodb_atlas.mongo_sample import mongo_sample_
 @pytest.fixture(scope="function")
 def unique_database_name() -> str:
     """Generate a unique PostgreSQL dataset name per-test to avoid duplicate key errors."""
-    # TODO: Revert to this once we figure out why we can't drop tables in CI
-    # return f"mongo_test_{str(uuid4()).replace('-', '')[:8]}"
-    return "mongo_test"
+    return f"mongo_test_{str(uuid4()).replace('-', '')[:8]}"
 
 
 # Helper functions
@@ -140,6 +138,10 @@ def seed_mongo_sample_data(
     try:
         logger.info(f"Dropping database: {unique_database_name}")
         integration_mongodb_atlas_connector.drop_database(unique_database_name)
+        assert (
+            unique_database_name
+            not in integration_mongodb_atlas_connector.list_database_names()
+        ), f"Unable to drop database {unique_database_name}"
         logger.info(f"Successfully dropped database: {unique_database_name}")
     except Exception as exc:
         logger.error(
