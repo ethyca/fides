@@ -274,7 +274,7 @@ def pytest_ops(
             coverage_arg,
             OPS_TEST_DIR,
             "-m",
-            "integration_external",
+            "integration_mongodb_atlas",
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
