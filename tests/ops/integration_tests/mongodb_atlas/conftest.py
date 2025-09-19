@@ -135,19 +135,7 @@ def seed_mongo_sample_data(
                 record,
             )
     yield records
-    try:
-        logger.info(f"Dropping database: {unique_database_name}")
-        integration_mongodb_atlas_connector.drop_database(unique_database_name)
-        assert (
-            unique_database_name
-            not in integration_mongodb_atlas_connector.list_database_names()
-        ), f"Unable to drop database {unique_database_name}"
-        logger.info(f"Successfully dropped database: {unique_database_name}")
-    except Exception as exc:
-        logger.error(
-            "Make sure the MongoDB Atlas user credentials have the Atlas Admin role to be able to drop databases."
-        )
-        raise exc
+    drop_database(integration_mongodb_atlas_connector, unique_database_name)
 
 
 @pytest.fixture(scope="function")
@@ -166,7 +154,17 @@ def mongodb_atlas_inserts(integration_mongodb_atlas_connector, unique_database_n
                 record,
             )
     yield records
-    for table_name in records.keys():
-        mongodb_atlas_delete(
-            integration_mongodb_atlas_connector, unique_database_name, table_name
+    drop_database(integration_mongodb_atlas_connector, unique_database_name)
+
+
+def drop_database(client: MongoClient, database_name: str) -> None:
+    """Drop the specified database."""
+    try:
+        logger.info(f"Dropping database: {database_name}")
+        client.drop_database(database_name)
+        logger.info(f"Successfully dropped database: {database_name}")
+    except Exception as exc:
+        logger.error(
+            "Make sure the MongoDB Atlas user credentials have the Atlas Admin role to be able to drop databases."
         )
+        raise exc
