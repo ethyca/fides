@@ -1,7 +1,7 @@
 """create digest config
 
 Revision ID: e1c2c845f23d
-Revises: 4d8c0fcc5771
+Revises: cd8649be3a2b
 Create Date: 2025-09-17 21:08:24.676798
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "e1c2c845f23d"
-down_revision = "4d8c0fcc5771"
+down_revision = "cd8649be3a2b"
 branch_labels = None
 depends_on = None
 
