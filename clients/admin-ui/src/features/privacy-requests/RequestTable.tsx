@@ -19,7 +19,6 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { useFeatures } from "~/features/common/features";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import {
   FidesTableV2,
@@ -42,7 +41,6 @@ import { useAntPagination } from "../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
-  const { plus: hasPlus } = useFeatures();
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
     "search",
     parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
@@ -118,7 +116,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const tableInstance = useReactTable<PrivacyRequestEntity>({
     getCoreRowModel: getCoreRowModel(),
     data: requests,
-    columns: useMemo(() => getRequestTableColumns(hasPlus), [hasPlus]),
+    columns: useMemo(() => getRequestTableColumns(), []),
     getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
     columnResizeMode: "onChange",
