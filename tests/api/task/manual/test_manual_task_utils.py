@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import CollectionAddress, FieldAddress, ScalarField
+from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyType,
+)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -14,7 +17,6 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.manual_task import ManualTask
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
-    ManualTaskConditionalDependencyType,
 )
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
@@ -401,7 +403,7 @@ class TestManualTaskUtilsConditionalDependencies:
             db=db,
             data={
                 "manual_task_id": second_manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": "postgres_example:payment_card:billing.subscription.status",
                 "operator": "eq",
                 "value": "active",

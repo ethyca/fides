@@ -19,11 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.70.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.70.1...main)
 
 ### Added
 - Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
 - Added SRV and SSL support for MongoDB [#6590](https://github.com/ethyca/fides/pull/6590)
+- Add indexes for classifications and user_assigned_data_categories columns from stagedresource table [#6612](https://github.com/ethyca/fides/pull/6612) https://github.com/ethyca/fides/labels/db-migration
+- Added a ConditionalDependency base class that Manual tasks now inherits from. This sets up a base for digest conditional dependencies. [#6613](https://github.com/ethyca/fides/pull/6613)
 
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
@@ -33,11 +35,18 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
+- Improved readability and maintainability around DSR packages and improved test coverage [#6540](https://github.com/ethyca/fides/pull/6540)
 
 ### Fixed
 - Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
 - Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+
+## [2.70.1](https://github.com/ethyca/fides/compare/2.70.0...2.70.1)
+
+### Fixed
+- Location field submission and display for privacy requests [#6619](https://github.com/ethyca/fides/pull/6619)
+- Fix column sizing bug [#6620](https://github.com/ethyca/fides/pull/6620)
 
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
@@ -46,6 +55,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new values to `ConsentStatus` enum [#6562](https://github.com/ethyca/fides/pull/6562) https://github.com/ethyca/fides/labels/db-migration
 - Added a messaging provider configuration page to the Admin UI [#6213](https://github.com/ethyca/fides/pull/6213)
 - Added event audits for taxonomy actions [#6564](https://github.com/ethyca/fides/pull/6564)
+- Added `ClassificationBenchmark` model and table to store classification benchmark records [#6569](https://github.com/ethyca/fides/pull/6569) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
