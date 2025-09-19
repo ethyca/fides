@@ -106,7 +106,14 @@ def upload_to_s3(  # pylint: disable=R0913
     document: Optional[BytesIO],
     auth_method: str,
 ) -> Optional[AnyHttpUrlString]:
-    """Uploads arbitrary data to s3 returned from an access request"""
+    """
+    DEPRECATED: Use PrivacyRequestStorageService instead.
+
+    Uploads arbitrary data to s3 returned from an access request
+    """
+    logger.warning(
+        "upload_to_s3 is deprecated. Use PrivacyRequestStorageService instead."
+    )
     logger.info("Starting S3 Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
@@ -160,7 +167,14 @@ def upload_to_gcs(
     privacy_request: PrivacyRequest,
     auth_method: str,
 ) -> str:
-    """Uploads access request data to a Google Cloud Storage bucket"""
+    """
+    DEPRECATED: Use PrivacyRequestStorageService instead.
+
+    Uploads access request data to a Google Cloud Storage bucket
+    """
+    logger.warning(
+        "upload_to_gcs is deprecated. Use PrivacyRequestStorageService instead."
+    )
     logger.info("Starting Google Cloud Storage upload of {}", file_key)
     content_type = {
         ResponseFormat.json.value: "application/json",
@@ -206,7 +220,14 @@ def upload_to_local(
     privacy_request: PrivacyRequest,
     resp_format: str = ResponseFormat.json.value,
 ) -> str:
-    """Uploads access request data to a local folder - for testing/demo purposes only"""
+    """
+    DEPRECATED: Use PrivacyRequestStorageService instead.
+
+    Uploads access request data to a local folder - for testing/demo purposes only
+    """
+    logger.warning(
+        "upload_to_local is deprecated. Use PrivacyRequestStorageService instead."
+    )
     get_local_filename(file_key)
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"

@@ -1,12 +1,13 @@
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from fideslang.models import Dataset, DatasetField
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+if TYPE_CHECKING:
+    from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+
 from fides.api.schemas.policy import ActionType
 
 
@@ -30,6 +31,8 @@ def get_redaction_entities_map(db: Session) -> set[str]:
     redaction_entities = set()
 
     try:
+        from fides.api.models.datasetconfig import DatasetConfig
+
         dataset_configs = DatasetConfig.all(db=db)
 
         for dataset_config in dataset_configs:
@@ -217,7 +220,7 @@ def get_redaction_entities_map_db(db: Session) -> set[str]:
     return redaction_entities
 
 
-def map_privacy_request(privacy_request: PrivacyRequest) -> dict[str, Any]:
+def map_privacy_request(privacy_request: "PrivacyRequest") -> dict[str, Any]:
     """Creates a map with a subset of values from the privacy request"""
     request_data: dict[str, Any] = {}
     request_data["id"] = privacy_request.id
