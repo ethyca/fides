@@ -16,4 +16,5 @@ export type MonitorTaskResponse = {
   status?: string | null;
   celery_id?: string | null;
   staged_resource_urns?: Array<string>;
+  dismissed_in_activity_view?: boolean | null;
 };
