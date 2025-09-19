@@ -9,14 +9,13 @@ from fides.api.graph.config import (
     GraphDataset,
     ScalarField,
 )
-from fides.api.models.connectionconfig import ConnectionConfig
 
 # Import application models
-from fides.api.models.manual_task import (
-    ManualTask,
-    ManualTaskConditionalDependencyType,
-    ManualTaskConfigurationType,
+from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyType,
 )
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.manual_task import ManualTask, ManualTaskConfigurationType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
@@ -135,7 +134,7 @@ def create_collection_for_connection_key(
     conditional_field_addresses: set[str] = {
         dependency.field_address
         for dependency in manual_task.conditional_dependencies
-        if dependency.condition_type == ManualTaskConditionalDependencyType.leaf
+        if dependency.condition_type == ConditionalDependencyType.leaf
         and dependency.field_address is not None
     }
 
