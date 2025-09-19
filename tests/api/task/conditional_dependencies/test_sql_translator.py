@@ -392,10 +392,10 @@ class TestBuildFilterExpression:
         )
 
         model_classes = {"other_table": Mock()}
-
-        result = translator._build_leaf_filter(condition, model_classes)
-
-        assert result is None
+        with pytest.raises(
+            SQLTranslationError, match="Table missing_table not found in model_classes"
+        ):
+            translator._build_leaf_filter(condition, model_classes)
 
     def test_build_leaf_filter_invalid_field_address(self, translator):
         """Test _build_leaf_filter with invalid field address"""
@@ -407,11 +407,10 @@ class TestBuildFilterExpression:
 
         model_classes = {"": Mock()}  # Empty table name
 
-        result = translator._build_leaf_filter(condition, model_classes)
-
-        # Should handle gracefully and return None or raise appropriate error
-        # The exact behavior depends on implementation
-        assert result is None or isinstance(result, Exception)
+        with pytest.raises(
+            SQLTranslationError, match="Table  not found in model_classes"
+        ):
+            translator._build_leaf_filter(condition, model_classes)
 
 
 class TestApplyOperatorToColumn:
@@ -772,8 +771,11 @@ class TestErrorHandling:
         # Mock model_classes without the nonexistent_table
         model_classes = {}
 
-        result = translator._build_filter_expression(condition, model_classes)
-        assert result is None
+        with pytest.raises(
+            SQLTranslationError,
+            match="Table nonexistent_table not found in model_classes",
+        ):
+            translator._build_filter_expression(condition, model_classes)
 
     def test_build_leaf_filter_nonexistent_table(self, translator):
         """Test _build_leaf_filter when table doesn't exist in model_classes"""
@@ -783,8 +785,11 @@ class TestErrorHandling:
 
         model_classes = {"other_table": Mock()}
 
-        result = translator._build_leaf_filter(condition, model_classes)
-        assert result is None
+        with pytest.raises(
+            SQLTranslationError,
+            match="Table nonexistent_table not found in model_classes",
+        ):
+            translator._build_leaf_filter(condition, model_classes)
 
     def test_build_leaf_filter_nonexistent_column(self, translator):
         """Test _build_leaf_filter when column doesn't exist on model"""
@@ -795,11 +800,15 @@ class TestErrorHandling:
         )
 
         mock_model = Mock()
+        mock_model.__name__ = "TestModel"  # Add __name__ attribute
         # Mock hasattr to return False for nonexistent field
         with patch("builtins.hasattr", return_value=False):
             model_classes = {"test_table": mock_model}
-            result = translator._build_leaf_filter(condition, model_classes)
-            assert result is None
+            with pytest.raises(
+                SQLTranslationError,
+                match="Column nonexistent_field not found on model TestModel",
+            ):
+                translator._build_leaf_filter(condition, model_classes)
 
 
 class TestSQLTranslatorEdgeCases:

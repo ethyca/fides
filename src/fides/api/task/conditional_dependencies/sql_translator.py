@@ -573,7 +573,9 @@ class SQLConditionTranslator:
         field_addr = FieldAddress.parse(condition.field_address)
 
         if not field_addr.table_name or field_addr.table_name not in model_classes:
-            return None
+            raise SQLTranslationError(
+                f"Table {field_addr.table_name} not found in model_classes"
+            )
 
         model_class = model_classes[field_addr.table_name]
         field_name = field_addr.column_name
@@ -609,7 +611,9 @@ class SQLConditionTranslator:
             return self._apply_operator_to_column(
                 attr, condition.operator, condition.value
             )
-        return None
+        raise SQLTranslationError(
+            f"Column {field_addr.column_name} not found on model {model_class.__name__}"
+        )
 
     def _handle_relationship_condition(
         self, relationship_attr: Any, condition: ConditionLeaf
