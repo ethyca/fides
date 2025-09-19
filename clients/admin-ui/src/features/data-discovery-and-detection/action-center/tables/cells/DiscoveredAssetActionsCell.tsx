@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  Icons,
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -9,7 +10,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { DiffStatus } from "~/types/api";
+import { ConsentStatus, DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 import {
@@ -17,17 +18,23 @@ import {
   useIgnoreMonitorResultAssetsMutation,
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
+import { DiscoveryErrorStatuses } from "../../constants";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
 import { SuccessToastContent } from "../../SuccessToastContent";
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
+  showComplianceIssueDetails?: (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => void;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
   onTabChange,
+  showComplianceIssueDetails,
 }: DiscoveredAssetActionsCellProps) => {
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -52,7 +59,13 @@ export const DiscoveredAssetActionsCell = ({
     diff_status: diffStatus,
     system_key: systemKey,
     user_assigned_system_key: userAssignedSystemKey,
+    consent_aggregated: consentAggregated,
   } = asset;
+
+  // Check if the consent status is an error type
+  const isErrorStatus = consentAggregated
+    ? DiscoveryErrorStatuses.includes(consentAggregated)
+    : false;
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -109,6 +122,13 @@ export const DiscoveredAssetActionsCell = ({
     }
   };
 
+  const handleViewComplianceDetails = () => {
+    showComplianceIssueDetails?.(
+      asset,
+      consentAggregated ?? ConsentStatus.UNKNOWN,
+    );
+  };
+
   // TODO [HJ-369] update disabled and tooltip logic once the categories of consent feature is implemented
   return (
     <Space>
@@ -140,6 +160,22 @@ export const DiscoveredAssetActionsCell = ({
           >
             Ignore
           </Button>
+          {isErrorStatus && (
+            <Button
+              data-testid="view-compliance-details-btn"
+              size="small"
+              onClick={handleViewComplianceDetails}
+              disabled={anyActionIsLoading}
+              loading={isRestoringResults}
+              icon={
+                <Icons.WarningAltFilled
+                  style={{ color: "var(--fidesui-error)", width: 14 }}
+                />
+              }
+              title="View compliance issue"
+              aria-label="View compliance issue"
+            />
+          )}
         </>
       )}
       {diffStatus === DiffStatus.MUTED && (

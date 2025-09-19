@@ -99,7 +99,7 @@ export const DiscoveredAssetsTable = ({
     monitorId,
     systemId,
     onSystemName,
-    onShowBreakdown: handleShowBreakdown,
+    onShowComplianceIssueDetails: handleShowBreakdown,
   });
 
   const handleClearFilters = () => {
