@@ -31,8 +31,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fix column sizing bug [#6620](https://github.com/ethyca/fides/pull/6620)
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
 - Fix misc location displays [#6600](https://github.com/ethyca/fides/pull/6600)
-
-### Fixed
 - Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
 
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
