@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
-from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -26,9 +26,6 @@ class ConditionalDependencyBase(Base):
 
     __abstract__ = True
 
-    # We need to redefine it here so that self-referential relationships
-    # can properly reference the `id` column instead of the built-in Python function.
-    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
     # Tree structure - parent_id defined in concrete classes for proper foreign keys
     condition_type = Column(EnumColumn(ConditionalDependencyType), nullable=False)
 
