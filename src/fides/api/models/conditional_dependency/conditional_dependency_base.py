@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Optional
 
-from sqlalchemy import Column, Index, Integer, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
