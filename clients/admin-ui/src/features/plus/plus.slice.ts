@@ -237,7 +237,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
-      CustomFieldDefinition
+      CustomFieldDefinitionWithId
     >({
       query: (params) => ({
         url: `plus/custom-metadata/custom-field-definition`,

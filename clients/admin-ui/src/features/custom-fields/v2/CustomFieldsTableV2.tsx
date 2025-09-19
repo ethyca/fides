@@ -14,7 +14,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import {
-  getCustomFieldType,
+  getCustomFieldTypeLabel,
   RESOURCE_TYPE_MAP,
 } from "~/features/custom-fields/constants";
 import CustomFieldModalV2 from "~/features/custom-fields/v2/CustomFieldModalV2";
@@ -43,10 +43,6 @@ const useCustomFieldsTable = () => {
   const [messageApi, messageContext] = message.useMessage();
 
   const [deleteCustomField] = useDeleteCustomFieldDefinitionMutation();
-
-  if (error) {
-    // TODO: do something
-  }
 
   const { tableProps } = useAntTable(tableState, {
     dataSource: data || [],
@@ -136,7 +132,7 @@ const useCustomFieldsTable = () => {
         dataIndex: "field_type",
         key: "field_type",
         render: (_: any, record: CustomFieldDefinitionWithId) =>
-          getCustomFieldType(record),
+          getCustomFieldTypeLabel(record),
       },
       {
         title: "Location",
@@ -218,7 +214,7 @@ export const CustomFieldsTableV2 = () => {
         />
         <CustomFieldModalV2
           open={formModalIsOpen}
-          field={activeField}
+          initialField={activeField}
           onClose={handleCloseFormModal}
           centered
         />

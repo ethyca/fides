@@ -1,3 +1,4 @@
+import { FieldTypes } from "~/features/common/custom-fields";
 import {
   AllowedTypes,
   CustomFieldDefinitionWithId,
@@ -12,13 +13,23 @@ export const RESOURCE_TYPE_MAP = new Map([
   [ResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
 
+export const FIELD_TYPE_LABEL_MAP: Record<FieldTypes, string> = {
+  [FieldTypes.SINGLE_SELECT]: "Single-value select",
+  [FieldTypes.MULTIPLE_SELECT]: "Multi-value select",
+  [FieldTypes.LOCATION_SELECT]: "Location select",
+  [FieldTypes.OPEN_TEXT]: "Open text",
+};
+
+export const getCustomFieldTypeLabel = (value: CustomFieldDefinitionWithId) =>
+  FIELD_TYPE_LABEL_MAP[getCustomFieldType(value)];
+
 export const getCustomFieldType = (value: CustomFieldDefinitionWithId) => {
   // eslint-disable-next-line no-underscore-dangle
   if (value.field_type === AllowedTypes.STRING_) {
-    return "Multi-value select";
+    return FieldTypes.MULTIPLE_SELECT;
   }
   if (value.allow_list_id) {
-    return "Single-value select";
+    return FieldTypes.SINGLE_SELECT;
   }
-  return "Open text";
+  return FieldTypes.OPEN_TEXT;
 };
