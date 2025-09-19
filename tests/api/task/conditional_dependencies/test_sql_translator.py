@@ -855,6 +855,18 @@ class TestSQLTranslatorEdgeCases:
         translator._handle_relationship_condition(mock_scalar_rel, condition)
         mock_scalar_rel.has.assert_called_once()
 
+        condition2 = ConditionLeaf(
+            field_address="table.relation.field",
+            operator=Operator.not_exists,
+            value=None,
+        )
+
+        with patch(
+            "fides.api.task.conditional_dependencies.sql_translator.not_"
+        ) as mock_not:
+            translator._handle_relationship_condition(mock_scalar_rel, condition2)
+            mock_not.assert_called_once()
+
     def test_relationship_target_field_extraction(self):
         """Test extraction of target fields from relationship field addresses"""
         mock_session = create_autospec(Session, spec_set=True)
@@ -1020,6 +1032,69 @@ class TestFindRelationshipPath:
 
         assert result == []
 
+    def test_find_relationship_path_through_intermediates_successful_traversal(
+        self, translator
+    ):
+        """Test _find_relationship_path_through_intermediates with successful path finding"""
+        # Create mock models with relationships
+        mock_start_model = Mock()
+        mock_start_model.__name__ = "StartModel"
+
+        mock_intermediate_model = Mock()
+        mock_intermediate_model.__name__ = "IntermediateModel"
+
+        mock_target_model = Mock()
+        mock_target_model.__name__ = "TargetModel"
+
+        # Mock relationship attributes
+        mock_start_rel = Mock()
+        mock_start_rel.__name__ = "intermediate_rel"
+        mock_target_rel = Mock()
+        mock_target_rel.__name__ = "target_rel"
+
+        # Set up the models to return the relationship attributes when accessed
+        mock_start_model.intermediate_rel = mock_start_rel
+        mock_intermediate_model.target_rel = mock_target_rel
+
+        # Mock relationship properties
+        mock_start_rel_prop = Mock()
+        mock_start_rel_prop.mapper.class_ = mock_intermediate_model
+
+        mock_target_rel_prop = Mock()
+        mock_target_rel_prop.mapper.class_ = mock_target_model
+
+        # Mock mappers
+        mock_start_mapper = Mock()
+        mock_start_mapper.relationships.items.return_value = [
+            ("intermediate_rel", mock_start_rel_prop)
+        ]
+
+        mock_intermediate_mapper = Mock()
+        mock_intermediate_mapper.relationships.items.return_value = [
+            ("target_rel", mock_target_rel_prop)
+        ]
+
+        def mock_inspect(model):
+            if model == mock_start_model:
+                return mock_start_mapper
+            elif model == mock_intermediate_model:
+                return mock_intermediate_mapper
+            else:
+                return Mock()
+
+        with patch(
+            "fides.api.task.conditional_dependencies.sql_translator.inspect",
+            side_effect=mock_inspect,
+        ):
+            result = translator._find_relationship_path_through_intermediates(
+                mock_start_model, mock_target_model, max_depth=2
+            )
+
+        # Should find path through intermediate model
+        assert len(result) == 2
+        assert result[0] == mock_start_rel
+        assert result[1] == mock_target_rel
+
     def test_extract_relationship_target_field_no_inspection_available(
         self, translator
     ):
@@ -1058,6 +1133,64 @@ class TestFindRelationshipPath:
         assert "No primaryjoin found for PrimaryModel, TargetModel" in str(
             exc_info.value
         )
+
+    def test_add_relationship_joins_with_reverse_relationship(self, translator):
+        """Test _add_relationship_joins when it encounters a reverse relationship"""
+        mock_query = Mock()
+        mock_primary_model = Mock()
+        mock_primary_model.__name__ = "PrimaryModel"
+
+        # Mock a relationship that points back to the primary model (reverse relationship)
+        mock_relationship_attr = Mock()
+
+        # Set up the property and mapper structure properly
+        mock_property = Mock()
+        mock_mapper = Mock()
+        mock_mapper.class_ = mock_primary_model
+        mock_property.mapper = mock_mapper
+        mock_property.primaryjoin = "mock_join_condition"
+        mock_relationship_attr.property = mock_property
+
+        mock_relationship_attr.class_ = Mock()
+        mock_relationship_attr.class_.__name__ = "TargetModel"
+
+        mock_target_model = Mock()
+        mock_target_model.__name__ = "TargetModel"
+
+        model_classes = {
+            "primary_table": mock_primary_model,
+            "target_table": mock_target_model,
+        }
+
+        # Create tables_to_fields with the target table having fields
+        # This ensures the method doesn't skip the target table
+        mock_field = Mock()
+        tables_to_fields = {
+            "target_table": [mock_field],
+        }
+
+        # Mock _fetch_join_path to return our reverse relationship
+        translator._fetch_join_path = Mock(return_value=[mock_relationship_attr])
+
+        # Mock _apply_reverse_join to track that it's called
+        mock_reversed_query = Mock()
+        translator._apply_reverse_join = Mock(return_value=mock_reversed_query)
+
+        result = translator._add_relationship_joins(
+            mock_query,
+            mock_primary_model,
+            model_classes,
+            "primary_table",
+            tables_to_fields,
+        )
+
+        # Verify that _apply_reverse_join was called (covering lines 441-443)
+        translator._apply_reverse_join.assert_called_once_with(
+            mock_query, mock_relationship_attr, mock_primary_model
+        )
+
+        # Verify the result is the reversed query
+        assert result == mock_reversed_query
 
     def test_fetch_join_path_with_successful_direct_path(self, translator):
         """Test _fetch_join_path when direct relationship path is found"""

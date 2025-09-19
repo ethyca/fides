@@ -322,15 +322,20 @@ class SQLConditionTranslator:
                 ) in mapper.relationships.items():
                     if hasattr(relationship_prop, "mapper"):
                         next_model = relationship_prop.mapper.class_
+                        logger.info(
+                            f"Found relationship: {relationship_name} from {current_model.__name__} to {next_model.__name__}"
+                        )
 
                         # Found target model
                         if next_model == to_model:
+                            logger.info(f"Found target model: {next_model.__name__}")
                             return current_path + [
                                 getattr(current_model, relationship_name)
                             ]
 
                         # Add to queue for further exploration if not visited
                         if next_model not in visited:
+                            logger.info(f"Adding to queue: {next_model.__name__}")
                             visited.add(next_model)
                             current = current_path + [
                                 getattr(current_model, relationship_name)
