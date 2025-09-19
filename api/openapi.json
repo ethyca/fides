@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.70.0"
+    "version": "2.70.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2763,6 +2763,46 @@
               "type": "boolean",
               "default": false,
               "title": "Show Deleted"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "name"
+                    ],
+                    "const": "name",
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_asc",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": true,
+              "title": "Sort Asc"
             }
           }
         ],
@@ -20981,8 +21021,33 @@
           },
           "defaultauthdb": {
             "type": "string",
-            "title": "Default Auth DB",
+            "title": "Default auth DB",
             "description": "Used to specify the default authentication database."
+          },
+          "use_srv": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use SRV",
+            "description": "Enable SRV record lookup for service discovery (mongodb+srv://). Required for MongoDB Atlas. Enables SSL by default.",
+            "default": false
+          },
+          "ssl_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "SSL enabled",
+            "description": "Enable SSL/TLS encryption. With SRV: defaults to enabled (can override). Without SRV: defaults to disabled."
           }
         },
         "type": "object",
