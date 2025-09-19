@@ -172,7 +172,9 @@ class TestDigestConfigQueries:
         )
         configs.append(config3)
 
-        return configs
+        yield configs
+        for config in configs:
+            config.delete(db)
 
     def test_get_by_digest_type(self, db: Session, sample_configs):
         """Test filtering digest configs by type."""
@@ -225,7 +227,7 @@ class TestDigestConfigUpdate:
     @pytest.fixture
     def digest_config(self, db: Session):
         """Create a test digest configuration."""
-        return DigestConfig.create(
+        digest_config = DigestConfig.create(
             db=db,
             data={
                 "digest_type": DigestType.MANUAL_TASKS,
@@ -237,6 +239,8 @@ class TestDigestConfigUpdate:
                 "config_metadata": {"version": 1},
             },
         )
+        yield digest_config
+        digest_config.delete(db)
 
     def test_update_basic_fields(self, db: Session, digest_config):
         """Test updating basic digest configuration fields."""
