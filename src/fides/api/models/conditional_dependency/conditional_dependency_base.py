@@ -33,20 +33,16 @@ class ConditionalDependencyBase(Base):
 
     # Condition details (for leaf nodes)
     field_address = Column(String(255), nullable=True)  # For leaf conditions
-    operator = Column(EnumColumn(Operator), nullable=True)  # For leaf conditions
+    operator = Column(String, nullable=True)  # For leaf conditions
     value = Column(JSONB, nullable=True)  # For leaf conditions
-
-    # Group details (for group nodes)
-    logical_operator = Column(
-        EnumColumn(GroupOperator), nullable=True
-    )  # For group conditions
+    logical_operator = Column(String, nullable=True)  # 'and' or 'or' for groups
 
     # Ordering
     sort_order = Column(Integer, nullable=False, default=0)
 
     def to_condition_leaf(self) -> ConditionLeaf:
         """Convert to ConditionLeaf if this is a leaf condition"""
-        if self.condition_type != ConditionalDependencyType.leaf:
+        if self.condition_type != "leaf":
             raise ValueError("Cannot convert group condition to leaf")
 
         return ConditionLeaf(
@@ -55,14 +51,14 @@ class ConditionalDependencyBase(Base):
 
     def to_condition_group(self) -> ConditionGroup:
         """Convert to ConditionGroup if this is a group condition"""
-        if self.condition_type != ConditionalDependencyType.group:
+        if self.condition_type != "group":
             raise ValueError("Cannot convert leaf condition to group")
 
         # Recursively build children
         child_conditions = []
-        children_list = [child for child in getattr(self, "children", [])]
+        children_list = [child for child in self.children]  # type: ignore[attr-defined]
         for child in sorted(children_list, key=lambda x: x.sort_order):
-            if child.condition_type == ConditionalDependencyType.leaf:
+            if child.condition_type == "leaf":
                 child_conditions.append(child.to_condition_leaf())
             else:
                 child_conditions.append(child.to_condition_group())
