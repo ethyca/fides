@@ -3280,7 +3280,7 @@ class TestPrivacyRequestSearch:
 
         privacy_request.created_at = created_at
         privacy_request.updated_at = updated_at
-        privacy_request.completed_on = completed_on
+        privacy_request.finalized_at = finalized_at
 
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
@@ -3337,7 +3337,7 @@ class TestPrivacyRequestSearch:
         )
         assert parse(first_row["Deadline"], ignoretz=True) == deadline
         assert parse(first_row["Last Updated"], ignoretz=True) == updated_at
-        assert parse(first_row["Completed On"], ignoretz=True) == completed_on
+        assert parse(first_row["Completed On"], ignoretz=True) == finalized_at
 
         privacy_request.delete(db)
 
