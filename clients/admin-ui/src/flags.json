@@ -57,7 +57,7 @@
   "alphaActionCenter": {
     "description": "Action Center included in Detection & Discovery tab set",
     "development": true,
-    "test": false,
+    "test": true,
     "production": false
   }
 }
