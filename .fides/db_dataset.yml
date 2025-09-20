@@ -3021,3 +3021,34 @@ dataset:
     - name: user_id
       description: 'ID of the user who triggered the audit event'
       data_categories: [user.unique_id]
+  - name: oauth_config
+    description: 'Fides Generated Description for Table: oauth_config'
+    data_categories: [ ]
+    fields:
+      - name: client_id
+        description: 'Fides Generated Description for Column: client_id'
+        data_categories: [ system.operations ]
+      - name: client_secret
+        description: 'Fides Generated Description for Column: client_secret'
+        data_categories: [ system.operations ]
+      - name: connection_config_id
+        description: 'Fides Generated Description for Column: connection_config_id'
+        data_categories: [ system.operations ]
+      - name: created_at
+        description: 'Fides Generated Description for Column: created_at'
+        data_categories: [ system.operations ]
+      - name: grant_type
+        description: 'Fides Generated Description for Column: grant_type'
+        data_categories: [ system.operations ]
+      - name: id
+        description: 'Fides Generated Description for Column: id'
+        data_categories: [ system.operations ]
+      - name: scope
+        description: 'Fides Generated Description for Column: scope'
+        data_categories: [ system.operations ]
+      - name: token_url
+        description: 'Fides Generated Description for Column: token_url'
+        data_categories: [ system.operations ]
+      - name: updated_at
+        description: 'Fides Generated Description for Column: updated_at'
+        data_categories: [ system.operations ]
