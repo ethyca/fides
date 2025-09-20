@@ -21,6 +21,7 @@ export enum ExecutionLogStatus {
   AWAITING_PROCESSING = "awaiting_processing",
   RETRYING = "retrying",
   SKIPPED = "skipped",
+  POLLING = "polling",
 }
 
 export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
@@ -32,6 +33,7 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.AWAITING_PROCESSING]: "Awaiting input",
   [ExecutionLogStatus.RETRYING]: "Retrying",
   [ExecutionLogStatus.SKIPPED]: "Skipped",
+  [ExecutionLogStatus.POLLING]: "Polling",
 };
 
 export const ExecutionLogStatusColors: Record<
@@ -46,6 +48,7 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.COMPLETE]: undefined,
   [ExecutionLogStatus.PAUSED]: undefined,
   [ExecutionLogStatus.RETRYING]: undefined,
+  [ExecutionLogStatus.POLLING]: undefined,
 };
 
 export interface ExecutionLog {
@@ -234,6 +237,7 @@ export interface ActivityTimelineItem {
   isError: boolean;
   isSkipped: boolean;
   isAwaitingInput: boolean;
+  isPolling: boolean;
   id: string;
   attachments?: { id: string; file_name: string }[];
 }

@@ -12,6 +12,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
+    AwaitingAsyncProcessing,
     AwaitingAsyncTask,
     FidesopsException,
     PostProcessingException,
@@ -326,7 +327,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 and request_task.id  # Only supported in DSR 3.0
             ):
                 # Asynchronous read request detected. We will exit below and put the
-                # Request Task in an "awaiting_processing" status.
+                # Request Task in a "polling" status.
                 awaiting_async_processing = True
                 if read_request.async_config is None:
                     raise FidesopsException("Async request strategy is not set")
@@ -354,7 +355,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # This allows us to build an output object even if we didn't generate and execute
             # any HTTP requests. This is useful if we just want to select specific input_data
             # values to provide as row data to the mask_data function
-            elif read_request.output:
+            elif not read_request.path and read_request.output:
                 rows.extend(
                     self._apply_output_template(
                         query_config.generate_param_value_maps(
@@ -371,8 +372,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
             # Use the existing session that the privacy_request is attached to
 
-            # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
-            raise AwaitingAsyncTask()
+            # Raising an AwaitingAsyncProcessing to put this task in a polling state
+            connection_name = self.configuration.name or self.saas_config.name
+            message = f"Polling {connection_name} for access results. Results may take some time to be available."
+            raise AwaitingAsyncProcessing(message)
 
         return rows
 
@@ -746,11 +749,26 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         ) and bool(
             request_task.id
         )  # Only supported in DSR 3.0
+
+        awaiting_async_polling: bool = bool(
+            masking_request.async_config
+            and masking_request.async_config.strategy == AsyncTaskType.polling.value
+        ) and bool(
+            request_task.id
+        )  # Only supported in DSR 3.0
+
         if awaiting_async_callback:
-            # Asynchronous masking request detected in saas config.
+            # Asynchronous callback masking request detected in saas config.
             # If the masking request was marked to expect async results, original responses are ignored
             # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
             raise AwaitingAsyncTask()
+        elif awaiting_async_polling:
+            # Asynchronous polling masking request detected in saas config.
+            # If the masking request was marked to expect async results, original responses are ignored
+            # and we raise an AwaitingAsyncProcessing to put this task in a polling state.
+            connection_name = self.configuration.name or self.saas_config.name
+            message = f"Polling {connection_name} for erasure results. Results may take some time to be available."
+            raise AwaitingAsyncProcessing(message)
         return rows_updated
 
     @staticmethod

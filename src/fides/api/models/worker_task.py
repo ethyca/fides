@@ -17,6 +17,7 @@ class ExecutionLogStatus(enum.Enum):
     awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
     retrying = "retrying"
     skipped = "skipped"
+    polling = "polling"
 
 
 class WorkerTask:

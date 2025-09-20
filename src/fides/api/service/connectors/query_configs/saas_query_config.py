@@ -353,7 +353,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             ]
 
         param_values[UUID] = str(uuid4())
-        param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
+        # Use full ISO-8601 timestamp including time component (UTC, seconds precision)
+        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         param_values[FIELD_LIST] = ",".join(
             [
                 field.name
