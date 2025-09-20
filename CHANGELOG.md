@@ -42,10 +42,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
 - Fixed an error on trying to submit optional integer fields in the integration form [#6626](https://github.com/ethyca/fides/pull/6626)
 
-## [2.70.2](https://github.com/ethyca/fides/compare/2.70.1...2.70.2)
+## [2.70.3](https://github.com/ethyca/fides/compare/2.70.2...2.70.3)
 
 ### Fixed
 - Fixed an error on trying to submit optional integer fields in the integration form [#6626](https://github.com/ethyca/fides/pull/6626)
+
+### [2.70.2](https://github.com/ethyca/fides/compare/2.70.1...2.70.2)
+
+- This tag is intentionally skipped. Changes intended for this version are included in 2.70.3.
 
 ## [2.70.1](https://github.com/ethyca/fides/compare/2.70.0...2.70.1)
 
