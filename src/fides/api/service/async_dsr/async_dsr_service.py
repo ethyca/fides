@@ -11,12 +11,13 @@ from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.saas.async_polling_configuration import PollingResult
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.service.async_dsr.async_dsr_strategy_factory import (
     get_strategy as get_async_strategy,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling_base import (
-    PollingAsyncDSRBaseStrategy,
+from fides.api.service.async_dsr.async_dsr_strategy_polling import (
+    PollingAsyncDSRStrategy,
 )
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -134,7 +135,7 @@ def execute_read_polling_requests(
     for read_request in read_requests:
         if read_request.async_config:
 
-            strategy: PollingAsyncDSRBaseStrategy = get_async_strategy(  # type: ignore
+            strategy: PollingAsyncDSRStrategy = get_async_strategy(  # type: ignore
                 read_request.async_config.strategy,
                 read_request.async_config.configuration,
             )
@@ -148,21 +149,52 @@ def execute_read_polling_requests(
                     continue
                 param_values = sub_request.param_values
 
-                status = strategy.get_status_request(client, param_values)
+                status = strategy.get_status_request(
+                    client, param_values, connector.secrets
+                )
                 if status:
                     sub_request.update_status(db, ExecutionLogStatus.complete.value)
-                    result = execute_result_request(
-                        db, polling_task, strategy, client, param_values
+                    polling_result = execute_result_request(
+                        db,
+                        polling_task,
+                        strategy,
+                        client,
+                        param_values,
+                        connector.secrets,
                     )
-                    if isinstance(result, list):
-                        rows.extend(result)
-                    elif isinstance(result, str):
-                        raise PrivacyRequestError("Link Support not yet implemented")
-                    elif isinstance(result, bytes):
-                        raise PrivacyRequestError("File Support not yet implemented")
+
+                    # Handle different result types
+                    if polling_result.result_type == "rows":
+                        # Structured data - add to rows collection
+                        if isinstance(polling_result.data, list):
+                            rows.extend(polling_result.data)
+                        else:
+                            logger.warning(
+                                f"Expected list for rows result, got {type(polling_result.data)}"
+                            )
+
+                    elif polling_result.result_type == "attachment":
+                        # File attachment - store and link to request task
+                        try:
+                            attachment_id = store_polling_attachment(
+                                db=db,
+                                file_content=polling_result.data,
+                                metadata=polling_result.metadata,
+                                request_task=polling_task,
+                                privacy_request=polling_task.privacy_request,
+                            )
+                            logger.info(
+                                f"Stored attachment {attachment_id} for task {polling_task.id}"
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Failed to store attachment for task {polling_task.id}: {e}"
+                            )
+                            raise PrivacyRequestError(f"Attachment storage failed: {e}")
+
                     else:
                         raise PrivacyRequestError(
-                            f"Unsupported result type: {type(result)}"
+                            f"Unsupported result type: {polling_result.result_type}"
                         )
                 else:
                     logger.info(
@@ -194,13 +226,16 @@ def save_polling_task_data(
 def execute_result_request(
     db: Session,
     polling_task: RequestTask,
-    strategy: PollingAsyncDSRBaseStrategy,
+    strategy: PollingAsyncDSRStrategy,
     client: AuthenticatedClient,
     param_values: Dict[str, Any],
-) -> Union[List[Row], str, bytes]:
-    """Execute the result request of a successfull polling task"""
-    result = strategy.get_result_request(client, param_values)
-    logger.info(f"Result: {result}")
+    secrets: Dict[str, Any],
+) -> PollingResult:
+    """Execute the result request of a successful polling task"""
+    result = strategy.get_result_request(client, param_values, secrets)
+    logger.info(
+        f"Polling result type: {result.result_type}, metadata: {result.metadata}"
+    )
     return result
 
 
@@ -212,3 +247,81 @@ def execute_erasure_polling_requests(
     """Execute the erasure polling requests for a given privacy request"""
     # TODO: Implement erasure polling logic. Or consider if we can generalize polling for all tasks
     logger.info(f"Erasure polling not yet implemented. Task {polling_task.id} passed")
+
+
+def store_polling_attachment(
+    db: Session,
+    file_content: bytes,
+    metadata: Dict[str, Any],
+    request_task: RequestTask,
+    privacy_request: PrivacyRequest,
+) -> str:
+    """
+    Store attachment file and create database records linking to RequestTask and PrivacyRequest.
+    Returns the attachment ID.
+    """
+    from io import BytesIO
+
+    from fides.api.models.attachment import (
+        Attachment,
+        AttachmentReference,
+        AttachmentReferenceType,
+        AttachmentType,
+    )
+    from fides.api.models.storage import StorageConfig
+
+    # Extract metadata
+    filename = metadata.get("filename", f"polling_result_{request_task.id}")
+    content_type = metadata.get("content_type", "application/octet-stream")
+
+    # Get default storage config (you might want to make this configurable)
+    storage_config = StorageConfig.get_default(db)
+    if not storage_config:
+        raise PrivacyRequestError("No default storage configuration found")
+
+    # Create file-like object from bytes
+    file_obj = BytesIO(file_content)
+
+    try:
+        # Create attachment record with upload
+        attachment = Attachment.create_and_upload(
+            db=db,
+            data={
+                "file_name": filename,
+                "attachment_type": AttachmentType.include_with_access_package,
+                "storage_key": storage_config.key,
+                "user_id": None,  # System-generated attachment
+            },
+            attachment_file=file_obj,
+        )
+
+        # Create references to link this attachment to the request task and privacy request
+        AttachmentReference.create(
+            db=db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": request_task.id,
+                "reference_type": AttachmentReferenceType.manual_task_submission,  # Closest match for polling results
+            },
+        )
+
+        AttachmentReference.create(
+            db=db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": privacy_request.id,
+                "reference_type": AttachmentReferenceType.privacy_request,
+            },
+        )
+
+        db.commit()
+
+        logger.info(
+            f"Successfully stored polling attachment {attachment.id} for request_task {request_task.id}"
+        )
+        return attachment.id
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to store polling attachment: {e}")
+        raise PrivacyRequestError(f"Failed to store polling attachment: {e}")

@@ -4,11 +4,11 @@ import pytest
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.schemas.saas.async_polling_configuration import SupportedDataType
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.schemas.saas.strategy_configuration import (
     PollingAsyncDSRAccessDataConfiguration,
-    SupportedDataType,
 )
 from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import (
     PollingAsyncDSRAccessDataStrategy,

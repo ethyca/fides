@@ -10,14 +10,8 @@ from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.async_dsr_strategy_callback import (
     CallbackAsyncDSRStrategy,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import (
-    PollingAsyncDSRAccessDataStrategy,
-)
-from fides.api.service.async_dsr.async_dsr_strategy_polling_access_download import (
-    PollingAsyncAccessDownloadStrategy,
-)
-from fides.api.service.async_dsr.async_dsr_strategy_polling_delete import (
-    PollingAsyncErasureStrategy,
+from fides.api.service.async_dsr.async_dsr_strategy_polling import (
+    PollingAsyncDSRStrategy,
 )
 
 
@@ -27,9 +21,7 @@ class SupportedAsyncDSRStrategies(Enum):
     """
 
     callback = CallbackAsyncDSRStrategy
-    polling_access_data = PollingAsyncDSRAccessDataStrategy
-    polling_access_download = PollingAsyncAccessDownloadStrategy
-    polling_erasure = PollingAsyncErasureStrategy
+    polling = PollingAsyncDSRStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

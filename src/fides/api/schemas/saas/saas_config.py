@@ -2,7 +2,9 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict
+from pydantic import Field as PydanticField
+from pydantic import field_validator, model_validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -213,10 +215,14 @@ class SaaSRequest(BaseModel):
 class ReadSaaSRequest(SaaSRequest):
     """
     An extension of the base SaaSRequest that allows the inclusion of an output template
-    that is used to format each collection result.
+    that is used to format each collection result, and correlation_id_path for async polling.
     """
 
     output: Optional[str] = None
+    correlation_id_path: Optional[str] = PydanticField(
+        default=None,
+        description="The path to the correlation ID in the response. For use with async polling.",
+    )
 
     @model_validator(mode="after")
     def validate_request(self) -> "ReadSaaSRequest":
@@ -230,6 +236,7 @@ class ReadSaaSRequest(SaaSRequest):
                 raise ValueError(
                     "A read request must specify a method if a path is provided and no request_override is specified"
                 )
+
         if self.request_override:
             allowed_fields = {
                 "request_override",
