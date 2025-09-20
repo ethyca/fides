@@ -976,7 +976,7 @@ class TestGetConnectionSecretSchema:
                 "port": {
                     "default": 27017,
                     "title": "Port",
-                    "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 27017). Port will be ignored if using SRV.",
                     "type": "integer",
                 },
                 "username": {

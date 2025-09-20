@@ -17,6 +17,11 @@ export const generateValidationSchemaFromAction = (
   }
   const customFieldsSchema = action.custom_privacy_request_fields
     ? Object.entries(action.custom_privacy_request_fields)
+        .filter(
+          ([, fieldInfo]) =>
+            /* checking for object key should not be necessary when backend types are updated */
+            "field_type" in fieldInfo && fieldInfo.field_type !== "location",
+        )
         .map(([fieldName, fieldInfo]) => ({
           [fieldName]: Yup.object().shape({
             value:
