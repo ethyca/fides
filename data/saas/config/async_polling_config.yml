@@ -1,14 +1,15 @@
 saas_config:
-  fides_key: saas_async_polling_config
+  fides_key: <instance_fides_key>
   name: Async Polling Example Custom Connector
-  type: saas_async_polling
+  type: async_polling
   description: Test Async Polling Config
-  version: 0.0.1
+  version: 0.0.13
 
   connector_params:
     - name: domain
     - name: api_token
       label: API token
+      sensitive: True
 
   client_config:
     protocol: https
@@ -28,26 +29,21 @@ saas_config:
     - name: user
       requests:
         read:
-          method: POST
-          path: /api/v1/user
-          query_params:
-            - name: query
-              value: <email>
           param_values:
             - name: email
               identity: email
           async_config:
             strategy: polling_access_data
             configuration:
+              initial_request:
+                method: POST
+                path: /api/gdpr/v1/stub
+              correlation_id_path: subject_request_id
               status_request:
                 method: GET
-                path: /api/v1/user/status
-              status_path: request_complete
-              status_completed_value: completed
+                path: /api/gdpr/v1/stub/<correlation_id>
+              status_path: request_status
               result_request:
                 method: GET
-                path: /api/v1/user/result
-              result_path: result
-              request_id_config:
-                id_source: path
-                id_path: id
+                path: /api/gdpr/v1/stub/download/<correlation_id>
+              data_type: csv

@@ -30,6 +30,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
+    cache_task_tracking_key,
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -680,6 +681,26 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
+                            # Check if the Privacy request has a polling Rqeuest Task, that it exists
+                            polling_request_task_exists = db.query(
+                                db.query(RequestTask)
+                                .filter(
+                                    RequestTask.privacy_request_id == privacy_request.id,
+                                    RequestTask.async_type == AsyncTaskType.polling,
+                                )
+                                .exists()
+                            ).scalar()
+
+                            if polling_request_task_exists:
+                                # If the polling request task has no cached task ID, it's stuck
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) Contains polling tasks - "
+                                    f"keeping request in current status as it may be waiting for polling task to complete"
+                                )
+                                should_requeue = False
+                                break
+
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
                                 db,
@@ -731,8 +752,15 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
 
             if async_tasks:
                 from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                    requeue_polling_request,
+                    execute_polling_task,
                 )
 
                 for async_task in async_tasks:
-                    requeue_polling_request(db, async_task)
+                    celery_task = execute_polling_task.apply_async(
+                        queue=DSR_QUEUE_NAME,
+                        kwargs={
+                            "polling_task_id": async_task.id,
+                            "privacy_request_id": async_task.privacy_request_id,
+                        },
+                    )
+                    cache_task_tracking_key(async_task.id, celery_task.task_id)

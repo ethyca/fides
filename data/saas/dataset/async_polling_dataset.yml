@@ -1,0 +1,35 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: async_polling
+    description: A sample dataset
+    collections:
+      - name: user
+        fields:
+          - name: system_id
+            data_categories: [system]
+          - name: app_id
+            data_categories: [user.unique_id]
+          - name: android_id
+            data_categories: [user.device.device_id]
+          - name: city
+            data_categories: [user.contact.address.city]
+          - name: customer_user_id
+            data_categories: [user.unique_id]
+          - name: dma
+            data_categories: [user.demographic.profile]
+          - name: http_referrer
+            data_categories: [user.behavior.browsing_history]
+          - name: idfa
+            data_categories: [user.device.device_id]
+          - name: idfv
+            data_categories: [user.device.device_id]
+          - name: imei
+            data_categories: [user.device.device_id]
+          - name: ip_address
+            data_categories: [user.device.ip_address]
+          - name: original_url
+            data_categories: [user.behavior.browsing_history]
+          - name: postal_code
+            data_categories: [user.contact.address.postal_code]
+          - name: appsflyer_id
+            data_categories: [user.unique_id]

@@ -1,3 +1,4 @@
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
 
 
@@ -11,6 +12,7 @@ class CallbackAsyncDSRStrategy(AsyncDSRStrategy):
     """
 
     name = "callback"
+    type = AsyncTaskType.callback
 
     def __init__(self) -> None:
         pass
