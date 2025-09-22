@@ -25,50 +25,81 @@ def upgrade():
     if "digest_config" not in inspector.get_table_names():
         op.create_table(
             "digest_config",
-            sa.Column("id", sa.String(length=255), nullable=False),
+            sa.Column(
+                "id", sa.VARCHAR(length=255), autoincrement=False, nullable=False
+            ),
             sa.Column(
                 "created_at",
-                sa.DateTime(timezone=True),
+                postgresql.TIMESTAMP(timezone=True),
                 server_default=sa.text("now()"),
+                autoincrement=False,
                 nullable=True,
             ),
             sa.Column(
                 "updated_at",
-                sa.DateTime(timezone=True),
+                postgresql.TIMESTAMP(timezone=True),
                 server_default=sa.text("now()"),
+                autoincrement=False,
                 nullable=True,
             ),
-            sa.Column("digest_type", sa.String(length=255), nullable=False),
-            sa.Column("name", sa.String(length=255), nullable=False),
-            sa.Column("description", sa.Text(), nullable=True),
-            sa.Column("enabled", sa.Boolean(), nullable=False, server_default="t"),
+            sa.Column(
+                "digest_type",
+                sa.VARCHAR(length=255),
+                autoincrement=False,
+                nullable=False,
+            ),
+            sa.Column(
+                "name", sa.VARCHAR(length=255), autoincrement=False, nullable=False
+            ),
+            sa.Column("description", sa.TEXT(), autoincrement=False, nullable=True),
+            sa.Column(
+                "enabled",
+                sa.BOOLEAN(),
+                server_default=sa.text("true"),
+                autoincrement=False,
+                nullable=False,
+            ),
             sa.Column(
                 "messaging_service_type",
-                sa.String(length=255),
+                sa.VARCHAR(length=255),
+                server_default=sa.text("'email'::character varying"),
+                autoincrement=False,
                 nullable=False,
-                server_default="email",
             ),
             sa.Column(
                 "cron_expression",
-                sa.String(length=100),
+                sa.VARCHAR(length=100),
+                server_default=sa.text("'0 9 * * 1'::character varying"),
+                autoincrement=False,
                 nullable=False,
-                server_default="0 9 * * 1",
             ),
             sa.Column(
                 "timezone",
-                sa.String(length=50),
+                sa.VARCHAR(length=50),
+                server_default=sa.text("'US/Eastern'::character varying"),
+                autoincrement=False,
                 nullable=False,
-                server_default="US/Eastern",
             ),
-            sa.Column("last_sent_at", sa.DateTime(timezone=True), nullable=True),
-            sa.Column("next_scheduled_at", sa.DateTime(timezone=True), nullable=True),
+            sa.Column(
+                "last_sent_at",
+                postgresql.TIMESTAMP(timezone=True),
+                autoincrement=False,
+                nullable=True,
+            ),
+            sa.Column(
+                "next_scheduled_at",
+                postgresql.TIMESTAMP(timezone=True),
+                autoincrement=False,
+                nullable=True,
+            ),
             sa.Column(
                 "config_metadata",
                 postgresql.JSONB(astext_type=sa.Text()),
+                server_default=sa.text("'{}'::jsonb"),
+                autoincrement=False,
                 nullable=True,
-                server_default="{}",
             ),
-            sa.PrimaryKeyConstraint("id"),
+            sa.PrimaryKeyConstraint("id", name="digest_config_pkey"),
         )
 
         # Create indexes for performance
