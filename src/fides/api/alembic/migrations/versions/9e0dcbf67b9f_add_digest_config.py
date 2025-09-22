@@ -1,4 +1,4 @@
-"""test_digest_differences
+"""add digest config
 
 Revision ID: 9e0dcbf67b9f
 Revises: cd8649be3a2b
