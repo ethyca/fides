@@ -42,12 +42,7 @@ def upgrade():
                 autoincrement=False,
                 nullable=True,
             ),
-            sa.Column(
-                "digest_type",
-                sa.VARCHAR(length=255),
-                autoincrement=False,
-                nullable=False,
-            ),
+            sa.Column("digest_type", sa.String(255), nullable=False),
             sa.Column(
                 "name", sa.VARCHAR(length=255), autoincrement=False, nullable=False
             ),
@@ -61,10 +56,9 @@ def upgrade():
             ),
             sa.Column(
                 "messaging_service_type",
-                sa.VARCHAR(length=255),
-                server_default=sa.text("'email'::character varying"),
-                autoincrement=False,
+                sa.String(255),
                 nullable=False,
+                server_default="email",
             ),
             sa.Column(
                 "cron_expression",
@@ -104,6 +98,9 @@ def upgrade():
 
         # Create indexes for performance
         op.create_index(
+            op.f("ix_digest_config_id"), "digest_config", ["id"], unique=False
+        )
+        op.create_index(
             op.f("ix_digest_config_digest_type"),
             "digest_config",
             ["digest_type"],
@@ -136,6 +133,7 @@ def downgrade():
     )
     op.drop_index(op.f("ix_digest_config_enabled"), table_name="digest_config")
     op.drop_index(op.f("ix_digest_config_digest_type"), table_name="digest_config")
+    op.drop_index(op.f("ix_digest_config_id"), table_name="digest_config")
 
     # Drop table if it exists
     op.drop_table("digest_config")
