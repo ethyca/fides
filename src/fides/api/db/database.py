@@ -159,5 +159,5 @@ def check_missing_migrations(database_url: str) -> None:
     result = command.autogen.compare_metadata(migration_context, Base.metadata)  # type: ignore[attr-defined]
 
     if result:
-        raise SystemExit("Migrations needs to be generated!")
+        raise SystemExit("Migration needs to be generated!")
     print("No migrations need to be generated.")

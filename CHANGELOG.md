@@ -19,12 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.70.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.70.3...main)
 
 ### Added
 - Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
 - Added SRV and SSL support for MongoDB [#6590](https://github.com/ethyca/fides/pull/6590)
 - Add indexes for classifications and user_assigned_data_categories columns from stagedresource table [#6612](https://github.com/ethyca/fides/pull/6612) https://github.com/ethyca/fides/labels/db-migration
+- Added a ConditionalDependency base class that Manual tasks now inherits from. This sets up a base for digest conditional dependencies. [#6613](https://github.com/ethyca/fides/pull/6613)
 
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
@@ -40,6 +41,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
 - Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+
+## [2.70.3](https://github.com/ethyca/fides/compare/2.70.2...2.70.3)
+
+### Fixed
+- Fixed an error on trying to submit optional integer fields in the integration form [#6626](https://github.com/ethyca/fides/pull/6626)
+
+### [2.70.2](https://github.com/ethyca/fides/compare/2.70.1...2.70.2)
+
+- This tag is intentionally skipped. Changes intended for this version are included in 2.70.3.
 
 ## [2.70.1](https://github.com/ethyca/fides/compare/2.70.0...2.70.1)
 
