@@ -28,7 +28,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added a ConditionalDependency base class that Manual tasks now inherits from. This sets up a base for digest conditional dependencies. [#6613](https://github.com/ethyca/fides/pull/6613)
 - Added condition to sql orm translator functionality. [#6578](https://github.com/ethyca/fides/pull/6578)
 
-
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
 - Systems inventory page now displays GVL deleted systems [#6602](https://github.com/ethyca/fides/pull/6602)
