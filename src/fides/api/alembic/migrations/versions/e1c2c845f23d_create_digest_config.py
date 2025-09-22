@@ -42,12 +42,7 @@ def upgrade():
                 autoincrement=False,
                 nullable=True,
             ),
-            sa.Column(
-                "digest_type",
-                sa.VARCHAR(length=255),
-                autoincrement=False,
-                nullable=False,
-            ),
+            sa.Column("digest_type", sa.String(255), nullable=False),
             sa.Column(
                 "name", sa.VARCHAR(length=255), autoincrement=False, nullable=False
             ),
@@ -59,13 +54,7 @@ def upgrade():
                 autoincrement=False,
                 nullable=False,
             ),
-            sa.Column(
-                "messaging_service_type",
-                sa.VARCHAR(length=255),
-                server_default=sa.text("'email'::character varying"),
-                autoincrement=False,
-                nullable=False,
-            ),
+            sa.Column("messaging_service_type", sa.String(255), nullable=False, server_default="email"),
             sa.Column(
                 "cron_expression",
                 sa.VARCHAR(length=100),
