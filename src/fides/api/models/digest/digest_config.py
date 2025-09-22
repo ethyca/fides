@@ -40,7 +40,10 @@ class DigestConfig(Base):
     # Configuration
     enabled = Column(Boolean, nullable=False, default=True, index=True)
     messaging_service_type = Column(
-        EnumColumn(MessagingMethod), nullable=False, default=MessagingMethod.EMAIL, index=True
+        EnumColumn(MessagingMethod),
+        nullable=False,
+        default=MessagingMethod.EMAIL,
+        index=True,
     )
     cron_expression = Column(String(100), nullable=False, default="0 9 * * 1")
     timezone = Column(String(50), nullable=False, default="US/Eastern")
