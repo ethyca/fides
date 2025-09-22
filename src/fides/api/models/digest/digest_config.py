@@ -70,7 +70,6 @@ class DigestConfig(Base):
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get content conditions for this digest config."""
-        from fides.api.models.digest.conditional_dependencies import DigestCondition
 
         return DigestCondition.get_root_condition(
             db, self.id, DigestConditionType.CONTENT
@@ -80,7 +79,6 @@ class DigestConfig(Base):
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get priority conditions for this digest config."""
-        from fides.api.models.digest.conditional_dependencies import DigestCondition
 
         return DigestCondition.get_root_condition(
             db, self.id, DigestConditionType.PRIORITY
@@ -90,6 +88,5 @@ class DigestConfig(Base):
         self, db: Session
     ) -> dict["DigestConditionType", Optional[Condition]]:
         """Get all condition types for this digest config."""
-        from fides.api.models.digest.conditional_dependencies import DigestCondition
 
         return DigestCondition.get_all_root_conditions(db, self.id)

@@ -68,6 +68,14 @@ class DigestCondition(ConditionalDependencyBase):
         foreign_keys="DigestCondition.parent_id",
     )
 
+    __table_args__ = (
+        Index("ix_digest_condition_digest_config_id", "digest_config_id"),
+        Index("ix_digest_condition_parent_id", "parent_id"),
+        Index("ix_digest_condition_digest_condition_type", "digest_condition_type"),
+        Index("ix_digest_condition_condition_type", "condition_type"),
+        Index("ix_digest_condition_sort_order", "sort_order"),
+    )
+
     @classmethod
     def get_root_condition(
         cls, db: Session, *args: Any, **kwargs: Any

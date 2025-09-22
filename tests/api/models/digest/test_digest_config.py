@@ -328,33 +328,35 @@ class TestDigestConfigConditionMethods:
             },
         )
 
-    def test_get_receiver_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that receiver conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_receiver_conditions(db)
+    def test_get_receiver_conditions_returns_none_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that receiver conditions method returns None when no conditions exist."""
+        result = digest_config.get_receiver_conditions(db)
+        assert result is None
 
-    def test_get_content_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that content conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_content_conditions(db)
+    def test_get_content_conditions_returns_none_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that content conditions method returns None when no conditions exist."""
+        result = digest_config.get_content_conditions(db)
+        assert result is None
 
-    def test_get_priority_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that priority conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_priority_conditions(db)
+    def test_get_priority_conditions_returns_none_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that priority conditions method returns None when no conditions exist."""
+        result = digest_config.get_priority_conditions(db)
+        assert result is None
 
-    def test_get_all_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that all conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_all_conditions(db)
+    def test_get_all_conditions_returns_none_values_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that all conditions method returns dict with None values when no conditions exist."""
+        result = digest_config.get_all_conditions(db)
+        assert isinstance(result, dict)
+        assert len(result) == 3  # All three condition types
+        assert all(value is None for value in result.values())
 
 
 class TestDigestConfigValidation:
