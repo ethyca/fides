@@ -5,13 +5,14 @@ Revises: e1c2c845f23d
 Create Date: 2025-09-18 21:04:23.620675
 
 """
-from alembic import op
+
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '918aefc950c9'
-down_revision = 'e1c2c845f23d'
+revision = "918aefc950c9"
+down_revision = "e1c2c845f23d"
 branch_labels = None
 depends_on = None
 

@@ -1,5 +1,4 @@
 from enum import Enum
-
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 from sqlalchemy import Column, ForeignKey, Index, String

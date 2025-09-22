@@ -8,7 +8,10 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
-from fides.api.models.digest.conditional_dependencies import DigestConditionType, DigestCondition
+from fides.api.models.digest.conditional_dependencies import (
+    DigestCondition,
+    DigestConditionType,
+)
 from fides.api.schemas.messaging.messaging import MessagingMethod
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
