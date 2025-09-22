@@ -1,13 +1,21 @@
+from io import BytesIO
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+    AttachmentType,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
+from fides.api.models.storage import get_active_default_storage_config
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
@@ -45,7 +53,6 @@ from fides.api.util.memory_watchdog import memory_limiter
 )
 def execute_polling_task(
     self: DatabaseTask,
-    privacy_request_id: str,
     polling_task_id: str,
 ) -> None:
     """Executes a polling request task from the status onward"""
@@ -55,7 +62,7 @@ def execute_polling_task(
         )
         if not polling_task:
             raise PrivacyRequestError(
-                f"RequestTask with id {polling_task_id} not found"
+                f"RequestTask with ID {polling_task_id} not found"
             )
 
         privacy_request: PrivacyRequest = polling_task.privacy_request
@@ -64,7 +71,7 @@ def execute_polling_task(
             polling_task.status = ExecutionLogStatus.error
             polling_task.save(db)
             raise PrivacyRequestError(
-                f"Cannot execute Polling Task {polling_task.id} for privacy request {privacy_request.id} with status {privacy_request.status.value}"
+                f"Cannot execute polling task {polling_task.id} for privacy request {privacy_request.id} with status {privacy_request.status.value}"
             )
 
         connection_config = get_connection_config_from_task(db, polling_task)
@@ -98,7 +105,7 @@ def execute_polling_task(
                 execute_erasure_polling_requests(db, polling_task, query_config)
 
 
-## Could move to Request Task Class
+# Could move to RequestTask class
 def get_connection_config_from_task(
     db: Session, request_task: RequestTask
 ) -> ConnectionConfig:
@@ -144,7 +151,7 @@ def execute_read_polling_requests(
             for sub_request in sub_requests:
                 if sub_request.sub_request_status == ExecutionLogStatus.complete.value:
                     logger.info(
-                        f"Polling sub request - {sub_request.id}  for task {polling_task.id} already completed. "
+                        f"Polling sub request - {sub_request.id} for task {polling_task.id} already completed. "
                     )
                     continue
                 param_values = sub_request.param_values
@@ -155,8 +162,6 @@ def execute_read_polling_requests(
                 if status:
                     sub_request.update_status(db, ExecutionLogStatus.complete.value)
                     polling_result = execute_result_request(
-                        db,
-                        polling_task,
                         strategy,
                         client,
                         param_values,
@@ -186,6 +191,51 @@ def execute_read_polling_requests(
                             logger.info(
                                 f"Stored attachment {attachment_id} for task {polling_task.id}"
                             )
+
+                            # Add attachment metadata to collection data (like manual tasks do)
+                            # This ensures the DSR builder can find and process the attachment
+                            attachment_record = (
+                                db.query(Attachment)
+                                .filter(Attachment.id == attachment_id)
+                                .first()
+                            )
+                            if attachment_record:
+                                # Try to enrich with size & URL
+                                try:
+                                    size, url = attachment_record.retrieve_attachment()
+                                    attachment_info = {
+                                        "file_name": attachment_record.file_name,
+                                        "download_url": str(url) if url else None,
+                                        "file_size": size,
+                                    }
+                                except Exception as exc:  # pylint: disable=broad-except
+                                    logger.warning(
+                                        f"Could not retrieve attachment content for {attachment_record.file_name}: {exc}"
+                                    )
+                                    attachment_info = {
+                                        "file_name": attachment_record.file_name,
+                                        "download_url": None,
+                                        "file_size": None,
+                                    }
+
+                                # Add attachment to the polling results - mirror manual task format
+                                # Use "attachments" as the field name to match DSR builder expectations
+                                attachments_item = None
+                                for item in rows:
+                                    if isinstance(item, dict) and "attachments" in item:
+                                        attachments_item = item
+                                        break
+
+                                if attachments_item is None:
+                                    # Create new attachments item
+                                    attachments_item = {"attachments": []}
+                                    rows.append(attachments_item)
+
+                                # Add attachment to the list
+                                attachments_item["attachments"].append(attachment_info)
+                                logger.info(
+                                    f"Added attachment {attachment_record.file_name} to attachments"
+                                )
                         except Exception as e:
                             logger.error(
                                 f"Failed to store attachment for task {polling_task.id}: {e}"
@@ -206,10 +256,12 @@ def execute_read_polling_requests(
     if pending_requests:
         # Save results for future polling
         save_polling_task_data(db, polling_task, rows)
-        logger.info(f"Polling task - {polling_task.id} still has pending requests. ")
+        logger.info(f"Polling task {polling_task.id} still has pending requests.")
         return
-    polling_task.update_status(db, ExecutionLogStatus.complete)
+
+    # Task is complete - save final results and mark complete
     save_polling_task_data(db, polling_task, rows)
+    polling_task.update_status(db, ExecutionLogStatus.complete)
     log_task_queued(polling_task, "polling success")
     queue_request_task(polling_task, privacy_request_proceed=True)
 
@@ -224,8 +276,6 @@ def save_polling_task_data(
 
 
 def execute_result_request(
-    db: Session,
-    polling_task: RequestTask,
     strategy: PollingAsyncDSRStrategy,
     client: AuthenticatedClient,
     param_values: Dict[str, Any],
@@ -240,9 +290,7 @@ def execute_result_request(
 
 
 def execute_erasure_polling_requests(
-    db: Session,
     polling_task: RequestTask,
-    query_config: SaaSQueryConfig,
 ) -> None:
     """Execute the erasure polling requests for a given privacy request"""
     # TODO: Implement erasure polling logic. Or consider if we can generalize polling for all tasks
@@ -257,25 +305,15 @@ def store_polling_attachment(
     privacy_request: PrivacyRequest,
 ) -> str:
     """
-    Store attachment file and create database records linking to RequestTask and PrivacyRequest.
+    Store attachment file and create database records linking to RequestTask.
     Returns the attachment ID.
     """
-    from io import BytesIO
-
-    from fides.api.models.attachment import (
-        Attachment,
-        AttachmentReference,
-        AttachmentReferenceType,
-        AttachmentType,
-    )
-    from fides.api.models.storage import StorageConfig
 
     # Extract metadata
     filename = metadata.get("filename", f"polling_result_{request_task.id}")
-    content_type = metadata.get("content_type", "application/octet-stream")
 
     # Get default storage config (you might want to make this configurable)
-    storage_config = StorageConfig.get_default(db)
+    storage_config = get_active_default_storage_config(db)
     if not storage_config:
         raise PrivacyRequestError("No default storage configuration found")
 
@@ -295,16 +333,6 @@ def store_polling_attachment(
             attachment_file=file_obj,
         )
 
-        # Create references to link this attachment to the request task and privacy request
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": attachment.id,
-                "reference_id": request_task.id,
-                "reference_type": AttachmentReferenceType.manual_task_submission,  # Closest match for polling results
-            },
-        )
-
         AttachmentReference.create(
             db=db,
             data={
@@ -314,7 +342,14 @@ def store_polling_attachment(
             },
         )
 
-        db.commit()
+        AttachmentReference.create(
+            db=db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": request_task.id,  # Reference the request task, not privacy request
+                "reference_type": AttachmentReferenceType.request_task,
+            },
+        )
 
         logger.info(
             f"Successfully stored polling attachment {attachment.id} for request_task {request_task.id}"
@@ -322,6 +357,5 @@ def store_polling_attachment(
         return attachment.id
 
     except Exception as e:
-        db.rollback()
         logger.error(f"Failed to store polling attachment: {e}")
         raise PrivacyRequestError(f"Failed to store polling attachment: {e}")

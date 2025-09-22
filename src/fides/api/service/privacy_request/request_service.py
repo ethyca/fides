@@ -760,7 +760,6 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
                         queue=DSR_QUEUE_NAME,
                         kwargs={
                             "polling_task_id": async_task.id,
-                            "privacy_request_id": async_task.privacy_request_id,
                         },
                     )
                     cache_task_tracking_key(async_task.id, celery_task.task_id)

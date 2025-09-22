@@ -307,8 +307,11 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 ) -> list[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: list[str] = []
-    # Remove manual webhook attachments from the list of attachments
-    # This is done because the manual webhook attachments are already included in the manual_data
+    # Remove manual webhook attachments and request task attachments from the list of attachments
+    # This is done because:
+    # - manual webhook attachments are already included in the manual_data
+    # - manual task submission attachments are already included in the manual_data
+    # - request task attachments (from async polling) are already embedded in the dataset results
     loaded_attachments = [
         attachment
         for attachment in privacy_request.attachments
@@ -317,6 +320,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
             in [
                 AttachmentReferenceType.access_manual_webhook,
                 AttachmentReferenceType.manual_task_submission,
+                AttachmentReferenceType.request_task,
             ]
             for ref in attachment.references
         )

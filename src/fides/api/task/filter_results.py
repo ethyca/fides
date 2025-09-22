@@ -10,6 +10,42 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row
 
 
+def should_skip_data_category_filtering(
+    node_address: str, results: List[Dict[str, Optional[Any]]]
+) -> bool:
+    """
+    Determine if results should skip data category filtering.
+
+    This includes:
+    1. Manual task data - controlled by field definitions, not data categories
+    2. Attachment data - should be preserved regardless of data categories (from polling or manual tasks)
+
+    :param node_address: The collection address being processed
+    :param results: The results data to check
+    :return: True if filtering should be skipped, False otherwise
+    """
+    # Check if this is a manual task address
+    if ManualTaskAddress.is_manual_task_address(node_address):
+        return True
+
+    # Check if results contain attachment data
+    if not results:
+        return False
+
+    # Verify it looks like actual attachment data
+    for result in results:
+        if isinstance(result, dict) and "attachments" in result:
+            attachments = result["attachments"]
+            if isinstance(attachments, list) and attachments:
+                first_attachment = attachments[0]
+                if isinstance(first_attachment, dict) and all(
+                    key in first_attachment for key in ["file_name", "download_url"]
+                ):
+                    return True
+
+    return False
+
+
 def filter_data_categories(
     access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
@@ -38,8 +74,8 @@ def filter_data_categories(
         if not results:
             continue
 
-        # Skip manual task data - it doesn't need filtering since it's controlled by field definitions
-        if ManualTaskAddress.is_manual_task_address(node_address):
+        # Skip data that doesn't need filtering (manual tasks and attachment data)
+        if should_skip_data_category_filtering(node_address, results):
             filtered_access_results[node_address].extend(results)
             continue
 
