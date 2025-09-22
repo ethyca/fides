@@ -28,11 +28,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added a ConditionalDependency base class that Manual tasks now inherits from. This sets up a base for digest conditional dependencies. [#6613](https://github.com/ethyca/fides/pull/6613)
 - Added condition to sql orm translator functionality. [#6578](https://github.com/ethyca/fides/pull/6578)
 
+
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
 - Systems inventory page now displays GVL deleted systems [#6602](https://github.com/ethyca/fides/pull/6602)
 - After creating a new integration it now redirects you to the integration detail page [#6605](https://github.com/ethyca/fides/pull/6605)
 - Add permission for "Approver" role to create privacy requests and show as "Submitted by" in the Admin UI [#6606](https://github.com/ethyca/fides/pull/6606)
+- Updated consent compliance issue labels & tooltips. Improved the way the consent issue modal is opened. [#6615](https://github.com/ethyca/fides/pull/6615)
 
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
