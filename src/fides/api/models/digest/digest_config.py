@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, Union
 
-from sqlalchemy import Boolean, Column, DateTime, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
@@ -33,19 +33,19 @@ class DigestConfig(Base):
         return "digest_config"
 
     # Digest identification
-    digest_type = Column(EnumColumn(DigestType), nullable=False)
+    digest_type = Column(EnumColumn(DigestType), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
 
     # Configuration
-    enabled = Column(Boolean, nullable=False, default=True)
+    enabled = Column(Boolean, nullable=False, default=True, index=True)
     messaging_service_type = Column(
-        EnumColumn(MessagingMethod), nullable=False, default=MessagingMethod.EMAIL
+        EnumColumn(MessagingMethod), nullable=False, default=MessagingMethod.EMAIL, index=True
     )
     cron_expression = Column(String(100), nullable=False, default="0 9 * * 1")
     timezone = Column(String(50), nullable=False, default="US/Eastern")
     last_sent_at = Column(DateTime(timezone=True), nullable=True)
-    next_scheduled_at = Column(DateTime(timezone=True), nullable=True)
+    next_scheduled_at = Column(DateTime(timezone=True), nullable=True, index=True)
     config_metadata = Column(JSONB, nullable=True, default={})
 
     def get_receiver_conditions(
