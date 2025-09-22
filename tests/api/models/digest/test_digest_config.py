@@ -358,7 +358,6 @@ class TestDigestConfigConditionMethods:
         assert len(result) == 3  # All three condition types
         assert all(value is None for value in result.values())
 
-
 class TestDigestConfigValidation:
     """Tests for digest configuration validation and constraints."""
 
