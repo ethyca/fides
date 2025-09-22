@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, Union
 
-from sqlalchemy import Boolean, Column, DateTime, Index, String, Text
+from sqlalchemy import Boolean, Column, DateTime, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
