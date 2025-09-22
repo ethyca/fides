@@ -43,6 +43,7 @@ export const InProgressMonitorTaskItem = ({
   const [retryMonitorTask, { isLoading: isRetrying }] = useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] = useDismissMonitorTaskMutation();
   const isDismissed = Boolean(task.dismissed_in_activity_view);
+  const canRetry = task.status === "error" && task.action_type !== "detection";
 
   const getTaskTypeColor = (taskType?: string) => {
     switch (taskType) {
@@ -198,15 +199,17 @@ export const InProgressMonitorTaskItem = ({
           {/* Retry and Dismiss buttons for error tasks */}
           {task.status === "error" && (
             <>
-              <Button
-                size="small"
-                type="primary"
-                loading={isRetrying}
-                onClick={handleRetryTask}
-                style={{ marginLeft: "8px" }}
-              >
-                Retry
-              </Button>
+              {canRetry && (
+                <Button
+                  size="small"
+                  type="primary"
+                  loading={isRetrying}
+                  onClick={handleRetryTask}
+                  style={{ marginLeft: "8px" }}
+                >
+                  Retry
+                </Button>
+              )}
               {!isDismissed && (
                 <Button
                   size="small"
