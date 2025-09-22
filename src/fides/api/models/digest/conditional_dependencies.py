@@ -6,6 +6,7 @@ from sqlalchemy import Column, ForeignKey, Index, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
+from fides.api.db.base_class import FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
@@ -35,6 +36,10 @@ class DigestCondition(ConditionalDependencyBase):
     @declared_attr
     def __tablename__(cls) -> str:
         return "digest_condition"
+
+    # We need to redefine it here so that self-referential relationships
+    # can properly reference the `id` column instead of the built-in Python function.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
     # Foreign key relationships
     digest_config_id = Column(
