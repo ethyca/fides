@@ -22,53 +22,6 @@ from fides.api.task.conditional_dependencies.schemas import (
 )
 
 # ============================================================================
-# Shared Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def digest_config(db: Session) -> DigestConfig:
-    """Create a test digest configuration."""
-    config = DigestConfig.create(
-        db=db,
-        data={
-            "digest_type": DigestType.MANUAL_TASKS,
-            "name": "Test Digest for Conditions",
-            "description": "Test digest configuration for condition testing",
-            "enabled": True,
-        },
-    )
-    yield config
-    config.delete(db)
-
-
-@pytest.fixture
-def sample_condition_leaf() -> ConditionLeaf:
-    """Create a sample leaf condition."""
-    return ConditionLeaf(
-        field_address="user.department", operator=Operator.eq, value="legal"
-    )
-
-
-@pytest.fixture
-def sample_condition_group() -> ConditionGroup:
-    """Create a sample group condition."""
-    return ConditionGroup(
-        logical_operator=GroupOperator.and_,
-        conditions=[
-            ConditionLeaf(
-                field_address="user.department", operator=Operator.eq, value="legal"
-            ),
-            ConditionLeaf(
-                field_address="user.role",
-                operator=Operator.list_contains,
-                value=["admin", "manager"],
-            ),
-        ],
-    )
-
-
-# ============================================================================
 # DigestConditionType Tests
 # ============================================================================
 
@@ -525,62 +478,12 @@ class TestDigestConditionTrees:
 class TestDigestConditionQueries:
     """Test querying digest conditions."""
 
-    @pytest.fixture
-    def sample_conditions(self, db: Session, digest_config: DigestConfig):
-        """Create sample conditions for testing."""
-        conditions = []
-
-        # Receiver condition
-        receiver_condition = DigestCondition.create(
-            db=db,
-            data={
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": DigestConditionType.RECEIVER,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "user.department",
-                "operator": Operator.eq,
-                "value": "legal",
-                "sort_order": 1,
-            },
-        )
-        conditions.append(receiver_condition)
-
-        # Content condition
-        content_condition = DigestCondition.create(
-            db=db,
-            data={
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": DigestConditionType.CONTENT,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "task.status",
-                "operator": Operator.list_contains,
-                "value": ["pending", "in_progress"],
-                "sort_order": 1,
-            },
-        )
-        conditions.append(content_condition)
-
-        # Priority condition
-        priority_condition = DigestCondition.create(
-            db=db,
-            data={
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": DigestConditionType.PRIORITY,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "task.priority",
-                "operator": Operator.gte,
-                "value": "high",
-                "sort_order": 1,
-            },
-        )
-        conditions.append(priority_condition)
-
-        yield conditions
-
     def test_get_root_condition_by_type(
         self, db: Session, digest_config: DigestConfig, sample_conditions
     ):
         """Test getting root condition by digest condition type."""
+        # sample_conditions fixture creates conditions, so we can test retrieval
+
         # Test getting receiver condition
         receiver_condition = DigestCondition.get_root_condition(
             db, digest_config.id, DigestConditionType.RECEIVER
@@ -632,6 +535,7 @@ class TestDigestConditionQueries:
         self, db: Session, digest_config: DigestConfig, sample_conditions
     ):
         """Test getting all root conditions for a digest config."""
+        # sample_conditions fixture creates conditions, so we can test retrieval
         all_conditions = DigestCondition.get_all_root_conditions(db, digest_config.id)
 
         assert len(all_conditions) == 3
@@ -1045,7 +949,10 @@ class TestDigestConditionValidation:
 
     def test_invalid_parent_reference(self, db: Session, digest_config: DigestConfig):
         """Test creating condition with invalid parent reference."""
-        with pytest.raises(IntegrityError):
+        with pytest.raises(
+            ValueError,
+            match="Parent condition with id 'nonexistent_parent_id' does not exist",
+        ):
             DigestCondition.create(
                 db=db,
                 data={
