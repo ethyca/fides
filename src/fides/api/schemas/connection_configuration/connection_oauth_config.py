@@ -40,5 +40,3 @@ class OAuthConfigResponse(BaseModel):
 
 class OAuthConfigDocsSchema(OAuthConfigSchema, NoValidationSchema):
     """OAuth2 Config Schema for API Docs"""
-
-    pass

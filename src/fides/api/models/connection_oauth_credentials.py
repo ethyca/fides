@@ -2,14 +2,13 @@ import enum
 
 from sqlalchemy import Column, Enum, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
 
-from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.db.base_class import Base
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.config import CONFIG
