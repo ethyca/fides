@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyType,
 )
-from fides.api.models.digest import DigestConfig, DigestType
+from fides.api.models.digest import DigestConfig
 from fides.api.models.digest.conditional_dependencies import (
     DigestCondition,
     DigestConditionType,
@@ -17,9 +17,22 @@ from fides.api.task.conditional_dependencies.schemas import GroupOperator, Opera
 class TestDigestConditionValidation:
     """Test DigestCondition validation for mixed condition types."""
 
-    def test_create_root_condition_no_validation(
-        self, db: Session, digest_config: DigestConfig, sample_conditions
-    ):
+    @pytest.fixture
+    def receiver_group(self, db: Session, digest_config: DigestConfig):
+        """Create a receiver group condition."""
+        group = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_type": ConditionalDependencyType.group,
+                "logical_operator": GroupOperator.and_,
+            },
+        )
+        yield group
+        group.delete(db)
+
+    def test_create_root_condition_no_validation(self, sample_conditions):
         """Test that root conditions don't require validation."""
         # sample_conditions fixture creates root conditions of different types
         receiver_condition, content_condition, priority_condition = sample_conditions
@@ -37,38 +50,14 @@ class TestDigestConditionValidation:
     def test_create_child_condition_same_type_succeeds(
         self,
         db: Session,
-        digest_config: DigestConfig,
+        receiver_group: DigestCondition,
         receiver_condition_db: DigestCondition,
     ):
         """Test that child conditions with same type as parent succeed."""
-        # Use receiver_condition_db as parent and create a child with same type
-        # First, make the existing condition a group so it can have children
-        parent = receiver_condition_db
-        parent.update(
-            db=db,
-            data={
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": GroupOperator.and_,
-                "field_address": None,
-                "operator": None,
-                "value": None,
-            },
-        )
+        parent = receiver_group
 
-        # Create child with same type - should succeed
-        child = DigestCondition.create(
-            db=db,
-            data={
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": DigestConditionType.RECEIVER,
-                "parent_id": parent.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "user.department",
-                "operator": Operator.eq,
-                "value": "legal",
-                "sort_order": 1,
-            },
-        )
+        child = receiver_condition_db
+        child.update(db=db, data={"parent_id": parent.id})
         assert child.digest_condition_type == DigestConditionType.RECEIVER
         assert child.parent_id == parent.id
 
@@ -76,21 +65,12 @@ class TestDigestConditionValidation:
         self,
         db: Session,
         digest_config: DigestConfig,
-        receiver_condition_db: DigestCondition,
+        receiver_group: DigestCondition,
     ):
         """Test that child conditions with different type from parent fail."""
         # Use receiver_condition_db as parent, make it a group
-        parent = receiver_condition_db
-        parent.update(
-            db=db,
-            data={
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": GroupOperator.and_,
-                "field_address": None,
-                "operator": None,
-                "value": None,
-            },
-        )
+
+        parent = receiver_group
 
         # Try to create child with different type - should fail
         with pytest.raises(
@@ -131,9 +111,7 @@ class TestDigestConditionValidation:
                 },
             )
 
-    def test_create_nested_conditions_same_type_succeeds(
-        self, db: Session, digest_config: DigestConfig, complex_condition_tree
-    ):
+    def test_create_nested_conditions_same_type_succeeds(self, complex_condition_tree):
         """Test that deeply nested conditions with same type succeed."""
         # complex_condition_tree fixture creates a nested structure with consistent types
         root = complex_condition_tree["root"]
@@ -156,7 +134,7 @@ class TestDigestConditionValidation:
             assert leaf.parent_id in [group.id for group in nested_groups]
 
     def test_update_condition_type_to_different_type_fails(
-        self, db: Session, digest_config: DigestConfig, complex_condition_tree
+        self, db: Session, complex_condition_tree
     ):
         """Test that updating a child condition to different type fails."""
         # Use a leaf from the complex tree (all are CONTENT type)
@@ -178,13 +156,12 @@ class TestDigestConditionValidation:
             )
 
     def test_update_condition_same_type_succeeds(
-        self, db: Session, digest_config: DigestConfig, complex_condition_tree
+        self, db: Session, complex_condition_tree
     ):
         """Test that updating condition with same type succeeds."""
         # Use a leaf from the complex tree
         leaf = complex_condition_tree["leaves"][0]
         original_type = leaf.digest_condition_type
-        original_field = leaf.field_address
 
         # Update other fields - should succeed
         updated_leaf = leaf.update(
@@ -201,7 +178,6 @@ class TestDigestConditionValidation:
     def test_update_root_condition_type_succeeds(
         self,
         db: Session,
-        digest_config: DigestConfig,
         receiver_condition_db: DigestCondition,
     ):
         """Test that updating root condition type succeeds (no parent to validate against)."""
@@ -225,21 +201,11 @@ class TestDigestConditionValidation:
         self,
         db: Session,
         digest_config: DigestConfig,
-        priority_condition_db: DigestCondition,
+        receiver_group: DigestCondition,
     ):
         """Test that validation error messages are clear and helpful."""
         # Use priority_condition_db as parent, make it a group
-        parent = priority_condition_db
-        parent.update(
-            db=db,
-            data={
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": GroupOperator.or_,
-                "field_address": None,
-                "operator": None,
-                "value": None,
-            },
-        )
+        parent = receiver_group
 
         # Try to create child with different type
         with pytest.raises(ValueError) as exc_info:
@@ -247,7 +213,7 @@ class TestDigestConditionValidation:
                 db=db,
                 data={
                     "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.RECEIVER,
+                    "digest_condition_type": DigestConditionType.CONTENT,
                     "parent_id": parent.id,
                     "condition_type": ConditionalDependencyType.leaf,
                     "field_address": "user.email",
@@ -258,8 +224,8 @@ class TestDigestConditionValidation:
             )
 
         error_message = str(exc_info.value)
-        assert "Cannot create condition with type 'receiver'" in error_message
-        assert "under parent with type 'priority'" in error_message
+        assert "Cannot create condition with type 'content'" in error_message
+        assert "under parent with type 'receiver'" in error_message
         assert "must have the same digest_condition_type" in error_message
 
     def test_all_condition_types_can_be_validated(

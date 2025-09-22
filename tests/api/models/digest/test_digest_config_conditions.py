@@ -23,6 +23,7 @@ from fides.api.task.conditional_dependencies.schemas import (
 # ============================================================================
 
 
+@pytest.mark.usefixtures("receiver_condition_db")
 class TestDigestConfigConditionMethods:
     """Test DigestConfig methods for retrieving conditions."""
 
@@ -30,7 +31,6 @@ class TestDigestConfigConditionMethods:
         self,
         db: Session,
         digest_config: DigestConfig,
-        receiver_condition_db: DigestCondition,
     ):
         """Test get_receiver_conditions returns a ConditionLeaf."""
 
