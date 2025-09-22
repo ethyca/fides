@@ -57,15 +57,15 @@ class DigestCondition(ConditionalDependencyBase):
     digest_config = relationship("DigestConfig", back_populates="conditions")
     parent = relationship(
         "DigestCondition",
-        remote_side="DigestCondition.id",
+        remote_side=[id],
         back_populates="children",
-        foreign_keys="DigestCondition.parent_id",
+        foreign_keys=[parent_id],
     )
     children = relationship(
         "DigestCondition",
         back_populates="parent",
         cascade="all, delete-orphan",
-        foreign_keys="DigestCondition.parent_id",
+        foreign_keys=[parent_id],
     )
 
     __table_args__ = (
