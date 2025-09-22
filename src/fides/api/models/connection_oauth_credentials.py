@@ -10,7 +10,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.db.base_class import Base
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+
+
+from fides.api.models.sql_models import System  # type: ignore[attr-defined] pylint: disable=unused-import
 from fides.config import CONFIG
 
 
