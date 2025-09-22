@@ -54,7 +54,12 @@ def upgrade():
                 autoincrement=False,
                 nullable=False,
             ),
-            sa.Column("messaging_service_type", sa.String(255), nullable=False, server_default="email"),
+            sa.Column(
+                "messaging_service_type",
+                sa.String(255),
+                nullable=False,
+                server_default="email",
+            ),
             sa.Column(
                 "cron_expression",
                 sa.VARCHAR(length=100),
