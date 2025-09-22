@@ -98,6 +98,9 @@ def upgrade():
 
         # Create indexes for performance
         op.create_index(
+            op.f("ix_digest_config_id"), "digest_config", ["id"], unique=False
+        )
+        op.create_index(
             op.f("ix_digest_config_digest_type"),
             "digest_config",
             ["digest_type"],
@@ -130,6 +133,7 @@ def downgrade():
     )
     op.drop_index(op.f("ix_digest_config_enabled"), table_name="digest_config")
     op.drop_index(op.f("ix_digest_config_digest_type"), table_name="digest_config")
+    op.drop_index(op.f("ix_digest_config_id"), table_name="digest_config")
 
     # Drop table if it exists
     op.drop_table("digest_config")
