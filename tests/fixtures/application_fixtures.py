@@ -1647,6 +1647,10 @@ def privacy_request_with_two_types(
             "action_type": ActionType.erasure.value,
             "name": "Erasure Request Rule",
             "policy_id": policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
         },
     )
 
