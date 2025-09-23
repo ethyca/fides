@@ -8,6 +8,7 @@ from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
+from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
@@ -191,16 +192,37 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @property
     def cookies(self) -> List[Asset]:
-        """Return relevant assets of type 'cookie' (via the data use)"""
+        """
+        Return the privacy notice's assets of type 'cookie'.
+        Cookies are matched to the privacy notice if they have at least one data use
+        that is either an exact match or a hierarchical descendant of a one of the
+        data uses in the privacy notice.
+        """
         db = Session.object_session(self)
-        or_queries = [
-            f"array_to_string(data_uses, ',') ILIKE '{data_use}%'"
+
+        if not self.data_uses:
+            return []
+
+        # Use array overlap operator (&&) for exact matches - GIN index friendly
+        # This will be much faster when we add: CREATE INDEX idx_asset_data_uses_gin ON asset USING GIN (data_uses)
+        exact_matches_condition = Asset.data_uses.op("&&")(self.data_uses)
+
+        # For hierarchical children, we still need to check individual elements with LIKE
+        # They have to match the data_use and the period separator, so we know it's a hierarchical descendant
+        hierarchical_conditions = [
+            text(
+                f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE '{data_use}.%')"
+            )
             for data_use in self.data_uses
         ]
 
+        asset_matching_condition = or_(
+            exact_matches_condition, *hierarchical_conditions
+        )
+
         query = db.query(Asset).filter(
             Asset.asset_type == "Cookie",
-            or_(*[text(query) for query in or_queries]),
+            asset_matching_condition,
         )
 
         return query.all()
