@@ -1,7 +1,7 @@
 """Adding OAuth2 config for ConnectionConfig
 
 Revision ID: 0eef0016cf06
-Revises: 4d8c0fcc5771
+Revises: a8e0c016afd
 Create Date: 2025-09-12 01:06:26.838560
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0eef0016cf06"
-down_revision = "4d8c0fcc5771"
+down_revision = "a8e0c016afd"
 branch_labels = None
 depends_on = None
 
