@@ -1640,6 +1640,7 @@ def privacy_request(
 def privacy_request_with_two_types(
     db: Session,
     policy: Policy,
+    storage_config: StorageConfig,
 ) -> Generator[PrivacyRequest, None, None]:
     erasure_request_rule = Rule.create(
         db=db,
@@ -1647,6 +1648,7 @@ def privacy_request_with_two_types(
             "action_type": ActionType.erasure.value,
             "name": "Erasure Request Rule",
             "policy_id": policy.id,
+            "storage_destination_id": storage_config.id,
         },
     )
 
