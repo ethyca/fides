@@ -49,7 +49,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "alphaActionCenter",
+        requiresFlag: "webMonitor",
         requiresPlus: true,
       },
       {

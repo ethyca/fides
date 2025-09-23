@@ -54,8 +54,8 @@
     "test": true,
     "production": false
   },
-  "alphaActionCenter": {
-    "description": "Action Center included in Detection & Discovery tab set",
+  "alphaFullActionCenter": {
+    "description": "Enable additional Action Center features",
     "development": true,
     "test": true,
     "production": false
