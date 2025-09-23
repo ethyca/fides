@@ -203,7 +203,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             return []
 
         # Use array overlap operator (&&) for exact matches - GIN index friendly
-        # This will be much faster when we add: CREATE INDEX idx_asset_data_uses_gin ON asset USING GIN (data_uses)
         exact_matches_condition = Asset.data_uses.op("&&")(self.data_uses)
 
         # For hierarchical children, we still need to check individual elements with LIKE
