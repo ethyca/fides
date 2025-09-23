@@ -7,7 +7,7 @@ import {
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import useCustomFieldsTable from "~/features/custom-fields/useCustomFieldsTable";
 
-export const CustomFieldsTable = () => {
+const CustomFieldsTable = () => {
   const { tableProps, columns, searchQuery, updateSearch, onAddClick } =
     useCustomFieldsTable();
 
@@ -31,3 +31,5 @@ export const CustomFieldsTable = () => {
     </Flex>
   );
 };
+
+export default CustomFieldsTable;
