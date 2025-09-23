@@ -8,7 +8,6 @@ from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
-from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
