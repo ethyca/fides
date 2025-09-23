@@ -1,19 +1,26 @@
 import {
   AntButton as Button,
+  AntCol as Col,
   AntFlex as Flex,
   AntListItemProps as ListItemProps,
   AntPopover as Popover,
+  AntRow as Row,
+  AntSpace as Space,
   AntTag as Tag,
   AntTypography as Typography,
   useToast,
+  Spinner,
 } from "fidesui";
 import { useRouter } from "next/router";
 
 import { formatDate } from "~/features/common/utils";
+import { formatDistanceStrict } from "date-fns";
 import { DATA_DISCOVERY_ROUTE_DETAIL } from "~/features/common/nav/routes";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
 import { useRetryMonitorTaskMutation, useDismissMonitorTaskMutation } from "../action-center.slice";
+import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import { useGetAggregateMonitorResultsQuery } from "../action-center.slice";
 
 const { Text, Title } = Typography;
 
@@ -44,6 +51,48 @@ export const InProgressMonitorTaskItem = ({
   const [dismissMonitorTask, { isLoading: isDismissing }] = useDismissMonitorTaskMutation();
   const isDismissed = Boolean(task.dismissed_in_activity_view);
   const canRetry = task.status === "error" && task.action_type !== "detection";
+
+  // Build a minimal monitor key -> icon data map for ConnectionTypeLogo
+  const { data: monitorAgg } = useGetAggregateMonitorResultsQuery({ page: 1, size: 1000 });
+  const aggItem = (task.monitor_config_id && monitorAgg?.items?.find((m) => m.key === task.monitor_config_id)) || undefined;
+  const logoData: any = aggItem
+    ? {
+        connection_type: aggItem.connection_type as any,
+        saas_config: aggItem.saas_config ? { type: (aggItem.saas_config as any).type } : undefined,
+        name: aggItem.name,
+        key: aggItem.key as any,
+        secrets: (aggItem as any).secrets?.url ? { url: (aggItem as any).secrets.url } : undefined,
+      }
+    : task.connection_type
+      ? {
+          connection_type: task.connection_type as any,
+          name: task.connection_name || task.connection_type,
+        }
+      : undefined;
+
+  const taskCount = task.staged_resource_urns?.length || 0;
+  const isInProgress = ["pending", "in_processing", "paused", "retrying"].includes(
+    (task.status || "").toLowerCase(),
+  );
+  const taskTitle = (() => {
+    if (task.action_type === "classification") {
+      const verb = task.status === "complete" ? "Classified" : "Classifying";
+      return `${verb} ${taskCount} ${taskCount === 1 ? "field" : "fields"}`;
+    }
+    if (task.action_type === "detection") {
+      return task.status === "complete" ? "Monitor scanned" : "Monitor scanning";
+    }
+    if (task.action_type === "promotion") {
+      return task.status === "complete" ? "Promoted" : "Promoting";
+    }
+    return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
+  })();
+
+  const monitorGroupLabel = (() => {
+    const type = (task.connection_type || "").toString().toUpperCase();
+    if (type.includes("WEBSITE")) return "Product monitor";
+    return "Analytics monitor";
+  })();
 
   const getTaskTypeColor = (taskType?: string) => {
     switch (taskType) {
@@ -161,85 +210,50 @@ export const InProgressMonitorTaskItem = ({
 
   return (
     <div {...props} style={{ width: "100%" }}>
-      {/* Line 1: Monitor name + all tags */}
-      <div style={{ marginBottom: "4px" }}>
-        <Flex gap={8} align="center" wrap="wrap">
-          <Title level={5} style={{ margin: 0, marginRight: "8px" }}>
-            {task.monitor_name || "Unknown Monitor"}
-          </Title>
-
-          {(task.connection_name || task.connection_type) && (
-            <Tag color="default">
-              {task.connection_name || task.connection_type}
-            </Tag>
-          )}
-
-          <Tag color={getTaskTypeColor(task.action_type)}>
-            {formatText(task.action_type)}
-          </Tag>
-
-          <Tag color={getStatusColor(task.status)}>
-            {formatText(task.status)}
-          </Tag>
-
-          {task.staged_resource_urns && task.staged_resource_urns.length > 0 && (
-            task.staged_resource_urns.length === 1 ? (
-              <Tag
-                color="orange"
-                style={{ cursor: "pointer" }}
-                onClick={() => handleSingleResourceClick(task.staged_resource_urns![0])}
-              >
-                Staged Resources: 1
-              </Tag>
-            ) : (
-              renderMultipleResourcesPopover(task.staged_resource_urns)
-            )
-          )}
-
-          {/* Retry and Dismiss buttons for error tasks */}
-          {task.status === "error" && (
-            <>
-              {canRetry && (
-                <Button
-                  size="small"
-                  type="primary"
-                  loading={isRetrying}
-                  onClick={handleRetryTask}
-                  style={{ marginLeft: "8px" }}
-                >
-                  Retry
-                </Button>
-              )}
-              {!isDismissed && (
-                <Button
-                  size="small"
-                  loading={isDismissing}
-                  onClick={handleDismissTask}
-                  style={{ marginLeft: "8px" }}
-                >
-                  Dismiss
-                </Button>
-              )}
-            </>
-          )}
-                </Flex>
-              </div>
-
-              {/* Line 2: Date */}
-      <div>
-        <Text type="secondary" style={{ fontSize: "12px" }}>
-          {formatDate(task.updated_at)}
-        </Text>
-      </div>
-
-      {/* Message line - if present */}
-      {task.message && (
-        <div style={{ marginTop: "4px" }}>
-          <Text type="secondary" style={{ fontSize: "11px", fontStyle: "italic" }}>
-            {task.message}
+      <Row gutter={12} className="w-full">
+        <Col span={17} className="align-middle">
+          <Space align="center" size={8} wrap>
+            {logoData && <ConnectionTypeLogo data={logoData} boxSize="24px" />}
+            <Title level={5} style={{ margin: 0 }}>
+              {taskTitle}
+            </Title>
+            {!isInProgress && (
+              <Tag color={getStatusColor(task.status)}>{formatText(task.status)}</Tag>
+            )}
+            {task.status === "error" && (
+              <>
+                {canRetry && (
+                  <Button size="small" type="primary" loading={isRetrying} onClick={handleRetryTask}>
+                    Retry
+                  </Button>
+                )}
+                {!isDismissed && (
+                  <Button size="small" loading={isDismissing} onClick={handleDismissTask}>
+                    Dismiss
+                  </Button>
+                )}
+                <Popover content={<div style={{ maxWidth: 360 }}>{task.message}</div>} title={null} trigger="click">
+                  <Button type="link" size="small">Failure reason</Button>
+                </Popover>
+              </>
+            )}
+          </Space>
+        </Col>
+        <Col span={4} className="flex items-center justify-end">
+          <Text type="secondary" style={{ fontSize: "12px" }}>
+            {monitorGroupLabel}
           </Text>
-        </div>
-      )}
+        </Col>
+        <Col span={3} className="flex items-center justify-end">
+          {isInProgress ? (
+            <Spinner size="sm" color="primary" thickness="2px" speed="0.6s" />
+          ) : (
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              {formatDistanceStrict(new Date(task.updated_at), new Date(), { addSuffix: true })}
+            </Text>
+          )}
+        </Col>
+      </Row>
     </div>
   );
 };
