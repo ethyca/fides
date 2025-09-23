@@ -129,6 +129,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -144,6 +145,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -193,6 +195,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -261,6 +264,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -373,6 +377,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -391,6 +396,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -431,6 +437,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -482,6 +489,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -533,6 +541,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -576,6 +585,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toMatchObject({
@@ -611,6 +621,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -670,6 +681,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usut");
     expect(section).toEqual({
@@ -705,6 +717,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -746,6 +759,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -806,6 +820,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usut");
     expect(section).toEqual({
@@ -860,6 +875,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -938,29 +954,13 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       });
     });
 
-    afterEach(() => {
-      // Reset any modification of the navigator for globalPrivacyControl
-      Object.defineProperty(window.navigator, "globalPrivacyControl", {
-        value: undefined,
-        writable: true,
-        configurable: true,
-      });
-    });
-
     describe("when the browser GPC setting is true", () => {
-      beforeEach(() => {
-        Object.defineProperty(window.navigator, "globalPrivacyControl", {
-          value: true,
-          writable: true,
-          configurable: true,
-        });
-      });
-
       it("sets Gpc=true in the usnat section", () => {
         const sectionsChanged = setGppOptOutsFromCookieAndExperience({
           cmpApi,
           cookie,
           experience: usnatExperience,
+          context: { globalPrivacyControl: true },
         });
         expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
         const section = cmpApi.getSection("usnat");
@@ -974,6 +974,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
           cmpApi,
           cookie,
           experience: uscaExperience,
+          context: { globalPrivacyControl: true },
         });
         expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
         const section = cmpApi.getSection("usca");
@@ -987,6 +988,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
           cmpApi,
           cookie,
           experience: usutExperience,
+          context: { globalPrivacyControl: true },
         });
         expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
         const section = cmpApi.getSection("usut");
@@ -997,19 +999,12 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     });
 
     describe("when the browser GPC setting is false", () => {
-      beforeEach(() => {
-        Object.defineProperty(window.navigator, "globalPrivacyControl", {
-          value: false,
-          writable: true,
-          configurable: true,
-        });
-      });
-
       it("sets Gpc=false in the usnat section", () => {
         const sectionsChanged = setGppOptOutsFromCookieAndExperience({
           cmpApi,
           cookie,
           experience: usnatExperience,
+          context: { globalPrivacyControl: false },
         });
         expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
         const section = cmpApi.getSection("usnat");
@@ -1023,6 +1018,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
           cmpApi,
           cookie,
           experience: uscaExperience,
+          context: { globalPrivacyControl: false },
         });
         expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
         const section = cmpApi.getSection("usca");
@@ -1036,6 +1032,51 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
           cmpApi,
           cookie,
           experience: usutExperience,
+          context: { globalPrivacyControl: false },
+        });
+        expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
+        const section = cmpApi.getSection("usut");
+        expect(section).not.toHaveProperty("GpcSegmentType");
+        expect(section).not.toHaveProperty("Gpc");
+        expect(cmpApi.getGppString()).toEqual("DBABFg~BAAAAAWA");
+      });
+    });
+
+    describe("when the browser GPC setting is undefined", () => {
+      it("sets Gpc=false in the usnat section", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: usnatExperience,
+          context: {},
+        });
+        expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
+        const section = cmpApi.getSection("usnat");
+        expect(section).toHaveProperty("GpcSegmentType", 1);
+        expect(section).toHaveProperty("Gpc", false);
+        expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAABY.QA");
+      });
+
+      it("sets Gpc=false in the usca section", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: uscaExperience,
+          context: {},
+        });
+        expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
+        const section = cmpApi.getSection("usca");
+        expect(section).toHaveProperty("GpcSegmentType", 1);
+        expect(section).toHaveProperty("Gpc", false);
+        expect(cmpApi.getGppString()).toEqual("DBABBg~BAAAAABY.QA");
+      });
+
+      it("does not include Gpc in the usut section where GPC is not supported", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: usutExperience,
+          context: {},
         });
         expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
         const section = cmpApi.getSection("usut");

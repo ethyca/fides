@@ -13,8 +13,7 @@
 
 import { UsNatField } from "@iabgpp/cmpapi";
 
-// TODO (ENG-1486): remove this import and pass context in explicitly
-import { getConsentContext } from "../consent-context";
+import type { ConsentContext } from "../consent-context";
 import { FIDES_US_REGION_TO_GPP_SECTION, GPPUSApproach } from "./constants";
 import {
   GPPPrivacyExperience,
@@ -44,7 +43,7 @@ export const isGpcSubsectionSupported = (section: GPPSection) => {
   if (typeof section?.name !== "string") {
     return false;
   }
-  // TODO: there must be a better way to determine this that just hardcoding this array, right?
+  // TODO (ENG-1486): there must be a better way to determine this that just hardcoding this array, right?
   const SECTIONS_WITH_GPC_SUBSECTION = [
     "usnat",
     "usca",
@@ -204,7 +203,6 @@ export const setOptOuts = ({
   gppSection,
   privacyNotices,
   noticeConsent,
-  // TODO (ENG-1486): provide `consentContext` as a required argument
 }: CmpApiUpdaterProps) => {
   if (!noticeConsent) {
     return;
@@ -231,18 +229,6 @@ export const setOptOuts = ({
           valueAsNum = value.split("").map((v) => +v);
         }
         gppApi.setFieldValue(gppSection.name, gppMechanism.field, valueAsNum);
-
-        // For any GPP sections that also support the GPC sub-section, pass
-        // along the current value of GPC for additional context
-        if (isGpcSubsectionSupported(gppSection)) {
-          // console.warn("SETTING GPC FIELD FOR SECTION", gppSection.name);
-          // TODO: pass this in? get from context? something?
-          // const isGpcEnabled: boolean =
-          //   window?.navigator?.globalPrivacyControl ?? false;
-          const isGpcEnabled =
-            getConsentContext().globalPrivacyControl ?? false;
-          gppApi.setFieldValue(gppSection.name, "Gpc", isGpcEnabled);
-        }
       });
     }
   });
@@ -266,4 +252,23 @@ export const setNoticesProvided = ({
       });
     }
   });
+};
+
+/*
+ * For any GPP sections that also support the GPC sub-section (e.g.  "usnat"),
+ * encode the current value of the user's GPC flag in the string for context
+ */
+export const setGpcSubsection = ({
+  gppApi,
+  gppSection,
+  context,
+}: {
+  gppApi: GPPApiLike;
+  gppSection: GPPSection;
+  context: ConsentContext;
+}) => {
+  if (isGpcSubsectionSupported(gppSection)) {
+    const isGpcEnabled = context?.globalPrivacyControl ?? false;
+    gppApi.setFieldValue(gppSection.name, "Gpc", isGpcEnabled);
+  }
 };
