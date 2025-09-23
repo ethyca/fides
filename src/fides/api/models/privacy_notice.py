@@ -209,9 +209,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         # They have to match the data_use and the period separator, so we know it's a hierarchical descendant
         hierarchical_conditions = [
             text(
-                f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE '{data_use}.%')"
-            )
-            for data_use in self.data_uses
+                f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE :pattern_{i})"
+            ).bindparams(**{f"pattern_{i}": f"{data_use}.%"})
+            for i, data_use in enumerate(self.data_uses)
         ]
 
         asset_matching_condition = or_(
