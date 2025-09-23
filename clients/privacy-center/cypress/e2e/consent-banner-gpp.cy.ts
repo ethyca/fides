@@ -705,9 +705,34 @@ describe("Fides-js GPP extension", () => {
           );
       });
 
-      // TODO (ENG-1486): Add integration tests for GPC here
-      it("can support the user's GPC setting", () => {
-        expect(true).to.eql(false);
+      it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        visitDemoWithGPP({});
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("@FidesUIShown").should("not.have.been.called");
+
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+          cy.get("@gppListener")
+            .should("have.been.calledOnce")
+            .its("args")
+            .then((args) => {
+              expect(args.length).to.eql(1);
+              const [data, success] = args[0];
+              expect(success).to.eql(true);
+              // Opt out string with GPC flag set
+              expect(data.pingData.applicableSections).to.eql([8]);
+              expect(data.pingData.parsedSections.usca.SaleOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.SharingOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.Gpc).to.eql(true);
+              expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
+              expect(data.pingData.signalStatus).to.eql("ready");
+            });
+        });
       });
 
       it("can handle a returning user", () => {
@@ -863,15 +888,22 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with GPP enabled for a Headless experience", () => {
+    const visitDemoWithGPPHeadless = (
+      props: { region: string } = { region: "us_ca" },
+    ) => {
+      visitDemoWithGPP({
+        overrideExperience: (experience: any) => {
+          /* eslint-disable no-param-reassign */
+          experience.experience_config.component === ComponentType.HEADLESS;
+          experience.region = props.region;
+          return experience;
+        },
+      });
+    };
+
     describe("when visiting from a state with an applicable section", () => {
       beforeEach(() => {
-        visitDemoWithGPP({
-          overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
-            experience.experience_config.component === ComponentType.HEADLESS;
-            return experience;
-          },
-        });
+        visitDemoWithGPPHeadless();
         cy.waitUntilFidesInitialized().then(() => {
           cy.get("@FidesUIShown").should("have.been.calledOnce");
           cy.window().then((win) => {
@@ -898,13 +930,7 @@ describe("Fides-js GPP extension", () => {
           consent: { data_sales_sharing_gpp_us_state: true },
         });
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-        visitDemoWithGPP({
-          overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
-            experience.experience_config.component === ComponentType.HEADLESS;
-            return experience;
-          },
-        });
+        visitDemoWithGPPHeadless();
         cy.waitUntilFidesInitialized().then(() => {
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
@@ -926,7 +952,7 @@ describe("Fides-js GPP extension", () => {
 
       it("can handle a fides string being passed in", () => {
         cy.setCookie("fides_string", ",,DBABBg~BUoAAABY.QA");
-        visitDemoWithGPP({});
+        visitDemoWithGPPHeadless();
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
@@ -949,21 +975,39 @@ describe("Fides-js GPP extension", () => {
         cy.get("@FidesUIShown").should("not.have.been.called");
       });
 
-      // TODO (ENG-1486): Add integration tests for GPC here
-      it("can support the user's GPC setting", () => {
-        expect(true).to.eql(false);
+      it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        visitDemoWithGPPHeadless();
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("@FidesUIShown").should("not.have.been.called");
+
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+          cy.get("@gppListener")
+            .should("have.been.calledOnce")
+            .its("args")
+            .then((args) => {
+              expect(args.length).to.eql(1);
+              const [data, success] = args[0];
+              expect(success).to.eql(true);
+              // Opt out string with GPC flag set
+              expect(data.pingData.applicableSections).to.eql([8]);
+              expect(data.pingData.parsedSections.usca.SaleOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.SharingOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.Gpc).to.eql(true);
+              expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
+              expect(data.pingData.signalStatus).to.eql("ready");
+            });
+        });
       });
     });
     describe("when visiting from a state that does not have an applicable section", () => {
       beforeEach(() => {
-        visitDemoWithGPP({
-          overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
-            experience.experience_config.component === ComponentType.HEADLESS;
-            experience.region = "us_nc";
-            return experience;
-          },
-        });
+        visitDemoWithGPPHeadless({ region: "us_nc" });
         cy.waitUntilFidesInitialized().then(() => {
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
@@ -991,14 +1035,7 @@ describe("Fides-js GPP extension", () => {
           consent: { data_sales_sharing_gpp_us_state: true },
         });
         cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-        visitDemoWithGPP({
-          overrideExperience: (experience: any) => {
-            /* eslint-disable no-param-reassign */
-            experience.experience_config.component === ComponentType.HEADLESS;
-            experience.region = "us_nc";
-            return experience;
-          },
-        });
+        visitDemoWithGPPHeadless({ region: "us_nc" });
         cy.waitUntilFidesInitialized().then(() => {
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
