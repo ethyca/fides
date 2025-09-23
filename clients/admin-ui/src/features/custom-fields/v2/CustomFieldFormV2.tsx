@@ -46,13 +46,12 @@ const CustomFieldFormV2 = ({
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
-  const { data: allowList, error } = useGetAllowListQuery(
+  const { data: allowList } = useGetAllowListQuery(
     initialField?.allow_list_id as string,
     {
       skip: !initialField?.allow_list_id,
     },
   );
-  // handle errors for this
 
   const [deleteCustomField, { isLoading: deleteIsLoading }] =
     useDeleteCustomFieldDefinitionMutation();

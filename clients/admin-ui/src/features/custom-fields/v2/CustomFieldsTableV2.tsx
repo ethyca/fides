@@ -30,7 +30,7 @@ const useCustomFieldsTable = () => {
 
   const router = useRouter();
 
-  const { data, isLoading, error } = useGetAllCustomFieldDefinitionsQuery();
+  const { data, isLoading } = useGetAllCustomFieldDefinitionsQuery();
 
   const { tableProps } = useAntTable(tableState, {
     dataSource: data || [],

@@ -23,12 +23,9 @@ const CustomFieldDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
 
-  const {
-    data: customField,
-    error,
-    isLoading,
-  } = useGetCustomFieldDefinitionByIdQuery({ id: id as string });
-  // handle error here
+  const { data: customField, isLoading } = useGetCustomFieldDefinitionByIdQuery(
+    { id: id as string },
+  );
 
   return (
     <Layout title="Edit custom field" mainProps={{ maxWidth: "720px" }}>
