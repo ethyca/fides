@@ -87,6 +87,7 @@ const useCustomFieldsTable = () => {
             <Button
               size="small"
               onClick={() => router.push(`${CUSTOM_FIELDS_ROUTE}/${record.id}`)}
+              data-testid="edit-btn"
             >
               Edit
             </Button>
@@ -120,7 +121,11 @@ export const CustomFieldsTableV2 = () => {
           onChange={updateSearch}
           placeholder="Search custom fields..."
         />
-        <Button onClick={onAddClick} type="primary">
+        <Button
+          onClick={onAddClick}
+          type="primary"
+          data-testid="add-custom-field-btn"
+        >
           Add custom field
         </Button>
       </Flex>

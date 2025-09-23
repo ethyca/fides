@@ -118,11 +118,11 @@ const CustomFieldFormV2 = ({
         name="name"
         rules={[{ required: true, message: "Please enter a name" }]}
       >
-        <Input />
+        <Input data-testid="input-name" />
       </Form.Item>
 
       <Form.Item label="Description" name="description">
-        <Input.TextArea rows={2} />
+        <Input.TextArea rows={2} data-testid="input-description" />
       </Form.Item>
 
       <Form.Item
@@ -136,6 +136,7 @@ const CustomFieldFormV2 = ({
             trigger.parentElement || document.body
           }
           disabled={!!initialField}
+          data-testid="select-resource-type"
         />
       </Form.Item>
 
@@ -149,6 +150,7 @@ const CustomFieldFormV2 = ({
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }
+          data-testid="select-field-type"
         />
       </Form.Item>
 
@@ -174,6 +176,7 @@ const CustomFieldFormV2 = ({
                         required={false}
                         key={field.key}
                         label={index === 0 ? "Options" : ""}
+                        data-testid="options-form-item"
                       >
                         <Flex gap="middle">
                           <Form.Item
@@ -203,7 +206,10 @@ const CustomFieldFormV2 = ({
                             ]}
                             noStyle
                           >
-                            <Input placeholder="Enter option value" />
+                            <Input
+                              placeholder="Enter option value"
+                              data-testid={`input-option-${index}`}
+                            />
                           </Form.Item>
                           {fields.length > 1 && (
                             <Button
@@ -220,6 +226,7 @@ const CustomFieldFormV2 = ({
                         type="dashed"
                         onClick={() => add()}
                         icon={<Icons.Add />}
+                        data-testid="add-option-btn"
                       >
                         Add select option
                       </Button>
@@ -238,6 +245,7 @@ const CustomFieldFormV2 = ({
               danger
               onClick={() => setDeleteModalIsOpen(true)}
               loading={deleteIsLoading}
+              data-testid="delete-btn"
             >
               Delete
             </Button>
@@ -254,10 +262,11 @@ const CustomFieldFormV2 = ({
                 </Typography.Paragraph>
               }
               isCentered
+              data-testid="delete-modal"
             />
           </>
         )}
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" data-testid="save-btn">
           Save
         </Button>
       </Flex>
