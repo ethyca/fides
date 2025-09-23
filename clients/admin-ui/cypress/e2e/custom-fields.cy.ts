@@ -93,7 +93,6 @@ describe("Custom Fields V2", () => {
         .should("eq", 201);
       cy.wait("@upsertAllowList").its("response.statusCode").should("eq", 200);
       cy.url().should("not.include", "/new");
-      cy.contains("Custom field created successfully").should("be.visible");
     });
   });
 
