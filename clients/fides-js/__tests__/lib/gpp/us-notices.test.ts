@@ -1,6 +1,28 @@
 /* eslint-disable no-underscore-dangle */
 
-import { CmpApi, Sections } from "@iabgpp/cmpapi";
+import {
+  CmpApi,
+  Sections,
+  TcfCaV1Field,
+  TcfEuV2Field,
+  UsCaField,
+  UsCoField,
+  UsCtField,
+  UsDeField,
+  UsFlField,
+  UsIaField,
+  UsMtField,
+  UsNatField,
+  UsNeField,
+  UsNhField,
+  UsNjField,
+  UsOrField,
+  UspV1Field,
+  UsTnField,
+  UsTxField,
+  UsUtField,
+  UsVaField,
+} from "@iabgpp/cmpapi";
 
 import {
   FidesCookie,
@@ -903,40 +925,69 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
 });
 
 describe("GPC subsection support", () => {
+  beforeEach(() => {
+    // Make stub so that the library initializes without errors
+    makeStub();
+  });
+
   describe("isGpcSubsectionSupported", () => {
-    const SECTIONS_WITH_GPC_SUBSECTION = [
-      "usnat",
-      "usca",
-      "usco",
-      "usct",
-      "usde",
-      "usia",
-      "usmn",
-      "usmt",
-      "usne",
-      "usnh",
-      "usnj",
-      "usor",
-      "ustn",
-      "ustx",
-    ];
     const ALL_SECTIONS: GPPSection[] = Array.from(
       Array.from(Sections.SECTION_ID_NAME_MAP.entries()).map(([id, name]) => ({
         id,
         name,
       })),
     );
+    // TODO (ENG-1486): explain this wizardry
+    const SECTION_NAME_TO_FIELD_DEFINITIONS_MAP: Record<string, any> = {
+      tcfcav1: TcfCaV1Field,
+      tcfeuv2: TcfEuV2Field,
+      usca: UsCaField,
+      usco: UsCoField,
+      usct: UsCtField,
+      usde: UsDeField,
+      usfl: UsFlField,
+      usia: UsIaField,
+      usmn: UsMtField,
+      usmt: UsMtField,
+      usnat: UsNatField,
+      usne: UsNeField,
+      usnh: UsNhField,
+      usnj: UsNjField,
+      usor: UsOrField,
+      uspv1: UspV1Field,
+      ustn: UsTnField,
+      ustx: UsTxField,
+      usut: UsUtField,
+      usva: UsVaField,
+    };
+
+    it("should have an hardcoded section name -> Field mapping for all sections in our unit tests", () => {
+      // TODO (ENG-1486): explain this wizardry
+      ALL_SECTIONS.forEach((section) => {
+        const fieldDefinition =
+          SECTION_NAME_TO_FIELD_DEFINITIONS_MAP[section.name];
+        expect(fieldDefinition).toBeDefined();
+      });
+    });
 
     it("should return true for all sections that support GPC", () => {
       ALL_SECTIONS.forEach((section) => {
-        const expectationValue = SECTIONS_WITH_GPC_SUBSECTION.includes(
-          section.name,
+        // TODO (ENG-1486): explain this wizardry
+        // First, we need to lookup the field definition for the section (e.g. usnat -> UsNatField)
+        const fieldDefinition =
+          SECTION_NAME_TO_FIELD_DEFINITIONS_MAP[section.name];
+
+        // Now, we can check if the field definition defines a "GPC" enum
+        const sectionHasGpcField = Object.prototype.hasOwnProperty.call(
+          fieldDefinition,
+          "GPC",
         );
+        const expectationValue = sectionHasGpcField;
         const actualValue = isGpcSubsectionSupported(section);
 
         // For readability, we want to show the section name in the error message
-        const expectation = `${section}: ${expectationValue}`;
-        const actual = `${section}: ${actualValue}`;
+        const expectation = `${section.name}: ${expectationValue}`;
+        const actual = `${section.name}: ${actualValue}`;
         expect(actual).toBe(expectation);
       });
     });

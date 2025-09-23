@@ -269,6 +269,9 @@ export const setGpcSubsection = ({
 }) => {
   if (isGpcSubsectionSupported(gppSection)) {
     const isGpcEnabled = context?.globalPrivacyControl ?? false;
-    gppApi.setFieldValue(gppSection.name, "Gpc", isGpcEnabled);
+    // NOTE: The "Gpc" field is named the same for all sections: UsNat, UsCa,
+    // and all other supported sections. Therefore, we can safely used
+    // UsNatField.GPC to avoid a magic string value
+    gppApi.setFieldValue(gppSection.name, UsNatField.GPC, isGpcEnabled);
   }
 };
