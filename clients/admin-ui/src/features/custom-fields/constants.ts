@@ -1,9 +1,4 @@
-import { FieldTypes } from "~/features/common/custom-fields";
-import {
-  AllowedTypes,
-  CustomFieldDefinitionWithId,
-  ResourceTypes,
-} from "~/types/api";
+import { ResourceTypes } from "~/types/api";
 
 export const RESOURCE_TYPE_MAP = new Map([
   [ResourceTypes.SYSTEM, "system:information"],
@@ -13,23 +8,43 @@ export const RESOURCE_TYPE_MAP = new Map([
   [ResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
 
+export enum FieldTypes {
+  SINGLE_SELECT = "singleSelect",
+  MULTIPLE_SELECT = "multipleSelect",
+  OPEN_TEXT = "openText",
+}
+
+export const RESOURCE_TYPE_OPTIONS = [
+  {
+    label: `taxonomy:${ResourceTypes.DATA_CATEGORY}`,
+    value: ResourceTypes.DATA_CATEGORY,
+  },
+  {
+    label: `taxonomy:${ResourceTypes.DATA_SUBJECT}`,
+    value: ResourceTypes.DATA_SUBJECT,
+  },
+  {
+    label: `taxonomy:${ResourceTypes.DATA_USE}`,
+    value: ResourceTypes.DATA_USE,
+  },
+  {
+    label: `${ResourceTypes.SYSTEM}:information`,
+    value: ResourceTypes.SYSTEM,
+  },
+  {
+    label: "system:data use",
+    value: ResourceTypes.PRIVACY_DECLARATION,
+  },
+];
+
+export const FIELD_TYPE_OPTIONS = [
+  { label: "Single select", value: FieldTypes.SINGLE_SELECT },
+  { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
+  { label: "Open text", value: FieldTypes.OPEN_TEXT },
+];
+
 export const FIELD_TYPE_LABEL_MAP: Record<FieldTypes, string> = {
   [FieldTypes.SINGLE_SELECT]: "Single-value select",
   [FieldTypes.MULTIPLE_SELECT]: "Multi-value select",
-  [FieldTypes.LOCATION_SELECT]: "Location select",
   [FieldTypes.OPEN_TEXT]: "Open text",
-};
-
-export const getCustomFieldTypeLabel = (value: CustomFieldDefinitionWithId) =>
-  FIELD_TYPE_LABEL_MAP[getCustomFieldType(value)];
-
-export const getCustomFieldType = (value: CustomFieldDefinitionWithId) => {
-  // eslint-disable-next-line no-underscore-dangle
-  if (value.field_type === AllowedTypes.STRING_) {
-    return FieldTypes.MULTIPLE_SELECT;
-  }
-  if (value.allow_list_id) {
-    return FieldTypes.SINGLE_SELECT;
-  }
-  return FieldTypes.OPEN_TEXT;
 };

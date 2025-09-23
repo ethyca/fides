@@ -1,6 +1,8 @@
 import { isEqual } from "lodash";
-import { FieldTypes } from "~/features/common/custom-fields";
+
 import { isErrorResult } from "~/features/common/helpers";
+import { FieldTypes } from "~/features/custom-fields/constants";
+import { CustomFieldsFormValues } from "~/features/custom-fields/v2/CustomFieldFormValues";
 import {
   useAddCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
@@ -12,7 +14,6 @@ import {
   CustomFieldDefinitionWithId,
 } from "~/types/api";
 import { RTKResult } from "~/types/errors";
-import { CustomFieldsFormValues } from "./CustomFieldModalV2";
 
 const generateNewAllowListName = () =>
   Date.now().toString() + Math.random().toString();
@@ -29,10 +30,7 @@ const useCreateOrUpdateCustomField = () => {
     initialField: CustomFieldDefinitionWithId | undefined,
     initialAllowList: AllowList | undefined,
   ) => {
-    if (
-      values.field_type === FieldTypes.OPEN_TEXT ||
-      values.field_type === FieldTypes.LOCATION_SELECT
-    ) {
+    if (values.field_type === FieldTypes.OPEN_TEXT) {
       const payload = {
         ...values,
         field_type: AllowedTypes.STRING,
@@ -45,7 +43,8 @@ const useCreateOrUpdateCustomField = () => {
         result = await updateCustomFieldDefinition(payload);
       }
       return result;
-    } else if (
+    }
+    if (
       values.field_type === FieldTypes.SINGLE_SELECT ||
       values.field_type === FieldTypes.MULTIPLE_SELECT
     ) {
@@ -72,39 +71,39 @@ const useCreateOrUpdateCustomField = () => {
         };
         const result = await addCustomFieldDefinition(fieldPayload);
         return result;
-      } else {
-        // update  the allow list if it's changed
-        let allowListResult: RTKResult | undefined;
-        const { options, ...rest } = values;
-        if (!isEqual(initialAllowList?.allowed_values, options)) {
-          const allowListPayload = {
-            ...initialAllowList,
-            name: initialAllowList?.name ?? generateNewAllowListName(),
-            id: initialAllowList?.id,
-            allowed_values: options ?? [],
-          };
-          allowListResult = await upsertAllowList(allowListPayload);
-          if (isErrorResult(allowListResult)) {
-            return allowListResult;
-          }
-        }
-        // then update the field
-        const fieldPayload = {
-          ...rest,
-          allow_list_id: allowListResult
-            ? // @ts-ignore - we returned early if there was an error so "data" will always be present here
-              allowListResult.data.id
-            : initialField.allow_list_id,
-          field_type:
-            values.field_type === FieldTypes.SINGLE_SELECT
-              ? AllowedTypes.STRING
-              : // eslint-disable-next-line no-underscore-dangle
-                AllowedTypes.STRING_,
-        };
-        const result = await updateCustomFieldDefinition(fieldPayload);
-        return result;
       }
+      // update  the allow list if it's changed
+      let allowListResult: RTKResult | undefined;
+      const { options, ...rest } = values;
+      if (!isEqual(initialAllowList?.allowed_values, options)) {
+        const allowListPayload = {
+          ...initialAllowList,
+          name: initialAllowList?.name ?? generateNewAllowListName(),
+          id: initialAllowList?.id,
+          allowed_values: options ?? [],
+        };
+        allowListResult = await upsertAllowList(allowListPayload);
+        if (isErrorResult(allowListResult)) {
+          return allowListResult;
+        }
+      }
+      // then update the field
+      const fieldPayload = {
+        ...rest,
+        allow_list_id: allowListResult
+          ? // @ts-ignore - we returned early if there was an error so "data" will always be present here
+            allowListResult.data.id
+          : initialField.allow_list_id,
+        field_type:
+          values.field_type === FieldTypes.SINGLE_SELECT
+            ? AllowedTypes.STRING
+            : // eslint-disable-next-line no-underscore-dangle
+              AllowedTypes.STRING_,
+      };
+      const result = await updateCustomFieldDefinition(fieldPayload);
+      return result;
     }
+    return undefined;
   };
 
   return {

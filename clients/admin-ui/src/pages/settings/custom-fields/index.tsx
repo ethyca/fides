@@ -4,7 +4,6 @@ import type { NextPage } from "next";
 import React from "react";
 
 import PageHeader from "~/features/common/PageHeader";
-import { CustomFieldsTable } from "~/features/custom-fields/CustomFieldsTable";
 import { CustomFieldsTableV2 } from "~/features/custom-fields/v2/CustomFieldsTableV2";
 
 const CUSTOM_FIELDS_COPY =
@@ -19,7 +18,6 @@ const CustomFields: NextPage = () => (
         </AntTypography.Paragraph>
       </PageHeader>
       <CustomFieldsTableV2 />
-      {/* <CustomFieldsTable /> */}
     </Box>
   </Layout>
 );
