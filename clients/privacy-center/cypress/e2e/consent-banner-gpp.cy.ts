@@ -705,6 +705,11 @@ describe("Fides-js GPP extension", () => {
           );
       });
 
+      // TODO (ENG-1486): Add integration tests for GPC here
+      it("can support the user's GPC setting", () => {
+        expect(true).to.eql(false);
+      });
+
       it("can handle a returning user", () => {
         const cookie = mockCookie({
           consent: { data_sales_sharing_gpp_us_state: true },
@@ -942,6 +947,11 @@ describe("Fides-js GPP extension", () => {
           ]);
         });
         cy.get("@FidesUIShown").should("not.have.been.called");
+      });
+
+      // TODO (ENG-1486): Add integration tests for GPC here
+      it("can support the user's GPC setting", () => {
+        expect(true).to.eql(false);
       });
     });
     describe("when visiting from a state that does not have an applicable section", () => {
