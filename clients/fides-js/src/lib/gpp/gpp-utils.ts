@@ -13,6 +13,8 @@
 
 import { UsNatField } from "@iabgpp/cmpapi";
 
+// TODO (ENG-1486): remove this import and pass context in explicitly
+import { getConsentContext } from "../consent-context";
 import { FIDES_US_REGION_TO_GPP_SECTION, GPPUSApproach } from "./constants";
 import {
   GPPPrivacyExperience,
@@ -30,6 +32,37 @@ export const US_NATIONAL_REGION = "us";
  */
 export const isUsRegion = (region: string) =>
   region?.toLowerCase().startsWith("us");
+
+/**
+ * Checks if a given section name (e.g. "usnat") supports the GPC sub-section.
+ * This is supported for *most* GPP sections, but not all!
+ *
+ * Returns true if the GPC sub-section is supported for the given section, false otherwise.
+ */
+export const isGpcSubsectionSupported = (section: GPPSection) => {
+  // Ignore any unexpected input types
+  if (typeof section?.name !== "string") {
+    return false;
+  }
+  // TODO: there must be a better way to determine this that just hardcoding this array, right?
+  const SECTIONS_WITH_GPC_SUBSECTION = [
+    "usnat",
+    "usca",
+    "usco",
+    "usct",
+    "usde",
+    "usia",
+    "usmn",
+    "usmt",
+    "usne",
+    "usnh",
+    "usnj",
+    "usor",
+    "ustn",
+    "ustx",
+  ];
+  return SECTIONS_WITH_GPC_SUBSECTION.includes(section.name);
+};
 
 /**
  * For US National, the privacy experience region is still the state where the user came from.
@@ -56,7 +89,7 @@ export interface GPPApiLike {
   setFieldValue(
     sectionName: string,
     field: string,
-    value: number | number[],
+    value: number | number[] | boolean,
   ): void;
 }
 
@@ -171,6 +204,7 @@ export const setOptOuts = ({
   gppSection,
   privacyNotices,
   noticeConsent,
+  // TODO (ENG-1486): provide `consentContext` as a required argument
 }: CmpApiUpdaterProps) => {
   if (!noticeConsent) {
     return;
@@ -197,6 +231,18 @@ export const setOptOuts = ({
           valueAsNum = value.split("").map((v) => +v);
         }
         gppApi.setFieldValue(gppSection.name, gppMechanism.field, valueAsNum);
+
+        // For any GPP sections that also support the GPC sub-section, pass
+        // along the current value of GPC for additional context
+        if (isGpcSubsectionSupported(gppSection)) {
+          // console.warn("SETTING GPC FIELD FOR SECTION", gppSection.name);
+          // TODO: pass this in? get from context? something?
+          // const isGpcEnabled: boolean =
+          //   window?.navigator?.globalPrivacyControl ?? false;
+          const isGpcEnabled =
+            getConsentContext().globalPrivacyControl ?? false;
+          gppApi.setFieldValue(gppSection.name, "Gpc", isGpcEnabled);
+        }
       });
     }
   });

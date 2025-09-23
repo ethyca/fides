@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-import { CmpApi } from "@iabgpp/cmpapi";
+import { CmpApi, Sections } from "@iabgpp/cmpapi";
 
 import {
   FidesCookie,
@@ -10,10 +10,13 @@ import {
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
 import { GPPUSApproach } from "../../../src/lib/gpp/constants";
+import { isGpcSubsectionSupported } from "../../../src/lib/gpp/gpp-utils";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
   GPPFieldMapping,
   GPPMechanismMapping,
+  GPPSection,
+  GPPSettings,
 } from "../../../src/lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
@@ -880,5 +883,217 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       Gpc: false,
     });
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVVVY.QA");
+  });
+
+  describe("encoding the GPC sub-section", () => {
+    let cmpApi: CmpApi;
+    let cookie: FidesCookie;
+    let notices: PrivacyNotice[];
+    let usnatExperience: PrivacyExperience;
+    let uscaExperience: PrivacyExperience;
+    let usutExperience: PrivacyExperience;
+    const US_CA_NOTICE = mockPrivacyNotice({
+      notice_key: "us_ca",
+      framework: PrivacyNoticeFramework.GPP_US_STATE,
+      gpp_field_mapping: [
+        mockGppField({ region: "us_ca", mechanism: [mockGppMechanism()] }),
+      ],
+    });
+
+    beforeEach(() => {
+      // Configure a test setup with both National and State-by-state notices configured
+      cmpApi = new CmpApi(1, 1);
+      cookie = mockFidesCookie({ consent: {} });
+      notices = [
+        DATA_SALES_SHARING_NOTICE,
+        TARGETED_ADVERTISING_NOTICE,
+        SENSITIVE_PERSONAL_SHARING_NOTICE,
+        KNOWN_CHILD_SENSITIVE_NOTICE,
+        PERSONAL_DATA_NOTICE,
+        US_UT_NOTICE,
+        US_CA_NOTICE,
+      ];
+      const gppSettings: GPPSettings = {
+        enabled: true,
+        us_approach: GPPUSApproach.ALL,
+        mspa_covered_transactions: true,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: false,
+        enable_tcfeu_string: true,
+      };
+      usnatExperience = mockPrivacyExperience({
+        region: "us",
+        privacy_notices: notices,
+        gpp_settings: gppSettings,
+      });
+      uscaExperience = mockPrivacyExperience({
+        region: "us_ca",
+        privacy_notices: notices,
+        gpp_settings: gppSettings,
+      });
+      usutExperience = mockPrivacyExperience({
+        region: "us_ut",
+        privacy_notices: notices,
+        gpp_settings: gppSettings,
+      });
+    });
+
+    afterEach(() => {
+      // Reset any modification of the navigator for globalPrivacyControl
+      Object.defineProperty(window.navigator, "globalPrivacyControl", {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    describe("when the browser GPC setting is true", () => {
+      beforeEach(() => {
+        Object.defineProperty(window.navigator, "globalPrivacyControl", {
+          value: true,
+          writable: true,
+          configurable: true,
+        });
+      });
+
+      it("sets Gpc=true in the usnat section", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: usnatExperience,
+        });
+        expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
+        const section = cmpApi.getSection("usnat");
+        expect(section).toHaveProperty("GpcSegmentType", 1);
+        expect(section).toHaveProperty("Gpc", true);
+        expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAABY.YA");
+      });
+
+      it("sets Gpc=true in the usca section", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: uscaExperience,
+        });
+        expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
+        const section = cmpApi.getSection("usca");
+        expect(section).toHaveProperty("GpcSegmentType", 1);
+        expect(section).toHaveProperty("Gpc", true);
+        expect(cmpApi.getGppString()).toEqual("DBABBg~BAAAAABY.YA");
+      });
+
+      it("does not include Gpc in the usut section where GPC is not supported", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: usutExperience,
+        });
+        expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
+        const section = cmpApi.getSection("usut");
+        expect(section).not.toHaveProperty("GpcSegmentType");
+        expect(section).not.toHaveProperty("Gpc");
+        expect(cmpApi.getGppString()).toEqual("DBABFg~BAAAAAWA");
+      });
+    });
+
+    describe("when the browser GPC setting is false", () => {
+      beforeEach(() => {
+        Object.defineProperty(window.navigator, "globalPrivacyControl", {
+          value: false,
+          writable: true,
+          configurable: true,
+        });
+      });
+
+      it("sets Gpc=false in the usnat section", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: usnatExperience,
+        });
+        expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
+        const section = cmpApi.getSection("usnat");
+        expect(section).toHaveProperty("GpcSegmentType", 1);
+        expect(section).toHaveProperty("Gpc", false);
+        expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAABY.QA");
+      });
+
+      it("sets Gpc=false in the usca section", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: uscaExperience,
+        });
+        expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
+        const section = cmpApi.getSection("usca");
+        expect(section).toHaveProperty("GpcSegmentType", 1);
+        expect(section).toHaveProperty("Gpc", false);
+        expect(cmpApi.getGppString()).toEqual("DBABBg~BAAAAABY.QA");
+      });
+
+      it("does not include Gpc in the usut section where GPC is not supported", () => {
+        const sectionsChanged = setGppOptOutsFromCookieAndExperience({
+          cmpApi,
+          cookie,
+          experience: usutExperience,
+        });
+        expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
+        const section = cmpApi.getSection("usut");
+        expect(section).not.toHaveProperty("GpcSegmentType");
+        expect(section).not.toHaveProperty("Gpc");
+        expect(cmpApi.getGppString()).toEqual("DBABFg~BAAAAAWA");
+      });
+    });
+  });
+});
+
+describe("isGpcSubsectionSupported", () => {
+  const SECTIONS_WITH_GPC_SUBSECTION = [
+    "usnat",
+    "usca",
+    "usco",
+    "usct",
+    "usde",
+    "usia",
+    "usmn",
+    "usmt",
+    "usne",
+    "usnh",
+    "usnj",
+    "usor",
+    "ustn",
+    "ustx",
+  ];
+  const ALL_SECTIONS: GPPSection[] = Array.from(
+    Array.from(Sections.SECTION_ID_NAME_MAP.entries()).map(([id, name]) => ({
+      id,
+      name,
+    })),
+  );
+
+  it("should return true for all sections that support GPC", () => {
+    ALL_SECTIONS.forEach((section) => {
+      const expectationValue = SECTIONS_WITH_GPC_SUBSECTION.includes(
+        section.name,
+      );
+      const actualValue = isGpcSubsectionSupported(section);
+
+      // For readability, we want to show the section name in the error message
+      const expectation = `${section}: ${expectationValue}`;
+      const actual = `${section}: ${actualValue}`;
+      expect(actual).toBe(expectation);
+    });
+  });
+
+  it("should return false for any unexpected input types", () => {
+    expect(isGpcSubsectionSupported(null as any)).toBe(false);
+    expect(isGpcSubsectionSupported(undefined as any)).toBe(false);
+    expect(isGpcSubsectionSupported("" as any)).toBe(false);
+    expect(isGpcSubsectionSupported({} as any)).toBe(false);
+    expect(isGpcSubsectionSupported({ id: 99 } as any)).toBe(false);
+    expect(isGpcSubsectionSupported({ name: "usnat" } as any)).toBe(true);
+    expect(isGpcSubsectionSupported({ name: "usca" } as any)).toBe(true);
+    expect(isGpcSubsectionSupported({ name: "usco" } as any)).toBe(true);
+    expect(isGpcSubsectionSupported({ name: "usct" } as any)).toBe(true);
   });
 });
