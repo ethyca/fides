@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
 - Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+- Added `--opt-out` support to `fides init` so analytics can be disabled non-interactively [#4703](https://github.com/ethyca/fides/issues/4703)
 
 ## [2.70.3](https://github.com/ethyca/fides/compare/2.70.2...2.70.3)
 

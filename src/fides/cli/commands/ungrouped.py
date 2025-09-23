@@ -122,7 +122,10 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
 @click.option(
     "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
 )
-def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
+@click.option(
+    "--opt-out", is_flag=True, help="Automatically opt-out of anonymous usage analytics."
+)
+def init(ctx: click.Context, fides_dir: str, opt_in: bool, opt_out: bool) -> None:
     """
     Initializes a Fides instance by creating the default directory and
     configuration file if not present.
@@ -134,8 +137,16 @@ def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
+    if opt_in and opt_out:
+        raise click.BadOptionUsage(
+            "opt-out", "`--opt-in` and `--opt-out` cannot be used together."
+        )
+
     config, config_path = create_and_update_config_file(
-        config, fides_dir, opt_in=opt_in
+        config,
+        fides_dir,
+        opt_in=opt_in if opt_in else None,
+        opt_out=opt_out if opt_out else None,
     )
 
     print_divider()

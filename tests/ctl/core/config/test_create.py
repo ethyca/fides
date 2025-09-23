@@ -4,6 +4,7 @@ import pytest
 import toml
 from py._path.local import LocalPath
 
+from fides.cli.utils import request_analytics_consent
 from fides.config import FidesConfig
 from fides.config.create import (
     build_field_documentation,
@@ -15,14 +16,94 @@ from fides.config.create import (
 
 @pytest.mark.unit
 def test_create_and_update_config_file_opt_in(
-    tmpdir: LocalPath, test_config: FidesConfig
+    tmpdir: LocalPath, test_config: FidesConfig, monkeypatch
 ) -> None:
-    """Test that config creation works when opting-in to analytics."""
+    """Opting in should skip the prompt and update the config file."""
 
-    create_and_update_config_file(
-        config=test_config, fides_directory_location=str(tmpdir), opt_in=True
+    config_copy = test_config.model_copy(deep=True)
+
+    def no_prompt(*args, **kwargs) -> bool:  # pragma: no cover - should not run
+        raise AssertionError("Should not prompt for analytics when opting in")
+
+    monkeypatch.setattr("fides.cli.utils.click.confirm", no_prompt)
+    monkeypatch.setattr("fides.cli.utils.check_server_health", lambda *_, **__: None)
+    monkeypatch.setattr("fides.cli.utils.is_user_registered", lambda *_: True)
+
+    updated_config, config_path = create_and_update_config_file(
+        config=config_copy, fides_directory_location=str(tmpdir), opt_in=True
     )
-    assert True
+
+    assert updated_config.user.analytics_opt_out is False
+    rendered_config = toml.load(config_path)
+    assert rendered_config["user"]["analytics_opt_out"] is False
+
+
+@pytest.mark.unit
+def test_create_and_update_config_file_opt_out(
+    tmpdir: LocalPath, test_config: FidesConfig, monkeypatch
+) -> None:
+    """Opting out should skip the prompt and persist the opt-out."""
+
+    config_copy = test_config.model_copy(deep=True)
+    config_copy.user.analytics_opt_out = False
+
+    def no_prompt(*args, **kwargs) -> bool:  # pragma: no cover - should not run
+        raise AssertionError("Should not prompt for analytics when opting out")
+
+    monkeypatch.setattr("fides.cli.utils.click.confirm", no_prompt)
+
+    updated_config, config_path = create_and_update_config_file(
+        config=config_copy, fides_directory_location=str(tmpdir), opt_out=True
+    )
+
+    assert updated_config.user.analytics_opt_out is True
+    rendered_config = toml.load(config_path)
+    assert rendered_config["user"]["analytics_opt_out"] is True
+
+
+@pytest.mark.unit
+def test_request_analytics_consent_conflicting_flags(
+    test_config: FidesConfig
+) -> None:
+    config_copy = test_config.model_copy(deep=True)
+
+    with pytest.raises(ValueError):
+        request_analytics_consent(config_copy, opt_in=True, opt_out=True)
+
+
+@pytest.mark.unit
+def test_request_analytics_consent_opt_out_skips_prompt(
+    test_config: FidesConfig, monkeypatch
+) -> None:
+    config_copy = test_config.model_copy(deep=True)
+    config_copy.user.analytics_opt_out = False
+
+    def no_prompt(*args, **kwargs) -> bool:  # pragma: no cover - should not run
+        raise AssertionError("Should not prompt when opt-out provided")
+
+    monkeypatch.setattr("fides.cli.utils.click.confirm", no_prompt)
+
+    updated = request_analytics_consent(config_copy, opt_out=True)
+
+    assert updated.user.analytics_opt_out is True
+
+
+@pytest.mark.unit
+def test_request_analytics_consent_env_false_opt_in(
+    test_config: FidesConfig, monkeypatch
+) -> None:
+    config_copy = test_config.model_copy(deep=True)
+    config_copy.user.analytics_opt_out = True
+
+    monkeypatch.setenv("FIDES__USER__ANALYTICS_OPT_OUT", "false")
+    monkeypatch.setattr("fides.cli.utils.click.confirm", lambda *_, **__: True)
+    monkeypatch.setattr("fides.cli.utils.check_server_health", lambda *_, **__: None)
+    monkeypatch.setattr("fides.cli.utils.is_user_registered", lambda *_: True)
+
+    updated = request_analytics_consent(config_copy)
+
+    assert updated.user.analytics_opt_out is False
+    monkeypatch.delenv("FIDES__USER__ANALYTICS_OPT_OUT", raising=False)
 
 
 @pytest.mark.unit
