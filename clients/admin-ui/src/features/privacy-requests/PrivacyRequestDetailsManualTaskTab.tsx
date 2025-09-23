@@ -65,7 +65,12 @@ const PrivacyRequestDetailsManualTaskTab = ({
     (task) => task.status === ManualFieldStatus.NEW,
   ).length;
 
-  const hasManualTaskConnections = manualTaskConnections.length > 0;
+  // Check if there are any manual task connections
+  // or if there are any tasks results. Some users may not have access to the connections,
+  // so we use task results as backup.
+  const hasManualTaskConnections =
+    manualTaskConnections.length > 0 || tasks.length > 0;
+
   const hasAnyManualFeatures =
     hasManualTaskConnections || hasLegacyManualIntegrations;
 
