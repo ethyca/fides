@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.70.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.70.4...main)
 
 ### Added
 - Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
@@ -43,6 +43,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
 - Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+
+## [2.70.4](https://github.com/ethyca/fides/compare/2.70.3...2.70.4)
+
+### Fixed
 - Fixed query to retrieve a `PrivacyNotice`'s cookies [#6636](https://github.com/ethyca/fides/pull/6636)
 
 ## [2.70.3](https://github.com/ethyca/fides/compare/2.70.2...2.70.3)

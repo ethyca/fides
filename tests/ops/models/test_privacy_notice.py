@@ -834,23 +834,10 @@ class TestPrivacyNoticeModel:
         """
         # This should find the _gcl_au cookie since it has matching data uses
         cookies = privacy_notice_targeted_advertising.cookies
-        cookie_names = [cookie.name for cookie in cookies]
-
-        # This assertion should PASS with the fixed implementation
-        # because the ILIKE pattern now matches data uses anywhere in the comma-separated string
-        assert "_gcl_au" in cookie_names, (
-            f"Expected to find '_gcl_au' cookie in privacy notice cookies. "
-            f"Found cookies: {cookie_names}. "
-            f"Privacy notice data uses: {privacy_notice_targeted_advertising.data_uses}"
-        )
 
         # Verify we found exactly one cookie (the _gcl_au cookie)
-        assert (
-            len(cookies) == 1
-        ), f"Expected exactly 1 cookie, but found {len(cookies)}: {cookie_names}"
-        assert (
-            cookies[0].name == "_gcl_au"
-        ), f"Expected '_gcl_au' cookie, but found: {cookies[0].name}"
+        assert len(cookies) == 1
+        assert cookies[0].name == multi_data_use_cookie_asset.name
 
     def test_cookies_property_hierarchical_matching_edge_cases(
         self, privacy_notice_targeted_advertising, db, system
