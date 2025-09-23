@@ -823,6 +823,179 @@ class TestPrivacyNoticeModel:
     def test_cookies_property(self, privacy_notice):
         assert len(privacy_notice.cookies) == 2
 
+    def test_cookies_property_with_multiple_data_uses(
+        self, privacy_notice_targeted_advertising, multi_data_use_cookie_asset
+    ):
+        """Test that assets with multiple data uses are matched correctly.
+
+        This reproduces the issue where an asset has multiple data uses and
+        the matching data use appears in the middle of the comma-separated string,
+        not at the beginning.
+        """
+        # This should find the _gcl_au cookie since it has matching data uses
+        cookies = privacy_notice_targeted_advertising.cookies
+
+        # Verify we found exactly one cookie (the _gcl_au cookie)
+        assert len(cookies) == 1
+        assert cookies[0].name == multi_data_use_cookie_asset.name
+
+    def test_cookies_property_hierarchical_matching_edge_cases(
+        self, privacy_notice_targeted_advertising, db, system
+    ):
+        """Test edge cases for hierarchical data use matching.
+
+        Ensures that substring matches don't create false positives when:
+        1. One data use is a substring of another (e.g., 'fun' vs 'funding')
+        2. The data use appears as a substring in a longer custom data use
+        """
+        # Clean up any existing assets to avoid interference
+        db.query(Asset).filter(Asset.asset_type == "Cookie").delete()
+        db.commit()
+
+        # Create assets that should NOT match our targeted advertising notice
+        # (which looks for 'marketing.advertising.first_party.targeted'
+        # and 'marketing.advertising.third_party.targeted')
+
+        # Case 1: Substring data use names
+        funding_asset = Asset(
+            name="funding_cookie",
+            asset_type="Cookie",
+            domain="example.com",
+            system_id=system.id,
+            data_uses=["funding.advertising.campaigns"],  # Contains 'funding' not 'fun'
+        )
+        funding_asset.save(db)
+
+        # Case 2: Data use as substring in custom data use
+        custom_marketing_asset = Asset(
+            name="custom_marketing_cookie",
+            asset_type="Cookie",
+            domain="example.com",
+            system_id=system.id,
+            data_uses=[
+                "custom_data_use.custom_marketing"
+            ],  # Contains 'marketing' but not as proper hierarchy
+        )
+        custom_marketing_asset.save(db)
+
+        # Case 3: Asset that SHOULD match (proper hierarchical child)
+        proper_hierarchy_asset = Asset(
+            name="proper_hierarchy_cookie",
+            asset_type="Cookie",
+            domain="example.com",
+            system_id=system.id,
+            data_uses=[
+                "marketing.advertising.first_party.targeted.behavioral"
+            ],  # Child of our target data use
+        )
+        proper_hierarchy_asset.save(db)
+
+        try:
+            privacy_notice = privacy_notice_targeted_advertising
+            cookies = privacy_notice.cookies
+            cookie_names = [cookie.name for cookie in cookies]
+
+            # Should only find the proper hierarchical match, not the false positives
+            assert len(cookies) == 1, (
+                f"Expected exactly 1 cookie, but found {len(cookies)}: {cookie_names}. "
+                f"Privacy notice data uses: {privacy_notice.data_uses}"
+            )
+            assert (
+                "proper_hierarchy_cookie" in cookie_names
+            ), f"Expected 'proper_hierarchy_cookie', but found: {cookie_names}"
+
+            # Verify we didn't get false positives
+            assert (
+                "funding_cookie" not in cookie_names
+            ), "Should not match 'funding' data use"
+            assert (
+                "custom_marketing_cookie" not in cookie_names
+            ), "Should not match custom data use containing 'marketing'"
+
+        finally:
+            # Clean up
+            try:
+                funding_asset.delete(db)
+                custom_marketing_asset.delete(db)
+                proper_hierarchy_asset.delete(db)
+            except:
+                pass  # Ignore cleanup errors
+            db.commit()
+
+    def test_cookies_property_fun_vs_funding_edge_case(
+        self, privacy_notice_fun_data_use, db, system
+    ):
+        """Test specific edge case: 'fun' data use should not match 'funding' asset.
+
+        This is a classic substring false positive case where one data use name
+        is contained within another unrelated data use name.
+        """
+        # Clean up any existing assets
+        db.query(Asset).filter(Asset.asset_type == "Cookie").delete()
+        db.commit()
+
+        # Create asset with 'funding' data use (should NOT match 'fun' notice)
+        funding_asset = Asset(
+            name="funding_cookie",
+            asset_type="Cookie",
+            domain="example.com",
+            system_id=system.id,
+            data_uses=[
+                "funding"
+            ],  # Contains 'fun' as substring but is different data use
+        )
+        funding_asset.save(db)
+
+        # Create asset with 'fun' data use (SHOULD match 'fun' notice)
+        fun_asset = Asset(
+            name="fun_cookie",
+            asset_type="Cookie",
+            domain="example.com",
+            system_id=system.id,
+            data_uses=["fun.activities"],  # Proper hierarchical child of 'fun'
+        )
+        fun_asset.save(db)
+
+        try:
+            privacy_notice = privacy_notice_fun_data_use
+            cookies = privacy_notice.cookies
+            cookie_names = [cookie.name for cookie in cookies]
+
+            # Should only find the 'fun' asset, not the 'funding' asset
+            assert len(cookies) == 1, (
+                f"Expected exactly 1 cookie, but found {len(cookies)}: {cookie_names}. "
+                f"Privacy notice data uses: {privacy_notice.data_uses}"
+            )
+            assert (
+                "fun_cookie" in cookie_names
+            ), f"Expected 'fun_cookie', but found: {cookie_names}"
+
+            # Critical: should not match 'funding' even though it contains 'fun' substring
+            assert (
+                "funding_cookie" not in cookie_names
+            ), "Should not match 'funding' asset when looking for 'fun' data use"
+
+        finally:
+            # Clean up
+            try:
+                funding_asset.delete(db)
+                fun_asset.delete(db)
+            except:
+                pass  # Ignore cleanup errors
+            db.commit()
+
+    def test_cookies_property_empty_data_uses(
+        self, privacy_notice_empty_data_uses, multi_data_use_cookie_asset
+    ) -> None:
+        """Test that a privacy notice with no data uses returns an empty list of cookies."""
+        # Privacy notice with empty data uses should return no cookies,
+        # even when cookie assets exist that would normally match
+        cookies = privacy_notice_empty_data_uses.cookies
+        assert len(cookies) == 0, (
+            f"Expected no cookies for privacy notice with empty data uses, "
+            f"but found {len(cookies)}: {[c.name for c in cookies]}. "
+        )
+
 
 class TestHierarchicalNotices:
     @pytest.fixture(scope="function")
