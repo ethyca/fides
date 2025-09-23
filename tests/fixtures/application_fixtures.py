@@ -2276,6 +2276,62 @@ def privacy_notice_fun_data_use(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def privacy_notice_empty_data_uses(db: Session) -> Generator:
+    """
+    Privacy notice fixture with no data uses for testing edge cases.
+
+    Creates a privacy notice with empty data uses list to test that it returns
+    no cookies regardless of what cookie assets exist.
+    """
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
+            "name": "Empty Notice",
+            "notice_key": "empty_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": [],  # Empty data uses
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Empty Notice",
+                    "description": "This notice has no data uses.",
+                }
+            ],
+        },
+    )
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "Empty Notice",
+            "notice_key": "empty_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": [],  # Empty data uses
+            "enforcement_level": EnforcementLevel.system_wide,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Empty Notice",
+                    "description": "This notice has no data uses.",
+                }
+            ],
+        },
+    )
+
+    yield privacy_notice
+
+    # Clean up
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+    template.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_2(db: Session) -> Generator:
     template = PrivacyNoticeTemplate.create(
         db,

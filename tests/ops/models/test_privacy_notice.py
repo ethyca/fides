@@ -984,6 +984,18 @@ class TestPrivacyNoticeModel:
                 pass  # Ignore cleanup errors
             db.commit()
 
+    def test_cookies_property_empty_data_uses(
+        self, privacy_notice_empty_data_uses, multi_data_use_cookie_asset
+    ) -> None:
+        """Test that a privacy notice with no data uses returns an empty list of cookies."""
+        # Privacy notice with empty data uses should return no cookies,
+        # even when cookie assets exist that would normally match
+        cookies = privacy_notice_empty_data_uses.cookies
+        assert len(cookies) == 0, (
+            f"Expected no cookies for privacy notice with empty data uses, "
+            f"but found {len(cookies)}: {[c.name for c in cookies]}. "
+        )
+
 
 class TestHierarchicalNotices:
     @pytest.fixture(scope="function")
