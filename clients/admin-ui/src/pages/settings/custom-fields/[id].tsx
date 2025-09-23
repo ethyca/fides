@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Layout from "~/features/common/Layout";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import CustomFieldFormV2 from "~/features/custom-fields/v2/CustomFieldFormV2";
+import CustomFieldFormV2 from "~/features/custom-fields/CustomFieldForm";
 import { useGetCustomFieldDefinitionByIdQuery } from "~/features/plus/plus.slice";
 
 const SkeletonCustomFieldForm = () => {

@@ -2,7 +2,7 @@ import { EnableCell } from "~/features/common/table/v2/cells";
 import { useUpdateCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId } from "~/types/api";
 
-const EnableCustomFieldCellV2 = ({
+const EnableCustomFieldCell = ({
   field,
   isDisabled,
 }: {
@@ -31,4 +31,4 @@ const EnableCustomFieldCellV2 = ({
   );
 };
 
-export default EnableCustomFieldCellV2;
+export default EnableCustomFieldCell;

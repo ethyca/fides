@@ -20,9 +20,9 @@ import {
   FieldTypes,
   RESOURCE_TYPE_OPTIONS,
 } from "~/features/custom-fields/constants";
-import { CustomFieldsFormValues } from "~/features/custom-fields/v2/CustomFieldFormValues";
-import useCreateOrUpdateCustomField from "~/features/custom-fields/v2/useCreateOrUpdateCustomField";
-import { getCustomFieldType } from "~/features/custom-fields/v2/utils";
+import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
+import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
+import { getCustomFieldType } from "~/features/custom-fields/utils";
 import {
   useDeleteCustomFieldDefinitionMutation,
   useGetAllowListQuery,
@@ -34,7 +34,7 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-const CustomFieldFormV2 = ({
+const CustomFieldForm = ({
   initialField,
 }: {
   initialField?: CustomFieldDefinitionWithId;
@@ -274,4 +274,4 @@ const CustomFieldFormV2 = ({
   );
 };
 
-export default CustomFieldFormV2;
+export default CustomFieldForm;

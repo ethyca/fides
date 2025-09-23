@@ -2,18 +2,16 @@ import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
   AntFlex as Flex,
-  AntTable as Table,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
-import EnableCustomFieldCellV2 from "~/features/custom-fields/v2/EnableCustomFieldCellV2";
-import { getCustomFieldTypeLabel } from "~/features/custom-fields/v2/utils";
+import EnableCustomFieldCellV2 from "~/features/custom-fields/EnableCustomFieldCell";
+import { getCustomFieldTypeLabel } from "~/features/custom-fields/utils";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
 import {
   CustomFieldDefinitionWithId,
@@ -109,27 +107,4 @@ const useCustomFieldsTable = () => {
   };
 };
 
-export const CustomFieldsTableV2 = () => {
-  const { tableProps, columns, searchQuery, updateSearch, onAddClick } =
-    useCustomFieldsTable();
-
-  return (
-    <Flex vertical gap="middle">
-      <Flex justify="space-between">
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search custom fields..."
-        />
-        <Button
-          onClick={onAddClick}
-          type="primary"
-          data-testid="add-custom-field-btn"
-        >
-          Add custom field
-        </Button>
-      </Flex>
-      <Table {...tableProps} columns={columns} />
-    </Flex>
-  );
-};
+export default useCustomFieldsTable;

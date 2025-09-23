@@ -2,7 +2,7 @@ import { isEqual } from "lodash";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { FieldTypes } from "~/features/custom-fields/constants";
-import { CustomFieldsFormValues } from "~/features/custom-fields/v2/CustomFieldFormValues";
+import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import {
   useAddCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
