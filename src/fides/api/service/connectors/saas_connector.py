@@ -44,12 +44,14 @@ from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_factory import (
-    get_strategy as get_async_strategy,
+from fides.api.service.async_dsr.handlers.async_request_handlers import (
+    AsyncAccessHandler,
+    AsyncErasureHandler,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling import (
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
     PollingAsyncDSRStrategy,
 )
+from fides.api.service.async_dsr.utils import is_async_request
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -227,17 +229,32 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """Retrieve data from SaaS APIs"""
+        """
+        Retrieve data from SaaS APIs.
+
+        Handles sync requests directly and delegates async requests to external handlers.
+        """
+
         # pylint: disable=too-many-branches
         self.set_privacy_request_state(privacy_request, node, request_task)
-        if request_task.callback_succeeded:
-            # If this is True, we assume we've received results from a third party
-            # asynchronously and we can proceed to the next node.
-            logger.info(
-                "Access callback succeeded for request task '{}'", request_task.id
-            )
-            return request_task.get_access_data()
+
         query_config: SaaSQueryConfig = self.query_config(node)
+
+        # Delegate async requests to external handlers
+        if is_async_request(request_task, query_config):
+            from fides.api.api.deps import get_autoclose_db_session as get_db
+            from fides.api.service.async_dsr.async_dsr_service import AsyncDSRService
+
+            logger.warning(f"input_data: {input_data}")
+
+            with get_db() as session:
+                async_service = AsyncDSRService(session)
+                return async_service.handle_async_access_request(
+                    connection_config=self.configuration,
+                    query_config=query_config,
+                    request_task_id=request_task.id,
+                    input_data=input_data,
+                )
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
         # An endpoint can be defined with multiple 'read' requests if the data for a single
@@ -275,7 +292,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
-        awaiting_async_processing: bool = False
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
             # check all the values specified by param_values are provided in input_data
@@ -320,38 +336,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                             )
                         )
 
-            # If the read request has an async configuration, we have to handle special configuration
-            # Such as flagging the request as awaiting processing and handling the polling process
-            if (
-                read_request.async_config
-                and request_task.id  # Only supported in DSR 3.0
-            ):
-                # Asynchronous read request detected. We will exit below and put the
-                # Request Task in a "polling" status.
-                awaiting_async_processing = True
-                if read_request.async_config is None:
-                    raise FidesopsException("Async request strategy is not set")
-
-                # Validate async strategy with proper enum value checking
-                strategy = get_async_strategy(
-                    read_request.async_config.strategy,
-                    read_request.async_config.configuration,
-                )
-
-                request_task.async_type = AsyncTaskType(strategy.type)
-
-                if request_task.async_type == AsyncTaskType.polling:
-
-                    self._handle_polling_initial_request(
-                        privacy_request,
-                        request_task,
-                        query_config,
-                        strategy,  # type: ignore
-                        read_request,
-                        input_data,
-                        policy,
-                    )
-
             # This allows us to build an output object even if we didn't generate and execute
             # any HTTP requests. This is useful if we just want to select specific input_data
             # values to provide as row data to the mask_data function
@@ -366,17 +350,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
         self.unset_connector_state()
-        if awaiting_async_processing:
-            # If a read request was marked to expect async results, original response data here is ignored.
-            # We'll instead use the data received in the callback URL later.
-
-            # Use the existing session that the privacy_request is attached to
-
-            # Raising an AwaitingAsyncProcessing to put this task in a polling state
-            connection_name = self.configuration.name or self.saas_config.name
-            message = f"Polling {connection_name} for access results. Results may take some time to be available."
-            raise AwaitingAsyncProcessing(message)
-
         return rows
 
     def _handle_polling_initial_request(
@@ -388,6 +361,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         read_request: ReadSaaSRequest,
         input_data: Dict[str, Any],
         policy: Policy,
+        session: Session,
     ) -> None:
         """
         Handles the setup for asynchronous initial requests.
@@ -426,31 +400,58 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
             param_value_map["correlation_id"] = str(correlation_id)
-            self._save_subrequest_data(request_task, param_value_map)
+            # Use the provided session for sub-request creation
+            logger.warning(f"About to create sub-request for task {request_task.id}")
+            self._save_subrequest_data(session, request_task, param_value_map)
+            logger.warning(f"Created sub-request for task {request_task.id}")
+
+            # Verify it was created
+            from fides.api.models.privacy_request.request_task import (
+                RequestTaskSubRequest,
+            )
+
+            final_count = (
+                session.query(RequestTaskSubRequest)
+                .filter(RequestTaskSubRequest.request_task_id == request_task.id)
+                .count()
+            )
+            logger.warning(
+                f"Sub-request count after creation for task {request_task.id}: {final_count}"
+            )
 
     def _save_subrequest_data(
         self,
+        db: Session,
         request_task: RequestTask,
         param_values_map: Dict[str, Any],
     ) -> None:
         """
         Saves the request data for future use in the request task on async requests.
         """
-        with get_db() as db:
-            # Create new sub-request entry
-            RequestTaskSubRequest.create(
-                db,
-                data={
-                    "request_task_id": request_task.id,
-                    "param_values": param_values_map,
-                    "sub_request_status": "pending",
-                },
-            )
-            logger.info(
-                "Created new request data for task '{}': {}",
-                request_task.id,
-                param_values_map,
-            )
+        from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
+
+        # Create new sub-request entry
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": request_task.id,
+                "param_values": param_values_map,
+                "sub_request_status": "pending",
+            },
+        )
+        logger.warning(
+            f"Created sub-request {sub_request.id} for task '{request_task.id}': {param_values_map}"
+        )
+
+        # Verify it was created by querying immediately
+        count_after_create = (
+            db.query(RequestTaskSubRequest)
+            .filter(RequestTaskSubRequest.request_task_id == request_task.id)
+            .count()
+        )
+        logger.warning(
+            f"Sub-request count after creation for task {request_task.id}: {count_after_create}"
+        )
 
     def _apply_output_template(
         self,
@@ -630,19 +631,28 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         rows: List[Row],
         input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
-        """Execute a masking request. Return the number of rows that have been updated."""
-        self.set_privacy_request_state(privacy_request, node, request_task)
-        if request_task.callback_succeeded:
-            # If this is True, we assume the data was masked
-            # asynchronously and we can proceed to the next node.
-            logger.info(
-                "Masking callback succeeded for request task '{}'", request_task.id
-            )
-            # If we've received the callback for this node, return rows_masked directly
-            return request_task.rows_masked or 0
+        """
+        Execute masking requests.
 
+        Handles synchronous requests directly and delegates async requests to external handlers.
+        """
         self.set_privacy_request_state(privacy_request, node, request_task)
+
         query_config = self.query_config(node)
+
+        # Delegate async requests to external handlers
+        if is_async_request(request_task, query_config):
+            from fides.api.api.deps import get_autoclose_db_session as get_db
+            from fides.api.service.async_dsr.async_dsr_service import AsyncDSRService
+
+            with get_db() as session:
+                async_service = AsyncDSRService(session)
+                return async_service.handle_async_erasure_request(
+                    query_config=query_config,
+                    request_task_id=request_task.id,
+                    rows=rows,
+                    node=node,
+                )
 
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
@@ -742,33 +752,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
         self.unset_connector_state()
-
-        awaiting_async_callback: bool = bool(
-            masking_request.async_config
-            and masking_request.async_config.strategy == AsyncTaskType.callback.value
-        ) and bool(
-            request_task.id
-        )  # Only supported in DSR 3.0
-
-        awaiting_async_polling: bool = bool(
-            masking_request.async_config
-            and masking_request.async_config.strategy == AsyncTaskType.polling.value
-        ) and bool(
-            request_task.id
-        )  # Only supported in DSR 3.0
-
-        if awaiting_async_callback:
-            # Asynchronous callback masking request detected in saas config.
-            # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
-            raise AwaitingAsyncTask()
-        elif awaiting_async_polling:
-            # Asynchronous polling masking request detected in saas config.
-            # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncProcessing to put this task in a polling state.
-            connection_name = self.configuration.name or self.saas_config.name
-            message = f"Polling {connection_name} for erasure results. Results may take some time to be available."
-            raise AwaitingAsyncProcessing(message)
         return rows_updated
 
     @staticmethod

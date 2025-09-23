@@ -6,11 +6,11 @@ from pydantic import ValidationError
 from fides.api.common_exceptions import NoSuchStrategyException
 from fides.api.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
-from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
-from fides.api.service.async_dsr.async_dsr_strategy_callback import (
+from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_callback import (
     CallbackAsyncDSRStrategy,
 )
-from fides.api.service.async_dsr.async_dsr_strategy_polling import (
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
     PollingAsyncDSRStrategy,
 )
 

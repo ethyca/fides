@@ -428,9 +428,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
             if self.request_task.id:
-                # Merge the request task to ensure we keep the changes made
-                # to self.request_task that haven't yet been committed to the database
+                # Merge the request_task into the current session to make it persistent,
+                # then refresh its `async_type` to load the latest state from the
+                # database. This is crucial for async tasks where `async_type` might be
+                # updated by another process, and avoids overwriting local data like
+                # `access_data`.
                 request_task = db.merge(self.request_task)
+                db.refresh(request_task, attribute_names=["async_type"])
                 request_task.update_status(db, status)
                 self.request_task = request_task
 

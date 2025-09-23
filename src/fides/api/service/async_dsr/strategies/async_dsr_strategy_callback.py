@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.saas.async_polling_configuration import PollingResult
-from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
 
