@@ -599,6 +599,17 @@ class StagedResource(Base):
             "vendor_id",
             text("(meta->>'consent_aggregated')"),
         ),
+        # GIN indices for array operations (&&, @>, <@)
+        Index(
+            "idx_stagedresource_classifications_gin",
+            "classifications",
+            postgresql_using="gin",
+        ),
+        Index(
+            "idx_stagedresource_user_categories_gin",
+            "user_assigned_data_categories",
+            postgresql_using="gin",
+        ),
     )
 
     @classmethod

@@ -1025,6 +1025,35 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: digest_config
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: digest_type
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: enabled
+      data_categories: [system.operations]
+    - name: messaging_service_type
+      data_categories: [system.operations]
+    - name: cron_expression
+      data_categories: [system.operations]
+    - name: timezone
+      data_categories: [system.operations]
+    - name: last_sent_at
+      data_categories: [system.operations]
+    - name: next_scheduled_at
+      data_categories: [system.operations]
+    - name: config_metadata
+      data_categories: [system.operations]
   - name: executionlog
     data_categories: []
     fields:
@@ -2983,6 +3012,28 @@ dataset:
       - name: raw_experiences_data
         data_categories: [system.operations]
       - name: processed_experiences_data
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: classification_benchmark
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: monitor_config_key
+        data_categories: [system.operations]
+      - name: dataset_fides_key
+        data_categories: [system.operations]
+      - name: resource_urns
+        data_categories: [system.operations]
+      - name: overall_metrics
+        data_categories: [system.operations]
+      - name: field_accuracy_details
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: messages
         data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
