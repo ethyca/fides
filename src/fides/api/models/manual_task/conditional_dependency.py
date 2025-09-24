@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -30,19 +30,16 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
     # Foreign key relationships
     manual_task_id = Column(
-        String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
+        String,
+        ForeignKey("manual_task.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     parent_id = Column(
         String,
         ForeignKey("manual_task_conditional_dependency.id", ondelete="CASCADE"),
         nullable=True,
-    )
-
-    __table_args__ = (
-        Index("ix_manual_task_conditional_dependency_manual_task_id", "manual_task_id"),
-        Index("ix_manual_task_conditional_dependency_parent_id", "parent_id"),
-        Index("ix_manual_task_conditional_dependency_condition_type", "condition_type"),
-        Index("ix_manual_task_conditional_dependency_sort_order", "sort_order"),
+        index=True,
     )
 
     # Relationships

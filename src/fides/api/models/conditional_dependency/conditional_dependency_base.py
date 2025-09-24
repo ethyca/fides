@@ -27,7 +27,9 @@ class ConditionalDependencyBase(Base):
     __abstract__ = True
 
     # Tree structure - parent_id defined in concrete classes for proper foreign keys
-    condition_type = Column(EnumColumn(ConditionalDependencyType), nullable=False)
+    condition_type = Column(
+        EnumColumn(ConditionalDependencyType), nullable=False, index=True
+    )
 
     # Condition details (for leaf nodes)
     field_address = Column(String(255), nullable=True)  # For leaf conditions
@@ -36,7 +38,7 @@ class ConditionalDependencyBase(Base):
     logical_operator = Column(String, nullable=True)  # 'and' or 'or' for groups
 
     # Ordering
-    sort_order = Column(Integer, nullable=False, default=0)
+    sort_order = Column(Integer, nullable=False, default=0, index=True)
 
     def to_condition_leaf(self) -> ConditionLeaf:
         """Convert to ConditionLeaf if this is a leaf condition"""

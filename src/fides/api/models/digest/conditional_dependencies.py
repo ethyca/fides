@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -47,16 +47,22 @@ class DigestCondition(ConditionalDependencyBase):
 
     # Foreign key relationships
     digest_config_id = Column(
-        String(255), ForeignKey("digest_config.id", ondelete="CASCADE"), nullable=False
+        String(255),
+        ForeignKey("digest_config.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     parent_id = Column(
         String(255),
         ForeignKey("digest_condition.id", ondelete="CASCADE"),
         nullable=True,
+        index=True,
     )
 
     # Digest-specific: condition category
-    digest_condition_type = Column(EnumColumn(DigestConditionType), nullable=False)
+    digest_condition_type = Column(
+        EnumColumn(DigestConditionType), nullable=False, index=True
+    )
 
     # Relationships
     digest_config = relationship("DigestConfig", back_populates="conditions")
@@ -71,14 +77,6 @@ class DigestCondition(ConditionalDependencyBase):
         back_populates="parent",
         cascade="all, delete-orphan",
         foreign_keys=[parent_id],
-    )
-
-    __table_args__ = (
-        Index("ix_digest_condition_digest_config_id", "digest_config_id"),
-        Index("ix_digest_condition_parent_id", "parent_id"),
-        Index("ix_digest_condition_digest_condition_type", "digest_condition_type"),
-        Index("ix_digest_condition_condition_type", "condition_type"),
-        Index("ix_digest_condition_sort_order", "sort_order"),
     )
 
     def _validate_condition_type_consistency(
