@@ -621,12 +621,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             # Add attachment to the polling results
             attachments_item = None
             for item in rows:
-                if isinstance(item, dict) and "attachments" in item:
+                if isinstance(item, dict) and "retrieved_attachments" in item:
                     attachments_item = item
                     break
 
             if attachments_item is None:
-                attachments_item = {"attachments": []}
+                attachments_item = {"retrieved_attachments": []}
                 rows.append(attachments_item)
 
-            attachments_item["attachments"].append(attachment_info)
+            attachments_item["retrieved_attachments"].append(attachment_info)

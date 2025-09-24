@@ -6,6 +6,7 @@ from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
+from fides.api.service.storage.util import is_attachment_field
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row
 
@@ -34,14 +35,10 @@ def should_skip_data_category_filtering(
 
     # Verify it looks like actual attachment data
     for result in results:
-        if isinstance(result, dict) and "attachments" in result:
-            attachments = result["attachments"]
-            if isinstance(attachments, list) and attachments:
-                first_attachment = attachments[0]
-                if isinstance(first_attachment, dict) and all(
-                    key in first_attachment for key in ["file_name", "download_url"]
-                ):
-                    return True
+        if isinstance(result, dict) and any(
+            is_attachment_field(value) for value in result.values()
+        ):
+            return True
 
     return False
 
