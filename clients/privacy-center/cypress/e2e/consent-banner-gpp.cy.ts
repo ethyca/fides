@@ -552,6 +552,7 @@ describe("Fides-js GPP extension", () => {
           });
         });
       });
+
       it("loads the gpp extension if it is enabled", () => {
         cy.window().then((win) => {
           win.__gpp("ping", cy.stub().as("gppPing"));
@@ -705,36 +706,6 @@ describe("Fides-js GPP extension", () => {
           );
       });
 
-      it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
-        cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.navigator.globalPrivacyControl = true;
-        });
-        visitDemoWithGPP({});
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("@FidesUIShown").should("not.have.been.called");
-
-          cy.window().then((win) => {
-            win.__gpp("addEventListener", cy.stub().as("gppListener"));
-          });
-          cy.get("@gppListener")
-            .should("have.been.calledOnce")
-            .its("args")
-            .then((args) => {
-              expect(args.length).to.eql(1);
-              const [data, success] = args[0];
-              expect(success).to.eql(true);
-              // Opt out string with GPC flag set
-              expect(data.pingData.applicableSections).to.eql([8]);
-              expect(data.pingData.parsedSections.usca.SaleOptOut).to.eql(1); // opt-out == 1
-              expect(data.pingData.parsedSections.usca.SharingOptOut).to.eql(1); // opt-out == 1
-              expect(data.pingData.parsedSections.usca.Gpc).to.eql(true);
-              expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
-              expect(data.pingData.signalStatus).to.eql("ready");
-            });
-        });
-      });
-
       it("can handle a returning user", () => {
         const cookie = mockCookie({
           consent: { data_sales_sharing_gpp_us_state: true },
@@ -885,6 +856,49 @@ describe("Fides-js GPP extension", () => {
         });
       });
     });
+
+    describe("when visiting from a state with an applicable section and GPC enabled", () => {
+      it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        visitDemoWithGPP({});
+        cy.waitUntilFidesInitialized().then(() => {
+          // GPP banner should be shown
+          cy.get("@FidesUIShown").should("have.been.calledOnce");
+          cy.get("div#fides-banner").within(() => {
+            cy.get("span").contains("Global Privacy Control Applied");
+          });
+
+          // FidesUpdated event should have been called which indicates GPC opt-out was applied
+          cy.get("@FidesUpdated").should("have.been.called");
+
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+          cy.get("@gppListener")
+            .should("have.been.called")
+            .its("args")
+            .then((args) => {
+              // Assert on the exact number of GPP listener calls
+              expect(args.length).to.eql(1); // Should be called 4 times: initial + GPC opt-out events
+
+              // Get the last (final) event which should have the GPC opt-out applied
+              const lastEvent = args[args.length - 1];
+              const [data, success] = lastEvent;
+              expect(success).to.eql(true);
+              // Opt out string with GPC flag set
+              expect(data.pingData.applicableSections).to.eql([8]);
+              expect(data.pingData.parsedSections.usca.SaleOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.SharingOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.Gpc).to.eql(true);
+              expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
+              expect(data.pingData.cmpDisplayStatus).to.eql("visible");
+            });
+        });
+      });
+    });
   });
 
   describe("with GPP enabled for a Headless experience", () => {
@@ -894,7 +908,7 @@ describe("Fides-js GPP extension", () => {
       visitDemoWithGPP({
         overrideExperience: (experience: any) => {
           /* eslint-disable no-param-reassign */
-          experience.experience_config.component === ComponentType.HEADLESS;
+          experience.experience_config.component = ComponentType.HEADLESS;
           experience.region = props.region;
           return experience;
         },
@@ -905,7 +919,7 @@ describe("Fides-js GPP extension", () => {
       beforeEach(() => {
         visitDemoWithGPPHeadless();
         cy.waitUntilFidesInitialized().then(() => {
-          cy.get("@FidesUIShown").should("have.been.calledOnce");
+          cy.get("@FidesUIShown").should("not.have.been.called");
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
           });
@@ -974,37 +988,8 @@ describe("Fides-js GPP extension", () => {
         });
         cy.get("@FidesUIShown").should("not.have.been.called");
       });
-
-      it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
-        cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.navigator.globalPrivacyControl = true;
-        });
-        visitDemoWithGPPHeadless();
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("@FidesUIShown").should("not.have.been.called");
-
-          cy.window().then((win) => {
-            win.__gpp("addEventListener", cy.stub().as("gppListener"));
-          });
-          cy.get("@gppListener")
-            .should("have.been.calledOnce")
-            .its("args")
-            .then((args) => {
-              expect(args.length).to.eql(1);
-              const [data, success] = args[0];
-              expect(success).to.eql(true);
-              // Opt out string with GPC flag set
-              expect(data.pingData.applicableSections).to.eql([8]);
-              expect(data.pingData.parsedSections.usca.SaleOptOut).to.eql(1); // opt-out == 1
-              expect(data.pingData.parsedSections.usca.SharingOptOut).to.eql(1); // opt-out == 1
-              expect(data.pingData.parsedSections.usca.Gpc).to.eql(true);
-              expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
-              expect(data.pingData.signalStatus).to.eql("ready");
-            });
-        });
-      });
     });
+
     describe("when visiting from a state that does not have an applicable section", () => {
       beforeEach(() => {
         visitDemoWithGPPHeadless({ region: "us_nc" });
@@ -1051,6 +1036,46 @@ describe("Fides-js GPP extension", () => {
               expect(data.pingData.gppString).to.eql("DBAA");
               // because TCF is disabled, status can always be "ready"
               expect(data.pingData.signalStatus).to.eql("ready");
+            });
+        });
+      });
+    });
+
+    describe("when visiting from a state with an applicable section and GPC enabled", () => {
+      it("can automatically apply an opt-out when the user's GPC setting is enabled", () => {
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        visitDemoWithGPPHeadless();
+        cy.waitUntilFidesInitialized().then(() => {
+          // No GPP banner should be shown
+          cy.get("@FidesUIShown").should("not.have.been.called");
+
+          // FidesUpdated event should have been called which indicates GPC opt-out was applied
+          cy.get("@FidesUpdated").should("have.been.called");
+
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+          cy.get("@gppListener")
+            .should("have.been.called")
+            .its("args")
+            .then((args) => {
+              // Assert on the exact number of GPP listener calls
+              expect(args.length).to.eql(1); // Should be called 4 times: initial + GPC opt-out events
+
+              // Get the last (final) event which should have the GPC opt-out applied
+              const lastEvent = args[args.length - 1];
+              const [data, success] = lastEvent;
+              expect(success).to.eql(true);
+              // Opt out string with GPC flag set
+              expect(data.pingData.applicableSections).to.eql([8]);
+              expect(data.pingData.parsedSections.usca.SaleOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.SharingOptOut).to.eql(1); // opt-out == 1
+              expect(data.pingData.parsedSections.usca.Gpc).to.eql(true);
+              expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
+              expect(data.pingData.cmpDisplayStatus).to.eql("hidden");
             });
         });
       });
