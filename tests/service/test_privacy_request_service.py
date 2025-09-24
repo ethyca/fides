@@ -715,8 +715,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Global single-row config used when no property configs available."""
-        from fides.api.common_exceptions import PrivacyRequestError
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
 
         # Ensure no default property present with config
         # Create global config requiring location
