@@ -49,6 +49,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Encode GPC subsection in GPP string whenever supported by the section (e.g. usnat, usca) [#6633](https://github.com/ethyca/fides/pull/6633)
+- Enforce required location validation on privacy-request POST when configured via Privacy Center/property config [#6646](https://github.com/ethyca/fides/pull/6646)
 
 ## [2.70.4](https://github.com/ethyca/fides/compare/2.70.3...2.70.4)
 
