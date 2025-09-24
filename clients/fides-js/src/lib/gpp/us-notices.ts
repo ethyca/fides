@@ -4,10 +4,12 @@
 
 import { CmpApi } from "@iabgpp/cmpapi";
 
+import type { ConsentContext } from "../consent-context";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
 import {
   CmpApiUpdaterProps,
   getGppSectionAndRegion,
+  setGpcSubsection,
   setMspaSections,
   setNoticesProvided,
   setOptOuts,
@@ -17,11 +19,12 @@ import { GPPSection } from "./types";
 interface UpdateGppProps {
   cmpApi: CmpApi;
   experience: PrivacyExperience;
+  context: ConsentContext;
   cookie?: FidesCookie;
 }
 const updateGpp = (
   updater: (props: CmpApiUpdaterProps) => void,
-  { cmpApi, experience, cookie }: UpdateGppProps,
+  { cmpApi, experience, context, cookie }: UpdateGppProps,
 ) => {
   const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
 
@@ -42,11 +45,19 @@ const updateGpp = (
     noticeConsent: cookie?.consent,
   });
 
+  // Set the MSPA fields with the current settings
   const { gpp_settings: gppSettings } = experience;
   setMspaSections({
     gppApi: cmpApi,
     sectionName: gppSection.name,
     gppSettings,
+  });
+
+  // Set the GPC subsection (if supported) with the current GPC context
+  setGpcSubsection({
+    gppApi: cmpApi,
+    gppSection,
+    context,
   });
 
   return Array.from(sectionsChanged);
@@ -60,10 +71,12 @@ const updateGpp = (
 export const setGppNoticesProvidedFromExperience = ({
   cmpApi,
   experience,
+  context,
 }: {
   cmpApi: CmpApi;
   experience: PrivacyExperience;
-}) => updateGpp(setNoticesProvided, { cmpApi, experience });
+  context: ConsentContext;
+}) => updateGpp(setNoticesProvided, { cmpApi, experience, context });
 
 /**
  * Sets the appropriate fields on a GPP CMP API model for user opt-outs
@@ -74,8 +87,10 @@ export const setGppOptOutsFromCookieAndExperience = ({
   cmpApi,
   cookie,
   experience,
+  context,
 }: {
   cmpApi: CmpApi;
   cookie: FidesCookie;
   experience: PrivacyExperience;
-}) => updateGpp(setOptOuts, { cmpApi, cookie, experience });
+  context: ConsentContext;
+}) => updateGpp(setOptOuts, { cmpApi, cookie, experience, context });

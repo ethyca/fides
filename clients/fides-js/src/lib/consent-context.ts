@@ -12,13 +12,17 @@ declare global {
  * This allows fides.js to function as if GPC is enabled while testing or demoing without
  * having to modify the browser before the script runs.
  *
- * GPC is not considered for standard TCF purposes/vendors when TCF is enabled, but it can
- * still be applied to custom privacy notices in TCF experiences.
+ * WARNING: In the special case where TCF is enabled without GPP or any custom notices, we
+ * ignore the GPC setting on the window and always return false. This is purely for legacy
+ * reasons and could be a surprising footgun, so we plan to remove this in a future version.
  */
 const getGlobalPrivacyControl = (): boolean | undefined => {
+  // DEFER: This special case "false" is a footgun and likely is no longer needed for the
+  // current version of the TCF code, so it should be removed once we can confirm this...
   if (
-    window.Fides.options.tcfEnabled &&
-    !window.Fides.experience?.privacy_notices?.length
+    window.Fides?.options.tcfEnabled &&
+    !window.Fides?.options.gppEnabled &&
+    !window.Fides?.experience?.privacy_notices?.length
   ) {
     return false;
   }
