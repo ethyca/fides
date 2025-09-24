@@ -12,6 +12,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
+from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -23,7 +24,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
