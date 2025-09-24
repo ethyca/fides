@@ -20,7 +20,9 @@ def upgrade():
     # Add the dismissed column to monitortask table
     op.add_column(
         "monitortask",
-        sa.Column("dismissed", sa.Boolean(), nullable=False, server_default=sa.text("false")),
+        sa.Column(
+            "dismissed", sa.Boolean(), nullable=False, server_default=sa.text("false")
+        ),
     )
 
 
