@@ -1,5 +1,7 @@
 """Shared fixtures for digest model tests."""
 
+from typing import Any
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -12,11 +14,72 @@ from fides.api.models.digest.conditional_dependencies import (
     DigestConditionType,
 )
 from fides.api.task.conditional_dependencies.schemas import (
-    ConditionGroup,
     ConditionLeaf,
     GroupOperator,
     Operator,
 )
+
+# ============================================================================
+# Base Digest Condition Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def receiver_condition(digest_config: DigestConfig) -> dict[str, Any]:
+    """Basis for a receiver condition."""
+    return {
+        "digest_config_id": digest_config.id,
+        "digest_condition_type": DigestConditionType.RECEIVER,
+    }
+
+
+@pytest.fixture
+def content_condition(digest_config: DigestConfig) -> dict[str, Any]:
+    """Basis for a content condition."""
+    return {
+        "digest_config_id": digest_config.id,
+        "digest_condition_type": DigestConditionType.CONTENT,
+    }
+
+
+@pytest.fixture
+def priority_condition(digest_config: DigestConfig) -> dict[str, Any]:
+    """Basis for a priority condition."""
+    return {
+        "digest_config_id": digest_config.id,
+        "digest_condition_type": DigestConditionType.PRIORITY,
+    }
+
+
+@pytest.fixture
+def group_condition_or() -> dict[str, Any]:
+    """Basis for a group condition with OR logical operator."""
+    return {
+        "condition_type": ConditionalDependencyType.group,
+        "logical_operator": GroupOperator.or_,
+    }
+
+
+@pytest.fixture
+def group_condition_and() -> dict[str, Any]:
+    """Basis for a group condition with AND logical operator."""
+    return {
+        "condition_type": ConditionalDependencyType.group,
+        "logical_operator": GroupOperator.and_,
+    }
+
+
+@pytest.fixture
+def receiver_group(
+    db: Session, group_condition_and: dict[str, Any], receiver_condition: dict[str, Any]
+):
+    """Create a receiver group condition."""
+    group = DigestCondition.create(
+        db=db, data={**group_condition_and, **receiver_condition}
+    )
+    yield group
+    group.delete(db)
+
 
 # ============================================================================
 # Base Digest Config Fixtures
@@ -39,29 +102,13 @@ def digest_config(db: Session) -> DigestConfig:
     config.delete(db)
 
 
-@pytest.fixture
-def disabled_digest_config(db: Session) -> DigestConfig:
-    """Create a disabled digest configuration."""
-    config = DigestConfig.create(
-        db=db,
-        data={
-            "digest_type": DigestType.MANUAL_TASKS,
-            "name": "Disabled Test Digest",
-            "description": "Disabled digest configuration for testing",
-            "enabled": False,
-        },
-    )
-    yield config
-    config.delete(db)
-
-
 # ============================================================================
-# Condition Schema Fixtures
+# Condition Leaf Fixtures
 # ============================================================================
 
 
 @pytest.fixture
-def sample_condition_leaf() -> ConditionLeaf:
+def sample_eq_condition_leaf() -> ConditionLeaf:
     """Create a sample leaf condition."""
     return ConditionLeaf(
         field_address="user.department", operator=Operator.eq, value="legal"
@@ -69,20 +116,10 @@ def sample_condition_leaf() -> ConditionLeaf:
 
 
 @pytest.fixture
-def sample_condition_group() -> ConditionGroup:
-    """Create a sample group condition."""
-    return ConditionGroup(
-        logical_operator=GroupOperator.and_,
-        conditions=[
-            ConditionLeaf(
-                field_address="user.department", operator=Operator.eq, value="legal"
-            ),
-            ConditionLeaf(
-                field_address="user.role",
-                operator=Operator.list_contains,
-                value=["admin", "manager"],
-            ),
-        ],
+def sample_exists_condition_leaf() -> ConditionLeaf:
+    """Create a sample exists condition leaf."""
+    return ConditionLeaf(
+        field_address="user.name", operator=Operator.exists, value=None
     )
 
 
@@ -106,7 +143,7 @@ def content_condition_leaf() -> ConditionLeaf:
 def priority_condition_leaf() -> ConditionLeaf:
     """Create a priority-specific condition leaf."""
     return ConditionLeaf(
-        field_address="task.priority", operator=Operator.gte, value="high"
+        field_address="task.priority", operator=Operator.eq, value="high"
     )
 
 
@@ -116,7 +153,15 @@ def priority_condition_leaf() -> ConditionLeaf:
 
 
 @pytest.fixture
-def sample_conditions(db: Session, digest_config: DigestConfig):
+def sample_conditions(
+    db: Session,
+    receiver_condition: dict[str, Any],
+    content_condition: dict[str, Any],
+    priority_condition: dict[str, Any],
+    receiver_condition_leaf: ConditionLeaf,
+    content_condition_leaf: ConditionLeaf,
+    priority_condition_leaf: ConditionLeaf,
+):
     """Create sample conditions for all types."""
     conditions = []
 
@@ -124,12 +169,9 @@ def sample_conditions(db: Session, digest_config: DigestConfig):
     receiver_condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.RECEIVER,
+            **receiver_condition,
+            **receiver_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "user.department",
-            "operator": Operator.eq,
-            "value": "legal",
             "sort_order": 1,
         },
     )
@@ -139,12 +181,9 @@ def sample_conditions(db: Session, digest_config: DigestConfig):
     content_condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
+            **content_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.status",
-            "operator": Operator.list_contains,
-            "value": ["pending", "in_progress"],
             "sort_order": 1,
         },
     )
@@ -154,85 +193,93 @@ def sample_conditions(db: Session, digest_config: DigestConfig):
     priority_condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.PRIORITY,
+            **priority_condition,
+            **priority_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.priority",
-            "operator": Operator.gte,
-            "value": "high",
             "sort_order": 1,
         },
     )
     conditions.append(priority_condition)
 
     yield conditions
+    for condition in conditions:
+        condition.delete(db)
 
 
 @pytest.fixture
-def receiver_condition_db(db: Session, digest_config: DigestConfig) -> DigestCondition:
+def receiver_digest_condition_leaf(
+    db: Session,
+    receiver_condition: dict[str, Any],
+    receiver_condition_leaf: ConditionLeaf,
+) -> DigestCondition:
     """Create a receiver condition in the database."""
     condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.RECEIVER,
+            **receiver_condition,
             "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "user.role",
-            "operator": Operator.eq,
-            "value": "admin",
+            **receiver_condition_leaf.model_dump(),
             "sort_order": 1,
         },
     )
     yield condition
+    condition.delete(db)
 
 
 @pytest.fixture
-def content_condition_db(db: Session, digest_config: DigestConfig) -> DigestCondition:
+def content_digest_condition_leaf(
+    db: Session,
+    content_condition: dict[str, Any],
+    content_condition_leaf: ConditionLeaf,
+) -> DigestCondition:
     """Create a content condition in the database."""
     condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
+            **content_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.type",
-            "operator": Operator.list_contains,
-            "value": ["review", "approval"],
             "sort_order": 1,
         },
     )
     yield condition
+    condition.delete(db)
 
 
 @pytest.fixture
-def priority_condition_db(db: Session, digest_config: DigestConfig) -> DigestCondition:
+def priority_digest_condition_leaf(
+    db: Session,
+    priority_condition: dict[str, Any],
+    priority_condition_leaf: ConditionLeaf,
+) -> DigestCondition:
     """Create a priority condition in the database."""
     condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.PRIORITY,
+            **priority_condition,
+            **priority_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.urgency",
-            "operator": Operator.gte,
-            "value": 8,
             "sort_order": 1,
         },
     )
     yield condition
+    condition.delete(db)
 
 
 @pytest.fixture
-def complex_condition_tree(db: Session, digest_config: DigestConfig):
+def complex_condition_tree(
+    db: Session,
+    content_condition: dict[str, Any],
+    group_condition_or: dict[str, Any],
+    group_condition_and: dict[str, Any],
+):
     """Create a complex condition tree for testing."""
     # Create root group: (A AND B) OR (C AND D)
     root_group = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
-            "condition_type": ConditionalDependencyType.group,
-            "logical_operator": GroupOperator.or_,
+            **content_condition,
+            **group_condition_or,
             "sort_order": 1,
         },
     )
@@ -241,11 +288,9 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
     nested_group1 = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
+            **group_condition_and,
             "parent_id": root_group.id,
-            "condition_type": ConditionalDependencyType.group,
-            "logical_operator": GroupOperator.and_,
             "sort_order": 1,
         },
     )
@@ -254,11 +299,9 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
     nested_group2 = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
+            **group_condition_and,
             "parent_id": root_group.id,
-            "condition_type": ConditionalDependencyType.group,
-            "logical_operator": GroupOperator.and_,
             "sort_order": 2,
         },
     )
@@ -267,8 +310,7 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
     leaf_a = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
             "parent_id": nested_group1.id,
             "condition_type": ConditionalDependencyType.leaf,
             "field_address": "task.assignee",
@@ -281,8 +323,7 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
     leaf_b = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
             "parent_id": nested_group1.id,
             "condition_type": ConditionalDependencyType.leaf,
             "field_address": "task.due_date",
@@ -296,8 +337,7 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
     leaf_c = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
             "parent_id": nested_group2.id,
             "condition_type": ConditionalDependencyType.leaf,
             "field_address": "task.category",
@@ -310,8 +350,7 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
     leaf_d = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
+            **content_condition,
             "parent_id": nested_group2.id,
             "condition_type": ConditionalDependencyType.leaf,
             "field_address": "task.created_at",
@@ -326,3 +365,4 @@ def complex_condition_tree(db: Session, digest_config: DigestConfig):
         "nested_groups": [nested_group1, nested_group2],
         "leaves": [leaf_a, leaf_b, leaf_c, leaf_d],
     }
+    root_group.delete(db)

@@ -176,7 +176,8 @@ class TestDigestConfigQueries:
         for config in configs:
             config.delete(db)
 
-    def test_get_by_digest_type(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_by_digest_type(self, db: Session):
         """Test filtering digest configs by type."""
         manual_task_configs = (
             db.query(DigestConfig)
@@ -190,7 +191,8 @@ class TestDigestConfigQueries:
             for config in manual_task_configs
         )
 
-    def test_get_enabled_configs(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_enabled_configs(self, db: Session):
         """Test filtering digest configs by enabled status."""
         enabled_configs = (
             db.query(DigestConfig).filter(DigestConfig.enabled == True).all()
@@ -199,7 +201,8 @@ class TestDigestConfigQueries:
         assert len(enabled_configs) == 2
         assert all(config.enabled is True for config in enabled_configs)
 
-    def test_get_by_messaging_service_type(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_by_messaging_service_type(self, db: Session):
         """Test filtering digest configs by messaging service type."""
         email_configs = (
             db.query(DigestConfig)
@@ -209,7 +212,8 @@ class TestDigestConfigQueries:
 
         assert len(email_configs) == 3  # All configs use email by default
 
-    def test_get_configs_with_cron_expression(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_configs_with_cron_expression(self, db: Session):
         """Test filtering digest configs that have cron expressions."""
         scheduled_configs = (
             db.query(DigestConfig)
@@ -357,6 +361,7 @@ class TestDigestConfigConditionMethods:
         assert isinstance(result, dict)
         assert len(result) == 3  # All three condition types
         assert all(value is None for value in result.values())
+
 
 class TestDigestConfigValidation:
     """Tests for digest configuration validation and constraints."""

@@ -1,5 +1,7 @@
 """Tests for DigestCondition validation logic."""
 
+from typing import Any
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -11,26 +13,14 @@ from fides.api.models.digest.conditional_dependencies import (
     DigestCondition,
     DigestConditionType,
 )
-from fides.api.task.conditional_dependencies.schemas import GroupOperator, Operator
+from fides.api.task.conditional_dependencies.schemas import (
+    ConditionLeaf,
+    Operator,
+)
 
 
 class TestDigestConditionValidation:
     """Test DigestCondition validation for mixed condition types."""
-
-    @pytest.fixture
-    def receiver_group(self, db: Session, digest_config: DigestConfig):
-        """Create a receiver group condition."""
-        group = DigestCondition.create(
-            db=db,
-            data={
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": DigestConditionType.RECEIVER,
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": GroupOperator.and_,
-            },
-        )
-        yield group
-        group.delete(db)
 
     def test_create_root_condition_no_validation(self, sample_conditions):
         """Test that root conditions don't require validation."""
@@ -51,12 +41,12 @@ class TestDigestConditionValidation:
         self,
         db: Session,
         receiver_group: DigestCondition,
-        receiver_condition_db: DigestCondition,
+        receiver_digest_condition_leaf: DigestCondition,
     ):
         """Test that child conditions with same type as parent succeed."""
         parent = receiver_group
 
-        child = receiver_condition_db
+        child = receiver_digest_condition_leaf
         child.update(db=db, data={"parent_id": parent.id})
         assert child.digest_condition_type == DigestConditionType.RECEIVER
         assert child.parent_id == parent.id
@@ -64,12 +54,12 @@ class TestDigestConditionValidation:
     def test_create_child_condition_different_type_fails(
         self,
         db: Session,
-        digest_config: DigestConfig,
         receiver_group: DigestCondition,
+        content_condition: dict[str, Any],
+        content_condition_leaf: ConditionLeaf,
     ):
         """Test that child conditions with different type from parent fail."""
-        # Use receiver_condition_db as parent, make it a group
-
+        # Use receiver_group as parent
         parent = receiver_group
 
         # Try to create child with different type - should fail
@@ -79,19 +69,19 @@ class TestDigestConditionValidation:
             DigestCondition.create(
                 db=db,
                 data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.CONTENT,
+                    **content_condition,
+                    **content_condition_leaf.model_dump(),
                     "parent_id": parent.id,
                     "condition_type": ConditionalDependencyType.leaf,
-                    "field_address": "task.status",
-                    "operator": Operator.eq,
-                    "value": "pending",
                     "sort_order": 1,
                 },
             )
 
     def test_create_child_condition_nonexistent_parent_fails(
-        self, db: Session, digest_config: DigestConfig
+        self,
+        db: Session,
+        receiver_condition: dict[str, Any],
+        receiver_condition_leaf: ConditionLeaf,
     ):
         """Test that creating child with nonexistent parent fails."""
         with pytest.raises(
@@ -100,13 +90,10 @@ class TestDigestConditionValidation:
             DigestCondition.create(
                 db=db,
                 data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.RECEIVER,
+                    **receiver_condition,
+                    **receiver_condition_leaf.model_dump(),
                     "parent_id": "nonexistent",
                     "condition_type": ConditionalDependencyType.leaf,
-                    "field_address": "user.email",
-                    "operator": Operator.exists,
-                    "value": None,
                     "sort_order": 1,
                 },
             )
@@ -149,10 +136,7 @@ class TestDigestConditionValidation:
             ValueError, match="Cannot create condition with type 'priority'"
         ):
             leaf.update(
-                db=db,
-                data={
-                    "digest_condition_type": DigestConditionType.PRIORITY,
-                },
+                db=db, data={"digest_condition_type": DigestConditionType.PRIORITY}
             )
 
     def test_update_condition_same_type_succeeds(
@@ -166,23 +150,18 @@ class TestDigestConditionValidation:
         # Update other fields - should succeed
         updated_leaf = leaf.update(
             db=db,
-            data={
-                "field_address": "task.updated_field",
-                "value": "updated_value",
-            },
+            data={"field_address": "task.updated_field", "value": "updated_value"},
         )
         assert updated_leaf.field_address == "task.updated_field"
         assert updated_leaf.value == "updated_value"
         assert updated_leaf.digest_condition_type == original_type  # Type unchanged
 
     def test_update_root_condition_type_succeeds(
-        self,
-        db: Session,
-        receiver_condition_db: DigestCondition,
+        self, db: Session, receiver_digest_condition_leaf: DigestCondition
     ):
         """Test that updating root condition type succeeds (no parent to validate against)."""
-        # Use receiver_condition_db as root condition (it has no parent)
-        root = receiver_condition_db
+        # Use receiver_digest_condition_leaf as root condition (it has no parent)
+        root = receiver_digest_condition_leaf
         assert root.parent_id is None  # Verify it's a root condition
 
         # Update root condition type - should succeed (no parent to validate against)
@@ -200,11 +179,11 @@ class TestDigestConditionValidation:
     def test_validation_error_messages_are_descriptive(
         self,
         db: Session,
-        digest_config: DigestConfig,
         receiver_group: DigestCondition,
+        content_condition: dict[str, Any],
+        receiver_condition_leaf: ConditionLeaf,
     ):
         """Test that validation error messages are clear and helpful."""
-        # Use priority_condition_db as parent, make it a group
         parent = receiver_group
 
         # Try to create child with different type
@@ -212,13 +191,10 @@ class TestDigestConditionValidation:
             DigestCondition.create(
                 db=db,
                 data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.CONTENT,
+                    **content_condition,
+                    **receiver_condition_leaf.model_dump(),
                     "parent_id": parent.id,
                     "condition_type": ConditionalDependencyType.leaf,
-                    "field_address": "user.email",
-                    "operator": Operator.exists,
-                    "value": None,
                     "sort_order": 1,
                 },
             )
@@ -228,65 +204,65 @@ class TestDigestConditionValidation:
         assert "under parent with type 'receiver'" in error_message
         assert "must have the same digest_condition_type" in error_message
 
+    @pytest.mark.parametrize(
+        "condition_type",
+        [
+            DigestConditionType.RECEIVER,
+            DigestConditionType.CONTENT,
+            DigestConditionType.PRIORITY,
+        ],
+    )
     def test_all_condition_types_can_be_validated(
-        self, db: Session, digest_config: DigestConfig, sample_conditions
+        self,
+        db: Session,
+        digest_config: DigestConfig,
+        condition_type: DigestConditionType,
+        group_condition_and: dict[str, Any],
     ):
         """Test validation works for all digest condition types."""
-        receiver_condition, content_condition, priority_condition = sample_conditions
 
-        # Test each existing condition can have children of the same type
-        conditions_to_test = [
-            (receiver_condition, DigestConditionType.RECEIVER),
-            (content_condition, DigestConditionType.CONTENT),
-            (priority_condition, DigestConditionType.PRIORITY),
-        ]
+        parent_condition = DigestCondition.create(
+            db=db,
+            data={
+                **group_condition_and,
+                "digest_condition_type": condition_type,
+                "digest_config_id": digest_config.id,
+            },
+        )
 
-        for parent_condition, condition_type in conditions_to_test:
-            # Convert to group so it can have children
-            parent_condition.update(
-                db=db,
-                data={
-                    "condition_type": ConditionalDependencyType.group,
-                    "logical_operator": GroupOperator.and_,
-                    "field_address": None,
-                    "operator": None,
-                    "value": None,
-                },
-            )
+        # Child with same type should succeed
+        child = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": condition_type,
+                "parent_id": parent_condition.id,
+                "condition_type": ConditionalDependencyType.leaf,
+                "field_address": "test.field",
+                "operator": Operator.eq,
+                "value": "test_value",
+                "sort_order": 1,
+            },
+        )
+        assert child.digest_condition_type == condition_type
 
-            # Child with same type should succeed
-            child = DigestCondition.create(
-                db=db,
-                data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": condition_type,
-                    "parent_id": parent_condition.id,
-                    "condition_type": ConditionalDependencyType.leaf,
-                    "field_address": "test.field",
-                    "operator": Operator.eq,
-                    "value": "test_value",
-                    "sort_order": 1,
-                },
-            )
-            assert child.digest_condition_type == condition_type
+        # Child with different type should fail
+        different_types = [t for t in DigestConditionType if t != condition_type]
+        if different_types:  # Only test if there are other types
+            with pytest.raises(ValueError):
+                DigestCondition.create(
+                    db=db,
+                    data={
+                        "digest_config_id": digest_config.id,
+                        "digest_condition_type": different_types[0],
+                        "parent_id": parent_condition.id,
+                        "condition_type": ConditionalDependencyType.leaf,
+                        "field_address": "test.field2",
+                        "operator": Operator.eq,
+                        "value": "test_value2",
+                        "sort_order": 2,
+                    },
+                )
 
-            # Child with different type should fail
-            different_types = [t for t in DigestConditionType if t != condition_type]
-            if different_types:  # Only test if there are other types
-                with pytest.raises(ValueError):
-                    DigestCondition.create(
-                        db=db,
-                        data={
-                            "digest_config_id": digest_config.id,
-                            "digest_condition_type": different_types[0],
-                            "parent_id": parent_condition.id,
-                            "condition_type": ConditionalDependencyType.leaf,
-                            "field_address": "test.field2",
-                            "operator": Operator.eq,
-                            "value": "test_value2",
-                            "sort_order": 2,
-                        },
-                    )
-
-            # Clean up child for next iteration
-            child.delete(db)
+        # Clean up child for next iteration
+        child.delete(db)
