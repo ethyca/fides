@@ -1,0 +1,11 @@
+{
+  "id": "cf_test_field_123",
+  "name": "Test Custom Field",
+  "description": "A test custom field for cypress testing",
+  "resource_type": "system",
+  "field_type": "singleSelect",
+  "allow_list_id": "al_test_123",
+  "active": true,
+  "created_at": "2025-09-23T10:00:00Z",
+  "updated_at": "2025-09-23T10:00:00Z"
+}
