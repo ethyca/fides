@@ -14,7 +14,11 @@
 import { UsNatField } from "@iabgpp/cmpapi";
 
 import type { ConsentContext } from "../consent-context";
-import { FIDES_US_REGION_TO_GPP_SECTION, GPPUSApproach } from "./constants";
+import {
+  FIDES_US_REGION_TO_GPP_SECTION,
+  GPPUSApproach,
+  SECTIONS_WITH_GPC_SUBSECTION,
+} from "./constants";
 import {
   GPPPrivacyExperience,
   GPPSection,
@@ -37,29 +41,16 @@ export const isUsRegion = (region: string) =>
  * This is supported for *most* GPP sections, but not all!
  *
  * Returns true if the GPC sub-section is supported for the given section, false otherwise.
+ *
+ * WARNING: This function relies on the constant SECTIONS_WITH_GPC_SUBSECTION.
+ * See constants.ts for more details on how this constant is automatically
+ * tested to ensure it stays up-to-date with the @iabgpp/cmpapi library.
  */
 export const isGpcSubsectionSupported = (section: GPPSection) => {
   // Ignore any unexpected input types
   if (typeof section?.name !== "string") {
     return false;
   }
-  // TODO (ENG-1486): there must be a better way to determine this that just hardcoding this array, right?
-  const SECTIONS_WITH_GPC_SUBSECTION = [
-    "usnat",
-    "usca",
-    "usco",
-    "usct",
-    "usde",
-    "usia",
-    "usmn",
-    "usmt",
-    "usne",
-    "usnh",
-    "usnj",
-    "usor",
-    "ustn",
-    "ustx",
-  ];
   return SECTIONS_WITH_GPC_SUBSECTION.includes(section.name);
 };
 
@@ -273,5 +264,14 @@ export const setGpcSubsection = ({
     // and all other supported sections. Therefore, we can safely used
     // UsNatField.GPC to avoid a magic string value
     gppApi.setFieldValue(gppSection.name, UsNatField.GPC, isGpcEnabled);
+
+    // NOTE: The "GpcSegmentIncluded" field is currently automatically enabled
+    // in the @iabgpp/cmpapi library, but setting it explicitly here adds a
+    // layer of safety to protect against any future changes
+    gppApi.setFieldValue(
+      gppSection.name,
+      UsNatField.GPC_SEGMENT_INCLUDED,
+      true,
+    );
   }
 };

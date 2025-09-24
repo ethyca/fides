@@ -2,26 +2,9 @@
 
 import {
   CmpApi,
+  InvalidFieldError,
   Sections,
-  TcfCaV1Field,
-  TcfEuV2Field,
-  UsCaField,
-  UsCoField,
-  UsCtField,
-  UsDeField,
-  UsFlField,
-  UsIaField,
-  UsMtField,
   UsNatField,
-  UsNeField,
-  UsNhField,
-  UsNjField,
-  UsOrField,
-  UspV1Field,
-  UsTnField,
-  UsTxField,
-  UsUtField,
-  UsVaField,
 } from "@iabgpp/cmpapi";
 
 import {
@@ -31,7 +14,10 @@ import {
   PrivacyNoticeFramework,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
-import { GPPUSApproach } from "../../../src/lib/gpp/constants";
+import {
+  FIDES_US_REGION_TO_GPP_SECTION,
+  GPPUSApproach,
+} from "../../../src/lib/gpp/constants";
 import { isGpcSubsectionSupported } from "../../../src/lib/gpp/gpp-utils";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
@@ -931,63 +917,55 @@ describe("GPC subsection support", () => {
   });
 
   describe("isGpcSubsectionSupported", () => {
+    // Automatically build a list of *all* sections defined in the
+    // @iabgpp/cmpapi library. This ensures our test suite is automatically
+    // staying current whenever the @iabgpp/cmpapi library is updated
     const ALL_SECTIONS: GPPSection[] = Array.from(
       Array.from(Sections.SECTION_ID_NAME_MAP.entries()).map(([id, name]) => ({
         id,
         name,
       })),
     );
-    // TODO (ENG-1486): explain this wizardry
-    const SECTION_NAME_TO_FIELD_DEFINITIONS_MAP: Record<string, any> = {
-      tcfcav1: TcfCaV1Field,
-      tcfeuv2: TcfEuV2Field,
-      usca: UsCaField,
-      usco: UsCoField,
-      usct: UsCtField,
-      usde: UsDeField,
-      usfl: UsFlField,
-      usia: UsIaField,
-      usmn: UsMtField,
-      usmt: UsMtField,
-      usnat: UsNatField,
-      usne: UsNeField,
-      usnh: UsNhField,
-      usnj: UsNjField,
-      usor: UsOrField,
-      uspv1: UspV1Field,
-      ustn: UsTnField,
-      ustx: UsTxField,
-      usut: UsUtField,
-      usva: UsVaField,
-    };
-
-    it("should have an hardcoded section name -> Field mapping for all sections in our unit tests", () => {
-      // TODO (ENG-1486): explain this wizardry
-      ALL_SECTIONS.forEach((section) => {
-        const fieldDefinition =
-          SECTION_NAME_TO_FIELD_DEFINITIONS_MAP[section.name];
-        expect(fieldDefinition).toBeDefined();
-      });
-    });
 
     it("should return true for all sections that support GPC", () => {
+      /**
+      We want to test *all* sections in the @iabgpp/cmpapi library to see which
+      ones do/don't support the GPC subsection. Unfortunately, there's no simple
+      utility function in the library to do this.  Therefore, instead, we use
+      the CmpApi to *attempt* to set the GPC subsection and see if it succeeds
+      or not. This is too expensive and janky to do in the real world code, but
+      in our test suite it's a perfect way to automatically test that our
+      library functions are staying up-to-date.
+      */
+      const cmpApi = new CmpApi(1, 1);
       ALL_SECTIONS.forEach((section) => {
-        // TODO (ENG-1486): explain this wizardry
-        // First, we need to lookup the field definition for the section (e.g. usnat -> UsNatField)
-        const fieldDefinition =
-          SECTION_NAME_TO_FIELD_DEFINITIONS_MAP[section.name];
-
-        // Now, we can check if the field definition defines a "GPC" enum
-        const sectionHasGpcField = Object.prototype.hasOwnProperty.call(
-          fieldDefinition,
-          "GPC",
-        );
+        let sectionHasGpcField = false;
+        try {
+          // Attempt to set the GPC subsection; this uses the UsNatField.GPC
+          // constant for convenience (all sections use the same value: "Gpc")
+          cmpApi.setFieldValue(section.name, UsNatField.GPC, true);
+          cmpApi.setFieldValue(
+            section.name,
+            UsNatField.GPC_SEGMENT_INCLUDED,
+            true,
+          );
+          sectionHasGpcField = true;
+        } catch (e) {
+          // We expect InvalidFieldError to be thrown if the section does not support the GPC subsection
+          if (e instanceof InvalidFieldError) {
+            sectionHasGpcField = false;
+          } else {
+            throw new Error(
+              `Unexpected error when testing GPC support for section ${section.name}: ${e}`,
+            );
+          }
+        }
         const expectationValue = sectionHasGpcField;
         const actualValue = isGpcSubsectionSupported(section);
 
-        // For readability, we want to show the section name in the error message
-        const expectation = `${section.name}: ${expectationValue}`;
-        const actual = `${section.name}: ${actualValue}`;
+        // For readability, show the section name in the error message
+        const expectation = `isGpcSubsectionSupported(${section.name}): ${expectationValue}`;
+        const actual = `isGpcSubsectionSupported(${section.name}): ${actualValue}`;
         expect(actual).toBe(expectation);
       });
     });
@@ -1235,6 +1213,52 @@ describe("GPC subsection support", () => {
           });
         });
       });
+    });
+  });
+});
+
+describe("GPP section support", () => {
+  describe("FIDES_US_REGION_TO_GPP_SECTION", () => {
+    it("should be populated with all Sections supported by @iabgpp/cmpapi library", () => {
+      /**
+       * We want to ensure that our FIDES_US_REGION_TO_GPP_SECTION constant is
+       * populated with all Sections supported by the @iabgpp/cmpapi library.
+       * This unit test keeps us honest by comparing the latest Sections defined
+       * in in the library against our constant and flagging any missing
+       * sections (or extra sections) in our code!
+       */
+
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      // Get all US sections from the @iabgpp/cmpapi library
+      const allSections = Array.from(Sections.SECTION_ID_NAME_MAP.entries());
+
+      // Filter to only US sections (those starting with "us"), excluding deprecated sections
+      const usSections = allSections.filter(
+        ([_id, name]) => name.startsWith("us") && name !== "uspv1", // Exclude deprecated uspv1
+      );
+
+      // Extract the section names from our constant
+      const ourSupportedSections = Object.values(
+        FIDES_US_REGION_TO_GPP_SECTION,
+      ).map((section) => section.name);
+
+      // Check that we support all US sections defined in the library
+      // NOTE: If you see this test fail, you need to add the new section to
+      // the FIDES_US_REGION_TO_GPP_SECTION constant in our code!
+      const missingNames = usSections
+        .filter(([_id, name]) => !ourSupportedSections.includes(name))
+        .map(([_id, name]) => name);
+      expect(missingNames).toEqual([]);
+
+      // Check that we don't have any extra sections that aren't in the library
+      // NOTE: If you see this test fail, you need to review the extra section
+      // in the FIDES_US_REGION_TO_GPP_SECTION constant - it's probably an error?
+      const extraNames = ourSupportedSections.filter(
+        (sectionName) =>
+          !usSections.some(([_id, name]) => name === sectionName),
+      );
+      expect(extraNames).toEqual([]);
+      /* eslint-enable @typescript-eslint/no-unused-vars */
     });
   });
 });
