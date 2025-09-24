@@ -13,10 +13,7 @@ from fides.api.models.digest.conditional_dependencies import (
     DigestCondition,
     DigestConditionType,
 )
-from fides.api.task.conditional_dependencies.schemas import (
-    ConditionLeaf,
-    Operator,
-)
+from fides.api.task.conditional_dependencies.schemas import ConditionLeaf, Operator
 
 
 class TestDigestConditionValidation:
