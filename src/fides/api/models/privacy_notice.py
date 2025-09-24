@@ -208,11 +208,25 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @property
     def cookies(self) -> List[Asset]:
-        """Return relevant assets of type 'cookie' (via the data use)"""
+        """
+        Return relevant assets of type 'cookie' (via the data use)
+        
+        This property implements an instance-level cache (`_cookies`). The first
+        time it's accessed, it runs a query and caches the result. Subsequent
+        accesses return the cached value, avoiding redundant database calls.
+
+        The cache can be pre-populated by the `load_cookie_data_for_notices`
+        classmethod to efficiently load data for many notices at once.
+        """
+        # Check if the instance-level cache exists
+        if hasattr(self, "_cookies"):
+            return self._cookies
+
+        # If not cached, perform the query
         db = Session.object_session(self)
         cookie_filter = self._get_cookie_filter_for_data_uses(self.data_uses)
 
-        return (
+        found_cookies = (
             db.query(Asset)
             .filter(
                 Asset.asset_type == "Cookie",
@@ -220,6 +234,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 )
             .all()
         )
+
+        # Cache the result on the instance for subsequent calls
+        setattr(self, "_cookies", found_cookies)
+        return found_cookies
 
     @classmethod
     def load_cookie_data_for_notices(cls, db: Session, notices: List["PrivacyNotice"]):
