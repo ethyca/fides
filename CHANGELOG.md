@@ -19,11 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.70.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.71.0...main)
+
+## [2.71.0](https://github.com/ethyca/fides/compare/2.70.4...2.71.0)
 
 ### Added
 - Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
-- Added SRV and SSL support for MongoDB [#6590](https://github.com/ethyca/fides/pull/6590)
 - Add indexes for classifications and user_assigned_data_categories columns from stagedresource table [#6612](https://github.com/ethyca/fides/pull/6612) https://github.com/ethyca/fides/labels/db-migration
 - Added a ConditionalDependency base class that Manual tasks now inherits from. This sets up a base for digest conditional dependencies. [#6613](https://github.com/ethyca/fides/pull/6613)
 - Added condition to sql orm translator functionality. [#6578](https://github.com/ethyca/fides/pull/6578)
@@ -45,9 +46,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved readability and maintainability around DSR packages and improved test coverage [#6540](https://github.com/ethyca/fides/pull/6540)
 
 ### Fixed
-- Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
-- Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
-- Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
 - Encode GPC subsection in GPP string whenever supported by the section (e.g. usnat, usca) [#6633](https://github.com/ethyca/fides/pull/6633)
 
 ## [2.70.4](https://github.com/ethyca/fides/compare/2.70.3...2.70.4)
@@ -66,9 +64,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [2.70.1](https://github.com/ethyca/fides/compare/2.70.0...2.70.1)
 
+### Added
+- Added SRV and SSL support for MongoDB [#6590](https://github.com/ethyca/fides/pull/6590)
+
 ### Fixed
 - Location field submission and display for privacy requests [#6619](https://github.com/ethyca/fides/pull/6619)
 - Fix column sizing bug [#6620](https://github.com/ethyca/fides/pull/6620)
+- Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+- Fix misc location displays [#6600](https://github.com/ethyca/fides/pull/6600)
+- Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
+- Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
 
 ## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
 
