@@ -1,83 +1,58 @@
-import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
+import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
 
 import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 
-import { DiscoveryStatusDisplayNames } from "../../constants";
+import {
+  DiscoveryErrorStatuses,
+  DiscoveryStatusDescriptions,
+  DiscoveryStatusDisplayNames,
+} from "../../constants";
 
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: ConsentStatus;
   stagedResource: StagedResourceAPIResponse;
-  onShowBreakdown?: (
-    stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
-  ) => void;
 }
 
 export const DiscoveryStatusBadgeCell = ({
   consentAggregated,
   stagedResource,
-  onShowBreakdown,
 }: DiscoveryStatusBadgeCellProps) => {
-  const handleClick = () => {
-    onShowBreakdown?.(stagedResource, consentAggregated);
+  const isErrorStatus = DiscoveryErrorStatuses.includes(consentAggregated);
+
+  // We only want to show compliance issues or unknown statuses
+  // as the other statuses are not actionable
+  const showTag = isErrorStatus || consentAggregated === ConsentStatus.UNKNOWN;
+  if (!showTag) {
+    return null;
+  }
+
+  const getTestId = (): string => {
+    return `status-badge_${consentAggregated.replace(/_/g, "-")}`;
   };
 
+  // Check if the asset has categories of consent
+  const hasDataUses = stagedResource.data_uses
+    ? stagedResource.data_uses.length > 0
+    : false;
+
+  // Determine tooltip text from the consent status
+  let tagTooltip = DiscoveryStatusDescriptions[consentAggregated];
+
+  // One exception: if the status is unknown and the asset has no categories of consent,
+  // we want to nudge the user to add a category of consent instead of running the monitor
+  if (consentAggregated === ConsentStatus.UNKNOWN && !hasDataUses) {
+    tagTooltip =
+      "Add a category of consent to this asset to find consent information.";
+  }
+
   return (
-    <>
-      {consentAggregated === ConsentStatus.WITHOUT_CONSENT && (
-        <Tooltip title="Asset was detected without any consent. Click the info icon for more details.">
-          <Tag
-            color="error"
-            closeIcon={<Icons.Information style={{ width: 12, height: 12 }} />}
-            closeButtonLabel="View details"
-            onClose={handleClick}
-            data-testid="status-badge_without-consent"
-          >
-            {DiscoveryStatusDisplayNames.WITHOUT_CONSENT}
-          </Tag>
-        </Tooltip>
-      )}
-      {consentAggregated === ConsentStatus.PRE_CONSENT && (
-        <Tooltip title="Asset was detected before user gave consent. Click the info icon for more details.">
-          <Tag
-            color="error"
-            closeIcon={<Icons.Information style={{ width: 12, height: 12 }} />}
-            closeButtonLabel="View details"
-            onClose={handleClick}
-            data-testid="status-badge_pre-consent"
-          >
-            {DiscoveryStatusDisplayNames.PRE_CONSENT}
-          </Tag>
-        </Tooltip>
-      )}
-      {consentAggregated === ConsentStatus.WITH_CONSENT && (
-        <Tooltip title="Asset was detected after the user gave consent">
-          <Tag color="success" data-testid="status-badge_with-consent">
-            {DiscoveryStatusDisplayNames.WITH_CONSENT}
-          </Tag>
-        </Tooltip>
-      )}
-      {consentAggregated === ConsentStatus.EXEMPT && (
-        <Tooltip title="Asset is valid regardless of consent">
-          <Tag data-testid="status-badge_consent-exempt">
-            {DiscoveryStatusDisplayNames.EXEMPT}
-          </Tag>
-        </Tooltip>
-      )}
-      {consentAggregated === ConsentStatus.UNKNOWN && (
-        <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
-          <Tag data-testid="status-badge_unknown">
-            {DiscoveryStatusDisplayNames.UNKNOWN}
-          </Tag>
-        </Tooltip>
-      )}
-      {consentAggregated === ConsentStatus.NOT_APPLICABLE && (
-        <Tooltip title="No privacy notices apply to this asset">
-          <Tag data-testid="status-badge_not-applicable">
-            {DiscoveryStatusDisplayNames.NOT_APPLICABLE}
-          </Tag>
-        </Tooltip>
-      )}
-    </>
+    <Tooltip title={tagTooltip}>
+      <Tag
+        color={isErrorStatus ? "error" : undefined}
+        data-testid={getTestId()}
+      >
+        {DiscoveryStatusDisplayNames[consentAggregated]}
+      </Tag>
+    </Tooltip>
   );
 };
