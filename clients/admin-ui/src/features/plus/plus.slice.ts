@@ -223,6 +223,15 @@ const plusApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Custom Field Definition"],
     }),
+    getCustomFieldDefinitionById: build.query<
+      CustomFieldDefinitionWithId,
+      { id: string }
+    >({
+      query: ({ id }) => ({
+        url: `plus/custom-metadata/custom-field-definition/${id}`,
+      }),
+      providesTags: ["Custom Field Definition"],
+    }),
     // Custom Metadata Custom Field Definition
     addCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -237,7 +246,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
-      CustomFieldDefinition
+      CustomFieldDefinitionWithId
     >({
       query: (params) => ({
         url: `plus/custom-metadata/custom-field-definition`,
@@ -499,6 +508,7 @@ export const {
   useGetVendorReportQuery,
   useGetClassifySystemQuery,
   useGetCustomFieldDefinitionsByResourceTypeQuery,
+  useGetCustomFieldDefinitionByIdQuery,
   useGetCustomFieldsForResourceQuery,
   useGetHealthQuery,
   useGetLatestScanDiffQuery,
