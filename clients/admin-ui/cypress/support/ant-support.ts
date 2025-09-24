@@ -188,7 +188,7 @@ Cypress.Commands.add(
     cy.get(subject.selector)
       .find(`.ant-select-selection-item[title="${option}"]`)
       .find(".ant-select-selection-item-remove")
-      .click();
+      .click({ force: true });
   },
 );
 

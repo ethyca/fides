@@ -1637,6 +1637,39 @@ def privacy_request(
 
 
 @pytest.fixture(scope="function")
+def privacy_request_with_two_types(
+    db: Session,
+    policy: Policy,
+) -> Generator[PrivacyRequest, None, None]:
+    erasure_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "name": "Erasure Request Rule",
+            "policy_id": policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    privacy_request = _create_privacy_request_for_policy(db, policy)
+
+    yield privacy_request
+
+    try:
+        erasure_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+
+    try:
+        privacy_request.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def soft_deleted_privacy_request(
     db: Session,
     policy: Policy,
