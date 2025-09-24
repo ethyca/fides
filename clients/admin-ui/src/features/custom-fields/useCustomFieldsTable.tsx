@@ -23,7 +23,6 @@ import {
 const useCustomFieldsTable = () => {
   const tableState = useTableState({
     pagination: { defaultPageSize: 25, pageSizeOptions: [10, 25, 50] },
-    // TODO: search not searching
     search: { defaultSearchQuery: "" },
   });
 
@@ -52,6 +51,9 @@ const useCustomFieldsTable = () => {
         title: "Name",
         dataIndex: "name",
         key: "name",
+        filteredValue: tableState.searchQuery ? [tableState.searchQuery] : null,
+        onFilter: (value, record) =>
+          record.name.toLowerCase().includes(value.toString().toLowerCase()),
       },
       {
         title: "Description",
