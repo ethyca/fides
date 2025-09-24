@@ -63,7 +63,7 @@ interface UseDiscoveredAssetsTableConfig {
   monitorId: string;
   systemId: string;
   onSystemName?: (name: string) => void;
-  onShowBreakdown?: (
+  onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
@@ -73,7 +73,7 @@ export const useDiscoveredAssetsTable = ({
   monitorId,
   systemId,
   onSystemName,
-  onShowBreakdown,
+  onShowComplianceIssueDetails,
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const toast = useToast();
@@ -374,17 +374,8 @@ export const useDiscoveredAssetsTable = ({
             : null,
         filters: convertToAntFilters(
           filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
-          (status) => {
-            const statusMap: Record<string, string> = {
-              with_consent: DiscoveryStatusDisplayNames.WITH_CONSENT,
-              without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
-              exempt: DiscoveryStatusDisplayNames.EXEMPT,
-              unknown: DiscoveryStatusDisplayNames.UNKNOWN,
-              pre_consent: DiscoveryStatusDisplayNames.PRE_CONSENT,
-              cmp_error: DiscoveryStatusDisplayNames.CMP_ERROR,
-            };
-            return statusMap[status] ?? status;
-          },
+          (status) =>
+            DiscoveryStatusDisplayNames[status as ConsentStatus] ?? status,
         ),
         filteredValue:
           columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
@@ -393,7 +384,6 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
             stagedResource={record}
-            onShowBreakdown={onShowBreakdown}
           />
         ),
       });
@@ -409,6 +399,7 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveredAssetActionsCell
             asset={record}
             onTabChange={onTabChange}
+            showComplianceIssueDetails={onShowComplianceIssueDetails}
           />
         ),
       });
@@ -430,7 +421,7 @@ export const useDiscoveredAssetsTable = ({
     locationsVersion,
     pagesVersion,
     firstItemConsentStatus,
-    onShowBreakdown,
+    onShowComplianceIssueDetails,
     onTabChange,
   ]);
 
