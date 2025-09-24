@@ -57,6 +57,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
+        requiresFlag: "alphaFullActionCenter",
       },
       {
         title: "Data detection",
