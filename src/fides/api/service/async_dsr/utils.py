@@ -5,6 +5,7 @@ This module contains utility functions with no business logic dependencies.
 These are helper functions that can be used across the async DSR system.
 """
 
+from enum import Enum
 from io import BytesIO
 
 # Type checking imports
@@ -37,7 +38,7 @@ from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
     from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
-        PollingAsyncDSRStrategy,
+        AsyncPollingStrategy,
     )
     from fides.api.service.connectors.query_configs.saas_query_config import (
         SaaSQueryConfig,
@@ -91,24 +92,36 @@ def is_async_request(request_task: RequestTask, query_config: "SaaSQueryConfig")
     )
 
 
-def classify_async_type(request_task: RequestTask, query_config: "SaaSQueryConfig") -> str:
+class AsyncPhase(Enum):
+    """Enum representing different phases of async DSR processing."""
+
+    callback_completion = "callback_completion"
+    polling_continuation = "polling_continuation"
+    initial_async = "initial_async"
+    sync = "sync"
+
+
+def get_async_phase(
+    request_task: RequestTask, query_config: "SaaSQueryConfig"
+) -> AsyncPhase:
     """
-    Classify the type of async request for routing purposes.
+    Classify the phase of async request for routing purposes.
 
     Returns:
-        - "callback_completion": Callback has completed
-        - "polling_continuation": Continuing an existing polling process
-        - "initial_async": Initial async request setup
-        - "sync": Not an async request
+        AsyncPhase enum value representing the current phase:
+        - callback_completion: Callback has completed
+        - polling_continuation: Continuing an existing polling process
+        - initial_async: Initial async request setup
+        - sync: Not an async request
     """
     if is_callback_completion(request_task):
-        return "callback_completion"
+        return AsyncPhase.callback_completion
     elif is_polling_continuation(request_task):
-        return "polling_continuation"
+        return AsyncPhase.polling_continuation
     elif has_async_requests(query_config):
-        return "initial_async"
+        return AsyncPhase.initial_async
     else:
-        return "sync"
+        return AsyncPhase.sync
 
 
 def get_connection_config_from_task(
@@ -161,7 +174,7 @@ def save_polling_results(
 
 
 def execute_result_request(
-    strategy: "PollingAsyncDSRStrategy",
+    strategy: "AsyncPollingStrategy",
     client: "AuthenticatedClient",
     param_values: dict,
     secrets: dict,
@@ -239,7 +252,7 @@ def handle_polling_initial_request(
     privacy_request: PrivacyRequest,
     request_task: RequestTask,
     query_config: "SaaSQueryConfig",
-    strategy: "PollingAsyncDSRStrategy",
+    strategy: "AsyncPollingStrategy",
     read_request: ReadSaaSRequest,
     input_data: Dict[str, Any],
     policy: Policy,

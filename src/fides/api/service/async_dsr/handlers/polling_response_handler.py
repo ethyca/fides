@@ -1,12 +1,12 @@
 """
-Response inference utility for async DSR polling.
+Pure response processing utility for async DSR polling.
 
-This utility handles data type inference, attachment classification,
-and response parsing for polling results.
+This module handles data type inference, attachment classification,
+and response parsing with no business logic dependencies.
 """
 import io
 import re
-from typing import List
+from typing import Any, List, Optional
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -19,132 +19,12 @@ from fides.api.schemas.saas.async_polling_configuration import (
     PollingResult,
     SupportedDataType,
 )
-from fides.api.service.async_dsr.utils import store_polling_attachment
 from fides.api.util.collection_util import Row
-
-
-class PollingResultHandler:
-    """
-    Handler for processing polling results based on action type.
-
-    Access requests: Adds rows to access_data or stores attachments
-    Erasure requests: Records number of affected records
-    """
-
-    @classmethod
-    def handle_access_result(
-        cls,
-        db,
-        polling_result,
-        request_task,
-        privacy_request,
-        rows_accumulator: List[Row]
-    ) -> None:
-        """Handle result for access requests."""
-        if polling_result.result_type == "rows":
-            # Structured data - add to rows collection
-            if isinstance(polling_result.data, list):
-                rows_accumulator.extend(polling_result.data)
-            else:
-                logger.warning(
-                    f"Expected list for rows result, got {type(polling_result.data)}"
-                )
-
-        elif polling_result.result_type == "attachment":
-            # File attachment - store and link to request task
-
-            try:
-                attachment_id = store_polling_attachment(
-                    db=db,
-                    attachment_data=polling_result.data,
-                    filename=polling_result.metadata.get("filename", "polling_result"),
-                    content_type=polling_result.metadata.get(
-                        "content_type", "application/octet-stream"
-                    ),
-                    request_task=request_task,
-                    privacy_request=privacy_request,
-                )
-
-                # Add attachment metadata to collection data
-                cls._add_attachment_metadata_to_rows(db, attachment_id, rows_accumulator)
-
-            except Exception as e:
-                raise PrivacyRequestError(f"Attachment storage failed: {e}")
-        else:
-            raise PrivacyRequestError(f"Unsupported result type: {polling_result.result_type}")
-
-    @classmethod
-    def handle_erasure_result(
-        cls,
-        polling_result,
-        request_task,
-        affected_records_accumulator: List[int]
-    ) -> None:
-        """Handle result for erasure requests."""
-        if polling_result.result_type == "rows":
-            # For erasure, rows typically contain info about what was deleted
-            # The count represents affected records
-            if isinstance(polling_result.data, list):
-                affected_records_accumulator.append(len(polling_result.data))
-            else:
-                # If it's a single response with count info, try to extract it
-                affected_records_accumulator.append(1)
-
-        elif polling_result.result_type == "attachment":
-            # Erasure attachments might contain reports of what was deleted
-            # For now, count as 1 affected record per attachment
-            affected_records_accumulator.append(1)
-
-        else:
-            from fides.api.common_exceptions import PrivacyRequestError
-            raise PrivacyRequestError(f"Unsupported erasure result type: {polling_result.result_type}")
-
-    @classmethod
-    def _add_attachment_metadata_to_rows(cls, db, attachment_id: str, rows: List[Row]) -> None:
-        """Add attachment metadata to rows collection (like manual tasks do)."""
-        from fides.api.models.attachment import Attachment
-
-        attachment_record = (
-            db.query(Attachment)
-            .filter(Attachment.id == attachment_id)
-            .first()
-        )
-
-        if attachment_record:
-            try:
-                size, url = attachment_record.retrieve_attachment()
-                attachment_info = {
-                    "file_name": attachment_record.file_name,
-                    "download_url": str(url) if url else None,
-                    "file_size": size,
-                }
-            except Exception as exc:
-                logger.warning(
-                    f"Could not retrieve attachment content for {attachment_record.file_name}: {exc}"
-                )
-                attachment_info = {
-                    "file_name": attachment_record.file_name,
-                    "download_url": None,
-                    "file_size": None,
-                }
-
-            # Add attachment to the polling results
-            attachments_item = None
-            for item in rows:
-                if isinstance(item, dict) and "attachments" in item:
-                    attachments_item = item
-                    break
-
-            if attachments_item is None:
-                attachments_item = {"attachments": []}
-                rows.append(attachments_item)
-
-            attachments_item["attachments"].append(attachment_info)
 
 
 class PollingResponseProcessor:
     """
-    Utility for processing async polling responses with smart data type inference.
+    Pure utility for processing async polling responses with smart data type inference.
 
     1. Infers data type from response characteristics
     2. Classifies whether response should be stored as attachment
@@ -403,3 +283,53 @@ class PollingResponseProcessor:
             return df.to_dict(orient='records')
         except Exception as e:
             raise PrivacyRequestError(f"Failed to parse CSV response: {e}")
+
+    @staticmethod
+    def evaluate_status_response(
+        response: Response,
+        status_path: str,
+        status_completed_value: Optional[Any] = None
+    ) -> bool:
+        """Process status response and extract completion status."""
+        status_path_value = pydash.get(response.json(), status_path)
+        return PollingResponseProcessor._evaluate_status_value(
+            status_path_value, status_completed_value
+        )
+
+    @staticmethod
+    def _evaluate_status_value(
+        status_path_value: Any,
+        status_completed_value: Optional[Any] = None
+    ) -> bool:
+        """Evaluate if status indicates completion."""
+
+        # Boolean direct check
+        if isinstance(status_path_value, bool):
+            return status_path_value
+
+        # Direct comparison with completed value
+        if status_path_value == status_completed_value:
+            return True
+
+        # String comparison
+        if isinstance(status_path_value, str):
+            # If no completed value specified, any non-empty string is considered complete
+            if status_completed_value is None:
+                return bool(status_path_value)
+            return status_path_value == str(status_completed_value)
+
+        # List check (first element)
+        if isinstance(status_path_value, list) and status_path_value:
+            first_element = status_path_value[0]
+            if status_completed_value is None:
+                return bool(first_element)
+            return first_element == status_completed_value
+
+        # Numeric comparison
+        if isinstance(status_path_value, (int, float)):
+            if isinstance(status_completed_value, (int, float)):
+                return status_path_value == status_completed_value
+            return bool(status_path_value)
+
+        # Default to False for unexpected types
+        return False

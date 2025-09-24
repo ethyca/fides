@@ -33,7 +33,7 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.AWAITING_PROCESSING]: "Awaiting input",
   [ExecutionLogStatus.RETRYING]: "Retrying",
   [ExecutionLogStatus.SKIPPED]: "Skipped",
-  [ExecutionLogStatus.POLLING]: "Polling",
+  [ExecutionLogStatus.POLLING]: "Awaiting polling",
 };
 
 export const ExecutionLogStatusColors: Record<

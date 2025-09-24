@@ -233,15 +233,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # Delegate async requests
-        if async_dsr_strategy := _get_async_dsr_strategy(
-            ActionType.access, query_config
-        ):
-            return async_dsr_strategy.async_retrieve_data(
-                connection_config=self.configuration,
-                query_config=query_config,
-                request_task_id=request_task.id,
-                input_data=input_data,
-            )
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                ActionType.access, query_config, db
+            ):
+                return async_dsr_strategy.async_retrieve_data(
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    input_data=input_data,
+                )
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
         # An endpoint can be defined with multiple 'read' requests if the data for a single
@@ -527,16 +527,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config = self.query_config(node)
 
         # Delegate async requests
-        if async_dsr_strategy := _get_async_dsr_strategy(
-            ActionType.erasure, query_config
-        ):
-            return async_dsr_strategy.async_mask_data(
-                connection_config=self.configuration,
-                query_config=query_config,
-                request_task_id=request_task.id,
-                rows=rows,
-                node=node,
-            )
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                ActionType.erasure, query_config, db
+            ):
+                return async_dsr_strategy.async_mask_data(
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    rows=rows,
+                )
 
         masking_request = query_config.get_masking_request()
         rows_updated = 0
@@ -1088,26 +1087,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore
 
+
 def _get_async_dsr_strategy(
-        action_type: ActionType, query_config: SaaSQueryConfig
-    ) -> AsyncDSRStrategy:
-        """
-        Returns the async DSR strategy if any of the read or masking requests have an async_config.
-        """
-        if action_type == ActionType.access:
-            read_request = query_config.get_read_requests_by_identity()
-            for request in read_request:
-                if request.async_config is not None:
-                    return get_strategy(
-                        request.async_config.strategy,
-                        request.async_config.configuration,
-                    )
-        elif action_type == ActionType.erasure:
-            masking_request = query_config.get_masking_request()
-            if masking_request is not None and masking_request.async_config is not None:
+    action_type: ActionType, query_config: SaaSQueryConfig, session: Session
+) -> AsyncDSRStrategy:
+    """
+    Returns the async DSR strategy if any of the read or masking requests have an async_config.
+    """
+    if action_type == ActionType.access:
+        read_request = query_config.get_read_requests_by_identity()
+        for request in read_request:
+            if request.async_config is not None:
                 return get_strategy(
-                    masking_request.async_config.strategy,
-                    masking_request.async_config.configuration,
+                    request.async_config.strategy,
+                    session,
+                    request.async_config.configuration,
                 )
-        else:
-            raise ValueError(f"Invalid action type: {action_type}")
+    elif action_type == ActionType.erasure:
+        masking_request = query_config.get_masking_request()
+        if masking_request is not None and masking_request.async_config is not None:
+            return get_strategy(
+                masking_request.async_config.strategy,
+                session,
+                masking_request.async_config.configuration,
+            )
+    else:
+        raise ValueError(f"Invalid action type: {action_type}")
