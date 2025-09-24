@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fides.api.common_exceptions import FidesopsException
+from fides.api.common_exceptions import FidesopsException, PrivacyRequestError
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
@@ -533,6 +533,257 @@ class TestPrivacyRequestService:
             # Cleanup
             privacy_center_config.delete(db)
 
+    def test_create_privacy_request_location_required_property_config_used_when_provided(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        property_a: Property,
+    ):
+        """Property config takes precedence: required location enforced when property_id provided."""
+        from fides.api.common_exceptions import PrivacyRequestError
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Global config without location requirement
+        global_config = PrivacyCenterConfig.create_or_update(
+            db=db,
+            data={
+                "config": {
+                    "title": "Global",
+                    "description": "Global config",
+                    "actions": [
+                        {
+                            "policy_key": policy.key,
+                            "title": "Action",
+                            "description": "desc",
+                            "icon_path": "/icon.svg",
+                            "identity_inputs": {"email": "required"},
+                        }
+                    ],
+                    "consent": {
+                        "button": {
+                            "description": "desc",
+                            "description_subtext": [],
+                            "icon_path": "/consent.svg",
+                            "identity_inputs": {"email": "optional"},
+                            "title": "Manage",
+                            "modalTitle": "Manage",
+                            "confirmButtonText": "Continue",
+                            "cancelButtonText": "Cancel",
+                        },
+                        "page": {
+                            "consentOptions": [],
+                            "description": "desc",
+                            "description_subtext": [],
+                            "policy_key": "default_consent_policy",
+                            "title": "Manage",
+                        },
+                    },
+                }
+            },
+        )
+
+        # Set property config requiring location
+        property_a.update(
+            db=db,
+            data={
+                "privacy_center_config": {
+                    "title": "Property",
+                    "description": "Property config",
+                    "actions": [
+                        {
+                            "policy_key": policy.key,
+                            "title": "Action",
+                            "description": "desc",
+                            "icon_path": "/icon.svg",
+                            "identity_inputs": {"email": "required"},
+                            "custom_privacy_request_fields": {
+                                "location": {
+                                    "label": "Location",
+                                    "field_type": "location",
+                                    "required": True,
+                                    "ip_geolocation_hint": False,
+                                }
+                            },
+                        }
+                    ],
+                    "consent": {
+                        "button": {
+                            "description": "desc",
+                            "description_subtext": [],
+                            "icon_path": "/consent.svg",
+                            "identity_inputs": {"email": "optional"},
+                            "title": "Manage",
+                            "modalTitle": "Manage",
+                            "confirmButtonText": "Continue",
+                            "cancelButtonText": "Cancel",
+                        },
+                        "page": {
+                            "consentOptions": [],
+                            "description": "desc",
+                            "description_subtext": [],
+                            "policy_key": "default_consent_policy",
+                            "title": "Manage",
+                        },
+                    },
+                }
+            },
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            with pytest.raises(PrivacyRequestError):
+                privacy_request_service.create_privacy_request(
+                    PrivacyRequestCreate(
+                        identity=identity,
+                        policy_key=policy.key,
+                        property_id=property_a.id,  # property config should be used
+                    ),
+                    authenticated=True,
+                )
+        finally:
+            global_config.delete(db)
+
+    def test_create_privacy_request_location_required_default_property_config_when_no_property_id(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        property_a: Property,
+    ):
+        """Default property config used when no property_id provided."""
+        # Make property_a default and set required location on its config
+        property_a.update(
+            db=db,
+            data={
+                "is_default": True,
+                "privacy_center_config": {
+                    "title": "Default Property",
+                    "description": "Default property config",
+                    "actions": [
+                        {
+                            "policy_key": policy.key,
+                            "title": "Action",
+                            "description": "desc",
+                            "icon_path": "/icon.svg",
+                            "identity_inputs": {"email": "required"},
+                            "custom_privacy_request_fields": {
+                                "location": {
+                                    "label": "Location",
+                                    "field_type": "location",
+                                    "required": True,
+                                    "ip_geolocation_hint": False,
+                                }
+                            },
+                        }
+                    ],
+                    "consent": {
+                        "button": {
+                            "description": "desc",
+                            "description_subtext": [],
+                            "icon_path": "/consent.svg",
+                            "identity_inputs": {"email": "optional"},
+                            "title": "Manage",
+                            "modalTitle": "Manage",
+                            "confirmButtonText": "Continue",
+                            "cancelButtonText": "Cancel",
+                        },
+                        "page": {
+                            "consentOptions": [],
+                            "description": "desc",
+                            "description_subtext": [],
+                            "policy_key": "default_consent_policy",
+                            "title": "Manage",
+                        },
+                    },
+                },
+            },
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        with pytest.raises(PrivacyRequestError):
+            privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy.key,
+                    # no property_id -> should use default property's config
+                ),
+                authenticated=True,
+            )
+
+    def test_create_privacy_request_location_required_falls_back_to_global_when_no_property_configs(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """Global single-row config used when no property configs available."""
+        from fides.api.common_exceptions import PrivacyRequestError
+        from fides.api.models.privacy_center_config import PrivacyCenterConfig
+
+        # Ensure no default property present with config
+        # Create global config requiring location
+        global_config = PrivacyCenterConfig.create_or_update(
+            db=db,
+            data={
+                "config": {
+                    "title": "Global Required",
+                    "description": "Global requires location",
+                    "actions": [
+                        {
+                            "policy_key": policy.key,
+                            "title": "Action",
+                            "description": "desc",
+                            "icon_path": "/icon.svg",
+                            "identity_inputs": {"email": "required"},
+                            "custom_privacy_request_fields": {
+                                "location": {
+                                    "label": "Location",
+                                    "field_type": "location",
+                                    "required": True,
+                                    "ip_geolocation_hint": False,
+                                }
+                            },
+                        }
+                    ],
+                    "consent": {
+                        "button": {
+                            "description": "desc",
+                            "description_subtext": [],
+                            "icon_path": "/consent.svg",
+                            "identity_inputs": {"email": "optional"},
+                            "title": "Manage",
+                            "modalTitle": "Manage",
+                            "confirmButtonText": "Continue",
+                            "cancelButtonText": "Cancel",
+                        },
+                        "page": {
+                            "consentOptions": [],
+                            "description": "desc",
+                            "description_subtext": [],
+                            "policy_key": "default_consent_policy",
+                            "title": "Manage",
+                        },
+                    },
+                }
+            },
+        )
+
+        identity = Identity(email="jane@example.com")
+
+        try:
+            with pytest.raises(PrivacyRequestError):
+                privacy_request_service.create_privacy_request(
+                    PrivacyRequestCreate(
+                        identity=identity,
+                        policy_key=policy.key,
+                    ),
+                    authenticated=True,
+                )
+        finally:
+            global_config.delete(db)
     def test_create_privacy_request_location_required_and_provided(
         self,
         db: Session,

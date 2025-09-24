@@ -90,19 +90,42 @@ class PrivacyRequestService:
         if privacy_request_data.location:
             return
 
-        # Get the Privacy Center configuration from the database
-        privacy_center_config_record = PrivacyCenterConfigModel.filter(
-            db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
-        ).first()
+        # Determine which Privacy Center configuration to use, with precedence:
+        # 1) The request's property config (if provided)
+        # 2) The default property's config (if available)
+        # 3) The single-row Privacy Center config table (legacy/global)
+        config_dict: Optional[Dict[str, Any]] = None
 
-        if not privacy_center_config_record:
+        # 1) Request's property config
+        if privacy_request_data.property_id:
+            prop = Property.get_by(
+                self.db, field="id", value=privacy_request_data.property_id
+            )
+            if prop and getattr(prop, "privacy_center_config", None):
+                config_dict = prop.privacy_center_config  # type: ignore[assignment]
+
+        # 2) Default property config
+        if not config_dict:
+            default_prop = Property.get_by(self.db, field="is_default", value=True)
+            if default_prop and getattr(default_prop, "privacy_center_config", None):
+                config_dict = default_prop.privacy_center_config  # type: ignore[assignment]
+
+        # 3) Single-row global config
+        if not config_dict:
+            privacy_center_config_record = PrivacyCenterConfigModel.filter(
+                db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
+            ).first()
+            if privacy_center_config_record:
+                config_dict = privacy_center_config_record.config  # type: ignore[assignment]
+
+        if not config_dict:
             # No Privacy Center config found, skip validation
             return
 
         try:
             # Parse the config using the Pydantic schema
             privacy_center_config = PrivacyCenterConfigSchema.model_validate(
-                privacy_center_config_record.config
+                config_dict
             )
         except Exception as exc:
             logger.warning(
