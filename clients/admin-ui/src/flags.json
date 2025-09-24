@@ -53,5 +53,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "alphaFullActionCenter": {
+    "description": "Enable additional Action Center features",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
