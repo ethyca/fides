@@ -123,7 +123,9 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
     "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
 )
 @click.option(
-    "--opt-out", is_flag=True, help="Automatically opt-out of anonymous usage analytics."
+    "--opt-out",
+    is_flag=True,
+    help="Automatically opt-out of anonymous usage analytics.",
 )
 def init(ctx: click.Context, fides_dir: str, opt_in: bool, opt_out: bool) -> None:
     """

@@ -62,9 +62,7 @@ def test_create_and_update_config_file_opt_out(
 
 
 @pytest.mark.unit
-def test_request_analytics_consent_conflicting_flags(
-    test_config: FidesConfig
-) -> None:
+def test_request_analytics_consent_conflicting_flags(test_config: FidesConfig) -> None:
     config_copy = test_config.model_copy(deep=True)
 
     with pytest.raises(ValueError):
