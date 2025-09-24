@@ -7,7 +7,6 @@ from py._path.local import LocalPath
 from fides.cli.utils import request_analytics_consent
 from fides.config import FidesConfig
 from fides.config.create import (
-    build_field_documentation,
     create_and_update_config_file,
     create_config_file,
     validate_generated_config,
@@ -126,8 +125,8 @@ class TestValidateGeneratedConfig:
         assert True
 
 
-@pytest.fixture()
-def remove_fides_dir(tmp_path) -> None:
+@pytest.fixture(name="remove_fides_dir_fixture")
+def _remove_fides_dir(tmp_path) -> None:
     try:
         os.remove(tmp_path / ".fides/fides.toml")
         os.rmdir(tmp_path / ".fides")
@@ -140,7 +139,7 @@ def remove_fides_dir(tmp_path) -> None:
 @pytest.mark.unit
 class TestCreateConfigFile:
     def test_create_config_file(
-        self, config, tmp_path, capfd, remove_fides_dir
+        self, config, tmp_path, capfd, remove_fides_dir_fixture
     ) -> None:
         config_path = create_config_file(config, tmp_path)
 
@@ -153,7 +152,7 @@ class TestCreateConfigFile:
         assert config_path == str(fides_file_path)
 
     def test_create_config_file_dir_exists(
-        self, config, tmp_path, capfd, remove_fides_dir
+        self, config, tmp_path, capfd, remove_fides_dir_fixture
     ) -> None:
         fides_directory = tmp_path / ".fides"
         fides_directory.mkdir()
@@ -168,7 +167,7 @@ class TestCreateConfigFile:
         assert config_path == str(fides_file_path)
 
     def test_create_config_file_exists(
-        self, config, tmp_path, capfd, remove_fides_dir
+        self, config, tmp_path, capfd, remove_fides_dir_fixture
     ) -> None:
         fides_directory = tmp_path / ".fides"
         fides_directory.mkdir()
