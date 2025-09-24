@@ -2,7 +2,7 @@ acryl-datahub==0.14.1
 alembic==1.8.1
 anyascii==0.3.2
 anyio==3.7.1
-APScheduler==3.9.1.post1
+APScheduler==3.10.4
 asyncpg==0.27.0
 boto3==1.26.1
 certifi==2024.8.30
