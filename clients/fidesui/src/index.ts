@@ -26,6 +26,7 @@ export type {
   InputProps as AntInputProps,
   ListProps as AntListProps,
   MenuProps as AntMenuProps,
+  ModalProps as AntModalProps,
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
