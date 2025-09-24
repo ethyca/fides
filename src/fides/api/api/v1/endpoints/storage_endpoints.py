@@ -50,8 +50,10 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
-from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
-from fides.api.service.storage.storage_uploader_service import upload
+from fides.api.service.deps import get_privacy_request_storage_service
+
+# REMOVED: from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
+# Now using StorageService.validate_connection() method
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 from fides.api.util.storage_util import get_schema_for_secrets
@@ -72,6 +74,9 @@ from fides.common.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
+from fides.service.storage.privacy_request_storage_service import (
+    PrivacyRequestStorageService,
+)
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 
@@ -88,6 +93,9 @@ def upload_data(
     db: Session = Depends(deps.get_db),
     data: Dict = Body(...),
     storage_key: FidesKey = Body(...),
+    privacy_request_storage_service: PrivacyRequestStorageService = Depends(
+        get_privacy_request_storage_service
+    ),
 ) -> DataUpload:
     """
     Uploads data from an access request to specified storage destination.
@@ -104,8 +112,10 @@ def upload_data(
 
     logger.info("Starting storage upload for request id: {}", request_id)
     try:
-        data_location: str = upload(
-            db, privacy_request=privacy_request, data=data, storage_key=storage_key
+        data_location: str = (
+            privacy_request_storage_service.upload_privacy_request_data(
+                privacy_request=privacy_request, data=data, storage_key=storage_key
+            )
         )
     except StorageUploadError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
@@ -220,15 +230,24 @@ def put_config_secrets(
 
     msg = f"Secrets updated for StorageConfig with key: {config_key}."
     if verify:
-        status = secrets_are_valid(secrets_schema, storage_config)
-        if status:
-            logger.info(
-                "Storage secrets are valid for config with key '{}'", config_key
-            )
-        else:
-            logger.warning(
-                "Storage secrets are invalid for config with key '{}'", config_key
-            )
+        # Use unified StorageService to validate configuration
+        from fides.service.storage import StorageService
+
+        try:
+            storage_service = StorageService.from_config(storage_config)
+            status = storage_service.validate_connection()
+
+            if status:
+                logger.info(
+                    "Storage secrets are valid for config with key '{}'", config_key
+                )
+            else:
+                logger.warning(
+                    "Storage secrets are invalid for config with key '{}'", config_key
+                )
+        except Exception as e:
+            logger.error(f"Failed to validate storage config '{config_key}': {e}")
+            status = False
 
         return TestStatusMessage(
             msg=msg,
@@ -534,17 +553,28 @@ def put_default_config_secrets(
 
     msg = f"Secrets updated for default config of storage type: {storage_type.value}."
     if verify:
-        status = secrets_are_valid(secrets_schema, storage_config)
-        if status:
-            logger.info(
-                "Storage secrets are valid for default config of storage type '{}'",
-                storage_type.value,
+        # Use unified StorageService to validate configuration
+        from fides.service.storage import StorageService
+
+        try:
+            storage_service = StorageService.from_config(storage_config)
+            status = storage_service.validate_connection()
+
+            if status:
+                logger.info(
+                    "Storage secrets are valid for default config of storage type '{}'",
+                    storage_type.value,
+                )
+            else:
+                logger.warning(
+                    "Storage secrets are invalid for default config of storage type '{}'",
+                    storage_type.value,
+                )
+        except Exception as e:
+            logger.error(
+                f"Failed to validate default storage config for '{storage_type.value}': {e}"
             )
-        else:
-            logger.warning(
-                "Storage secrets are invalid for default config of storage type '{}'",
-                storage_type.value,
-            )
+            status = False
 
         return TestStatusMessage(
             msg=msg,
