@@ -1,9 +1,16 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from fides.api.models.privacy_request.request_task import AsyncTaskType
-from fides.api.schemas.saas.async_polling_configuration import PollingResult
+from fides.api.api.deps import get_autoclose_db_session as get_db
+from fides.api.graph.execution import ExecutionNode
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
+from fides.api.service.async_dsr.handlers.async_request_handlers import (
+    AsyncAccessHandler,
+    AsyncErasureHandler,
+)
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
+from fides.api.util.collection_util import Row
 
 
 class CallbackAsyncDSRStrategy(AsyncDSRStrategy):
@@ -16,30 +23,63 @@ class CallbackAsyncDSRStrategy(AsyncDSRStrategy):
 
     type = AsyncTaskType.callback
 
-    def get_status_request(
+    def async_retrieve_data(
         self,
-        client: AuthenticatedClient,
-        param_values: Dict[str, Any],
-        secrets: Dict[str, Any],
-    ) -> bool:
+        connection_config: ConnectionConfig,
+        query_config: SaaSQueryConfig,
+        request_task_id: str,
+        input_data: Dict[str, List[Any]],
+    ) -> List[Row]:
         """
-        Callback strategies don't use status polling.
-        Status updates come through webhook callbacks.
+        Execute async retrieve data.
         """
-        raise NotImplementedError(
-            "Callback strategies don't use status polling - status comes via webhook"
-        )
+        with get_db() as session:
+            # Look up the request task using the service's session
+            request_task = (
+                session.query(RequestTask)
+                .filter(RequestTask.id == request_task_id)
+                .first()
+            )
+            if not request_task:
+                raise ValueError(f"RequestTask with id {request_task_id} not found")
 
-    def get_result_request(
+            # Delegate to the existing handler with minimal parameters
+            async_access_handler = AsyncAccessHandler()
+            return async_access_handler.handle_async_request(
+                request_task,
+                connection_config,
+                query_config,
+                input_data,
+                session,
+            )
+
+    def async_mask_data(
         self,
-        client: AuthenticatedClient,
-        param_values: Dict[str, Any],
-        secrets: Dict[str, Any],
-    ) -> PollingResult:
+        connection_config: ConnectionConfig,
+        query_config: SaaSQueryConfig,
+        request_task_id: str,
+        rows: List[Row],
+        node: ExecutionNode,
+    ) -> int:
         """
-        Callback strategies don't use result polling.
-        Results come through webhook callbacks.
+        Execute async mask data.
         """
-        raise NotImplementedError(
-            "Callback strategies don't use result polling - results come via webhook"
-        )
+        with get_db() as session:
+            # Look up the request task using the service's session
+            request_task = (
+                session.query(RequestTask)
+                .filter(RequestTask.id == request_task_id)
+                .first()
+            )
+            if not request_task:
+                raise ValueError(f"RequestTask with id {request_task_id} not found")
+
+            # Delegate to the existing handler with minimal parameters
+            return AsyncErasureHandler.handle_async_request(
+                request_task,
+                connection_config,
+                query_config,
+                rows,
+                node,
+                session,
+            )

@@ -1,8 +1,9 @@
 """
-Core business logic service for async DSR operations.
+Polling continuation handler for async DSR operations.
 
-This service provides the main orchestration and coordination for async DSR operations,
-managing the lifecycle of polling requests and coordinating between different components.
+This handler orchestrates the polling continuation process, managing the lifecycle
+of polling requests and coordinating between status checking, result processing,
+and task completion.
 """
 
 # Type checking imports
@@ -12,111 +13,44 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import RequestTask
 from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
+from fides.api.service.async_dsr.handlers.polling_request_handler import (
+    PollingRequestHandler,
+)
 from fides.api.service.async_dsr.handlers.polling_result_handler import (
     PollingResultHandler,
 )
-from fides.api.service.async_dsr.utils import (
-    execute_result_request,
-    save_polling_results,
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
+    get_strategy,
 )
-from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
+from fides.api.service.async_dsr.utils import save_polling_results
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
+    from fides.api.service.connectors.query_configs.saas_query_config import (
+        SaaSQueryConfig,
+    )
     from fides.api.service.connectors.saas_connector import SaaSConnector
-    from fides.api.task.graph_task import ExecutionNode
 
 
-class AsyncDSRService:
+class PollingContinuationHandler:
     """
-    Core service for async DSR operations.
+    Handler for polling continuation operations.
 
-    Orchestrates polling execution, manages task lifecycle,
-    and coordinates between detection, handling, and storage components.
+    Orchestrates the polling continuation process by managing status checks,
+    result processing, and determining polling completion status.
     """
 
     def __init__(self, db: Session):
         self.db = db
 
-    def handle_async_access_request(
-        self,
-        connection_config: ConnectionConfig,
-        query_config: SaaSQueryConfig,
-        request_task_id: str,
-        input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
-        """
-        Handle async access request using minimal parameters.
-        Uses the service's database session to avoid detachment issues.
-        """
-        from fides.api.models.privacy_request import RequestTask
-        from fides.api.service.async_dsr.handlers.async_request_handlers import (
-            AsyncAccessHandler,
-        )
-
-        session = self.db
-
-        # Look up the request task using the service's session
-        request_task = (
-            session.query(RequestTask).filter(RequestTask.id == request_task_id).first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with id {request_task_id} not found")
-
-        # Delegate to the existing handler with minimal parameters
-        return AsyncAccessHandler.handle_async_request(
-            request_task,
-            connection_config,
-            query_config,
-            input_data,
-            session,
-        )
-
-    def handle_async_erasure_request(
-        self,
-        connection_config: ConnectionConfig,
-        query_config: SaaSQueryConfig,
-        request_task_id: str,
-        rows: List[Row],
-        node: "ExecutionNode",
-    ) -> int:
-        """
-        Handle async erasure request using minimal parameters.
-        Uses the service's database session to avoid detachment issues.
-        """
-        from fides.api.models.privacy_request import RequestTask
-        from fides.api.service.async_dsr.handlers.async_request_handlers import (
-            AsyncErasureHandler,
-        )
-
-        session = self.db
-
-        # Look up the request task using the service's session
-        request_task = (
-            session.query(RequestTask).filter(RequestTask.id == request_task_id).first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with id {request_task_id} not found")
-
-        # Delegate to the existing handler with minimal parameters
-        return AsyncErasureHandler.handle_async_request(
-            request_task,
-            connection_config,
-            query_config,
-            rows,
-            node,
-            session,
-        )
-
     def execute_polling_requests(
         self,
         polling_task: RequestTask,
-        query_config: SaaSQueryConfig,
+        query_config: "SaaSQueryConfig",
         connector: "SaaSConnector",
     ) -> bool:
         """
@@ -142,11 +76,7 @@ class AsyncDSRService:
             rows_accumulator: List[Row] = []
             affected_records_accumulator = None
         elif polling_task.action_type == ActionType.erasure:
-            # For erasure, we need masking/deletion requests
-            from sqlalchemy.orm import Session
-
-            session = Session.object_session(polling_task)
-            masking_request = query_config.get_masking_request(session)
+            masking_request = query_config.get_masking_request()
             if not masking_request:
                 raise PrivacyRequestError(
                     f"No masking request found for erasure task {polling_task.id}"
@@ -161,10 +91,6 @@ class AsyncDSRService:
 
         for request in requests:
             if request.async_config:
-                from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
-                    get_strategy,
-                )
-
                 strategy = get_strategy(
                     request.async_config.strategy,
                     request.async_config.configuration,
@@ -186,8 +112,11 @@ class AsyncDSRService:
 
                     param_values = sub_request.param_values
 
-                    # Check status
-                    status = strategy.get_status_request(
+                    # Create polling handler and check status
+                    polling_handler = PollingRequestHandler(
+                        strategy.status_request, strategy.result_request
+                    )
+                    status = polling_handler.get_status_request(
                         client, param_values, connector.secrets
                     )
 
@@ -196,11 +125,8 @@ class AsyncDSRService:
                         sub_request.update_status(
                             self.db, ExecutionLogStatus.complete.value
                         )
-                        polling_result = execute_result_request(
-                            strategy,
-                            client,
-                            param_values,
-                            connector.secrets,
+                        polling_result = polling_handler.get_result_request(
+                            client, param_values, connector.secrets
                         )
 
                         # Handle results based on action type
@@ -222,9 +148,6 @@ class AsyncDSRService:
                         logger.info(
                             f"Polling sub request - {sub_request.id} for task {polling_task.id} still not ready."
                         )
-
-        # # Refresh the polling task to get the latest sub-request statuses
-        # self.db.refresh(polling_task)
 
         # Check if all sub-requests are complete
         all_sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()

@@ -1,10 +1,13 @@
 from abc import abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, List
 
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.saas.async_polling_configuration import PollingResult
+from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.strategy import Strategy
+from fides.api.util.collection_util import Row
 
 
 class AsyncDSRStrategy(Strategy):
@@ -12,40 +15,24 @@ class AsyncDSRStrategy(Strategy):
 
     type: AsyncTaskType
 
-    @abstractmethod
-    def get_status_request(
+    def async_retrieve_data(
         self,
-        client: AuthenticatedClient,
-        param_values: Dict[str, Any],
-        secrets: Dict[str, Any],
-    ) -> bool:
+        connection_config: ConnectionConfig,
+        query_config: SaaSQueryConfig,
+        request_task_id: str,
+        input_data: Dict[str, List[Any]],
+    ) -> List[Row]:
         """
-        Execute status request and return completion status.
-
-        Args:
-            client: Authenticated SaaS client
-            param_values: Parameter values including correlation_id
-            secrets: SaaS connector secrets for authentication
-
-        Returns:
-            bool: True if job is complete, False if still processing
+        Execute async retrieve data.
         """
 
-    @abstractmethod
-    def get_result_request(
+    def async_mask_data(
         self,
-        client: AuthenticatedClient,
-        param_values: Dict[str, Any],
-        secrets: Dict[str, Any],
-    ) -> PollingResult:
+        connection_config: ConnectionConfig,
+        query_config: SaaSQueryConfig,
+        request_task_id: str,
+        rows: List[Row],
+    ) -> int:
         """
-        Execute result request and return processed results.
-
-        Args:
-            client: Authenticated SaaS client
-            param_values: Parameter values including correlation_id
-            secrets: SaaS connector secrets for authentication
-
-        Returns:
-            PollingResult: Processed results in standardized container format
+        Execute async mask data.
         """

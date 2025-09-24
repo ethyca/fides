@@ -6,7 +6,7 @@ async requests, including initial setup, callback completion, and polling contin
 """
 
 # Type checking imports
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -16,7 +16,17 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.policy import Policy
-from fides.api.service.async_dsr.utils import classify_async_type
+from fides.api.schemas.saas.async_polling_configuration import (
+    PollingResultRequest,
+    PollingStatusRequest,
+)
+from fides.api.service.async_dsr.handlers.polling_request_handler import (
+    PollingRequestHandler,
+)
+from fides.api.service.async_dsr.utils import (
+    classify_async_type,
+    handle_polling_initial_request,
+)
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
@@ -30,8 +40,16 @@ if TYPE_CHECKING:
 class AsyncAccessHandler:
     """Handles all async access request logic"""
 
-    @staticmethod
+    def __init__(
+        self,
+        status_request: Optional[PollingStatusRequest],
+        result_request: Optional[PollingResultRequest],
+    ):
+        self.status_request = status_request
+        self.result_request = result_request
+
     def handle_async_request(
+        self,
         request_task: RequestTask,
         connection_config: ConnectionConfig,
         query_config: "SaaSQueryConfig",
@@ -54,13 +72,13 @@ class AsyncAccessHandler:
         async_type = classify_async_type(request_task, query_config)
 
         if async_type == "callback_completion":
-            return AsyncAccessHandler.handle_callback_completion(request_task)
+            return self.handle_callback_completion(request_task)
         elif async_type == "polling_continuation":
-            return AsyncAccessHandler.handle_polling_continuation(
+            return self.handle_polling_continuation(
                 connector, request_task, query_config, session
             )
         elif async_type == "initial_async":
-            return AsyncAccessHandler.handle_initial_setup(
+            return self.handle_initial_setup(
                 connector,
                 request_task,
                 query_config,
@@ -74,16 +92,15 @@ class AsyncAccessHandler:
             logger.warning(f"Unexpected async type '{async_type}' for request task {request_task.id}")
             return []
 
-    @staticmethod
-    def handle_callback_completion(request_task: RequestTask) -> List[Row]:
+    def handle_callback_completion(self, request_task: RequestTask) -> List[Row]:
         """Handle completed callback requests"""
         logger.info(
             "Access callback succeeded for request task '{}'", request_task.id
         )
         return request_task.get_access_data()
 
-    @staticmethod
     def handle_polling_continuation(
+        self,
         connector: "SaaSConnector",
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
@@ -97,23 +114,24 @@ class AsyncAccessHandler:
             request_task = session.merge(request_task)
 
         # Use the provided session
-        from fides.api.service.async_dsr.async_dsr_service import AsyncDSRService
+        from fides.api.service.async_dsr.handlers.polling_continuation_handler import (
+            PollingContinuationHandler,
+        )
 
-        polling_complete = AsyncDSRService(session).execute_polling_requests(
+        polling_complete = PollingContinuationHandler(session).execute_polling_requests(
             request_task, query_config, connector
         )
 
         if not polling_complete:
             # Polling still in progress - raise exception to keep task in polling status
-            from fides.api.common_exceptions import AwaitingAsyncProcessing
 
             raise AwaitingAsyncProcessing("Polling in progress")
 
         # Polling is complete - return the accumulated data
         return request_task.get_access_data()
 
-    @staticmethod
     def handle_initial_setup(
+        self,
         connector: "SaaSConnector",
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
@@ -123,9 +141,6 @@ class AsyncAccessHandler:
         session: Session,
     ) -> List[Row]:
         """Handle initial async request setup for access requests"""
-        # Ensure request_task is attached to the session
-        if Session.object_session(request_task) != session:
-            request_task = session.merge(request_task)
 
         read_requests = query_config.get_read_requests_by_identity()
 
@@ -163,7 +178,8 @@ class AsyncAccessHandler:
                 logger.info(
                     f"Creating initial polling sub-requests for task {request_task.id}"
                 )
-                connector._handle_polling_initial_request(
+
+                handle_polling_initial_request(
                     privacy_request,
                     request_task,
                     query_config,
@@ -172,6 +188,7 @@ class AsyncAccessHandler:
                     input_data,
                     policy,
                     session,
+                    connector.create_client(),
                 )
                 # Refresh the request_task to see newly created sub-requests
                 session.refresh(request_task)
@@ -249,14 +266,12 @@ class AsyncErasureHandler:
         """Handle polling continuation requests"""
         logger.info(f"Continuing polling for erasure task {request_task.id}")
 
-        # Ensure request_task is attached to the session
-        if Session.object_session(request_task) != session:
-            request_task = session.merge(request_task)
-
         # Use the provided session
-        from fides.api.service.async_dsr.async_dsr_service import AsyncDSRService
+        from fides.api.service.async_dsr.handlers.polling_continuation_handler import (
+            PollingContinuationHandler,
+        )
 
-        polling_complete = AsyncDSRService(session).execute_polling_requests(
+        polling_complete = PollingContinuationHandler(session).execute_polling_requests(
             request_task, query_config, connector
         )
 
@@ -278,16 +293,12 @@ class AsyncErasureHandler:
         rows: List[Row],
         policy: Policy,
         node: "ExecutionNode",
-        session: Session,
     ) -> int:
         """Handle initial async request setup for erasure requests"""
-        # Ensure request_task is attached to the session
-        if Session.object_session(request_task) != session:
-            request_task = session.merge(request_task)
 
         # For erasure, we look at masking requests (delete/update requests)
         # Use the provided session
-        masking_request = query_config.get_masking_request(session)
+        masking_request = query_config.get_masking_request()
         read_requests = (
             query_config.get_read_requests_by_identity()
         )  # May also have async config for erasure
@@ -326,9 +337,7 @@ class AsyncErasureHandler:
                                 prepared_request = query_config.generate_update_stmt(
                                     row, policy, privacy_request
                                 )
-                                response = client.send(
-                                    prepared_request, request.ignore_errors
-                                )
+                                client.send(prepared_request, request.ignore_errors)
                                 rows_updated += 1
                             except ValueError as exc:
                                 if request.skip_missing_param_values:

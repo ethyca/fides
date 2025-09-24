@@ -69,10 +69,8 @@ class PollingResultHandler:
                 cls._add_attachment_metadata_to_rows(db, attachment_id, rows_accumulator)
 
             except Exception as e:
-                from fides.api.common_exceptions import PrivacyRequestError
                 raise PrivacyRequestError(f"Attachment storage failed: {e}")
         else:
-            from fides.api.common_exceptions import PrivacyRequestError
             raise PrivacyRequestError(f"Unsupported result type: {polling_result.result_type}")
 
     @classmethod

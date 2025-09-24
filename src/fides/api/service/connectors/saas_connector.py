@@ -22,17 +22,12 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.models.privacy_request.request_task import (
-    AsyncTaskType,
-    RequestTaskSubRequest,
-)
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
 )
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
@@ -44,12 +39,9 @@ from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
 )
-from fides.api.service.async_dsr.handlers.async_request_handlers import (
-    AsyncAccessHandler,
-    AsyncErasureHandler,
-)
-from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
-    PollingAsyncDSRStrategy,
+from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
+    get_strategy,
 )
 from fides.api.service.async_dsr.utils import is_async_request
 from fides.api.service.connectors.base_connector import BaseConnector
@@ -240,21 +232,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         query_config: SaaSQueryConfig = self.query_config(node)
 
-        # Delegate async requests to external handlers
-        if is_async_request(request_task, query_config):
-            from fides.api.api.deps import get_autoclose_db_session as get_db
-            from fides.api.service.async_dsr.async_dsr_service import AsyncDSRService
-
-            logger.warning(f"input_data: {input_data}")
-
-            with get_db() as session:
-                async_service = AsyncDSRService(session)
-                return async_service.handle_async_access_request(
-                    connection_config=self.configuration,
-                    query_config=query_config,
-                    request_task_id=request_task.id,
-                    input_data=input_data,
-                )
+        # Delegate async requests
+        if async_dsr_strategy := _get_async_dsr_strategy(
+            ActionType.access, query_config
+        ):
+            return async_dsr_strategy.async_retrieve_data(
+                connection_config=self.configuration,
+                query_config=query_config,
+                request_task_id=request_task.id,
+                input_data=input_data,
+            )
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
         # An endpoint can be defined with multiple 'read' requests if the data for a single
@@ -351,107 +338,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         self.unset_connector_state()
         return rows
-
-    def _handle_polling_initial_request(
-        self,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        query_config: SaaSQueryConfig,
-        strategy: PollingAsyncDSRStrategy,
-        read_request: ReadSaaSRequest,
-        input_data: Dict[str, Any],
-        policy: Policy,
-        session: Session,
-    ) -> None:
-        """
-        Handles the setup for asynchronous initial requests.
-        The main read request serves as the initial request.
-        """
-        query_config.action = "Polling - start"
-        prepared_requests: List[Tuple[SaaSRequestParams, Dict[str, Any]]] = (
-            query_config.generate_requests(input_data, policy, read_request)
-        )
-        logger.info(f"Prepared requests: {len(prepared_requests)}")
-        # Execute the main read request as the initial request and extract correlation_id
-        client: AuthenticatedClient = self.create_client()
-
-        for next_request, param_value_map in prepared_requests:
-            logger.info(f"Executing initial request: {next_request}")
-            response = client.send(next_request)
-
-            if not response.ok:
-                raise FidesopsException(
-                    f"Initial async request failed with status code {response.status_code}: {response.text}"
-                )
-
-            # Extract correlation_id from response using correlation_id_path
-            try:
-                response_data = response.json()
-                correlation_id = pydash.get(
-                    response_data, read_request.correlation_id_path
-                )
-                if not correlation_id:
-                    raise FidesopsException(
-                        f"Could not extract correlation ID from response using path: {read_request.correlation_id_path}"
-                    )
-            except ValueError as e:
-                raise FidesopsException(
-                    f"Invalid JSON response from initial request: {e}"
-                )
-
-            param_value_map["correlation_id"] = str(correlation_id)
-            # Use the provided session for sub-request creation
-            logger.warning(f"About to create sub-request for task {request_task.id}")
-            self._save_subrequest_data(session, request_task, param_value_map)
-            logger.warning(f"Created sub-request for task {request_task.id}")
-
-            # Verify it was created
-            from fides.api.models.privacy_request.request_task import (
-                RequestTaskSubRequest,
-            )
-
-            final_count = (
-                session.query(RequestTaskSubRequest)
-                .filter(RequestTaskSubRequest.request_task_id == request_task.id)
-                .count()
-            )
-            logger.warning(
-                f"Sub-request count after creation for task {request_task.id}: {final_count}"
-            )
-
-    def _save_subrequest_data(
-        self,
-        db: Session,
-        request_task: RequestTask,
-        param_values_map: Dict[str, Any],
-    ) -> None:
-        """
-        Saves the request data for future use in the request task on async requests.
-        """
-        from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
-
-        # Create new sub-request entry
-        sub_request = RequestTaskSubRequest.create(
-            db,
-            data={
-                "request_task_id": request_task.id,
-                "param_values": param_values_map,
-                "sub_request_status": "pending",
-            },
-        )
-        logger.warning(
-            f"Created sub-request {sub_request.id} for task '{request_task.id}': {param_values_map}"
-        )
-
-        # Verify it was created by querying immediately
-        count_after_create = (
-            db.query(RequestTaskSubRequest)
-            .filter(RequestTaskSubRequest.request_task_id == request_task.id)
-            .count()
-        )
-        logger.warning(
-            f"Sub-request count after creation for task {request_task.id}: {count_after_create}"
-        )
 
     def _apply_output_template(
         self,
@@ -640,22 +526,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         query_config = self.query_config(node)
 
-        # Delegate async requests to external handlers
-        if is_async_request(request_task, query_config):
-            from fides.api.api.deps import get_autoclose_db_session as get_db
-            from fides.api.service.async_dsr.async_dsr_service import AsyncDSRService
+        # Delegate async requests
+        if async_dsr_strategy := _get_async_dsr_strategy(
+            ActionType.erasure, query_config
+        ):
+            return async_dsr_strategy.async_mask_data(
+                connection_config=self.configuration,
+                query_config=query_config,
+                request_task_id=request_task.id,
+                rows=rows,
+                node=node,
+            )
 
-            with get_db() as session:
-                async_service = AsyncDSRService(session)
-                return async_service.handle_async_erasure_request(
-                    query_config=query_config,
-                    request_task_id=request_task.id,
-                    rows=rows,
-                    node=node,
-                )
-
-        session = Session.object_session(privacy_request)
-        masking_request = query_config.get_masking_request(session)
+        masking_request = query_config.get_masking_request()
         rows_updated = 0
 
         if not masking_request:
@@ -1204,3 +1087,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             return []
 
         return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore
+
+def _get_async_dsr_strategy(
+        action_type: ActionType, query_config: SaaSQueryConfig
+    ) -> AsyncDSRStrategy:
+        """
+        Returns the async DSR strategy if any of the read or masking requests have an async_config.
+        """
+        if action_type == ActionType.access:
+            read_request = query_config.get_read_requests_by_identity()
+            for request in read_request:
+                if request.async_config is not None:
+                    return get_strategy(
+                        request.async_config.strategy,
+                        request.async_config.configuration,
+                    )
+        elif action_type == ActionType.erasure:
+            masking_request = query_config.get_masking_request()
+            if masking_request is not None and masking_request.async_config is not None:
+                return get_strategy(
+                    masking_request.async_config.strategy,
+                    masking_request.async_config.configuration,
+                )
+        else:
+            raise ValueError(f"Invalid action type: {action_type}")
