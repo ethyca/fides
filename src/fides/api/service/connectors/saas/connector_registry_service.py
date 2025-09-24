@@ -2,9 +2,10 @@
 import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Any, Dict, Iterable, List, Optional, Type
+from typing import Dict, Iterable, List, Optional, Type
 from zipfile import ZipFile
 
+import pydash
 from fideslang.models import Dataset
 from loguru import logger
 from packaging.version import Version
@@ -346,52 +347,6 @@ def create_connection_config_from_template_no_save(
     return connection_config
 
 
-def _get_nested_value(obj: Dict, path: str) -> Optional[Any]:
-    """
-    Get a nested value from a dictionary using dot notation.
-
-    Args:
-        obj: The dictionary to get the value from
-        path: Dot notation path like "fides_meta.data_type"
-
-    Returns:
-        The value at the nested path, or None if not found
-    """
-    keys = path.split(".")
-    current = obj
-
-    for key in keys:
-        if isinstance(current, dict) and key in current:
-            current = current[key]
-        else:
-            return None
-
-    return current
-
-
-def _set_nested_value(obj: Dict, path: str, value: Any) -> None:
-    """
-    Set a nested value in a dictionary using dot notation.
-
-    Args:
-        obj: The dictionary to set the value in
-        path: Dot notation path like "fidesops_meta.data_type"
-        value: The value to set
-    """
-    keys = path.split(".")
-    current = obj
-
-    # Navigate to the parent of the final key
-    for key in keys[:-1]:
-        if key not in current:
-            current[key] = {}
-        current = current[key]
-
-    # Set the final value
-    final_key = keys[-1]
-    current[final_key] = value
-
-
 def _preserve_property(
     merged_item: Dict, existing_item: Dict, property_path: str
 ) -> None:
@@ -403,15 +358,9 @@ def _preserve_property(
         existing_item: The existing item to preserve from
         property_path: Property path, can be simple ("data_categories") or nested ("fidesops_meta.data_type")
     """
-    if "." in property_path:
-        # Handle nested property with dot notation
-        existing_value = _get_nested_value(existing_item, property_path)
-        if existing_value is not None:
-            _set_nested_value(merged_item, property_path, existing_value)
-    else:
-        # Handle simple property
-        if property_path in existing_item:
-            merged_item[property_path] = existing_item[property_path]
+    existing_value = pydash.get(existing_item, property_path)
+    if existing_value is not None:
+        pydash.set_(merged_item, property_path, existing_value)
 
 
 def merge_dataset_dicts(
@@ -496,9 +445,9 @@ def _merge_nested_fields(
         preserved_properties: List of properties to preserve (supports dot notation)
     """
     # Handle nested fields - we need to preserve existing nested fields even if template doesn't have them
-    if "fields" in existing_field:
+    if existing_field.get("fields"):
         # If existing has nested fields, we should preserve them
-        if "fields" not in merged_field:
+        if not merged_field.get("fields"):
             # Template doesn't have nested fields but existing does - preserve existing structure
             merged_field["fields"] = []
             for existing_nested_field in existing_field["fields"]:
