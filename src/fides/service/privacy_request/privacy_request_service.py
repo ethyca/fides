@@ -90,88 +90,120 @@ class PrivacyRequestService:
         if privacy_request_data.location:
             return
 
-        # Determine which Privacy Center configuration to use, with precedence:
-        # 1) The request's property config (if provided)
-        # 2) The default property's config (if available)
-        # 3) The single-row Privacy Center config table (legacy/global)
-        config_dict: Optional[Dict[str, Any]] = None
-
-        # 1) Request's property config
-        if privacy_request_data.property_id:
-            prop = Property.get_by(
-                self.db, field="id", value=privacy_request_data.property_id
-            )
-            if prop and getattr(prop, "privacy_center_config", None):
-                config_dict = prop.privacy_center_config  # type: ignore[assignment]
-
-        # 2) Default property config
+        config_dict = self._resolve_privacy_center_config_dict(
+            privacy_request_data.property_id
+        )
         if not config_dict:
-            default_prop = Property.get_by(self.db, field="is_default", value=True)
-            if default_prop and getattr(default_prop, "privacy_center_config", None):
-                config_dict = default_prop.privacy_center_config  # type: ignore[assignment]
-
-        # 3) Single-row global config
-        if not config_dict:
-            privacy_center_config_record = PrivacyCenterConfigModel.filter(
-                db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
-            ).first()
-            if privacy_center_config_record:
-                config_dict = privacy_center_config_record.config  # type: ignore[assignment]
-
-        if not config_dict:
-            # No Privacy Center config found, skip validation
             return
 
-        try:
-            # Parse the config using the Pydantic schema
-            privacy_center_config = PrivacyCenterConfigSchema.model_validate(
-                config_dict
+        privacy_center_config = self._parse_privacy_center_config(config_dict)
+        if not privacy_center_config:
+            return
+
+        action = self._get_matching_action(
+            privacy_center_config, privacy_request_data.policy_key
+        )
+        if not action or not action.custom_privacy_request_fields:
+            return
+
+        missing_required = self._is_required_location_missing(
+            action, privacy_request_data
+        )
+        if missing_required:
+            # Find the first location field name to reference in the error for clarity
+            first_location_field = next(
+                (
+                    name
+                    for name, cfg in action.custom_privacy_request_fields.items()
+                    if isinstance(cfg, LocationCustomPrivacyRequestField)
+                    and getattr(cfg, "required", False)
+                ),
+                "location",
             )
-        except Exception as exc:
+            raise PrivacyRequestError(
+                f"Location is required for field '{first_location_field}' but was not provided",
+                privacy_request_data.model_dump(mode="json"),
+            )
+
+    def _resolve_privacy_center_config_dict(
+        self, property_id: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        """Return the applicable Privacy Center config as a dict using precedence.
+
+        Precedence:
+        1) The request's property config (if provided)
+        2) The default property's config (if available)
+        3) The single-row Privacy Center config table (legacy/global)
+        """
+        # 1) Request's property config
+        if property_id:
+            prop = Property.get_by(self.db, field="id", value=property_id)
+            if prop and getattr(prop, "privacy_center_config", None):
+                return prop.privacy_center_config  # type: ignore[return-value]
+
+        # 2) Default property config
+        default_prop = Property.get_by(self.db, field="is_default", value=True)
+        if default_prop and getattr(default_prop, "privacy_center_config", None):
+            return default_prop.privacy_center_config  # type: ignore[return-value]
+
+        # 3) Single-row global config
+        privacy_center_config_record = PrivacyCenterConfigModel.filter(
+            db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
+        ).first()
+        if privacy_center_config_record:
+            return privacy_center_config_record.config  # type: ignore[return-value]
+        return None
+
+    def _parse_privacy_center_config(
+        self, config_dict: Dict[str, Any]
+    ) -> Optional[PrivacyCenterConfigSchema]:
+        """Parse a config dict into a schema instance, logging and skipping on error."""
+        try:
+            return PrivacyCenterConfigSchema.model_validate(config_dict)
+        except Exception as exc:  # pylint: disable=broad-except
             logger.warning(
                 f"Could not parse Privacy Center config for location validation: {exc}"
             )
-            return
+            return None
 
-        # Find the action that matches the policy key
-        matching_action = None
+    @staticmethod
+    def _get_matching_action(
+        privacy_center_config: PrivacyCenterConfigSchema, policy_key: str
+    ) -> Optional[Any]:
+        """Return the action entry matching the given policy key, if any."""
         for action in privacy_center_config.actions:
-            if action.policy_key == privacy_request_data.policy_key:
-                matching_action = action
-                break
+            if action.policy_key == policy_key:
+                return action
+        return None
 
-        if not matching_action or not matching_action.custom_privacy_request_fields:
-            # No matching action or no custom fields defined
-            return
+    @staticmethod
+    def _is_required_location_missing(
+        action: Any, privacy_request_data: PrivacyRequestCreate
+    ) -> bool:
+        """Check if any required location fields exist without values in the request."""
+        if not getattr(action, "custom_privacy_request_fields", None):
+            return False
 
-        # Check if any location fields are required
-        for (
-            field_name,
-            field_config,
-        ) in matching_action.custom_privacy_request_fields.items():
-            if isinstance(field_config, LocationCustomPrivacyRequestField):
-                # This is a location field - check if it's required
-                if field_config.required:
-                    # Check if this field has a value in the request
-                    field_has_value = False
-                    if privacy_request_data.custom_privacy_request_fields:
-                        field_data = (
-                            privacy_request_data.custom_privacy_request_fields.get(
-                                field_name
-                            )
-                        )
-                        if (
-                            field_data
-                            and hasattr(field_data, "value")
-                            and field_data.value
-                        ):
-                            field_has_value = True
+        custom_fields = action.custom_privacy_request_fields
+        for field_name, field_config in custom_fields.items():
+            if not isinstance(field_config, LocationCustomPrivacyRequestField):
+                continue
+            if not getattr(field_config, "required", False):
+                continue
 
-                    if not field_has_value:
-                        raise PrivacyRequestError(
-                            f"Location is required for field '{field_name}' but was not provided",
-                            privacy_request_data.model_dump(mode="json"),
-                        )
+            # Check if this location field has a value in the request custom fields
+            field_has_value = False
+            if privacy_request_data.custom_privacy_request_fields:
+                field_data = privacy_request_data.custom_privacy_request_fields.get(
+                    field_name
+                )
+                if field_data and getattr(field_data, "value", None):
+                    field_has_value = True
+
+            if not field_has_value:
+                return True
+
+        return False
 
     # pylint: disable=too-many-branches
     def create_privacy_request(

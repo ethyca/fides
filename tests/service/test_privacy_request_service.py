@@ -784,6 +784,7 @@ class TestPrivacyRequestService:
                 )
         finally:
             global_config.delete(db)
+
     def test_create_privacy_request_location_required_and_provided(
         self,
         db: Session,
