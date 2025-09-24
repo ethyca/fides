@@ -2826,6 +2826,8 @@ dataset:
         data_categories: [system.operations]
       - name: message
         data_categories: [system.operations]
+      - name: dismissed
+        data_categories: [system.operations]
       - name: monitor_config_id
         data_categories: [system.operations]
       - name: staged_resource_urns
