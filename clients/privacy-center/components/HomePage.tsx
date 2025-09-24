@@ -93,7 +93,7 @@ const HomePage: NextPage = () => {
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
   const { SHOW_BRAND_LINK, ALLOW_HTML_DESCRIPTION } = useSettings();
-  console.log({ ALLOW_HTML_DESCRIPTION });
+
   const showPrivacyPolicyLink =
     !!config.privacy_policy_url && !!config.privacy_policy_url_text;
 
