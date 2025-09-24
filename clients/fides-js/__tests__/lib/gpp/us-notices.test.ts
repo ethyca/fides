@@ -1,6 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 
-import { CmpApi } from "@iabgpp/cmpapi";
+import {
+  CmpApi,
+  InvalidFieldError,
+  Sections,
+  UsNatField,
+} from "@iabgpp/cmpapi";
 
 import {
   FidesCookie,
@@ -9,11 +14,17 @@ import {
   PrivacyNoticeFramework,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
-import { GPPUSApproach } from "../../../src/lib/gpp/constants";
+import {
+  FIDES_US_REGION_TO_GPP_SECTION,
+  GPPUSApproach,
+} from "../../../src/lib/gpp/constants";
+import { isGpcSubsectionSupported } from "../../../src/lib/gpp/gpp-utils";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
   GPPFieldMapping,
   GPPMechanismMapping,
+  GPPSection,
+  GPPSettings,
 } from "../../../src/lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
@@ -126,6 +137,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -141,6 +153,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -190,6 +203,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -258,6 +272,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -370,6 +385,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -388,6 +404,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
@@ -428,6 +445,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -479,6 +497,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -530,6 +549,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -573,6 +593,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toMatchObject({
@@ -608,6 +629,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -667,6 +689,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usut");
     expect(section).toEqual({
@@ -702,6 +725,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     const sectionsChanged = setGppNoticesProvidedFromExperience({
       cmpApi,
       experience,
+      context: {},
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
@@ -743,6 +767,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -803,6 +828,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usut");
     expect(section).toEqual({
@@ -857,6 +883,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cmpApi,
       cookie,
       experience,
+      context: {},
     });
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
@@ -880,5 +907,358 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       Gpc: false,
     });
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVVVY.QA");
+  });
+});
+
+describe("GPC subsection support", () => {
+  beforeEach(() => {
+    // Make stub so that the library initializes without errors
+    makeStub();
+  });
+
+  describe("isGpcSubsectionSupported", () => {
+    // Automatically build a list of *all* sections defined in the
+    // @iabgpp/cmpapi library. This ensures our test suite is automatically
+    // staying current whenever the @iabgpp/cmpapi library is updated
+    const ALL_SECTIONS: GPPSection[] = Array.from(
+      Array.from(Sections.SECTION_ID_NAME_MAP.entries()).map(([id, name]) => ({
+        id,
+        name,
+      })),
+    );
+
+    it("should return true for all sections that support GPC", () => {
+      /**
+      We want to test *all* sections in the @iabgpp/cmpapi library to see which
+      ones do/don't support the GPC subsection. Unfortunately, there's no simple
+      utility function in the library to do this.  Therefore, instead, we use
+      the CmpApi to *attempt* to set the GPC subsection and see if it succeeds
+      or not. This is too expensive and janky to do in the real world code, but
+      in our test suite it's a perfect way to automatically test that our
+      library functions are staying up-to-date.
+      */
+      const cmpApi = new CmpApi(1, 1);
+      ALL_SECTIONS.forEach((section) => {
+        let sectionHasGpcField = false;
+        try {
+          // Attempt to set the GPC subsection; this uses the UsNatField.GPC
+          // constant for convenience (all sections use the same value: "Gpc")
+          cmpApi.setFieldValue(section.name, UsNatField.GPC, true);
+          cmpApi.setFieldValue(
+            section.name,
+            UsNatField.GPC_SEGMENT_INCLUDED,
+            true,
+          );
+          sectionHasGpcField = true;
+        } catch (e) {
+          // We expect InvalidFieldError to be thrown if the section does not support the GPC subsection
+          if (e instanceof InvalidFieldError) {
+            sectionHasGpcField = false;
+          } else {
+            throw new Error(
+              `Unexpected error when testing GPC support for section ${section.name}: ${e}`,
+            );
+          }
+        }
+        const expectationValue = sectionHasGpcField;
+        const actualValue = isGpcSubsectionSupported(section);
+
+        // For readability, show the section name in the error message
+        const expectation = `isGpcSubsectionSupported(${section.name}): ${expectationValue}`;
+        const actual = `isGpcSubsectionSupported(${section.name}): ${actualValue}`;
+        expect(actual).toBe(expectation);
+      });
+    });
+
+    it("should return false for any unexpected input types", () => {
+      expect(isGpcSubsectionSupported(null as any)).toBe(false);
+      expect(isGpcSubsectionSupported(undefined as any)).toBe(false);
+      expect(isGpcSubsectionSupported("" as any)).toBe(false);
+      expect(isGpcSubsectionSupported({} as any)).toBe(false);
+      expect(isGpcSubsectionSupported({ id: 99 } as any)).toBe(false);
+      expect(isGpcSubsectionSupported({ name: "usnat" } as any)).toBe(true);
+      expect(isGpcSubsectionSupported({ name: "usca" } as any)).toBe(true);
+      expect(isGpcSubsectionSupported({ name: "usco" } as any)).toBe(true);
+      expect(isGpcSubsectionSupported({ name: "usct" } as any)).toBe(true);
+    });
+  });
+
+  describe("when updating notices or opt-outs", () => {
+    let cmpApi: CmpApi;
+    let cookie: FidesCookie;
+    let notices: PrivacyNotice[];
+    let usnatExperience: PrivacyExperience;
+    let uscaExperience: PrivacyExperience;
+    let usutExperience: PrivacyExperience;
+
+    // Example national notice (where GPC subsection is supported)
+    const US_NAT_NOTICE = mockPrivacyNotice({
+      notice_key: "data_sales_and_sharing",
+      framework: PrivacyNoticeFramework.GPP_US_NATIONAL,
+      gpp_field_mapping: [
+        mockGppField({
+          region: "us",
+          notice: [
+            "SaleOptOutNotice",
+            "SharingOptOutNotice",
+            "TargetedAdvertisingOptOutNotice",
+          ],
+          mechanism: [
+            mockGppMechanism({
+              field: "SaleOptOut",
+            }),
+            mockGppMechanism({
+              field: "SharingOptOut",
+            }),
+            mockGppMechanism({
+              field: "TargetedAdvertisingOptOut",
+            }),
+          ],
+        }),
+      ],
+    });
+
+    // Example state notice (where GPC subsection is supported)
+    const US_CA_NOTICE = mockPrivacyNotice({
+      notice_key: "us_ca",
+      framework: PrivacyNoticeFramework.GPP_US_STATE,
+      gpp_field_mapping: [
+        mockGppField({
+          region: "us_ca",
+          notice: ["SaleOptOutNotice"],
+          mechanism: [mockGppMechanism()],
+        }),
+      ],
+    });
+
+    // Example state notice (where GPC subsection is not supported)
+    const US_UT_NOTICE = mockPrivacyNotice({
+      notice_key: "us_ut",
+      framework: PrivacyNoticeFramework.GPP_US_STATE,
+      gpp_field_mapping: [
+        mockGppField({
+          region: "us_ut",
+          notice: ["SaleOptOutNotice"],
+          mechanism: [mockGppMechanism()],
+        }),
+      ],
+    });
+
+    beforeEach(() => {
+      // Configure a test setup with all three example notices configured
+      cmpApi = new CmpApi(1, 1);
+      cookie = mockFidesCookie({ consent: {} });
+      notices = [US_NAT_NOTICE, US_UT_NOTICE, US_CA_NOTICE];
+      const gppSettings: GPPSettings = {
+        enabled: true,
+        us_approach: GPPUSApproach.ALL,
+        mspa_covered_transactions: true,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: false,
+        enable_tcfeu_string: true,
+      };
+      usnatExperience = mockPrivacyExperience({
+        region: "us",
+        privacy_notices: notices,
+        gpp_settings: gppSettings,
+      });
+      uscaExperience = mockPrivacyExperience({
+        region: "us_ca",
+        privacy_notices: notices,
+        gpp_settings: gppSettings,
+      });
+      usutExperience = mockPrivacyExperience({
+        region: "us_ut",
+        privacy_notices: notices,
+        gpp_settings: gppSettings,
+      });
+    });
+
+    // Test that the GPC subsection is set correctly by both the notice & opt-out update functions
+    const updateFunctions = [
+      setGppOptOutsFromCookieAndExperience,
+      setGppNoticesProvidedFromExperience,
+    ];
+    updateFunctions.forEach((updateFunction) => {
+      describe(`when updating GPP via ${updateFunction.name}`, () => {
+        describe("when the browser GPC setting is true", () => {
+          it("sets Gpc=true in the usnat section", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: usnatExperience,
+              context: { globalPrivacyControl: true },
+            });
+            expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
+            const section = cmpApi.getSection("usnat");
+            expect(section).toHaveProperty("GpcSegmentType", 1);
+            expect(section).toHaveProperty("Gpc", true);
+            expect(cmpApi.getGppString()).toMatch(/DBABLA~B..AAAAAAABY\.YA$/);
+          });
+
+          it("sets Gpc=true in the usca section", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: uscaExperience,
+              context: { globalPrivacyControl: true },
+            });
+            expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
+            const section = cmpApi.getSection("usca");
+            expect(section).toHaveProperty("GpcSegmentType", 1);
+            expect(section).toHaveProperty("Gpc", true);
+            expect(cmpApi.getGppString()).toMatch(/DBABBg~B.AAAABY\.YA$/);
+          });
+
+          it("does not include Gpc in the usut section where GPC is not supported", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: usutExperience,
+              context: { globalPrivacyControl: true },
+            });
+            expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
+            const section = cmpApi.getSection("usut");
+            expect(section).not.toHaveProperty("GpcSegmentType");
+            expect(section).not.toHaveProperty("Gpc");
+            expect(cmpApi.getGppString()).toMatch(/DBABFg~B.AAAAWA$/);
+          });
+        });
+
+        describe("when the browser GPC setting is false", () => {
+          it("sets Gpc=false in the usnat section", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: usnatExperience,
+              context: { globalPrivacyControl: false },
+            });
+            expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
+            const section = cmpApi.getSection("usnat");
+            expect(section).toHaveProperty("GpcSegmentType", 1);
+            expect(section).toHaveProperty("Gpc", false);
+            expect(cmpApi.getGppString()).toMatch(/DBABLA~B..AAAAAAABY\.QA$/);
+          });
+
+          it("sets Gpc=false in the usca section", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: uscaExperience,
+              context: { globalPrivacyControl: false },
+            });
+            expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
+            const section = cmpApi.getSection("usca");
+            expect(section).toHaveProperty("GpcSegmentType", 1);
+            expect(section).toHaveProperty("Gpc", false);
+            expect(cmpApi.getGppString()).toMatch(/DBABBg~B.AAAABY\.QA$/);
+          });
+
+          it("does not include Gpc in the usut section where GPC is not supported", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: usutExperience,
+              context: { globalPrivacyControl: false },
+            });
+            expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
+            const section = cmpApi.getSection("usut");
+            expect(section).not.toHaveProperty("GpcSegmentType");
+            expect(section).not.toHaveProperty("Gpc");
+            expect(cmpApi.getGppString()).toMatch(/DBABFg~B.AAAAWA/);
+          });
+        });
+
+        describe("when the browser GPC setting is undefined", () => {
+          it("sets Gpc=false in the usnat section", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: usnatExperience,
+              context: {},
+            });
+            expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
+            const section = cmpApi.getSection("usnat");
+            expect(section).toHaveProperty("GpcSegmentType", 1);
+            expect(section).toHaveProperty("Gpc", false);
+            expect(cmpApi.getGppString()).toMatch(/DBABLA~B..AAAAAAABY\.QA$/);
+          });
+
+          it("sets Gpc=false in the usca section", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: uscaExperience,
+              context: {},
+            });
+            expect(sectionsChanged).toEqual([{ name: "usca", id: 8 }]);
+            const section = cmpApi.getSection("usca");
+            expect(section).toHaveProperty("GpcSegmentType", 1);
+            expect(section).toHaveProperty("Gpc", false);
+            expect(cmpApi.getGppString()).toMatch(/DBABBg~B.AAAABY\.QA$/);
+          });
+
+          it("does not include Gpc in the usut section where GPC is not supported", () => {
+            const sectionsChanged = updateFunction({
+              cmpApi,
+              cookie,
+              experience: usutExperience,
+              context: {},
+            });
+            expect(sectionsChanged).toEqual([{ name: "usut", id: 11 }]);
+            const section = cmpApi.getSection("usut");
+            expect(section).not.toHaveProperty("GpcSegmentType");
+            expect(section).not.toHaveProperty("Gpc");
+            expect(cmpApi.getGppString()).toMatch(/DBABFg~B.AAAAWA$/);
+          });
+        });
+      });
+    });
+  });
+});
+
+describe("GPP section support", () => {
+  describe("FIDES_US_REGION_TO_GPP_SECTION", () => {
+    it("should be populated with all Sections supported by @iabgpp/cmpapi library", () => {
+      /**
+       * We want to ensure that our FIDES_US_REGION_TO_GPP_SECTION constant is
+       * populated with all Sections supported by the @iabgpp/cmpapi library.
+       * This unit test keeps us honest by comparing the latest Sections defined
+       * in in the library against our constant and flagging any missing
+       * sections (or extra sections) in our code!
+       */
+
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      // Get all US sections from the @iabgpp/cmpapi library
+      const allSections = Array.from(Sections.SECTION_ID_NAME_MAP.entries());
+
+      // Filter to only US sections (those starting with "us"), excluding deprecated sections
+      const usSections = allSections.filter(
+        ([_id, name]) => name.startsWith("us") && name !== "uspv1", // Exclude deprecated uspv1
+      );
+
+      // Extract the section names from our constant
+      const ourSupportedSections = Object.values(
+        FIDES_US_REGION_TO_GPP_SECTION,
+      ).map((section) => section.name);
+
+      // Check that we support all US sections defined in the library
+      // NOTE: If you see this test fail, you need to add the new section to
+      // the FIDES_US_REGION_TO_GPP_SECTION constant in our code!
+      const missingNames = usSections
+        .filter(([_id, name]) => !ourSupportedSections.includes(name))
+        .map(([_id, name]) => name);
+      expect(missingNames).toEqual([]);
+
+      // Check that we don't have any extra sections that aren't in the library
+      // NOTE: If you see this test fail, you need to review the extra section
+      // in the FIDES_US_REGION_TO_GPP_SECTION constant - it's probably an error?
+      const extraNames = ourSupportedSections.filter(
+        (sectionName) =>
+          !usSections.some(([_id, name]) => name === sectionName),
+      );
+      expect(extraNames).toEqual([]);
+      /* eslint-enable @typescript-eslint/no-unused-vars */
+    });
   });
 });

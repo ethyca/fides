@@ -48,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
 - Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
 - Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+- Encode GPC subsection in GPP string whenever supported by the section (e.g. usnat, usca) [#6633](https://github.com/ethyca/fides/pull/6633)
 - Enforce required location validation on privacy-request POST when configured via Privacy Center/property config [#6646](https://github.com/ethyca/fides/pull/6646)
 
 ## [2.70.4](https://github.com/ethyca/fides/compare/2.70.3...2.70.4)
