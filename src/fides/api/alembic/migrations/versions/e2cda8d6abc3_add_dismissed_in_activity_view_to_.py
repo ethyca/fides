@@ -1,4 +1,4 @@
-"""add_dismissed_in_activity_view_to_monitor_task
+"""add_dismissed_to_monitor_task
 
 Revision ID: e2cda8d6abc3
 Revises: 0eef0016cf06
@@ -17,15 +17,13 @@ depends_on = None
 
 
 def upgrade():
-    # Add the dismissed_in_activity_view column to monitortask table
+    # Add the dismissed column to monitortask table
     op.add_column(
         "monitortask",
-        sa.Column(
-            "dismissed_in_activity_view", sa.Boolean(), nullable=True, default=False
-        ),
+        sa.Column("dismissed", sa.Boolean(), nullable=False, server_default=sa.text("false")),
     )
 
 
 def downgrade():
-    # Remove the dismissed_in_activity_view column from monitortask table
-    op.drop_column("monitortask", "dismissed_in_activity_view")
+    # Remove the dismissed column from monitortask table
+    op.drop_column("monitortask", "dismissed")

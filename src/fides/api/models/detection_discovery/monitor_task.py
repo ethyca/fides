@@ -51,7 +51,7 @@ class MonitorTask(WorkerTask, Base):
     )
     staged_resource_urns = Column(ARRAY(String), nullable=True)
     child_resource_urns = Column(ARRAY(String), nullable=True)
-    dismissed_in_activity_view = Column(Boolean, nullable=True, default=False)
+    dismissed = Column(Boolean, nullable=False, default=False)
 
     monitor_config = relationship(MonitorConfig, cascade="all, delete")
     execution_logs = relationship(
