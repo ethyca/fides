@@ -12,16 +12,19 @@
   ],
   "exports": {
     ".": {
+      "module": "./dist/fides.mjs",
       "import": "./dist/fides.mjs",
       "require": "./dist/fides.js",
       "types": "./dist/fides.d.ts"
     },
     "./headless": {
+      "module": "./dist/fides-headless.mjs",
       "import": "./dist/fides-headless.mjs",
       "require": "./dist/fides-headless.js",
       "types": "./dist/fides-headless.d.ts"
     },
     "./tcf": {
+      "module": "./dist/fides-tcf.mjs",
       "import": "./dist/fides-tcf.mjs",
       "require": "./dist/fides-tcf.js",
       "types": "./dist/fides-tcf.d.ts"
@@ -38,7 +41,8 @@
     "format:ci": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "jest --watchAll",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
     "test:ci": "jest",
     "typecheck": "tsc --noEmit"
   },
@@ -95,7 +99,7 @@
     "typedoc": "^0.26.11",
     "typedoc-plugin-markdown": "~4.1.0",
     "typescript": "^4.9.5",
-    "typescript-plugin-css-modules": "^5.0.1"
+    "typescript-plugin-css-modules": "^5.2.0"
   },
   "typedocOptions": {
     "disableSources": true,

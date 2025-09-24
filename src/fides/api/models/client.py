@@ -51,6 +51,7 @@ class ClientDetail(Base):
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
     )
+    user: Optional["FidesUser"]
 
     @classmethod
     def create_client_and_secret(

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import dayjs, { Dayjs } from "dayjs";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -13,11 +14,7 @@ import {
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL } from "../../constants";
 import {
-  ConfigMessagingDetailsRequest,
-  ConfigMessagingRequest,
-  ConfigMessagingSecretsRequest,
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,
@@ -42,87 +39,71 @@ export function mapFiltersToSearchParams({
   verbose,
   sort_direction,
   sort_field,
-}: Partial<PrivacyRequestParams>): any {
-  let fromISO;
+}: Partial<PrivacyRequestParams>): URLSearchParams {
+  let fromDay: Dayjs | undefined;
   if (from) {
-    fromISO = new Date(from);
-    fromISO.setUTCHours(0, 0, 0);
+    fromDay = dayjs(from);
   }
 
-  let toISO;
+  let toDay: Dayjs | undefined;
   if (to) {
-    toISO = new Date(to);
-    toISO.setUTCHours(23, 59, 59);
+    toDay = dayjs(to);
   }
 
-  return {
-    include_identities: "true",
-    include_custom_privacy_request_fields: "true",
-    ...(action_type && action_type.length > 0
-      ? { action_type: action_type.join("&action_type=") }
-      : {}),
-    ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
-    ...(id ? { request_id: id } : {}),
-    ...(fuzzy_search_str ? { fuzzy_search_str } : {}),
-    ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
-    ...(toISO ? { created_lt: toISO.toISOString() } : {}),
-    ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
-    ...(verbose ? { verbose } : {}),
-    ...(sort_direction ? { sort_direction } : {}),
-    ...(sort_field ? { sort_field } : {}),
-  };
+  const params = new URLSearchParams();
+
+  params.set("include_identities", "true");
+  params.set("include_custom_privacy_request_fields", "true");
+
+  if (Array.isArray(action_type) && action_type.length > 0) {
+    action_type.forEach((value) => {
+      params.append("action_type", String(value));
+    });
+  }
+
+  if (Array.isArray(status) && status.length > 0) {
+    status.forEach((value) => {
+      params.append("status", String(value));
+    });
+  }
+
+  if (id) {
+    params.set("request_id", id);
+  }
+
+  if (fuzzy_search_str) {
+    params.set("fuzzy_search_str", fuzzy_search_str);
+  }
+
+  if (fromDay) {
+    params.set("created_gt", fromDay.startOf("day").utc().toISOString());
+  }
+  if (toDay) {
+    params.set("created_lt", toDay.endOf("day").utc().toISOString());
+  }
+
+  if (page) {
+    params.set("page", `${page}`);
+  }
+
+  if (typeof size !== "undefined") {
+    params.set("size", `${size}`);
+  }
+
+  if (typeof verbose !== "undefined") {
+    params.set("verbose", String(verbose));
+  }
+
+  if (sort_direction) {
+    params.set("sort_direction", sort_direction);
+  }
+
+  if (sort_field) {
+    params.set("sort_field", sort_field);
+  }
+
+  return params;
 }
-
-export const requestCSVDownload = async ({
-  id,
-  from,
-  to,
-  status,
-  action_type,
-  token,
-}: PrivacyRequestParams & { token: string | null }) => {
-  if (!token) {
-    return null;
-  }
-
-  return fetch(
-    `${BASE_URL}/privacy-request?${new URLSearchParams({
-      ...mapFiltersToSearchParams({
-        id,
-        from,
-        to,
-        status,
-        action_type,
-      }),
-      download_csv: "true",
-    })}`,
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${token}`,
-        "X-Fides-Source": "fidesops-admin-ui",
-      },
-    },
-  )
-    .then(async (response) => {
-      if (!response.ok) {
-        if (response.status === 400) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || "Bad request error");
-        }
-        throw new Error("Got a bad response from the server");
-      }
-      return response.blob();
-    })
-    .then((data) => {
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(data);
-      a.download = "privacy-requests.csv";
-      a.click();
-    })
-    .catch((error) => Promise.reject(error));
-};
 
 export const selectPrivacyRequestFilters = (
   state: RootState,
@@ -182,7 +163,7 @@ export const subjectRequestsSlice = createSlice({
     clearAllFilters: () => ({
       ...initialState,
     }),
-    clearSortFields: (state) => ({
+    clearSortKeys: (state) => ({
       ...state,
       sort_direction: undefined,
       sort_field: undefined,
@@ -201,11 +182,7 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       id: action.payload,
     }),
-    setFuzzySearchStr: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      fuzzy_search_str: action.payload,
-    }),
+
     setRequestStatus: (
       state,
       action: PayloadAction<PrivacyRequestStatus[]>,
@@ -233,7 +210,7 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       sort_direction: action.payload,
     }),
-    setSortField: (state, action: PayloadAction<string>) => ({
+    setSortKey: (state, action: PayloadAction<string>) => ({
       ...state,
       sort_field: action.payload,
     }),
@@ -251,7 +228,7 @@ export const subjectRequestsSlice = createSlice({
 
 export const {
   clearAllFilters,
-  clearSortFields,
+  clearSortKeys,
   setPage,
   setRequestFrom,
   setRequestId,
@@ -259,9 +236,8 @@ export const {
   setRequestActionType,
   setRequestTo,
   setRetryRequests,
-  setFuzzySearchStr,
   setSortDirection,
-  setSortField,
+  setSortKey,
   setVerbose,
 } = subjectRequestsSlice.actions;
 
@@ -317,9 +293,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
-        url: `privacy-request?${decodeURIComponent(
-          new URLSearchParams(mapFiltersToSearchParams(filters)).toString(),
-        )}`,
+        url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
       }),
       providesTags: () => ["Request"],
       async onQueryStarted(_key, { dispatch, queryFulfilled }) {
@@ -329,6 +303,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
             dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
           }
         });
+      },
+    }),
+    downloadPrivacyRequestCsv: build.query<any, Partial<PrivacyRequestParams>>({
+      query: (filters) => {
+        return {
+          url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
+          params: {
+            download_csv: true,
+          },
+          responseHandler: "content-type",
+        };
       },
     }),
     postPrivacyRequest: build.mutation<
@@ -429,43 +414,6 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.details,
       }),
     }),
-    getActiveMessagingProvider: build.query<any, void>({
-      query: () => ({
-        url: `messaging/default/active`,
-      }),
-    }),
-    getMessagingConfigurationDetails: build.query<any, ConfigMessagingRequest>({
-      query: (params) => ({
-        url: `messaging/default/${params.type}`,
-      }),
-    }),
-    createMessagingConfiguration: build.mutation<
-      any,
-      ConfigMessagingDetailsRequest
-    >({
-      query: (params) => ({
-        url: `messaging/default`,
-        method: "PUT",
-        body: params,
-      }),
-    }),
-    createMessagingConfigurationSecrets: build.mutation<
-      any,
-      ConfigMessagingSecretsRequest
-    >({
-      query: (params) => ({
-        url: `messaging/default/${params.service_type}/secret`,
-        method: "PUT",
-        body: params.details,
-      }),
-    }),
-    createTestConnectionMessage: build.mutation<any, any>({
-      query: (params) => ({
-        url: `messaging/config/test`,
-        method: "POST",
-        body: params,
-      }),
-    }),
     uploadManualAccessWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -557,14 +505,10 @@ export const {
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
-  useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
-  useCreateMessagingConfigurationMutation,
-  useCreateMessagingConfigurationSecretsMutation,
-  useCreateTestConnectionMessageMutation,
   useGetPrivacyRequestAccessResultsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
   usePostPrivacyRequestFinalizeMutation,
+  useLazyDownloadPrivacyRequestCsvQuery,
 } = privacyRequestApi;

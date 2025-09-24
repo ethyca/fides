@@ -20,8 +20,8 @@ describe("System integrations", () => {
   });
 
   it("should render the integration configuration panel when navigating to integrations tab", () => {
-    cy.getByTestId("system-fidesctl_system").within(() => {
-      cy.getByTestId("edit-btn").click();
+    cy.getAntTableRow("fidesctl_system").within(() => {
+      cy.getByTestId("system-link-fidesctl_system").click();
     });
     cy.wait("@getDict");
     cy.getAntTab("Integrations").click({ force: true });
@@ -30,8 +30,8 @@ describe("System integrations", () => {
 
   describe("Integration search", () => {
     beforeEach(() => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
+      cy.getAntTableRow("fidesctl_system").within(() => {
+        cy.getByTestId("system-link-fidesctl_system").click();
       });
       cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
@@ -50,13 +50,17 @@ describe("System integrations", () => {
         .find('[role="menuitem"] p')
         .should("contain.text", "Shopify");
     });
+
+    it("should not display Website in the dropdown", () => {
+      cy.getByTestId("select-dropdown-list")
+        .find('[role="menuitem"] p')
+        .should("not.contain.text", "Website");
+    });
   });
 
   describe("Integration form contents", () => {
     beforeEach(() => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
 
@@ -77,7 +81,7 @@ describe("System integrations", () => {
     });
   });
 
-  describe("Consent automation", () => {
+  describe("Bidirectional consent", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/system/*", {
         fixture: "systems/system_active_integration.json",
@@ -91,19 +95,17 @@ describe("System integrations", () => {
       cy.intercept("GET", "/api/v1/privacy-notice*", {
         fixture: "privacy-notices/list.json",
       }).as("getNotices");
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Integrations").click({ force: true });
     });
-    it("should render the consent automation accordion panel", () => {
+    it("should render the Bidirectional consent accordion panel", () => {
       cy.getByTestId("accordion-consent-automation").click();
       cy.getByTestId("accordion-panel-consent-automation").should("exist");
       cy.getByTestId("consentable-item-label").should("have.length", 5);
       cy.getByTestId("consentable-item-label-child").should("have.length", 6);
       cy.getByTestId("consentable-item-select").should("have.length", 11);
     });
-    it("should save the consent automation settings", () => {
+    it("should save the Bidirectional consent settings", () => {
       cy.getByTestId("accordion-consent-automation").click();
       cy.getByTestId("consentable-item-select").antSelect(0);
       cy.getByTestId("save-consent-automation").click();

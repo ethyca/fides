@@ -57,6 +57,7 @@ export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";
 export const INTEGRATION_MANAGEMENT_ROUTE = "/integrations";
+export const INTEGRATION_DETAIL_ROUTE = "/integrations/[id]";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/settings/organization";
 export const LOCATIONS_ROUTE = "/settings/locations";
 export const REGULATIONS_ROUTE = "/settings/regulations";
@@ -67,9 +68,12 @@ export const EMAIL_TEMPLATES_ROUTE = "/settings/email-templates";
 export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
+export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
 export const MESSAGING_ROUTE = "/messaging";
 export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
 export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
+export const MESSAGING_PROVIDERS_ROUTE = `/settings/messaging-providers`;
+export const MESSAGING_PROVIDERS_EDIT_ROUTE = `/settings/messaging-providers/[key]`;
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";

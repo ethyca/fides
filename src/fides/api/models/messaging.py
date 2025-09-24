@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Dict, Optional, Type, Union
 
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy import Column, Enum, String
+from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -18,17 +19,18 @@ from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     SMS_MESSAGING_SERVICES,
-    SUPPORTED_MESSAGING_SERVICE_SECRETS,
+    MessagingConnectionTestStatus,
     MessagingMethod,
+    MessagingServiceType,
+)
+from fides.api.schemas.messaging.shared_schemas import (
+    SUPPORTED_MESSAGING_SERVICE_SECRETS,
     MessagingServiceSecretsAWS_SES,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
-    MessagingServiceType,
-)
-from fides.api.schemas.messaging.messaging_secrets_docs_only import (
-    possible_messaging_secrets,
+    PossibleMessagingSecrets,
 )
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
@@ -48,7 +50,7 @@ def get_messaging_method(
 
 def get_schema_for_secrets(
     service_type: MessagingServiceType,
-    secrets: possible_messaging_secrets,
+    secrets: PossibleMessagingSecrets,
 ) -> SUPPORTED_MESSAGING_SERVICE_SECRETS:
     """
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema
@@ -87,6 +89,8 @@ class MessagingConfig(Base):
         Enum(MessagingServiceType), index=True, unique=True, nullable=False
     )
     details = Column(MutableDict.as_mutable(JSONB), nullable=True)
+    last_test_timestamp = Column(DateTime(timezone=True))
+    last_test_succeeded = Column(Boolean)
     secrets = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
@@ -136,7 +140,7 @@ class MessagingConfig(Base):
         self,
         *,
         db: Session,
-        messaging_secrets: possible_messaging_secrets,
+        messaging_secrets: PossibleMessagingSecrets,
     ) -> None:
         """Creates or updates secrets associated with a config id"""
 
@@ -185,6 +189,18 @@ class MessagingConfig(Base):
                 f"Unknown notification_service_type {active_default_messaging_type} configured"
             )
 
+    def update_test_status(
+        self, test_status: MessagingConnectionTestStatus, db: Session
+    ) -> None:
+        """
+        Updates last_test_timestamp and last_test_succeeded after an attempt to send a test message.
+        """
+        self.last_test_timestamp = datetime.now()
+        self.last_test_succeeded = (
+            test_status == MessagingConnectionTestStatus.succeeded
+        )
+        self.save(db)
+
 
 def default_messaging_config_name(service_type: str) -> str:
     """
@@ -192,7 +208,7 @@ def default_messaging_config_name(service_type: str) -> str:
 
     Returns a name to be used in a default messaging config for the given type.
     """
-    return f"Default Messaging Config [{service_type}]"
+    return MessagingServiceType(service_type).human_readable
 
 
 def default_messaging_config_key(service_type: str) -> str:
@@ -201,4 +217,8 @@ def default_messaging_config_key(service_type: str) -> str:
 
     Returns a key to be used in a default messaging config for the given type.
     """
-    return f"default_messaging_config_{service_type.lower()}"
+    # Historically, when a key was not supplied, the service type string itself
+    # was used as the key (e.g. "mailgun").  Reverting to that behaviour keeps
+    # backward-compatibility with existing tests and API consumers that may rely
+    # on this convention.
+    return service_type.lower()

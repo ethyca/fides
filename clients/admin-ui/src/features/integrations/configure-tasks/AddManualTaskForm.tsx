@@ -12,7 +12,8 @@ import React, { useEffect } from "react";
 
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
 
-import { Task } from "./useTaskColumns";
+import { FIELD_TYPE_LABELS, REQUEST_TYPE_LABELS } from "./constants";
+import { Task } from "./types";
 
 type Props = {
   isSubmitting: boolean;
@@ -52,8 +53,14 @@ const AddManualTaskForm = ({
   const isEditing = !!editingTask;
 
   const requestTypeOptions = [
-    { label: "Access", value: ManualFieldRequestType.ACCESS },
-    { label: "Erasure", value: ManualFieldRequestType.ERASURE },
+    {
+      label: REQUEST_TYPE_LABELS[ManualFieldRequestType.ACCESS],
+      value: ManualFieldRequestType.ACCESS,
+    },
+    {
+      label: REQUEST_TYPE_LABELS[ManualFieldRequestType.ERASURE],
+      value: ManualFieldRequestType.ERASURE,
+    },
   ];
 
   // Watch request type to determine available field type options
@@ -63,12 +70,23 @@ const AddManualTaskForm = ({
   const getFieldTypeOptions = () => {
     if (requestType === ManualFieldRequestType.ACCESS) {
       return [
-        { label: "Text", value: ManualTaskFieldType.TEXT },
-        { label: "Attachment", value: ManualTaskFieldType.ATTACHMENT },
+        {
+          label: FIELD_TYPE_LABELS[ManualTaskFieldType.TEXT],
+          value: ManualTaskFieldType.TEXT,
+        },
+        {
+          label: FIELD_TYPE_LABELS[ManualTaskFieldType.ATTACHMENT],
+          value: ManualTaskFieldType.ATTACHMENT,
+        },
       ];
     }
     if (requestType === ManualFieldRequestType.ERASURE) {
-      return [{ label: "Checkbox", value: ManualTaskFieldType.CHECKBOX }];
+      return [
+        {
+          label: FIELD_TYPE_LABELS[ManualTaskFieldType.CHECKBOX],
+          value: ManualTaskFieldType.CHECKBOX,
+        },
+      ];
     }
     // Return empty options when no request type is selected
     return [];
@@ -142,7 +160,7 @@ const AddManualTaskForm = ({
           { max: 100, message: "Task name must be less than 100 characters" },
         ]}
       >
-        <Input placeholder="Enter task name" />
+        <Input placeholder="Enter task name" data-testid="input-name" />
       </Form.Item>
 
       <Form.Item
@@ -158,7 +176,10 @@ const AddManualTaskForm = ({
           { max: 200, message: "Description must be less than 200 characters" },
         ]}
       >
-        <Input placeholder="Enter task description" />
+        <Input
+          placeholder="Enter task description"
+          data-testid="input-description"
+        />
       </Form.Item>
 
       {!isEditing && (
@@ -179,7 +200,10 @@ const AddManualTaskForm = ({
             },
           ]}
         >
-          <Input placeholder="Recommended to specify (auto-generated if empty)" />
+          <Input
+            placeholder="Recommended to specify (auto-generated if empty)"
+            data-testid="input-key"
+          />
         </Form.Item>
       )}
 
@@ -193,7 +217,7 @@ const AddManualTaskForm = ({
           }
           name="key"
         >
-          <Input disabled />
+          <Input disabled data-testid="input-key-disabled" />
         </Form.Item>
       )}
 
@@ -210,6 +234,7 @@ const AddManualTaskForm = ({
         <Select
           placeholder="Select request type"
           options={requestTypeOptions}
+          data-testid="select-request-type"
         />
       </Form.Item>
 
@@ -227,14 +252,24 @@ const AddManualTaskForm = ({
           placeholder="Select field type"
           options={fieldTypeOptions}
           disabled={isFieldTypeDisabled}
+          data-testid="select-field-type"
         />
       </Form.Item>
 
       <Flex justify="flex-end" gap={2}>
-        <Button onClick={onCancel} disabled={isSubmitting}>
+        <Button
+          onClick={onCancel}
+          disabled={isSubmitting}
+          data-testid="cancel-btn"
+        >
           Cancel
         </Button>
-        <Button type="primary" htmlType="submit" loading={isSubmitting}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={isSubmitting}
+          data-testid="save-btn"
+        >
           {isEditing ? "Update task" : "Add task"}
         </Button>
       </Flex>

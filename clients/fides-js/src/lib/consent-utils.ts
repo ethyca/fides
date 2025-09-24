@@ -265,6 +265,13 @@ export const shouldResurfaceBanner = (
   if (options.fidesModalDisplay === "immediate") {
     return false;
   }
+  // Never surface TCF banner if there are no vendors
+  if (
+    experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
+    experience.vendor_count === 0
+  ) {
+    return false;
+  }
   // Always resurface banner for TCF unless consent was set by override
   // or the saved version_hash matches
   if (
@@ -577,6 +584,7 @@ export const applyOverridesToConsent = (
   privacyNotices: PrivacyNoticeWithPreference[] | undefined = [],
   flagTypeOverride?: ConsentFlagType,
   nonApplicableFlagModeOverride?: ConsentNonApplicableFlagMode,
+  cookieNonApplicableNoticeKeys?: string[],
 ): NoticeConsent => {
   const consent = { ...fidesConsent };
   // Get options from either the provided options or the Fides config, with
@@ -613,10 +621,22 @@ export const applyOverridesToConsent = (
     {},
   );
 
+  // Filter out consent values for notices that were non-applicable when saved
+  const filteredConsent: NoticeConsent = {};
+  Object.entries(consent).forEach(([key, value]) => {
+    if (
+      cookieNonApplicableNoticeKeys?.includes(key) &&
+      !nonApplicablePrivacyNotices?.includes(key)
+    ) {
+      return;
+    }
+    filteredConsent[key] = value;
+  });
+
   Object.assign(
     consentValues,
     normalizeConsentValues({
-      consent,
+      consent: filteredConsent,
       consentMechanisms,
       flagType,
     }),

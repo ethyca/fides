@@ -27,9 +27,11 @@ const useConsentReportingDownload = () => {
     } else {
       const a = document.createElement("a");
       const csvBlob = new Blob([result.data], { type: "text/csv" });
-      a.href = window.URL.createObjectURL(csvBlob);
+      const csvUrl = window.URL.createObjectURL(csvBlob);
+      a.href = csvUrl;
       a.download = `consent-reports.csv`;
       a.click();
+      window.URL.revokeObjectURL(csvUrl);
     }
   };
 

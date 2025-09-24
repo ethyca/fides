@@ -6,7 +6,9 @@ import {
   Collapse,
   Divider,
   Flex,
+  formatIsoLocation,
   Heading,
+  isoStringToEntry,
   Text,
 } from "fidesui";
 import { useFormikContext } from "formik";
@@ -476,7 +478,15 @@ export const PrivacyExperienceForm = ({
         allItems={allSelectedRegions}
         values={values.regions ?? []}
         setValues={(newValues) => setFieldValue("regions", newValues)}
-        getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
+        getItemLabel={(item) => {
+          const isoEntry = isoStringToEntry(item);
+
+          return isoEntry
+            ? formatIsoLocation({ isoEntry })
+            : PRIVACY_NOTICE_REGION_RECORD[
+                item
+              ]; /* fallback on internal list for now */
+        }}
         draggable
         baseTestId="location"
       />

@@ -18,6 +18,8 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from pyinstrument import Profiler
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from starlette.background import BackgroundTask
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from uvicorn import Config, Server
@@ -43,6 +45,7 @@ from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
 from fides.api.service.privacy_request.request_service import (
+    initiate_async_tasks_status_polling,
     initiate_interrupted_task_requeue_poll,
     initiate_poll_for_exited_privacy_request_tasks,
     initiate_scheduled_dsr_data_removal,
@@ -60,6 +63,7 @@ from fides.api.ui import (
 )
 from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
+from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 
@@ -99,6 +103,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_poll_for_exited_privacy_request_tasks()
     initiate_scheduled_dsr_data_removal()
     initiate_interrupted_task_requeue_poll()
+    initiate_async_tasks_status_polling()
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
 
@@ -232,7 +237,8 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     # If the request fails, we still want to log it
     try:
         response = await call_next(request)
-    except:  # pylint: disable=bare-except
+    except Exception as e:  # pylint: disable=bare-except
+        logger.exception(f"Unhandled exception processing request: '{e}'")
         response = Response(status_code=500)
 
     handler_time = datetime.now() - start
@@ -387,3 +393,22 @@ async def request_validation_exception_handler(
             "detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})
         },
     )
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
+    """Log rate limit violations and delegate to default handler."""
+    client_ip = safe_rate_limit_key(
+        request
+    )  # non exception-raising, falls back to source IP
+
+    # Log the rate limit event
+    logger.warning(
+        "Rate limit exceeded - IP: %s, Path: %s, Method: %s",
+        client_ip,
+        request.url.path,
+        request.method,
+    )
+
+    # Use the default handler to generate the proper response
+    return _rate_limit_exceeded_handler(request, exc)

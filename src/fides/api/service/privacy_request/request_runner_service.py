@@ -41,6 +41,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.models.privacy_request.webhook import (
+    generate_privacy_request_download_token,
+)
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
@@ -49,6 +52,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.connectors import FidesConnector, get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
@@ -82,6 +86,7 @@ from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
 from fides.common.api.v1.urn_registry import (
+    PRIVACY_CENTER_DSR_PACKAGE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
 )
@@ -256,14 +261,14 @@ def upload_access_results(
             "Error uploading subject access data for rule {} on policy {}: {}",
             rule.key,
             policy.key,
-            Pii(str(exc)),
+            str(exc),
         )
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
             dataset_name="Access package upload",
             collection_name=None,
-            message="Access package upload failed for privacy request.",
+            message=f"Access package upload failed for privacy request: {str(exc)}",
             action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error
@@ -307,8 +312,14 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     loaded_attachments = [
         attachment
         for attachment in privacy_request.attachments
-        if AttachmentReferenceType.access_manual_webhook
-        not in [ref.reference_type for ref in attachment.references]
+        if not any(
+            ref.reference_type
+            in [
+                AttachmentReferenceType.access_manual_webhook,
+                AttachmentReferenceType.manual_task_submission,
+            ]
+            for ref in attachment.references
+        )
     ]
     attachments = get_attachments_content(loaded_attachments)
     # Process attachments once for both upload and storage
@@ -609,6 +620,9 @@ def run_privacy_request(
                 # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
                 # Request Tasks have been built.  The Privacy Request will be requeued from
                 # the appropriate checkpoint when all the Request Tasks have run.
+                logger.info(
+                    "Privacy Request exited awaiting sub task processing (Request Tasks)"
+                )
                 return
 
             except ValidationError as exc:
@@ -740,14 +754,17 @@ def run_privacy_request(
                             else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
                         )
 
-                        if message_send_enabled(
+                        message_send_result = message_send_enabled(
                             session,
                             privacy_request.property_id,
                             action_type,
                             legacy_request_completion_enabled,
-                        ) and not policy.get_rules_for_action(
+                        )
+                        has_consent_rules = policy.get_rules_for_action(
                             action_type=ActionType.consent
-                        ):
+                        )
+
+                        if message_send_result and not has_consent_rules:
                             if not access_result_urls:
                                 # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
                                 # from the database because the Privacy Request would have exited
@@ -763,11 +780,30 @@ def run_privacy_request(
                                     access_result_urls,
                                     identity_data,
                                     privacy_request.property_id,
+                                    privacy_request.id,
+                                )
+                                # Add success log for completion email
+                                privacy_request.add_success_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Privacy request completion email",
+                                    collection_name=None,
+                                    message="Privacy request completion email sent successfully.",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
                                 )
                             except (
                                 IdentityNotFoundException,
                                 MessageDispatchException,
                             ) as e:
+                                # Add error log for completion email failure
+                                privacy_request.add_error_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Privacy request completion email",
+                                    collection_name=None,
+                                    message=f"Privacy request completion email failed: {str(e)}",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                )
                                 privacy_request.error_processing(db=session)
                                 # If dev mode, log traceback
                                 _log_exception(e, CONFIG.dev_mode)
@@ -780,6 +816,7 @@ def initiate_privacy_request_completion_email(
     access_result_urls: list[str],
     identity_data: dict[str, Any],
     property_id: Optional[str],
+    privacy_request_id: str,
 ) -> None:
     """
     :param session: SQLAlchemy Session
@@ -787,6 +824,7 @@ def initiate_privacy_request_completion_email(
     :param access_result_urls: list of urls generated by access request upload
     :param identity_data: Dict of identity data
     :param property_id: Property id associated with the privacy request
+    :param privacy_request_id: ID of the privacy request for generating DSR package links
     """
     config_proxy = ConfigProxy(session)
     if not (
@@ -801,6 +839,32 @@ def initiate_privacy_request_completion_email(
         phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
     )
     if policy.get_rules_for_action(action_type=ActionType.access):
+        # Check if any rule has enable_access_package_redirect=True and enable_streaming=True in storage config
+        # This can be extended to other storage types and non streaming access results in the future
+        use_dsr_package_links = False
+        for rule in policy.get_rules_for_action(action_type=ActionType.access):
+            storage_destination = rule.get_storage_destination(session)
+            if (
+                storage_destination.type == StorageType.s3
+                and storage_destination.details.get("enable_access_package_redirect")
+                and storage_destination.details.get("enable_streaming")
+            ):
+                use_dsr_package_links = True
+                break
+
+        # Generate appropriate URLs based on streaming configuration
+        if use_dsr_package_links and config_proxy.privacy_center.url:
+            # Use DSR package links instead of direct storage URLs
+            # Generate the download token for security
+            download_token = generate_privacy_request_download_token(privacy_request_id)
+
+            # Generate DSR package URLs for the messaging template system
+            dsr_package_url = f"{config_proxy.privacy_center.url}/api{PRIVACY_CENTER_DSR_PACKAGE.format(privacy_request_id=privacy_request_id)}?token={download_token}"
+            download_links = [dsr_package_url]
+        else:
+            # Use original direct storage URLs
+            download_links = access_result_urls
+
         # synchronous for now since failure to send complete emails is fatal to request
         dispatch_message(
             db=session,
@@ -808,7 +872,7 @@ def initiate_privacy_request_completion_email(
             to_identity=to_identity,
             service_type=config_proxy.notifications.notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
-                download_links=access_result_urls,
+                download_links=download_links,
                 subject_request_download_time_in_days=CONFIG.security.subject_request_download_link_ttl_seconds
                 / 86400,
             ),

@@ -854,6 +854,10 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: last_test_succeeded
+      data_categories: [system.operations]
+    - name: last_test_timestamp
+      data_categories: [system.operations]
   - name: masking_secret
     description: 'Fides Generated Description for Table: masking_secret'
     data_categories: []
@@ -1020,6 +1024,35 @@ dataset:
     - name: id
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+  - name: digest_config
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: digest_type
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: enabled
+      data_categories: [system.operations]
+    - name: messaging_service_type
+      data_categories: [system.operations]
+    - name: cron_expression
+      data_categories: [system.operations]
+    - name: timezone
+      data_categories: [system.operations]
+    - name: last_sent_at
+      data_categories: [system.operations]
+    - name: next_scheduled_at
+      data_categories: [system.operations]
+    - name: config_metadata
       data_categories: [system.operations]
   - name: executionlog
     data_categories: []
@@ -1598,6 +1631,8 @@ dataset:
       data_categories: [system.operations]
     - name: identity_verified_at
       data_categories: [system.operations]
+    - name: location
+      data_categories: [user.location]
     - name: origin
       data_categories: [system.operations]
     - name: paused_at
@@ -2484,6 +2519,8 @@ dataset:
       data_categories: [system]
     - name: callback_succeeded
       data_categories: [system]
+    - name: async_type
+      data_categories: [system]
   - name: monitorconfig
     fields:
     - name: classify_params
@@ -2817,3 +2854,252 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: taxonomy
+    description: 'Fides Generated Description for Table: taxonomy'
+    fields:
+    - name: applies_to
+      description: 'Fides Generated Description for Column: applies_to'
+      data_categories: [system.operations]
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: description
+      description: 'Fides Generated Description for Column: description'
+      data_categories: [system.operations]
+    - name: fides_key
+      description: 'Fides Generated Description for Column: fides_key'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: name
+      description: 'Fides Generated Description for Column: name'
+      data_categories: [system.operations]
+    - name: organization_fides_key
+      description: 'Fides Generated Description for Column: organization_fides_key'
+      data_categories: [system.operations]
+    - name: tags
+      description: 'Fides Generated Description for Column: tags'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_element
+    description: 'Fides Generated Description for Table: taxonomy_element'
+    data_categories: [system.operations]
+    fields:
+    - name: active
+      description: 'Fides Generated Description for Column: active'
+      data_categories: [system.operations]
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: description
+      description: 'Fides Generated Description for Column: description'
+      data_categories: [system.operations]
+    - name: fides_key
+      description: 'Fides Generated Description for Column: fides_key'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: name
+      description: 'Fides Generated Description for Column: name'
+      data_categories: [system.operations]
+    - name: organization_fides_key
+      description: 'Fides Generated Description for Column: organization_fides_key'
+      data_categories: [system.operations]
+    - name: parent_key
+      description: 'Fides Generated Description for Column: parent_key'
+      data_categories: [system.operations]
+    - name: tags
+      description: 'Fides Generated Description for Column: tags'
+      data_categories: [system.operations]
+    - name: taxonomy_type
+      description: 'Fides Generated Description for Column: taxonomy_type'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_allowed_usage
+    description: 'Fides Generated Description for Table: taxonomy_allowed_usage'
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: source_taxonomy_key
+      description: 'Fides Generated Description for Column: source_taxonomy_key'
+      data_categories: [system.operations]
+    - name: target_type
+      description: 'Fides Generated Description for Column: target_type'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_usage
+    description: 'Fides Generated Description for Table: taxonomy_usage'
+    fields:
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+    - name: source_taxonomy
+      description: 'Fides Generated Description for Column: source_taxonomy'
+      data_categories: [system.operations]
+    - name: source_element_key
+      description: 'Fides Generated Description for Column: source_element_key'
+      data_categories: [system.operations]
+    - name: target_taxonomy
+      description: 'Fides Generated Description for Column: target_taxonomy'
+      data_categories: [system.operations]
+    - name: target_element_key
+      description: 'Fides Generated Description for Column: target_element_key'
+      data_categories: [system.operations]
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: privacy_request_redaction_pattern
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: pattern
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: system_group
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: fides_key
+        data_categories: [system.operations]
+      - name: data_steward_username
+        data_categories: [system.operations]
+      - name: data_uses
+        data_categories: [system.operations]
+      - name: label_color
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: system_group_member
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: system_group_id
+        data_categories: [system.operations]
+      - name: system_id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: web_monitor_group_job
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: group_id
+        data_categories: [system.operations]
+      - name: is_test_run
+        data_categories: [system.operations]
+      - name: raw_experiences_data
+        data_categories: [system.operations]
+      - name: processed_experiences_data
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: classification_benchmark
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: monitor_config_key
+        data_categories: [system.operations]
+      - name: dataset_fides_key
+        data_categories: [system.operations]
+      - name: resource_urns
+        data_categories: [system.operations]
+      - name: overall_metrics
+        data_categories: [system.operations]
+      - name: field_accuracy_details
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: messages
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: event_audit
+    description: 'Table used to store audit events for tracking system changes and operations'
+    fields:
+    - name: created_at
+      description: 'Timestamp when the audit event was created'
+      data_categories: [system.operations]
+    - name: description
+      description: 'Human-readable description of the audit event'
+      data_categories: [system.operations]
+    - name: event_details
+      description: 'JSON details about the specific event and its context'
+      data_categories: [system.operations]
+    - name: event_type
+      description: 'Type/category of the audit event'
+      data_categories: [system.operations]
+    - name: id
+      description: 'Unique identifier for the audit event'
+      data_categories: [system.operations]
+    - name: resource_identifier
+      description: 'Identifier of the resource that was affected by the event'
+      data_categories: [system.operations]
+    - name: resource_type
+      description: 'Type of resource that was affected by the event'
+      data_categories: [system.operations]
+    - name: status
+      description: 'Status of the audit event (succeeded, failed, etc.)'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Timestamp when the audit event was last updated'
+      data_categories: [system.operations]
+    - name: user_id
+      description: 'ID of the user who triggered the audit event'
+      data_categories: [user.unique_id]
+  - name: oauth_config
+    description: 'Fides Generated Description for Table: oauth_config'
+    data_categories: [ ]
+    fields:
+      - name: client_id
+        description: 'Fides Generated Description for Column: client_id'
+        data_categories: [ system.operations ]
+      - name: client_secret
+        description: 'Fides Generated Description for Column: client_secret'
+        data_categories: [ system.operations ]
+      - name: connection_config_id
+        description: 'Fides Generated Description for Column: connection_config_id'
+        data_categories: [ system.operations ]
+      - name: created_at
+        description: 'Fides Generated Description for Column: created_at'
+        data_categories: [ system.operations ]
+      - name: grant_type
+        description: 'Fides Generated Description for Column: grant_type'
+        data_categories: [ system.operations ]
+      - name: id
+        description: 'Fides Generated Description for Column: id'
+        data_categories: [ system.operations ]
+      - name: scope
+        description: 'Fides Generated Description for Column: scope'
+        data_categories: [ system.operations ]
+      - name: token_url
+        description: 'Fides Generated Description for Column: token_url'
+        data_categories: [ system.operations ]
+      - name: updated_at
+        description: 'Fides Generated Description for Column: updated_at'
+        data_categories: [ system.operations ]

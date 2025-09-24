@@ -19,6 +19,7 @@ from fides.config import CONFIG, FidesConfig
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
 DSR_QUEUE_NAME = "fides.dsr"  # This queue is used for running data subject requests
+CONSENT_WEBHOOK_QUEUE_NAME = "fidesplus.consent_webhooks"  # This queue is used for processing consent webhooks from 3rd-party APIs
 DISCOVERY_MONITORS_DETECTION_QUEUE_NAME = "fidesplus.discovery_monitors_detection"  # This queue is used for running discovery monitors detection tasks
 DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME = "fidesplus.discovery_monitors_classification"  # This queue is used for running discovery monitors classification tasks
 DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotion"  # This queue is used for running discovery monitors promotion tasks
@@ -74,6 +75,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
                 keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
                 keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
                 keepalives_count=CONFIG.database.task_engine_keepalives_count,
+                pool_pre_ping=CONFIG.database.task_engine_pool_pre_ping,
             )
 
         # same for the sessionmaker

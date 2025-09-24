@@ -38,7 +38,7 @@ describe("Privacy Requests", () => {
 
     // TODO: add multi-page stubs to test the pagination controls.
     it("shows the first page of results", () => {
-      cy.get("@rowsNew").should("have.length", 4);
+      cy.get("@rowsNew").should("have.length", 5);
       cy.get("@rowsCompleted").should("have.length", 3);
       cy.get("@rowsError").should("have.length", 1);
     });
@@ -47,7 +47,7 @@ describe("Privacy Requests", () => {
       // Add small delay until we find a solution to the 'nextjs cancelling route' issue with hashes in the url
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(200);
-      cy.get("@rowsNew").first().click();
+      cy.get("@rowsNew").first().children().first().click();
       cy.location("pathname").should("match", /^\/privacy-requests\/pri.+/);
     });
 
@@ -97,6 +97,7 @@ describe("Privacy Requests", () => {
 
   describe("The request details page", () => {
     beforeEach(() => {
+      stubPlus(true);
       cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
         cy.visit(`/privacy-requests/${privacyRequest.id}`);
       });
@@ -109,6 +110,46 @@ describe("Privacy Requests", () => {
           .should("have.prop", "value")
           .should("match", /pri_/);
         cy.getByTestId("request-status-badge").contains("New");
+
+        // Core metadata assertions
+        cy.getByTestId("request-status-badge").should("exist");
+        cy.contains("Time remaining").should("exist");
+        cy.contains("Request type").should("exist");
+        cy.getByTestId("request-detail-value-Source").should(
+          "contain",
+          "Privacy Center",
+        ); // source value for Privacy Center requests
+        cy.contains("Subject email").should("exist");
+
+        // Reviewed by should always exist with proper value
+        cy.getByTestId("request-detail-value-Reviewed by").should(
+          "contain",
+          "-",
+        ); // reviewer.username value when null
+      });
+    });
+
+    it("shows submitted_by when source is Request Manager", () => {
+      // Navigate to the specific request that has submitted_by
+      cy.visit(
+        "/privacy-requests/pri_request_manager_test-1234-5678-9abc-def012345678",
+      );
+      cy.wait("@getPrivacyRequestManager");
+
+      cy.getByTestId("privacy-request-details").within(() => {
+        // This request should have submitted_by
+        cy.getByTestId("request-detail-value-Created by").should(
+          "contain",
+          "user_3",
+        ); // submitter.username value
+        cy.getByTestId("request-detail-value-Reviewed by").should(
+          "contain",
+          "user_2",
+        ); // reviewer.username value
+        cy.getByTestId("request-detail-value-Source").should(
+          "contain",
+          "Request Manager",
+        ); // source value for Request Manager requests
       });
     });
 
@@ -279,43 +320,6 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe("Message Configuration", () => {
-    beforeEach(() => {
-      cy.visit("/privacy-requests/configure/messaging");
-    });
-
-    it("Can configure Mailgun email", () => {
-      cy.getByTestId("option-mailgun").click();
-      cy.getByTestId("input-domain").type("test-domain");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createMessagingConfiguration").then((interception) => {
-        const { body } = interception.request;
-        expect(body.service_type).to.eql("mailgun");
-        cy.contains(
-          "Mailgun email successfully updated. You can now enter your security key.",
-        );
-      });
-    });
-
-    it("Can configure Twilio email", () => {
-      cy.getByTestId("option-twilio-email").click();
-      cy.getByTestId("input-email").type("test-email");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createMessagingConfiguration").then(() => {
-        cy.contains(
-          "Twilio email successfully updated. You can now enter your security key.",
-        );
-      });
-    });
-
-    it("Can configure Twilio SMS", () => {
-      cy.getByTestId("option-twilio-sms").click();
-      cy.wait("@createMessagingConfiguration").then(() => {
-        cy.contains("Messaging provider saved successfully.");
-      });
-    });
-  });
-
   describe("privacy request creation", () => {
     describe("showing button depending on role", () => {
       beforeEach(() => {
@@ -334,6 +338,13 @@ describe("Privacy Requests", () => {
         cy.visit("/privacy-requests");
         cy.wait("@getPrivacyRequests");
         cy.getByTestId("submit-request-btn").should("not.exist");
+      });
+
+      it("shows the option to create for approver role", () => {
+        cy.assumeRole(RoleRegistryEnum.APPROVER);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+        cy.getByTestId("submit-request-btn").should("exist");
       });
     });
 

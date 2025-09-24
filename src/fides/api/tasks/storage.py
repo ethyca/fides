@@ -12,7 +12,7 @@ from loguru import logger
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DsrReportBuilder,
+    DSRReportBuilder,
 )
 from fides.api.service.storage.gcs import get_gcs_blob
 from fides.api.service.storage.s3 import (
@@ -47,7 +47,7 @@ def write_to_in_memory_buffer(
     logger.debug("Writing data to in-memory buffer")
     try:
         if resp_format == ResponseFormat.html.value:
-            return DsrReportBuilder(
+            return DSRReportBuilder(
                 privacy_request=privacy_request,
                 dsr_data=data,
             ).generate()
@@ -122,9 +122,6 @@ def upload_to_s3(  # pylint: disable=R0913
         s3_client = get_s3_client(
             auth_method,
             storage_secrets,
-            assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
-                "storage", {}
-            ).get("aws_s3_assume_role_arn"),
         )
     except (ClientError, ParamValidationError) as e:
         logger.error(f"Error getting s3 client: {str(e)}")

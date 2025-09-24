@@ -53,8 +53,11 @@ class NotificationApplicationConfig(FidesSchema):
 
     @field_validator("notification_service_type", mode="before")
     @classmethod
-    def validate_notification_service_type(cls, value: str) -> Optional[str]:
+    def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
+        if value is None:
+            return None  # Allow None values for disabling messaging
+
         value = value.lower()  # force lowercase for safety
         try:
             MessagingServiceType[value]
@@ -73,7 +76,8 @@ class ExecutionApplicationConfig(FidesSchema):
     memory_watchdog_enabled: Optional[bool] = None
     sql_dry_run: Optional[SqlDryRunMode] = None
 
-    model_config = ConfigDict(use_enum_values=True, extra="forbid")
+    # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through
+    model_config = ConfigDict(use_enum_values=True, extra="ignore")
 
 
 class AdminUIConfig(FidesSchema):
@@ -82,6 +86,12 @@ class AdminUIConfig(FidesSchema):
     error_notification_mode: Optional[ErrorNotificationMode] = (
         ErrorNotificationMode.CONSOLE_ONLY
     )
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class PrivacyCenterConfig(FidesSchema):
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
 
     model_config = ConfigDict(extra="forbid")
 
@@ -118,6 +128,7 @@ class ApplicationConfig(FidesSchema):
     security: Optional[SecurityApplicationConfig] = None
     consent: Optional[ConsentConfig] = None
     admin_ui: Optional[AdminUIConfig] = None
+    privacy_center: Optional[PrivacyCenterConfig] = None
 
     @model_validator(mode="before")
     @classmethod

@@ -1,19 +1,24 @@
-import { AntColumnsType as ColumnsType, AntSpace as Space } from "fidesui";
+import {
+  AntColumnsType as ColumnsType,
+  AntSpace as Space,
+  formatIsoLocation,
+  isoStringToEntry,
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
-  expandCollapseAllMenuItems,
   ListExpandableCell,
-  MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import {
   ConsentAlertInfo,
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
+import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
@@ -24,7 +29,7 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
   allowIgnore?: boolean;
-  onTabChange: (tab: ActionCenterTabHash) => void;
+  onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   consentStatus?: ConsentAlertInfo;
   rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
 }
@@ -39,6 +44,10 @@ export const useDiscoveredSystemAggregateColumns = ({
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isDomainsExpanded, setIsDomainsExpanded] = useState(false);
+  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+  const [locationsVersion, setLocationsVersion] = useState(0);
+  const [domainsVersion, setDomainsVersion] = useState(0);
+  const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
       const baseColumns: ColumnsType<SystemStagedResourcesAggregateRecord> = [
@@ -50,7 +59,7 @@ export const useDiscoveredSystemAggregateColumns = ({
             </Space>
           ),
           dataIndex: "name",
-          key: "system_name",
+          key: DiscoveredSystemAggregateColumnKeys.SYSTEM_NAME,
           fixed: "left",
           render: (_, record) => (
             <DiscoveredSystemStatusCell
@@ -62,78 +71,99 @@ export const useDiscoveredSystemAggregateColumns = ({
         {
           title: "Assets",
           dataIndex: "total_updates",
-          key: "total_updates",
+          key: DiscoveredSystemAggregateColumnKeys.TOTAL_UPDATES,
         },
         {
           title: "Categories of consent",
-          key: "data_use",
+          key: DiscoveredSystemAggregateColumnKeys.DATA_USE,
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsDataUsesExpanded(true);
+                setDataUsesVersion((prev) => prev + 1);
+              } else if (e.key === "collapse-all") {
+                setIsDataUsesExpanded(false);
+                setDataUsesVersion((prev) => prev + 1);
+              }
+            },
+          },
           render: (_, record) => (
-            <DiscoveredSystemDataUseCell system={record} />
-          ),
-        },
-        {
-          title: () => (
-            <MenuHeaderCell
-              title="Locations"
-              menu={{
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  if (e.key === "expand-all") {
-                    setIsLocationsExpanded(true);
-                  } else if (e.key === "collapse-all") {
-                    setIsLocationsExpanded(false);
-                  }
-                },
+            <DiscoveredSystemDataUseCell
+              system={record}
+              columnState={{
+                isExpanded: isDataUsesExpanded,
+                version: dataUsesVersion,
               }}
             />
           ),
+        },
+        {
+          title: "Locations",
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsLocationsExpanded(true);
+                setLocationsVersion((prev) => prev + 1);
+              } else if (e.key === "collapse-all") {
+                setIsLocationsExpanded(false);
+                setLocationsVersion((prev) => prev + 1);
+              }
+            },
+          },
           dataIndex: "locations",
-          key: "locations",
-          width: 250,
+          key: DiscoveredSystemAggregateColumnKeys.LOCATIONS,
           render: (locations: string[]) => (
             <TagExpandableCell
               values={
-                locations?.map((location) => ({
-                  label:
-                    PRIVACY_NOTICE_REGION_RECORD[
-                      location as PrivacyNoticeRegion
-                    ] ?? location,
-                  key: location,
-                })) ?? []
+                locations?.map((location) => {
+                  const isoEntry = isoStringToEntry(location);
+
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry })
+                      : (PRIVACY_NOTICE_REGION_RECORD[
+                          location as PrivacyNoticeRegion
+                        ] ?? location) /* fallback on internal list for now */,
+                    key: location,
+                  };
+                }) ?? []
               }
               columnState={{
                 isExpanded: isLocationsExpanded,
                 isWrapped: true,
+                version: locationsVersion,
               }}
             />
           ),
         },
         {
-          title: () => (
-            <MenuHeaderCell
-              title="Domains"
-              menu={{
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  if (e.key === "expand-all") {
-                    setIsDomainsExpanded(true);
-                  } else if (e.key === "collapse-all") {
-                    setIsDomainsExpanded(false);
-                  }
-                },
-              }}
-            />
-          ),
+          title: "Domains",
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsDomainsExpanded(true);
+                setDomainsVersion((prev) => prev + 1);
+              } else if (e.key === "collapse-all") {
+                setIsDomainsExpanded(false);
+                setDomainsVersion((prev) => prev + 1);
+              }
+            },
+          },
           dataIndex: "domains",
-          key: "domains",
+          key: DiscoveredSystemAggregateColumnKeys.DOMAINS,
           render: (domains: string[]) => (
             <ListExpandableCell
               values={domains}
               valueSuffix="domains"
               columnState={{
                 isExpanded: isDomainsExpanded,
+                version: domainsVersion,
               }}
             />
           ),
@@ -143,7 +173,8 @@ export const useDiscoveredSystemAggregateColumns = ({
       if (!readonly) {
         baseColumns.push({
           title: "Actions",
-          key: "actions",
+          key: DiscoveredSystemAggregateColumnKeys.ACTIONS,
+          fixed: "right",
           render: (_, record) => (
             <DiscoveredSystemActionsCell
               system={record}
@@ -160,8 +191,12 @@ export const useDiscoveredSystemAggregateColumns = ({
       readonly,
       consentStatus,
       rowClickUrl,
+      isDataUsesExpanded,
       isLocationsExpanded,
       isDomainsExpanded,
+      dataUsesVersion,
+      locationsVersion,
+      domainsVersion,
       monitorId,
       allowIgnore,
       onTabChange,

@@ -29,37 +29,30 @@ describe("System Navigation", () => {
 
   it("updates URL hash when switching tabs", () => {
     cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500); // wait for initial tab to load
     cy.location("hash").should("eq", "#information");
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Data uses").click({ force: true });
+    cy.clickAntTab("Data uses");
     cy.location("hash").should("eq", "#data-uses");
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Data flow").click({ force: true });
+    cy.clickAntTab("Data flow");
     cy.location("hash").should("eq", "#data-flow");
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Integrations").click({ force: true });
+    cy.clickAntTab("Integrations");
     cy.location("hash").should("eq", "#integrations");
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("Assets").click({ force: true });
+    cy.clickAntTab("Assets");
     cy.location("hash").should("eq", "#assets");
 
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(500);
-    cy.getAntTab("History").click({ force: true });
+    cy.clickAntTab("History");
     cy.location("hash").should("eq", "#history");
   });
 
   it("loads correct tab directly based on URL hash", () => {
     // Visit page with specific hash
     cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+    cy.wait("@getMinimalUnlinkedDatasets");
 
     // Verify correct tab is active
     cy.getAntTab("Data uses").should("have.attr", "aria-selected", "true");

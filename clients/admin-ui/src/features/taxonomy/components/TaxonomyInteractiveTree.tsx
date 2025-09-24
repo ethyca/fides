@@ -16,10 +16,14 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
-import { CoreTaxonomiesEnum, TAXONOMY_ROOT_NODE_ID } from "../constants";
-import { TaxonomyTreeHoverProvider } from "../context/TaxonomyTreeHoverContext";
-import useD3HierarchyLayout from "../hooks/useD3HierarchyLayout";
-import { TaxonomyEntity } from "../types";
+import {
+  TAXONOMY_ROOT_NODE_ID,
+  taxonomyTypeToLabel,
+} from "~/features/taxonomy/constants";
+import { TaxonomyTreeHoverProvider } from "~/features/taxonomy/context/TaxonomyTreeHoverContext";
+import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
+import { TaxonomyEntity } from "~/features/taxonomy/types";
+
 import TaxonomyTextInputNode, {
   TextInputNodeType,
 } from "./TaxonomyTextInputNode";
@@ -27,7 +31,7 @@ import TaxonomyTreeEdge from "./TaxonomyTreeEdge";
 import TaxonomyTreeNode, { TaxonomyTreeNodeType } from "./TaxonomyTreeNode";
 
 interface TaxonomyInteractiveTreeProps {
-  taxonomyType: CoreTaxonomiesEnum;
+  taxonomyType: string;
   taxonomyItems: TaxonomyEntity[];
   draftNewItem: Partial<TaxonomyEntity> | null;
   lastCreatedItemKey: string | null;
@@ -37,6 +41,7 @@ interface TaxonomyInteractiveTreeProps {
   onCancelDraftItem: () => void;
   onSubmitDraftItem: (label: string) => void;
   userCanAddLabels: boolean;
+  isCreating?: boolean;
 }
 
 const TaxonomyInteractiveTree = ({
@@ -50,6 +55,7 @@ const TaxonomyInteractiveTree = ({
   onCancelDraftItem,
   onSubmitDraftItem,
   userCanAddLabels,
+  isCreating = false,
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
 
@@ -66,7 +72,7 @@ const TaxonomyInteractiveTree = ({
       id: TAXONOMY_ROOT_NODE_ID,
       position: { x: 0, y: 0 },
       data: {
-        label: taxonomyType,
+        label: taxonomyTypeToLabel(taxonomyType),
         taxonomyItem: {
           fides_key: TAXONOMY_ROOT_NODE_ID,
         },
@@ -143,6 +149,7 @@ const TaxonomyInteractiveTree = ({
         parentKey,
         onCancel: onCancelDraftItem,
         onSubmit: onSubmitDraftItem,
+        isLoading: isCreating,
       },
       hidden: !draftNewItem,
     };

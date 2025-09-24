@@ -160,7 +160,7 @@ def pytest_ops(
             pytest_path=OPS_TEST_DIR,
         )
     elif mark == "external_datastores":
-        session.run(*START_APP, external=True)
+        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
             "docker",
             "exec",
@@ -256,6 +256,18 @@ def pytest_ops(
             "S3_AWS_ACCESS_KEY_ID",
             "-e",
             "S3_AWS_SECRET_ACCESS_KEY",
+            "-e",
+            "MONGODB_ATLAS_HOST",
+            "-e",
+            "MONGODB_ATLAS_DEFAULT_AUTH_DB",
+            "-e",
+            "MONGODB_ATLAS_USERNAME",
+            "-e",
+            "MONGODB_ATLAS_PASSWORD",
+            "-e",
+            "MONGODB_ATLAS_USE_SRV",
+            "-e",
+            "MONGODB_ATLAS_SSL_ENABLED",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
@@ -313,3 +325,85 @@ def pytest_api(session: Session, coverage_arg: str) -> None:
         "not integration and not integration_external and not integration_saas",
     )
     session.run(*run_command, external=True)
+
+
+def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
+    """Runs unit tests from smaller test directories."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC,
+        "pytest",
+        coverage_arg,
+        "tests/service/",
+        "tests/task/",
+        "tests/util/",
+        "-m",
+        "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_misc_integration(session: Session, mark: str, coverage_arg: str) -> None:
+    """Runs integration tests from smaller test directories."""
+    session.notify("teardown")
+    if mark == "external":
+        session.run(*START_APP, external=True)
+        # Use the integration infrastructure to run all tests from multiple directories
+        # Need PostgreSQL for service integration tests, BigQuery for QA tests, and Snowflake for service tests
+        run_command = (
+            "docker",
+            "exec",
+            "-e",
+            "SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER",
+            "-e",
+            "SNOWFLAKE_TEST_USER_LOGIN_NAME",
+            "-e",
+            "SNOWFLAKE_TEST_PASSWORD",
+            "-e",
+            "SNOWFLAKE_TEST_PRIVATE_KEY",
+            "-e",
+            "SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE",
+            "-e",
+            "SNOWFLAKE_TEST_WAREHOUSE_NAME",
+            "-e",
+            "SNOWFLAKE_TEST_DATABASE_NAME",
+            "-e",
+            "SNOWFLAKE_TEST_SCHEMA_NAME",
+            "-e",
+            "BIGQUERY_KEYFILE_CREDS",
+            "-e",
+            "BIGQUERY_DATASET",
+            "-e",
+            "BIGQUERY_ENTERPRISE_KEYFILE_CREDS",
+            "-e",
+            "BIGQUERY_ENTERPRISE_DATASET",
+            "-e",
+            "MONGODB_ATLAS_HOST",
+            "-e",
+            "MONGODB_ATLAS_USERNAME",
+            "-e",
+            "MONGODB_ATLAS_PASSWORD",
+            "-e",
+            "MONGODB_ATLAS_DEFAULT_AUTH_DB",
+            CI_ARGS_EXEC,
+            CONTAINER_NAME,
+            "pytest",
+            coverage_arg,
+            "tests/qa/",
+            "tests/service/",
+            "tests/task/",
+            "tests/util/",
+            "-m",
+            mark,
+        )
+        session.run(*run_command, external=True)
+    else:
+        # Use the mark parameter for non-external integration tests
+        session.run(*START_APP, external=True)
+        run_infrastructure(
+            run_tests=True,
+            analytics_opt_out=True,
+            datastores=["postgres", "bigquery", "snowflake"],
+            pytest_path="tests/qa/ tests/service/ tests/task/ tests/util/",
+        )

@@ -12,6 +12,27 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_use", {
     fixture: "taxonomy/data_uses.json",
   }).as("getDataUses");
+
+  // Generic taxonomy endpoints
+  cy.intercept("GET", "/api/v1/taxonomies", {
+    body: [], // No custom taxonomies by default
+  }).as("getCustomTaxonomies");
+
+  // Generic taxonomy endpoint for system groups (if accessed via taxonomy API)
+  cy.intercept("GET", "/api/v1/taxonomies/system_group", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroupTaxonomy");
+
+  // Generic taxonomy CRUD operations
+  cy.intercept("POST", "/api/v1/taxonomies/*", {
+    statusCode: 201,
+  }).as("createTaxonomyItem");
+  cy.intercept("PUT", "/api/v1/taxonomies/*", {
+    statusCode: 200,
+  }).as("updateTaxonomyItem");
+  cy.intercept("DELETE", "/api/v1/taxonomies/*/*", {
+    statusCode: 204,
+  }).as("deleteTaxonomyItem");
   cy.intercept(
     {
       method: "GET",
@@ -95,6 +116,30 @@ export const stubSystemCrud = () => {
         resource: system,
       },
     }).as("deleteSystem");
+  });
+  cy.intercept("POST", "/api/v1/system/bulk-delete", {
+    statusCode: 200,
+  }).as("bulkDeleteSystems");
+  cy.intercept("POST", "/api/v1/system/assign-steward", {
+    statusCode: 200,
+  }).as("bulkAssignSteward");
+};
+
+export const stubGVLSystem = () => {
+  cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+    cy.fixture("systems/system.json").then((origSystem) => {
+      cy.intercept(
+        { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+        {
+          body: {
+            ...origSystem,
+            ...dictSystem,
+            fides_key: origSystem.fides_key,
+            customFieldValues: undefined,
+          },
+        },
+      ).as("getDictSystem");
+    });
   });
 };
 
@@ -218,6 +263,28 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   }).as("getPrivacyCenterConfig");
 };
 
+export const stubMessagingProvidersCrud = (options?: {
+  listItems?: any[];
+  createStatus?: number;
+  createResponse?: any;
+  getByKeyResponse?: any;
+}) => {
+  cy.intercept("GET", "/api/v1/messaging/config", {
+    statusCode: 200,
+    body: { items: options?.listItems ?? [] },
+  }).as("getMessagingConfigs");
+
+  cy.intercept("POST", "/api/v1/messaging/config", {
+    statusCode: options?.createStatus ?? 200,
+    body: options?.createResponse ?? { key: "new_config_key" },
+  }).as("postMessagingConfig");
+
+  cy.intercept("GET", "/api/v1/messaging/config/*", {
+    statusCode: 200,
+    body: options?.getByKeyResponse ?? {},
+  }).as("getMessagingConfigByKey");
+};
+
 export const stubPrivacyNoticesCrud = () => {
   cy.intercept("GET", "/api/v1/privacy-notice*", {
     fixture: "privacy-notices/list.json",
@@ -315,6 +382,30 @@ export const stubPrivacyRequests = (
         },
         { fixture: "privacy-requests/list.json" },
       ).as("getPrivacyRequests");
+
+      // Add specific stub for Request Manager request
+      cy.intercept(
+        {
+          method: "GET",
+          pathname: "/api/v1/privacy-request",
+          query: {
+            include_identities: "true",
+            request_id: "pri_request_manager_test-1234-5678-9abc-def012345678",
+          },
+        },
+        {
+          body: {
+            items: [
+              privacyRequests.items.find(
+                (item) =>
+                  item.id ===
+                  "pri_request_manager_test-1234-5678-9abc-def012345678",
+              ),
+            ],
+            total: 1,
+          },
+        },
+      ).as("getPrivacyRequestManager");
     },
   );
 
@@ -762,6 +853,65 @@ export const stubIntegrationManagement = (
   }).as("getSystems");
 };
 
+export const stubManualTaskConfig = () => {
+  // Mock manual task related endpoints
+  cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields*", {
+    fixture: "integration-management/manual-tasks/manual-fields.json",
+  }).as("getManualFields");
+
+  cy.intercept("POST", "/api/v1/plus/connection/*/manual-field", {
+    body: {},
+  }).as("createManualField");
+
+  cy.intercept("PUT", "/api/v1/plus/connection/*/manual-field/*", {
+    body: {},
+  }).as("updateManualField");
+
+  cy.intercept("DELETE", "/api/v1/plus/connection/*/manual-field/*", {
+    statusCode: 204,
+  }).as("deleteManualField");
+
+  cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
+    fixture: "integration-management/manual-tasks/manual-task-connection.json",
+  }).as("getConnection");
+
+  // Mock user assignment endpoints
+  cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
+    fixture: "integration-management/manual-tasks/task-config.json",
+  }).as("getManualTask");
+
+  cy.intercept("PUT", "/api/v1/plus/connection/*/manual-task/assign-users", {
+    body: {},
+  }).as("assignUsersToManualTask");
+
+  // Mock external user creation
+  cy.intercept("POST", "/api/v1/plus/external-user", {
+    body: {},
+  }).as("createExternalUser");
+
+  // Mock dependency conditions endpoints
+  cy.intercept(
+    "PUT",
+    "/api/v1/plus/connection/*/manual-task/dependency-conditions",
+    {
+      body: {},
+    },
+  ).as("updateDependencyConditions");
+
+  // Mock dataset endpoints for DatasetReferencePicker
+  cy.intercept(
+    "GET",
+    "/api/v1/dataset?minimal=true&exclude_saas_datasets=true",
+    {
+      fixture: "datasets.json",
+    },
+  ).as("getFilteredDatasets");
+
+  cy.intercept("GET", "/api/v1/dataset/*", {
+    fixture: "dataset.json",
+  }).as("getDatasetByKey");
+};
+
 export const stubSharedMonitorConfig = () => {
   cy.intercept("GET", "/api/v1/plus/shared-monitor-config*", {
     fixture: "detection-discovery/monitors/shared_config_response.json",
@@ -819,4 +969,66 @@ export const stubPlusAuth = () => {
     statusCode: 200,
     body: {},
   }).as("logoutRequest");
+};
+
+export const stubCustomFields = () => {
+  // List custom field definitions
+  cy.intercept("GET", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    fixture: "custom-fields/list.json",
+  }).as("getCustomFieldDefinitions");
+
+  // Get single custom field definition
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/custom-metadata/custom-field-definition/*",
+    {
+      fixture: "custom-fields/detail.json",
+    },
+  ).as("getCustomFieldDefinition");
+
+  // Create custom field definition
+  cy.intercept("POST", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    statusCode: 201,
+    fixture: "custom-fields/detail.json",
+  }).as("createCustomFieldDefinition");
+
+  // Update custom field definition
+  cy.intercept("PUT", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    statusCode: 200,
+    fixture: "custom-fields/detail.json",
+  }).as("updateCustomFieldDefinition");
+
+  // Delete custom field definition
+  cy.intercept(
+    "DELETE",
+    "/api/v1/plus/custom-metadata/custom-field-definition/*",
+    {
+      statusCode: 204,
+    },
+  ).as("deleteCustomFieldDefinition");
+
+  // Get allow list
+  cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
+    fixture: "custom-fields/allow-list.json",
+  }).as("getAllowList");
+
+  // Create/Update allow list
+  cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list", {
+    statusCode: 200,
+    fixture: "custom-fields/allow-list.json",
+  }).as("upsertAllowList");
+};
+
+export const stubSystemGroups = () => {
+  cy.intercept("GET", "/api/v1/system-groups", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroups");
+
+  cy.intercept("POST", "/api/v1/system-groups", {
+    statusCode: 200,
+  }).as("createSystemGroup");
+
+  cy.intercept("PUT", "/api/v1/system-groups/*", {
+    statusCode: 200,
+  }).as("updateSystemGroup");
 };

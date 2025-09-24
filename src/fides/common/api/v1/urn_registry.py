@@ -66,12 +66,16 @@ MESSAGING_ACTIVE_DEFAULT = "/messaging/default/active"
 MESSAGING_STATUS = "/messaging/default/status"
 MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
-MESSAGING_TEST = "/messaging/config/test"
+MESSAGING_TEST_DEPRECATED = "/messaging/config/test"  # DEPRECATED
+MESSAGING_TEST = "/messaging/test/{service_type}"
 MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
+
+# Privacy Center URLs
+PRIVACY_CENTER_DSR_PACKAGE = "/privacy-request/{privacy_request_id}/access-package"
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
@@ -113,6 +117,9 @@ PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
 
+# Privacy Request Redaction Patterns URLs
+PRIVACY_REQUEST_REDACTION_PATTERNS = "/privacy-request/redaction-patterns"
+
 # Privacy Request pre-approve URLs
 PRIVACY_REQUEST_PRE_APPROVE = "/privacy-request/{privacy_request_id}/pre-approve"
 PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/eligible"
@@ -151,6 +158,7 @@ CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
 CONNECTIONS = "/connection"
 CONNECTION_BY_KEY = "/connection/{connection_key}"
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
+CONNECTION_OAUTH = "/connection/{connection_key}/oauth"
 CONNECTION_TEST = "/connection/{connection_key}/test"
 AUTHORIZE = "/connection/{connection_key}/authorize"
 

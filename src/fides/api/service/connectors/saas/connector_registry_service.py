@@ -27,6 +27,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 )
 from fides.api.util.saas_util import (
     encode_file_contents,
+    extract_display_info_from_config,
     load_config,
     load_config_from_string,
     load_dataset_from_string,
@@ -79,6 +80,8 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                     == OAuth2AuthorizationCodeAuthenticationStrategy.name
                 )
 
+                display_info = extract_display_info_from_config(config)
+
                 try:
                     icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
                 except FileNotFoundError:
@@ -101,6 +104,7 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                         authorization_required=authorization_required,
                         user_guide=config.user_guide,
                         supported_actions=config.supported_actions,
+                        **display_info,
                     )
                 except Exception:
                     logger.exception("Unable to load {} connector", connector_type)
@@ -166,6 +170,8 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             == OAuth2AuthorizationCodeAuthenticationStrategy.name
         )
 
+        display_info = extract_display_info_from_config(config)
+
         connector_template = ConnectorTemplate(
             config=template.config,
             dataset=template.dataset,
@@ -174,6 +180,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             authorization_required=authorization_required,
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
+            **display_info,
         )
 
         # register the template in the loader's template dictionary

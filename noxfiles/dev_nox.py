@@ -51,10 +51,16 @@ def dev(session: Session) -> None:
         - ui = Build and run the Admin UI
         - pc = Build and run the Privacy Center
         - remote_debug = Run with remote debugging enabled (see docker-compose.remote-debug.yml)
-        - worker = Run a Fides worker
+        - workers-all = Run all available Fides workers (see below)
         - flower = Run Flower monitoring dashboard for Celery
         - child = Run a Fides child node
+        - nginx = Run two Fides webservers with nginx load balancer proxy
         - <datastore(s)> = Run a test datastore (e.g. 'mssql', 'mongodb')
+
+    To run specific workers only, use any of the following posargs:
+        - worker-dsr = Run a Fides DSR worker
+        - worker-privacy-preferences = Run a Fides Privacy Preferences worker
+        - worker-other = Run a Fides worker that excludes the dedicated queues
 
     Parameters:
         N/A
@@ -63,19 +69,22 @@ def dev(session: Session) -> None:
     build(session, "dev")
     session.notify("teardown")
 
-    workers = ["worker", "worker-privacy-preferences", "worker-dsr"]
-
+    available_workers = ["worker-privacy-preferences", "worker-dsr", "worker-other"]
+    workers = [
+        worker
+        for worker in available_workers
+        if worker in session.posargs or "workers-all" in session.posargs
+    ]
     for worker in workers:
-        if worker in session.posargs:
-            session.run("docker", "compose", "up", "--wait", worker, external=True)
+        session.run("docker", "compose", "up", "--wait", worker, external=True)
 
     if "flower" in session.posargs:
-        # Only start Flower if worker is also enabled
-        if any(worker in session.posargs for worker in workers):
+        # Only start Flower if at least one worker is enabled
+        if workers:
             session.run("docker", "compose", "up", "-d", "flower", external=True)
         else:
             session.error(
-                "Flower requires the worker service. Please add 'worker' to your arguments."
+                "Flower requires at least one worker service. Please add at least one 'worker' to your arguments."
             )
 
     datastores = [
@@ -103,7 +112,20 @@ def dev(session: Session) -> None:
 
     open_shell = "shell" in session.posargs
     remote_debug = "remote_debug" in session.posargs
-    if not datastores:
+    use_nginx = "nginx" in session.posargs
+
+    if use_nginx:
+        # Run two Fides webservers with nginx load balancer proxy
+        session.run(
+            "docker",
+            "compose",
+            "up",
+            "fides-1",
+            "fides-2",
+            "fides-proxy",
+            external=True,
+        )
+    elif not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
             session.log("~~Remember to login with `fides user login`!~~")

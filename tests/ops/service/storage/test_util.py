@@ -8,6 +8,8 @@ from fides.api.service.storage.util import (
     AllowedFileType,
     get_allowed_file_type_or_raise,
     get_local_filename,
+    get_unique_filename,
+    resolve_path_from_context,
 )
 
 
@@ -180,3 +182,252 @@ class TestGetLocalFilename:
             result = get_local_filename("test_文件.txt")
             assert result == str(tmp_path / "test_文件.txt")
             assert os.path.exists(tmp_path)
+
+
+class TestGetUniqueFilename:
+    """Tests for the get_unique_filename function"""
+
+    @pytest.mark.parametrize(
+        "filename, used_filenames, expected_result",
+        [
+            param("test.txt", set(), "test.txt", id="no_conflict"),
+            param("test.txt", {"test.txt"}, "test_1.txt", id="with_conflict"),
+            param(
+                "test.txt",
+                {"test.txt", "test_1.txt"},
+                "test_2.txt",
+                id="multiple_conflicts",
+            ),
+            param(
+                "test.txt",
+                {"test.txt", "test_1.txt", "test_2.txt"},
+                "test_3.txt",
+                id="multiple_conflicts_3",
+            ),
+            param("testfile", set(), "testfile", id="no_conflict_with_file"),
+            param(".testfile", set(), ".testfile", id="no_conflict_with_dot_file"),
+            param(
+                "test.backup.txt",
+                set(),
+                "test.backup.txt",
+                id="no_conflict_with_multiple_dots",
+            ),
+            param(
+                "测试.txt",
+                set(),
+                "测试.txt",
+                id="no_conflict_with_unicode_characters",
+            ),
+            param("test-file.txt", set(), "test-file.txt", id="no_conflict_with_dash"),
+            param(
+                "a" * 200 + ".txt",
+                set(),
+                "a" * 200 + ".txt",
+                id="no_conflict_with_long_filename",
+            ),
+            param(
+                "Test.txt", set(), "Test.txt", id="no_conflict_with_case_sensitivity"
+            ),
+            param(
+                "test.txt",
+                {"test.txt", "test_1.txt", "test_3.txt"},
+                "test_2.txt",
+                id="multiple_conflicts_with_used_filenames",
+            ),
+        ],
+    )
+    def test_unique_filename_no_conflict(
+        self, filename, used_filenames, expected_result
+    ):
+        """Test that a unique filename is returned when no conflicts exist"""
+        result = get_unique_filename(filename, used_filenames)
+        assert result == expected_result
+
+
+class TestGenerateAttachmentUrlFromStoragePath:
+    """Tests for the generate_attachment_url_from_storage_path function"""
+
+    def test_generate_attachment_url_streaming_mode_same_directory(self):
+        """Test URL generation in streaming mode for same directory."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="attachments",
+            html_directory="attachments",
+            enable_streaming=True,
+        )
+
+        # Should URL-encode the filename
+        assert result == "test%20file%20%25%20pdf.pdf"
+
+    def test_generate_attachment_url_streaming_mode_data_directory(self):
+        """Test URL generation in streaming mode for data directory."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="data/dataset/collection",
+            html_directory="data/dataset/collection",
+            enable_streaming=True,
+        )
+
+        # Should URL-encode the filename and add attachments prefix
+        assert result == "attachments/test%20file%20%25%20pdf.pdf"
+
+    def test_generate_attachment_url_streaming_mode_other_cases(self):
+        """Test URL generation in streaming mode for other cases."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="other/path",
+            html_directory="different/path",
+            enable_streaming=True,
+        )
+
+        # Should URL-encode the filename in the relative path
+        assert result == "../other/path/test%20file%20%25%20pdf.pdf"
+
+    def test_generate_attachment_url_non_streaming_mode(self):
+        """Test URL generation in non-streaming mode."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        result = generate_attachment_url_from_storage_path(
+            download_url="https://example.com/file.pdf",
+            unique_filename="test file % pdf.pdf",
+            base_path="attachments",
+            html_directory="attachments",
+            enable_streaming=False,
+        )
+
+        # Should return the original download URL
+        assert result == "https://example.com/file.pdf"
+
+    def test_generate_attachment_url_special_characters(self):
+        """Test URL generation with various special characters."""
+        from fides.api.service.storage.util import (
+            generate_attachment_url_from_storage_path,
+        )
+
+        test_cases = [
+            ("file with spaces.pdf", "file%20with%20spaces.pdf"),
+            ("file%20with%20encoded.pdf", "file%2520with%2520encoded.pdf"),
+            ("file+with+plus.pdf", "file%2Bwith%2Bplus.pdf"),
+            ("file#with#hash.pdf", "file%23with%23hash.pdf"),
+            ("file?with?query.pdf", "file%3Fwith%3Fquery.pdf"),
+            ("file&with&ampersand.pdf", "file%26with%26ampersand.pdf"),
+        ]
+
+        for filename, expected_encoded in test_cases:
+            result = generate_attachment_url_from_storage_path(
+                download_url="https://example.com/file.pdf",
+                unique_filename=filename,
+                base_path="attachments",
+                html_directory="attachments",
+                enable_streaming=True,
+            )
+            assert result == expected_encoded, f"Failed for filename: {filename}"
+
+
+class TestResolvePathFromContext:
+    """Tests for the resolve_path_from_context function"""
+
+    @pytest.mark.parametrize(
+        "attachment, default_base_path, expected_path",
+        [
+            param(
+                {
+                    "_context": {
+                        "type": "direct",
+                        "dataset": "users",
+                        "collection": "profiles",
+                    }
+                },
+                "attachments",
+                "data/users/profiles/attachments",
+                id="direct_context",
+            ),
+            param(
+                {
+                    "_context": {
+                        "type": "nested",
+                        "dataset": "orders",
+                        "collection": "items",
+                    }
+                },
+                "attachments",
+                "data/orders/items/attachments",
+                id="nested_context",
+            ),
+            param(
+                {"_context": {"type": "top_level"}},
+                "attachments",
+                "attachments",
+                id="top_level_context",
+            ),
+            param(
+                {
+                    "_context": {
+                        "type": "old_format",
+                        "key": "dataset:collection",
+                        "item_id": "123",
+                    }
+                },
+                "attachments",
+                "dataset:collection/123/attachments",
+                id="old_context_format",
+            ),
+            param(
+                {},  # no context
+                "attachments",
+                "attachments",
+                id="no_context_default",
+            ),
+            param(
+                {},  # no context with custom default
+                "custom/path",
+                "custom/path",
+                id="no_context_custom_default",
+            ),
+            param(
+                {"_context": {}},  # empty context
+                "attachments",
+                "attachments",
+                id="empty_context",
+            ),
+            param(
+                {
+                    "_context": {
+                        "type": "direct",
+                        "dataset": "users",
+                        "collection": "profiles",
+                    }
+                },
+                "custom/default",
+                "data/users/profiles/attachments",
+                id="context_overrides_default",
+            ),
+        ],
+    )
+    def test_resolve_path(self, attachment, default_base_path, expected_path):
+        """Test that base path is resolved correctly based on context"""
+        result = resolve_path_from_context(attachment, default_base_path)
+        assert result == expected_path
+
+    def test_resolve_path_with_none_context(self):
+        """Test that None context is handled gracefully"""
+        attachment = {"_context": None}
+        result = resolve_path_from_context(attachment, "default")
+        assert result == "default"

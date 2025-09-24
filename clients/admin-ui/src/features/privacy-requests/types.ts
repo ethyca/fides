@@ -1,4 +1,5 @@
 import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -94,17 +95,17 @@ export interface PrivacyRequestEntity {
     drp_action?: DrpAction;
     execution_timeframe?: number;
   };
-  reviewer: {
-    id: string;
-    username: string;
-  };
+  reviewer?: PrivacyRequestUser;
   created_at: string;
-  reviewed_by: string;
+  reviewed_by?: string;
+  submitted_by?: string;
   finalized_at?: string;
+  submitter?: PrivacyRequestUser;
   finalized_by?: string;
   id: string;
   days_left?: number;
   source?: string;
+  location?: string;
 }
 
 export interface PrivacyRequestResponse {
@@ -133,12 +134,6 @@ export type RetryRequests = {
   checkAll: boolean;
   errorRequests: string[];
 };
-
-export interface MessagingConfigResponse {
-  storage: {
-    active_default_storage_type: string;
-  };
-}
 
 export interface StorageConfigResponse {
   notifications: {

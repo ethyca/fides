@@ -11,15 +11,17 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
-    AwaitingAsyncTaskCallback,
+    AwaitingAsyncTask,
     FidesopsException,
     PostProcessingException,
+    PrivacyRequestError,
     SkippingConsentPropagation,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -27,7 +29,6 @@ from fides.api.schemas.consentable_item import (
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
-    AsyncStrategy,
     ClientConfig,
     ConsentRequestMap,
     ParamValue,
@@ -229,7 +230,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
-
         # An endpoint can be defined with multiple 'read' requests if the data for a single
         # collection can be accessed in multiple ways for example:
         #
@@ -265,17 +265,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
-        awaiting_async_callback: bool = False
+        awaiting_async_processing: bool = False
+
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
             if (
-                read_request.async_config
-                and read_request.async_config.strategy == AsyncStrategy.callback
+                read_request.async_config is not None
                 and request_task.id  # Only supported in DSR 3.0
             ):
                 # Asynchronous read request detected. We will exit below and put the
                 # Request Task in an "awaiting_processing" status.
-                awaiting_async_callback = True
+                awaiting_async_processing = True
+
+                # Validate async strategy with proper enum value checking
+                strategy_value = read_request.async_config.strategy
+                valid_strategies = [task_type.value for task_type in AsyncTaskType]
+
+                if strategy_value not in valid_strategies:
+                    raise PrivacyRequestError(
+                        f"Invalid async type '{strategy_value}' for request task {request_task.id}. "
+                        f"Valid types are: {valid_strategies}"
+                    )
+
+                request_task.async_type = AsyncTaskType(strategy_value)
 
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
@@ -333,11 +345,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
         self.unset_connector_state()
-        if awaiting_async_callback:
+        if awaiting_async_processing:
             # If a read request was marked to expect async results, original response data here is ignored.
             # We'll instead use the data received in the callback URL later.
-            # Raising an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state
-            raise AwaitingAsyncTaskCallback()
+            # However for polling async request we want to save the request data for ids that we will use on the pollings status
+            if request_task.async_type == AsyncTaskType.polling:
+                # Saving the request task access data to use it on the polling status request
+                # TODO: Consider if we want to clean up the rows. Currently this is the concern of the GraphTask.
+                request_task.access_data = rows
+            # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
+            raise AwaitingAsyncTask()
 
         return rows
 
@@ -634,15 +651,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         awaiting_async_callback: bool = bool(
             masking_request.async_config
-            and masking_request.async_config.strategy == AsyncStrategy.callback
+            and masking_request.async_config.strategy == AsyncTaskType.callback.value
         ) and bool(
             request_task.id
         )  # Only supported in DSR 3.0
         if awaiting_async_callback:
             # Asynchronous masking request detected in saas config.
             # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state.
-            raise AwaitingAsyncTaskCallback()
+            # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
+            raise AwaitingAsyncTask()
         return rows_updated
 
     @staticmethod

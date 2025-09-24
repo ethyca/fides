@@ -374,4 +374,41 @@ describe("Taxonomy management page", () => {
       });
     });
   });
+
+  describe("Can display human-readable labels", () => {
+    beforeEach(() => {
+      cy.visit("/taxonomy");
+    });
+
+    it("displays proper labels for all taxonomy types", () => {
+      cy.getByTestId("taxonomy-type-selector").click();
+
+      // Should show human-readable labels, not API keys
+      cy.contains("Data categories").should("exist");
+      cy.contains("Data uses").should("exist");
+      cy.contains("Data subjects").should("exist");
+
+      // Should not show raw API keys
+      cy.contains("data_category").should("not.exist");
+      cy.contains("data_use").should("not.exist");
+      cy.contains("data_subject").should("not.exist");
+    });
+
+    it("shows human-readable labels for root nodes", () => {
+      // Default: Data categories
+      cy.getByTestId("taxonomy-node-root").should("contain", "Data categories");
+
+      // Switch to data uses
+      cy.getByTestId("taxonomy-type-selector").selectAntMenuOption("Data uses");
+      cy.wait("@getDataUses");
+      cy.getByTestId("taxonomy-node-root").should("contain", "Data uses");
+
+      // Switch to data subjects
+      cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+        "Data subjects",
+      );
+      cy.wait("@getDataSubjects");
+      cy.getByTestId("taxonomy-node-root").should("contain", "Data subjects");
+    });
+  });
 });

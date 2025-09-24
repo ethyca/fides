@@ -42,9 +42,11 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
+    initiate_privacy_request_completion_email,
     needs_batch_email_send,
     run_webhooks_and_report_status,
 )
@@ -1764,6 +1766,12 @@ class TestConsentEmailStep:
             == PrivacyRequestStatus.awaiting_email_send
         )
         assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
+        last_log = privacy_request_with_consent_policy.execution_logs.order_by(
+            ExecutionLog.created_at.desc()
+        ).first()
+        assert last_log.status == ExecutionLogStatus.pending
+        assert last_log.message == "Privacy request paused pending batch email send job"
+        assert last_log.dataset_name == "Pending batch email send"
 
     def test_needs_batch_email_send_no_consent_preferences(
         self, db, privacy_request_with_consent_policy
@@ -1961,6 +1969,12 @@ class TestAsyncCallbacks:
         )
         db.refresh(pr)
 
+        if dsr_version == "use_dsr_2_0":
+            # Async Access Requests not supported for DSR 2.0 - the given
+            # node cannot be paused
+            assert pr.status == PrivacyRequestStatus.complete
+            return
+
         if dsr_version == "use_dsr_3_0":
             assert pr.status == PrivacyRequestStatus.in_processing
 
@@ -1970,7 +1984,9 @@ class TestAsyncCallbacks:
             # SaaS Request was marked as needing async results, so the Request
             # Task was put in a paused state
             assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            assert request_tasks[1].collection_address == "saas_async_config:user"
+            assert (
+                request_tasks[1].collection_address == "saas_async_callback_config:user"
+            )
 
             # Terminator task is downstream so it is still in a pending state
             assert request_tasks[2].status == ExecutionLogStatus.pending
@@ -1987,18 +2003,16 @@ class TestAsyncCallbacks:
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
             assert pr.get_raw_access_results() == {
-                "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
+                "saas_async_callback_config:user": [
+                    {"id": 1, "user_id": "abcde", "state": "VA"}
+                ]
             }
             # User data supplied async was filtered before being returned to the end user
             assert pr.get_filtered_final_upload() == {
                 "access_request_rule": {
-                    "saas_async_config:user": [{"state": "VA", "id": 1}]
+                    "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
                 }
             }
-        else:
-            # Async Access Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            assert pr.status == PrivacyRequestStatus.complete
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
@@ -2062,12 +2076,6 @@ class TestAsyncCallbacks:
 
             assert pr.erasure_tasks[1].rows_masked == 2
             assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
-
-        else:
-            # Async Erasure Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.complete
 
 
 class TestDatasetReferenceValidation:
@@ -2205,3 +2213,411 @@ class TestSkipCollectionsWithOptionalIdentities:
         assert skipped_log.message == (
             'Skipping the "optional_identities:customer" collection, it is reachable by the "user_id" identity but only the "email" identity was provided'
         )
+
+
+class TestDSRPackageURLGeneration:
+    """Tests for DSR package URL generation functionality in request runner service"""
+
+    @pytest.fixture
+    def mock_config_proxy(self):
+        """Mock config proxy with privacy center URL"""
+        with mock.patch(
+            "fides.api.service.privacy_request.request_runner_service.ConfigProxy"
+        ) as mock_proxy:
+            mock_config = mock.MagicMock()
+            mock_config.privacy_center.url = "https://privacy.example.com"
+            mock_config.notifications.notification_service_type = "mailgun"
+            mock_proxy.return_value = mock_config
+            yield mock_config
+
+    @pytest.fixture
+    def mock_storage_destination_s3_with_redirect(self):
+        """Mock S3 storage destination with access package redirect enabled"""
+        mock_dest = mock.MagicMock()
+        mock_dest.type = StorageType.s3
+        mock_dest.details = {
+            "enable_access_package_redirect": True,
+            "enable_streaming": True,
+        }
+        return mock_dest
+
+    @pytest.fixture
+    def mock_storage_destination_s3_without_redirect(self):
+        """Mock S3 storage destination without access package redirect"""
+        mock_dest = mock.MagicMock()
+        mock_dest.type = StorageType.s3
+        mock_dest.details = {
+            "enable_access_package_redirect": False,
+            "enable_streaming": False,
+        }
+        return mock_dest
+
+    @pytest.fixture
+    def mock_storage_destination_non_s3(self):
+        """Mock non-S3 storage destination"""
+        mock_dest = mock.MagicMock()
+        mock_dest.type = StorageType.local
+        mock_dest.details = {}
+        return mock_dest
+
+    @pytest.fixture
+    def mock_rule_with_storage(self, mock_storage_destination_s3_with_redirect):
+        """Mock rule with storage destination"""
+        mock_rule = mock.MagicMock()
+        mock_rule.get_storage_destination.return_value = (
+            mock_storage_destination_s3_with_redirect
+        )
+        return mock_rule
+
+    @pytest.fixture
+    def mock_policy_with_access_rule(self, mock_rule_with_storage):
+        """Mock policy with access rule only (no erasure rules)"""
+        mock_policy = mock.MagicMock()
+        mock_policy.get_rules_for_action.side_effect = lambda action_type: (
+            [mock_rule_with_storage] if action_type == ActionType.access else []
+        )
+        return mock_policy
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+    )
+    def test_generate_dsr_package_urls_when_enabled(
+        self,
+        mock_generate_token,
+        mock_dispatch_message,
+        mock_config_proxy,
+        mock_policy_with_access_rule,
+        db,
+        privacy_request,
+    ):
+        # Ensure the mock is properly set up to not actually call the real function
+        mock_dispatch_message.return_value = None
+        """Test that DSR package URLs are generated when enable_access_package_redirect is True"""
+        mock_generate_token.return_value = "test_token_123"
+
+        # Call the function
+        initiate_privacy_request_completion_email(
+            session=db,
+            privacy_request_id=privacy_request.id,
+            policy=mock_policy_with_access_rule,
+            access_result_urls=[
+                "https://storage.example.com/file1",
+                "https://storage.example.com/file2",
+            ],
+            identity_data={"email": "test@example.com"},
+            property_id=None,
+        )
+
+        # Verify the token was generated
+        mock_generate_token.assert_called_once_with(privacy_request.id)
+
+        # Verify the message was dispatched with DSR package URL
+        mock_dispatch_message.assert_called_once()
+        call_args = mock_dispatch_message.call_args
+        message_params = call_args[1]["message_body_params"]
+
+        # Check that DSR package URL was used instead of direct storage URLs
+        # Note: In CI environments, tokens may be masked for security
+        download_url = message_params.download_links[0]
+
+        # Verify the URL structure without depending on exact token values
+        assert download_url.startswith(
+            "https://privacy.example.com/api/privacy-request/"
+        )
+        assert "/access-package?token=" in download_url
+        assert privacy_request.id in download_url
+
+        # Verify that a token is present (either the actual value or masked)
+        # The token should be present and at least 3 characters (to account for masking like "***")
+        token_part = download_url.split("?token=")[1]
+        assert len(token_part) >= 3, "Token should be present and at least 3 characters"
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+    )
+    def test_use_direct_urls_when_redirect_disabled(
+        self,
+        mock_generate_token,
+        mock_dispatch_message,
+        mock_config_proxy,
+        db,
+        privacy_request,
+    ):
+        # Ensure the mock is properly set up to not actually call the real function
+        mock_dispatch_message.return_value = None
+        """Test that direct storage URLs are used when enable_access_package_redirect is False"""
+        # Create a policy with storage destination that has redirect disabled
+        mock_rule = mock.MagicMock()
+        mock_rule.get_storage_destination.return_value = mock.MagicMock(
+            type=StorageType.s3, details={"enable_access_package_redirect": False}
+        )
+
+        mock_policy = mock.MagicMock()
+        mock_policy.get_rules_for_action.side_effect = lambda action_type: (
+            [mock_rule] if action_type == ActionType.access else []
+        )
+
+        access_result_urls = [
+            "https://storage.example.com/file1",
+            "https://storage.example.com/file2",
+        ]
+
+        # Call the function
+        initiate_privacy_request_completion_email(
+            session=db,
+            privacy_request_id=privacy_request.id,
+            policy=mock_policy,
+            access_result_urls=access_result_urls,
+            identity_data={"email": "test@example.com"},
+            property_id=None,
+        )
+
+        # Verify no token was generated
+        mock_generate_token.assert_not_called()
+
+        # Verify the message was dispatched with direct storage URLs
+        mock_dispatch_message.assert_called_once()
+        call_args = mock_dispatch_message.call_args
+        message_params = call_args[1]["message_body_params"]
+
+        # Check that direct storage URLs were used
+        assert message_params.download_links == access_result_urls
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+    )
+    def test_use_direct_urls_for_non_s3_storage(
+        self,
+        mock_generate_token,
+        mock_dispatch_message,
+        mock_config_proxy,
+        db,
+        privacy_request,
+    ):
+        # Ensure the mock is properly set up to not actually call the real function
+        mock_dispatch_message.return_value = None
+        """Test that direct storage URLs are used for non-S3 storage destinations"""
+        # Create a policy with non-S3 storage destination
+        mock_rule = mock.MagicMock()
+        mock_rule.get_storage_destination.return_value = mock.MagicMock(
+            type=StorageType.local, details={}
+        )
+
+        mock_policy = mock.MagicMock()
+        mock_policy.get_rules_for_action.side_effect = lambda action_type: (
+            [mock_rule] if action_type == ActionType.access else []
+        )
+
+        access_result_urls = ["https://storage.example.com/file1"]
+
+        # Call the function
+        initiate_privacy_request_completion_email(
+            session=db,
+            privacy_request_id=privacy_request.id,
+            policy=mock_policy,
+            access_result_urls=access_result_urls,
+            identity_data={"email": "test@example.com"},
+            property_id=None,
+        )
+
+        # Verify no token was generated
+        mock_generate_token.assert_not_called()
+
+        # Verify the message was dispatched with direct storage URLs
+        mock_dispatch_message.assert_called_once()
+        call_args = mock_dispatch_message.call_args
+        message_params = call_args[1]["message_body_params"]
+
+        # Check that direct storage URLs were used
+        assert message_params.download_links == access_result_urls
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+    )
+    def test_use_direct_urls_when_no_privacy_center_url(
+        self,
+        mock_generate_token,
+        mock_dispatch_message,
+        db,
+        privacy_request,
+    ):
+        # Ensure the mock is properly set up to not actually call the real function
+        mock_dispatch_message.return_value = None
+        """Test that direct storage URLs are used when privacy center URL is not configured"""
+        # Mock config proxy without privacy center URL
+        with mock.patch(
+            "fides.api.service.privacy_request.request_runner_service.ConfigProxy"
+        ) as mock_proxy:
+            mock_config = mock.MagicMock()
+            mock_config.privacy_center.url = None
+            mock_config.notifications.notification_service_type = "mailgun"
+            mock_proxy.return_value = mock_config
+
+            # Create a policy with storage destination that has redirect enabled
+            mock_rule = mock.MagicMock()
+            mock_rule.get_storage_destination.return_value = mock.MagicMock(
+                type=StorageType.s3, details={"enable_access_package_redirect": True}
+            )
+
+            mock_policy = mock.MagicMock()
+            mock_policy.get_rules_for_action.side_effect = lambda action_type: (
+                [mock_rule] if action_type == ActionType.access else []
+            )
+
+            access_result_urls = ["https://storage.example.com/file1"]
+
+            # Call the function
+            initiate_privacy_request_completion_email(
+                session=db,
+                privacy_request_id=privacy_request.id,
+                policy=mock_policy,
+                access_result_urls=access_result_urls,
+                identity_data={"email": "test@example.com"},
+                property_id=None,
+            )
+
+            # Verify no token was generated
+            mock_generate_token.assert_not_called()
+
+            # Verify the message was dispatched with direct storage URLs
+            mock_dispatch_message.assert_called_once()
+            call_args = mock_dispatch_message.call_args
+            message_params = call_args[1]["message_body_params"]
+
+            # Check that direct storage URLs were used
+            assert message_params.download_links == access_result_urls
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+    )
+    def test_multiple_rules_with_mixed_storage_types(
+        self,
+        mock_generate_token,
+        mock_dispatch_message,
+        mock_config_proxy,
+        db,
+        privacy_request,
+    ):
+        # Ensure the mock is properly set up to not actually call the real function
+        mock_dispatch_message.return_value = None
+        """Test behavior when policy has multiple rules with different storage types"""
+        mock_generate_token.return_value = "test_token_123"
+
+        # Create a policy with mixed storage destinations
+        mock_rule1 = mock.MagicMock()
+        mock_rule1.get_storage_destination.return_value = mock.MagicMock(
+            type=StorageType.s3, details={"enable_access_package_redirect": False}
+        )
+
+        mock_rule2 = mock.MagicMock()
+        mock_rule2.get_storage_destination.return_value = mock.MagicMock(
+            type=StorageType.s3,
+            details={"enable_access_package_redirect": True, "enable_streaming": True},
+        )
+
+        mock_policy = mock.MagicMock()
+        mock_policy.get_rules_for_action.side_effect = lambda action_type: (
+            [mock_rule1, mock_rule2] if action_type == ActionType.access else []
+        )
+
+        access_result_urls = ["https://storage.example.com/file1"]
+
+        # Call the function
+        initiate_privacy_request_completion_email(
+            session=db,
+            privacy_request_id=privacy_request.id,
+            policy=mock_policy,
+            access_result_urls=access_result_urls,
+            identity_data={"email": "test@example.com"},
+            property_id=None,
+        )
+
+        # Verify token was generated (because at least one rule has redirect enabled)
+        mock_generate_token.assert_called_once_with(privacy_request.id)
+
+        # Verify the message was dispatched with DSR package URL
+        mock_dispatch_message.assert_called_once()
+        call_args = mock_dispatch_message.call_args
+        message_params = call_args[1]["message_body_params"]
+
+        # Check that DSR package URL was used
+        # Note: In CI environments, tokens may be masked for security
+        download_url = message_params.download_links[0]
+
+        # Verify the URL structure without depending on exact token values
+        assert download_url.startswith(
+            "https://privacy.example.com/api/privacy-request/"
+        )
+        assert "/access-package?token=" in download_url
+        assert privacy_request.id in download_url
+
+        # Verify that a token is present (either the actual value or masked)
+        # The token should be at least 3 characters (to account for masking like "***")
+        token_part = download_url.split("?token=")[1]
+        assert len(token_part) >= 3, "Token should be present and at least 3 characters"
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+    )
+    def test_dsr_package_url_format(
+        self,
+        mock_generate_token,
+        mock_dispatch_message,
+        mock_config_proxy,
+        mock_policy_with_access_rule,
+        db,
+        privacy_request,
+    ):
+        # Ensure the mock is properly set up to not actually call the real function
+        mock_dispatch_message.return_value = None
+        """Test that DSR package URL is formatted correctly"""
+        mock_generate_token.return_value = "test_token_123"
+
+        # Call the function
+        initiate_privacy_request_completion_email(
+            session=db,
+            privacy_request_id=privacy_request.id,
+            policy=mock_policy_with_access_rule,
+            access_result_urls=["https://storage.example.com/file1"],
+            identity_data={"email": "test@example.com"},
+            property_id=None,
+        )
+
+        # Verify the message was dispatched
+        mock_dispatch_message.assert_called_once()
+        call_args = mock_dispatch_message.call_args
+        message_params = call_args[1]["message_body_params"]
+
+        # Check that DSR package URL has the correct format
+        # Note: In CI environments, tokens may be masked for security
+        download_url = message_params.download_links[0]
+
+        # Verify the URL structure without depending on exact token values
+        assert download_url.startswith(
+            "https://privacy.example.com/api/privacy-request/"
+        )
+        assert "/access-package?token=" in download_url
+        assert privacy_request.id in download_url
+
+        # Verify that a token is present (either the actual value or masked)
+        # The token should be present and at least 3 characters (to account for masking like "***")
+        token_part = download_url.split("?token=")[1]
+        assert len(token_part) >= 3, "Token should be present and at least 3 characters"

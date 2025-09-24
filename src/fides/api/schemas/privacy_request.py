@@ -14,10 +14,11 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
-from fides.api.schemas.user import PrivacyRequestReviewer
+from fides.api.schemas.user import PrivacyRequestUser
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.api.util.enums import ColumnSort
+from fides.api.util.text import normalize_location_code
 from fides.config import CONFIG
 
 
@@ -103,6 +104,7 @@ class PrivacyRequestCreate(FidesSchema):
     property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
     source: Optional[PrivacyRequestSource] = None
+    location: Optional[str] = None
 
     @field_validator("encryption_key")
     @classmethod
@@ -113,6 +115,18 @@ class PrivacyRequestCreate(FidesSchema):
         if value:
             verify_encryption_key(value.encode(CONFIG.security.encoding))
         return value
+
+    @field_validator("location")
+    @classmethod
+    def validate_location(
+        cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
+    ) -> Optional[str]:
+        """Validate and normalize location to ISO 3166 format"""
+        if value is None:
+            return None
+
+        # nuance here is the validator will coalesce values from the less strict format to ISO 3166 (i.e. "us_ca" -> "US-CA")
+        return normalize_location_code(value)
 
 
 class PrivacyRequestResubmit(PrivacyRequestCreate):
@@ -302,7 +316,9 @@ class PrivacyRequestResponse(FidesSchema):
     started_processing_at: Optional[datetime] = None
     reviewed_at: Optional[datetime] = None
     reviewed_by: Optional[str] = None
-    reviewer: Optional[PrivacyRequestReviewer] = None
+    submitted_by: Optional[str] = None
+    reviewer: Optional[PrivacyRequestUser] = None
+    submitter: Optional[PrivacyRequestUser] = None
     finished_processing_at: Optional[datetime] = None
     identity_verified_at: Optional[datetime] = None
     paused_at: Optional[datetime] = None
@@ -321,10 +337,12 @@ class PrivacyRequestResponse(FidesSchema):
     custom_privacy_request_fields_approved_by: Optional[str] = None
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     source: Optional[PrivacyRequestSource] = None
+    location: Optional[str] = None
     deleted_at: Optional[datetime] = None
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
+
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -437,6 +455,7 @@ class PrivacyRequestFilter(FidesSchema):
     errored_lt: Optional[datetime] = None
     errored_gt: Optional[datetime] = None
     external_id: Optional[str] = None
+    location: Optional[str] = None
     action_type: Optional[ActionType] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False

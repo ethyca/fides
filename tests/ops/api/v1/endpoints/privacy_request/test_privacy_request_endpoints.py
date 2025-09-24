@@ -57,8 +57,11 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
-from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.task.graph_runners import access_runner
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    LabeledIdentity,
+)
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
@@ -115,7 +118,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.conftest import generate_role_header_for_user
+from tests.conftest import access_runner_tester, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
@@ -166,7 +169,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
-        print(resp.json())
+
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
@@ -285,6 +288,69 @@ class TestCreatePrivacyRequest:
         assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
         pr.delete(db=db)
         assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_create_privacy_request_stores_location(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_LOCATION = "US-CA"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                },
+                "location": TEST_LOCATION,
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        # Verify location is stored in the database
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.location == TEST_LOCATION
+
+        # Verify location is included in the response
+        assert response_data[0]["location"] == TEST_LOCATION
+
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_create_privacy_request_invalid_location(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": "test@example.com",
+                },
+                "location": "INVALID",  # Invalid location format
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 422  # Validation error
+        assert "Invalid location format" in resp.text
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
@@ -791,7 +857,9 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @pytest.mark.usefixtures(
-        "messaging_config", "privacy_request_receipt_notification_enabled"
+        "messaging_config",
+        "privacy_request_receipt_notification_enabled",
+        "set_notification_service_type_to_mailgun",
     )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -923,6 +991,31 @@ class TestGetPrivacyRequests:
         assert user.username == reviewer["username"]
         privacy_request.delete(db)
 
+    def test_get_privacy_requests_displays_submitter(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        user,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        privacy_request.submitted_by = user.id
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?request_id={privacy_request.id}", headers=auth_header
+        )
+        assert 200 == response.status_code
+
+        submitter = response.json()["items"][0]["submitter"]
+        assert submitter
+        assert user.id == submitter["id"]
+        assert user.username == submitter["username"]
+        privacy_request.delete(db)
+
     def test_get_privacy_requests_accept_datetime(
         self,
         api_client: TestClient,
@@ -985,9 +1078,12 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
+                    "location": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -1054,9 +1150,12 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
+                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1765,9 +1864,12 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
+                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1937,6 +2039,10 @@ class TestGetPrivacyRequests:
             ExecutionLog.privacy_request_id == privacy_request.id
         ).delete()
 
+    @pytest.mark.usefixtures(
+        "allow_custom_privacy_request_field_collection_enabled",
+        "allow_custom_privacy_request_fields_in_request_execution_enabled",
+    )
     def test_get_privacy_requests_csv_format(
         self, db, generate_auth_header, api_client, url, privacy_request, user
     ):
@@ -1955,10 +2061,21 @@ class TestGetPrivacyRequests:
                 "phone_number": TEST_PHONE,
             }
         )
+        EXAMPLE_CUSTOM_FIELD = "example_custom_fields"
+        EXAMPLE_CUSTOM_FIELD_LABEL = "Example Field"
+        EXAMPLE_CUSTOM_FIELD_VALUE = "example_value"
+        custom_request_field = CustomPrivacyRequestField(
+            label=EXAMPLE_CUSTOM_FIELD_LABEL, value=EXAMPLE_CUSTOM_FIELD_VALUE
+        )
+
+        privacy_request.persist_custom_privacy_request_fields(
+            db, {EXAMPLE_CUSTOM_FIELD: custom_request_field}
+        )
+
         privacy_request.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?download_csv=True", headers=auth_header)
+        response = api_client.get(url + "?download_csv=True", headers=auth_header)
         assert 200 == response.status_code
 
         assert response.headers["content-type"] == "text/csv; charset=utf-8"
@@ -1973,20 +2090,20 @@ class TestGetPrivacyRequests:
 
         first_row = next(csv_file)
         assert parse(first_row["Time Received"], ignoretz=True) == created_at
-        assert ast.literal_eval(first_row["Subject Identity"]) == {
-            "email": TEST_EMAIL,
-            "phone_number": TEST_PHONE,
-            "ga_client_id": None,
-            "ljt_readerID": None,
-            "fides_user_device_id": None,
-            "external_id": None,
-        }
+
+        assert first_row["email"] == TEST_EMAIL
+        assert first_row["phone_number"] == TEST_PHONE
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
         assert first_row["Reviewed By"] == user.id
         assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial Reason"] == ""
         assert first_row["Request ID"] == privacy_request.id
+
+        assert (
+            first_row[f"Custom Field {EXAMPLE_CUSTOM_FIELD_LABEL}"]
+            == EXAMPLE_CUSTOM_FIELD_VALUE
+        )
 
         privacy_request.delete(db)
 
@@ -2238,6 +2355,31 @@ class TestPrivacyRequestSearch:
         assert user.username == reviewer["username"]
         privacy_request.delete(db)
 
+    def test_privacy_request_search_displays_submitter(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        user,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        privacy_request.submitted_by = user.id
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(
+            url, headers=auth_header, json={"request_id": privacy_request.id}
+        )
+        assert 200 == response.status_code
+
+        submitter = response.json()["items"][0]["submitter"]
+        assert submitter
+        assert user.id == submitter["id"]
+        assert user.username == submitter["username"]
+        privacy_request.delete(db)
+
     def test_privacy_request_search_accept_datetime(
         self,
         api_client: TestClient,
@@ -2299,9 +2441,12 @@ class TestPrivacyRequestSearch:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
+                    "location": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -2368,9 +2513,12 @@ class TestPrivacyRequestSearch:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
+                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -2942,9 +3090,12 @@ class TestPrivacyRequestSearch:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "submitted_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "submitter": None,
                     "source": None,
+                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -3114,25 +3265,51 @@ class TestPrivacyRequestSearch:
             ExecutionLog.privacy_request_id == privacy_request.id
         ).delete()
 
+    @pytest.mark.usefixtures(
+        "allow_custom_privacy_request_field_collection_enabled",
+        "allow_custom_privacy_request_fields_in_request_execution_enabled",
+    )
     def test_privacy_request_search_csv_format(
-        self, db, generate_auth_header, api_client, url, privacy_request, user
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        url,
+        privacy_request_with_two_types,
+        user,
     ):
         reviewed_at = datetime.now()
         created_at = datetime.now()
+        updated_at = datetime.now()
+        finalized_at = datetime.now()
+        deadline = created_at + timedelta(privacy_request_with_two_types.days_left)
 
-        privacy_request.created_at = created_at
-        privacy_request.status = PrivacyRequestStatus.approved
-        privacy_request.reviewed_by = user.id
-        privacy_request.reviewed_at = reviewed_at
+        privacy_request_with_two_types.created_at = created_at
+        privacy_request_with_two_types.updated_at = updated_at
+        privacy_request_with_two_types.finalized_at = finalized_at
+
+        privacy_request_with_two_types.status = PrivacyRequestStatus.approved
+        privacy_request_with_two_types.reviewed_by = user.id
+        privacy_request_with_two_types.reviewed_at = reviewed_at
         TEST_EMAIL = "test@example.com"
         TEST_PHONE = "+12345678910"
-        privacy_request.cache_identity(
+        privacy_request_with_two_types.cache_identity(
             {
                 "email": TEST_EMAIL,
                 "phone_number": TEST_PHONE,
             }
         )
-        privacy_request.save(db)
+
+        EXAMPLE_CUSTOM_FIELD = "example_custom_fields"
+        EXAMPLE_CUSTOM_FIELD_LABEL = "Example Field"
+        EXAMPLE_CUSTOM_FIELD_VALUE = "example_value"
+        custom_request_field = CustomPrivacyRequestField(
+            label=EXAMPLE_CUSTOM_FIELD_LABEL, value=EXAMPLE_CUSTOM_FIELD_VALUE
+        )
+        privacy_request_with_two_types.persist_custom_privacy_request_fields(
+            db, {EXAMPLE_CUSTOM_FIELD: custom_request_field}
+        )
+        privacy_request_with_two_types.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
@@ -3152,22 +3329,23 @@ class TestPrivacyRequestSearch:
 
         first_row = next(csv_file)
         assert parse(first_row["Time Received"], ignoretz=True) == created_at
-        assert ast.literal_eval(first_row["Subject Identity"]) == {
-            "email": TEST_EMAIL,
-            "phone_number": TEST_PHONE,
-            "ga_client_id": None,
-            "ljt_readerID": None,
-            "fides_user_device_id": None,
-            "external_id": None,
-        }
-        assert first_row["Request Type"] == "access"
+        assert first_row["email"] == TEST_EMAIL
+        assert first_row["phone_number"] == TEST_PHONE
+        assert first_row["Request Type"] == "access+erasure"
         assert first_row["Status"] == "approved"
         assert first_row["Reviewed By"] == user.id
         assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial Reason"] == ""
-        assert first_row["Request ID"] == privacy_request.id
+        assert first_row["Request ID"] == privacy_request_with_two_types.id
+        assert (
+            first_row[f"Custom Field {EXAMPLE_CUSTOM_FIELD_LABEL}"]
+            == EXAMPLE_CUSTOM_FIELD_VALUE
+        )
+        assert parse(first_row["Deadline"], ignoretz=True) == deadline
+        assert parse(first_row["Last Updated"], ignoretz=True) == updated_at
+        assert parse(first_row["Completed On"], ignoretz=True) == finalized_at
 
-        privacy_request.delete(db)
+        privacy_request_with_two_types.delete(db)
 
     def test_get_requires_input_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
@@ -3931,6 +4109,7 @@ class TestApprovePrivacyRequest:
 
         privacy_request.delete(db)
 
+    @pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
@@ -4485,6 +4664,7 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert not mock_dispatch_message.called
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestDenyPrivacyRequest:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request):
@@ -4901,8 +5081,11 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "submitted_by": None,
             "reviewer": None,
+            "submitter": None,
             "source": None,
+            "location": None,
             "paused_at": None,
             "policy": {
                 "execution_timeframe": 7,
@@ -5723,6 +5906,7 @@ class TestVerifyIdentity:
         assert queue == MESSAGING_QUEUE_NAME
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -6637,6 +6821,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         )
 
 
+@pytest.mark.usefixtures("set_notification_service_type_to_mailgun")
 class TestCreatePrivacyRequestEmailReceiptNotification:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -6796,6 +6981,44 @@ class TestCreatePrivacyRequestAuthenticated:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_create_privacy_request_authenticated_with_location(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        generate_auth_header,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_LOCATION = "GB"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": TEST_EMAIL},
+                "location": TEST_LOCATION,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        # Verify location is stored in the database
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.location == TEST_LOCATION
+
+        # Verify location is included in the response
+        assert response_data[0]["location"] == TEST_LOCATION
+
+        pr.delete(db=db)
         assert run_access_request_mock.called
 
     @pytest.mark.parametrize(
@@ -7290,9 +7513,10 @@ class TestPrivacyRequestDataTransfer:
         graph = DatasetGraph(merged_graph)
 
         # execute the privacy request to mimic the expected workflow on the "child"
-        # this will populate the access results in the cache, which is required for the
+        # this will populate the access results, which is required for the
         # transfer endpoint to work
-        access_runner(
+
+        access_runner_tester(
             privacy_request,
             policy,
             graph,
@@ -8692,9 +8916,15 @@ class TestResubmitPrivacyRequest:
         [
             ("owner_auth_header", HTTP_200_OK),
             ("contributor_auth_header", HTTP_200_OK),
-            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            (
+                "viewer_and_approver_auth_header",
+                HTTP_200_OK,
+            ),
             ("viewer_auth_header", HTTP_403_FORBIDDEN),
-            ("approver_auth_header", HTTP_403_FORBIDDEN),
+            (
+                "approver_auth_header",
+                HTTP_200_OK,
+            ),
         ],
     )
     def test_resubmit_privacy_request_with_roles(

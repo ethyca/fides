@@ -185,6 +185,11 @@ export interface FidesInitOptions {
    *
    */
   fidesModalDisplay?: "immediate" | "default";
+
+  // Controls handling of unsupported repeated script loading
+  fidesUnsupportedRepeatedScriptLoading?:
+    | "enabled_acknowledge_not_supported"
+    | "disabled";
 }
 
 /**
@@ -313,6 +318,7 @@ export interface FidesCookie {
   fides_string?: string;
   tcf_consent: TcfOtherConsent;
   tcf_version_hash?: ExperienceMeta["version_hash"];
+  non_applicable_notice_keys?: string[];
 }
 
 export type GetPreferencesFnResp = {
@@ -838,6 +844,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesInitializedEventMode"
   | "fidesModalDefaultView"
   | "fidesModalDisplay"
+  | "fidesUnsupportedRepeatedScriptLoading"
 >;
 
 export type FidesExperienceTranslationOverrides = {

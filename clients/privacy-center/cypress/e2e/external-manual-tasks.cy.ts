@@ -186,14 +186,24 @@ describe("External Manual Tasks", () => {
       cy.get("table tbody tr[data-row-key='pri_ext_001-task_ext_001']")
         .should("exist")
         .within(() => {
-          cy.get("td")
+          cy.get("td:not(.ant-table-selection-column)")
             .eq(0)
             .should("contain", "Export Customer Data from Salesforce");
-          cy.get("td").eq(1).should("contain", "New");
-          cy.get("td").eq(2).should("contain", "Salesforce");
-          cy.get("td").eq(3).should("contain", "Access");
-          cy.get("td").eq(4).should("contain", "15 days");
-          cy.get("td").eq(5).should("contain", "customer@example.com");
+          cy.get("td:not(.ant-table-selection-column)")
+            .eq(1)
+            .should("contain", "New");
+          cy.get("td:not(.ant-table-selection-column)")
+            .eq(2)
+            .should("contain", "Salesforce");
+          cy.get("td:not(.ant-table-selection-column)")
+            .eq(3)
+            .should("contain", "Access");
+          cy.get("td:not(.ant-table-selection-column)")
+            .eq(4)
+            .should("contain", "15 days");
+          cy.get("td:not(.ant-table-selection-column)")
+            .eq(5)
+            .should("contain", "customer@example.com");
         });
     });
 

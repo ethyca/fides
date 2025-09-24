@@ -1073,6 +1073,8 @@ class TestMongoConnectionPutSecretsAPI:
             "username": "mongo_user",
             "password": "mongo_pass",
             "defaultauthdb": "mongo_test",
+            "use_srv": False,
+            "ssl_enabled": None,
         }
         resp = api_client.put(
             url,
@@ -1098,6 +1100,8 @@ class TestMongoConnectionPutSecretsAPI:
             "username": "mongo_user",
             "password": "mongo_pass",
             "defaultauthdb": "mongo_test",
+            "use_srv": False,
+            "ssl_enabled": None,
         }
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is False
@@ -1115,6 +1119,8 @@ class TestMongoConnectionPutSecretsAPI:
             "defaultauthdb": "mongo_test",
             "username": "mongo_user",
             "password": "mongo_pass",
+            "use_srv": False,
+            "ssl_enabled": None,
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -1139,6 +1145,8 @@ class TestMongoConnectionPutSecretsAPI:
             "username": "mongo_user",
             "password": "mongo_pass",
             "port": 27017,
+            "use_srv": False,
+            "ssl_enabled": None,
         }
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
@@ -1451,6 +1459,7 @@ class TestScyllaDBConnector:
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
 
+@pytest.mark.xfail(reason="Needs updated credentials")
 @pytest.mark.integration_external
 @pytest.mark.integration_rds_mysql
 class TestRDSMySQLConnector:
@@ -1477,6 +1486,7 @@ class TestRDSMySQLConnector:
             connector.test_connection()
 
 
+@pytest.mark.xfail(reason="Needs updated credentials")
 @pytest.mark.integration_external
 @pytest.mark.integration_rds_postgres
 class TestRDSPostgresConnector:

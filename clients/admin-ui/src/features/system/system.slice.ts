@@ -1,17 +1,23 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector } from "@reduxjs/toolkit";
 
-import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
+import { buildArrayQueryParams } from "~/features/common/utils";
+import { SystemColumnKeys } from "~/features/system/table/SystemColumnKeys";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
-  Page_BasicSystemResponse_,
+  Page_BasicSystemResponseExtended_,
   System,
   SystemResponse,
+  SystemSchemaExtended,
   TestStatusMessage,
 } from "~/types/api";
-import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
+import {
+  PaginationQueryParams,
+  SearchQueryParams,
+  SortQueryParams,
+} from "~/types/query-params";
 
 interface SystemDeleteResponse {
   message: string;
@@ -24,6 +30,11 @@ interface UpsertResponse {
   updated: number;
 }
 
+interface BulkAssignStewardRequest {
+  data_steward: string;
+  system_keys: string[];
+}
+
 export type ConnectionConfigSecretsRequest = {
   systemFidesKey: string;
   secrets: {
@@ -31,30 +42,45 @@ export type ConnectionConfigSecretsRequest = {
   };
 };
 
+export type GetSystemsQueryParams = {
+  data_stewards?: string[];
+  system_groups?: string[];
+  show_deleted?: boolean;
+};
+
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
-      Page_BasicSystemResponse_,
-      PaginationQueryParams & SearchQueryParams
+      Page_BasicSystemResponseExtended_,
+      PaginationQueryParams &
+        SearchQueryParams &
+        GetSystemsQueryParams &
+        SortQueryParams<SystemColumnKeys>
     >({
-      query: (params) => ({
-        method: "GET",
-        url: `system`,
-        params,
-      }),
+      query: ({
+        data_stewards,
+        system_groups,
+        sort_by = [SystemColumnKeys.NAME],
+        ...params
+      }) => {
+        const sortByArray = Array.isArray(sort_by) ? sort_by : [sort_by];
+        const urlParams = buildArrayQueryParams({
+          data_stewards,
+          system_groups,
+          sort_by: sortByArray,
+        });
+
+        return {
+          method: "GET",
+          url: `system?${urlParams.toString()}`,
+          params,
+        };
+      },
       providesTags: () => ["System"],
     }),
     getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system` }),
       providesTags: () => ["System"],
-      transformResponse: (systems: SystemResponse[]) =>
-        systems.sort((a, b) => {
-          const displayName = (system: SystemResponse) =>
-            system.name === "" || system.name == null
-              ? system.fides_key
-              : system.name;
-          return displayName(a).localeCompare(displayName(b));
-        }),
     }),
     getSystemByFidesKey: build.query<SystemResponse, string>({
       query: (fides_key) => ({ url: `system/${fides_key}` }),
@@ -90,9 +116,23 @@ const systemApi = baseApi.injectEndpoints({
         "System Vendors",
       ],
     }),
+    bulkDeleteSystems: build.mutation<SystemDeleteResponse, string[]>({
+      query: (keys) => ({
+        url: `system/bulk-delete`,
+        method: "POST",
+        body: keys,
+      }),
+      invalidatesTags: [
+        "Datamap",
+        "System",
+        "Datastore Connection",
+        "Privacy Notices",
+        "System Vendors",
+      ],
+    }),
     upsertSystems: build.mutation<UpsertResponse, System[]>({
       query: (systems) => ({
-        url: `/system/upsert`,
+        url: `system/upsert`,
         method: "POST",
         body: systems,
       }),
@@ -106,7 +146,7 @@ const systemApi = baseApi.injectEndpoints({
     }),
     updateSystem: build.mutation<
       SystemResponse,
-      Partial<System> & Pick<System, "fides_key">
+      Partial<SystemSchemaExtended> & Pick<SystemSchemaExtended, "fides_key">
     >({
       query: ({ ...patch }) => ({
         url: `system`,
@@ -167,6 +207,14 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection", "System"],
     }),
+    bulkAssignSteward: build.mutation<void, BulkAssignStewardRequest>({
+      query: ({ data_steward, system_keys }) => ({
+        url: `/system/assign-steward`,
+        method: "POST",
+        body: { data_steward, system_keys },
+      }),
+      invalidatesTags: () => ["System"],
+    }),
   }),
 });
 
@@ -178,12 +226,14 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useDeleteSystemMutation,
+  useBulkDeleteSystemsMutation,
   useUpsertSystemsMutation,
   usePatchSystemConnectionConfigsMutation,
   useDeleteSystemConnectionConfigMutation,
   useGetSystemConnectionConfigsQuery,
   usePatchSystemConnectionSecretsMutation,
   useLazyGetSystemByFidesKeyQuery,
+  useBulkAssignStewardMutation,
 } = systemApi;
 
 export interface State {
@@ -191,31 +241,6 @@ export interface State {
   activeClassifySystemFidesKey?: string;
   systemsToClassify?: System[];
 }
-const initialState: State = {};
-
-export const systemSlice = createSlice({
-  name: "system",
-  initialState,
-  reducers: {
-    setActiveSystem: (
-      draftState,
-      action: PayloadAction<System | undefined>,
-    ) => {
-      draftState.activeSystem = action.payload;
-    },
-  },
-});
-
-export const { setActiveSystem } = systemSlice.actions;
-
-export const { reducer } = systemSlice;
-
-const selectSystem = (state: RootState) => state.system;
-
-export const selectActiveSystem = createSelector(
-  selectSystem,
-  (state) => state.activeSystem,
-);
 
 /**
  * Selects the number of systems

@@ -63,6 +63,7 @@ module = [
   "pymysql.*",
   "RestrictedPython.*",
   "sendgrid.*",
+  "smart_open.*",
   "snowflake.*",
   "sqlalchemy_utils.*",
   "sqlalchemy.ext.*",
@@ -162,7 +163,8 @@ extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 ############
 [tool.pytest.ini_options]
 env = [
-  "FIDES__TEST_MODE=true"
+  "FIDES__TEST_MODE=true",
+  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute"
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
@@ -183,11 +185,13 @@ markers = [
     "postgres: only runs the integration tests for postgres",
     "mssql: only runs the integration tests for sqlserver/mssql",
     "mysql: only runs the integration tests for mysql",
+    "serial: marks tests that must run sequentially to avoid resource conflicts",
     "integration",
     "integration_external",
     "integration_mysql",
     "integration_postgres",
     "integration_mongodb",
+    "integration_mongodb_atlas",
     "integration_mssql",
     "integration_google_cloud_sql_mysql",
     "integration_google_cloud_sql_postgres",

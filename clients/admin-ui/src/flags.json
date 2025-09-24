@@ -1,16 +1,10 @@
 {
-  "privacyRequestsConfiguration": {
+  "messagingConfiguration": {
     "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage.",
-    "development": false,
+    "development": true,
     "test": false,
     "production": false,
     "userCannotModify": true
-  },
-  "organizationManagement": {
-    "description": "Management page to configure Organization details for RoPA reporting, messaging, etc.",
-    "development": true,
-    "test": true,
-    "production": false
   },
   "standaloneConnections": {
     "description": "Allow the creation of standalone connections for testing",
@@ -42,12 +36,6 @@
     "test": true,
     "production": false
   },
-  "ssoAuthentication": {
-    "description": "SSO Authentication Providers (OpenID)",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "downloadAccessRequestResults": {
     "description": "Download access data from completed requests",
     "development": true,
@@ -56,6 +44,18 @@
   },
   "publisherRestrictions": {
     "description": "TCF publisher restrictions",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "newIntegrationManagement": {
+    "description": "Shows all integrations (including SaaS) in the integrations page",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "alphaFullActionCenter": {
+    "description": "Enable additional Action Center features",
     "development": true,
     "test": true,
     "production": false

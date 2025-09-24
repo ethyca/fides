@@ -49,6 +49,7 @@ import {
   useGetAllCustomFieldDefinitionsQuery,
   useGetHealthQuery,
 } from "~/features/plus/plus.slice";
+import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import {
   CustomReportResponse,
   DATAMAP_GROUPING,
@@ -58,7 +59,11 @@ import {
 } from "~/types/api";
 
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
-import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "./constants";
+import {
+  COLUMN_IDS,
+  DATAMAP_LOCAL_STORAGE_KEYS,
+  DEFAULT_COLUMN_NAMES,
+} from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
 import {
   DEFAULT_COLUMN_FILTERS,
@@ -85,6 +90,9 @@ export const DatamapReportTable = () => {
     ScopeRegistryEnum.CUSTOM_REPORT_READ,
   ]);
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
+
+  // Fetch system groups to get taxonomy name for dynamic display
+  const { data: systemGroups } = useGetAllSystemGroupsQuery();
   const {
     PAGE_SIZES,
     pageSize,
@@ -217,7 +225,9 @@ export const DatamapReportTable = () => {
             getDataSubjectDisplayName,
             datamapReport,
             customFields,
+            systemGroups,
             isRenaming: isRenamingColumns,
+            groupBy,
           })
         : [],
     [
@@ -226,7 +236,9 @@ export const DatamapReportTable = () => {
       getDataCategoryDisplayName,
       datamapReport,
       customFields,
+      systemGroups,
       isRenamingColumns,
+      groupBy,
     ],
   );
 
@@ -342,6 +354,19 @@ export const DatamapReportTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().columnSizing]);
 
+  // Get the proper name for dropdown options (no lower-casing)
+  const getSystemGroupOptionName = () => {
+    // Priority: Custom column name from user overrides
+    const customSystemGroupName =
+      columnNameMapOverrides[COLUMN_IDS.SYSTEM_GROUP];
+    if (customSystemGroupName) {
+      return customSystemGroupName;
+    }
+
+    // Fallback: Generic "System group"
+    return "System group";
+  };
+
   const getMenuDisplayValue = () => {
     switch (groupBy) {
       case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
@@ -349,6 +374,13 @@ export const DatamapReportTable = () => {
       }
       case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
         return "data use";
+      }
+      case DATAMAP_GROUPING.SYSTEM_GROUP: {
+        // Lower case the first letter for "Group by X" text
+        const systemGroupName = getSystemGroupOptionName();
+        return (
+          systemGroupName.charAt(0).toLowerCase() + systemGroupName.slice(1)
+        );
       }
       default: {
         return "system";
@@ -554,6 +586,16 @@ export const DatamapReportTable = () => {
                     data-testid="group-by-data-use-system"
                   >
                     Data use
+                  </MenuItemOption>
+                  <MenuItemOption
+                    onClick={() => {
+                      onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP);
+                    }}
+                    isChecked={DATAMAP_GROUPING.SYSTEM_GROUP === groupBy}
+                    value={DATAMAP_GROUPING.SYSTEM_GROUP}
+                    data-testid="group-by-system-group"
+                  >
+                    {getSystemGroupOptionName()}
                   </MenuItemOption>
                 </MenuList>
               </Menu>

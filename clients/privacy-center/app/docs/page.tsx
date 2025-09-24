@@ -12,8 +12,7 @@ const DocsPage: NextPage = () => {
     return notFound();
   }
 
-  //
-  return <h1>Not available</h1>;
   // return <SwaggerUI url="/api/openapi.json" />;
+  return <h1>Not available</h1>;
 };
 export default DocsPage;
