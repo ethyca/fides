@@ -35,6 +35,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Systems inventory page now displays GVL deleted systems [#6602](https://github.com/ethyca/fides/pull/6602)
 - After creating a new integration it now redirects you to the integration detail page [#6605](https://github.com/ethyca/fides/pull/6605)
 - Add permission for "Approver" role to create privacy requests and show as "Submitted by" in the Admin UI [#6606](https://github.com/ethyca/fides/pull/6606)
+- Updated manual task configuration UI from a table to a list view [#6632](https://github.com/ethyca/fides/pull/6632)
 - Action type column of Privacy Request CSV to show all request policy types separated by `+` [6621](https://github.com/ethyca/fides/pull/6621)
 
 ### Developer Experience

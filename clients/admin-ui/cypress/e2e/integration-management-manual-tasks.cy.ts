@@ -33,7 +33,7 @@ describe("Integration Management - Manual Task Configuration", () => {
     cy.wait("@getUsers");
   });
 
-  describe("Manual Task Table and UI", () => {
+  describe("Manual Task List and UI", () => {
     it("should display the manual tasks configuration interface", () => {
       // Verify tab is active and content is loaded
       cy.getAntTab("Manual tasks")
@@ -47,24 +47,32 @@ describe("Integration Management - Manual Task Configuration", () => {
 
       // Verify action buttons are present
       cy.getByTestId("manage-secure-access-btn").should("exist");
-      cy.getByTestId("add-manual-task-btn").should("exist");
+      cy.getByTestId("add-manual-task-list-btn").should("exist");
 
-      // Verify table is displayed
-      cy.get("table").should("exist");
-      cy.get("tbody tr").should("have.length.at.least", 1);
+      // Verify list is displayed
+      cy.get(".ant-list").should("exist");
+      cy.get(".ant-list-item").should("have.length.at.least", 1);
     });
 
     it("should display manual tasks with correct data", () => {
-      // Verify first task data is displayed correctly
-      cy.getAntTableRow("task1").within(() => {
-        cy.getAntCellWithinRow(0).should("contain", "Customer Data Export");
-        cy.getAntCellWithinRow(1).should(
-          "contain",
-          "Export customer data for GDPR requests",
-        );
-        cy.getAntCellWithinRow(2).should("contain", "Attachment");
-        cy.getAntCellWithinRow(3).should("contain", "Access");
-      });
+      // Verify first task data is displayed correctly in list format
+      cy.get(".ant-list-item")
+        .first()
+        .within(() => {
+          // Title should contain "Customer Data Export (Access)"
+          cy.get(".ant-list-item-meta-title").should(
+            "contain",
+            "Customer Data Export (Access)",
+          );
+          // Description should contain the help text
+          cy.get(".ant-list-item-meta-description").should(
+            "contain",
+            "Export customer data for GDPR requests",
+          );
+          // Action buttons should be present
+          cy.getByTestId("edit-list-btn").should("exist");
+          cy.getByTestId("delete-list-btn").should("exist");
+        });
     });
 
     it("should show empty state when no manual tasks exist", () => {
@@ -82,7 +90,7 @@ describe("Integration Management - Manual Task Configuration", () => {
 
   describe("Add Manual Task", () => {
     it("should create a new manual task successfully", () => {
-      cy.getByTestId("add-manual-task-btn").click();
+      cy.getByTestId("add-manual-task-list-btn").click();
 
       // Fill out the form
       cy.getByTestId("input-name").type("New Manual Task");
@@ -111,7 +119,7 @@ describe("Integration Management - Manual Task Configuration", () => {
     });
 
     it("should close modal when cancel is clicked", () => {
-      cy.getByTestId("add-manual-task-btn").click();
+      cy.getByTestId("add-manual-task-list-btn").click();
       cy.getByTestId("add-manual-task-modal").should("be.visible");
       cy.getByTestId("cancel-btn").click();
       cy.getByTestId("add-manual-task-modal").should("not.exist");
@@ -121,9 +129,11 @@ describe("Integration Management - Manual Task Configuration", () => {
   describe("Edit Manual Task", () => {
     it("should open edit modal when edit button is clicked", () => {
       // Click edit button on first task
-      cy.getAntTableRow("task1").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.get(".ant-list-item")
+        .first()
+        .within(() => {
+          cy.getByTestId("edit-list-btn").click();
+        });
 
       // Verify modal opens with existing data
       cy.getByTestId("add-manual-task-modal").should("be.visible");
@@ -132,9 +142,11 @@ describe("Integration Management - Manual Task Configuration", () => {
     });
 
     it("should update manual task successfully", () => {
-      cy.getAntTableRow("task1").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.get(".ant-list-item")
+        .first()
+        .within(() => {
+          cy.getByTestId("edit-list-btn").click();
+        });
 
       // Modify the task
       cy.getByTestId("input-name").clear().type("Updated Task Name");
@@ -154,9 +166,11 @@ describe("Integration Management - Manual Task Configuration", () => {
 
   describe("Delete Manual Task", () => {
     it("should delete manual task when confirmed", () => {
-      cy.getAntTableRow("task1").within(() => {
-        cy.getByTestId("delete-btn").click();
-      });
+      cy.get(".ant-list-item")
+        .first()
+        .within(() => {
+          cy.getByTestId("delete-list-btn").click();
+        });
 
       // Confirm deletion
       cy.getByTestId("continue-btn").click();
@@ -172,8 +186,12 @@ describe("Integration Management - Manual Task Configuration", () => {
   describe("User Assignment Management", () => {
     it("should display user assignment section", () => {
       // Verify assignment section exists
-      cy.contains("Assign manual tasks to users:").should("be.visible");
-      cy.getByTestId("assign-users-select").should("be.visible");
+      cy.contains("Assign manual tasks to users:")
+        .scrollIntoView()
+        .should("be.visible");
+      cy.getByTestId("assign-users-select")
+        .scrollIntoView()
+        .should("be.visible");
     });
 
     it("should load and display currently assigned users", () => {
@@ -220,9 +238,9 @@ describe("Integration Management - Manual Task Configuration", () => {
 
     it("should unassign users from manual tasks", () => {
       // Remove a selected user
-      cy.getByTestId("assign-users-select").antRemoveSelectTag(
-        "External 1 User",
-      );
+      cy.getByTestId("assign-users-select")
+        .scrollIntoView()
+        .antRemoveSelectTag("External 1 User");
 
       cy.wait("@assignUsersToManualTask").then((interception) => {
         // Verify the request body is an array of user IDs
