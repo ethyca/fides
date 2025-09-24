@@ -88,8 +88,9 @@ const useCreateOrUpdateCustomField = () => {
         }
       }
       // then update the field
-      const fieldPayload = {
+      const fieldPayload: CustomFieldDefinitionWithId = {
         ...rest,
+        id: initialField.id,
         allow_list_id: allowListResult
           ? // @ts-ignore - we returned early if there was an error so "data" will always be present here
             allowListResult.data.id

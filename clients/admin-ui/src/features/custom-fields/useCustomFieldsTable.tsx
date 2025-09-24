@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
   AntFlex as Flex,
+  AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -34,6 +35,9 @@ const useCustomFieldsTable = () => {
     dataSource: data || [],
     totalRows: data?.length || 0,
     isLoading,
+    customTableProps: {
+      layout: "fixed",
+    },
   });
 
   const userCanUpdate = useHasPermission([
@@ -53,6 +57,12 @@ const useCustomFieldsTable = () => {
         title: "Description",
         dataIndex: "description",
         key: "description",
+        render: (text: string) => (
+          <Typography.Text ellipsis={{ tooltip: text }} className="w-96">
+            {text}
+          </Typography.Text>
+        ),
+        width: 384,
       },
       {
         title: "Type",

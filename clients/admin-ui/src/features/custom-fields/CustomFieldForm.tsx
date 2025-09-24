@@ -168,8 +168,24 @@ const CustomFieldForm = ({
 
           return (
             isSelectType && (
-              <Form.List name="options">
-                {(fields, { add, remove }) => (
+              <Form.List
+                name="options"
+                rules={[
+                  {
+                    validator: async (_, options) => {
+                      if (!options || options.length < 1) {
+                        return Promise.reject(
+                          new Error(
+                            "At least one option is required for selects",
+                          ),
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                {(fields, { add, remove }, { errors }) => (
                   <>
                     {fields.map((field, index) => (
                       <Form.Item
@@ -231,6 +247,7 @@ const CustomFieldForm = ({
                         Add select option
                       </Button>
                     </Form.Item>
+                    <Form.ErrorList errors={errors} className="-mt-4 mb-4" />
                   </>
                 )}
               </Form.List>
