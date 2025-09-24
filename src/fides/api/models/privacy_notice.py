@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+import itertools
 import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.validation import FidesKey, validate_fides_key
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Boolean, Column, false, func
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship, selectinload
 from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base, FidesBase
@@ -189,21 +191,81 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         raise Exception("Invalid notice consent mechanism.")
 
+    @staticmethod
+    def _get_cookie_filter_for_data_uses(data_uses: List[str]) -> BinaryExpression:
+        """
+        Returns the SQLAlchemy filter clause to find cookies for the given data uses.
+        This is a helper method to keep the query logic consistent and safe.
+        """
+        if not data_uses:
+            return false()
+
+        or_clauses = [
+            func.array_to_string(Asset.data_uses, ",").ilike(f"{data_use}%")
+            for data_use in data_uses
+        ]
+        return or_(*or_clauses)
+
     @property
     def cookies(self) -> List[Asset]:
         """Return relevant assets of type 'cookie' (via the data use)"""
         db = Session.object_session(self)
-        or_queries = [
-            f"array_to_string(data_uses, ',') ILIKE '{data_use}%'"
-            for data_use in self.data_uses
-        ]
+        cookie_filter = self._get_cookie_filter_for_data_uses(self.data_uses)
 
-        query = db.query(Asset).filter(
-            Asset.asset_type == "Cookie",
-            or_(*[text(query) for query in or_queries]),
+        return (
+            db.query(Asset)
+            .filter(
+                Asset.asset_type == "Cookie",
+                cookie_filter,
+                )
+            .all()
         )
 
-        return query.all()
+    @classmethod
+    def load_cookie_data_for_notices(cls, db: Session, notices: List["PrivacyNotice"]):
+        """
+        An efficient method to bulk-load cookie data for a list of PrivacyNotice objects.
+
+        This classmethod prevents the "N+1" query problem that would occur if accessing
+        the `.cookies` property for each notice individually in a loop.
+
+        It fetches all relevant cookies in a single query and attaches them to the
+        notice instances, overriding the `cookies` property for the lifespan of these
+        objects.
+        """
+        if not notices:
+            return
+
+        all_data_uses = set(
+            itertools.chain.from_iterable(n.data_uses for n in notices)
+        )
+
+        all_relevant_cookies: List[Asset] = []
+        if all_data_uses:
+            # It now uses the same centralized helper method for the query logic
+            cookie_filter = cls._get_cookie_filter_for_data_uses(list(all_data_uses))
+            all_relevant_cookies = (
+                db.query(Asset)
+                .options(selectinload("system")) # Eagerly load the system to prevent further N+1s
+                .filter(
+                    Asset.asset_type == "Cookie",
+                    cookie_filter,
+                    )
+                .all()
+            )
+
+        # This logic remains the same, as it efficiently associates the pre-fetched cookies
+        for notice in notices:
+            matching_cookies = [
+                cookie
+                for cookie in all_relevant_cookies
+                if any(
+                    ",".join(cookie.data_uses).lower().startswith(d.lower())
+                    for d in notice.data_uses
+                )
+            ]
+            # Override the property on the instance to prevent the N+1 query
+            setattr(notice, "cookies", matching_cookies)
 
     @property
     def calculated_systems_applicable(self) -> bool:
