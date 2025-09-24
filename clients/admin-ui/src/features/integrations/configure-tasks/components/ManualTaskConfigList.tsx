@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntTable as Table,
+  AntList as List,
   AntTypography as Typography,
   WarningIcon,
 } from "fidesui";
@@ -11,15 +11,15 @@ import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import AddManualTaskModal from "../AddManualTaskModal";
+import { REQUEST_TYPE_LABELS } from "../constants";
 import { useManualTaskManagement } from "../hooks/useManualTaskManagement";
 import { Task } from "../types";
-import { useManualTaskColumns } from "../useManualTaskColumns";
 
-interface ManualTaskConfigTableProps {
+interface ManualTaskConfigListProps {
   integration: ConnectionConfigurationResponse;
 }
 
-const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
+const ManualTaskConfigList = ({ integration }: ManualTaskConfigListProps) => {
   const { manualTasks, deleteManualTask, refreshManualTasks } =
     useManualTaskManagement({ integration });
 
@@ -45,48 +45,77 @@ const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
     setIsDeleteModalOpen(false);
   }, [manualTaskToDelete, deleteManualTask]);
 
-  const { columns } = useManualTaskColumns({
-    onEdit: (task: Task) => {
-      setEditingManualTask(task);
-      setIsAddEditModalOpen(true);
-    },
-    onDelete: (task: Task) => {
-      setManualTaskToDelete(task);
-      setIsDeleteModalOpen(true);
-    },
-  });
+  const handleEdit = (task: Task) => {
+    setEditingManualTask(task);
+    setIsAddEditModalOpen(true);
+  };
+
+  const handleDelete = (task: Task) => {
+    setManualTaskToDelete(task);
+    setIsDeleteModalOpen(true);
+  };
 
   return (
     <>
-      <Flex
-        align="center"
-        justify="end"
-        gap="small"
-        className="mb-1 mt-[-25px]"
-      >
+      <Flex align="center" justify="end" gap="small" className="mt-[-25px]">
         <Button
           type="primary"
           onClick={handleAddManualTask}
-          data-testid="add-manual-task-btn"
+          data-testid="add-manual-task-list-btn"
         >
-          Add manual task
+          Create manual task
         </Button>
       </Flex>
 
-      <Table
-        columns={columns}
+      <List
+        itemLayout="horizontal"
         dataSource={manualTasks}
-        rowKey="id"
-        pagination={false}
         locale={{
           emptyText: (
-            <div className="p-8 text-center">
+            <div className="px-4 py-2 text-center">
               <Typography.Paragraph type="secondary">
-                No manual tasks configured yet. Click &quot;Add manual
-                task&quot; to get started.
+                No manual tasks configured yet. <br />
+                Click &quot;Create manual task&quot; to get started.
               </Typography.Paragraph>
             </div>
           ),
+        }}
+        renderItem={(task: Task) => {
+          const requestTypeLabel =
+            REQUEST_TYPE_LABELS[
+              task.requestType as keyof typeof REQUEST_TYPE_LABELS
+            ] || task.requestType;
+
+          return (
+            <List.Item
+              key={task.id}
+              actions={[
+                <Button
+                  key="edit"
+                  type="link"
+                  onClick={() => handleEdit(task)}
+                  data-testid="edit-list-btn"
+                  className="px-1"
+                >
+                  Edit
+                </Button>,
+                <Button
+                  key="delete"
+                  type="link"
+                  onClick={() => handleDelete(task)}
+                  data-testid="delete-list-btn"
+                  className="px-1"
+                >
+                  Delete
+                </Button>,
+              ]}
+            >
+              <List.Item.Meta
+                title={`${task.name} (${requestTypeLabel})`}
+                description={task.description}
+              />
+            </List.Item>
+          );
         }}
       />
 
@@ -123,4 +152,4 @@ const ManualTaskConfigTable = ({ integration }: ManualTaskConfigTableProps) => {
   );
 };
 
-export default ManualTaskConfigTable;
+export default ManualTaskConfigList;
