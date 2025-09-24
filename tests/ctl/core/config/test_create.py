@@ -6,7 +6,6 @@ from py._path.local import LocalPath
 
 from fides.config import FidesConfig
 from fides.config.create import (
-    build_field_documentation,
     create_and_update_config_file,
     create_config_file,
     validate_generated_config,
@@ -23,6 +22,92 @@ def test_create_and_update_config_file_opt_in(
         config=test_config, fides_directory_location=str(tmpdir), opt_in=True
     )
     assert True
+
+
+@pytest.mark.unit
+def test_create_config_populates_security_defaults(
+    tmpdir: LocalPath, test_config: FidesConfig, monkeypatch
+) -> None:
+    """`fides init` should generate missing security credentials."""
+
+    monkeypatch.setenv("FIDES__USER__ANALYTICS_OPT_OUT", "true")
+
+    config_copy = test_config.model_copy(deep=True)
+    config_copy.security.app_encryption_key = ""
+    config_copy.security.oauth_root_client_id = ""
+    config_copy.security.oauth_root_client_secret = ""
+    config_copy.security.oauth_root_client_secret_hash = None
+
+    updated_config, config_path = create_and_update_config_file(
+        config=config_copy, fides_directory_location=str(tmpdir)
+    )
+
+    assert updated_config.security.app_encryption_key
+    assert len(updated_config.security.app_encryption_key) == 32
+    assert updated_config.security.oauth_root_client_id
+    assert updated_config.security.oauth_root_client_secret
+    assert updated_config.security.oauth_root_client_secret_hash is not None
+
+    rendered_config = toml.load(config_path)
+    security_section = rendered_config["security"]
+    assert (
+        security_section["app_encryption_key"]
+        == updated_config.security.app_encryption_key
+    )
+    assert (
+        security_section["oauth_root_client_id"]
+        == updated_config.security.oauth_root_client_id
+    )
+    assert (
+        security_section["oauth_root_client_secret"]
+        == updated_config.security.oauth_root_client_secret
+    )
+
+
+@pytest.mark.unit
+def test_create_config_updates_existing_security_defaults(
+    tmpdir: LocalPath, test_config: FidesConfig, monkeypatch
+) -> None:
+    """Existing configs with blank security values should be updated."""
+
+    monkeypatch.setenv("FIDES__USER__ANALYTICS_OPT_OUT", "true")
+
+    legacy_dir = tmpdir.mkdir(".fides")
+    legacy_config = (
+        "[security]\n"
+        'app_encryption_key = "" # string\n'
+        'oauth_root_client_id = "" # string\n'
+        'oauth_root_client_secret = "" # string\n'
+    )
+    legacy_config_path = legacy_dir.join("fides.toml")
+    legacy_config_path.write(legacy_config)
+
+    config_copy = test_config.model_copy(deep=True)
+    config_copy.security.app_encryption_key = ""
+    config_copy.security.oauth_root_client_id = ""
+    config_copy.security.oauth_root_client_secret = ""
+    config_copy.security.oauth_root_client_secret_hash = None
+
+    updated_config, config_path = create_and_update_config_file(
+        config=config_copy, fides_directory_location=str(tmpdir)
+    )
+
+    assert config_path == str(legacy_config_path)
+
+    rendered_config = toml.load(config_path)
+    security_section = rendered_config["security"]
+    assert (
+        security_section["app_encryption_key"]
+        == updated_config.security.app_encryption_key
+    )
+    assert (
+        security_section["oauth_root_client_id"]
+        == updated_config.security.oauth_root_client_id
+    )
+    assert (
+        security_section["oauth_root_client_secret"]
+        == updated_config.security.oauth_root_client_secret
+    )
 
 
 @pytest.mark.unit
@@ -47,8 +132,8 @@ class TestValidateGeneratedConfig:
         assert True
 
 
-@pytest.fixture()
-def remove_fides_dir(tmp_path) -> None:
+@pytest.fixture(name="remove_fides_dir_fixture")
+def _remove_fides_dir(tmp_path) -> None:
     try:
         os.remove(tmp_path / ".fides/fides.toml")
         os.rmdir(tmp_path / ".fides")
@@ -61,7 +146,7 @@ def remove_fides_dir(tmp_path) -> None:
 @pytest.mark.unit
 class TestCreateConfigFile:
     def test_create_config_file(
-        self, config, tmp_path, capfd, remove_fides_dir
+        self, config, tmp_path, capfd, remove_fides_dir_fixture
     ) -> None:
         config_path = create_config_file(config, tmp_path)
 
@@ -74,7 +159,7 @@ class TestCreateConfigFile:
         assert config_path == str(fides_file_path)
 
     def test_create_config_file_dir_exists(
-        self, config, tmp_path, capfd, remove_fides_dir
+        self, config, tmp_path, capfd, remove_fides_dir_fixture
     ) -> None:
         fides_directory = tmp_path / ".fides"
         fides_directory.mkdir()
@@ -89,7 +174,7 @@ class TestCreateConfigFile:
         assert config_path == str(fides_file_path)
 
     def test_create_config_file_exists(
-        self, config, tmp_path, capfd, remove_fides_dir
+        self, config, tmp_path, capfd, remove_fides_dir_fixture
     ) -> None:
         fides_directory = tmp_path / ".fides"
         fides_directory.mkdir()
