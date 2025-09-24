@@ -2605,8 +2605,12 @@ class TestPutConnectionOAuthConfig:
             in response.json()["detail"]
         )
 
+    @pytest.mark.parametrize(
+        "verify", [True, False], ids=["with_verify", "without_verify"]
+    )
     def test_put_oauth_config_success(
         self,
+        verify,
         api_client,
         generate_auth_header,
         https_connection_config,
@@ -2623,8 +2627,13 @@ class TestPutConnectionOAuthConfig:
                 test_status="succeeded",
             )
 
+            if not verify:
+                url = self.url.format(https_connection_config.key) + "?verify=False"
+            else:
+                url = self.url.format(https_connection_config.key)
+
             response = api_client.put(
-                self.url.format(https_connection_config.key),
+                url,
                 headers=auth_header,
                 json=self.oauth_payload,
             )
@@ -2759,8 +2768,12 @@ class TestPatchConnectionOAuthConfig:
             == original_client_id
         )  # Unchanged
 
+    @pytest.mark.parametrize(
+        "verify", [True, False], ids=["with_verify", "without_verify"]
+    )
     def test_patch_oauth_config_success_no_existing_config(
         self,
+        verify,
         api_client,
         generate_auth_header,
         https_connection_config,
@@ -2777,8 +2790,13 @@ class TestPatchConnectionOAuthConfig:
                 test_status="succeeded",
             )
 
+            if not verify:
+                url = self.url.format(https_connection_config.key) + "?verify=False"
+            else:
+                url = self.url.format(https_connection_config.key)
+
             response = api_client.patch(
-                self.url.format(https_connection_config.key),
+                url,
                 headers=auth_header,
                 json=self.complete_payload,
             )

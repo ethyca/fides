@@ -1,6 +1,7 @@
 from collections.abc import Generator
 
 import pytest
+import requests
 import requests_mock
 from requests import Request
 
@@ -65,6 +66,28 @@ class TestHttpOAuth2ConnectorMethods:
                 request_body, response_expected=response_expected
             )
 
+            assert mock_response.call_count == 2
+
+    def test_request_exception_causes_error(self, connector):
+        request_body = {"test": "response"}
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                connector.configuration.oauth_config.token_url,
+                json={"access_token": "test_token", "token_type": "Bearer"},
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+            )
+
+            mock_response.post(
+                connector.build_uri(),
+                exc=requests.exceptions.ConnectionError,
+            )
+
+            with pytest.raises(ClientUnsuccessfulException) as exc:
+                connector.execute(request_body, response_expected=True)
+
+            assert exc.value.args[0] == "Client call failed with status code '500'"
             assert mock_response.call_count == 2
 
     def test_invalid_access_token_response_causes_error(self, connector):

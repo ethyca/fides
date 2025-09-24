@@ -45,60 +45,56 @@ class HTTPSConnector(BaseConnector[None]):
         """Calls a client-defined endpoint and returns the data that it responds with"""
         config = HttpsSchema(**self.configuration.secrets or {})
 
-        oauth_config = self.configuration.oauth_config
-
-        if oauth_config is not None:
+        def _request_with_oauth() -> requests.Response:
+            """Helper function to make a request with OAuth2 authentication"""
             client_id = oauth_config.client_id
             client_secret = oauth_config.client_secret
             scopes = oauth_config.scope.split(" ") or []
             auth = HTTPBasicAuth(client_id, client_secret)
             client = BackendApplicationClient(client_id=client_id)
             session_client = OAuth2Session(client=client, scope=scopes)
-            # Fetch the access token from the token URL
             try:
+                # Fetch the access token from the token URL
                 session_client.fetch_token(token_url=oauth_config.token_url, auth=auth)
-
-                try:
-                    response = session_client.post(
-                        url=config.url, headers=additional_headers, json=request_body
-                    )
-                except requests.ConnectionError:
-                    logger.error("HTTPS+OAuth2 client received an error.")
-                    raise ClientUnsuccessfulException(
-                        status_code=HTTP_500_INTERNAL_SERVER_ERROR
-                    )
             except Exception as e:
                 logger.error(f"Error fetching OAuth2 token: {e}")
                 raise ClientUnsuccessfulException(
                     status_code=HTTP_500_INTERNAL_SERVER_ERROR
                 )
-        else:
+
+            return session_client.post(
+                url=config.url, headers=additional_headers, json=request_body
+            )
+
+        def _request_without_oauth() -> requests.Response:
+            """Helper function to make a request without OAuth2 authentication"""
             headers = self.build_authorization_header()
             headers.update(additional_headers)
+            return requests.post(url=config.url, headers=headers, json=request_body)
 
-            try:
-                response = requests.post(
-                    url=config.url, headers=headers, json=request_body
-                )
-            except requests.ConnectionError:
-                logger.info("Requests connection error received.")
-                raise ClientUnsuccessfulException(
-                    status_code=HTTP_500_INTERNAL_SERVER_ERROR
-                )
+        oauth_config = self.configuration.oauth_config
 
-        if response is None:
-            logger.error("No response received from webhook.")
+        try:
+            response = (
+                _request_with_oauth()
+                if oauth_config is not None
+                else _request_without_oauth()
+            )
+
+            if not response_expected:
+                return {}
+
+            if not response.ok:
+                logger.error("Invalid response received from webhook.")
+                raise ClientUnsuccessfulException(status_code=response.status_code)
+
+            return json.loads(response.text)
+
+        except requests.ConnectionError:
+            logger.error("HTTPS client received a connection error.")
             raise ClientUnsuccessfulException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        if not response_expected:
-            return {}
-
-        if not response.ok:
-            logger.error("Invalid response received from webhook.")
-            raise ClientUnsuccessfulException(status_code=response.status_code)
-        return json.loads(response.text)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
