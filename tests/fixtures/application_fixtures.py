@@ -1175,6 +1175,7 @@ def policy(
             "rule_id": access_request_rule.id,
         },
     )
+    db.refresh(access_request_policy)
     yield access_request_policy
     try:
         rule_target.delete(db)
