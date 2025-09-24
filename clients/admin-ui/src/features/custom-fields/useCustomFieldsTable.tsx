@@ -107,7 +107,7 @@ const useCustomFieldsTable = () => {
         width: 96,
       },
     ],
-    [router, showActions, userCanUpdate],
+    [router, showActions, tableState.searchQuery, userCanUpdate],
   );
 
   return {
