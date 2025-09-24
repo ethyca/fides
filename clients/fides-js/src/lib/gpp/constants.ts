@@ -1,3 +1,16 @@
+/**
+ * @fileoverview GPP constants for handling Global Privacy Platform operations.
+ *
+ * ⚠️  IMPORTANT: This file is synchronized between repositories!
+ *
+ * This file exists in both:
+ * - fides: clients/fides-js/src/lib/gpp/constants.ts
+ * - fidesplus: src/fidesplus/gpp_js_integration/constants.ts
+ *
+ * Any changes made to this file should be applied to both locations
+ * to maintain consistency between the open-source and enterprise versions.
+ */
+
 import {
   UsCa,
   UsCo,

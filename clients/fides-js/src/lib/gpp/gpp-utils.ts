@@ -13,13 +13,13 @@
 
 import { UsNatField } from "@iabgpp/cmpapi";
 
-import type { ConsentContext } from "../consent-context";
 import {
   FIDES_US_REGION_TO_GPP_SECTION,
   GPPUSApproach,
   SECTIONS_WITH_GPC_SUBSECTION,
 } from "./constants";
 import {
+  ConsentContext,
   GPPPrivacyExperience,
   GPPSection,
   GPPSettings,
