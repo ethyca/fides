@@ -6,6 +6,8 @@ import {
 } from "../consent-types";
 import { GPPUSApproach } from "./constants";
 
+export type { ConsentContext } from "../consent-context";
+
 export interface GppCallback {
   (event: PingData | EventData | boolean | null, success: boolean): void;
 }

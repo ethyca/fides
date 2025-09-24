@@ -88,7 +88,7 @@
           ],
           "enforcement_level": "not_applicable",
           "disabled": false,
-          "has_gpc_flag": false,
+          "has_gpc_flag": true,
           "framework": "gpp_us_state",
           "gpp_field_mapping": [
             {
