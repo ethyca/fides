@@ -21,7 +21,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.71.0...main)
 
-## [2.71.0](https://github.com/ethyca/fides/compare/2.70.4...2.71.0)
+## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
 ### Added
 - Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
@@ -44,6 +44,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
 - Improved readability and maintainability around DSR packages and improved test coverage [#6540](https://github.com/ethyca/fides/pull/6540)
+
+## [2.70.5](https://github.com/ethyca/fides/compare/2.70.3...2.70.5)
 
 ### Fixed
 - Encode GPC subsection in GPP string whenever supported by the section (e.g. usnat, usca) [#6633](https://github.com/ethyca/fides/pull/6633)
