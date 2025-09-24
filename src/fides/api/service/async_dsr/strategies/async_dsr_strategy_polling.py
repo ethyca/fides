@@ -62,8 +62,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             return self._initial_request_access(request_task, query_config, input_data)
         elif async_phase == AsyncPhase.polling_continuation:
             return self._polling_continuation_access(request_task, query_config)
-        elif async_phase == AsyncPhase.polling_continuation:  # polling_completion case
-            return self._polling_completion_access(request_task)
         else:
             logger.warning(
                 f"Unexpected async phase '{async_phase}' for polling access task {request_task.id}"
@@ -94,8 +92,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             return self._initial_request_erasure(request_task, query_config, rows)
         elif async_phase == AsyncPhase.polling_continuation:
             return self._polling_continuation_erasure(request_task, query_config)
-        elif async_phase == AsyncPhase.polling_continuation:  # polling_completion case
-            return self._polling_completion_erasure(request_task)
         else:
             logger.warning(
                 f"Unexpected async phase '{async_phase}' for polling erasure task {request_task.id}"
@@ -300,17 +296,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             raise AwaitingAsyncProcessing("Polling in progress")
 
         # Polling is complete - return the accumulated count
-        return request_task.rows_masked or 0
-
-    def _polling_completion_access(self, request_task: RequestTask) -> List[Row]:
-        """Handle completion of access polling requests."""
-        logger.info(f"Access polling completed for request task '{request_task.id}'")
-        return request_task.get_access_data()
-
-    def _polling_completion_erasure(self, request_task: RequestTask) -> int:
-        """Handle completion of erasure polling requests."""
-        logger.info(f"Masking polling completed for request task '{request_task.id}'")
-        # If we've received the results for this task, return rows_masked directly
         return request_task.rows_masked or 0
 
     def _execute_polling_requests(
