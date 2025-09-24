@@ -23,6 +23,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
@@ -461,9 +462,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that a PrivacyRequestError is raised when a location field is required but location is not provided"""
-        from fides.api.common_exceptions import PrivacyRequestError
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create Privacy Center configuration with a required location field for this policy
         privacy_center_config_data = {
             "config": {
@@ -541,9 +539,6 @@ class TestPrivacyRequestService:
         property_a: Property,
     ):
         """Property config takes precedence: required location enforced when property_id provided."""
-        from fides.api.common_exceptions import PrivacyRequestError
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Global config without location requirement
         global_config = PrivacyCenterConfig.create_or_update(
             db=db,
@@ -792,8 +787,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that privacy request creation succeeds when required location is provided"""
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create Privacy Center configuration with a required location field for this policy
         privacy_center_config_data = {
             "config": {
@@ -868,8 +861,6 @@ class TestPrivacyRequestService:
     ):
         """Test that validation is skipped when no Privacy Center config exists"""
         # Ensure no Privacy Center config exists
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         PrivacyCenterConfig.delete_all(db)
         db.commit()
 
@@ -895,8 +886,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that validation is skipped when Privacy Center config fails to parse"""
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create an invalid Privacy Center config that will fail parsing
         invalid_config_data = {
             "config": {
@@ -945,8 +934,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that validation is skipped when no action matches the policy key"""
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create Privacy Center config with action for a different policy
         privacy_center_config_data = {
             "config": {
@@ -1020,8 +1007,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that validation is skipped when action has no custom_privacy_request_fields"""
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create Privacy Center config with action that has no custom fields
         privacy_center_config_data = {
             "config": {
@@ -1088,8 +1073,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that validation passes when location field exists but is not required"""
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create Privacy Center config with optional location field
         privacy_center_config_data = {
             "config": {
@@ -1163,9 +1146,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Test that validation passes when required location field has value in custom_privacy_request_fields"""
-        from fides.api.common_exceptions import PrivacyRequestError
-        from fides.api.models.privacy_center_config import PrivacyCenterConfig
-
         # Create Privacy Center config with required location field
         privacy_center_config_data = {
             "config": {
