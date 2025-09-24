@@ -261,6 +261,13 @@ class ConnectionConfig(Base):
         ARRAY(Enum(ActionType, native_enum=False)), unique=False, nullable=True
     )
 
+    oauth_config = relationship(  # type: ignore[misc]
+        "OAuthConfig",
+        back_populates="connection_config",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
     @property
     def system_key(self) -> Optional[str]:
         """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""

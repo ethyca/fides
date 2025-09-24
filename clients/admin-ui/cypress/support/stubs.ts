@@ -971,6 +971,54 @@ export const stubPlusAuth = () => {
   }).as("logoutRequest");
 };
 
+export const stubCustomFields = () => {
+  // List custom field definitions
+  cy.intercept("GET", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    fixture: "custom-fields/list.json",
+  }).as("getCustomFieldDefinitions");
+
+  // Get single custom field definition
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/custom-metadata/custom-field-definition/*",
+    {
+      fixture: "custom-fields/detail.json",
+    },
+  ).as("getCustomFieldDefinition");
+
+  // Create custom field definition
+  cy.intercept("POST", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    statusCode: 201,
+    fixture: "custom-fields/detail.json",
+  }).as("createCustomFieldDefinition");
+
+  // Update custom field definition
+  cy.intercept("PUT", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    statusCode: 200,
+    fixture: "custom-fields/detail.json",
+  }).as("updateCustomFieldDefinition");
+
+  // Delete custom field definition
+  cy.intercept(
+    "DELETE",
+    "/api/v1/plus/custom-metadata/custom-field-definition/*",
+    {
+      statusCode: 204,
+    },
+  ).as("deleteCustomFieldDefinition");
+
+  // Get allow list
+  cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
+    fixture: "custom-fields/allow-list.json",
+  }).as("getAllowList");
+
+  // Create/Update allow list
+  cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list", {
+    statusCode: 200,
+    fixture: "custom-fields/allow-list.json",
+  }).as("upsertAllowList");
+};
+
 export const stubSystemGroups = () => {
   cy.intercept("GET", "/api/v1/system-groups", {
     fixture: "systems/system-groups.json",

@@ -557,9 +557,9 @@ describe("Action center Asset Results", () => {
           cy.contains("Compliance").should("exist");
         });
 
-        // Check "Without consent" badge
+        // Check "Consent ignored" badge
         cy.getAntTableRow(rowUrns[0]).within(() => {
-          cy.contains("Without consent").should("exist");
+          cy.contains("Consent ignored").should("exist");
           cy.getByTestId("status-badge_without-consent").should(
             "have.attr",
             "data-color",
@@ -567,9 +567,9 @@ describe("Action center Asset Results", () => {
           );
         });
 
-        // Check "Without consent" badge for another asset
+        // Check "Consent ignored" badge for another asset
         cy.getAntTableRow(rowUrns[1]).within(() => {
-          cy.contains("Without consent").should("exist");
+          cy.contains("Consent ignored").should("exist");
           cy.getByTestId("status-badge_without-consent").should(
             "have.attr",
             "data-color",
@@ -577,9 +577,9 @@ describe("Action center Asset Results", () => {
           );
         });
 
-        // Check "Pre-consent" badge
+        // Check "Pre-Consent" badge
         cy.getAntTableRow(rowUrns[2]).within(() => {
-          cy.contains("Pre-consent").should("exist");
+          cy.contains("Pre-Consent").should("exist");
           cy.getByTestId("status-badge_pre-consent").should(
             "have.attr",
             "data-color",
@@ -587,14 +587,10 @@ describe("Action center Asset Results", () => {
           );
         });
 
-        // Check "With consent" badge
+        // "With consent" status no longer shows a badge as it's not an error status
         cy.getAntTableRow(rowUrns[3]).within(() => {
-          cy.contains("With consent").should("exist");
-          cy.getByTestId("status-badge_with-consent").should(
-            "have.attr",
-            "data-color",
-            "success",
-          );
+          // The badge should not exist for "with_consent" status
+          cy.getByTestId("status-badge_with-consent").should("not.exist");
         });
       });
 
@@ -611,13 +607,11 @@ describe("Action center Asset Results", () => {
         }).should("be.visible");
       });
 
-      it("should open consent breakdown modal when clicking 'Without consent' badge", () => {
+      it("should open consent breakdown modal when clicking 'View compliance details' button", () => {
         cy.getAntTableRow(rowUrns[0]).within(() => {
-          cy.getByTestId("status-badge_without-consent")
+          cy.getByTestId("view-compliance-details-btn")
             .scrollIntoView()
-            .within(() => {
-              cy.findByRole("button").click();
-            });
+            .click();
         });
 
         cy.wait("@getConsentBreakdown");
@@ -667,11 +661,9 @@ describe("Action center Asset Results", () => {
 
       it("should open external links in new tab from consent breakdown modal", () => {
         cy.getAntTableRow(rowUrns[0]).within(() => {
-          cy.getByTestId("status-badge_without-consent")
+          cy.getByTestId("view-compliance-details-btn")
             .scrollIntoView()
-            .within(() => {
-              cy.findByRole("button").click({ force: true });
-            });
+            .click({ force: true });
         });
 
         cy.wait("@getConsentBreakdown");

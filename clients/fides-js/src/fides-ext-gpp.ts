@@ -16,6 +16,7 @@ import {
 } from "@iabgpp/cmpapi";
 
 import { FidesEvent } from "./fides";
+import { getConsentContext } from "./lib/consent-context";
 import {
   FidesGlobal,
   FidesOptions,
@@ -191,6 +192,7 @@ const initializeGppCmpApi = () => {
             experience.privacy_notices,
           )))
     ) {
+      const context = getConsentContext();
       const tcSet = setTcString(event, cmpApi);
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
@@ -198,11 +200,13 @@ const initializeGppCmpApi = () => {
       const sectionsSet = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
+        context,
       });
       const sectionsChanged = setGppOptOutsFromCookieAndExperience({
         cmpApi,
         cookie: event.detail,
         experience,
+        context,
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -245,6 +249,7 @@ const initializeGppCmpApi = () => {
       const sectionsChanged = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
+        context: getConsentContext(),
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -282,6 +287,7 @@ const initializeGppCmpApi = () => {
         cmpApi,
         cookie: event.detail,
         experience: window.Fides.experience,
+        context: getConsentContext(),
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
