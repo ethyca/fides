@@ -7,6 +7,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useBulkUpdateCustomFieldsMutation } from "~/features/plus/plus.slice";
 import { useUpdateSystemMutation } from "~/features/system";
 import {
+  BulkCustomFieldRequest,
   CustomFieldWithId,
   PrivacyDeclaration,
   PrivacyDeclarationResponse,
@@ -14,6 +15,32 @@ import {
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
+const buildCustomFieldsPayload = (
+  customFieldValues: Record<string, any>,
+  resourceId: string,
+): BulkCustomFieldRequest => {
+  const payloadUpsert: CustomFieldWithId[] = [];
+  const payloadDelete: string[] = [];
+  Object.entries(customFieldValues).forEach(([key, value]) => {
+    if (value) {
+      payloadUpsert.push({
+        id: key,
+        resource_id: resourceId,
+        custom_field_definition_id: key,
+        value,
+      });
+    } else {
+      payloadDelete.push(key);
+    }
+  });
+  return {
+    upsert: payloadUpsert,
+    delete: payloadDelete,
+    resource_type: ResourceTypes.PRIVACY_DECLARATION,
+    resource_id: resourceId,
+  };
+};
 
 const useSystemDataUseCrud = (system: SystemResponse) => {
   const toast = useToast();
@@ -60,6 +87,8 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
   const patchDataUses = async (
     updatedDeclarations: Omit<PrivacyDeclarationResponse, "id">[],
     isDelete?: boolean,
+    customFieldValues?: Record<string, any>,
+    newDeclarationDataUse?: string,
   ) => {
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
@@ -75,19 +104,54 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
 
     const updateSystemResult = await updateSystem(systemBodyWithDeclaration);
 
+    // if we created a new data use, get its ID from the response and update
+    // its custom fields
+    if (customFieldValues && newDeclarationDataUse) {
+      const newDeclaration =
+        updateSystemResult?.data?.privacy_declarations?.find(
+          (d) => d.data_use === newDeclarationDataUse,
+        );
+      if (newDeclaration) {
+        const customFieldsPayload = buildCustomFieldsPayload(
+          customFieldValues,
+          newDeclaration.id,
+        );
+        const bulkUpdateResult =
+          await bulkUpdateCustomFields(customFieldsPayload);
+        if (isErrorResult(bulkUpdateResult)) {
+          const errorMsg = getErrorMessage(
+            bulkUpdateResult.error,
+            "An unexpected error occurred while updating custom fields for this data use. Please try again.",
+          );
+          toast(errorToastParams(errorMsg));
+        }
+      }
+    }
     return handleResult(updateSystemResult, isDelete);
   };
 
-  const createDataUse = async (values: PrivacyDeclaration) => {
-    console.log("Creating data use with values: ", values);
-    console.log("Current system state: ", system);
+  const createDataUse = async (
+    values: PrivacyDeclaration & {
+      customFieldValues?: Record<string, any>;
+    },
+  ) => {
     if (declarationAlreadyExists(values)) {
       return undefined;
     }
 
+    const { customFieldValues, ...newDeclaration } = values;
+
     toast.closeAll();
-    const updatedDeclarations = [...system.privacy_declarations, values];
-    return patchDataUses(updatedDeclarations);
+    const updatedDeclarations = [
+      ...system.privacy_declarations,
+      newDeclaration,
+    ];
+    return patchDataUses(
+      updatedDeclarations,
+      false,
+      customFieldValues,
+      newDeclaration.data_use,
+    );
   };
 
   const updateDataUse = async (
@@ -103,26 +167,10 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     // build the custom fields payload
     const { customFieldValues, ...updateDeclaration } = values;
     if (customFieldValues) {
-      const payloadUpsert: CustomFieldWithId[] = [];
-      const payloadDelete: string[] = [];
-      Object.entries(customFieldValues).forEach(([key, value]) => {
-        if (value) {
-          payloadUpsert.push({
-            id: key,
-            resource_id: values.id,
-            custom_field_definition_id: key,
-            value,
-          });
-        } else {
-          payloadDelete.push(key);
-        }
-      });
-      const customFieldsPayload = {
-        upsert: payloadUpsert,
-        delete: payloadDelete,
-        resource_type: ResourceTypes.PRIVACY_DECLARATION,
-        resource_id: values.id,
-      };
+      const customFieldsPayload = buildCustomFieldsPayload(
+        customFieldValues,
+        values.id,
+      );
       const bulkUpdateResult =
         await bulkUpdateCustomFields(customFieldsPayload);
       if (isErrorResult(bulkUpdateResult)) {

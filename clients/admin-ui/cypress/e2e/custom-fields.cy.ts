@@ -108,7 +108,7 @@ describe("Custom Fields V2", () => {
       cy.getByTestId("select-field-type").should("exist");
     });
 
-    it.only("allows updating field properties", () => {
+    it("allows updating field properties", () => {
       cy.visit("/settings/custom-fields");
       cy.getByTestId("edit-btn").first().click();
 
