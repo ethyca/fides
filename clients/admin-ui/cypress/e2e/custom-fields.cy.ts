@@ -108,14 +108,14 @@ describe("Custom Fields V2", () => {
       cy.getByTestId("select-field-type").should("exist");
     });
 
-    it.only("allows updating field properties", () => {
+    it("allows updating field properties", () => {
       cy.visit("/settings/custom-fields");
       cy.getByTestId("edit-btn").first().click();
 
       // Update name
       cy.getByTestId("input-name").clear().type("Updated field name");
       cy.getByTestId("add-option-btn").click();
-      cy.getByTestId("input-option-0").type("Added option");
+      cy.getByTestId("input-option-3").type("Added option");
 
       cy.getByTestId("save-btn").click();
       cy.wait("@updateCustomFieldDefinition")
