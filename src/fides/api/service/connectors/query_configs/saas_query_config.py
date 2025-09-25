@@ -213,6 +213,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy],
         read_request: SaaSRequest,
+        privacy_request: Optional[PrivacyRequest] = None,
     ) -> List[Tuple[SaaSRequestParams, Dict[str, Any]]]:
         """
         Takes the identity and reference values from input_data and combines them
@@ -225,6 +226,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.current_request = read_request
 
         request_params = []
+
+        if privacy_request:
+            input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
+
         param_value_maps = self.generate_param_value_maps(input_data, read_request)
 
         for param_value_map in param_value_maps:
