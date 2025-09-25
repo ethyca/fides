@@ -308,7 +308,7 @@ const useSystemsTable = () => {
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
         ),
-        filteredValue: columnFilters?.data_steward || null,
+        filteredValue: columnFilters?.data_stewards || null,
       },
       {
         title: "Description",
@@ -373,8 +373,7 @@ const useSystemsTable = () => {
     sortOrder,
     plusIsEnabled,
     allSystemGroups,
-    columnFilters?.system_groups,
-    columnFilters?.data_steward,
+    columnFilters,
     allUsers?.items,
     isGroupsExpanded,
     systemGroupMap,
@@ -382,6 +381,8 @@ const useSystemsTable = () => {
     showDeleteOption,
     router,
   ]);
+
+  console.log(columns);
 
   return {
     // table
