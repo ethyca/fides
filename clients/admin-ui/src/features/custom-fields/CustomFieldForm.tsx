@@ -52,7 +52,7 @@ const CustomFieldForm = ({
   isLoading,
 }: {
   initialField?: CustomFieldDefinitionWithId;
-  isLoading: boolean;
+  isLoading?: boolean;
 }) => {
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const router = useRouter();
