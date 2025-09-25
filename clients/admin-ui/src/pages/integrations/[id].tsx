@@ -103,44 +103,39 @@ const IntegrationDetailView: NextPage = () => {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
-      >
-        <AntFlex gap={24}>
-          <div className="grow">
-            <div className="mb-6">
-              <IntegrationBox
-                integration={connection}
-                integrationTypeInfo={integrationTypeInfo}
-                showDeleteButton
+      />
+      <AntFlex gap={24}>
+        <div className="grow">
+          <div className="mb-6">
+            <IntegrationBox
+              integration={connection}
+              integrationTypeInfo={integrationTypeInfo}
+              showDeleteButton
+            />
+          </div>
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            !!connection && (
+              <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
+            )
+          )}
+        </div>
+        <div className="w-[350px] shrink-0">
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            !!connection && (
+              <IntegrationSetupSteps
+                testData={testData}
+                testIsLoading={isTestLoading}
+                connectionOption={integrationOption!}
+                connection={connection}
               />
-            </div>
-            {isLoading ? (
-              <Spinner />
-            ) : (
-              !!connection && (
-                <Tabs
-                  items={tabs}
-                  activeKey={activeTab}
-                  onChange={onTabChange}
-                />
-              )
-            )}
-          </div>
-          <div className="w-[350px] shrink-0">
-            {isLoading ? (
-              <Spinner />
-            ) : (
-              !!connection && (
-                <IntegrationSetupSteps
-                  testData={testData}
-                  testIsLoading={isTestLoading}
-                  connectionOption={integrationOption!}
-                  connection={connection}
-                />
-              )
-            )}
-          </div>
-        </AntFlex>
-      </PageHeader>
+            )
+          )}
+        </div>
+      </AntFlex>
     </Layout>
   );
 };

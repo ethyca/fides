@@ -4,7 +4,7 @@ import csv
 import io
 import json
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import (
     Annotated,
     Any,
@@ -285,15 +285,19 @@ def privacy_request_csv_download(
             "Status",
             "Request Type",
             "Time Received",
+            "Deadline",
             "Reviewed By",
             "Request ID",
             "Time Approved/Denied",
             "Denial Reason",
+            "Last Updated",
+            "Completed On",
         ]
         + identity_columns
         + with_prefix("Custom Field", list(custom_field_columns.values()))
     )
 
+    pr: PrivacyRequest
     for pr in privacy_request_query:
         denial_reason = (
             denial_audit_logs[pr.id]
@@ -301,14 +305,26 @@ def privacy_request_csv_download(
             else None
         )
 
+        action_types: List[str] = []
+        if pr and pr.policy:
+            for rule in pr.policy.rules or []:  # type: ignore
+                action_types.append(rule.action_type)
+
+        deadline: Optional[datetime] = None
+        if pr.days_left and pr.created_at:
+            deadline = pr.created_at + timedelta(days=pr.days_left)
+
         static_cells = [
             pr.status.value if pr.status else None,
-            pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
+            ("+".join(action_types)),
             pr.created_at,
+            deadline,
             pr.reviewed_by,
             pr.id,
             pr.reviewed_at,
             denial_reason,
+            pr.updated_at,
+            pr.finalized_at,
         ]
 
         identity_cells = extract_identity_cells(identity_columns, pr)
