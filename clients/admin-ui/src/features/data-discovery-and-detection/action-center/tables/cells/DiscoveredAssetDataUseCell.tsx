@@ -17,10 +17,12 @@ const DiscoveredAssetDataUseCell = ({
   asset,
   readonly,
   columnState,
+  onChange,
 }: {
   asset: StagedResourceAPIResponse;
   readonly?: boolean;
   columnState?: ColumnState;
+  onChange?: (dataUses: string[]) => void;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -37,10 +39,11 @@ const DiscoveredAssetDataUseCell = ({
       : [];
 
   const handleAddDataUse = async (newDataUse: string) => {
+    const dataUses = [...currentDataUses, newDataUse];
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
       urnList: [asset.urn],
-      dataUses: [...currentDataUses, newDataUse],
+      dataUses,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -49,15 +52,17 @@ const DiscoveredAssetDataUseCell = ({
         `Consent category added to ${asset.resource_type} "${asset.name}" .`,
         `Confirmed`,
       );
+      onChange?.(dataUses);
     }
     setIsAdding(false);
   };
 
   const handleDeleteDataUse = async (useToDelete: string) => {
+    const dataUses = currentDataUses.filter((use) => use !== useToDelete);
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
       urnList: [asset.urn],
-      dataUses: currentDataUses.filter((use) => use !== useToDelete),
+      dataUses,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -66,6 +71,7 @@ const DiscoveredAssetDataUseCell = ({
         `Consent category removed from ${asset.resource_type} "${asset.name}".`,
         `Confirmed`,
       );
+      onChange?.(dataUses);
     }
   };
 

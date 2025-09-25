@@ -88,6 +88,7 @@ export const useDiscoveredAssetsTable = ({
   const [locationsVersion, setLocationsVersion] = useState(0);
   const [pagesVersion, setPagesVersion] = useState(0);
   const [dataUsesVersion, setDataUsesVersion] = useState(0);
+  const [dataUsesHaveChanged, setDataUsesHaveChanged] = useState(false);
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
 
@@ -115,18 +116,21 @@ export const useDiscoveredAssetsTable = ({
     updatePageSize,
   } = tableState;
 
-  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
-    key: monitorId,
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-    sort_by: sortKey
-      ? [sortKey] // User selected a column to sort by
-      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
-    sort_asc: sortOrder !== "descend",
-    ...activeParams,
-    ...columnFilters,
-  });
+  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery(
+    {
+      key: monitorId,
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+      sort_by: sortKey
+        ? [sortKey] // User selected a column to sort by
+        : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
+      sort_asc: sortOrder !== "descend",
+      ...activeParams,
+      ...columnFilters,
+    },
+    { refetchOnMountOrArgChange: dataUsesHaveChanged },
+  );
 
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -261,6 +265,7 @@ export const useDiscoveredAssetsTable = ({
               isExpanded: isDataUsesExpanded,
               version: dataUsesVersion,
             }}
+            onChange={() => setDataUsesHaveChanged(true)}
           />
         ),
       },
