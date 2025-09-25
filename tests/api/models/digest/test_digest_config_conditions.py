@@ -28,13 +28,18 @@ from fides.api.task.conditional_dependencies.schemas import (
 class TestDigestConfigConditionMethods:
     """Test DigestConfig methods for retrieving conditions."""
 
-    @pytest.mark.usefixtures("receiver_digest_condition_leaf")
     def test_get_receiver_condition_leaf(
         self,
         db: Session,
         digest_config: DigestConfig,
+        receiver_digest_condition_leaf: DigestCondition,
     ):
         """Test get_receiver_condition returns a ConditionLeaf."""
+
+        # Update the condition to use the correct digest_config
+        receiver_digest_condition_leaf.digest_config_id = digest_config.id
+        db.add(receiver_digest_condition_leaf)
+        db.commit()
 
         # Test getting receiver conditions
         receiver_conditions = digest_config.get_receiver_condition(db)
@@ -111,13 +116,18 @@ class TestDigestConfigConditionMethods:
         result = digest_config.get_receiver_condition(db)
         assert result is None
 
-    @pytest.mark.usefixtures("content_digest_condition_leaf")
     def test_get_content_condition_leaf(
         self,
         db: Session,
         digest_config: DigestConfig,
+        content_digest_condition_leaf: DigestCondition,
     ):
         """Test get_content_condition returns a ConditionLeaf."""
+
+        # Update the condition to use the correct digest_config
+        content_digest_condition_leaf.digest_config_id = digest_config.id
+        db.add(content_digest_condition_leaf)
+        db.commit()
 
         # Test getting content conditions
         content_conditions = digest_config.get_content_condition(db)
@@ -161,13 +171,18 @@ class TestDigestConfigConditionMethods:
         result = digest_config.get_content_condition(db)
         assert result is None
 
-    @pytest.mark.usefixtures("priority_digest_condition_leaf")
     def test_get_priority_condition_leaf(
         self,
         db: Session,
         digest_config: DigestConfig,
+        priority_digest_condition_leaf: DigestCondition,
     ):
         """Test get_priority_condition returns a ConditionLeaf."""
+
+        # Update the condition to use the correct digest_config
+        priority_digest_condition_leaf.digest_config_id = digest_config.id
+        db.add(priority_digest_condition_leaf)
+        db.commit()
 
         # Test getting priority conditions
         priority_conditions = digest_config.get_priority_condition(db)
@@ -215,15 +230,21 @@ class TestDigestConfigConditionMethods:
         assert priority.field_address == "task.priority"
         assert priority.value == "high"
 
-    @pytest.mark.usefixtures(
-        "receiver_digest_condition_leaf", "priority_digest_condition_leaf"
-    )
     def test_get_all_conditions_partial(
         self,
         db: Session,
         digest_config: DigestConfig,
+        receiver_digest_condition_leaf: DigestCondition,
+        priority_digest_condition_leaf: DigestCondition,
     ):
         """Test get_all_conditions with only some condition types present."""
+
+        # Update the conditions to use the correct digest_config
+        receiver_digest_condition_leaf.digest_config_id = digest_config.id
+        priority_digest_condition_leaf.digest_config_id = digest_config.id
+        db.add(receiver_digest_condition_leaf)
+        db.add(priority_digest_condition_leaf)
+        db.commit()
 
         # Test getting all conditions
         all_conditions = digest_config.get_all_conditions(db)
@@ -252,11 +273,32 @@ class TestDigestConfigConditionMethods:
         assert all_conditions[DigestConditionType.CONTENT] is None
         assert all_conditions[DigestConditionType.PRIORITY] is None
 
-    @pytest.mark.usefixtures("complex_condition_tree", "receiver_digest_condition_leaf")
     def test_get_all_conditions_mixed_types(
-        self, db: Session, digest_config: DigestConfig
+        self,
+        db: Session,
+        digest_config: DigestConfig,
+        complex_condition_tree: dict,
+        receiver_digest_condition_leaf: DigestCondition,
     ):
         """Test get_all_conditions with mixed leaf and group conditions."""
+
+        # Update all conditions to use the correct digest_config
+        receiver_digest_condition_leaf.digest_config_id = digest_config.id
+        db.add(receiver_digest_condition_leaf)
+
+        # Update the complex condition tree to use the correct digest_config
+        complex_condition_tree["root"].digest_config_id = digest_config.id
+        db.add(complex_condition_tree["root"])
+
+        for nested_group in complex_condition_tree["nested_groups"]:
+            nested_group.digest_config_id = digest_config.id
+            db.add(nested_group)
+
+        for leaf in complex_condition_tree["leaves"]:
+            leaf.digest_config_id = digest_config.id
+            db.add(leaf)
+
+        db.commit()
 
         # Test getting all conditions
         all_conditions = digest_config.get_all_conditions(db)
