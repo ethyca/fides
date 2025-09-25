@@ -323,13 +323,12 @@ const actionCenterApi = baseApi.injectEndpoints({
             getInProgressMonitorTasks: build.query<
               { items: MonitorTaskInProgressResponse[]; total: number; page: number; pages: number; size: number },
               SearchQueryParams & PaginationQueryParams & {
-                connection_names?: string[];
                 task_types?: string[];
                 statuses?: string[];
                 return_dismissed?: boolean;
               }
             >({
-              query: ({ page = 1, size = 20, search, connection_names, task_types, statuses, return_dismissed = false }) => {
+              query: ({ page = 1, size = 20, search, task_types, statuses, return_dismissed = false }) => {
                 const params = new URLSearchParams({
                   page: page.toString(),
                   size: size.toString(),
@@ -338,10 +337,6 @@ const actionCenterApi = baseApi.injectEndpoints({
 
                 if (search) {
                   params.append('search', search);
-                }
-
-                if (connection_names?.length) {
-                  connection_names.forEach(name => params.append('connection_names', name));
                 }
 
                 if (task_types?.length) {
