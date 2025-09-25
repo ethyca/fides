@@ -22,16 +22,16 @@ const buildCustomFieldsPayload = (
 ): BulkCustomFieldRequest => {
   const payloadUpsert: CustomFieldWithId[] = [];
   const payloadDelete: string[] = [];
-  Object.entries(customFieldValues).forEach(([key, value]) => {
+  Object.entries(customFieldValues).forEach(([id, value]) => {
     if (value) {
       payloadUpsert.push({
-        id: key,
-        resource_id: resourceId,
-        custom_field_definition_id: key,
+        id,
         value,
+        resource_id: resourceId,
+        custom_field_definition_id: id,
       });
     } else {
-      payloadDelete.push(key);
+      payloadDelete.push(id);
     }
   });
   return {
@@ -88,7 +88,7 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     updatedDeclarations: Omit<PrivacyDeclarationResponse, "id">[],
     isDelete?: boolean,
     customFieldValues?: Record<string, any>,
-    newDeclarationDataUse?: string,
+    updatedDeclarationDataUse?: string,
   ) => {
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
@@ -104,12 +104,12 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
 
     const updateSystemResult = await updateSystem(systemBodyWithDeclaration);
 
-    // if we created a new data use, get its ID from the response and update
-    // its custom fields
-    if (customFieldValues && newDeclarationDataUse) {
+    // get the ID of the modified declaration from the response and update
+    // its custom fields if provided
+    if (customFieldValues && updatedDeclarationDataUse) {
       const newDeclaration =
         updateSystemResult?.data?.privacy_declarations?.find(
-          (d) => d.data_use === newDeclarationDataUse,
+          (d) => d.data_use === updatedDeclarationDataUse,
         );
       if (newDeclaration) {
         const customFieldsPayload = buildCustomFieldsPayload(
@@ -164,30 +164,18 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     if (values.id !== oldDeclaration.id && declarationAlreadyExists(values)) {
       return undefined;
     }
-    // build the custom fields payload
-    const { customFieldValues, ...updateDeclaration } = values;
-    if (customFieldValues) {
-      const customFieldsPayload = buildCustomFieldsPayload(
-        customFieldValues,
-        values.id,
-      );
-      const bulkUpdateResult =
-        await bulkUpdateCustomFields(customFieldsPayload);
-      if (isErrorResult(bulkUpdateResult)) {
-        const errorMsg = getErrorMessage(
-          bulkUpdateResult.error,
-          "An unexpected error occurred while updating custom fields. Please try again.",
-        );
-        toast(errorToastParams(errorMsg));
-        return undefined;
-      }
-    }
+    const { customFieldValues, ...updatedDeclaration } = values;
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = system.privacy_declarations.map((dec) =>
-      dec.id === oldDeclaration.id ? updateDeclaration : dec,
+      dec.id === oldDeclaration.id ? updatedDeclaration : dec,
     );
-    return patchDataUses(updatedDeclarations);
+    return patchDataUses(
+      updatedDeclarations,
+      false,
+      customFieldValues,
+      updatedDeclaration.data_use,
+    );
   };
 
   const deleteDataUse = async (
