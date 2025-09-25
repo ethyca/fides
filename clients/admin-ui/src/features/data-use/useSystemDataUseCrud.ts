@@ -4,10 +4,13 @@ import { useToast } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useBulkUpdateCustomFieldsMutation } from "~/features/plus/plus.slice";
 import { useUpdateSystemMutation } from "~/features/system";
 import {
+  CustomFieldWithId,
   PrivacyDeclaration,
   PrivacyDeclarationResponse,
+  ResourceTypes,
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -15,6 +18,8 @@ import { isErrorResult } from "~/types/errors";
 const useSystemDataUseCrud = (system: SystemResponse) => {
   const toast = useToast();
   const [updateSystem] = useUpdateSystemMutation();
+
+  const [bulkUpdateCustomFields] = useBulkUpdateCustomFieldsMutation();
 
   const declarationAlreadyExists = (values: PrivacyDeclaration) => {
     if (
@@ -74,6 +79,8 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
   };
 
   const createDataUse = async (values: PrivacyDeclaration) => {
+    console.log("Creating data use with values: ", values);
+    console.log("Current system state: ", system);
     if (declarationAlreadyExists(values)) {
       return undefined;
     }
@@ -85,19 +92,52 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
 
   const updateDataUse = async (
     oldDeclaration: PrivacyDeclarationResponse,
-    updatedDeclaration: PrivacyDeclarationResponse,
+    values: PrivacyDeclarationResponse & {
+      customFieldValues?: Record<string, any>;
+    },
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
-    if (
-      updatedDeclaration.id !== oldDeclaration.id &&
-      declarationAlreadyExists(updatedDeclaration)
-    ) {
+    if (values.id !== oldDeclaration.id && declarationAlreadyExists(values)) {
       return undefined;
+    }
+    // build the custom fields payload
+    const { customFieldValues, ...updateDeclaration } = values;
+    if (customFieldValues) {
+      const payloadUpsert: CustomFieldWithId[] = [];
+      const payloadDelete: string[] = [];
+      Object.entries(customFieldValues).forEach(([key, value]) => {
+        if (value) {
+          payloadUpsert.push({
+            id: key,
+            resource_id: values.id,
+            custom_field_definition_id: key,
+            value,
+          });
+        } else {
+          payloadDelete.push(key);
+        }
+      });
+      const customFieldsPayload = {
+        upsert: payloadUpsert,
+        delete: payloadDelete,
+        resource_type: ResourceTypes.PRIVACY_DECLARATION,
+        resource_id: values.id,
+      };
+      const bulkUpdateResult =
+        await bulkUpdateCustomFields(customFieldsPayload);
+      if (isErrorResult(bulkUpdateResult)) {
+        const errorMsg = getErrorMessage(
+          bulkUpdateResult.error,
+          "An unexpected error occurred while updating custom fields. Please try again.",
+        );
+        toast(errorToastParams(errorMsg));
+        return undefined;
+      }
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = system.privacy_declarations.map((dec) =>
-      dec.id === oldDeclaration.id ? updatedDeclaration : dec,
+      dec.id === oldDeclaration.id ? updateDeclaration : dec,
     );
     return patchDataUses(updatedDeclarations);
   };
