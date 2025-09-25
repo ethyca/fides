@@ -308,7 +308,7 @@ const useSystemsTable = () => {
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
         ),
-        filteredValue: columnFilters?.data_steward || null,
+        filteredValue: columnFilters?.data_stewards || null,
       },
       {
         title: "Description",
