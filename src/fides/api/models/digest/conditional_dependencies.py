@@ -97,14 +97,26 @@ class DigestCondition(ConditionalDependencyBase):
         foreign_keys=[parent_id],
     )
 
+    @staticmethod
     def _validate_condition_type_consistency(
-        self, db: Session, data: dict[str, Any]
+        db: Session, data: dict[str, Any], instance: Optional["DigestCondition"] = None
     ) -> None:
-        """Validate that all conditions in the same tree have the same digest_condition_type."""
-        parent_id = data.get("parent_id") or getattr(self, "parent_id", None)
-        digest_condition_type = data.get("digest_condition_type") or getattr(
-            self, "digest_condition_type", None
-        )
+        """Validate that all conditions in the same tree have the same digest_condition_type.
+
+        Args:
+            db: Database session for querying
+            data: Dictionary containing condition data to validate
+            instance: Optional existing instance to get fallback values from
+        """
+        parent_id = data.get("parent_id")
+        digest_condition_type = data.get("digest_condition_type")
+
+        # Fallback to instance values if not in data
+        if instance:
+            parent_id = parent_id or getattr(instance, "parent_id", None)
+            digest_condition_type = digest_condition_type or getattr(
+                instance, "digest_condition_type", None
+            )
 
         if not parent_id:
             # Root condition - no validation needed
@@ -134,9 +146,8 @@ class DigestCondition(ConditionalDependencyBase):
         check_name: bool = True,
     ) -> "DigestCondition":
         """Create a new DigestCondition with validation."""
-        # Create a temporary instance for validation
-        temp_instance = cls()
-        temp_instance._validate_condition_type_consistency(db, data)
+        # Validate condition type consistency
+        cls._validate_condition_type_consistency(db, data)
 
         # If validation passes, create normally
         return super().create(db=db, data=data, check_name=check_name)
@@ -144,7 +155,7 @@ class DigestCondition(ConditionalDependencyBase):
     def update(self, db: Session, *, data: dict[str, Any]) -> "DigestCondition":
         """Update DigestCondition with validation."""
         # Validate before updating
-        self._validate_condition_type_consistency(db, data)
+        self._validate_condition_type_consistency(db, data, self)
 
         # If validation passes, update normally
         return super().update(db=db, data=data)  # type: ignore[return-value]
