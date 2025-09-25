@@ -332,25 +332,25 @@ class TestDigestConfigConditionMethods:
             },
         )
 
-    def test_get_receiver_conditions_returns_none_when_empty(
+    def test_get_receiver_condition_returns_none_when_empty(
         self, db: Session, digest_config
     ):
         """Test that receiver conditions method returns None when no conditions exist."""
-        result = digest_config.get_receiver_conditions(db)
+        result = digest_config.get_receiver_condition(db)
         assert result is None
 
-    def test_get_content_conditions_returns_none_when_empty(
+    def test_get_content_condition_returns_none_when_empty(
         self, db: Session, digest_config
     ):
         """Test that content conditions method returns None when no conditions exist."""
-        result = digest_config.get_content_conditions(db)
+        result = digest_config.get_content_condition(db)
         assert result is None
 
-    def test_get_priority_conditions_returns_none_when_empty(
+    def test_get_priority_condition_returns_none_when_empty(
         self, db: Session, digest_config
     ):
         """Test that priority conditions method returns None when no conditions exist."""
-        result = digest_config.get_priority_conditions(db)
+        result = digest_config.get_priority_condition(db)
         assert result is None
 
     def test_get_all_conditions_returns_none_values_when_empty(

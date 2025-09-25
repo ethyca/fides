@@ -29,29 +29,29 @@ class TestDigestConfigConditionMethods:
     """Test DigestConfig methods for retrieving conditions."""
 
     @pytest.mark.usefixtures("receiver_digest_condition_leaf")
-    def test_get_receiver_conditions_leaf(
+    def test_get_receiver_condition_leaf(
         self,
         db: Session,
         digest_config: DigestConfig,
     ):
-        """Test get_receiver_conditions returns a ConditionLeaf."""
+        """Test get_receiver_condition returns a ConditionLeaf."""
 
         # Test getting receiver conditions
-        receiver_conditions = digest_config.get_receiver_conditions(db)
+        receiver_conditions = digest_config.get_receiver_condition(db)
         assert receiver_conditions is not None
         assert isinstance(receiver_conditions, ConditionLeaf)
         assert receiver_conditions.field_address == "user.email"
         assert receiver_conditions.operator == Operator.exists
         assert receiver_conditions.value == None
 
-    def test_get_receiver_conditions_group(
+    def test_get_receiver_condition_group(
         self,
         db: Session,
         digest_config: DigestConfig,
         receiver_condition: dict[str, Any],
         group_condition_and: dict[str, Any],
     ):
-        """Test get_receiver_conditions returns a ConditionGroup."""
+        """Test get_receiver_condition returns a ConditionGroup."""
         # Create root group condition
         root_group = DigestCondition.create(
             db=db,
@@ -92,7 +92,7 @@ class TestDigestConfigConditionMethods:
 
         # Test getting receiver conditions as group
         db.refresh(digest_config)
-        receiver_conditions = digest_config.get_receiver_conditions(db)
+        receiver_conditions = digest_config.get_receiver_condition(db)
         assert receiver_conditions is not None
         assert isinstance(receiver_conditions, ConditionGroup)
         assert receiver_conditions.logical_operator == GroupOperator.and_
@@ -104,23 +104,23 @@ class TestDigestConfigConditionMethods:
         assert isinstance(receiver_conditions.conditions[1], ConditionLeaf)
         assert receiver_conditions.conditions[1].field_address == "user.active"
 
-    def test_get_receiver_conditions_none(
+    def test_get_receiver_condition_none(
         self, db: Session, digest_config: DigestConfig
     ):
-        """Test get_receiver_conditions returns None when no conditions exist."""
-        result = digest_config.get_receiver_conditions(db)
+        """Test get_receiver_condition returns None when no conditions exist."""
+        result = digest_config.get_receiver_condition(db)
         assert result is None
 
     @pytest.mark.usefixtures("content_digest_condition_leaf")
-    def test_get_content_conditions_leaf(
+    def test_get_content_condition_leaf(
         self,
         db: Session,
         digest_config: DigestConfig,
     ):
-        """Test get_content_conditions returns a ConditionLeaf."""
+        """Test get_content_condition returns a ConditionLeaf."""
 
         # Test getting content conditions
-        content_conditions = digest_config.get_content_conditions(db)
+        content_conditions = digest_config.get_content_condition(db)
         assert content_conditions is not None
         assert isinstance(content_conditions, ConditionLeaf)
         assert content_conditions.field_address == "task.status"
@@ -128,13 +128,13 @@ class TestDigestConfigConditionMethods:
         assert content_conditions.value == "pending"
 
     @pytest.mark.usefixtures("complex_condition_tree")
-    def test_get_content_conditions_complex_group(
+    def test_get_content_condition_complex_group(
         self, db: Session, digest_config: DigestConfig
     ):
-        """Test get_content_conditions with complex nested groups."""
+        """Test get_content_condition with complex nested groups."""
 
         # Test getting content conditions
-        content_conditions = digest_config.get_content_conditions(db)
+        content_conditions = digest_config.get_content_condition(db)
         assert content_conditions is not None
         assert isinstance(content_conditions, ConditionGroup)
         assert content_conditions.logical_operator == GroupOperator.or_
@@ -156,34 +156,32 @@ class TestDigestConfigConditionMethods:
         assert second_condition.conditions[0].field_address == "task.category"
         assert second_condition.conditions[1].field_address == "task.created_at"
 
-    def test_get_content_conditions_none(
-        self, db: Session, digest_config: DigestConfig
-    ):
-        """Test get_content_conditions returns None when no conditions exist."""
-        result = digest_config.get_content_conditions(db)
+    def test_get_content_condition_none(self, db: Session, digest_config: DigestConfig):
+        """Test get_content_condition returns None when no conditions exist."""
+        result = digest_config.get_content_condition(db)
         assert result is None
 
     @pytest.mark.usefixtures("priority_digest_condition_leaf")
-    def test_get_priority_conditions_leaf(
+    def test_get_priority_condition_leaf(
         self,
         db: Session,
         digest_config: DigestConfig,
     ):
-        """Test get_priority_conditions returns a ConditionLeaf."""
+        """Test get_priority_condition returns a ConditionLeaf."""
 
         # Test getting priority conditions
-        priority_conditions = digest_config.get_priority_conditions(db)
+        priority_conditions = digest_config.get_priority_condition(db)
         assert priority_conditions is not None
         assert isinstance(priority_conditions, ConditionLeaf)
         assert priority_conditions.field_address == "task.priority"
         assert priority_conditions.operator == Operator.eq
         assert priority_conditions.value == "high"
 
-    def test_get_priority_conditions_none(
+    def test_get_priority_condition_none(
         self, db: Session, digest_config: DigestConfig
     ):
-        """Test get_priority_conditions returns None when no conditions exist."""
-        result = digest_config.get_priority_conditions(db)
+        """Test get_priority_condition returns None when no conditions exist."""
+        result = digest_config.get_priority_condition(db)
         assert result is None
 
     @pytest.mark.usefixtures("sample_conditions")
@@ -339,11 +337,11 @@ class TestDigestConfigConditionIntegration:
         )
 
         # Test isolation
-        config1_receiver = config1.get_receiver_conditions(db)
+        config1_receiver = config1.get_receiver_condition(db)
         assert isinstance(config1_receiver, ConditionLeaf)
         assert config1_receiver.value == "alpha"
 
-        config2_receiver = config2.get_receiver_conditions(db)
+        config2_receiver = config2.get_receiver_condition(db)
         assert isinstance(config2_receiver, ConditionLeaf)
         assert config2_receiver.value == "beta"
 
@@ -363,7 +361,7 @@ class TestDigestConfigConditionIntegration:
     ):
         """Test that condition changes are immediately reflected in getter methods."""
         # Initially no conditions
-        assert digest_config.get_receiver_conditions(db) is None
+        assert digest_config.get_receiver_condition(db) is None
 
         # Create a condition
         condition = DigestCondition.create(
@@ -380,7 +378,7 @@ class TestDigestConfigConditionIntegration:
         )
 
         # Should now return the condition
-        receiver_conditions = digest_config.get_receiver_conditions(db)
+        receiver_conditions = digest_config.get_receiver_condition(db)
         assert receiver_conditions is not None
         assert isinstance(receiver_conditions, ConditionLeaf)
         assert receiver_conditions.value == "active"
@@ -389,14 +387,14 @@ class TestDigestConfigConditionIntegration:
         condition.update(db, data={"value": "verified"})
 
         # Should reflect the update
-        updated_receiver_conditions = digest_config.get_receiver_conditions(db)
+        updated_receiver_conditions = digest_config.get_receiver_condition(db)
         assert updated_receiver_conditions.value == "verified"
 
         # Delete the condition
         condition.delete(db)
 
         # Should now return None
-        assert digest_config.get_receiver_conditions(db) is None
+        assert digest_config.get_receiver_condition(db) is None
 
     def test_performance_with_large_condition_trees(
         self, db: Session, digest_config: DigestConfig
@@ -445,7 +443,7 @@ class TestDigestConfigConditionIntegration:
                 )
 
         # Test that retrieval still works efficiently
-        content_conditions = digest_config.get_content_conditions(db)
+        content_conditions = digest_config.get_content_condition(db)
         assert isinstance(content_conditions, ConditionGroup)
         assert len(content_conditions.conditions) == 3
 

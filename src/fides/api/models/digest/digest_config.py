@@ -61,7 +61,7 @@ class DigestConfig(Base):
         cascade="all, delete-orphan",
     )
 
-    def get_receiver_conditions(
+    def get_receiver_condition(
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get receiver conditions for this digest config."""
@@ -71,7 +71,7 @@ class DigestConfig(Base):
             digest_condition_type=DigestConditionType.RECEIVER,
         )
 
-    def get_content_conditions(
+    def get_content_condition(
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get content conditions for this digest config."""
@@ -82,7 +82,7 @@ class DigestConfig(Base):
             digest_condition_type=DigestConditionType.CONTENT,
         )
 
-    def get_priority_conditions(
+    def get_priority_condition(
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get priority conditions for this digest config."""
