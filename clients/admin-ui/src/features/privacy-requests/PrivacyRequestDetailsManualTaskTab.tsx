@@ -70,9 +70,10 @@ const PrivacyRequestDetailsManualTaskTab = ({
   // so we use task results as backup.
   const hasManualTaskConnections = manualTaskConnections.length > 0;
   const hasTasks = tasks.length > 0;
+  const isManualTaskConfigured = hasManualTaskConnections || hasTasks;
 
   const hasAnyManualFeatures =
-    hasManualTaskConnections || hasLegacyManualIntegrations || hasTasks;
+    isManualTaskConfigured || hasLegacyManualIntegrations;
 
   const handleViewTasksClick = () => {
     router.push({
@@ -97,7 +98,7 @@ const PrivacyRequestDetailsManualTaskTab = ({
   return (
     <Stack spacing={6}>
       {/* New Manual Tasks Section */}
-      {hasManualTaskConnections && (
+      {isManualTaskConfigured && (
         <Box>
           <Typography.Title level={4} style={{ marginBottom: 12 }}>
             Manual tasks
