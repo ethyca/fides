@@ -5,6 +5,7 @@ import {
   AntInput as Input,
   AntMessage as message,
   AntSelect as Select,
+  AntSkeleton as Skeleton,
   AntTypography as Typography,
   ConfirmationModal,
   Icons,
@@ -34,10 +35,24 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+export const SkeletonCustomFieldForm = () => {
+  return (
+    <Skeleton active>
+      <Skeleton.Input />
+      <Skeleton.Input />
+      <Skeleton.Input />
+      <Skeleton.Input />
+      <Skeleton.Button />
+    </Skeleton>
+  );
+};
+
 const CustomFieldForm = ({
   initialField,
+  isLoading,
 }: {
   initialField?: CustomFieldDefinitionWithId;
+  isLoading: boolean;
 }) => {
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const router = useRouter();
@@ -46,12 +61,10 @@ const CustomFieldForm = ({
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
-  const { data: allowList } = useGetAllowListQuery(
-    initialField?.allow_list_id as string,
-    {
+  const { data: allowList, isLoading: isAllowListLoading } =
+    useGetAllowListQuery(initialField?.allow_list_id as string, {
       skip: !initialField?.allow_list_id,
-    },
-  );
+    });
 
   const [deleteCustomField, { isLoading: deleteIsLoading }] =
     useDeleteCustomFieldDefinitionMutation();
@@ -103,6 +116,10 @@ const CustomFieldForm = ({
   };
 
   const initialValues = parseFieldToFormValues(initialField);
+
+  if (isLoading || isAllowListLoading) {
+    return <SkeletonCustomFieldForm />;
+  }
 
   return (
     <Form
