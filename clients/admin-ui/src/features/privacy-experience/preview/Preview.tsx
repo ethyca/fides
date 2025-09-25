@@ -208,10 +208,10 @@ const Preview = ({
         updatedConfig.experience.experience_config.translations[0] =
           translationOrDefault(currentTranslation);
         updatedConfig.options.fidesLocale = currentTranslation.language;
-      } else if (values.translations) {
+      } else if (values.translations && values.translations[0]) {
         updatedConfig.experience.experience_config.translations[0] =
           translationOrDefault(values.translations[0]);
-        updatedConfig.options.fidesLocale = values.translations[0].language;
+        updatedConfig.options.fidesLocale = values.translations[0]?.language;
       }
     }
     updatedConfig.experience.experience_config.show_layer1_notices =

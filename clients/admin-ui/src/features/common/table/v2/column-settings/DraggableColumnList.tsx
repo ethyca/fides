@@ -218,7 +218,10 @@ export const useEditableColumns = ({
       produce(prev, (draft) => {
         const dragged = draft[dragIndex];
         draft.splice(dragIndex, 1);
-        draft.splice(hoverIndex, 0, dragged);
+
+        if (dragged) {
+          draft.splice(hoverIndex, 0, dragged);
+        }
       }),
     );
   }, []);
@@ -226,8 +229,13 @@ export const useEditableColumns = ({
   const setColumnVisible = useCallback((index: number, isVisible: boolean) => {
     setColumns((prev: DraggableColumn[]) =>
       produce(prev, (draft) => {
-        if (draft[index]) {
-          draft[index].isVisible = isVisible;
+        const [target] = draft.splice(index, 1);
+
+        if (target) {
+          draft.splice(index, 0, {
+            ...target,
+            isVisible,
+          });
         }
       }),
     );

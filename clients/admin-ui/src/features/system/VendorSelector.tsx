@@ -174,12 +174,13 @@ const VendorSelector = ({
   const handleTabPressed = async (
     event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
+    const [suggestion] = suggestions;
+    if (suggestion && searchParam !== suggestion.label) {
       event.preventDefault();
-      setSearchParam(suggestions[0].label);
-      setFieldValue("vendor_id", suggestions[0].value);
-      await setValue(suggestions[0].label);
-      onVendorSelected(suggestions[0].value);
+      setSearchParam(suggestion.label);
+      setFieldValue("vendor_id", suggestion.value);
+      await setValue(suggestion.label);
+      onVendorSelected(suggestion.value);
     } else {
       setFieldValue("vendor_id", undefined);
       await setValue(searchParam);
@@ -229,7 +230,7 @@ const VendorSelector = ({
           />
           <AutosuggestSuffix
             searchText={searchParam}
-            suggestion={suggestions.length ? suggestions[0].label : ""}
+            suggestion={suggestions[0]?.label ?? ""}
           />
         </Box>
         <ErrorMessage

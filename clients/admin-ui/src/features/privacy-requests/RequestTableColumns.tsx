@@ -71,7 +71,7 @@ export const getRequestTableColumns = () => [
   }),
   columnHelper.accessor(
     (row) =>
-      row.identity?.email.value || row.identity?.phone_number.value || "",
+      row.identity?.email?.value || row.identity?.phone_number?.value || "",
     {
       id: COLUMN_IDS.SUBJECT_IDENTITY,
       cell: ({ getValue }) => <DefaultCell value={getValue()} />,

@@ -83,13 +83,19 @@ describe("Merge Columns", () => {
   });
 
   it("should shift column to end of list when it's renamed", () => {
-    const renamedOneColumn = [...columns];
-    renamedOneColumn[0].value = "updated column key";
-
+    const [firstColumn, ...restColumns] = columns;
+    const renamedOneColumn = [
+      {
+        ...firstColumn,
+        value: "updated column key",
+      },
+      ...restColumns,
+    ];
     const correctResponse = [...updatedColumns];
     correctResponse.push(
       correctResponse.shift() as (typeof correctResponse)[0],
     );
+
     expect(mergeColumns(renamedOneColumn, updatedColumns)).toEqual(
       correctResponse,
     );

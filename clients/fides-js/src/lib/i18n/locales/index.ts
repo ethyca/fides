@@ -92,7 +92,7 @@ export const STATIC_MESSAGES: Record<Locale, Messages> = {
   uk: uk,
   zh: zh,
   "zh-Hant": zhHant,
-};
+} as const;
 
 export const LOCALE_LANGUAGE_MAP: Language[] = [
   { locale: "ar", label_en: "Arabic", label_original: "العَرَبِيَّة" },

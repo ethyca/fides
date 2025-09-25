@@ -13,13 +13,13 @@ import { Form, Formik } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CustomReportResponse, ReportType } from "~/types/api";
 
 import { usePostCustomReportMutation } from "../../datamap/reporting/custom-reports.slice";
 import { CustomReportTableState } from "../../datamap/types";
+import { mappedZip } from "../utils/objects";
 
 const CUSTOM_REPORT_LABEL = "Report name";
 
@@ -64,19 +64,16 @@ export const CustomReportCreationModal = ({
   );
 
   const handleCreateReport = async (reportName: string) => {
-    const newColumnMap: Record<string, CustomReportColumn> = {};
-    Object.entries(columnMapToSave).forEach(([key, value]) => {
-      newColumnMap[key] = {
-        label: value,
-        enabled: true,
-      };
-    });
-    Object.entries(tableStateToSave?.columnVisibility ?? {}).forEach(
-      ([key, value]) => {
-        if (!newColumnMap[key]) {
-          newColumnMap[key] = {};
-        }
-        newColumnMap[key].enabled = value;
+    const newColumnMap = mappedZip(
+      columnMapToSave,
+      tableStateToSave?.columnVisibility || {},
+      (label, enabled) => {
+        return label
+          ? {
+              label,
+              enabled: enabled !== undefined ? enabled : true,
+            }
+          : { enabled: !!enabled };
       },
     );
     try {

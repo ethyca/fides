@@ -154,7 +154,10 @@ const datamapApi = baseApi.injectEndpoints({
         };
       },
     }),
-    getDatamap: build.query<DatamapTableData, { organizationName: string }>({
+    getDatamap: build.query<
+      DatamapTableData | undefined,
+      { organizationName: string }
+    >({
       query: ({ organizationName }) => ({
         url: `plus/datamap/${organizationName}`,
         method: "GET",
@@ -164,18 +167,23 @@ const datamapApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Datamap"],
       transformResponse: (data: DatamapResponse) => {
-        const columnHeaderData = Object.entries(data[0]).filter(
-          ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1,
-        );
+        if (!data[0]) {
+          return undefined;
+        }
 
         return {
-          columns: columnHeaderData.map(([value, displayText], index) => ({
-            isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
-            text:
-              value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
-            value,
-            id: index,
-          })),
+          columns: Object.entries(data[0]).flatMap(([key, value], index) =>
+            DEPRECATED_COLUMNS.indexOf(key) !== -1
+              ? []
+              : [
+                  {
+                    isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(key) > -1,
+                    text: COLUMN_NAME_MAP?.[key] ?? value,
+                    value: key,
+                    id: index,
+                  },
+                ],
+          ),
           rows: data.slice(1),
         };
       },

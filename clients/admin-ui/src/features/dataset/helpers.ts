@@ -48,15 +48,12 @@ export const getUpdatedDatasetFromField = (
   fieldIndex: number,
 ) => {
   const collection = dataset.collections[collectionIndex];
-  const updatedCollection = getUpdatedCollectionFromField(
-    collection,
-    field,
-    fieldIndex,
-  );
-  return getUpdatedDatasetFromCollection(
-    dataset,
-    updatedCollection,
-    collectionIndex,
+  const updatedCollection =
+    collection && getUpdatedCollectionFromField(collection, field, fieldIndex);
+
+  return (
+    updatedCollection &&
+    getUpdatedDatasetFromCollection(dataset, updatedCollection, collectionIndex)
   );
 };
 

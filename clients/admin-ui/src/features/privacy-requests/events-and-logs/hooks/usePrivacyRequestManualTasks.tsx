@@ -63,7 +63,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
           // Use the most recent comment if available
           const description =
             task.comments && task.comments.length > 0
-              ? task.comments[task.comments.length - 1].comment_text
+              ? task.comments[task.comments.length - 1]?.comment_text
               : undefined;
 
           // Use attachments array directly

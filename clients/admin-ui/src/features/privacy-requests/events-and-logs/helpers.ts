@@ -15,8 +15,8 @@ export const hasStatus = (
   );
 
   // If latest entry has no collection and has the target status, return true
-  if (!sortedLogs[0].collection_name) {
-    return sortedLogs[0].status === status;
+  if (!sortedLogs[0]?.collection_name) {
+    return sortedLogs[0]?.status === status;
   }
 
   // If the latest entry for any collection has the target status, return true
