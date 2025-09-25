@@ -13,8 +13,13 @@
 
 import { UsNatField } from "@iabgpp/cmpapi";
 
-import { FIDES_US_REGION_TO_GPP_SECTION, GPPUSApproach } from "./constants";
 import {
+  FIDES_US_REGION_TO_GPP_SECTION,
+  GPPUSApproach,
+  SECTIONS_WITH_GPC_SUBSECTION,
+} from "./constants";
+import {
+  ConsentContext,
   GPPPrivacyExperience,
   GPPSection,
   GPPSettings,
@@ -30,6 +35,24 @@ export const US_NATIONAL_REGION = "us";
  */
 export const isUsRegion = (region: string) =>
   region?.toLowerCase().startsWith("us");
+
+/**
+ * Checks if a given section name (e.g. "usnat") supports the GPC sub-section.
+ * This is supported for *most* GPP sections, but not all!
+ *
+ * Returns true if the GPC sub-section is supported for the given section, false otherwise.
+ *
+ * WARNING: This function relies on the constant SECTIONS_WITH_GPC_SUBSECTION.
+ * See constants.ts for more details on how this constant is automatically
+ * tested to ensure it stays up-to-date with the @iabgpp/cmpapi library.
+ */
+export const isGpcSubsectionSupported = (section: GPPSection) => {
+  // Ignore any unexpected input types
+  if (typeof section?.name !== "string") {
+    return false;
+  }
+  return SECTIONS_WITH_GPC_SUBSECTION.includes(section.name);
+};
 
 /**
  * For US National, the privacy experience region is still the state where the user came from.
@@ -56,7 +79,7 @@ export interface GPPApiLike {
   setFieldValue(
     sectionName: string,
     field: string,
-    value: number | number[],
+    value: number | number[] | boolean,
   ): void;
 }
 
@@ -220,4 +243,35 @@ export const setNoticesProvided = ({
       });
     }
   });
+};
+
+/*
+ * For any GPP sections that also support the GPC sub-section (e.g.  "usnat"),
+ * encode the current value of the user's GPC flag in the string for context
+ */
+export const setGpcSubsection = ({
+  gppApi,
+  gppSection,
+  context,
+}: {
+  gppApi: GPPApiLike;
+  gppSection: GPPSection;
+  context: ConsentContext;
+}) => {
+  if (isGpcSubsectionSupported(gppSection)) {
+    const isGpcEnabled = context?.globalPrivacyControl ?? false;
+    // NOTE: The "Gpc" field is named the same for all sections: UsNat, UsCa,
+    // and all other supported sections. Therefore, we can safely used
+    // UsNatField.GPC to avoid a magic string value
+    gppApi.setFieldValue(gppSection.name, UsNatField.GPC, isGpcEnabled);
+
+    // NOTE: The "GpcSegmentIncluded" field is currently automatically enabled
+    // in the @iabgpp/cmpapi library, but setting it explicitly here adds a
+    // layer of safety to protect against any future changes
+    gppApi.setFieldValue(
+      gppSection.name,
+      UsNatField.GPC_SEGMENT_INCLUDED,
+      true,
+    );
+  }
 };
