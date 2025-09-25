@@ -166,8 +166,6 @@ class DigestCondition(ConditionalDependencyBase):
         """Create a new DigestCondition with validation."""
         # Validate condition type consistency
         cls._validate_condition_type_consistency(db, data)
-
-        # If validation passes, create normally
         return super().create(db=db, data=data, check_name=check_name)
 
     def update(self, db: Session, *, data: dict[str, Any]) -> "DigestCondition":
