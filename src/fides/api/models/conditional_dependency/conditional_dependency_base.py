@@ -1,9 +1,6 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, Optional
 
-if TYPE_CHECKING:
-    from sqlalchemy.orm.relationships import RelationshipProperty
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
@@ -15,6 +12,9 @@ from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
 )
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm.relationships import RelationshipProperty
 
 
 class ConditionalDependencyType(str, Enum):
