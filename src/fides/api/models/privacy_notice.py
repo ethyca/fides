@@ -3,17 +3,27 @@ from __future__ import annotations
 import itertools
 import re
 from enum import Enum
+from functools import cached_property
 from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.validation import FidesKey, validate_fides_key
-from sqlalchemy import Boolean, Column, false, func
+from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
+from sqlalchemy import (
+    Float,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+    false,
+    func,
+    or_,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship, selectinload
 from sqlalchemy.orm.dynamic import AppenderQuery
-from sqlalchemy.sql.elements import BinaryExpression
+from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base, FidesBase
@@ -192,7 +202,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         raise Exception("Invalid notice consent mechanism.")
 
     @staticmethod
-    def _get_cookie_filter_for_data_uses(data_uses: List[str]) -> BinaryExpression:
+    def _get_cookie_filter_for_data_uses(data_uses: List[str]) -> ColumnElement:
         """
         Returns the SQLAlchemy filter clause to find cookies for the given data uses.
         This is a helper method to keep the query logic consistent and safe.
@@ -206,73 +216,56 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         ]
         return or_(*or_clauses)
 
-    @property
+    @cached_property
     def cookies(self) -> List[Asset]:
         """
         Return relevant assets of type 'cookie' (via the data use)
-        
-        This property implements an instance-level cache (`_cookies`). The first
-        time it's accessed, it runs a query and caches the result. Subsequent
-        accesses return the cached value, avoiding redundant database calls.
 
-        The cache can be pre-populated by the `load_cookie_data_for_notices`
-        classmethod to efficiently load data for many notices at once.
+        This is a cached_property, so the database query is only executed
+        once per instance, and the result is cached for subsequent accesses.
         """
-        # Check if the instance-level cache exists
-        if hasattr(self, "_cookies"):
-            return self._cookies
-
-        # If not cached, perform the query
         db = Session.object_session(self)
         cookie_filter = self._get_cookie_filter_for_data_uses(self.data_uses)
 
-        found_cookies = (
+        return (
             db.query(Asset)
             .filter(
                 Asset.asset_type == "Cookie",
                 cookie_filter,
-                )
+            )
             .all()
         )
 
-        # Cache the result on the instance for subsequent calls
-        setattr(self, "_cookies", found_cookies)
-        return found_cookies
-
     @classmethod
-    def load_cookie_data_for_notices(cls, db: Session, notices: List["PrivacyNotice"]):
+    def load_cookie_data_for_notices(
+        cls, db: Session, notices: List["PrivacyNotice"]
+    ) -> None:
         """
         An efficient method to bulk-load cookie data for a list of PrivacyNotice objects.
-
-        This classmethod prevents the "N+1" query problem that would occur if accessing
-        the `.cookies` property for each notice individually in a loop.
-
-        It fetches all relevant cookies in a single query and attaches them to the
-        notice instances, overriding the `cookies` property for the lifespan of these
-        objects.
+        This prevents the "N+1" query problem by pre-populating the `cookies`
+        cached_property for each notice.
         """
         if not notices:
             return
 
-        all_data_uses = set(
-            itertools.chain.from_iterable(n.data_uses for n in notices)
-        )
+        all_data_uses = set(itertools.chain.from_iterable(n.data_uses for n in notices))
 
         all_relevant_cookies: List[Asset] = []
         if all_data_uses:
-            # It now uses the same centralized helper method for the query logic
             cookie_filter = cls._get_cookie_filter_for_data_uses(list(all_data_uses))
             all_relevant_cookies = (
                 db.query(Asset)
-                .options(selectinload("system")) # Eagerly load the system to prevent further N+1s
+                .options(
+                    selectinload("system")
+                )  # Eagerly load the system to prevent further N+1s
                 .filter(
                     Asset.asset_type == "Cookie",
                     cookie_filter,
-                    )
+                )
                 .all()
             )
 
-        # This logic remains the same, as it efficiently associates the pre-fetched cookies
+        # Associate the pre-fetched cookies to notices based on their data uses
         for notice in notices:
             matching_cookies = [
                 cookie
@@ -282,7 +275,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                     for d in notice.data_uses
                 )
             ]
-            # Override the property on the instance to prevent the N+1 query
+            # Pre-populate the cache of the 'cookies' cached_property.
+            # This directly sets the attribute that the decorator would otherwise compute.
             setattr(notice, "cookies", matching_cookies)
 
     @property

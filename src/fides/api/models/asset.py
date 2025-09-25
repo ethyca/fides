@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, selectinload
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
@@ -191,6 +191,9 @@ class Asset(Base):
                 .where(System.fides_key == system_fides_key)
             )
 
+        # Explicitly eager load the `system` relationship to make this query's
+        # performance predictable and prevent N+1 issues.
+        query = query.options(selectinload(cls.system))  # type: ignore[attr-defined]
         result = await async_session.execute(query)
         return result.scalars().all()
 
