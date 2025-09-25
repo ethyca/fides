@@ -263,3 +263,133 @@ class TestDigestConditionValidation:
 
         # Clean up child for next iteration
         child.delete(db)
+
+    def test_deep_tree_validation_prevents_type_mixing(
+        self,
+        db: Session,
+        digest_config: DigestConfig,
+        receiver_condition: dict[str, Any],
+        content_condition: dict[str, Any],
+        group_condition_and: dict[str, Any],
+    ):
+        """Test that validation works across multiple levels of nesting."""
+        # Create root RECEIVER condition
+        root = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                **group_condition_and,
+                "sort_order": 0,
+            },
+        )
+
+        # Create intermediate RECEIVER condition (child of root)
+        intermediate = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                **group_condition_and,
+                "parent_id": root.id,
+                "sort_order": 1,
+            },
+        )
+
+        # Create another intermediate RECEIVER condition (grandchild of root)
+        deep_intermediate = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                **group_condition_and,
+                "parent_id": intermediate.id,
+                "sort_order": 1,
+            },
+        )
+
+        # Now try to create a CONTENT condition as great-grandchild
+        # This should fail because the parent is RECEIVER type
+        with pytest.raises(
+            ValueError,
+            match="Cannot create condition with type 'content' under parent with type 'receiver'",
+        ):
+            DigestCondition.create(
+                db=db,
+                data={
+                    **content_condition,
+                    "condition_type": ConditionalDependencyType.leaf,
+                    "parent_id": deep_intermediate.id,
+                    "field_address": "content.title",
+                    "operator": Operator.eq,
+                    "value": "test",
+                    "sort_order": 1,
+                },
+            )
+
+        # But creating a RECEIVER condition should work
+        valid_deep_child = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                "condition_type": ConditionalDependencyType.leaf,
+                "parent_id": deep_intermediate.id,
+                "field_address": "receiver.email",
+                "operator": Operator.eq,
+                "value": "test@example.com",
+                "sort_order": 1,
+            },
+        )
+        assert valid_deep_child.digest_condition_type == DigestConditionType.RECEIVER
+
+        # Clean up
+        valid_deep_child.delete(db)
+        deep_intermediate.delete(db)
+        intermediate.delete(db)
+        root.delete(db)
+
+    def test_validation_prevents_update_that_breaks_tree_consistency(
+        self,
+        db: Session,
+        digest_config: DigestConfig,
+        receiver_condition: dict[str, Any],
+        content_condition: dict[str, Any],
+        group_condition_and: dict[str, Any],
+    ):
+        """Test that updating a condition to different type fails if it breaks tree consistency."""
+        # Create RECEIVER tree
+        root = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                **group_condition_and,
+                "sort_order": 0,
+            },
+        )
+
+        child = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                "condition_type": ConditionalDependencyType.leaf,
+                "parent_id": root.id,
+                "field_address": "receiver.email",
+                "operator": Operator.eq,
+                "value": "test@example.com",
+                "sort_order": 1,
+            },
+        )
+
+        # Try to update child to CONTENT type - should fail
+        with pytest.raises(
+            ValueError,
+            match="Cannot create condition with type 'content' under parent with type 'receiver'",
+        ):
+            child.update(
+                db=db, data={"digest_condition_type": DigestConditionType.CONTENT}
+            )
+
+        # Verify child is still RECEIVER type
+        db.refresh(child)
+        assert child.digest_condition_type == DigestConditionType.RECEIVER
+
+        # Clean up
+        child.delete(db)
+        root.delete(db)

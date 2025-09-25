@@ -101,12 +101,18 @@ class DigestCondition(ConditionalDependencyBase):
     def _validate_condition_type_consistency(
         db: Session, data: dict[str, Any], instance: Optional["DigestCondition"] = None
     ) -> None:
-        """Validate that all conditions in the same tree have the same digest_condition_type.
+        """Validate that a condition's digest_condition_type matches its parent's type.
+
+        Since each parent was validated when created, checking against the immediate parent
+        is sufficient to ensure tree-wide consistency.
 
         Args:
             db: Database session for querying
             data: Dictionary containing condition data to validate
             instance: Optional existing instance to get fallback values from
+
+        Raises:
+            ValueError: If parent doesn't exist or digest_condition_type doesn't match parent's type
         """
         parent_id = data.get("parent_id")
         digest_condition_type = data.get("digest_condition_type")
@@ -129,7 +135,7 @@ class DigestCondition(ConditionalDependencyBase):
         if not parent:
             raise ValueError(f"Parent condition with id '{parent_id}' does not exist")
 
-        # Check if parent has the same digest_condition_type
+        # Validate that the new condition matches the parent's digest_condition_type
         if parent.digest_condition_type != digest_condition_type:
             raise ValueError(
                 f"Cannot create condition with type '{digest_condition_type}' under parent "

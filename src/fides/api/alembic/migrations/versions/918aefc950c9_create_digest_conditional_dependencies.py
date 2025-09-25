@@ -1,7 +1,7 @@
 """create digest conditional dependencies
 
 Revision ID: 918aefc950c9
-Revises: e1c2c845f23d
+Revises: e2cda8d6abc3
 Create Date: 2025-09-18 21:04:23.620675
 
 """
