@@ -397,6 +397,10 @@ const NoticeOverlay = () => {
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
       isVendorAssetDisclosureView={isVendorAssetDisclosureView}
+      onModalHide={() => {
+        setIsVendorAssetDisclosureView(false);
+        setSelectedNoticeKey(null);
+      }}
       headerContent={
         isVendorAssetDisclosureView && selectedNotice
           ? {

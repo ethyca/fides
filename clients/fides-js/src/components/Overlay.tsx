@@ -53,6 +53,7 @@ interface Props {
     description: string;
   };
   isVendorAssetDisclosureView?: boolean;
+  onModalHide?: () => void;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -69,6 +70,7 @@ const Overlay: FunctionComponent<Props> = ({
   isUiBlocking,
   headerContent,
   isVendorAssetDisclosureView,
+  onModalHide,
 }: Props) => {
   const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
@@ -136,6 +138,9 @@ const Overlay: FunctionComponent<Props> = ({
       id: "fides-modal",
       onClose: () => {
         dispatchCloseEvent({ saved: false });
+        if (onModalHide) {
+          onModalHide();
+        }
       },
     });
 
@@ -169,15 +174,23 @@ const Overlay: FunctionComponent<Props> = ({
         onOpen(origin);
       }
     },
-    [modalDialogInstance, onOpen, options],
+    [modalDialogInstance, onOpen, options]
   );
 
   const handleCloseModalAfterSave = useCallback(() => {
     if (modalDialogInstance && !options.fidesEmbed) {
       modalDialogInstance.hide();
       dispatchCloseEvent({ saved: true });
+      if (onModalHide) {
+        onModalHide();
+      }
     }
-  }, [modalDialogInstance, dispatchCloseEvent, options.fidesEmbed]);
+  }, [
+    modalDialogInstance,
+    dispatchCloseEvent,
+    options.fidesEmbed,
+    onModalHide,
+  ]);
 
   useEffect(() => {
     if (options.fidesEmbed && !bannerIsOpen) {
