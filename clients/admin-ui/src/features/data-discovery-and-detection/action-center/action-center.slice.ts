@@ -230,7 +230,60 @@ const actionCenterApi = baseApi.injectEndpoints({
           user_assigned_data_uses: params.dataUses,
         })),
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      // invalidatesTags: ["Discovery Monitor Results"],
+      async onQueryStarted(
+        { monitorId, urnList, dataUses },
+        { dispatch, queryFulfilled, getState },
+      ) {
+        // Get all cached queries for getDiscoveredAssets
+        const state = getState();
+        const queries = actionCenterApi.util.selectCachedArgsForQuery(
+          state,
+          "getDiscoveredAssets",
+        );
+
+        // Update all relevant cached queries
+        const updates: any[] = [];
+        queries.forEach((queryArgs) => {
+          // Only update queries for the same monitor
+          if (queryArgs.key === monitorId) {
+            const update = dispatch(
+              actionCenterApi.util.updateQueryData(
+                "getDiscoveredAssets",
+                queryArgs,
+                (draft) => {
+                  // Update each item that matches our URN list
+                  if (draft.items) {
+                    urnList.forEach((urn) => {
+                      const itemResult = draft.items.find(
+                        (item) => item.urn === urn,
+                      );
+                      if (itemResult) {
+                        itemResult.user_assigned_data_uses = dataUses;
+                      }
+                    });
+                  }
+                },
+              ),
+            );
+            updates.push(update);
+          }
+        });
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // Rollback all updates on failure
+          updates.forEach((update) => {
+            if (update.undo) {
+              update.undo();
+            }
+          });
+          dispatch(
+            actionCenterApi.util.invalidateTags(["Discovery Monitor Results"]),
+          );
+        }
+      },
     }),
     // generic update assets mutation, necessary for non-destructive bulk data use updates
     updateAssets: build.mutation<
