@@ -685,7 +685,8 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             polling_request_task_exists = db.query(
                                 db.query(RequestTask)
                                 .filter(
-                                    RequestTask.privacy_request_id == privacy_request.id,
+                                    RequestTask.privacy_request_id
+                                    == privacy_request.id,
                                     RequestTask.async_type == AsyncTaskType.polling,
                                 )
                                 .exists()

@@ -4,6 +4,7 @@ Pure response processing utility for async DSR polling.
 This module handles data type inference, attachment classification,
 and response parsing with no business logic dependencies.
 """
+
 import io
 import re
 from typing import Any, List, Optional

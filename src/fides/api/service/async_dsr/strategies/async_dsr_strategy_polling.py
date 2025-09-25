@@ -724,7 +724,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         )
         return True  # Polling is complete
 
+
 # Private helper functions
+
 
 def _handle_erasure_result(
     polling_result, affected_records_accumulator: List[int]

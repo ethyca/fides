@@ -57,7 +57,9 @@ def is_callback_completion(request_task: RequestTask) -> bool:
     return request_task.callback_succeeded
 
 
-def is_async_request(request_task: RequestTask, query_config: "SaaSQueryConfig") -> bool:
+def is_async_request(
+    request_task: RequestTask, query_config: "SaaSQueryConfig"
+) -> bool:
     """
     Check if this is an async request (callback, continuation, or initial async).
 

@@ -12,8 +12,6 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
-    AwaitingAsyncProcessing,
-    AwaitingAsyncTask,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,

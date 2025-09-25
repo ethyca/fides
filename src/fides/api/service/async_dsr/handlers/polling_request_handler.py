@@ -25,7 +25,9 @@ class PollingRequestHandler:
     Handles status checks and result retrieval with no business logic dependencies.
     """
 
-    def __init__(self, status_request: PollingStatusRequest, result_request: PollingResultRequest):
+    def __init__(
+        self, status_request: PollingStatusRequest, result_request: PollingResultRequest
+    ):
         self.status_request = status_request
         self.result_request = result_request
 

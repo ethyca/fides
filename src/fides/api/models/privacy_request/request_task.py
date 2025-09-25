@@ -341,13 +341,13 @@ class RequestTaskSubRequest(Base):
     @declared_attr
     def __tablename__(cls) -> str:
         """Overriding base class method to set the table name."""
-        return "requesttask_sub_request"
+        return "request_task_sub_request"
 
     request_task_id = Column(
         String(255),
         ForeignKey(
             "requesttask.id",
-            name="requesttask_request_data_request_task_id_fkey",
+            name="request_task_sub_request_request_task_id_fkey",
             ondelete="CASCADE",
         ),
         nullable=False,
