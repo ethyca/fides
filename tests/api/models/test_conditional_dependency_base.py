@@ -1,5 +1,6 @@
 """Tests for the ConditionalDependencyBase abstract model."""
 
+from typing import Any
 from unittest.mock import create_autospec
 
 import pytest
@@ -45,7 +46,7 @@ class TestConditionalDependencyBase:
             NotImplementedError,
             match="Subclasses of ConditionalDependencyBase must implement get_root_condition",
         ):
-            ConditionalDependencyBase.get_root_condition(db, "test_id")
+            ConditionalDependencyBase.get_root_condition(db, test_id="test_id")
 
     def test_abstract_class_attributes(self):
         """Test that the abstract class has the required attributes."""
@@ -81,8 +82,6 @@ class TestConditionalDependencyBase:
 
         # Test the new helper functions we added
         new_helper_functions = [
-            "validate_condition_data",
-            "is_valid",
             "get_depth",
             "get_tree_summary",
         ]
@@ -132,12 +131,12 @@ class MockConditionalDependency:
         return temp.to_condition_group()
 
     @classmethod
-    def get_root_condition(cls, db: Session, parent_id: str):
+    def get_root_condition(cls, db: Session, *, parent_id: str, **kwargs: Any):
         """Mock implementation."""
         temp = ConditionalDependencyBase()
         temp.condition_type = cls.condition_type
         temp.parent_id = parent_id
-        return temp.get_root_condition(db, parent_id)
+        return temp.get_root_condition(db, parent_id=parent_id)
 
 
 class TestConditionalDependencyBaseMethods:
@@ -452,193 +451,6 @@ class TestConditionalDependencyBaseEdgeCases:
         assert len(nested_or.conditions) == 2
         assert nested_or.conditions[0].field_address == "user.verified"
         assert nested_or.conditions[1].field_address == "user.premium"
-
-
-class TestConditionalDependencyBaseValidation:
-    """Test the new validation methods."""
-
-    def test_validate_condition_data_valid_leaf(self):
-        """Test validation of a valid leaf condition."""
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.name",
-            operator=Operator.eq,
-            value="test_user",
-        )
-
-        # Create temp object to test validation
-        temp = ConditionalDependencyBase()
-        temp.condition_type = dependency.condition_type
-        temp.field_address = dependency.field_address
-        temp.operator = dependency.operator
-        temp.value = dependency.value
-        temp.logical_operator = None
-
-        errors = temp.validate_condition_data()
-        assert errors == []
-
-    def test_validate_condition_data_valid_group(self):
-        """Test validation of a valid group condition."""
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.group,
-            logical_operator="and",
-        )
-
-        # Create temp object to test validation
-        temp = ConditionalDependencyBase()
-        temp.condition_type = dependency.condition_type
-        temp.logical_operator = dependency.logical_operator
-        temp.field_address = None
-        temp.operator = None
-        temp.value = None
-
-        errors = temp.validate_condition_data()
-        assert errors == []
-
-    def test_validate_condition_data_leaf_missing_field_address(self):
-        """Test validation fails when leaf is missing field_address."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = None
-        temp.operator = Operator.eq
-        temp.value = "test"
-        temp.logical_operator = None
-
-        errors = temp.validate_condition_data()
-        assert "Leaf conditions must have a field_address" in errors
-
-    def test_validate_condition_data_leaf_missing_operator(self):
-        """Test validation fails when leaf is missing operator."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = "user.name"
-        temp.operator = None
-        temp.value = "test"
-        temp.logical_operator = None
-
-        errors = temp.validate_condition_data()
-        assert "Leaf conditions must have an operator" in errors
-
-    def test_validate_condition_data_leaf_missing_value(self):
-        """Test validation fails when leaf is missing value."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = "user.name"
-        temp.operator = Operator.eq
-        temp.value = None
-        temp.logical_operator = None
-
-        errors = temp.validate_condition_data()
-        assert (
-            "Leaf conditions must have a value (use explicit null for null checks)"
-            in errors
-        )
-
-    def test_validate_condition_data_leaf_has_logical_operator(self):
-        """Test validation fails when leaf has logical_operator."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = "user.name"
-        temp.operator = Operator.eq
-        temp.value = "test"
-        temp.logical_operator = "and"
-
-        errors = temp.validate_condition_data()
-        assert "Leaf conditions should not have a logical_operator" in errors
-
-    def test_validate_condition_data_group_missing_logical_operator(self):
-        """Test validation fails when group is missing logical_operator."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.group
-        temp.logical_operator = None
-        temp.field_address = None
-        temp.operator = None
-        temp.value = None
-
-        errors = temp.validate_condition_data()
-        assert "Group conditions must have a logical_operator ('and' or 'or')" in errors
-
-    def test_validate_condition_data_group_invalid_logical_operator(self):
-        """Test validation fails when group has invalid logical_operator."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.group
-        temp.logical_operator = "invalid"
-        temp.field_address = None
-        temp.operator = None
-        temp.value = None
-
-        errors = temp.validate_condition_data()
-        assert "Invalid logical_operator 'invalid'. Must be 'and' or 'or'" in errors
-
-    def test_validate_condition_data_group_has_field_address(self):
-        """Test validation fails when group has field_address."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.group
-        temp.logical_operator = "and"
-        temp.field_address = "user.name"
-        temp.operator = None
-        temp.value = None
-
-        errors = temp.validate_condition_data()
-        assert "Group conditions should not have a field_address" in errors
-
-    def test_validate_condition_data_group_has_operator(self):
-        """Test validation fails when group has operator."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.group
-        temp.logical_operator = "and"
-        temp.field_address = None
-        temp.operator = Operator.eq
-        temp.value = None
-
-        errors = temp.validate_condition_data()
-        assert "Group conditions should not have an operator" in errors
-
-    def test_validate_condition_data_group_has_value(self):
-        """Test validation fails when group has value."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.group
-        temp.logical_operator = "and"
-        temp.field_address = None
-        temp.operator = None
-        temp.value = "test"
-
-        errors = temp.validate_condition_data()
-        assert "Group conditions should not have a value" in errors
-
-    def test_validate_condition_data_invalid_condition_type(self):
-        """Test validation fails with invalid condition_type."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = "invalid"
-        temp.field_address = None
-        temp.operator = None
-        temp.value = None
-        temp.logical_operator = None
-
-        errors = temp.validate_condition_data()
-        assert "Invalid condition_type 'invalid'. Must be 'leaf' or 'group'" in errors
-
-    def test_is_valid_true_for_valid_leaf(self):
-        """Test is_valid returns True for valid leaf condition."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = "user.name"
-        temp.operator = Operator.eq
-        temp.value = "test"
-        temp.logical_operator = None
-
-        assert temp.is_valid() is True
-
-    def test_is_valid_false_for_invalid_leaf(self):
-        """Test is_valid returns False for invalid leaf condition."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = None  # Missing field_address
-        temp.operator = Operator.eq
-        temp.value = "test"
-        temp.logical_operator = None
-
-        assert temp.is_valid() is False
 
 
 class TestConditionalDependencyBaseDepth:

@@ -59,18 +59,22 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
 
     @classmethod
     def get_root_condition(
-        cls, db: Session, *args: Any, **kwargs: Any
+        cls, db: Session, **kwargs: Any
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get the root condition for a manual task
 
         Args:
             db: Database session
-            manual_task_id: ID of the manual task (first positional arg)
-        """
-        if not args:
-            raise ValueError("manual_task_id is required as first positional argument")
+            **kwargs: Keyword arguments containing:
+                manual_task_id: ID of the manual task
 
-        manual_task_id = args[0]
+        Raises:
+            ValueError: If manual_task_id is not provided
+        """
+        manual_task_id = kwargs.get("manual_task_id")
+
+        if not manual_task_id:
+            raise ValueError("manual_task_id is required as a keyword argument")
         root = (
             db.query(cls)
             .filter(cls.manual_task_id == manual_task_id, cls.parent_id.is_(None))

@@ -66,7 +66,9 @@ class DigestConfig(Base):
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get receiver conditions for this digest config."""
         return DigestCondition.get_root_condition(
-            db, self.id, DigestConditionType.RECEIVER
+            db,
+            digest_config_id=self.id,
+            digest_condition_type=DigestConditionType.RECEIVER,
         )
 
     def get_content_conditions(
@@ -75,7 +77,9 @@ class DigestConfig(Base):
         """Get content conditions for this digest config."""
 
         return DigestCondition.get_root_condition(
-            db, self.id, DigestConditionType.CONTENT
+            db,
+            digest_config_id=self.id,
+            digest_condition_type=DigestConditionType.CONTENT,
         )
 
     def get_priority_conditions(
@@ -84,7 +88,9 @@ class DigestConfig(Base):
         """Get priority conditions for this digest config."""
 
         return DigestCondition.get_root_condition(
-            db, self.id, DigestConditionType.PRIORITY
+            db,
+            digest_config_id=self.id,
+            digest_condition_type=DigestConditionType.PRIORITY,
         )
 
     def get_all_conditions(

@@ -367,7 +367,9 @@ class TestDigestConditionQueries:
 
         # Test getting receiver condition
         receiver_condition = DigestCondition.get_root_condition(
-            db, digest_config.id, DigestConditionType.RECEIVER
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.RECEIVER,
         )
         assert receiver_condition is not None
         assert isinstance(receiver_condition, ConditionLeaf)
@@ -376,7 +378,9 @@ class TestDigestConditionQueries:
 
         # Test getting content condition
         content_condition = DigestCondition.get_root_condition(
-            db, digest_config.id, DigestConditionType.CONTENT
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.CONTENT,
         )
         assert content_condition is not None
         assert isinstance(content_condition, ConditionLeaf)
@@ -385,7 +389,9 @@ class TestDigestConditionQueries:
 
         # Test getting priority condition
         priority_condition = DigestCondition.get_root_condition(
-            db, digest_config.id, DigestConditionType.PRIORITY
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.PRIORITY,
         )
         assert priority_condition is not None
         assert isinstance(priority_condition, ConditionLeaf)
@@ -401,7 +407,9 @@ class TestDigestConditionQueries:
         )
 
         result = DigestCondition.get_root_condition(
-            db, empty_config.id, DigestConditionType.RECEIVER
+            db,
+            digest_config_id=empty_config.id,
+            digest_condition_type=DigestConditionType.RECEIVER,
         )
         assert result is None
         empty_config.delete(db)
@@ -436,9 +444,9 @@ class TestDigestConditionQueries:
         """Test that get_root_condition raises error with missing arguments."""
         with pytest.raises(
             ValueError,
-            match="digest_config_id and digest_condition_type are required as positional arguments",
+            match="digest_config_id and digest_condition_type are required keyword arguments",
         ):
-            DigestCondition.get_root_condition(db, "only_one_arg")
+            DigestCondition.get_root_condition(db, digest_config_id="only_one_arg")
 
     @pytest.mark.usefixtures("sample_conditions")
     def test_filter_conditions_by_type(self, db: Session, digest_config: DigestConfig):

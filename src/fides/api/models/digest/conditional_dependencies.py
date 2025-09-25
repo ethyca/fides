@@ -195,7 +195,9 @@ class DigestCondition(ConditionalDependencyBase):
 
     @classmethod
     def get_root_condition(
-        cls, db: Session, *args: Any, **kwargs: Any
+        cls,
+        db: Session,
+        **kwargs: Any,
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get the root condition tree for a specific digest condition type.
 
@@ -205,34 +207,38 @@ class DigestCondition(ConditionalDependencyBase):
 
         Args:
             db: SQLAlchemy database session for querying
-            digest_config_id: ID of the digest config (first positional arg)
-            digest_condition_type: DigestConditionType enum value (second positional arg)
-                                 Must be one of: RECEIVER, CONTENT, PRIORITY
+            **kwargs: Keyword arguments containing:
+                digest_config_id: ID of the digest config
+                digest_condition_type: DigestConditionType enum value
+                                     Must be one of: RECEIVER, CONTENT, PRIORITY
 
         Returns:
             Optional[Union[ConditionLeaf, ConditionGroup]]: Root condition tree for the specified
                                                           type, or None if no conditions exist
 
         Raises:
-            ValueError: If digest_config_id and digest_condition_type are not provided
+            ValueError: If required parameters are missing
 
         Example:
             >>> # Get receiver conditions for a digest
             >>> receiver_conditions = DigestCondition.get_root_condition(
-            ...     db, digest_config.id, DigestConditionType.RECEIVER
+            ...     db, digest_config_id=digest_config.id,
+            ...     digest_condition_type=DigestConditionType.RECEIVER
             ... )
             >>> # Get content conditions for the same digest
             >>> content_conditions = DigestCondition.get_root_condition(
-            ...     db, digest_config.id, DigestConditionType.CONTENT
+            ...     db, digest_config_id=digest_config.id,
+            ...     digest_condition_type=DigestConditionType.CONTENT
             ... )
         """
-        if len(args) < 2:
+        digest_config_id = kwargs.get("digest_config_id")
+        digest_condition_type = kwargs.get("digest_condition_type")
+
+        if not digest_config_id or not digest_condition_type:
             raise ValueError(
-                "digest_config_id and digest_condition_type are required as positional arguments. "
-                "Usage: get_root_condition(db, digest_config_id, digest_condition_type)"
+                "digest_config_id and digest_condition_type are required keyword arguments"
             )
 
-        digest_config_id, digest_condition_type = args[0], args[1]
         root = (
             db.query(cls)
             .filter(
@@ -240,7 +246,7 @@ class DigestCondition(ConditionalDependencyBase):
                 cls.digest_condition_type == digest_condition_type,
                 cls.parent_id.is_(None),
             )
-            .first()
+            .one_or_none()
         )
 
         if not root:
@@ -256,6 +262,10 @@ class DigestCondition(ConditionalDependencyBase):
     ) -> dict[DigestConditionType, Optional[Condition]]:
         """Get root conditions for all digest condition types"""
         return {
-            condition_type: cls.get_root_condition(db, digest_config_id, condition_type)
+            condition_type: cls.get_root_condition(
+                db,
+                digest_config_id=digest_config_id,
+                digest_condition_type=condition_type,
+            )
             for condition_type in DigestConditionType
         }

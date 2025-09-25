@@ -180,9 +180,7 @@ class ConditionalDependencyBase(Base):
         )
 
     @classmethod
-    def get_root_condition(
-        cls, db: Session, *args: Any, **kwargs: Any
-    ) -> Optional[Condition]:
+    def get_root_condition(cls, db: Session, **kwargs: Any) -> Optional[Condition]:
         """Get the root condition tree for a parent entity.
 
         This abstract method must be implemented by concrete subclasses to define
@@ -197,12 +195,8 @@ class ConditionalDependencyBase(Base):
 
         Args:
             db: SQLAlchemy database session for querying
-            *args: Additional positional arguments specific to each implementation.
-                  Currently used examples:
-                  - entity_id: ID of the parent entity (manual_task_id, digest_config_id, etc.)
-                  - condition_type: Filter by specific condition types (for multi-type hierarchies)
-            **kwargs: Additional keyword arguments for implementation-specific options.
-                    Currently used examples:
+            **kwargs: Keyword arguments specific to each implementation.
+                    Examples:
                     - manual_task_id: ID of the manual task (for single-type hierarchies)
                     - digest_config_id: ID of the digest config (for multi-type hierarchies)
                     - digest_condition_type: Type of digest condition (for multi-type hierarchies)
@@ -216,7 +210,7 @@ class ConditionalDependencyBase(Base):
 
         Example Implementation:
             >>> @classmethod
-            >>> def get_root_condition(cls, db: Session, manual_task_id: str) -> Optional[Condition]:
+            >>> def get_root_condition(cls, db: Session, *, manual_task_id: str) -> Optional[Condition]:
             ...     root = db.query(cls).filter(
             ...         cls.manual_task_id == manual_task_id,
             ...         cls.parent_id.is_(None)
@@ -231,69 +225,6 @@ class ConditionalDependencyBase(Base):
             f"and return it as a Condition schema object, or None if not found. "
             f"See the docstring for implementation guidelines and examples."
         )
-
-    def validate_condition_data(self) -> List[str]:
-        """Validate the condition data and return any validation errors.
-
-        This method performs basic validation on the condition data to ensure
-        it's properly structured for its condition_type.
-
-        Returns:
-            List[str]: List of validation error messages (empty if valid)
-
-        Example:
-            >>> condition = SomeConditionalDependency(condition_type="leaf")
-            >>> errors = condition.validate_condition_data()
-            >>> if errors:
-            ...     print("Validation errors:", errors)
-        """
-        errors = []
-
-        if self.condition_type == ConditionalDependencyType.leaf:
-            # Leaf conditions must have field_address, operator, and value
-            if not self.field_address:
-                errors.append("Leaf conditions must have a field_address")
-            if not self.operator:
-                errors.append("Leaf conditions must have an operator")
-            if self.value is None:
-                errors.append(
-                    "Leaf conditions must have a value (use explicit null for null checks)"
-                )
-            # Leaf conditions should not have logical_operator
-            if self.logical_operator:
-                errors.append("Leaf conditions should not have a logical_operator")
-
-        elif self.condition_type == ConditionalDependencyType.group:
-            # Group conditions must have logical_operator
-            if not self.logical_operator:
-                errors.append(
-                    "Group conditions must have a logical_operator ('and' or 'or')"
-                )
-            elif self.logical_operator not in ["and", "or"]:
-                errors.append(
-                    f"Invalid logical_operator '{self.logical_operator}'. Must be 'and' or 'or'"
-                )
-            # Group conditions should not have leaf-specific fields
-            if self.field_address:
-                errors.append("Group conditions should not have a field_address")
-            if self.operator:
-                errors.append("Group conditions should not have an operator")
-            if self.value is not None:
-                errors.append("Group conditions should not have a value")
-        else:
-            errors.append(
-                f"Invalid condition_type '{self.condition_type}'. Must be 'leaf' or 'group'"
-            )
-
-        return errors
-
-    def is_valid(self) -> bool:
-        """Check if this condition has valid data structure.
-
-        Returns:
-            bool: True if the condition data is valid, False otherwise
-        """
-        return len(self.validate_condition_data()) == 0
 
     def get_depth(self) -> int:
         """Calculate the depth of this node in the condition tree.
