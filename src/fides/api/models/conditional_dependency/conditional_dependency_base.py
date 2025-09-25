@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -89,7 +89,7 @@ class ConditionalDependencyBase(Base):
     # Ordering
     sort_order = Column(Integer, nullable=False, default=0, index=True)
 
-    def to_correct_condition_type(self) -> ConditionLeaf | ConditionGroup:
+    def to_correct_condition_type(self) -> Union[ConditionLeaf, ConditionGroup]:
         """Convert this database model to the correct condition type."""
         if self.condition_type == ConditionalDependencyType.leaf:
             return self.to_condition_leaf()
@@ -270,7 +270,7 @@ class ConditionalDependencyBase(Base):
 
         def _build_tree_lines(
             node: "ConditionalDependencyBase", prefix: str = "", is_last: bool = True
-        ) -> List[str]:
+        ) -> list[str]:
             lines = []
 
             # Current node info
