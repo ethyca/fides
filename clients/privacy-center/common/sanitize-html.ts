@@ -17,6 +17,7 @@ export default function sanitizeHTML(input: string) {
       "i",
       "li",
       "ol",
+      "ul",
       "p",
       "pre",
       "q",
