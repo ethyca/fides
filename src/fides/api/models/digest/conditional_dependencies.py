@@ -22,7 +22,19 @@ if TYPE_CHECKING:
 
 
 class DigestConditionType(str, Enum):
-    """Types of digest conditions - each can have their own tree."""
+    """Types of digest conditions - each can have their own tree.
+
+    Types:
+        - RECEIVER: Conditions that determine who gets the digest
+        - CONTENT: Conditions that determine what gets included in the digest
+        - PRIORITY: Conditions that determine what is considered high priority for the digest
+          - This could be used to determine sending the digest at a different time or how
+            often it should be sent. It could also be used to format content.
+          - Example:
+            - DSRs that are due within the next week
+            - Privacy requests that are due within the next week
+            - Privacy requests for certain geographic regions
+    """
 
     RECEIVER = "receiver"
     CONTENT = "content"
@@ -165,6 +177,21 @@ class DigestCondition(ConditionalDependencyBase):
 
         # If validation passes, update normally
         return super().update(db=db, data=data)  # type: ignore[return-value]
+
+    def save(self, db: Session) -> "DigestCondition":
+        """Save DigestCondition with validation."""
+        # Extract current object data for validation
+        data = {
+            "parent_id": self.parent_id,
+            "digest_condition_type": self.digest_condition_type,
+        }
+
+        # Validate before saving (only if this has a parent)
+        if self.parent_id:
+            self._validate_condition_type_consistency(db, data, self)
+
+        # If validation passes, save normally
+        return super().save(db=db)  # type: ignore[return-value]
 
     @classmethod
     def get_root_condition(

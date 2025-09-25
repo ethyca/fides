@@ -393,3 +393,54 @@ class TestDigestConditionValidation:
         # Clean up
         child.delete(db)
         root.delete(db)
+
+    def test_save_method_validates_condition_type_consistency(
+        self,
+        db: Session,
+        digest_config: DigestConfig,
+        receiver_condition: dict[str, Any],
+        content_condition: dict[str, Any],
+        group_condition_and: dict[str, Any],
+    ):
+        """Test that the save method also validates condition type consistency."""
+        # Create RECEIVER root
+        root = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                **group_condition_and,
+                "sort_order": 0,
+            },
+        )
+
+        # Create RECEIVER child
+        child = DigestCondition.create(
+            db=db,
+            data={
+                **receiver_condition,
+                "condition_type": ConditionalDependencyType.leaf,
+                "parent_id": root.id,
+                "field_address": "receiver.email",
+                "operator": Operator.eq,
+                "value": "test@example.com",
+                "sort_order": 1,
+            },
+        )
+
+        # Manually modify the child's digest_condition_type in memory (bypassing validation)
+        child.digest_condition_type = DigestConditionType.CONTENT
+
+        # Try to save - should fail validation
+        with pytest.raises(
+            ValueError,
+            match="Cannot create condition with type 'content' under parent with type 'receiver'",
+        ):
+            child.save(db)
+
+        # Verify child's type was not saved to database
+        db.refresh(child)
+        assert child.digest_condition_type == DigestConditionType.RECEIVER
+
+        # Clean up
+        child.delete(db)
+        root.delete(db)
