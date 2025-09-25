@@ -436,7 +436,7 @@ class TestDigestConditionQueries:
         """Test that get_root_condition raises error with missing arguments."""
         with pytest.raises(
             ValueError,
-            match="digest_config_id and condition_type are required as positional arguments",
+            match="digest_config_id and digest_condition_type are required as positional arguments",
         ):
             DigestCondition.get_root_condition(db, "only_one_arg")
 

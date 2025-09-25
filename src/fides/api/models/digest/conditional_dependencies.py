@@ -32,9 +32,27 @@ class DigestConditionType(str, Enum):
 class DigestCondition(ConditionalDependencyBase):
     """Digest conditional dependencies - multi-type hierarchies.
 
+    - Multi-type hierarchy means one digest_config can have multiple independent
+      condition trees, each with a different digest_condition_type (RECEIVER, CONTENT, PRIORITY)
+    - Within each tree, all nodes must have the same digest_condition_type
+    - This enables separate condition logic for different aspects of digest processing
+
     Ensures that all conditions within the same tree have the same digest_condition_type.
     This prevents logical errors where different condition types are mixed in a single
     condition tree structure.
+
+    Example Tree Structure:
+        DigestConfig (e.g., "Weekly Privacy Digest")
+        ├── RECEIVER Dependency Condition Tree (who gets the digest)
+        │   └── Group (AND)
+        │       ├── Leaf: user.role == "admin"
+        │       └── Leaf: user.department == "privacy"
+        ├── CONTENT Dependency Condition Tree (what gets included)
+        │   └── Group (OR)
+        │       ├── Leaf: task.priority == "high"
+        │       └── Leaf: task.overdue == true
+        └── PRIORITY Dependency Condition Tree (when to send)
+            └── Leaf: task.count >= 5
     """
 
     @declared_attr
@@ -135,24 +153,47 @@ class DigestCondition(ConditionalDependencyBase):
     def get_root_condition(
         cls, db: Session, *args: Any, **kwargs: Any
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
-        """Get the root condition for a specific digest condition type
+        """Get the root condition tree for a specific digest condition type.
+
+        Implementation of the abstract base method for DigestCondition's multi-type hierarchy.
+        Each digest_config can have separate condition trees for RECEIVER, CONTENT, and PRIORITY
+        types. This method retrieves the root of one specific tree.
 
         Args:
-            db: Database session
+            db: SQLAlchemy database session for querying
             digest_config_id: ID of the digest config (first positional arg)
-            condition_type: Type of digest condition (second positional arg)
+            digest_condition_type: DigestConditionType enum value (second positional arg)
+                                 Must be one of: RECEIVER, CONTENT, PRIORITY
+
+        Returns:
+            Optional[Union[ConditionLeaf, ConditionGroup]]: Root condition tree for the specified
+                                                          type, or None if no conditions exist
+
+        Raises:
+            ValueError: If digest_config_id and digest_condition_type are not provided
+
+        Example:
+            >>> # Get receiver conditions for a digest
+            >>> receiver_conditions = DigestCondition.get_root_condition(
+            ...     db, digest_config.id, DigestConditionType.RECEIVER
+            ... )
+            >>> # Get content conditions for the same digest
+            >>> content_conditions = DigestCondition.get_root_condition(
+            ...     db, digest_config.id, DigestConditionType.CONTENT
+            ... )
         """
         if len(args) < 2:
             raise ValueError(
-                "digest_config_id and condition_type are required as positional arguments"
+                "digest_config_id and digest_condition_type are required as positional arguments. "
+                "Usage: get_root_condition(db, digest_config_id, digest_condition_type)"
             )
 
-        digest_config_id, condition_type = args[0], args[1]
+        digest_config_id, digest_condition_type = args[0], args[1]
         root = (
             db.query(cls)
             .filter(
                 cls.digest_config_id == digest_config_id,
-                cls.digest_condition_type == condition_type,
+                cls.digest_condition_type == digest_condition_type,
                 cls.parent_id.is_(None),
             )
             .first()
