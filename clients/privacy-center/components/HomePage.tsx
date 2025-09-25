@@ -6,6 +6,7 @@ import {
   Link,
   Stack,
   Text,
+  TextProps,
   useDisclosure,
   useToast,
 } from "fidesui";
@@ -14,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import sanitizeHTML from "~/common/sanitize-html";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
 import ConsentCard from "~/components/consent/ConsentCard";
@@ -35,6 +37,28 @@ import {
 import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+
+const TextOrHtml = ({
+  allowHTMLDescription,
+  children,
+  ...props
+}: Omit<TextProps, "children"> & {
+  allowHTMLDescription: boolean | null;
+  children: string;
+}) => {
+  if (allowHTMLDescription) {
+    return (
+      <Text
+        {...props}
+        dangerouslySetInnerHTML={{
+          __html: sanitizeHTML(children.trim()),
+        }}
+      />
+    );
+  }
+
+  return <Text {...props}>{children}</Text>;
+};
 
 const HomePage: NextPage = () => {
   const config = useConfig();
@@ -68,7 +92,8 @@ const HomePage: NextPage = () => {
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
-  const { SHOW_BRAND_LINK } = useSettings();
+  const { SHOW_BRAND_LINK, ALLOW_HTML_DESCRIPTION } = useSettings();
+
   const showPrivacyPolicyLink =
     !!config.privacy_policy_url && !!config.privacy_policy_url_text;
 
@@ -164,30 +189,32 @@ const HomePage: NextPage = () => {
             {config.title}
           </Heading>
 
-          <Text
+          <TextOrHtml
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
             textAlign="center"
             color="gray.800"
             data-testid="description"
+            allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
           >
             {config.description}
-          </Text>
+          </TextOrHtml>
 
           {config.description_subtext?.map((paragraph, index) => (
-            <Text
+            <TextOrHtml
               fontSize={["small", "medium"]}
               fontWeight="medium"
               maxWidth={624}
               textAlign="center"
               color="gray.800"
               data-testid={`description-${index}`}
+              allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
               // eslint-disable-next-line react/no-array-index-key
               key={`description-${index}`}
             >
               {paragraph}
-            </Text>
+            </TextOrHtml>
           ))}
         </Stack>
         <Flex m={-2} flexDirection={["column", "column", "row"]}>
@@ -195,17 +222,18 @@ const HomePage: NextPage = () => {
         </Flex>
 
         {config.addendum?.map((paragraph, index) => (
-          <Text
+          <TextOrHtml
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
             color="gray.800"
             data-testid={`addendum-${index}`}
+            allowHTMLDescription={ALLOW_HTML_DESCRIPTION}
             // eslint-disable-next-line react/no-array-index-key
             key={`addendum-${index}`}
           >
             {paragraph}
-          </Text>
+          </TextOrHtml>
         ))}
 
         {(SHOW_BRAND_LINK || showPrivacyPolicyLink) && (
