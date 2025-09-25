@@ -117,7 +117,7 @@ const DeprecatedPurposeOverrides = () => {
                 fontWeight="normal"
                 lineHeight="4"
               >
-                Purpose {po.purpose}: {purposeMapping[po.purpose].name}
+                Purpose {po.purpose}: {purposeMapping[po.purpose]?.name}
               </Flex>
 
               <Flex
@@ -149,8 +149,8 @@ const DeprecatedPurposeOverrides = () => {
               <LegalBasisContainer purpose={po.purpose}>
                 <CustomSwitch
                   isDisabled={
-                    !values.purposeOverrides[index].is_included ||
-                    values.purposeOverrides[index].is_legitimate_interest
+                    !values.purposeOverrides[index]?.is_included ||
+                    values.purposeOverrides[index]?.is_legitimate_interest
                   }
                   name={`purposeOverrides[${index}].is_consent`}
                 />
@@ -158,8 +158,8 @@ const DeprecatedPurposeOverrides = () => {
               <LegalBasisContainer purpose={po.purpose} endCol>
                 <CustomSwitch
                   isDisabled={
-                    !values.purposeOverrides[index].is_included ||
-                    values.purposeOverrides[index].is_consent
+                    !values.purposeOverrides[index]?.is_included ||
+                    values.purposeOverrides[index]?.is_consent
                   }
                   name={`purposeOverrides[${index}].is_legitimate_interest`}
                 />

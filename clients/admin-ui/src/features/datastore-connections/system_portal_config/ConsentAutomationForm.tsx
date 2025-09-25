@@ -148,7 +148,7 @@ export const ConsentAutomationForm = ({
       );
       if (associatedNotice?.length) {
         const childNoticeIds: string[] =
-          associatedNotice[0].children?.map((child) => child.id) || [];
+          associatedNotice[0]?.children?.map((child) => child.id) || [];
         return noticesOptions.filter((notice) =>
           childNoticeIds.includes(notice.value),
         );

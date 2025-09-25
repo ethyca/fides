@@ -41,7 +41,7 @@ export const useFormFieldsFromSchema = (
   ) => {
     if (isRequiredField(key)) {
       return (value: string | undefined) =>
-        validateField(fieldSchema.title, value, fieldSchema.allOf?.[0].$ref);
+        validateField(fieldSchema.title, value, fieldSchema.allOf?.[0]?.$ref);
     }
     return undefined;
   };
@@ -51,7 +51,7 @@ export const useFormFieldsFromSchema = (
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
         if (
-          secretsSchema.properties[key].allOf?.[0].$ref ===
+          secretsSchema.properties[key]?.allOf?.[0]?.$ref ===
           FIDES_DATASET_REFERENCE
         ) {
           const referencePath = updatedValues.secrets[key]?.split(".");
@@ -65,7 +65,7 @@ export const useFormFieldsFromSchema = (
         }
         if (
           secretsSchema.title === "WebsiteSchema" &&
-          secretsSchema.properties[key].title === "URL"
+          secretsSchema.properties[key]?.title === "URL"
         ) {
           if (
             !updatedValues.secrets[key].startsWith("http://") &&
@@ -76,7 +76,7 @@ export const useFormFieldsFromSchema = (
           }
         }
         // sending "" when the backend expects an integer will cause an error
-        if (secretsSchema.properties[key].type === "integer") {
+        if (secretsSchema.properties[key]?.type === "integer") {
           if (
             typeof updatedValues.secrets[key] === "string" &&
             updatedValues.secrets[key].trim() === ""

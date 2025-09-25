@@ -114,8 +114,9 @@ export const taxonomyHandlers = (
             const item = remaining[i];
             // Check if parent already exists in result
             if (
+              item &&
               result.some(
-                (resultItem) => resultItem.fides_key === item.parent_key,
+                (resultItem) => resultItem.fides_key === item?.parent_key,
               )
             ) {
               addedInThisPass.push(item);

@@ -19,9 +19,9 @@ export const columnExpandedVersion = (
   expandedColumns: string[],
 ) => {
   const expandedColumn = expandedColumns.find((c) => c.startsWith(columnId));
-  return expandedColumn
-    ? parseInt(expandedColumn.split(COLUMN_VERSION_DELIMITER)[1], 10)
-    : undefined;
+  const expandedIndex = expandedColumn?.split(COLUMN_VERSION_DELIMITER)[1];
+
+  return expandedIndex ? parseInt(expandedIndex, 10) : undefined;
 };
 
 interface GetColumnHeaderTextProps {

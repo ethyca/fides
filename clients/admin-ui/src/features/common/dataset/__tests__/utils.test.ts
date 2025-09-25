@@ -96,10 +96,10 @@ describe("Dataset Reference Utils", () => {
       );
       const profileNode = result[1];
 
-      expect(profileNode.key).toBe("dataset1:users:profile");
-      expect(profileNode.isLeaf).toBe(false);
-      expect(profileNode.children).toHaveLength(2);
-      expect(profileNode.children![0]).toEqual({
+      expect(profileNode?.key).toBe("dataset1:users:profile");
+      expect(profileNode?.isLeaf).toBe(false);
+      expect(profileNode?.children).toHaveLength(2);
+      expect(profileNode?.children![0]).toEqual({
         key: "dataset1:users:profile.email",
         title: "email",
         fullTitle: "users:profile.email",
@@ -147,7 +147,7 @@ describe("Dataset Reference Utils", () => {
 
       const result = updateTreeNodeChildren(mockTreeData, "node1", newChildren);
 
-      expect(result[0].children).toEqual(newChildren);
+      expect(result[0]?.children).toEqual(newChildren);
       expect(result[1]).toEqual(mockTreeData[1]); // Other nodes unchanged
     });
 
@@ -191,7 +191,7 @@ describe("Dataset Reference Utils", () => {
         newChildren,
       );
 
-      expect(result[0].children![0].children).toEqual(newChildren);
+      expect(result[0]?.children![0]?.children).toEqual(newChildren);
     });
   });
 });

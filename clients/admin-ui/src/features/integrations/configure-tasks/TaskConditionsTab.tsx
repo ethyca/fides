@@ -72,11 +72,11 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
     ) {
       const firstGroup = manualTaskConfig.dependency_conditions[0];
       // Filter to only ConditionLeaf items (not nested groups)
-      const leafConditions = firstGroup.conditions.filter(
+      const leafConditions = firstGroup?.conditions.filter(
         (condition): condition is ConditionLeaf =>
           "field_address" in condition && "operator" in condition,
       );
-      setConditions(leafConditions);
+      setConditions(leafConditions ?? []);
     } else {
       setConditions([]);
     }

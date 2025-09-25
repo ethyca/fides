@@ -54,7 +54,7 @@ const CustomText = ({
   CustomTypographyTextProps) => (
   <Typography.Text
     className={classNames(getTextSizeClassName(size), {
-      [styles.unStyled]: unStyled,
+      [styles.unStyled ?? "unStyled"]: unStyled,
     })}
     {...props}
   />
@@ -69,7 +69,7 @@ const CustomParagraph = ({
   <Typography.Paragraph
     role="paragraph"
     className={classNames(styles.paragraph, getTextSizeClassName(size), {
-      [styles.unStyled]: unStyled,
+      [styles.unStyled ?? "unStyled"]: unStyled,
     })}
     {...props}
   />
@@ -85,8 +85,8 @@ const CustomLink = React.forwardRef<
   <Typography.Link
     ref={ref}
     className={classNames(getTextSizeClassName(size), {
-      [styles.primaryColorLink]: variant === "primary",
-      [styles.unStyled]: unStyled,
+      [styles.primaryColorLink ?? "primaryColorLink"]: variant === "primary",
+      [styles.unStyled ?? "unStyled"]: unStyled,
     })}
     {...props}
   />

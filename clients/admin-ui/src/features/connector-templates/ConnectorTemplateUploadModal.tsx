@@ -41,14 +41,14 @@ const ConnectorTemplateUploadModal = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
-      const fileExtension = file.name.split(".").pop()?.toLowerCase();
+      const fileExtension = file?.name.split(".").pop()?.toLowerCase();
 
       if (fileExtension !== "zip") {
         toast(errorToastParams("Only zip files are allowed."));
         return;
       }
 
-      setUploadedFile(acceptedFiles[0]);
+      setUploadedFile(acceptedFiles[0] ?? null);
     },
   });
 

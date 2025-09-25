@@ -1,17 +1,23 @@
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
+import { ReadOnlyNonEmptyArray } from "~/features/common/utils/array";
 import { FilterTab } from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import { DiffStatus } from "~/types/api";
 
-export enum DiscoveryResultFilterTabs {
-  ACTION_REQUIRED = "action-required",
-  IN_PROGRESS = "in-progress",
-  UNMONITORED = "unmonitored",
-}
+export type DiscoveryResultFilterTab =
+  | "action-required"
+  | "in-progress"
+  | "unmonitored";
 
-const TAB_MAP: Record<DiscoveryResultFilterTabs, FilterTab> = {
-  [DiscoveryResultFilterTabs.ACTION_REQUIRED]: {
+const DISCOVERY_RESULT_FILTER_TABS: ReadOnlyNonEmptyArray<DiscoveryResultFilterTab> =
+  ["action-required", "in-progress", "unmonitored"] as const;
+
+const TAB_MAP: Record<
+  DiscoveryResultFilterTab,
+  FilterTab<DiscoveryResultFilterTab>
+> = {
+  "action-required": {
     label: "Action Required",
-    key: DiscoveryResultFilterTabs.ACTION_REQUIRED,
+    key: "action-required",
     filters: [
       DiffStatus.CLASSIFICATION_ADDITION,
       DiffStatus.CLASSIFICATION_UPDATE,
@@ -21,15 +27,15 @@ const TAB_MAP: Record<DiscoveryResultFilterTabs, FilterTab> = {
       DiffStatus.CLASSIFICATION_UPDATE,
     ],
   },
-  [DiscoveryResultFilterTabs.IN_PROGRESS]: {
+  "in-progress": {
     label: "In progress",
     key: "in-progress",
     filters: [DiffStatus.CLASSIFYING, DiffStatus.CLASSIFICATION_QUEUED],
     childFilters: [DiffStatus.CLASSIFYING, DiffStatus.CLASSIFICATION_QUEUED],
   },
-  [DiscoveryResultFilterTabs.UNMONITORED]: {
+  unmonitored: {
     label: "Unmonitored",
-    key: DiscoveryResultFilterTabs.UNMONITORED,
+    key: "unmonitored",
     filters: [DiffStatus.MUTED],
     childFilters: [],
   },
@@ -37,16 +43,15 @@ const TAB_MAP: Record<DiscoveryResultFilterTabs, FilterTab> = {
 
 const useDiscoveryResultsFilterTabs = () => {
   const { activeTab, onTabChange } = useURLHashedTabs({
-    tabKeys: Object.values(DiscoveryResultFilterTabs),
+    tabKeys: DISCOVERY_RESULT_FILTER_TABS,
   });
 
   return {
     filterTabs: Object.values(TAB_MAP),
     activeTab,
     onTabChange,
-    activeDiffFilters: TAB_MAP[activeTab as DiscoveryResultFilterTabs]?.filters,
-    activeChildDiffFilters:
-      TAB_MAP[activeTab as DiscoveryResultFilterTabs]?.childFilters,
+    activeDiffFilters: TAB_MAP[activeTab].filters,
+    activeChildDiffFilters: TAB_MAP[activeTab].childFilters,
   };
 };
 export default useDiscoveryResultsFilterTabs;

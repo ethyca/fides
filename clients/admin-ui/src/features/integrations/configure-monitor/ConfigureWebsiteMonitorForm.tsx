@@ -67,7 +67,7 @@ const ConfigureWebsiteMonitorForm = ({
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
-    : (router.query.id as string);
+    : router.query.id;
   const initialDate = monitor?.execution_start_date
     ? parseISO(monitor.execution_start_date)
     : Date.now();
@@ -92,7 +92,7 @@ const ConfigureWebsiteMonitorForm = ({
       monitor?.execution_frequency || MonitorFrequency.NOT_SCHEDULED,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     url,
-    connection_config_key: integrationId,
+    connection_config_key: integrationId || "",
     datasource_params: (monitor?.datasource_params as WebsiteMonitorParams) ?? {
       locations: [],
       exclude_domains: [],
@@ -114,16 +114,23 @@ const ConfigureWebsiteMonitorForm = ({
             execution_start_date: undefined,
           };
 
-    const payload: WebsiteMonitorConfig = {
-      ...monitor,
-      ...values,
-      ...executionInfo,
-      key: monitor?.key,
-      classify_params: monitor?.classify_params || {},
-      datasource_params: values.datasource_params || {},
-      connection_config_key: integrationId,
-    };
-    onSubmit(payload);
+    /**
+     * existing tech debt
+     * needs proper validation to handle missing values before submitting with usesr feedback
+     * */
+    if (integrationId) {
+      const payload: WebsiteMonitorConfig = {
+        ...monitor,
+        ...values,
+        ...executionInfo,
+        key: monitor?.key,
+        classify_params: monitor?.classify_params || {},
+        datasource_params: values.datasource_params || {},
+        connection_config_key: integrationId,
+      };
+
+      onSubmit(payload);
+    }
   };
 
   const {

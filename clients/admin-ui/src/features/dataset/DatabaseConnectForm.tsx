@@ -176,7 +176,7 @@ const DatabaseConnectForm = () => {
     );
     const createResult =
       createResults.find((result) => "error" in result) ?? createResults[0];
-    if ("error" in createResult) {
+    if (createResult && "error" in createResult) {
       toast(errorToastParams(createResult.error));
       return;
     }
@@ -184,11 +184,11 @@ const DatabaseConnectForm = () => {
     // Default generate flow:
     if (!values.classify) {
       toast(
-        successToastParams(`Generated ${createResult.dataset.name} dataset`),
+        successToastParams(`Generated ${createResult?.dataset.name} dataset`),
       );
       router.push({
         pathname: DATASET_DETAIL_ROUTE,
-        query: { datasetId: createResult.dataset.fides_key },
+        query: { datasetId: createResult?.dataset.fides_key },
       });
       return;
     }
@@ -204,7 +204,7 @@ const DatabaseConnectForm = () => {
     }
 
     toast(successToastParams(`Generate and classify are now in progress`));
-    dispatch(setActiveDatasetFidesKey(createResult.dataset.fides_key));
+    dispatch(setActiveDatasetFidesKey(createResult?.dataset.fides_key));
     router.push(`/dataset`);
   };
 

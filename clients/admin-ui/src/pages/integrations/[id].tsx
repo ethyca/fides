@@ -17,7 +17,10 @@ import useTestConnection from "~/features/datastore-connections/useTestConnectio
 import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import { useFeatureBasedTabs } from "~/features/integrations/hooks/useFeatureBasedTabs";
+import {
+  FEATURE_TAB_KEYS,
+  useFeatureBasedTabs,
+} from "~/features/integrations/hooks/useFeatureBasedTabs";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
@@ -92,7 +95,7 @@ const IntegrationDetailView: NextPage = () => {
   });
 
   const { activeTab, onTabChange } = useURLHashedTabs({
-    tabKeys: tabs.map((tab) => tab.key),
+    tabKeys: FEATURE_TAB_KEYS,
   });
 
   return (
@@ -119,8 +122,22 @@ const IntegrationDetailView: NextPage = () => {
           {isLoading ? (
             <Spinner />
           ) : (
-            !!connection && (
-              <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
+            !!connection &&
+            !!tabs &&
+            tabs.length > 0 && (
+              <Tabs
+                items={[...tabs]}
+                activeKey={activeTab}
+                onChange={(tabKey) => {
+                  const systemKey = FEATURE_TAB_KEYS.find(
+                    (st) => st === tabKey,
+                  );
+
+                  if (systemKey) {
+                    onTabChange(systemKey);
+                  }
+                }}
+              />
             )
           )}
         </Col>

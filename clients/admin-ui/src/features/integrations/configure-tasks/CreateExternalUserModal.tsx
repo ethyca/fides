@@ -43,13 +43,22 @@ const CreateExternalUserModal = ({
     // Generate username from email address (part before @)
     const username = email.split("@")[0];
     // Sanitize username to only allow alphanumeric characters and underscores
-    return username.replace(/[^a-zA-Z0-9_]/g, "_");
+    return username?.replace(/[^a-zA-Z0-9_]/g, "_");
   };
 
   const handleSubmit = async (values: FormData) => {
     setIsLoading(true);
     try {
       const username = generateUsername(values.email_address);
+
+      /*
+       * existing tech debt
+       * handle missing username before submission
+       */
+      if (!username) {
+        toast(errorToastParams("Username not provided"));
+        return;
+      }
 
       const result = await createExternalUser({
         username,

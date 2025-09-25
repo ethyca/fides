@@ -114,7 +114,7 @@ const ConnectorParametersForm = ({
   );
 
   const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
-    if (item.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+    if (item.allOf?.[0]?.$ref === FIDES_DATASET_REFERENCE) {
       return "Enter dataset.collection.field";
     }
     return undefined;
@@ -131,7 +131,7 @@ const ConnectorParametersForm = ({
       validate={
         data.required?.includes(key) || item.type === "integer"
           ? (value: string) =>
-              validateField(item.title, value, item.allOf?.[0].$ref)
+              validateField(item.title, value, item.allOf?.[0]?.$ref)
           : false
       }
     >
@@ -196,7 +196,7 @@ const ConnectorParametersForm = ({
     // from a dot delimited string to a FidesopsDatasetReference
     const updatedValues = { ...values };
     Object.keys(data.properties).forEach((key) => {
-      if (data.properties[key].allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+      if (data.properties[key]?.allOf?.[0]?.$ref === FIDES_DATASET_REFERENCE) {
         const referencePath = values[key].split(".");
         updatedValues[key] = {
           dataset: referencePath.shift(),

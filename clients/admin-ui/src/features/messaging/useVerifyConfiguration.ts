@@ -24,7 +24,7 @@ export const useVerifyConfiguration = () => {
     if (isErrorWithDetail(error)) {
       errorMsg = error.data.detail;
     } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
+      errorMsg = error.data.detail[0]?.msg ?? errorMsg;
     }
     return errorMsg;
   };

@@ -73,16 +73,26 @@ export const useDatabaseConnector = ({
       if (payload.failed?.length > 0) {
         errorAlert(payload.failed[0].message);
       } else {
-        const params2: DatastoreConnectionSecretsRequest = {
-          connection_key: payload.succeeded[0].key,
-          secrets: {},
-        };
+        const payloadKey = payload.succeeded[0]?.key;
+        const params2: DatastoreConnectionSecretsRequest | undefined =
+          payloadKey
+            ? {
+                connection_key: payloadKey,
+                secrets: {},
+              }
+            : undefined;
         Object.entries(data.properties).forEach((key) => {
-          params2.secrets[key[0]] = values[key[0]];
+          if (params2) {
+            params2.secrets = {
+              ...params2?.secrets,
+              [key[0]]: values[key[0]],
+            };
+          }
         });
-        const payload2 =
-          await updateDatastoreConnectionSecrets(params2).unwrap();
-        if (payload2.test_status === "failed") {
+        const payload2 = params2
+          ? await updateDatastoreConnectionSecrets(params2).unwrap()
+          : undefined;
+        if (payload2?.test_status === "failed") {
           errorAlert(
             <>
               <b>Message:</b> {payload2.msg}

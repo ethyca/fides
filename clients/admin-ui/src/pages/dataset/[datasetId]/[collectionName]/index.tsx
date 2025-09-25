@@ -82,13 +82,19 @@ const FieldsDetailPage: NextPage = () => {
       };
       const collectionIndex = collections.indexOf(collection!);
       const fieldIndex = collection!.fields.indexOf(field!);
-      const updatedDataset = getUpdatedDatasetFromField(
-        dataset!,
-        updatedField,
-        collectionIndex,
-        fieldIndex,
-      );
-      updateDataset(updatedDataset);
+
+      const updatedDataset = dataset
+        ? getUpdatedDatasetFromField(
+            dataset,
+            updatedField,
+            collectionIndex,
+            fieldIndex,
+          )
+        : null;
+
+      if (updatedDataset) {
+        updateDataset(updatedDataset);
+      }
     },
     [collection, collections, dataset, updateDataset],
   );
@@ -115,7 +121,10 @@ const FieldsDetailPage: NextPage = () => {
         collectionIndex,
         fieldIndex,
       );
-      updateDataset(updatedDataset);
+
+      if (updatedDataset) {
+        updateDataset(updatedDataset);
+      }
     },
     [collection, collections, dataset, updateDataset],
   );

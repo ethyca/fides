@@ -11,7 +11,7 @@ export const accordionMultifieldFilter = <T extends Record<string, any>>(
   filterValue: FieldValueToIsSelected,
 ) => {
   const fieldValue = row.original[columnId];
-  return filterValue[fieldValue];
+  return !!filterValue[fieldValue];
 };
 interface AccordionMultifieldFilterProps {
   column: Column<DatamapRow>;

@@ -40,7 +40,7 @@ const RegulationModal = ({
     onClose();
   };
 
-  const continentName = regulations[0].continent;
+  const continentName = regulations[0]?.continent;
 
   return (
     <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>

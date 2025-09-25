@@ -52,8 +52,10 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     isCommentsLoading || isResultsLoading || isManualTasksLoading;
 
   useEffect(() => {
-    if (currentKey && results && results[currentKey]) {
-      setCurrentLogs(results[currentKey]);
+    const currentResult = results?.[currentKey];
+
+    if (currentResult) {
+      setCurrentLogs(currentResult);
     }
   }, [results, currentKey]);
 
@@ -108,13 +110,16 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     const eventItemsWithClickHandler = eventItems.map((item) => {
       if (item.type === "Request update" && item.title && results) {
         const key = item.title;
-        if (results[key]) {
+        const resultItem = results[key];
+
+        if (resultItem) {
           return {
             ...item,
-            onClick: () => showLogs(key, results[key]),
+            onClick: () => showLogs(key, resultItem),
           };
         }
       }
+
       return item;
     });
 

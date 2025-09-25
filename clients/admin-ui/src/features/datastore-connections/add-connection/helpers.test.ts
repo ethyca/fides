@@ -18,7 +18,7 @@ const TEST_CASES = [
     "test.key.with.dots.and spaces and.special.chars(áéíóúÑ)",
     "test_key_with_dots_and_spaces_and_special_chars",
   ],
-];
+] as const;
 
 describe(formatKey.name, () => {
   it("should format the key to lower case and replace spaces and dots with underscores", () => {

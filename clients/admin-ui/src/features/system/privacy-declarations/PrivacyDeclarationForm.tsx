@@ -222,10 +222,13 @@ export const usePrivacyDeclarationForm = ({
           // (which we want to be true) - they both mean the PD has no name
           (pd.name ? pd.name === values.name : true),
       );
-      if (customFieldResource.length > 0) {
+
+      const customFieldResourceId = customFieldResource[0]?.id;
+
+      if (customFieldResourceId) {
         await upsertCustomFields({
           customFieldValues: formCustomFieldValues,
-          fides_key: customFieldResource[0].id,
+          fides_key: customFieldResourceId,
         });
       }
       // Reset state such that isDirty will be checked again before next save

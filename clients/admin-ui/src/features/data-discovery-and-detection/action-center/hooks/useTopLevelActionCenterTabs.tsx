@@ -2,11 +2,14 @@ import { useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
+import { ReadOnlyNonEmptyArray } from "~/features/common/utils/array";
 
-export enum TopLevelActionCenterTabHash {
-  ATTENTION_REQUIRED = "attention-required",
-  IN_PROGRESS = "in-progress",
-}
+type TopLevelActionCenterTabHash = "attention-required" | "in-progress";
+
+export const TOP_LEVEL_ACTION_CENTER_TABS: ReadOnlyNonEmptyArray<TopLevelActionCenterTabHash> =
+  ["attention-required", "in-progress"];
+
+type TopLevelTab = { label: string; hash: TopLevelActionCenterTabHash };
 
 const useTopLevelActionCenterTabs = () => {
   const { flags } = useFeatures();
@@ -14,28 +17,26 @@ const useTopLevelActionCenterTabs = () => {
 
   const availableTabKeys = useMemo(() => {
     return hasFullActionCenter
-      ? Object.values(TopLevelActionCenterTabHash)
-      : [TopLevelActionCenterTabHash.ATTENTION_REQUIRED];
+      ? TOP_LEVEL_ACTION_CENTER_TABS
+      : (["attention-required"] as const);
   }, [hasFullActionCenter]);
 
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: availableTabKeys,
   });
 
-  const tabs = useMemo(() => {
-    const baseTabs = [
+  const tabs: ReadOnlyNonEmptyArray<TopLevelTab> = useMemo(() => {
+    const ActivityTab: TopLevelTab = {
+      label: "Activity",
+      hash: "in-progress",
+    } as const;
+    return [
       {
         label: "Attention required",
-        hash: TopLevelActionCenterTabHash.ATTENTION_REQUIRED,
+        hash: "attention-required",
       },
-    ];
-    if (hasFullActionCenter) {
-      baseTabs.push({
-        label: "Activity",
-        hash: TopLevelActionCenterTabHash.IN_PROGRESS,
-      });
-    }
-    return baseTabs;
+      ...(hasFullActionCenter ? [ActivityTab] : []),
+    ] as const;
   }, [hasFullActionCenter]);
 
   return {

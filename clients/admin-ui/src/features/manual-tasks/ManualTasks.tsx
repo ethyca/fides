@@ -251,7 +251,7 @@ export const ManualTasks = () => {
         pagination={{
           current: pageIndex,
           pageSize,
-          pageSizeOptions: DEFAULT_PAGE_SIZES,
+          pageSizeOptions: [...DEFAULT_PAGE_SIZES],
           total: totalRows || 0,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,

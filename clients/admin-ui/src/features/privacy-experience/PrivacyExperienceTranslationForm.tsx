@@ -112,15 +112,22 @@ const PrivacyExperienceTranslationForm = ({
       ...t,
       is_default: idx === newDefaultIndex,
     }));
-    // move the new default to first in the array
-    newTranslations.unshift(newTranslations.splice(newDefaultIndex, 1)[0]);
+    /**
+     * Tech debt
+     * should use immutable arrays
+     */
+    const splicedTranslation = newTranslations.splice(newDefaultIndex, 1)[0];
+
+    if (splicedTranslation) {
+      newTranslations.unshift(splicedTranslation);
+    }
     setFieldValue("translations", newTranslations);
     onReturnToMainForm();
   };
 
   const handleSaveTranslation = () => {
     if (
-      values.translations![translationIndex].is_default &&
+      values.translations![translationIndex]?.is_default &&
       !initialTranslation.is_default
     ) {
       onOpenNewDefault();

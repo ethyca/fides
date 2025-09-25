@@ -136,10 +136,13 @@ export const usePagination = (config: PaginationConfig = {}) => {
       }));
     } else {
       setQueryState((prevState) => {
-        return {
-          [pageQueryKey]: prevState[pageQueryKey] + 1,
-          [sizeQueryKey]: prevState[sizeQueryKey],
-        };
+        return prevState
+          ? {
+              [pageQueryKey]:
+                (prevState[pageQueryKey] ?? DEFAULT_PAGE_INDEX) + 1,
+              [sizeQueryKey]: prevState[sizeQueryKey],
+            }
+          : {};
       });
     }
   };
@@ -153,7 +156,7 @@ export const usePagination = (config: PaginationConfig = {}) => {
     } else {
       setQueryState((prevState) => {
         return {
-          [pageQueryKey]: prevState[pageQueryKey] - 1,
+          [pageQueryKey]: (prevState[pageQueryKey] ?? DEFAULT_PAGE_INDEX) - 1,
           [sizeQueryKey]: prevState[sizeQueryKey],
         };
       });

@@ -33,7 +33,7 @@ export const AttachmentDisplay = ({ attachments }: AttachmentDisplayProps) => {
             ellipsis={{ tooltip: true }}
             className="!max-w-[200px]"
           >
-            {attachment.file_name}
+            {attachment?.file_name}
           </Typography.Text>
         </div>
       </div>

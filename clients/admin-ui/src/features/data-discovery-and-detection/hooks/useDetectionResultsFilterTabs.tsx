@@ -1,38 +1,44 @@
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
+import { ReadOnlyNonEmptyArray } from "~/features/common/utils/array";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { DiffStatus } from "~/types/api";
 
-export enum DetectionResultFilterTabs {
-  ACTION_REQUIRED = "action-required",
-  MONITORED = "monitored",
-  UNMONITORED = "unmonitored",
-}
+export type DetectionResultFilterTab =
+  | "action-required"
+  | "monitored"
+  | "unmonitored";
 
-export interface FilterTab {
+const DETECTION_RESULT_FILTER_TABS: ReadOnlyNonEmptyArray<DetectionResultFilterTab> =
+  ["action-required", "monitored", "unmonitored"] as const;
+
+export interface FilterTab<T> {
   label: string;
-  key: string;
+  key: T;
   filters: DiffStatus[];
   childFilters: DiffStatus[];
   changeTypeOverride?: ResourceChangeType;
 }
 
-const tabMap: Record<DetectionResultFilterTabs, FilterTab> = {
-  [DetectionResultFilterTabs.ACTION_REQUIRED]: {
+const TAB_MAP: Record<
+  DetectionResultFilterTab,
+  FilterTab<DetectionResultFilterTab>
+> = {
+  "action-required": {
     label: "Action Required",
-    key: DetectionResultFilterTabs.ACTION_REQUIRED,
+    key: "action-required",
     filters: [DiffStatus.ADDITION, DiffStatus.REMOVAL],
     childFilters: [DiffStatus.ADDITION, DiffStatus.REMOVAL],
   },
-  [DetectionResultFilterTabs.MONITORED]: {
+  monitored: {
     label: "Monitored",
-    key: DetectionResultFilterTabs.MONITORED,
+    key: "monitored",
     filters: [DiffStatus.MONITORED],
     childFilters: [],
     changeTypeOverride: ResourceChangeType.MONITORED,
   },
-  [DetectionResultFilterTabs.UNMONITORED]: {
+  unmonitored: {
     label: "Unmonitored",
-    key: DetectionResultFilterTabs.UNMONITORED,
+    key: "unmonitored",
     filters: [DiffStatus.MUTED],
     childFilters: [],
     changeTypeOverride: ResourceChangeType.MUTED,
@@ -41,18 +47,16 @@ const tabMap: Record<DetectionResultFilterTabs, FilterTab> = {
 
 const useDetectionResultsFilterTabs = () => {
   const { activeTab, onTabChange } = useURLHashedTabs({
-    tabKeys: Object.values(DetectionResultFilterTabs),
+    tabKeys: DETECTION_RESULT_FILTER_TABS,
   });
 
   return {
-    filterTabs: Object.values(tabMap),
+    filterTabs: Object.values(TAB_MAP),
     activeTabKey: activeTab,
     onTabChange,
-    activeDiffFilters: tabMap[activeTab as DetectionResultFilterTabs]?.filters,
-    activeChildDiffFilters:
-      tabMap[activeTab as DetectionResultFilterTabs]?.childFilters,
-    activeChangeTypeOverride:
-      tabMap[activeTab as DetectionResultFilterTabs]?.changeTypeOverride,
+    activeDiffFilters: TAB_MAP[activeTab].filters,
+    activeChildDiffFilters: TAB_MAP[activeTab].childFilters,
+    activeChangeTypeOverride: TAB_MAP[activeTab].changeTypeOverride,
   };
 };
 export default useDetectionResultsFilterTabs;

@@ -19,10 +19,17 @@ export const isValidVendorIdFormat = (value: string): boolean => {
 
   // Check if it's a range (e.g., "15-300")
   const rangeMatch = value.match(/^(\d+)-(\d+)$/);
+
   if (rangeMatch) {
-    const start = parseInt(rangeMatch[1], 10);
-    const end = parseInt(rangeMatch[2], 10);
-    return start < end; // Start must be less than end
+    // Extract optional string values
+    const [, startString, endString] = rangeMatch;
+
+    if (!!startString && !!endString) {
+      const start = parseInt(startString, 10);
+      const end = parseInt(endString, 10);
+
+      return start < end; // Start must be less than end
+    }
   }
 
   return false;
@@ -39,10 +46,15 @@ export const parseVendorIdToRange = (vendorId: string): VendorRange | null => {
   // Parse range (e.g., "15-300")
   const rangeMatch = vendorId.match(/^(\d+)-(\d+)$/);
   if (rangeMatch) {
-    return {
-      start: parseInt(rangeMatch[1], 10),
-      end: parseInt(rangeMatch[2], 10),
-    };
+    // Extract optional string values
+    const [, startString, endString] = rangeMatch;
+
+    if (!!startString && !!endString) {
+      return {
+        start: parseInt(startString, 10),
+        end: parseInt(endString, 10),
+      };
+    }
   }
 
   // Return null for invalid formats instead of throwing an error
@@ -225,14 +237,20 @@ export const convertVendorIdToRangeEntry = (
 
   // Parse range (e.g., "15-300")
   const rangeMatch = vendorId.match(/^(\d+)-(\d+)$/);
+
   if (rangeMatch) {
-    const start = parseInt(rangeMatch[1], 10);
-    const end = parseInt(rangeMatch[2], 10);
-    if (start < end) {
-      return {
-        start_vendor_id: start,
-        end_vendor_id: end,
-      };
+    const [, startString, endString] = rangeMatch;
+
+    if (!!startString && !!endString) {
+      const start = parseInt(startString, 10);
+      const end = parseInt(endString, 10);
+
+      if (start < end) {
+        return {
+          start_vendor_id: start,
+          end_vendor_id: end,
+        };
+      }
     }
   }
 

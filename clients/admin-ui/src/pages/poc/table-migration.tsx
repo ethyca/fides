@@ -313,7 +313,7 @@ export const TableMigrationPOC = () => {
         pagination={{
           current: pageIndex,
           pageSize,
-          pageSizeOptions: DEFAULT_PAGE_SIZES,
+          pageSizeOptions: [...DEFAULT_PAGE_SIZES],
           total: totalRows,
         }}
         onChange={handleTableChange}

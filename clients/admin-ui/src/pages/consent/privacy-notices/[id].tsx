@@ -13,12 +13,9 @@ import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 const PrivacyNoticeDetailPage = () => {
   const router = useRouter();
 
-  let noticeId = "";
-  if (router.query.id) {
-    noticeId = Array.isArray(router.query.id)
-      ? router.query.id[0]
-      : router.query.id;
-  }
+  const noticeId =
+    (Array.isArray(router.query.id) ? router.query.id[0] : router.query.id) ??
+    "";
 
   const { data, isLoading } = useGetPrivacyNoticeByIdQuery(noticeId);
   const { data: availableTranslations } =

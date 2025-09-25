@@ -88,7 +88,7 @@ export const DiscoveredSystemActionsCell = ({
               ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
               : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
             async () => {
-              await onTabChange(ActionCenterTabHash.IGNORED);
+              await onTabChange("ignored");
             },
           ),
         ),

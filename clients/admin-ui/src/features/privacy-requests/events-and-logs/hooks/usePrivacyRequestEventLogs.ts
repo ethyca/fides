@@ -30,7 +30,13 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
         return {
           author: "Fides",
           title: key,
-          date: new Date(logs[0].updated_at),
+          /**
+           * Tech Debt
+           * proper handling of scenario in which a date cannot be accurately constructed
+           */
+          date: logs[0]?.updated_at
+            ? new Date(logs[0]?.updated_at)
+            : new Date(),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
           showViewLog:
             hasUnresolvedErrorStatus ||

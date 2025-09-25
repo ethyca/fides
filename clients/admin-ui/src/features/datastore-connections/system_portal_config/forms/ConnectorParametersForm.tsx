@@ -116,7 +116,7 @@ export const ConnectorParametersForm = ({
       // to convert them from objects to dot-delimited strings
       if (secretsSchema?.properties) {
         Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
-          if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+          if (schema.allOf?.[0]?.$ref === FIDES_DATASET_REFERENCE) {
             const datasetReference = initialValues.secrets[key];
             if (datasetReference) {
               initialValues.secrets[key] =

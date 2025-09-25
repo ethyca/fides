@@ -18,7 +18,7 @@ const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
 
   const bestClassifiedCategory = resource.classifications?.length
-    ? resource.classifications[0].label
+    ? resource.classifications[0]?.label
     : null;
 
   const userCategories = resource.user_assigned_data_categories ?? [];

@@ -36,7 +36,7 @@ const DataUseBlock = ({
 
   const detailedDataUseOptions = allDataUseOptions.filter(
     (o) =>
-      o.value.split(".")[0] === values.privacy_declarations[index].consent_use,
+      o.value.split(".")[0] === values.privacy_declarations[index]?.consent_use,
   );
 
   return (
@@ -64,7 +64,7 @@ const DataUseBlock = ({
         name={`privacy_declarations.${index}.data_use`}
         options={detailedDataUseOptions}
         layout="stacked"
-        disabled={!values.privacy_declarations[index].consent_use || disabled}
+        disabled={!values.privacy_declarations[index]?.consent_use || disabled}
       />
       <ControlledSelect
         mode="tags"

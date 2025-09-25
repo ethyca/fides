@@ -12,12 +12,8 @@ import TestLogsSection from "~/features/test-datasets/TestLogsSection";
 import TestResultsSection from "~/features/test-datasets/TestRunnerSection";
 
 // Helper functions
-const getSystemId = (query: { id?: string | string[] }): string => {
-  if (!query.id) {
-    return "";
-  }
-  return Array.isArray(query.id) ? query.id[0] : query.id;
-};
+const getSystemId = (query: { id?: string | string[] }): string =>
+  (Array.isArray(query.id) ? query.id[0] : query.id) ?? "";
 
 const TestDatasetPage: NextPage = () => {
   const router = useRouter();

@@ -24,7 +24,7 @@ import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detect
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import useTopLevelActionCenterTabs, {
-  TopLevelActionCenterTabHash,
+  TOP_LEVEL_ACTION_CENTER_TABS,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { ConnectionType } from "~/types/api";
@@ -165,7 +165,7 @@ const ActionCenterPage = () => {
         }))}
         selectedKeys={[activeTab]}
         onClick={async (menuInfo) => {
-          const validKey = Object.values(TopLevelActionCenterTabHash).find(
+          const validKey = TOP_LEVEL_ACTION_CENTER_TABS.find(
             (value) => value === menuInfo.key,
           );
           if (validKey) {
@@ -176,7 +176,7 @@ const ActionCenterPage = () => {
         data-testid="action-center-tabs"
       />
 
-      {activeTab === TopLevelActionCenterTabHash.IN_PROGRESS ? (
+      {activeTab === "in-progress" ? (
         <InProgressMonitorTasksList />
       ) : (
         <>

@@ -184,15 +184,20 @@ const useSystemsTable = () => {
         return;
       }
       const currentGroup = systemGroupMap[groupKey];
-      const result = await updateSystemGroup({
-        ...currentGroup,
-        systems: uniq([
-          ...(currentGroup.systems ?? []),
-          ...selectedRowKeys.map((key) => key.toString()),
-        ]),
-      });
-      if (isErrorResult(result)) {
-        messageApi.error(getErrorMessage(result.error));
+      const result = currentGroup
+        ? await updateSystemGroup({
+            ...currentGroup,
+            systems: uniq([
+              ...(currentGroup?.systems ?? []),
+              ...selectedRowKeys.map((key) => key.toString()),
+            ]),
+          })
+        : null;
+      if (!result || isErrorResult(result)) {
+        const errorMessage = result?.error
+          ? getErrorMessage(result?.error)
+          : "Error message could not be found";
+        messageApi.error(errorMessage);
       } else {
         messageApi.success(
           `${selectedRowKeys?.length} systems added to group '${groupKey}'`,
@@ -241,7 +246,10 @@ const useSystemsTable = () => {
           <SystemGroupCell
             selectedGroups={
               systemGroups
-                ?.map((key) => systemGroupMap?.[key])
+                ?.flatMap((key) => {
+                  const systemGroup = systemGroupMap?.[key];
+                  return systemGroup ? [systemGroup] : [];
+                })
                 .filter((group) => !!group) ?? []
             }
             allGroups={allSystemGroups!}

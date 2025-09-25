@@ -55,9 +55,13 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
               key={d}
               data-testid={`data-use-${d}`}
               color="white"
-              onClick={() =>
-                handleOpenEditForm(system.privacy_declarations[idx])
-              }
+              onClick={() => {
+                const declaration = system.privacy_declarations[idx];
+
+                if (declaration) {
+                  handleOpenEditForm(declaration);
+                }
+              }}
               closable
               onClose={() => deleteDeclarationByDataUse(d)}
               closeButtonLabel="Remove data use"

@@ -569,7 +569,7 @@ const normalizeConsentValues = ({
         key
       ];
       normalizedConsentValues[key] = transformConsentToFidesUserPreference(
-        value,
+        !!value,
         consentMechanism,
       );
     }

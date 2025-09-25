@@ -20,9 +20,7 @@ import {
 } from "~/features/common/table/v2";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
-import useDiscoveryResultsFilterTabs, {
-  DiscoveryResultFilterTabs,
-} from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
+import useDiscoveryResultsFilterTabs from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import { IndicatorLegend } from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
@@ -180,7 +178,13 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           label: tab.label,
         }))}
         activeKey={activeTab}
-        onChange={(tab) => onTabChange(tab as DiscoveryResultFilterTabs)}
+        onChange={(tab) => {
+          const matchedTab = filterTabs.find((ft) => ft.key === tab);
+
+          if (matchedTab) {
+            onTabChange(matchedTab.key);
+          }
+        }}
       />
       <TableActionBar>
         <Flex gap={6} align="center">

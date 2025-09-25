@@ -90,8 +90,8 @@ export const parseCronExpression = (
   const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
 
   // Validate minute and hour
-  const minuteNum = parseInt(minute, 10);
-  const hourNum = parseInt(hour, 10);
+  const minuteNum = minute ? parseInt(minute, 10) : NaN;
+  const hourNum = hour ? parseInt(hour, 10) : NaN;
 
   if (
     Number.isNaN(minuteNum) ||
@@ -108,7 +108,7 @@ export const parseCronExpression = (
 
   // Check for monthly pattern: specific day of month
   if (month === "*" && dayOfWeek === "*" && dayOfMonth !== "*") {
-    const dayNum = parseInt(dayOfMonth, 10);
+    const dayNum = dayOfMonth ? parseInt(dayOfMonth, 10) : NaN;
     if (Number.isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
       return null;
     }
@@ -129,7 +129,7 @@ export const parseCronExpression = (
 
   // Check for weekly pattern: specific day of week
   if (dayOfMonth === "*" && month === "*" && dayOfWeek !== "*") {
-    const dayNum = parseInt(dayOfWeek, 10);
+    const dayNum = dayOfWeek ? parseInt(dayOfWeek, 10) : NaN;
     if (Number.isNaN(dayNum) || dayNum < 0 || dayNum > 6) {
       return null;
     }

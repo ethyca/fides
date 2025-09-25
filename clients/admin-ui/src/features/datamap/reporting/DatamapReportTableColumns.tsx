@@ -71,7 +71,7 @@ const getCustomFieldColumns = (
   // Determine custom field keys by
   // 1. If they aren't in our expected, static, columns
   // 2. If they start with one of the custom field prefixes
-  const datamapKeys = datamapReport?.items?.length
+  const datamapKeys = datamapReport?.items?.[0]
     ? Object.keys(datamapReport.items[0])
     : [];
   const defaultKeys = Object.values(COLUMN_IDS);
@@ -148,7 +148,7 @@ export const getDatamapReportColumns = ({
     if (!groupKeys || groupKeys.length === 0) {
       return undefined;
     }
-    if (groupKeys.length === 1) {
+    if (groupKeys.length === 1 && !!groupKeys[0]) {
       return getSystemGroupColor(groupKeys[0]);
     }
     // For multiple groups, use white as neutral color (consistent with other columns)

@@ -186,7 +186,7 @@ const ManualProcessingList = ({
           } else {
             errorAlert(
               `An error occurred while loading manual input data for ${
-                data![index].connection_config.name
+                data![index]?.connection_config.name
               }`,
             );
           }

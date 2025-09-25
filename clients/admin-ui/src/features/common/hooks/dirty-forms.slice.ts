@@ -48,10 +48,9 @@ export const dirtyFormsSlice = createSlice({
       draftState,
       { payload }: PayloadAction<Pick<FormState, "id" | "isDirty">>,
     ) {
-      const idx = draftState.forms.map((f) => f.id).indexOf(payload.id);
-      if (idx > -1) {
-        draftState.forms[idx].isDirty = payload.isDirty;
-      }
+      draftState.forms = draftState.forms.map((form) =>
+        form.id === payload.id ? { ...form, isDirty: payload.isDirty } : form,
+      );
     },
     openModal(draftState) {
       draftState.isModalOpen = true;
