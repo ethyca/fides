@@ -342,7 +342,8 @@ saas_config:
               "last_name": "<custom_privacy_request_fields.last_name>",
               "order_id": "<custom_privacy_request_fields.order_id?>",
               "subscriber_ids": <custom_privacy_request_fields.subscriber_ids>,
-              "account_ids": <custom_privacy_request_fields.account_ids>
+              "account_ids": <custom_privacy_request_fields.account_ids>,
+              "location_data": "<privacy_request_object.location>"
             }
         update:
           method: POST
@@ -351,6 +352,9 @@ saas_config:
             {
               "user_info": {
                 <custom_privacy_request_fields>
+              }, 
+              "privacy_request": { 
+                <privacy_request_object>
               }
             }
     - name: skipped_collection
