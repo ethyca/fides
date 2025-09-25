@@ -13,16 +13,18 @@ const ConsentModal = ({
   onVendorPageClick,
   renderModalFooter,
   headerContent,
+  isVendorAssetDisclosureView,
 }: {
   attributes: A11yDialogAttributes;
   children: ComponentChildren;
   dismissable: boolean | undefined;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
-  headerContent?: {
+  headerContent: {
     title: string;
     description: string;
   };
+  isVendorAssetDisclosureView?: boolean;
 }) => {
   const { container, dialog, title, closeButton } = attributes;
   const { setTrigger } = useEvent();
@@ -57,6 +59,7 @@ const ConsentModal = ({
           renderModalFooter={renderModalFooter}
           onVendorPageClick={onVendorPageClick}
           headerContent={headerContent}
+          isVendorAssetDisclosureView={isVendorAssetDisclosureView}
         >
           {children}
         </ConsentContent>

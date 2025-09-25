@@ -635,7 +635,6 @@ export const PrivacyExperienceForm = ({
           ]}
         />
       </Collapse>
-      <Divider />
       <CustomSwitch
         name="auto_subdomain_cookie_deletion"
         id="auto_subdomain_cookie_deletion"

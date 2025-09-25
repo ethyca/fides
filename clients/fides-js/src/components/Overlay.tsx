@@ -21,6 +21,7 @@ import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
 import { LiveRegion } from "./LiveRegion";
+import { useI18n } from "../lib/i18n/i18n-context";
 
 interface RenderBannerProps {
   attributes: A11yDialogAttributes;
@@ -51,6 +52,7 @@ interface Props {
     title: string;
     description: string;
   };
+  isVendorAssetDisclosureView?: boolean;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -66,6 +68,7 @@ const Overlay: FunctionComponent<Props> = ({
   onVendorPageClick,
   isUiBlocking,
   headerContent,
+  isVendorAssetDisclosureView,
 }: Props) => {
   const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
@@ -76,6 +79,15 @@ const Overlay: FunctionComponent<Props> = ({
   const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
   const modalLinkRef = useRef<HTMLElement | null>(null);
   const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
+
+  const { i18n } = useI18n();
+  const defaultTitle = i18n.t("exp.title");
+  const defaultDescription = i18n.t("exp.description");
+
+  const effectiveHeaderContent = headerContent ?? {
+    title: defaultTitle,
+    description: defaultDescription,
+  };
 
   useEffect(() => {
     if (disableBanner === null) {
@@ -258,7 +270,8 @@ const Overlay: FunctionComponent<Props> = ({
               })
             }
             onVendorPageClick={onVendorPageClick}
-            headerContent={headerContent}
+            headerContent={effectiveHeaderContent}
+            isVendorAssetDisclosureView={isVendorAssetDisclosureView}
           >
             {renderModalContent()}
           </ConsentContent>
@@ -275,7 +288,8 @@ const Overlay: FunctionComponent<Props> = ({
           attributes={modalDialogAttributes}
           dismissable={experience.experience_config.dismissable}
           onVendorPageClick={onVendorPageClick}
-          headerContent={headerContent}
+          headerContent={effectiveHeaderContent}
+          isVendorAssetDisclosureView={isVendorAssetDisclosureView}
           renderModalFooter={() =>
             renderModalFooter
               ? renderModalFooter({

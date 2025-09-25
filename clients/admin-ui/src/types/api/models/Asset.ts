@@ -4,6 +4,14 @@
 
 import type { ConsentStatus } from "./ConsentStatus";
 
+export enum AssetType {
+  COOKIE = "cookie",
+  BROWSER_REQUEST = "browser_request",
+  IFRAME = "iframe",
+  JAVASCRIPT_TAG = "javascript_tag",
+  IMAGE = "image",
+}
+
 /**
  * Schema for asset responses
  */

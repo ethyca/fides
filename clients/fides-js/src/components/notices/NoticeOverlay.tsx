@@ -396,6 +396,7 @@ const NoticeOverlay = () => {
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
+      isVendorAssetDisclosureView={isVendorAssetDisclosureView}
       headerContent={
         isVendorAssetDisclosureView && selectedNotice
           ? {
