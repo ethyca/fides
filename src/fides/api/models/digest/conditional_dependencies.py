@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String, text
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -106,6 +106,17 @@ class DigestCondition(ConditionalDependencyBase):
         back_populates="parent",
         cascade="all, delete-orphan",
         foreign_keys=[parent_id],
+    )
+
+    # Ensure only one root condition per digest_condition_type per digest_config
+    __table_args__ = (
+        Index(
+            "ix_digest_condition_unique_root_per_type",
+            "digest_config_id",
+            "digest_condition_type",
+            unique=True,
+            postgresql_where=text("parent_id IS NULL"),
+        ),
     )
 
     @staticmethod
