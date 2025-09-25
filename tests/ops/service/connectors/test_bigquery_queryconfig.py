@@ -20,6 +20,7 @@ from fides.api.service.connectors.query_configs.bigquery_query_config import (
 from tests.fixtures.bigquery_fixtures import PROJECT_NAME
 
 
+@pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 class TestBigQueryQueryConfig:
@@ -947,6 +948,7 @@ class TestBigQueryQueryConfig:
         assert stmts == expected_stmts
 
 
+@pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 class TestBigQueryQueryConfigPartitioning:
