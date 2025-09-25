@@ -382,8 +382,6 @@ const useSystemsTable = () => {
     router,
   ]);
 
-  console.log(columns);
-
   return {
     // table
     tableProps,
