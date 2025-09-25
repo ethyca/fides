@@ -1,20 +1,47 @@
-from typing import TYPE_CHECKING, Any, Dict, List
+from io import BytesIO
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from uuid import uuid4
 
+import pydash
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import AwaitingAsyncProcessing, PrivacyRequestError
-from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
+from fides.api.common_exceptions import (
+    AwaitingAsyncProcessing,
+    FidesopsException,
+    PrivacyRequestError,
+)
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+    AttachmentType,
+)
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import RequestTask
+from fides.api.models.privacy_request.request_task import (
+    AsyncTaskType,
+    RequestTask,
+    RequestTaskSubRequest,
+)
+from fides.api.models.storage import get_active_default_storage_config
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.async_polling_configuration import (
     PollingAsyncDSRConfiguration,
+)
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.service.async_dsr.handlers.polling_request_handler import (
+    PollingRequestHandler,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.utils import (
     AsyncPhase,
     get_async_phase,
     get_connection_config_from_task,
-    handle_polling_initial_request,
 )
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
@@ -98,6 +125,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             )
             return 0
 
+    # Private helper methods
+
     def _initial_request_access(
         self,
         request_task: RequestTask,
@@ -119,9 +148,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         read_requests = query_config.get_read_requests_by_identity()
 
         # Filter to get only the requests that need async processing
-        async_requests_to_process = [
-            req for req in read_requests if req.async_config and request_task.id
-        ]
+        async_requests_to_process = [req for req in read_requests if req.async_config]
 
         # If there are no async requests, we shouldn't be in this handler.
         if not async_requests_to_process:
@@ -143,15 +170,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"Creating initial polling sub-requests for task {request_task.id}"
             )
 
-            handle_polling_initial_request(
-                privacy_request,
+            self._handle_polling_initial_request(
                 request_task,
                 query_config,
-                self,  # Pass self as the strategy
                 read_request,
                 input_data,
                 policy,
-                self.session,
                 connector.create_client(),
             )
             # Refresh the request_task to see newly created sub-requests
@@ -258,18 +282,22 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         # Create connector from request_task
         connection_config = get_connection_config_from_task(self.session, request_task)
+
         from fides.api.service.connectors.saas_connector import SaaSConnector
 
         connector = SaaSConnector(connection_config)
 
-        # Use internal orchestration (moved from PollingContinuationHandler)
         polling_complete = self._execute_polling_requests(
             request_task, query_config, connector
         )
 
         if not polling_complete:
             # Polling still in progress - raise exception to keep task in polling status
-            raise AwaitingAsyncProcessing("Polling in progress")
+            connection_name = connector.configuration.name or connector.saas_config.name
+            message = (
+                f"Waiting for next scheduled check of {connection_name} access results."
+            )
+            raise AwaitingAsyncProcessing(message)
 
         # Polling is complete - return the accumulated data
         return request_task.get_access_data()
@@ -292,11 +320,217 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         )
 
         if not polling_complete:
-            # Polling still in progress - raise exception to keep task in polling status
-            raise AwaitingAsyncProcessing("Polling in progress")
+            connection_name = connector.configuration.name or connector.saas_config.name
+            message = f"Waiting for next scheduled check of {connection_name} erasure results."
+            raise AwaitingAsyncProcessing(message)
 
         # Polling is complete - return the accumulated count
         return request_task.rows_masked or 0
+
+    def _handle_access_result(
+        self,
+        db,
+        polling_result,
+        request_task,
+        rows_accumulator: List[Row],
+    ) -> None:
+        """Handle result for access requests."""
+        if polling_result.result_type == "rows":
+            # Structured data - add to rows collection
+            if isinstance(polling_result.data, list):
+                rows_accumulator.extend(polling_result.data)
+            else:
+                logger.warning(
+                    f"Expected list for rows result, got {type(polling_result.data)}"
+                )
+
+        elif polling_result.result_type == "attachment":
+            # File attachment - store and link to request task
+            try:
+                attachment_id = self._store_polling_attachment(
+                    request_task,
+                    attachment_data=polling_result.data,
+                    filename=polling_result.metadata.get(
+                        "filename", f"attachment_{str(uuid4())[:8]}"
+                    ),
+                )
+
+                # Add attachment metadata to collection data
+                _add_attachment_metadata_to_rows(db, attachment_id, rows_accumulator)
+
+            except Exception as exc:
+                raise PrivacyRequestError(f"Attachment storage failed: {exc}")
+        else:
+            raise PrivacyRequestError(
+                f"Unsupported result type: {polling_result.result_type}"
+            )
+
+    def _save_polling_results(
+        self,
+        polling_task: RequestTask,
+        rows: Optional[List[Row]],
+        affected_records: Optional[List[int]],
+    ) -> None:
+        """Save polling results to the request task."""
+        if rows is not None:
+            # Access request - save rows
+            existing_data = polling_task.access_data or []
+            existing_data.extend(rows)
+            polling_task.access_data = existing_data
+            polling_task.save(self.session)
+        elif affected_records is not None:
+            # Erasure request - accumulate affected records count
+            current_count = polling_task.rows_masked or 0
+            polling_task.rows_masked = current_count + sum(affected_records)
+            polling_task.save(self.session)
+
+    def _store_polling_attachment(
+        self,
+        request_task: RequestTask,
+        attachment_data: bytes,
+        filename: str,
+    ) -> str:
+        """
+        Store polling attachment data and return attachment ID.
+
+        This utility function handles the storage of attachment data
+        from polling results and creates the necessary database records.
+        """
+        try:
+            # Get active storage config
+            storage_config = get_active_default_storage_config(self.session)
+            if not storage_config:
+                raise PrivacyRequestError("No active storage configuration found")
+
+            # Create attachment record and upload to storage
+            attachment = Attachment.create_and_upload(
+                db=self.session,
+                data={
+                    "file_name": filename,
+                    "attachment_type": AttachmentType.include_with_access_package,
+                    "storage_key": storage_config.key,
+                },
+                attachment_file=BytesIO(attachment_data),
+            )
+
+            # Create attachment references
+            AttachmentReference.create(
+                db=self.session,
+                data={
+                    "attachment_id": attachment.id,
+                    "reference_id": request_task.id,
+                    "reference_type": AttachmentReferenceType.request_task,
+                },
+            )
+
+            AttachmentReference.create(
+                db=self.session,
+                data={
+                    "attachment_id": attachment.id,
+                    "reference_id": request_task.privacy_request.id,
+                    "reference_type": AttachmentReferenceType.privacy_request,
+                },
+            )
+
+            logger.info(
+                f"Successfully stored polling attachment {attachment.id} for request_task {request_task.id}"
+            )
+            return attachment.id
+
+        except Exception as e:
+            logger.error(f"Failed to store polling attachment: {e}")
+            raise PrivacyRequestError(f"Failed to store polling attachment: {e}")
+
+    def _handle_polling_initial_request(
+        self,
+        request_task: RequestTask,
+        query_config: "SaaSQueryConfig",
+        read_request: ReadSaaSRequest,
+        input_data: Dict[str, Any],
+        policy: Policy,
+        client: "AuthenticatedClient",
+    ) -> None:
+        """
+        Handles the setup for asynchronous initial requests.
+        The main read request serves as the initial request.
+        """
+        query_config.action = "Polling - start"
+        prepared_requests: List[Tuple[SaaSRequestParams, Dict[str, Any]]] = (
+            query_config.generate_requests(input_data, policy, read_request)
+        )
+        logger.info(f"Prepared requests: {len(prepared_requests)}")
+        # Execute the main read request as the initial request and extract correlation_id
+
+        for next_request, param_value_map in prepared_requests:
+            logger.info(f"Executing initial request: {next_request}")
+            response = client.send(next_request)
+
+            if not response.ok:
+                raise FidesopsException(
+                    f"Initial async request failed with status code {response.status_code}: {response.text}"
+                )
+
+            # Extract correlation_id from response using correlation_id_path
+            try:
+                response_data = response.json()
+                correlation_id = pydash.get(
+                    response_data, read_request.correlation_id_path
+                )
+                if not correlation_id:
+                    raise FidesopsException(
+                        f"Could not extract correlation ID from response using path: {read_request.correlation_id_path}"
+                    )
+            except ValueError as exc:
+                raise FidesopsException(
+                    f"Invalid JSON response from initial request: {exc}"
+                )
+
+            param_value_map["correlation_id"] = str(correlation_id)
+            # Use the provided session for sub-request creation
+            logger.warning(f"About to create sub-request for task {request_task.id}")
+            self._save_sub_request_data(request_task, param_value_map)
+            logger.warning(f"Created sub-request for task {request_task.id}")
+
+            # Verify it was created
+            final_count = (
+                self.session.query(RequestTaskSubRequest)
+                .filter(RequestTaskSubRequest.request_task_id == request_task.id)
+                .count()
+            )
+            logger.warning(
+                f"Sub-request count after creation for task {request_task.id}: {final_count}"
+            )
+
+    def _save_sub_request_data(
+        self,
+        request_task: RequestTask,
+        param_values_map: Dict[str, Any],
+    ) -> None:
+        """
+        Saves the request data for future use in the request task on async requests.
+        """
+        # Create new sub-request entry
+        sub_request = RequestTaskSubRequest.create(
+            self.session,
+            data={
+                "request_task_id": request_task.id,
+                "param_values": param_values_map,
+                "sub_request_status": "pending",
+            },
+        )
+        logger.warning(
+            f"Created sub-request {sub_request.id} for task '{request_task.id}': {param_values_map}"
+        )
+
+        # Verify it was created by querying immediately
+        count_after_create = (
+            self.session.query(RequestTaskSubRequest)
+            .filter(RequestTaskSubRequest.request_task_id == request_task.id)
+            .count()
+        )
+        logger.warning(
+            f"Sub-request count after creation for task {request_task.id}: {count_after_create}"
+        )
 
     def _execute_polling_requests(
         self,
@@ -313,14 +547,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         Returns:
             bool: True if all polling is complete, False if still in progress
         """
-        from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
-        from fides.api.models.worker_task import ExecutionLogStatus
-        from fides.api.schemas.policy import ActionType
-        from fides.api.service.async_dsr.handlers.polling_request_handler import (
-            PollingRequestHandler,
-        )
-        from fides.api.service.async_dsr.utils import save_polling_results
-        from fides.api.util.collection_util import Row
 
         # Get appropriate requests based on action type
         if polling_task.action_type == ActionType.access:
@@ -437,10 +663,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                                 client, param_values
                             )
 
-                            from fides.api.service.async_dsr.handlers.polling_response_handler import (
-                                PollingResponseProcessor,
-                            )
-
                             # We need to reconstruct the request path for processing
                             from fides.api.util.saas_util import map_param_values
 
@@ -451,10 +673,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                                 param_values,
                             )
 
-                            polling_result = PollingResponseProcessor.process_response(
-                                response,
-                                prepared_result_request.path or "",
-                                self.result_request.result_path,
+                            polling_result = (
+                                PollingResponseProcessor.process_result_response(
+                                    response,
+                                    prepared_result_request.path or "",
+                                    self.result_request.result_path,
+                                )
                             )
 
                         # Handle results based on action type
@@ -463,13 +687,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                                 self.session,
                                 polling_result,
                                 polling_task,
-                                polling_task.privacy_request,
                                 rows_accumulator,
                             )
                         elif polling_task.action_type == ActionType.erasure:
-                            self._handle_erasure_result(
+                            _handle_erasure_result(
                                 polling_result,
-                                polling_task,
                                 affected_records_accumulator,
                             )
                     else:
@@ -480,14 +702,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         # Check if all sub-requests are complete
         all_sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
         completed_sub_requests = [
-            sr
-            for sr in all_sub_requests
-            if sr.sub_request_status == ExecutionLogStatus.complete.value
+            sub_request
+            for sub_request in all_sub_requests
+            if sub_request.sub_request_status == ExecutionLogStatus.complete.value
         ]
 
         # Save results to polling_task (RequestTask)
-        save_polling_results(
-            self.session, polling_task, rows_accumulator, affected_records_accumulator
+        self._save_polling_results(
+            polling_task, rows_accumulator, affected_records_accumulator
         )
 
         if len(completed_sub_requests) < len(all_sub_requests):
@@ -502,116 +724,67 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         )
         return True  # Polling is complete
 
-    def _handle_access_result(
-        self,
-        db,
-        polling_result,
-        request_task,
-        privacy_request,
-        rows_accumulator: List[Row],
-    ) -> None:
-        """Handle result for access requests."""
-        if polling_result.result_type == "rows":
-            # Structured data - add to rows collection
-            if isinstance(polling_result.data, list):
-                rows_accumulator.extend(polling_result.data)
-            else:
-                logger.warning(
-                    f"Expected list for rows result, got {type(polling_result.data)}"
-                )
+# Private helper functions
 
-        elif polling_result.result_type == "attachment":
-            # File attachment - store and link to request task
-            try:
-                from fides.api.service.async_dsr.utils import store_polling_attachment
-
-                attachment_id = store_polling_attachment(
-                    db=db,
-                    attachment_data=polling_result.data,
-                    filename=polling_result.metadata.get("filename", "polling_result"),
-                    content_type=polling_result.metadata.get(
-                        "content_type", "application/octet-stream"
-                    ),
-                    request_task=request_task,
-                    privacy_request=privacy_request,
-                )
-
-                # Add attachment metadata to collection data
-                self._add_attachment_metadata_to_rows(
-                    db, attachment_id, rows_accumulator
-                )
-
-            except Exception as e:
-                from fides.api.common_exceptions import PrivacyRequestError
-
-                raise PrivacyRequestError(f"Attachment storage failed: {e}")
+def _handle_erasure_result(
+    polling_result, affected_records_accumulator: List[int]
+) -> None:
+    """Handle result for erasure requests."""
+    if polling_result.result_type == "rows":
+        # For erasure, rows typically contain info about what was deleted
+        # The count represents affected records
+        if isinstance(polling_result.data, list):
+            affected_records_accumulator.append(len(polling_result.data))
         else:
-            from fides.api.common_exceptions import PrivacyRequestError
-
-            raise PrivacyRequestError(
-                f"Unsupported result type: {polling_result.result_type}"
-            )
-
-    def _handle_erasure_result(
-        self, polling_result, request_task, affected_records_accumulator: List[int]
-    ) -> None:
-        """Handle result for erasure requests."""
-        if polling_result.result_type == "rows":
-            # For erasure, rows typically contain info about what was deleted
-            # The count represents affected records
-            if isinstance(polling_result.data, list):
-                affected_records_accumulator.append(len(polling_result.data))
-            else:
-                # If it's a single response with count info, try to extract it
-                affected_records_accumulator.append(1)
-
-        elif polling_result.result_type == "attachment":
-            # Erasure attachments might contain reports of what was deleted
-            # For now, count as 1 affected record per attachment
+            # If it's a single response with count info, try to extract it
             affected_records_accumulator.append(1)
 
-        else:
-            raise PrivacyRequestError(
-                f"Unsupported erasure result type: {polling_result.result_type}"
-            )
+    elif polling_result.result_type == "attachment":
+        # Erasure attachments might contain reports of what was deleted
+        # For now, count as 1 affected record per attachment
+        affected_records_accumulator.append(1)
 
-    def _add_attachment_metadata_to_rows(
-        self, db, attachment_id: str, rows: List[Row]
-    ) -> None:
-        """Add attachment metadata to rows collection (like manual tasks do)."""
-        from fides.api.models.attachment import Attachment
-
-        attachment_record = (
-            db.query(Attachment).filter(Attachment.id == attachment_id).first()
+    else:
+        raise PrivacyRequestError(
+            f"Unsupported erasure result type: {polling_result.result_type}"
         )
 
-        if attachment_record:
-            try:
-                size, url = attachment_record.retrieve_attachment()
-                attachment_info = {
-                    "file_name": attachment_record.file_name,
-                    "download_url": str(url) if url else None,
-                    "file_size": size,
-                }
-            except Exception as exc:
-                logger.warning(
-                    f"Could not retrieve attachment content for {attachment_record.file_name}: {exc}"
-                )
-                attachment_info = {
-                    "file_name": attachment_record.file_name,
-                    "download_url": None,
-                    "file_size": None,
-                }
 
-            # Add attachment to the polling results
-            attachments_item = None
-            for item in rows:
-                if isinstance(item, dict) and "retrieved_attachments" in item:
-                    attachments_item = item
-                    break
+def _add_attachment_metadata_to_rows(db, attachment_id: str, rows: List[Row]) -> None:
+    """Add attachment metadata to rows collection (like manual tasks do)."""
+    from fides.api.models.attachment import Attachment
 
-            if attachments_item is None:
-                attachments_item = {"retrieved_attachments": []}
-                rows.append(attachments_item)
+    attachment_record = (
+        db.query(Attachment).filter(Attachment.id == attachment_id).first()
+    )
 
-            attachments_item["retrieved_attachments"].append(attachment_info)
+    if attachment_record:
+        try:
+            size, url = attachment_record.retrieve_attachment()
+            attachment_info = {
+                "file_name": attachment_record.file_name,
+                "download_url": str(url) if url else None,
+                "file_size": size,
+            }
+        except Exception as exc:
+            logger.warning(
+                f"Could not retrieve attachment content for {attachment_record.file_name}: {exc}"
+            )
+            attachment_info = {
+                "file_name": attachment_record.file_name,
+                "download_url": None,
+                "file_size": None,
+            }
+
+        # Add attachment to the polling results
+        attachments_item = None
+        for item in rows:
+            if isinstance(item, dict) and "retrieved_attachments" in item:
+                attachments_item = item
+                break
+
+        if attachments_item is None:
+            attachments_item = {"retrieved_attachments": []}
+            rows.append(attachments_item)
+
+        attachments_item["retrieved_attachments"].append(attachment_info)
