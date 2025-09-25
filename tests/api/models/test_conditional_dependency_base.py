@@ -2,6 +2,7 @@
 
 from typing import Any
 from unittest.mock import create_autospec
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.orm import Session
@@ -16,6 +17,160 @@ from fides.api.task.conditional_dependencies.schemas import (
     GroupOperator,
     Operator,
 )
+
+
+def create_mock_conditional_dependency_leaf(**kwargs):
+    """Create a mock conditional dependency."""
+    return MockConditionalDependency(
+        condition_type=ConditionalDependencyType.leaf,
+        **kwargs,
+    )
+
+
+class MockConditionalDependency:
+    """Concrete implementation for testing base class methods without SQLAlchemy."""
+
+    def __init__(self, **kwargs):
+        # Set required attributes for testing
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        if not hasattr(self, "id"):
+            self.id = str(uuid4())
+
+        # Set defaults if not provided
+        if not hasattr(self, "children"):
+            self.children = []
+
+        if not hasattr(self, "parent_id"):
+            self.parent_id = None
+
+        if not hasattr(self, "parent"):
+            self.parent = None
+
+        if not hasattr(self, "sort_order"):
+            self.sort_order = 0
+
+    def to_correct_condition_type(self):
+        """Use the base class method via composition."""
+        # Create a temporary object with base class methods
+        temp = ConditionalDependencyBase()
+        temp.condition_type = self.condition_type
+        temp.field_address = getattr(self, "field_address", None)
+        temp.operator = getattr(self, "operator", None)
+        temp.value = getattr(self, "value", None)
+        temp.logical_operator = getattr(self, "logical_operator", None)
+        temp.children = self.children
+        temp.parent_id = getattr(self, "parent_id", None)
+        temp.parent = getattr(self, "parent", None)
+        return temp.to_correct_condition_type()
+
+    def to_condition_leaf(self):
+        """Use the base class method via composition."""
+        # Create a temporary object with base class methods
+        temp = ConditionalDependencyBase()
+        temp.condition_type = self.condition_type
+        temp.field_address = getattr(self, "field_address", None)
+        temp.operator = getattr(self, "operator", None)
+        temp.value = getattr(self, "value", None)
+        temp.parent_id = getattr(self, "parent_id", None)
+        temp.parent = getattr(self, "parent", None)
+        return temp.to_condition_leaf()
+
+    def to_condition_group(self):
+        """Use the base class method via composition."""
+        # Create a temporary object with base class methods
+        temp = ConditionalDependencyBase()
+        temp.condition_type = self.condition_type
+        temp.logical_operator = getattr(self, "logical_operator", None)
+        temp.children = self.children
+        temp.parent_id = getattr(self, "parent_id", None)
+        temp.parent = getattr(self, "parent", None)
+        return temp.to_condition_group()
+
+    @classmethod
+    def get_root_condition(cls, db: Session, *, parent_id: str, **kwargs: Any):
+        """Mock implementation."""
+        temp = ConditionalDependencyBase()
+        temp.condition_type = cls.condition_type
+        temp.parent_id = parent_id
+        temp.parent = getattr(cls, "parent", None)
+        return temp.get_root_condition(db, parent_id=parent_id)
+
+
+@pytest.fixture
+def leaf_dependency_name():
+    """Create a leaf dependency factory that returns fresh instances."""
+
+    def _create():
+        return MockConditionalDependency(
+            condition_type=ConditionalDependencyType.leaf,
+            field_address="user.name",
+            operator=Operator.eq,
+            value="test_user",
+        )
+
+    return _create()
+
+
+@pytest.fixture
+def leaf_dependency_active():
+    """Create a leaf dependency factory that returns fresh instances."""
+    condition = {"field_address": "user.active", "operator": Operator.eq, "value": True}
+    return create_mock_conditional_dependency_leaf(**condition)
+
+
+@pytest.fixture
+def leaf_dependency_role():
+    """Create a leaf dependency factory that returns fresh instances."""
+    condition = {
+        "field_address": "user.role",
+        "operator": Operator.eq,
+        "value": "admin",
+    }
+    return create_mock_conditional_dependency_leaf(**condition)
+
+
+@pytest.fixture
+def leaf_dependency_verified():
+    """Create a leaf dependency factory that returns fresh instances."""
+    condition = {
+        "field_address": "user.verified",
+        "operator": Operator.eq,
+        "value": True,
+    }
+    return create_mock_conditional_dependency_leaf(**condition)
+
+
+@pytest.fixture
+def leaf_dependency_premium():
+    """Create a leaf dependency factory that returns fresh instances."""
+    condition = {
+        "field_address": "user.premium",
+        "operator": Operator.eq,
+        "value": True,
+    }
+    return create_mock_conditional_dependency_leaf(**condition)
+
+
+@pytest.fixture
+def leaf_dependency_age():
+    """Create a leaf dependency factory that returns fresh instances."""
+    condition = {"field_address": "user.age", "operator": Operator.gte, "value": 18}
+    return create_mock_conditional_dependency_leaf(**condition)
+
+
+@pytest.fixture
+def group_dependency():
+    """Create a group dependency factory that returns fresh instances."""
+
+    def _create():
+        return MockConditionalDependency(
+            condition_type=ConditionalDependencyType.group,
+            logical_operator=GroupOperator.and_,
+        )
+
+    return _create()
 
 
 class TestConditionalDependencyType:
@@ -72,6 +227,7 @@ class TestConditionalDependencyBase:
 
         # Test the functions that are common to all conditional dependency models
         common_functions = [
+            "to_correct_condition_type",
             "to_condition_leaf",
             "to_condition_group",
             "get_root_condition",
@@ -99,93 +255,75 @@ class TestConditionalDependencyBase:
         assert len(all_attributes) == len(ConditionalDependencyBase.__dict__)
 
 
-class MockConditionalDependency:
-    """Concrete implementation for testing base class methods without SQLAlchemy."""
-
-    def __init__(self, **kwargs):
-        # Set required attributes for testing
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-        # Set defaults if not provided
-        if not hasattr(self, "children"):
-            self.children = []
-
-    def to_condition_leaf(self):
-        """Use the base class method via composition."""
-        # Create a temporary object with base class methods
-        temp = ConditionalDependencyBase()
-        temp.condition_type = self.condition_type
-        temp.field_address = getattr(self, "field_address", None)
-        temp.operator = getattr(self, "operator", None)
-        temp.value = getattr(self, "value", None)
-        return temp.to_condition_leaf()
-
-    def to_condition_group(self):
-        """Use the base class method via composition."""
-        # Create a temporary object with base class methods
-        temp = ConditionalDependencyBase()
-        temp.condition_type = self.condition_type
-        temp.logical_operator = getattr(self, "logical_operator", None)
-        temp.children = self.children
-        return temp.to_condition_group()
-
-    @classmethod
-    def get_root_condition(cls, db: Session, *, parent_id: str, **kwargs: Any):
-        """Mock implementation."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = cls.condition_type
-        temp.parent_id = parent_id
-        return temp.get_root_condition(db, parent_id=parent_id)
-
-
 class TestConditionalDependencyBaseMethods:
     """Test the shared methods in ConditionalDependencyBase."""
 
-    def test_to_condition_leaf_success(self):
-        """Test successful conversion to ConditionLeaf."""
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.name",
-            operator=Operator.eq,
-            value="test_user",
-        )
+    def test_to_correct_condition_type_leaf(
+        self, leaf_dependency_name: MockConditionalDependency
+    ):
+        """Test successful conversion to the correct condition type."""
+        dependency = leaf_dependency_name
 
-        result = dependency.to_condition_leaf()
+        result = dependency.to_correct_condition_type()
 
         assert isinstance(result, ConditionLeaf)
         assert result.field_address == "user.name"
         assert result.operator == Operator.eq
         assert result.value == "test_user"
 
-    def test_to_condition_leaf_failure_on_group(self):
+    def test_to_correct_condition_type_group(
+        self,
+        group_dependency: MockConditionalDependency,
+        leaf_dependency_name: MockConditionalDependency,
+    ):
+        """Test successful conversion to the correct condition type."""
+        leaf_dependency_name.parent_id = group_dependency.id
+        group_dependency.children = [leaf_dependency_name]
+        group_dependency.conditions = [leaf_dependency_name]
+
+        result = group_dependency.to_correct_condition_type()
+
+        assert isinstance(result, ConditionGroup)
+        assert result.logical_operator == GroupOperator.and_
+        assert len(result.conditions) == 1
+        assert isinstance(result.conditions[0], ConditionLeaf)
+        assert result.conditions[0].field_address == "user.name"
+
+    def test_to_condition_leaf_success(
+        self, leaf_dependency_name: MockConditionalDependency
+    ):
+        """Test successful conversion to ConditionLeaf."""
+        result = leaf_dependency_name.to_condition_leaf()
+
+        assert isinstance(result, ConditionLeaf)
+        assert result.field_address == "user.name"
+        assert result.operator == Operator.eq
+        assert result.value == "test_user"
+
+    def test_to_condition_leaf_failure_on_group(
+        self,
+        group_dependency: MockConditionalDependency,
+        leaf_dependency_name: MockConditionalDependency,
+    ):
         """Test that to_condition_leaf fails when called on group condition."""
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.group,
-            logical_operator=GroupOperator.and_,
-        )
+        leaf_dependency_name.parent_id = group_dependency.id
 
         with pytest.raises(ValueError, match="Cannot convert group condition to leaf"):
-            dependency.to_condition_leaf()
+            group_dependency.to_condition_leaf()
 
-    def test_to_condition_group_success_single_child(self):
+    def test_to_condition_group_success_single_child(
+        self,
+        leaf_dependency_active: MockConditionalDependency,
+        group_dependency: MockConditionalDependency,
+    ):
         """Test successful conversion to ConditionGroup with single child."""
         # Create child leaf condition
-        child = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.active",
-            operator=Operator.eq,
-            value=True,
-            sort_order=1,
-        )
+        child = leaf_dependency_active
+        child.parent_id = group_dependency.id
+        group_dependency.children = [child]
+        group_dependency.conditions = [child]
 
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.group,
-            logical_operator=GroupOperator.and_,
-            children=[child],
-        )
-
-        result = dependency.to_condition_group()
+        result = group_dependency.to_condition_group()
 
         assert isinstance(result, ConditionGroup)
         assert result.logical_operator == GroupOperator.and_
@@ -193,75 +331,61 @@ class TestConditionalDependencyBaseMethods:
         assert isinstance(result.conditions[0], ConditionLeaf)
         assert result.conditions[0].field_address == "user.active"
 
-    def test_to_condition_group_success_with_leaf_children(self):
+    def test_to_condition_group_success_with_leaf_children(
+        self,
+        leaf_dependency_age: MockConditionalDependency,
+        leaf_dependency_active: MockConditionalDependency,
+        group_dependency: MockConditionalDependency,
+    ):
         """Test successful conversion to ConditionGroup with leaf children."""
         # Create child leaf conditions
-        child1 = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.age",
-            operator=Operator.gte,
-            value=18,
-            sort_order=1,
-        )
-        child2 = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.active",
-            operator=Operator.eq,
-            value=True,
-            sort_order=2,
-        )
+        child1 = leaf_dependency_age
+        child1.sort_order = 1
+        child1.parent_id = group_dependency.id
+        child2 = leaf_dependency_active
+        child2.sort_order = 2
+        child2.parent_id = group_dependency.id
+        group_dependency.children = [child1, child2]
+        group_dependency.conditions = [child1, child2]
 
-        # Create parent group
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.group,
-            logical_operator=GroupOperator.and_,
-            children=[child2, child1],  # Intentionally out of order
-        )
-
-        result = dependency.to_condition_group()
+        result = group_dependency.to_condition_group()
 
         assert isinstance(result, ConditionGroup)
         assert result.logical_operator == GroupOperator.and_
         assert len(result.conditions) == 2
 
-        # Check that children are sorted by sort_order
-        assert isinstance(result.conditions[0], ConditionLeaf)
-        assert result.conditions[0].field_address == "user.age"
-        assert isinstance(result.conditions[1], ConditionLeaf)
-        assert result.conditions[1].field_address == "user.active"
-
-    def test_to_condition_group_success_with_nested_groups(self):
+    def test_to_condition_group_success_with_nested_groups(
+        self,
+        leaf_dependency_verified: MockConditionalDependency,
+        leaf_dependency_role: MockConditionalDependency,
+    ):
         """Test successful conversion to ConditionGroup with nested group children."""
-        # Create nested child group
-        nested_leaf = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.verified",
-            operator=Operator.eq,
-            value=True,
-            sort_order=1,
-        )
-        nested_group = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.group,
-            logical_operator=GroupOperator.or_,
-            children=[nested_leaf],
-            sort_order=1,
-        )
-
-        # Create direct child leaf
-        direct_leaf = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.role",
-            operator=Operator.eq,
-            value="admin",
-            sort_order=2,
-        )
-
         # Create parent group
         dependency = MockConditionalDependency(
             condition_type=ConditionalDependencyType.group,
             logical_operator=GroupOperator.and_,
-            children=[direct_leaf, nested_group],  # Mixed leaf and group children
         )
+
+        # Create nested child group
+        nested_leaf = leaf_dependency_verified
+        nested_leaf.sort_order = 1
+        nested_leaf.parent_id = dependency.id
+        nested_group = MockConditionalDependency(
+            condition_type=ConditionalDependencyType.group,
+            logical_operator=GroupOperator.or_,
+            children=[nested_leaf],
+        )
+        nested_group.sort_order = 1
+        nested_group.parent_id = dependency.id
+        nested_group.children = [nested_leaf]
+
+        # Create direct child leaf
+        direct_leaf = leaf_dependency_role
+        direct_leaf.sort_order = 2
+        direct_leaf.parent_id = dependency.id
+
+        dependency.children = [nested_group, direct_leaf]
+        dependency.conditions = [nested_group, direct_leaf]
 
         result = dependency.to_condition_group()
 
@@ -280,17 +404,12 @@ class TestConditionalDependencyBaseMethods:
         assert isinstance(result.conditions[1], ConditionLeaf)
         assert result.conditions[1].field_address == "user.role"
 
-    def test_to_condition_group_failure_on_leaf(self):
+    def test_to_condition_group_failure_on_leaf(
+        self, leaf_dependency_name: MockConditionalDependency
+    ):
         """Test that to_condition_group fails when called on leaf condition."""
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.name",
-            operator=Operator.eq,
-            value="test",
-        )
-
         with pytest.raises(ValueError, match="Cannot convert leaf condition to group"):
-            dependency.to_condition_group()
+            leaf_dependency_name.to_condition_group()
 
     def test_to_condition_group_sorts_children_by_sort_order(self):
         """Test that children are properly sorted by sort_order."""
@@ -354,46 +473,23 @@ class TestConditionalDependencyBaseEdgeCases:
         with pytest.raises(ValueError, match="conditions list cannot be empty"):
             dependency.to_condition_group()
 
-    def test_complex_nested_structure(self):
+    def test_complex_nested_structure(
+        self,
+        leaf_dependency_name: MockConditionalDependency,
+        leaf_dependency_age: MockConditionalDependency,
+        leaf_dependency_role: MockConditionalDependency,
+        leaf_dependency_verified: MockConditionalDependency,
+        leaf_dependency_premium: MockConditionalDependency,
+    ):
         """Test complex nested group structure with multiple levels."""
         # Build a complex structure: (A AND B) OR (C AND (D OR E))
 
         # Leaf conditions
-        leaf_a = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.name",
-            operator=Operator.exists,
-            value=None,
-            sort_order=1,
-        )
-        leaf_b = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.age",
-            operator=Operator.gte,
-            value=18,
-            sort_order=2,
-        )
-        leaf_c = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.role",
-            operator=Operator.eq,
-            value="admin",
-            sort_order=1,
-        )
-        leaf_d = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.verified",
-            operator=Operator.eq,
-            value=True,
-            sort_order=1,
-        )
-        leaf_e = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.premium",
-            operator=Operator.eq,
-            value=True,
-            sort_order=2,
-        )
+        leaf_a = leaf_dependency_name
+        leaf_b = leaf_dependency_age
+        leaf_c = leaf_dependency_role
+        leaf_d = leaf_dependency_verified
+        leaf_e = leaf_dependency_premium
 
         # Inner groups
         group_ab = MockConditionalDependency(
@@ -402,18 +498,32 @@ class TestConditionalDependencyBaseEdgeCases:
             children=[leaf_a, leaf_b],
             sort_order=1,
         )
+        leaf_a.parent_id = group_ab.id
+        leaf_a.sort_order = 1  # First in group_ab
+        leaf_b.parent_id = group_ab.id
+        leaf_b.sort_order = 2  # Second in group_ab
+
         group_de = MockConditionalDependency(
             condition_type=ConditionalDependencyType.group,
             logical_operator=GroupOperator.or_,
             children=[leaf_d, leaf_e],
             sort_order=2,
         )
+        leaf_d.parent_id = group_de.id
+        leaf_d.sort_order = 1  # First in group_de
+        leaf_e.parent_id = group_de.id
+        leaf_e.sort_order = 2  # Second in group_de
+
         group_c_de = MockConditionalDependency(
             condition_type=ConditionalDependencyType.group,
             logical_operator=GroupOperator.and_,
             children=[leaf_c, group_de],
             sort_order=2,
         )
+        leaf_c.parent_id = group_c_de.id
+        leaf_c.sort_order = 1
+        group_de.parent_id = group_c_de.id
+        group_de.sort_order = 2
 
         # Root group
         root = MockConditionalDependency(
@@ -421,6 +531,8 @@ class TestConditionalDependencyBaseEdgeCases:
             logical_operator=GroupOperator.or_,
             children=[group_ab, group_c_de],
         )
+        group_ab.parent_id = root.id
+        group_c_de.parent_id = root.id
 
         result = root.to_condition_group()
 
@@ -576,17 +688,13 @@ class TestConditionalDependencyBaseEnhancedErrorMessages:
         assert "Only conditions with condition_type='leaf'" in error_message
         assert "should be converted using to_condition_group()" in error_message
 
-    def test_to_condition_group_enhanced_error_message(self):
+    def test_to_condition_group_enhanced_error_message(
+        self, leaf_dependency_name: MockConditionalDependency
+    ):
         """Test enhanced error message when converting leaf to group."""
-        dependency = MockConditionalDependency(
-            condition_type=ConditionalDependencyType.leaf,
-            field_address="user.name",
-            operator=Operator.eq,
-            value="test",
-        )
 
         with pytest.raises(ValueError) as exc_info:
-            dependency.to_condition_group()
+            leaf_dependency_name.to_condition_group()
 
         error_message = str(exc_info.value)
         assert "Cannot convert leaf condition to group" in error_message

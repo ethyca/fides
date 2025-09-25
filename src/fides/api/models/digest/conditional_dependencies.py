@@ -9,7 +9,6 @@ from fides.api.db.base_class import FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
-    ConditionalDependencyType,
 )
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -252,9 +251,7 @@ class DigestCondition(ConditionalDependencyBase):
         if not root:
             return None
 
-        if root.condition_type == ConditionalDependencyType.leaf:
-            return root.to_condition_leaf()
-        return root.to_condition_group()
+        return root.to_correct_condition_type()
 
     @classmethod
     def get_all_root_conditions(

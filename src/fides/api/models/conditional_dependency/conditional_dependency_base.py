@@ -89,6 +89,12 @@ class ConditionalDependencyBase(Base):
     # Ordering
     sort_order = Column(Integer, nullable=False, default=0, index=True)
 
+    def to_correct_condition_type(self) -> ConditionLeaf | ConditionGroup:
+        """Convert this database model to the correct condition type."""
+        if self.condition_type == ConditionalDependencyType.leaf:
+            return self.to_condition_leaf()
+        return self.to_condition_group()
+
     def to_condition_leaf(self) -> ConditionLeaf:
         """Convert this database model to a ConditionLeaf schema object.
 
