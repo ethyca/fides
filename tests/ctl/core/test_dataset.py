@@ -470,7 +470,7 @@ TEST_DATABASE_PARAMETERS = {
     },
     # Disabling Snowflake tests for now as they are proving flaky.
     # This functionality is basically superceded by Helios, so there is
-    # minimal risk in dsiabling these tests.
+    # minimal risk in disabling these tests.
     # "snowflake": {
     #     "url": SNOWFLAKE_URL,
     #     "setup_url": SNOWFLAKE_URL,
