@@ -40,7 +40,7 @@
     "framer-motion": "12.4.7",
     "headers-polyfill": "^4.0.3",
     "immer": "^9.0.21",
-    "next": "^15.2.3",
+    "next": "^14.2.32",
     "next-swagger-doc": "^0.4.0",
     "p-retry": "^6.2.1",
     "pino": "^9.7.0",
