@@ -1,4 +1,4 @@
-""" Create new Sub Request Table
+"""Create new Sub Request Table
 
 Revision ID: 7db29f9cd77b
 Revises: cd8649be3a2b

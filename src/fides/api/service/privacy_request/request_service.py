@@ -365,7 +365,7 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
-def initiate_async_tasks_status_polling() -> None:
+def initiate_polling_task_requeue() -> None:
     """Initiates scheduler to check for and requeue pending polling async tasks"""
     if CONFIG.test_mode:
         return
@@ -376,7 +376,7 @@ def initiate_async_tasks_status_polling() -> None:
 
     logger.info("Initiating scheduler for async tasks status polling")
     scheduler.add_job(
-        func=poll_async_tasks_status,
+        func=requeue_polling_tasks,
         trigger="interval",
         kwargs={},
         id=ASYNC_TASKS_STATUS_POLLING,
@@ -727,7 +727,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def poll_async_tasks_status(self: DatabaseTask) -> None:
+def requeue_polling_tasks(self: DatabaseTask) -> None:
     """
     Poll the status of async tasks that are awaiting processing.
     """
@@ -741,26 +741,21 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         with self.get_new_session() as db:
             logger.debug("Polling for async tasks status")
 
-            # Get all tasks that are awaiting processing and are from polling async tasks
+            # Get all tasks that are polling and are from polling async tasks
             async_tasks = (
                 db.query(RequestTask)
-                .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+                .filter(RequestTask.status == ExecutionLogStatus.polling)
                 .filter(RequestTask.async_type == AsyncTaskType.polling)
                 .all()
             )
-            logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
+            logger.info(f"Found {len(async_tasks)} async polling tasks")
 
             if async_tasks:
-                from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                    execute_polling_task,
-                )
+                # Avoiding cyclic imports
+                from fides.api.task.execute_request_tasks import queue_request_task
 
                 for async_task in async_tasks:
-                    celery_task = execute_polling_task.apply_async(
-                        queue=DSR_QUEUE_NAME,
-                        kwargs={
-                            "polling_task_id": async_task.id,
-                            "privacy_request_id": async_task.privacy_request_id,
-                        },
+                    logger.info(
+                        f"Requeuing polling task {async_task.id} for processing"
                     )
-                    cache_task_tracking_key(async_task.id, celery_task.task_id)
+                    queue_request_task(async_task, privacy_request_proceed=True)
