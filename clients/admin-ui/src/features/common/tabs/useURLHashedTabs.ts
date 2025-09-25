@@ -1,9 +1,11 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-interface UseURLHashedTabsProps {
-  tabKeys: string[];
-  initialTab?: string;
+import { ReadOnlyNonEmptyArray, ValueOf } from "../utils/array";
+
+interface UseURLHashedTabsProps<A extends ReadOnlyNonEmptyArray<T>, T> {
+  tabKeys: A;
+  initialTab?: A[number];
 }
 
 const normalizeHash = (hash: string): string => {
@@ -11,14 +13,20 @@ const normalizeHash = (hash: string): string => {
   return normalizedHash;
 };
 
-const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
+const useURLHashedTabs = <
+  T extends string,
+  A extends ReadOnlyNonEmptyArray<T>,
+>({
+  tabKeys,
+  initialTab,
+}: UseURLHashedTabsProps<A, T>) => {
   const router = useRouter();
 
   const initialKey = router.asPath.split("#")[1];
 
   // Default to the first tab if no hash is present
-  const defaultTab = initialKey || tabKeys[0];
-  const [activeTab, setActiveTab] = useState<string>(defaultTab);
+  const defaultTab = tabKeys.find((tk) => tk === initialKey) ?? tabKeys[0];
+  const [activeTab, setActiveTab] = useState<ValueOf<A>>(defaultTab);
 
   // needed to prevent a race condition on some pages where activeTab is set
   // before the router is ready
@@ -29,7 +37,7 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
   }, [initialTab, tabKeys, router.isReady]);
 
   const onTabChange = useCallback(
-    async (tab: string) => {
+    async (tab: ValueOf<A>) => {
       if (!tabKeys.includes(tab)) {
         await router.replace({
           pathname: router.pathname,

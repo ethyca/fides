@@ -51,8 +51,9 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         {title && (
           <Typography.Text
             className={classNames(styles.title, {
-              [styles["title--error"]]: isError,
-              [styles["title--awaiting-input"]]: isAwaitingInput,
+              [styles?.["title--error"] ?? "title--error"]: isError,
+              [styles["title--awaiting-input"] ?? "title--awaiting-input"]:
+                isAwaitingInput,
             })}
             ellipsis={{ tooltip: true }}
             data-testid="activity-timeline-title"
@@ -107,12 +108,13 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
 
   const commonProps = {
     className: classNames(styles.itemButton, {
-      [styles["itemButton--error"]]: isError,
-      [styles["itemButton--awaiting-input"]]: isAwaitingInput,
-      [styles["itemButton--clickable"]]: isClickable,
-      [styles["itemButton--comment"]]:
+      [styles["itemButton--error"] ?? "itemButton--error"]: isError,
+      [styles["itemButton--awaiting-input"] ?? "itemButton--awaiting-input"]:
+        isAwaitingInput,
+      [styles["itemButton--clickable"] ?? "itemButton--clickable"]: isClickable,
+      [styles["itemButton--comment"] ?? "itemButton--comment"]:
         type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
-      [styles["itemButton--manual-task"]]:
+      [styles["itemButton--manual-task"] ?? "itemButton--manual-task"]:
         type === ActivityTimelineItemTypeEnum.MANUAL_TASK,
     }),
     "data-testid": "activity-timeline-item",

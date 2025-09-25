@@ -1,4 +1,5 @@
 import {
+  AntBaseOptionType as BaseOptionType,
   AntButton as Button,
   AntSelectProps as SelectProps,
   ArrowForwardIcon,
@@ -53,11 +54,12 @@ import {
 
 import { useFeatures } from "../common/features";
 import { ControlledSelect } from "../common/form/ControlledSelect";
+import { ReadOnlyNonEmptyArray } from "../common/utils/array";
 import { useGetConfigurationSettingsQuery } from "../config-settings/config-settings.slice";
 import { TCFConfigSelect } from "./form/TCFConfigSelect";
 
 // Base component type options without TCF overlay
-const baseComponentTypeOptions: SelectProps["options"] = [
+const baseComponentTypeOptions: ReadOnlyNonEmptyArray<BaseOptionType> = [
   {
     label: "Banner and modal",
     value: ComponentType.BANNER_AND_MODAL,
@@ -74,7 +76,7 @@ const baseComponentTypeOptions: SelectProps["options"] = [
     label: "Headless",
     value: ComponentType.HEADLESS,
   },
-];
+] as const;
 
 // The TCF overlay option to insert
 const tcfOverlayOption = {
@@ -304,6 +306,16 @@ export const PrivacyExperienceForm = ({
     });
     setFieldValue("component", value);
   };
+
+  const options = plusHealth?.tcf?.enabled
+    ? // Insert TCF overlay as the second item
+      [
+        baseComponentTypeOptions[0],
+        tcfOverlayOption,
+        ...baseComponentTypeOptions.slice(1),
+      ]
+    : baseComponentTypeOptions;
+
   return (
     <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
       <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
@@ -320,17 +332,7 @@ export const PrivacyExperienceForm = ({
       <ControlledSelect
         name="component"
         id="component"
-        options={useMemo(() => {
-          if (plusHealth?.tcf?.enabled) {
-            // Insert TCF overlay as the second item
-            return [
-              baseComponentTypeOptions[0],
-              tcfOverlayOption,
-              ...baseComponentTypeOptions.slice(1),
-            ];
-          }
-          return baseComponentTypeOptions;
-        }, [plusHealth])}
+        options={[...options]}
         label="Experience type"
         layout="stacked"
         disabled={!!initialValues.component}
@@ -526,7 +528,10 @@ export const PrivacyExperienceForm = ({
         <Button
           icon={<ArrowForwardIcon />}
           iconPosition="end"
-          onClick={() => onSelectTranslation(values.translations![0])}
+          onClick={() =>
+            values.translations![0] &&
+            onSelectTranslation(values.translations![0])
+          }
           data-testid="edit-experience-btn"
         >
           Edit experience text

@@ -164,7 +164,7 @@ export const useDiscoveredAssetsTable = ({
 
   const antTableConfig = useMemo(
     () => ({
-      enableSelection: activeTab !== ActionCenterTabHash.ADDED,
+      enableSelection: activeTab !== "added",
       getRowKey: (record: StagedResourceAPIResponse) => record.urn,
       isLoading,
       isFetching,
@@ -225,9 +225,7 @@ export const useDiscoveredAssetsTable = ({
             <SystemCell
               aggregateSystem={record}
               monitorConfigId={record.monitor_config_id}
-              readonly={
-                actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
-              }
+              readonly={actionsDisabled || activeTab === "ignored"}
             />
           ),
       },
@@ -254,9 +252,7 @@ export const useDiscoveredAssetsTable = ({
         render: (_, record) => (
           <DiscoveredAssetDataUseCell
             asset={record}
-            readonly={
-              actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
-            }
+            readonly={actionsDisabled || activeTab === "ignored"}
             columnState={{
               isExpanded: isDataUsesExpanded,
               version: dataUsesVersion,

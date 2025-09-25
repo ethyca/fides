@@ -63,7 +63,7 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
   ): boolean => headers.some((column) => columnIds.indexOf(column.id) > -1);
 
   const headers = useMemo(
-    () => headerGroups?.[0].headers || [],
+    () => headerGroups?.[0]?.headers || [],
     [headerGroups],
   );
 

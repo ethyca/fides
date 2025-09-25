@@ -61,7 +61,7 @@ const DatasetConfiguration = () => {
 
   useEffect(() => {
     if (data && data.items.length) {
-      setSelectedDatasetKey(data.items[0].ctl_dataset.fides_key);
+      setSelectedDatasetKey(data.items[0]?.ctl_dataset.fides_key);
     }
   }, [data]);
 
@@ -74,7 +74,11 @@ const DatasetConfiguration = () => {
     };
     const payload = await patchDatasetConfig(params).unwrap();
     if (payload.failed?.length > 0) {
-      errorAlert(payload.failed[0].message);
+      const errorMessage = payload.failed[0]?.message;
+
+      if (errorMessage) {
+        errorAlert(errorMessage);
+      }
     } else {
       successAlert("Dataset successfully updated!");
     }
@@ -86,7 +90,7 @@ const DatasetConfiguration = () => {
       try {
         let fidesKey = selectedDatasetKey;
         if (data && data.items.length) {
-          fidesKey = data.items[0].fides_key;
+          fidesKey = data.items[0]?.fides_key ?? fidesKey;
         }
         const datasetPairs: DatasetConfigCtlDataset[] = [
           { fides_key: fidesKey, ctl_dataset_fides_key: selectedDatasetKey },
@@ -125,7 +129,8 @@ const DatasetConfiguration = () => {
           fides_key: d.fides_key,
           // This will not handle deletions, additions, or even changing order. If we want to support
           // those, we should probably have a different UX
-          ctl_dataset_fides_key: upsertedDatasets[i].fides_key,
+          /* fallback to existing key if not found */
+          ctl_dataset_fides_key: upsertedDatasets[i]?.fides_key ?? d.fides_key,
         }));
       }
 

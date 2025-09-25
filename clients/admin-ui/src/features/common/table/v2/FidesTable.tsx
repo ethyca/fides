@@ -385,8 +385,11 @@ export const FidesTableV2 = <T,>({
 
   useEffect(() => {
     if (onSort) {
-      const columnSort = tableInstance.getState().sorting;
-      onSort(columnSort[0]);
+      const columnSort = tableInstance.getState().sorting[0];
+
+      if (columnSort) {
+        onSort(columnSort);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().sorting]);

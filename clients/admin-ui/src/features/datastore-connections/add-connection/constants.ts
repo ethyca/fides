@@ -56,7 +56,12 @@ export const DEFAULT_CONNECTION_TYPE_FILTER = CONNECTION_TYPE_FILTER_MAP.get(
   "Show all",
 )?.value as string;
 
-export const STEPS: AddConnectionStep[] = [
+export const STEPS: readonly [
+  AddConnectionStep,
+  AddConnectionStep,
+  AddConnectionStep,
+  AddConnectionStep,
+] = [
   {
     stepId: 0,
     label: "Connections",
@@ -82,4 +87,4 @@ export const STEPS: AddConnectionStep[] = [
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=3`,
     parentStepId: 1,
   },
-];
+] as const;

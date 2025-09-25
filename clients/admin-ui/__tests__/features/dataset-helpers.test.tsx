@@ -17,14 +17,14 @@ describe("dataset helpers", () => {
       const originalField = mockDatasetField();
       const newField = { ...originalField, ...{ name: newName } };
       const collection = mockDatasetCollection({ fields: [originalField] });
-      expect(collection.fields[0].name).toEqual("created_at");
+      expect(collection.fields[0]?.name).toEqual("created_at");
 
       const updatedCollection = getUpdatedCollectionFromField(
         collection,
         newField,
         0,
       );
-      expect(updatedCollection.fields[0].name).toEqual(newName);
+      expect(updatedCollection.fields[0]?.name).toEqual(newName);
     });
 
     it("should update a dataset from a collection", () => {
@@ -40,7 +40,9 @@ describe("dataset helpers", () => {
         updatedCollection,
         0,
       );
-      expect(updatedDataset.collections[0].description).toEqual(newDescription);
+      expect(updatedDataset.collections[0]?.description).toEqual(
+        newDescription,
+      );
     });
 
     it("should update a dataset from a field", () => {
@@ -67,7 +69,7 @@ describe("dataset helpers", () => {
         fieldIndex,
       );
       expect(
-        updatedDataset.collections[collectionIndex].fields[fieldIndex].name,
+        updatedDataset?.collections[collectionIndex]?.fields[fieldIndex]?.name,
       ).toEqual(newName);
     });
   });

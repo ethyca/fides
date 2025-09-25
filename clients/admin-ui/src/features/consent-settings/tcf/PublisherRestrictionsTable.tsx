@@ -170,9 +170,11 @@ export const PublisherRestrictionsTable = ({
                   return "none";
                 }
                 if (types.length === 1) {
+                  const type = types[0];
+
                   return (
                     <Text size="sm" whiteSpace="nowrap">
-                      {RESTRICTION_TYPE_LABELS[types[0]]}
+                      {!!type && RESTRICTION_TYPE_LABELS[type]}
                     </Text>
                   );
                 }

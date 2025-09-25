@@ -62,8 +62,13 @@ const extractRecordCount = (detail: ExecutionLog): string => {
   // Standardized format: "success - retrieved/masked/processed X records"
   const standardPattern = /(?:retrieved|masked|processed)\s+(\d+)\s+records?$/i;
   const standardMatch = message.match(standardPattern);
+
   if (standardMatch) {
-    return parseInt(standardMatch[1], 10).toLocaleString();
+    const [, standardMatchItem] = standardMatch;
+
+    if (standardMatchItem) {
+      return parseInt(standardMatchItem, 10).toLocaleString();
+    }
   }
 
   return "-";
@@ -109,8 +114,12 @@ const calculateTotalRecordCount = (
       const match = log.message.match(recordPattern);
       if (match) {
         foundAnyRecordInfo = true;
-        const count = parseInt(match[1], 10);
-        totalCount += count;
+
+        const matchedItem = match[1];
+        if (matchedItem) {
+          const count = parseInt(matchedItem, 10);
+          totalCount += count;
+        }
       }
     }
   });

@@ -51,7 +51,11 @@ export const PublisherRestrictionsConfig = ({
       tcfConfigurations?.items?.length &&
       !selectedTCFConfigId
     ) {
-      setSelectedTCFConfigId(tcfConfigurations.items[0].id);
+      const newTcfConfigId = tcfConfigurations.items[0]?.id;
+
+      if (newTcfConfigId) {
+        setSelectedTCFConfigId(newTcfConfigId);
+      }
     }
     if (
       !isTcfConfigurationsLoading &&

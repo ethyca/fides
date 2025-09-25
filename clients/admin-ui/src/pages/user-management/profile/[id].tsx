@@ -16,14 +16,10 @@ import { ScopeRegistryEnum } from "~/types/api";
 const Profile = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  let profileId = "";
-  if (router.query.id) {
-    profileId = Array.isArray(router.query.id)
-      ? router.query.id[0]
-      : router.query.id;
-  } else {
-    profileId = "";
-  }
+  const profileId =
+    (Array.isArray(router.query.id) ? router.query.id[0] : router.query.id) ??
+    "";
+
   const { data: existingUser, isLoading: isLoadingUser } =
     useGetUserByIdQuery(profileId);
 

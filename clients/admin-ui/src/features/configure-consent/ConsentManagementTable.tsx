@@ -86,19 +86,37 @@ export const ConsentManagementTable = () => {
   const selectedPurposeFilters = useMemo(() => {
     const normalOptions = purposeOptions
       .filter((o) => o.value.includes("normal"))
-      .map((o) => ({
-        ...o,
-        value: o.value.split(".")[1],
-      }));
+      .flatMap((o) => {
+        const value = o.value.split(".")[1];
+
+        return value
+          ? [
+              {
+                ...o,
+                value,
+              },
+            ]
+          : [];
+      });
+
     return getQueryParamsFromList(normalOptions, "purposes");
   }, [purposeOptions]);
   const selectedSpecialPurposeFilters = useMemo(() => {
     const specialOptions = purposeOptions
       .filter((o) => o.value.includes("special"))
-      .map((o) => ({
-        ...o,
-        value: o.value.split(".")[1],
-      }));
+      .flatMap((o) => {
+        const value = o.value.split(".")[1];
+
+        return value
+          ? [
+              {
+                ...o,
+                value,
+              },
+            ]
+          : [];
+      });
+
     return getQueryParamsFromList(specialOptions, "special_purposes");
   }, [purposeOptions]);
   const selectedConsentCategoryFilters = useMemo(

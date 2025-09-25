@@ -3,9 +3,9 @@ import { AntCard as Card, AntTypography as Typography, Box } from "fidesui";
 import styles from "./CalloutNavCard.module.scss";
 
 interface CalloutNavCardProps {
-  color: string;
   title: string;
   description: string;
+  color?: string;
   icon?: React.ReactElement;
 }
 
@@ -16,7 +16,9 @@ const CalloutNavCard = ({
   icon,
 }: CalloutNavCardProps) => (
   <Box
-    borderLeft={`9px solid ${color}`}
+    borderLeftColor={color}
+    borderLeftWidth="9px"
+    borderLeftStyle="solid"
     borderRadius="6px"
     className={styles.container}
   >

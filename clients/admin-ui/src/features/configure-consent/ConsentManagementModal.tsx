@@ -106,14 +106,14 @@ export const ConsentManagementModal = ({
                                   {listRender(
                                     "Data uses",
                                     systemPurposeSummary.purposes[purposeName]
-                                      .data_uses,
+                                      ?.data_uses ?? [],
                                   )}
                                 </Flex>
                                 <Flex className="my-4" vertical>
                                   {listRender(
                                     "Legal basis",
                                     systemPurposeSummary.purposes[purposeName]
-                                      .legal_bases,
+                                      ?.legal_bases ?? [],
                                   )}
                                 </Flex>
                               </AccordionPanel>
