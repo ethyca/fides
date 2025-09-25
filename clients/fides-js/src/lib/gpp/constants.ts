@@ -1,3 +1,16 @@
+/**
+ * @fileoverview GPP constants for handling Global Privacy Platform operations.
+ *
+ * ⚠️  IMPORTANT: This file is synchronized between repositories!
+ *
+ * This file exists in both:
+ * - fides: clients/fides-js/src/lib/gpp/constants.ts
+ * - fidesplus: src/fidesplus/gpp_js_integration/constants.ts
+ *
+ * Any changes made to this file should be applied to both locations
+ * to maintain consistency between the open-source and enterprise versions.
+ */
+
 import {
   UsCa,
   UsCo,
@@ -21,7 +34,12 @@ import { GPPSection } from "./types";
 
 export const CMP_VERSION = 1;
 
-// This is the mapping of Fides experience region codes to GPP sections. This helps determine which GPP section to use for a given experience. It also doubles as a comprehensive list of all GPP RegionAPIs that we support. If a new GPP API is added, it must be added here.
+/**
+ * This is the mapping of Fides experience region codes to GPP sections. This
+ * helps determine which GPP section to use for a given experience. It also
+ * doubles as a comprehensive list of all GPP RegionAPIs that we support. If a
+ * new GPP API is added, it must be added here.
+ */
 export const FIDES_US_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {
   us: { name: UsNat.NAME, id: UsNat.ID },
   us_ca: { name: UsCa.NAME, id: UsCa.ID },
@@ -40,6 +58,31 @@ export const FIDES_US_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {
   us_tn: { name: UsTn.NAME, id: UsTn.ID },
   us_tx: { name: UsTx.NAME, id: UsTx.ID },
 };
+
+/**
+ * This is a list of GPP sections that are known to support the GPC subsection.
+ * Unfortunately, there's no static way to determine this at build-time, so we
+ * have to maintain a hardcoded list.
+ *
+ * However, our unit tests do dynamically check *all* sections to ensure that
+ * this list is accurate and updated whenever the @iabgpp/cmpapi library
+ * changes. See us-notices.test.ts for more details.
+ */
+export const SECTIONS_WITH_GPC_SUBSECTION = [
+  UsNat.NAME,
+  UsCa.NAME,
+  UsCo.NAME,
+  UsCt.NAME,
+  UsDe.NAME,
+  UsIa.NAME,
+  UsMt.NAME,
+  UsNe.NAME,
+  UsNh.NAME,
+  UsNj.NAME,
+  UsOr.NAME,
+  UsTn.NAME,
+  UsTx.NAME,
+];
 
 export enum GPPUSApproach {
   NATIONAL = "national",
