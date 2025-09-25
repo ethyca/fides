@@ -1,7 +1,7 @@
 import Layout from "~/features/common/Layout";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import CustomFieldFormV2 from "~/features/custom-fields/CustomFieldForm";
+import CustomFieldForm from "~/features/custom-fields/CustomFieldForm";
 
 const CustomFieldNewPage = () => {
   return (
@@ -13,7 +13,7 @@ const CustomFieldNewPage = () => {
           { title: "Create new" },
         ]}
       />
-      <CustomFieldFormV2 />
+      <CustomFieldForm />
     </Layout>
   );
 };
