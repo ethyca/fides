@@ -115,7 +115,7 @@ describe("Custom Fields V2", () => {
       // Update name
       cy.getByTestId("input-name").clear().type("Updated field name");
       cy.getByTestId("add-option-btn").click();
-      cy.getByTestId("input-option-0").type("Added option");
+      cy.getByTestId("input-option-3").type("Added option");
 
       cy.getByTestId("save-btn").click();
       cy.wait("@updateCustomFieldDefinition")
