@@ -6,6 +6,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from fides.api.models.datasetconfig import DatasetConfig  # type: ignore[attr-defined]
 from fides.api.schemas.dataset import ValidateDatasetResponse
 from fides.service.dataset.dataset_validator import DatasetValidator
 
@@ -24,6 +25,10 @@ class DatasetError(Exception):
 
 class DatasetNotFoundException(DatasetError):
     """Raised when a dataset is not found"""
+
+
+class LinkedDatasetException(DatasetError):
+    """Raised when attempting to delete a dataset that's associated to a DatasetConfig"""
 
 
 class DatasetService:
@@ -68,6 +73,40 @@ class DatasetService:
     def delete_dataset(self, fides_key: str) -> CtlDataset:
         """Delete a dataset by fides key"""
         dataset = self.get_dataset(fides_key)
+
+        # Check if dataset is associated with any DatasetConfigs
+        associated_configs = (
+            self.db.query(DatasetConfig)
+            .filter(DatasetConfig.ctl_dataset_id == dataset.id)
+            .all()
+        )
+
+        if associated_configs:
+            # Create detailed error message
+            integration_details = []
+            for config in associated_configs:
+                connection_name = (
+                    config.connection_config.name or config.connection_config.key
+                )
+                detail = f"'{connection_name}' ({config.connection_config.connection_type.value})"
+
+                # Add system information if available
+                if config.connection_config.system_id:
+                    system = config.connection_config.system
+                    if system:
+                        system_name = system.name or system.fides_key
+                        detail += f" in system '{system_name}'"
+
+                integration_details.append(detail)
+
+            message = (
+                f"Cannot delete dataset '{fides_key}' because it is associated with "
+                f"the following integration(s): {', '.join(integration_details)}. "
+                f"Remove the dataset from these integrations before deleting."
+            )
+
+            raise LinkedDatasetException(message)
+
         dataset.delete(self.db)
         return dataset
 
