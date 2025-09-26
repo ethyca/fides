@@ -1408,8 +1408,12 @@ describe("Consent overlay", () => {
               expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
             });
           cy.get("#fides-modal-link").click();
+          cy.getByTestId("toggle-one").within(() => {
+            cy.get("input").should("be.disabled");
+            cy.get("input").should("be.checked");
+          });
           cy.get(".fides-notice-toggle")
-            .contains("Applied")
+            .contains("Advertising with gpc enabled")
             .parents(".fides-notice-toggle-title")
             .within(() => {
               cy.get(".fides-gpc-label").contains("Applied");
