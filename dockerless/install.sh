@@ -107,7 +107,7 @@ install_conda() {
   fi
 
   chmod +x "$installer_path"
-  if ! bash "$installer_path" -b -p "$HOME/miniconda3" >/dev/null; then
+  if ! "$installer_path" -b -p "$HOME/miniconda3" >/dev/null; then
     INFO_MESSAGES+=("Miniconda installer failed. See $installer_path for debugging and install manually.")
     return 1
   fi
