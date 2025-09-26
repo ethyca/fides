@@ -18,7 +18,6 @@ import {
 import {
   getGpcStatusFromNotice,
   isConsentOverride,
-  processNoticeConsentPreferences,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {
@@ -209,13 +208,16 @@ const NoticeOverlay = () => {
       consentMethod: ConsentMethod,
       enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>,
     ) => {
-      const noticeConsent = processNoticeConsentPreferences(
-        consentMethod,
-        privacyNoticeItems,
-        enabledPrivacyNoticeKeys,
-        fidesGlobal.cookie?.consent,
-      );
-
+      const noticeConsent: NoticeConsent = {};
+      privacyNoticeItems.forEach((item) => {
+        if (item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+          noticeConsent[item.notice.notice_key] =
+            enabledPrivacyNoticeKeys.includes(item.notice.notice_key);
+        } else {
+          // always set notice-only notices to true
+          noticeConsent[item.notice.notice_key] = true;
+        }
+      });
       updateConsent(fidesGlobal, {
         noticeConsent,
         consentMethod,

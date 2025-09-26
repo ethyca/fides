@@ -669,48 +669,6 @@ export const isValidAcString = (acString: string) => {
  * @param hasPrivacyNotices - Whether privacy notices exist in the experience
  * @returns Proxied consent object with default value handling
  */
-
-/**
- * Processes notice consent based on consent method and privacy notice items.
- * For ACKNOWLEDGE method, preserves existing consent and only updates notice-only items.
- * For other methods, updates consent based on enabled notice keys.
- *
- * @param consentMethod - The consent method being used
- * @param privacyNoticeItems - Array of privacy notice items to process
- * @param enabledPrivacyNoticeKeys - Array of notice keys that are enabled
- * @param existingConsent - Current consent state to preserve for ACKNOWLEDGE method
- * @returns Processed notice consent object
- */
-export const processNoticeConsentPreferences = (
-  consentMethod: ConsentMethod,
-  privacyNoticeItems: Array<{ notice: PrivacyNotice }>,
-  enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>,
-  existingConsent?: NoticeConsent,
-): NoticeConsent => {
-  const noticeConsent: NoticeConsent =
-    consentMethod === ConsentMethod.ACKNOWLEDGE
-      ? { ...existingConsent } // Preserve existing consent for ACKNOWLEDGE
-      : {};
-
-  privacyNoticeItems.forEach((item) => {
-    const isNoticeOnly =
-      item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY;
-
-    if (isNoticeOnly) {
-      // Always set notice-only notices to true
-      noticeConsent[item.notice.notice_key] = true;
-    } else if (consentMethod !== ConsentMethod.ACKNOWLEDGE) {
-      // For non-ACKNOWLEDGE methods, update based on enabled keys
-      noticeConsent[item.notice.notice_key] = enabledPrivacyNoticeKeys.includes(
-        item.notice.notice_key,
-      );
-    }
-    // For ACKNOWLEDGE + non-notice-only: preserve existing values (no action needed)
-  });
-
-  return noticeConsent;
-};
-
 export const createConsentProxy = (
   consentObject: NoticeConsent,
   options: Pick<FidesInitOptions, "fidesConsentFlagType">,
