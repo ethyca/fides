@@ -52,6 +52,7 @@ export const baseApi = createApi({
     "Manual Tasks",
     "Messaging Templates",
     "Messaging Config",
+    "Monitor Tasks",
     "Dictionary",
     "System Vendors",
     "Latest Scan",
