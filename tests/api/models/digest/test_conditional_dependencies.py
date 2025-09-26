@@ -618,13 +618,14 @@ class TestDigestConditionValidation:
         with pytest.raises(ValueError, match="Cannot convert group condition to leaf"):
             group_condition.to_condition_leaf()
 
-        # Create leaf condition
+        # Create leaf condition as a child of the group condition
         leaf_condition = DigestCondition.create(
             db=db,
             data={
                 **receiver_condition,
                 **sample_eq_condition_leaf.model_dump(),
                 "condition_type": ConditionalDependencyType.leaf,
+                "parent_id": group_condition.id,
                 "sort_order": 1,
             },
         )
