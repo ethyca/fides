@@ -1,6 +1,7 @@
 import { Image, ImageProps } from "fidesui";
 import React from "react";
 
+import type { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import { ConnectionConfigurationResponse } from "~/types/api";
 import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
@@ -14,8 +15,22 @@ import {
   SAAS_TYPE_LOGO_MAP,
 } from "./constants";
 
+// Lightweight shape with only the fields this component uses
+type LogoSourceLite = {
+  connection_type: ConnectionTypeModel;
+  saas_config?: { type?: string } | null;
+  name?: string | null;
+  key?: string | null;
+  secrets?: { url?: string } | null;
+};
+
 type ConnectionTypeLogoProps = {
-  data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
+  data:
+    | string
+    | ConnectionConfigurationResponse
+    | ConnectionSystemTypeMap
+    | MonitorAggregatedResults
+    | LogoSourceLite;
 };
 
 const FALLBACK_WEBSITE_LOGO_PATH =
@@ -23,22 +38,37 @@ const FALLBACK_WEBSITE_LOGO_PATH =
   CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.WEBSITE);
 
 const isDatastoreConnection = (
-  obj: any,
-): obj is ConnectionConfigurationResponse =>
-  (obj as ConnectionConfigurationResponse).connection_type !== undefined;
+  obj: unknown,
+): obj is
+  | ConnectionConfigurationResponse
+  | MonitorAggregatedResults
+  | LogoSourceLite =>
+  !!obj && typeof obj === "object" && "connection_type" in obj;
 
-const isConnectionSystemTypeMap = (obj: any): obj is ConnectionSystemTypeMap =>
-  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
+const isConnectionSystemTypeMap = (
+  obj: unknown,
+): obj is ConnectionSystemTypeMap =>
+  !!obj && typeof obj === "object" && "encoded_icon" in obj;
 
 const isWebsiteConnection = (
-  obj: any,
-): obj is ConnectionConfigurationResponse => {
-  return obj?.connection_type === ConnectionTypeModel.WEBSITE;
-};
+  obj: unknown,
+): obj is {
+  connection_type: ConnectionTypeModel;
+  secrets?: { url?: string } | null;
+} =>
+  isDatastoreConnection(obj) &&
+  (obj as { connection_type: ConnectionTypeModel }).connection_type ===
+    ConnectionTypeModel.WEBSITE;
 
-const isSaasConnection = (obj: any): obj is ConnectionConfigurationResponse => {
-  return obj?.connection_type === ConnectionTypeModel.SAAS;
-};
+const isSaasConnection = (
+  obj: unknown,
+): obj is {
+  connection_type: ConnectionTypeModel;
+  saas_config?: { type?: string } | null;
+} =>
+  isDatastoreConnection(obj) &&
+  (obj as { connection_type: ConnectionTypeModel }).connection_type ===
+    ConnectionTypeModel.SAAS;
 
 const ConnectionTypeLogo = ({
   data,
@@ -50,7 +80,7 @@ const ConnectionTypeLogo = ({
     }
 
     if (isWebsiteConnection(data)) {
-      const url = (data as any).secrets?.url;
+      const url = data.secrets?.url;
       if (!url) {
         return FALLBACK_WEBSITE_LOGO_PATH;
       }
@@ -90,7 +120,9 @@ const ConnectionTypeLogo = ({
 
   const getAltValue = (): string => {
     if (isDatastoreConnection(data)) {
-      return data.name ?? data.key;
+      const maybeName = (data as { name?: string | null }).name;
+      const maybeKey = (data as { key?: string | null }).key;
+      return maybeName ?? maybeKey ?? "connection";
     }
     if (isConnectionSystemTypeMap(data)) {
       return data.human_readable;

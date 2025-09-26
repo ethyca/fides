@@ -13,13 +13,15 @@ import {
 } from "fidesui";
 
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
-import { MonitorTaskInProgressResponse } from "~/types/api";
+import { ConnectionType, MonitorTaskInProgressResponse } from "~/types/api";
 
 import {
   useDismissMonitorTaskMutation,
   useGetAggregateMonitorResultsQuery,
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
+import type { MonitorAggregatedResults } from "../types";
+
 
 const { Text, Title } = Typography;
 
@@ -61,23 +63,31 @@ export const InProgressMonitorTaskItem = ({
     ? monitorAgg?.items?.find((m) => m.key === task.monitor_config_id)
     : undefined;
 
-  let logoData: any;
+  type LogoSourceLite = {
+    connection_type: ConnectionType;
+    saas_config?: { type?: string } | null;
+    name?: string | null;
+    key?: string | null;
+    secrets?: { url?: string } | null;
+  };
+
+  let logoData: MonitorAggregatedResults | LogoSourceLite | undefined;
   if (aggItem) {
+    const item = aggItem as MonitorAggregatedResults;
     logoData = {
-      connection_type: aggItem.connection_type as any,
-      saas_config: aggItem.saas_config
-        ? { type: (aggItem.saas_config as any).type }
-        : undefined,
-      name: aggItem.name,
-      key: aggItem.key as any,
-      secrets: (aggItem as any).secrets?.url
-        ? { url: (aggItem as any).secrets.url }
-        : undefined,
+      connection_type: item.connection_type,
+      saas_config: item.saas_config ? { type: item.saas_config.type } : null,
+      name: item.name,
+      key: item.key ?? null,
+      secrets: item.secrets?.url ? { url: item.secrets.url } : null,
     };
   } else if (task.connection_type) {
     logoData = {
-      connection_type: task.connection_type as any,
-      name: task.connection_name || task.connection_type,
+      connection_type: task.connection_type as ConnectionType,
+      name: task.connection_name || task.connection_type || undefined,
+      key: null,
+      saas_config: null,
+      secrets: null,
     };
   }
 
