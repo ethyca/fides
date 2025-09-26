@@ -27,7 +27,9 @@ class TestDatasetServiceDeleteDataset:
         with pytest.raises(DatasetNotFoundException) as exc_info:
             dataset_service.delete_dataset("nonexistent_dataset")
 
-        assert "No CTL dataset found with fides_key 'nonexistent_dataset'" in str(exc_info.value)
+        assert "No CTL dataset found with fides_key 'nonexistent_dataset'" in str(
+            exc_info.value
+        )
 
     def test_delete_dataset_success_no_associations(
         self, db: Session, dataset_service: DatasetService
@@ -57,7 +59,9 @@ class TestDatasetServiceDeleteDataset:
         deleted_dataset = dataset_service.delete_dataset("standalone_dataset")
 
         assert deleted_dataset.fides_key == "standalone_dataset"
-        assert CtlDataset.get_by(db, field="fides_key", value="standalone_dataset") is None
+        assert (
+            CtlDataset.get_by(db, field="fides_key", value="standalone_dataset") is None
+        )
 
     def test_delete_dataset_with_single_association(
         self, db: Session, dataset_service: DatasetService
