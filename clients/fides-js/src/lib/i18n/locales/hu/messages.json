@@ -3,5 +3,10 @@
   "static.gpc.description": "A globális adatvédelmi szabályozással kapcsolatos beállításai el lettek fogadva. Automatikusan kikerült azokból az adatfelhasználási esetekből, amelyek a globális adatvédelmi szabályozáshoz tartoznak.",
   "static.gpc.status.applied": "Alkalmazva",
   "static.gpc.status.overridden": "Felülírva",
-  "static.gpc.title": "Globális adatvédelmi szabályozás észlelve"
+  "static.gpc.title": "Globális adatvédelmi ellenőrzés észlelve",
+  "static.other.cookies": "Sütik",
+  "static.other.back": "Vissza",
+  "static.other.vendors": "Értékesítők",
+  "static.other.retention": "Megőrzés",
+  "static.other.description": "Leírás"
 }

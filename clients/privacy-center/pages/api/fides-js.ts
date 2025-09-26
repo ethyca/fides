@@ -8,7 +8,7 @@ import {
   experienceIsValid,
   fetchExperience,
   FidesConfig,
-  parseFidesDisabledNotices,
+  parseCommaSeparatedString,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
@@ -241,6 +241,9 @@ export default async function handler(
               fidesApiUrl: getFidesApiUrl(),
               propertyId,
               requestMinimalTCF: true,
+              // If provided, pass systems to be excluded from notice asset disclosure
+              excludeNoticeAssetsBySystems:
+                (req.query.fides_disabled_systems as string) || undefined,
               missingExperienceHandler,
             }),
           {
@@ -339,7 +342,10 @@ export default async function handler(
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
       fidesConsentOverride: environment.settings.FIDES_CONSENT_OVERRIDE,
       fidesDisabledNotices: environment.settings.FIDES_DISABLED_NOTICES
-        ? parseFidesDisabledNotices(environment.settings.FIDES_DISABLED_NOTICES)
+        ? parseCommaSeparatedString(environment.settings.FIDES_DISABLED_NOTICES)
+        : null,
+      fidesDisabledSystems: environment.settings.FIDES_DISABLED_SYSTEMS
+        ? parseCommaSeparatedString(environment.settings.FIDES_DISABLED_SYSTEMS)
         : null,
       fidesConsentNonApplicableFlagMode:
         environment.settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,

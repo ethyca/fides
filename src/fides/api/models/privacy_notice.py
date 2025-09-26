@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import itertools
 import re
 from enum import Enum
+from functools import cached_property
 from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, false, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship, selectinload
 from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base, FidesBase
@@ -189,21 +192,17 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         raise Exception("Invalid notice consent mechanism.")
 
-    @property
-    def cookies(self) -> List[Asset]:
+    @staticmethod
+    def _get_cookie_filter_for_data_uses(data_uses: List[str]) -> ColumnElement:
         """
-        Return the privacy notice's assets of type 'cookie'.
-        Cookies are matched to the privacy notice if they have at least one data use
-        that is either an exact match or a hierarchical descendant of a one of the
-        data uses in the privacy notice.
+        Returns the SQLAlchemy filter clause to find cookies for the given data uses.
+        This is a helper method to keep the query logic consistent and safe.
         """
-        db = Session.object_session(self)
-
-        if not self.data_uses:
-            return []
+        if not data_uses:
+            return false()
 
         # Use array overlap operator (&&) for exact matches - GIN index friendly
-        exact_matches_condition = Asset.data_uses.op("&&")(self.data_uses)
+        exact_matches_condition = Asset.data_uses.op("&&")(data_uses)
 
         # For hierarchical children, we still need to check individual elements with LIKE
         # They have to match the data_use and the period separator, so we know it's a hierarchical descendant
@@ -211,19 +210,77 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             text(
                 f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE :pattern_{i})"
             ).bindparams(**{f"pattern_{i}": f"{data_use}.%"})
-            for i, data_use in enumerate(self.data_uses)
+            for i, data_use in enumerate(data_uses)
         ]
 
-        asset_matching_condition = or_(
-            exact_matches_condition, *hierarchical_conditions
+        return or_(exact_matches_condition, *hierarchical_conditions)
+
+    @cached_property
+    def cookies(self) -> List[Asset]:
+        """
+        Return relevant assets of type 'cookie' (via the data use)
+
+        Cookies are matched to the privacy notice if they have at least one data use
+        that is either an exact match or a hierarchical descendant of a one of the
+        data uses in the privacy notice.
+
+        This is a cached_property, so the database query is only executed
+        once per instance, and the result is cached for subsequent accesses.
+        """
+        db = Session.object_session(self)
+        cookie_filter = self._get_cookie_filter_for_data_uses(self.data_uses)
+
+        return (
+            db.query(Asset)
+            .filter(
+                Asset.asset_type == "Cookie",
+                cookie_filter,
+            )
+            .all()
         )
 
-        query = db.query(Asset).filter(
-            Asset.asset_type == "Cookie",
-            asset_matching_condition,
-        )
+    @classmethod
+    def load_cookie_data_for_notices(
+        cls, db: Session, notices: List["PrivacyNotice"]
+    ) -> None:
+        """
+        An efficient method to bulk-load cookie data for a list of PrivacyNotice objects.
+        This prevents the "N+1" query problem by pre-populating the `cookies`
+        cached_property for each notice.
+        """
+        if not notices:
+            return
 
-        return query.all()
+        all_data_uses = set(itertools.chain.from_iterable(n.data_uses for n in notices))
+
+        all_relevant_cookies: List[Asset] = []
+        if all_data_uses:
+            cookie_filter = cls._get_cookie_filter_for_data_uses(list(all_data_uses))
+            all_relevant_cookies = (
+                db.query(Asset)
+                .options(
+                    selectinload("system")
+                )  # Eagerly load the system to prevent further N+1s
+                .filter(
+                    Asset.asset_type == "Cookie",
+                    cookie_filter,
+                )
+                .all()
+            )
+
+        # Associate the pre-fetched cookies to notices based on their data uses
+        for notice in notices:
+            matching_cookies = [
+                cookie
+                for cookie in all_relevant_cookies
+                if any(
+                    ",".join(cookie.data_uses).lower().startswith(d.lower())
+                    for d in notice.data_uses
+                )
+            ]
+            # Pre-populate the cache of the 'cookies' cached_property.
+            # This directly sets the attribute that the decorator would otherwise compute.
+            setattr(notice, "cookies", matching_cookies)
 
     @property
     def calculated_systems_applicable(self) -> bool:

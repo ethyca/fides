@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import { FidesEvent } from "../../docs/fides-event";
 import { getConsentContext } from "../../lib/consent-context";
 import {
+  AssetType,
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
@@ -45,6 +46,7 @@ import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import VendorAssetDisclosure from "./VendorAssetDisclosure";
 
 const NoticeOverlay = () => {
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
@@ -181,12 +183,39 @@ const NoticeOverlay = () => {
       noticeKey: item.notice.notice_key,
       title: item.bestTranslation?.title || item.notice.name || "",
       description: item.bestTranslation?.description,
+      cookies: item.notice.cookies,
       checked,
       consentMechanism: item.notice.consent_mechanism,
       disabled: item.notice.disabled,
       gpcStatus,
     };
   });
+
+  const [isVendorAssetDisclosureView, setIsVendorAssetDisclosureView] =
+    useState(false);
+  const [selectedNoticeKey, setSelectedNoticeKey] = useState<string | null>(
+    null,
+  );
+
+  const selectedNotice = useMemo(() => {
+    if (!selectedNoticeKey) {
+      return null;
+    }
+    return privacyNoticeItems.find(
+      (item) => item.notice.notice_key === selectedNoticeKey,
+    );
+  }, [selectedNoticeKey, privacyNoticeItems]);
+
+  const noticesWithCookies = privacyNoticeItems
+    .map((item) => ({
+      noticeKey: item.notice.notice_key,
+      title: item.bestTranslation?.title || item.notice.name || "",
+      cookies: item.notice.cookies || [],
+    }))
+    .filter((n) => n.cookies && n.cookies.length > 0);
+  const cookiesBySelectedNotice = selectedNoticeKey
+    ? noticesWithCookies.filter((n) => n.noticeKey === selectedNoticeKey)
+    : noticesWithCookies;
 
   useNoticesServed({
     privacyExperienceConfigHistoryId,
@@ -367,6 +396,22 @@ const NoticeOverlay = () => {
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
+      isVendorAssetDisclosureView={isVendorAssetDisclosureView}
+      onModalHide={() => {
+        setIsVendorAssetDisclosureView(false);
+        setSelectedNoticeKey(null);
+      }}
+      headerContent={
+        isVendorAssetDisclosureView && selectedNotice
+          ? {
+              title:
+                selectedNotice.bestTranslation?.title ||
+                selectedNotice.notice.name ||
+                "",
+              description: selectedNotice.bestTranslation?.description || "",
+            }
+          : undefined
+      }
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
@@ -421,13 +466,51 @@ const NoticeOverlay = () => {
       }}
       renderModalContent={() => (
         <div>
-          <div className="fides-modal-notices">
-            <NoticeToggles
-              noticeToggles={noticeToggles}
-              enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={handleToggleChange}
+          {isVendorAssetDisclosureView ? (
+            <VendorAssetDisclosure
+              cookiesByNotice={cookiesBySelectedNotice}
+              onBack={() => {
+                setIsVendorAssetDisclosureView(false);
+                setSelectedNoticeKey(null);
+              }}
             />
-          </div>
+          ) : (
+            <div className="fides-modal-notices">
+              <NoticeToggles
+                noticeToggles={noticeToggles}
+                enabledNoticeKeys={draftEnabledNoticeKeys}
+                onChange={handleToggleChange}
+                renderDescription={(props) => {
+                  const hasCookies = (props.cookies || []).length > 0;
+                  return (
+                    <div>
+                      {props.description}
+                      {hasCookies &&
+                      // only "Cookie" asset types are currently supported for vendor disclosure
+                      experience.experience_config?.asset_disclosure_include_types?.includes(
+                        AssetType.COOKIE,
+                      ) &&
+                      experience.experience_config
+                        ?.allow_vendor_asset_disclosure ? (
+                        <div style={{ marginTop: "12px" }}>
+                          <button
+                            type="button"
+                            className="fides-link-button fides-vendors-disclosure-link"
+                            onClick={() => {
+                              setSelectedNoticeKey(props.noticeKey);
+                              setIsVendorAssetDisclosureView(true);
+                            }}
+                          >
+                            {i18n.t("static.other.vendors")}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
       renderModalFooter={({ onClose }) => (
