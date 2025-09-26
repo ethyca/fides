@@ -396,7 +396,7 @@ fi
 PYTHON_PACKAGES=()
 NEED_FIDES_INSTALL=false
 if declare -p MISSING_EXTRA_CMDS >/dev/null 2>&1; then
-  for missing in "${MISSING_EXTRA_CMDS[@]}"; do
+  for missing in "${MISSING_EXTRA_CMDS[@]:-}"; do
     case "$missing" in
       uvicorn)
         PYTHON_PACKAGES+=("uvicorn")
