@@ -234,7 +234,6 @@ export const AddNewSystemModal = ({
               <Button
                 htmlType="reset"
                 onClick={handleCloseModal}
-                disabled={isLoading || !dirty || !isValid}
                 data-testid="cancel-btn"
               >
                 Cancel

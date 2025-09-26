@@ -21,6 +21,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.71.0...main)
 
+### Changed
+- Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
+
+### Fixed
+- Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
+
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
 ### Added
@@ -40,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated consent compliance issue labels & tooltips. Improved the way the consent issue modal is opened. [#6615](https://github.com/ethyca/fides/pull/6615)
 - Updated manual task configuration UI from a table to a list view [#6632](https://github.com/ethyca/fides/pull/6632)
 - Action type column of Privacy Request CSV to show all request policy types separated by `+` [6621](https://github.com/ethyca/fides/pull/6621)
+- Privacy Center now supports certain HTML if `FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION` is set [#6643](https://github.com/ethyca/fides/pull/6643)
 
 ### Developer Experience
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
