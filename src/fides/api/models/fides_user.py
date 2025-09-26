@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from fides.api.models.fides_user_respondent_email_verification import (
         FidesUserRespondentEmailVerification,
     )
+    from fides.api.models.manual_task.manual_task import ManualTaskReference
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
     from fides.api.models.system_manager import SystemManager
 
@@ -88,6 +89,14 @@ class FidesUser(Base):
         back_populates="user",
         cascade="all,delete",
         uselist=False,
+    )
+
+    # Manual task assignments relationship
+    manual_task_references = relationship(
+        "ManualTaskReference",
+        primaryjoin="and_(FidesUser.id == foreign(ManualTaskReference.reference_id), "
+        "ManualTaskReference.reference_type == 'assigned_user')",
+        viewonly=True,
     )
 
     @property
