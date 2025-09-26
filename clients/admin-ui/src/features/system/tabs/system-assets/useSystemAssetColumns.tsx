@@ -9,10 +9,11 @@ import {
   IndeterminateCheckboxCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
+import { AssetType } from "~/features/system/tabs/system-assets/AddEditAssetModal";
 import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCell";
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
-import { Asset, AssetType, PrivacyNoticeRegion } from "~/types/api";
+import { Asset, PrivacyNoticeRegion } from "~/types/api";
 
 const useSystemAssetColumns = ({
   systemKey,

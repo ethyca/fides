@@ -24,7 +24,7 @@ import {
   useUpdateSystemAssetsMutation,
 } from "~/features/system/system-assets.slice";
 import WrappedDataUseSelect from "~/features/system/tabs/system-assets/WrappedDataUseSelect";
-import { Asset, AssetType } from "~/types/api";
+import { Asset } from "~/types/api";
 
 interface AddEditAssetModalProps extends Omit<ModalProps, "children"> {
   systemKey: string;
@@ -32,6 +32,14 @@ interface AddEditAssetModalProps extends Omit<ModalProps, "children"> {
 }
 
 const FORM_COPY = `Create and configure assets (e.g. cookies, pixels, tags) for this system to ensure proper consent enforcement. Adding assets manually allows you to define key attributes, assign categories, and align them with compliance requirements.`;
+
+export enum AssetType {
+  COOKIE = "Cookie",
+  BROWSER_REQUEST = "Browser Request",
+  I_FRAME = "iFrame",
+  JAVASCRIPT_TAG = "Javascript tag",
+  IMAGE = "Image",
+}
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Enter a name for this asset"),

@@ -18,7 +18,6 @@ export { AlertLevel } from "./models/AlertLevel";
 export { AllowedTypes } from "./models/AllowedTypes";
 export type { AllowList } from "./models/AllowList";
 export type { AllowListUpdate } from "./models/AllowListUpdate";
-export { AssetType } from "./models/Asset";
 export type { Asset } from "./models/Asset";
 export type { AssetCreate } from "./models/AssetCreate";
 export type { AssetUpdate } from "./models/AssetUpdate";
