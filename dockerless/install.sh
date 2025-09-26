@@ -395,16 +395,18 @@ fi
 
 PYTHON_PACKAGES=()
 NEED_FIDES_INSTALL=false
-for missing in "${MISSING_EXTRA_CMDS[@]}"; do
-  case "$missing" in
-    uvicorn)
-      PYTHON_PACKAGES+=("uvicorn")
-      ;;
-    fides)
-      NEED_FIDES_INSTALL=true
-      ;;
-  esac
-done
+if declare -p MISSING_EXTRA_CMDS >/dev/null 2>&1; then
+  for missing in "${MISSING_EXTRA_CMDS[@]}"; do
+    case "$missing" in
+      uvicorn)
+        PYTHON_PACKAGES+=("uvicorn")
+        ;;
+      fides)
+        NEED_FIDES_INSTALL=true
+        ;;
+    esac
+  done
+fi
 
 if [ ${#PYTHON_PACKAGES[@]} -gt 0 ]; then
   install_python_packages "${PYTHON_PACKAGES[@]}"
