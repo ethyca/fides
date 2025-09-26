@@ -1,21 +1,19 @@
 import { AntEmpty as Empty } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import { MonitorTaskInProgressResponse } from "~/types/api";
-
 import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
-interface UseInProgressMonitorTasksListConfig {
-  monitorId?: string; // Optional since this shows tasks from all monitors
-}
-
-export const useInProgressMonitorTasksList = ({
-  monitorId,
-}: UseInProgressMonitorTasksListConfig = {}) => {
+export const useInProgressMonitorTasksList = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilters, setStatusFilters] = useState<string[]>(["pending", "in_processing", "paused", "retrying", "error"]); // Default to all "in progress" states plus error tasks
+  const [statusFilters, setStatusFilters] = useState<string[]>([
+    "pending",
+    "in_processing",
+    "paused",
+    "retrying",
+    "error",
+  ]); // Default to all "in progress" states plus error tasks
   const [showDismissed, setShowDismissed] = useState(false); // Default to not showing dismissed tasks
 
   const updateSearch = useCallback((newSearch: string) => {
@@ -35,7 +33,13 @@ export const useInProgressMonitorTasksList = ({
 
   // Default button: Reset to all "In Progress" states plus error tasks (pending, in_processing, paused, retrying, error)
   const resetToDefault = useCallback(() => {
-    setStatusFilters(["pending", "in_processing", "paused", "retrying", "error"]);
+    setStatusFilters([
+      "pending",
+      "in_processing",
+      "paused",
+      "retrying",
+      "error",
+    ]);
     setShowDismissed(false);
     setPageIndex(1);
   }, []);
@@ -56,7 +60,7 @@ export const useInProgressMonitorTasksList = ({
     "error",
     "paused", // This is the actual enum value for "awaiting_processing"
     "retrying",
-    "skipped"
+    "skipped",
   ];
 
   const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery({

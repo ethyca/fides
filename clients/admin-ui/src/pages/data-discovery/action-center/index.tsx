@@ -22,7 +22,9 @@ import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-an
 import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
-import useTopLevelActionCenterTabs, { TopLevelActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
+import useTopLevelActionCenterTabs, {
+  TopLevelActionCenterTabHash,
+} from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
 
@@ -158,28 +160,31 @@ const ActionCenterPage = () => {
       ) : (
         <>
           <Flex className="justify-between py-6">
-            <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
           </Flex>
 
-      <List
-        loading={isLoading}
-        dataSource={results || loadingResults}
-        locale={{
-          emptyText: <EmptyMonitorsResult />,
-        }}
-        renderItem={(summary: MonitorAggregatedResults) => {
-          return (
-            !!summary?.key && (
-              <MonitorResult
-                showSkeleton={isFetching}
-                key={summary.key}
-                monitorSummary={summary}
-                actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
-              />
-            )
-          );
-        }}
-      />
+          <List
+            loading={isLoading}
+            dataSource={results || loadingResults}
+            locale={{
+              emptyText: <EmptyMonitorsResult />,
+            }}
+            renderItem={(summary: MonitorAggregatedResults) => {
+              return (
+                !!summary?.key && (
+                  <MonitorResult
+                    showSkeleton={isFetching}
+                    key={summary.key}
+                    monitorSummary={summary}
+                    actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
+                  />
+                )
+              );
+            }}
+          />
 
           {!!results && !!data?.total && data.total > pageSize && (
             <>

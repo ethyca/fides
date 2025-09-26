@@ -6,18 +6,15 @@ import {
   AntPopover as Popover,
   AntSelect as Select,
   AntSpace as Space,
-  AntTypography as Typography,
   Icons,
 } from "fidesui";
 import { useState } from "react";
 
-import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
 import { InProgressMonitorTaskItem } from "./InProgressMonitorTaskItem";
-
-const { Text } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
@@ -27,18 +24,12 @@ const formatStatusForDisplay = (status: string): string => {
   }
 
   return status
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
-interface InProgressMonitorTasksListProps {
-  monitorId?: string;
-}
-
-export const InProgressMonitorTasksList = ({
-  monitorId,
-}: InProgressMonitorTasksListProps) => {
+export const InProgressMonitorTasksList = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const {
@@ -61,11 +52,7 @@ export const InProgressMonitorTasksList = ({
 
     // Ant Design list integration
     listProps,
-
-    // Loading states
-    isLoading,
-    isFetching,
-  } = useInProgressMonitorTasksList({ monitorId });
+  } = useInProgressMonitorTasksList();
 
   // Count active filters (status filters + whether dismissed is shown)
   const activeFilterCount = statusFilters.length + (showDismissed ? 1 : 0);
@@ -78,7 +65,7 @@ export const InProgressMonitorTasksList = ({
         value={statusFilters}
         onChange={updateStatusFilters}
         style={{ width: "100%", marginBottom: "12px" }}
-        options={availableStatuses.map(status => ({
+        options={availableStatuses.map((status) => ({
           label: formatStatusForDisplay(status),
           value: status,
         }))}
@@ -107,7 +94,11 @@ export const InProgressMonitorTasksList = ({
   return (
     <>
       {/* Search Row */}
-      <Flex justify="space-between" align="center" style={{ marginBottom: "16px" }}>
+      <Flex
+        justify="space-between"
+        align="center"
+        style={{ marginBottom: "16px" }}
+      >
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}
@@ -127,17 +118,19 @@ export const InProgressMonitorTasksList = ({
             <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span>Filter</span>
               {activeFilterCount > 0 && (
-                <span style={{
-                  background: "#1890ff",
-                  color: "white",
-                  borderRadius: "10px",
-                  padding: "2px 6px",
-                  fontSize: "10px",
-                  minWidth: "16px",
-                  textAlign: "center",
-                  lineHeight: "1",
-                  fontWeight: "600"
-                }}>
+                <span
+                  style={{
+                    background: "#1890ff",
+                    color: "white",
+                    borderRadius: "10px",
+                    padding: "2px 6px",
+                    fontSize: "10px",
+                    minWidth: "16px",
+                    textAlign: "center",
+                    lineHeight: "1",
+                    fontWeight: "600",
+                  }}
+                >
                   {activeFilterCount}
                 </span>
               )}

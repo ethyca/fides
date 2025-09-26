@@ -1,26 +1,25 @@
+import { formatDistanceStrict } from "date-fns";
 import {
   AntButton as Button,
   AntCol as Col,
-  AntFlex as Flex,
   AntListItemProps as ListItemProps,
   AntPopover as Popover,
   AntRow as Row,
   AntSpace as Space,
   AntTag as Tag,
   AntTypography as Typography,
-  useToast,
   Spinner,
+  useToast,
 } from "fidesui";
-import { useRouter } from "next/router";
 
-import { formatDate } from "~/features/common/utils";
-import { formatDistanceStrict } from "date-fns";
-import { DATA_DISCOVERY_ROUTE_DETAIL } from "~/features/common/nav/routes";
+import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 
-import { useRetryMonitorTaskMutation, useDismissMonitorTaskMutation } from "../action-center.slice";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
-import { useGetAggregateMonitorResultsQuery } from "../action-center.slice";
+import {
+  useDismissMonitorTaskMutation,
+  useGetAggregateMonitorResultsQuery,
+  useRetryMonitorTaskMutation,
+} from "../action-center.slice";
 
 const { Text, Title } = Typography;
 
@@ -32,9 +31,9 @@ const formatStatusForDisplay = (status: string): string => {
   }
 
   return status
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
@@ -45,42 +44,59 @@ export const InProgressMonitorTaskItem = ({
   task,
   ...props
 }: InProgressMonitorTaskItemProps) => {
-  const router = useRouter();
   const toast = useToast();
-  const [retryMonitorTask, { isLoading: isRetrying }] = useRetryMonitorTaskMutation();
-  const [dismissMonitorTask, { isLoading: isDismissing }] = useDismissMonitorTaskMutation();
+  const [retryMonitorTask, { isLoading: isRetrying }] =
+    useRetryMonitorTaskMutation();
+  const [dismissMonitorTask, { isLoading: isDismissing }] =
+    useDismissMonitorTaskMutation();
   const isDismissed = Boolean(task.dismissed_in_activity_view);
   const canRetry = task.status === "error" && task.action_type !== "detection";
 
   // Build a minimal monitor key -> icon data map for ConnectionTypeLogo
-  const { data: monitorAgg } = useGetAggregateMonitorResultsQuery({ page: 1, size: 1000 });
-  const aggItem = (task.monitor_config_id && monitorAgg?.items?.find((m) => m.key === task.monitor_config_id)) || undefined;
-  const logoData: any = aggItem
-    ? {
-        connection_type: aggItem.connection_type as any,
-        saas_config: aggItem.saas_config ? { type: (aggItem.saas_config as any).type } : undefined,
-        name: aggItem.name,
-        key: aggItem.key as any,
-        secrets: (aggItem as any).secrets?.url ? { url: (aggItem as any).secrets.url } : undefined,
-      }
-    : task.connection_type
-      ? {
-          connection_type: task.connection_type as any,
-          name: task.connection_name || task.connection_type,
-        }
-      : undefined;
+  const { data: monitorAgg } = useGetAggregateMonitorResultsQuery({
+    page: 1,
+    size: 1000,
+  });
+  const aggItem = task.monitor_config_id
+    ? monitorAgg?.items?.find((m) => m.key === task.monitor_config_id)
+    : undefined;
+
+  let logoData: any;
+  if (aggItem) {
+    logoData = {
+      connection_type: aggItem.connection_type as any,
+      saas_config: aggItem.saas_config
+        ? { type: (aggItem.saas_config as any).type }
+        : undefined,
+      name: aggItem.name,
+      key: aggItem.key as any,
+      secrets: (aggItem as any).secrets?.url
+        ? { url: (aggItem as any).secrets.url }
+        : undefined,
+    };
+  } else if (task.connection_type) {
+    logoData = {
+      connection_type: task.connection_type as any,
+      name: task.connection_name || task.connection_type,
+    };
+  }
 
   const taskCount = task.staged_resource_urns?.length || 0;
-  const isInProgress = ["pending", "in_processing", "paused", "retrying"].includes(
-    (task.status || "").toLowerCase(),
-  );
+  const isInProgress = [
+    "pending",
+    "in_processing",
+    "paused",
+    "retrying",
+  ].includes((task.status || "").toLowerCase());
   const taskTitle = (() => {
     if (task.action_type === "classification") {
       const verb = task.status === "complete" ? "Classified" : "Classifying";
       return `${verb} ${taskCount} ${taskCount === 1 ? "field" : "fields"}`;
     }
     if (task.action_type === "detection") {
-      return task.status === "complete" ? "Monitor scanned" : "Monitor scanning";
+      return task.status === "complete"
+        ? "Monitor scanned"
+        : "Monitor scanning";
     }
     if (task.action_type === "promotion") {
       return task.status === "complete" ? "Promoted" : "Promoting";
@@ -90,20 +106,11 @@ export const InProgressMonitorTaskItem = ({
 
   const monitorGroupLabel = (() => {
     const type = (task.connection_type || "").toString().toUpperCase();
-    if (type.includes("WEBSITE")) return "Product monitor";
+    if (type.includes("WEBSITE")) {
+      return "Product monitor";
+    }
     return "Analytics monitor";
   })();
-
-  const getTaskTypeColor = (taskType?: string) => {
-    switch (taskType) {
-      case "classification":
-        return "blue";
-      case "promotion":
-        return "green";
-      default:
-        return "gray";
-    }
-  };
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -127,7 +134,9 @@ export const InProgressMonitorTaskItem = ({
   };
 
   const formatText = (text?: string) => {
-    if (!text) return "Unknown";
+    if (!text) {
+      return "Unknown";
+    }
     return formatStatusForDisplay(text);
   };
 
@@ -139,7 +148,8 @@ export const InProgressMonitorTaskItem = ({
         description: "Task retry initiated successfully",
       });
     } catch (error: any) {
-      const errorMessage = error?.data?.detail || error?.message || "Unknown error occurred";
+      const errorMessage =
+        error?.data?.detail || error?.message || "Unknown error occurred";
       toast({
         status: "error",
         description: `Failed to retry task: ${errorMessage}`,
@@ -155,57 +165,13 @@ export const InProgressMonitorTaskItem = ({
         description: "Task dismissed successfully",
       });
     } catch (error: any) {
-      const errorMessage = error?.data?.detail || error?.message || "Unknown error occurred";
+      const errorMessage =
+        error?.data?.detail || error?.message || "Unknown error occurred";
       toast({
         status: "error",
         description: `Failed to dismiss task: ${errorMessage}`,
       });
     }
-  };
-
-  const handleSingleResourceClick = (urn: string) => {
-    router.push({
-      pathname: DATA_DISCOVERY_ROUTE_DETAIL,
-      query: { resourceUrn: encodeURIComponent(urn) },
-    });
-  };
-
-  const renderMultipleResourcesPopover = (urns: string[]) => {
-    const content = (
-      <div style={{ maxWidth: "300px" }}>
-        <Text strong style={{ marginBottom: "8px", display: "block" }}>
-          Staged Resources ({urns.length})
-        </Text>
-        <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-          {urns.map((urn, index) => (
-            <div key={urn} style={{ marginBottom: "4px" }}>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => handleSingleResourceClick(urn)}
-                style={{ padding: "0", height: "auto", textAlign: "left" }}
-              >
-                <Text style={{ fontSize: "12px" }} ellipsis={{ tooltip: urn }}>
-                  {urn.split("/").pop() || `Resource ${index + 1}`}
-                </Text>
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-
-    return (
-      <Popover content={content} title={null} trigger="click" placement="bottom">
-        <Tag
-          color="orange"
-          style={{ cursor: "pointer" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          Staged Resources: {urns.length}
-        </Tag>
-      </Popover>
-    );
   };
 
   return (
@@ -218,22 +184,39 @@ export const InProgressMonitorTaskItem = ({
               {taskTitle}
             </Title>
             {!isInProgress && (
-              <Tag color={getStatusColor(task.status)}>{formatText(task.status)}</Tag>
+              <Tag color={getStatusColor(task.status)}>
+                {formatText(task.status)}
+              </Tag>
             )}
             {task.status === "error" && (
               <>
                 {canRetry && (
-                  <Button size="small" type="primary" loading={isRetrying} onClick={handleRetryTask}>
+                  <Button
+                    size="small"
+                    type="primary"
+                    loading={isRetrying}
+                    onClick={handleRetryTask}
+                  >
                     Retry
                   </Button>
                 )}
                 {!isDismissed && (
-                  <Button size="small" loading={isDismissing} onClick={handleDismissTask}>
+                  <Button
+                    size="small"
+                    loading={isDismissing}
+                    onClick={handleDismissTask}
+                  >
                     Dismiss
                   </Button>
                 )}
-                <Popover content={<div style={{ maxWidth: 360 }}>{task.message}</div>} title={null} trigger="click">
-                  <Button type="link" size="small">Failure reason</Button>
+                <Popover
+                  content={<div style={{ maxWidth: 360 }}>{task.message}</div>}
+                  title={null}
+                  trigger="click"
+                >
+                  <Button type="link" size="small">
+                    Failure reason
+                  </Button>
                 </Popover>
               </>
             )}
@@ -249,7 +232,9 @@ export const InProgressMonitorTaskItem = ({
             <Spinner size="sm" color="primary" thickness="2px" speed="0.6s" />
           ) : (
             <Text type="secondary" style={{ fontSize: "12px" }}>
-              {formatDistanceStrict(new Date(task.updated_at), new Date(), { addSuffix: true })}
+              {formatDistanceStrict(new Date(task.updated_at), new Date(), {
+                addSuffix: true,
+              })}
             </Text>
           )}
         </Col>
