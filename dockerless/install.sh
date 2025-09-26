@@ -76,10 +76,24 @@ install_conda() {
 
   case "$OS_NAME" in
     Linux)
-      installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+      case "$ARCH" in
+        aarch64|arm64)
+          installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh"
+          ;;
+        *)
+          installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+          ;;
+      esac
       ;;
     Darwin)
-      installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
+      case "$ARCH" in
+        arm64)
+          installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"
+          ;;
+        *)
+          installer_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
+          ;;
+      esac
       ;;
     *)
       INFO_MESSAGES+=("Unsupported OS for automatic Miniconda install. Install Conda manually.")
@@ -288,6 +302,7 @@ install_python_packages() {
 }
 
 OS_NAME="$(uname -s)"
+ARCH="$(uname -m)"
 PACKAGE_MANAGER=""
 INSTALL_POSTGRES_CMD=""
 INSTALL_REDIS_CMD=""
