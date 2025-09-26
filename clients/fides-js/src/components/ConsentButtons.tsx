@@ -195,7 +195,6 @@ export const NoticeConsentButtons = ({
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
   }
-  console.log("===> enabledKeys", enabledKeys);
 
   // NOTE: acknowledge and save should behave the same, other than the consent method
   const handleAcknowledgeNotices = () => {
