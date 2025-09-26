@@ -66,18 +66,27 @@ class TestDigestConditionType:
 class TestDigestConditionCRUD:
     """Test basic CRUD operations for DigestCondition."""
 
-    def test_create_receiver_leaf_condition(
+    @pytest.mark.parametrize(
+        "digest_condition_type",
+        [
+            DigestConditionType.RECEIVER,
+            DigestConditionType.CONTENT,
+            DigestConditionType.PRIORITY,
+        ],
+    )
+    def test_create_leaf_condition_types(
         self,
         db: Session,
         digest_config: DigestConfig,
+        digest_condition_type: DigestConditionType,
         sample_eq_condition_leaf: ConditionLeaf,
-        receiver_condition: dict[str, Any],
     ):
         """Test creating a receiver leaf condition."""
         condition = DigestCondition.create(
             db=db,
             data={
-                **receiver_condition,
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": digest_condition_type,
                 **sample_eq_condition_leaf.model_dump(),
                 "condition_type": ConditionalDependencyType.leaf,
                 "sort_order": 1,
@@ -85,11 +94,8 @@ class TestDigestConditionCRUD:
         )
 
         assert condition.id is not None
-        assert condition.digest_config_id == receiver_condition["digest_config_id"]
-        assert (
-            condition.digest_condition_type
-            == receiver_condition["digest_condition_type"]
-        )
+        assert condition.digest_config_id == digest_config.id
+        assert condition.digest_condition_type == digest_condition_type
         assert condition.condition_type == ConditionalDependencyType.leaf
         assert condition.field_address == sample_eq_condition_leaf.field_address
         assert condition.operator == sample_eq_condition_leaf.operator
@@ -99,43 +105,40 @@ class TestDigestConditionCRUD:
 
         # Test relationship
         assert condition.digest_config == digest_config
+        condition.delete(db)
 
-    def test_create_content_group_condition(
+    @pytest.mark.parametrize(
+        "digest_condition_type",
+        [
+            DigestConditionType.RECEIVER,
+            DigestConditionType.CONTENT,
+            DigestConditionType.PRIORITY,
+        ],
+    )
+    @pytest.mark.parametrize("group_condition", [GroupOperator.or_, GroupOperator.and_])
+    def test_create_group_condition_types(
         self,
         db: Session,
-        content_condition: dict[str, Any],
-        group_condition_or: dict[str, Any],
+        digest_config: DigestConfig,
+        digest_condition_type: DigestConditionType,
+        group_condition: GroupOperator,
     ):
         """Test creating a content group condition."""
         condition = DigestCondition.create(
-            db=db, data={**content_condition, **group_condition_or, "sort_order": 1}
-        )
-
-        assert condition.digest_condition_type == DigestConditionType.CONTENT
-        assert condition.condition_type == ConditionalDependencyType.group
-        assert_group_condition(condition, GroupOperator.or_, [])
-
-    def test_create_priority_condition(
-        self,
-        db: Session,
-        priority_condition: dict[str, Any],
-        priority_condition_leaf: ConditionLeaf,
-    ):
-        """Test creating a priority condition."""
-        condition = DigestCondition.create(
             db=db,
             data={
-                **priority_condition,
-                **priority_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.group,
+                "logical_operator": group_condition,
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": digest_condition_type,
                 "sort_order": 1,
             },
         )
 
-        assert condition.digest_condition_type == DigestConditionType.PRIORITY
-        assert condition.field_address == priority_condition_leaf.field_address
-        assert condition.operator == priority_condition_leaf.operator
-        assert condition.value == priority_condition_leaf.value
+        assert condition.digest_condition_type == digest_condition_type
+        assert condition.condition_type == ConditionalDependencyType.group
+        assert_group_condition(condition, group_condition, [])
+        condition.delete(db)
 
     def test_required_fields_validation(self, db: Session, digest_config: DigestConfig):
         """Test that required fields are validated."""
@@ -260,6 +263,7 @@ class TestDigestConditionTrees:
         assert child1.parent == root_group
         assert child2.parent == root_group
         assert len(root_group.children) == 2
+        root_group.delete(db)
 
     def test_nested_group_condition_tree(
         self,
@@ -607,7 +611,7 @@ class TestDigestConditionValidation:
         """Test error handling for invalid condition conversions."""
         # Create group condition
         group_condition = DigestCondition.create(
-            db=db, data={**receiver_condition, **group_condition_and, "sort_order": 1}
+            db=db, data={**receiver_condition, **group_condition_and, "sort_order": 0}
         )
 
         # Test converting group to leaf fails

@@ -36,6 +36,7 @@ class TestDigestConfigCreation:
         assert config.config_metadata == {}
         assert config.created_at is not None
         assert config.updated_at is not None
+        config.delete(db)
 
     def test_create_privacy_request_digest(self, db: Session):
         """Test creating a privacy request digest configuration."""
@@ -63,6 +64,7 @@ class TestDigestConfigCreation:
         assert config.config_metadata["region"] == "EU"
         assert config.config_metadata["export_format"] == "csv"
         assert config.config_metadata["include_attachments"] is True
+        config.delete(db)
 
     def test_create_minimal_digest_config(self, db: Session):
         """Test creating a digest config with only required fields."""
@@ -82,6 +84,7 @@ class TestDigestConfigCreation:
         assert config.cron_expression == "0 9 * * 1"
         assert config.timezone == "US/Eastern"  # Default
         assert config.config_metadata == {}
+        config.delete(db)
 
     def test_digest_config_defaults(self, db: Session):
         """Test that default values are properly set."""
@@ -98,6 +101,7 @@ class TestDigestConfigCreation:
         assert config.timezone == "US/Eastern"
         assert config.cron_expression == "0 9 * * 1"
         assert config.config_metadata == {}
+        config.delete(db)
 
     def test_name_is_required(self, db: Session):
         """Test that name field is required."""

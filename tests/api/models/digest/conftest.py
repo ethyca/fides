@@ -73,14 +73,14 @@ def group_condition_and() -> dict[str, Any]:
 def receiver_group(
     db: Session,
     group_condition_and: dict[str, Any],
-    receiver_digest_config: DigestConfig,
+    digest_config: DigestConfig,
 ):
     """Create a receiver group condition using separate digest config."""
     group = DigestCondition.create(
         db=db,
         data={
             **group_condition_and,
-            "digest_config_id": receiver_digest_config.id,
+            "digest_config_id": digest_config.id,
             "digest_condition_type": DigestConditionType.RECEIVER,
             "sort_order": 1,
         },
@@ -215,32 +215,16 @@ def sample_conditions(
 
 
 @pytest.fixture
-def receiver_digest_config(db: Session) -> DigestConfig:
-    """Create a separate digest configuration for receiver-specific fixtures."""
-    config = DigestConfig.create(
-        db=db,
-        data={
-            "digest_type": DigestType.MANUAL_TASKS,
-            "name": "Receiver Test Digest Configuration",
-            "description": "Separate digest configuration for receiver condition tests",
-            "enabled": True,
-        },
-    )
-    yield config
-    config.delete(db)
-
-
-@pytest.fixture
 def receiver_digest_condition_leaf(
     db: Session,
-    receiver_digest_config: DigestConfig,
+    digest_config: DigestConfig,
     receiver_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
     """Create a receiver condition in the database using separate digest config."""
     condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": receiver_digest_config.id,
+            "digest_config_id": digest_config.id,
             "digest_condition_type": DigestConditionType.RECEIVER,
             "condition_type": ConditionalDependencyType.leaf,
             **receiver_condition_leaf.model_dump(),
@@ -252,32 +236,16 @@ def receiver_digest_condition_leaf(
 
 
 @pytest.fixture
-def content_digest_config(db: Session) -> DigestConfig:
-    """Create a separate digest configuration for content-specific fixtures."""
-    config = DigestConfig.create(
-        db=db,
-        data={
-            "digest_type": DigestType.MANUAL_TASKS,
-            "name": "Content Test Digest Configuration",
-            "description": "Separate digest configuration for content condition tests",
-            "enabled": True,
-        },
-    )
-    yield config
-    config.delete(db)
-
-
-@pytest.fixture
 def content_digest_condition_leaf(
     db: Session,
-    content_digest_config: DigestConfig,
+    digest_config: DigestConfig,
     content_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
     """Create a content condition in the database using separate digest config."""
     condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": content_digest_config.id,
+            "digest_config_id": digest_config.id,
             "digest_condition_type": DigestConditionType.CONTENT,
             **content_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
@@ -289,32 +257,16 @@ def content_digest_condition_leaf(
 
 
 @pytest.fixture
-def priority_digest_config(db: Session) -> DigestConfig:
-    """Create a separate digest configuration for priority-specific fixtures."""
-    config = DigestConfig.create(
-        db=db,
-        data={
-            "digest_type": DigestType.MANUAL_TASKS,
-            "name": "Priority Test Digest Configuration",
-            "description": "Separate digest configuration for priority condition tests",
-            "enabled": True,
-        },
-    )
-    yield config
-    config.delete(db)
-
-
-@pytest.fixture
 def priority_digest_condition_leaf(
     db: Session,
-    priority_digest_config: DigestConfig,
+    digest_config: DigestConfig,
     priority_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
     """Create a priority condition in the database using separate digest config."""
     condition = DigestCondition.create(
         db=db,
         data={
-            "digest_config_id": priority_digest_config.id,
+            "digest_config_id": digest_config.id,
             "digest_condition_type": DigestConditionType.PRIORITY,
             **priority_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,

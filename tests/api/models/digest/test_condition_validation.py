@@ -37,14 +37,24 @@ class TestDigestConditionValidation:
     def test_create_child_condition_same_type_succeeds(
         self,
         db: Session,
+        digest_config: DigestConfig,
         receiver_group: DigestCondition,
-        receiver_digest_condition_leaf: DigestCondition,
+        receiver_condition_leaf: ConditionLeaf,
     ):
         """Test that child conditions with same type as parent succeed."""
         parent = receiver_group
 
-        child = receiver_digest_condition_leaf
-        child.update(db=db, data={"parent_id": parent.id})
+        child = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                **receiver_condition_leaf.model_dump(),
+                "parent_id": parent.id,
+                "condition_type": ConditionalDependencyType.leaf,
+                "sort_order": 1,
+            },
+        )
         assert child.digest_condition_type == DigestConditionType.RECEIVER
         assert child.parent_id == parent.id
 
@@ -262,12 +272,12 @@ class TestDigestConditionValidation:
                 )
 
         # Clean up child for next iteration
-        child.delete(db)
+        parent_condition.delete(db)
 
+    @pytest.mark.usefixtures("digest_config")
     def test_deep_tree_validation_prevents_type_mixing(
         self,
         db: Session,
-        digest_config: DigestConfig,
         receiver_condition: dict[str, Any],
         content_condition: dict[str, Any],
         group_condition_and: dict[str, Any],
@@ -345,12 +355,11 @@ class TestDigestConditionValidation:
         intermediate.delete(db)
         root.delete(db)
 
-    def test_validation_prevents_update_that_breaks_tree_consistency(
+    @pytest.mark.usefixtures("digest_config")
+    def test_validation_prevents_crud_that_breaks_tree_consistency(
         self,
         db: Session,
-        digest_config: DigestConfig,
         receiver_condition: dict[str, Any],
-        content_condition: dict[str, Any],
         group_condition_and: dict[str, Any],
     ):
         """Test that updating a condition to different type fails if it breaks tree consistency."""
@@ -364,6 +373,7 @@ class TestDigestConditionValidation:
             },
         )
 
+        # Create receiver leaf condition
         child = DigestCondition.create(
             db=db,
             data={
@@ -390,47 +400,8 @@ class TestDigestConditionValidation:
         db.refresh(child)
         assert child.digest_condition_type == DigestConditionType.RECEIVER
 
-        # Clean up
-        child.delete(db)
-        root.delete(db)
-
-    def test_save_method_validates_condition_type_consistency(
-        self,
-        db: Session,
-        digest_config: DigestConfig,
-        receiver_condition: dict[str, Any],
-        content_condition: dict[str, Any],
-        group_condition_and: dict[str, Any],
-    ):
-        """Test that the save method also validates condition type consistency."""
-        # Create RECEIVER root
-        root = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                **group_condition_and,
-                "sort_order": 0,
-            },
-        )
-
-        # Create RECEIVER child
-        child = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                "condition_type": ConditionalDependencyType.leaf,
-                "parent_id": root.id,
-                "field_address": "receiver.email",
-                "operator": Operator.eq,
-                "value": "test@example.com",
-                "sort_order": 1,
-            },
-        )
-
-        # Manually modify the child's digest_condition_type in memory (bypassing validation)
-        child.digest_condition_type = DigestConditionType.CONTENT
-
         # Try to save - should fail validation
+        child.digest_condition_type = DigestConditionType.CONTENT
         with pytest.raises(
             ValueError,
             match="Cannot create condition with type 'content' under parent with type 'receiver'",
