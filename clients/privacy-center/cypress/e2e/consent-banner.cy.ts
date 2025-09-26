@@ -6,8 +6,10 @@ import {
   ConsentMethod,
   ConsentNonApplicableFlagMode,
   encodeNoticeConsentString,
+  ExperienceConfig,
   FidesCookie,
   FidesInitOptions,
+  Layer1ButtonOption,
   PrivacyNotice,
   RecordConsentServedRequest,
   REQUEST_SOURCE,
@@ -1357,6 +1359,61 @@ describe("Consent overlay", () => {
           cy.get("button").contains("Manage preferences").click();
           cy.get("div.fides-gpc-banner").should("not.exist");
           cy.get("div.fides-gpc-badge").should("not.exist");
+        });
+      });
+
+      describe("when GPC flag is found, and notices apply to GPC and acknowledge button is used", () => {
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = true;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          stubConfig({
+            experience: {
+              privacy_notices: [
+                mockPrivacyNotice({
+                  title: "Advertising with gpc enabled",
+                  id: "pri_notice-advertising",
+                  has_gpc_flag: true,
+                }),
+                mockPrivacyNotice({
+                  title: "one",
+                  id: "pri_notice-one",
+                  notice_key: "one",
+                  consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+                }),
+              ],
+            },
+            experienceConfig: {
+              layer1_button_options: Layer1ButtonOption.ACKNOWLEDGE,
+            },
+          });
+        });
+
+        it("does not get overridden by banner acknowledge button", () => {
+          cy.get("@FidesUpdated")
+            .should("have.been.calledOnce")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.GPC);
+            });
+          cy.get("div#fides-banner").within(() => {
+            cy.get("button").contains("OK").click();
+          });
+          cy.get("@FidesUpdated")
+            .should("have.been.calledTwice")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
+            });
+          cy.get("#fides-modal-link").click();
+          cy.get(".fides-notice-toggle")
+            .contains("Applied")
+            .parents(".fides-notice-toggle-title")
+            .within(() => {
+              cy.get(".fides-gpc-label").contains("Applied");
+            });
         });
       });
 
