@@ -21,8 +21,6 @@ import {
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
 import type { MonitorAggregatedResults } from "../types";
-
-
 const { Text, Title } = Typography;
 
 // Helper function to format status names for display
