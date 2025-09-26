@@ -168,10 +168,19 @@ ensure_conda_env() {
 
   if ! conda env list | awk '!/^#/ {print $1}' | grep -qx "$CONDA_ENV_NAME"; then
     echo "Creating Conda environment '$CONDA_ENV_NAME' (python=$CONDA_REQUIRED_PYTHON)..."
-    if ! conda create -y -n "$CONDA_ENV_NAME" "python=$CONDA_REQUIRED_PYTHON"; then
-      INFO_MESSAGES+=("Failed to create Conda env '$CONDA_ENV_NAME'. Create it manually.")
+    local create_log
+    create_log="$(mktemp -t fides_conda_create.XXXXXXXXXX)"
+    if ! conda create -y -n "$CONDA_ENV_NAME" "python=$CONDA_REQUIRED_PYTHON" >"$create_log" 2>&1; then
+      if grep -q "CondaToSNonInteractiveError" "$create_log"; then
+        INFO_MESSAGES+=("Conda could not create env '$CONDA_ENV_NAME' until you accept the Anaconda Terms of Service letters above. Run the commands displayed by conda and rerun dockerless/install.sh.")
+      else
+        INFO_MESSAGES+=("Failed to create Conda env '$CONDA_ENV_NAME'. See $create_log for details or create it manually.")
+      fi
+      cat "$create_log"
+      rm -f "$create_log"
       return 1
     fi
+    rm -f "$create_log"
   fi
 
   echo "Activating Conda environment '$CONDA_ENV_NAME'..."
