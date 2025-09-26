@@ -170,7 +170,7 @@ class DigestCondition(ConditionalDependencyBase):
         try:
             return super().create(db=db, data=data, check_name=check_name)
         except Exception as e:
-            raise ConditionalDependencyError(e)
+            raise ConditionalDependencyError(str(e))
 
     def update(self, db: Session, *, data: dict[str, Any]) -> "DigestCondition":
         """Update DigestCondition with validation."""
