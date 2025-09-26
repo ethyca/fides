@@ -431,7 +431,7 @@ for extra_cmd in uvicorn fides; do
   fi
 done
 
-if [ ${#MISSING_EXTRA_CMDS[@]} -gt 0 ]; then
+if declare -p MISSING_EXTRA_CMDS >/dev/null 2>&1 && [ ${#MISSING_EXTRA_CMDS[@]} -gt 0 ]; then
   INFO_MESSAGES+=("Still missing CLI commands: ${MISSING_EXTRA_CMDS[*]}. Install them manually or activate the appropriate environment.")
 fi
 
