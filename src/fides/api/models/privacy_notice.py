@@ -9,15 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Type
 from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import (
-    Float,
-    ForeignKey,
-    String,
-    UniqueConstraint,
-    false,
-    or_,
-    text,
-)
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, false, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship, selectinload
