@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.71.0...main)
 
+### Added
+- Added digest conditional dependency sql model. [#6627](https://github.com/ethyca/fides/pull/6627) https://github.com/ethyca/fides/labels/db-migration
+
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
 
