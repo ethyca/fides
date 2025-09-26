@@ -54,7 +54,7 @@ describe("Plus Asset List", () => {
       cy.wait("@getSystemAssets");
     });
 
-    it.only("can add a new asset", () => {
+    it("can add a new asset", () => {
       cy.getByTestId("add-asset-btn").click();
       cy.getByTestId("add-modal-content").within(() => {
         cy.getByTestId("input-name").type("test_cookie");
@@ -69,7 +69,7 @@ describe("Plus Asset List", () => {
       cy.wait("@addSystemAsset");
     });
 
-    it.only("can edit an existing asset", () => {
+    it("can edit an existing asset", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("edit-btn").click();
       });
