@@ -606,7 +606,7 @@ class TestDigestConditionValidation:
         db: Session,
         receiver_condition: dict[str, Any],
         group_condition_and: dict[str, Any],
-        sample_exists_condition_leaf: ConditionLeaf,
+        sample_eq_condition_leaf: ConditionLeaf,
     ):
         """Test error handling for invalid condition conversions."""
         # Create group condition
@@ -623,7 +623,7 @@ class TestDigestConditionValidation:
             db=db,
             data={
                 **receiver_condition,
-                **sample_exists_condition_leaf.model_dump(),
+                **sample_eq_condition_leaf.model_dump(),
                 "condition_type": ConditionalDependencyType.leaf,
                 "sort_order": 1,
             },
