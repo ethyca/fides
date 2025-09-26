@@ -177,7 +177,11 @@ ensure_conda_env() {
 
     if ! conda create -y -n "$CONDA_ENV_NAME" "python=$CONDA_REQUIRED_PYTHON" >"$create_log" 2>&1; then
       if grep -q "CondaToSNonInteractiveError" "$create_log"; then
-        INFO_MESSAGES+=("Conda could not create env '$CONDA_ENV_NAME' until you accept the Anaconda Terms of Service. Run:\n  ${conda_bin:-\$HOME/miniconda3/bin/conda} tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main\n  ${conda_bin:-\$HOME/miniconda3/bin/conda} tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r\nThen re-run dockerless/install.sh.")
+        INFO_MESSAGES+=("Conda could not create env '$CONDA_ENV_NAME' until you accept the Anaconda Terms of Service. Run:
+  ${conda_bin:-\$HOME/miniconda3/bin/conda} tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+  ${conda_bin:-\$HOME/miniconda3/bin/conda} tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+Then re-run dockerless/install.sh.
+Hint: run "source \$HOME/miniconda3/etc/profile.d/conda.sh" first if 'conda' is not on your PATH.")
       else
         INFO_MESSAGES+=("Failed to create Conda env '$CONDA_ENV_NAME'. See $create_log for details or create it manually.")
       fi
