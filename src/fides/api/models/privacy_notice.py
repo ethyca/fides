@@ -15,7 +15,6 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     false,
-    func,
     or_,
     text,
 )
@@ -211,7 +210,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             return false()
 
         # Use array overlap operator (&&) for exact matches - GIN index friendly
-        exact_matches_condition = Asset.data_uses.op("&&")(self.data_uses)
+        exact_matches_condition = Asset.data_uses.op("&&")(data_uses)
 
         # For hierarchical children, we still need to check individual elements with LIKE
         # They have to match the data_use and the period separator, so we know it's a hierarchical descendant
@@ -219,12 +218,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             text(
                 f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE :pattern_{i})"
             ).bindparams(**{f"pattern_{i}": f"{data_use}.%"})
-            for i, data_use in enumerate(self.data_uses)
+            for i, data_use in enumerate(data_uses)
         ]
 
-        return or_(
-            exact_matches_condition, *hierarchical_conditions
-        )
+        return or_(exact_matches_condition, *hierarchical_conditions)
 
     @cached_property
     def cookies(self) -> List[Asset]:
