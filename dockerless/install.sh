@@ -176,17 +176,6 @@ ensure_conda_env() {
     fi
 
     if ! conda create -y -n "$CONDA_ENV_NAME" "python=$CONDA_REQUIRED_PYTHON" >"$create_log" 2>&1; then
-      if grep -q "CondaToSNonInteractiveError" "$create_log" && [ -n "$conda_bin" ] && "$conda_bin" help tos >/dev/null 2>&1; then
-        echo "Accepting Anaconda Terms of Service for default channels..."
-        "$conda_bin" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main >/dev/null 2>&1 || true
-        "$conda_bin" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r >/dev/null 2>&1 || true
-        if conda create -y -n "$CONDA_ENV_NAME" "python=$CONDA_REQUIRED_PYTHON" >>"$create_log" 2>&1; then
-          rm -f "$create_log"
-        fi
-      fi
-    fi
-
-    if ! conda env list | awk '!/^#/ {print $1}' | grep -qx "$CONDA_ENV_NAME"; then
       if grep -q "CondaToSNonInteractiveError" "$create_log"; then
         INFO_MESSAGES+=("Conda could not create env '$CONDA_ENV_NAME' until you accept the Anaconda Terms of Service. Run:\n  ${conda_bin:-\$HOME/miniconda3/bin/conda} tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main\n  ${conda_bin:-\$HOME/miniconda3/bin/conda} tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r\nThen re-run dockerless/install.sh.")
       else
