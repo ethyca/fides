@@ -224,7 +224,7 @@ const SPANISH_MODAL: TestModalTranslations = {
   acknowledge_button_label: "Aceptar",
   gpc_title: "Control de privacidad global detectado",
   gpc_description:
-    "Su preferencia de control de privacidad global se ha respetado.",
+    "Hemos detectado su señal de Control de Privacidad Global y respetaremos sus preferencias en consecuencia.",
   gpc_label: "Control de privacidad global",
   gpc_applied_label: "Aplicado",
   gpc_overridden_label: "Anulado",

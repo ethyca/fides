@@ -1,6 +1,6 @@
 {
   "static.gpc": "Globale Datenschutzeinstellungen",
-  "static.gpc.description": "Ihre globale Datenschutzeinstellungen werden berücksichtigt. Sie wurden automatisch von Anwendungsfällen ausgenommen, die nicht Ihren globalen Datenschutzeinstellungen unterliegen.",
+  "static.gpc.description": "Wir haben Ihr Global Privacy Control-Signal erkannt und werden Ihre Präferenzen entsprechend berücksichtigen.",
   "static.gpc.status.applied": "Angewendet",
   "static.gpc.status.overridden": "Überschrieben",
   "static.gpc.title": "Globale Datenschutzeinstellungen entdeckt"
