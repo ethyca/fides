@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyError,
     ConditionalDependencyType,
 )
 from fides.api.models.digest import DigestConfig, DigestType
@@ -143,7 +144,7 @@ class TestDigestConditionCRUD:
     def test_required_fields_validation(self, db: Session, digest_config: DigestConfig):
         """Test that required fields are validated."""
         # Missing digest_config_id
-        with pytest.raises(IntegrityError):
+        with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
                 data={
@@ -153,7 +154,7 @@ class TestDigestConditionCRUD:
             )
 
         # Missing digest_condition_type
-        with pytest.raises(IntegrityError):
+        with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
                 data={
@@ -163,7 +164,7 @@ class TestDigestConditionCRUD:
             )
 
         # Missing condition_type
-        with pytest.raises(IntegrityError):
+        with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
                 data={
@@ -653,7 +654,7 @@ class TestDigestConditionValidation:
         self, db: Session, sample_exists_condition_leaf: ConditionLeaf
     ):
         """Test creating condition with invalid digest config reference."""
-        with pytest.raises(IntegrityError):
+        with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
                 data={
