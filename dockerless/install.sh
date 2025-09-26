@@ -71,8 +71,11 @@ download_conda_installer() {
 
 install_conda() {
   local installer_url=""
+  local installer_tmp
   local installer_path
-  installer_path="$(mktemp -t fides_conda_installer.XXXXXXXXXX)"
+  installer_tmp="$(mktemp -t fides_conda_installer.XXXXXXXXXX)"
+  installer_path="${installer_tmp}.sh"
+  mv "$installer_tmp" "$installer_path"
 
   case "$OS_NAME" in
     Linux)
