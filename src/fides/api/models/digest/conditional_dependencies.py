@@ -9,6 +9,7 @@ from fides.api.db.base_class import FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
+    ConditionalDependencyError,
 )
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -166,7 +167,10 @@ class DigestCondition(ConditionalDependencyBase):
         """Create a new DigestCondition with validation."""
         # Validate condition type consistency
         cls._validate_condition_type_consistency(db, data)
-        return super().create(db=db, data=data, check_name=check_name)
+        try:
+            return super().create(db=db, data=data, check_name=check_name)
+        except Exception as e:
+            raise ConditionalDependencyError(e)
 
     def update(self, db: Session, *, data: dict[str, Any]) -> "DigestCondition":
         """Update DigestCondition with validation."""

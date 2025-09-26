@@ -17,6 +17,14 @@ if TYPE_CHECKING:
     from sqlalchemy.orm.relationships import RelationshipProperty
 
 
+class ConditionalDependencyError(Exception):
+    """Exception for conditional dependency errors."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 class ConditionalDependencyType(str, Enum):
     """Shared enum for conditional dependency node types.
 
