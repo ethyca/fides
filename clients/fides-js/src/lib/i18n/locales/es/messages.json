@@ -1,6 +1,6 @@
 {
   "static.gpc": "Control de privacidad global",
-  "static.gpc.description": "Su preferencia de control de privacidad global se ha respetado. Se le ha excluido automáticamente de los casos de uso de datos que se adhieren al control de privacidad global.",
+  "static.gpc.description": "Hemos detectado su señal de Control de Privacidad Global y respetaremos sus preferencias en consecuencia.",
   "static.gpc.status.applied": "Aplicado",
   "static.gpc.status.overridden": "Anulado",
   "static.gpc.title": "Control de privacidad global detectado"

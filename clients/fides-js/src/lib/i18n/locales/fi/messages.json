@@ -1,6 +1,6 @@
 {
   "static.gpc": "Maailmanlaajunen tietosuojavalvonta",
-  "static.gpc.description": "Maailmanlaajuinen tietosuojavalvontanne on vahvistettu. Teidät on automaattisesti poistettu tietojen käyttötapauksista, jotka noudattavat maailmanlaajuista tietosuojavalvontaa.",
+  "static.gpc.description": "Olemme havainneet Global Privacy Control -signaalinne ja kunnioitamme mieltymyksiänne vastaavasti.",
   "static.gpc.status.applied": "Käytössä",
   "static.gpc.status.overridden": "Ohitettu",
   "static.gpc.title": "Maailmanlaajuinen tietosuojavalvonta havaittu"

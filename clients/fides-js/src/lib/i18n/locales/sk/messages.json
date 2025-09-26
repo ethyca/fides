@@ -1,6 +1,6 @@
 {
   "static.gpc": "Globálna kontrola súkromia",
-  "static.gpc.description": "Vaša predvoľba pre globálnu kontrolu súkromia bola dodržaná. Pre prípady použitia, kde sa používa globálna kontrola súkromia, vám bol automaticky nastavený explicitný nesúhlas.",
+  "static.gpc.description": "Zaznamenali sme váš signál Global Privacy Control a budeme rešpektovať vaše preferencie zodpovedajúcim spôsobom.",
   "static.gpc.status.applied": "Použitá",
   "static.gpc.status.overridden": "Prepísaná",
   "static.gpc.title": "Bola zistená Globálna kontrola súkromia"
