@@ -210,16 +210,30 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         if not data_uses:
             return false()
 
-        or_clauses = [
-            func.array_to_string(Asset.data_uses, ",").ilike(f"{data_use}%")
-            for data_use in data_uses
+        # Use array overlap operator (&&) for exact matches - GIN index friendly
+        exact_matches_condition = Asset.data_uses.op("&&")(self.data_uses)
+
+        # For hierarchical children, we still need to check individual elements with LIKE
+        # They have to match the data_use and the period separator, so we know it's a hierarchical descendant
+        hierarchical_conditions = [
+            text(
+                f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE :pattern_{i})"
+            ).bindparams(**{f"pattern_{i}": f"{data_use}.%"})
+            for i, data_use in enumerate(self.data_uses)
         ]
-        return or_(*or_clauses)
+
+        return or_(
+            exact_matches_condition, *hierarchical_conditions
+        )
 
     @cached_property
     def cookies(self) -> List[Asset]:
         """
         Return relevant assets of type 'cookie' (via the data use)
+
+        Cookies are matched to the privacy notice if they have at least one data use
+        that is either an exact match or a hierarchical descendant of a one of the
+        data uses in the privacy notice.
 
         This is a cached_property, so the database query is only executed
         once per instance, and the result is cached for subsequent accesses.

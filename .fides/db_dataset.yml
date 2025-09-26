@@ -1025,6 +1025,35 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: digest_config
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: digest_type
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: enabled
+      data_categories: [system.operations]
+    - name: messaging_service_type
+      data_categories: [system.operations]
+    - name: cron_expression
+      data_categories: [system.operations]
+    - name: timezone
+      data_categories: [system.operations]
+    - name: last_sent_at
+      data_categories: [system.operations]
+    - name: next_scheduled_at
+      data_categories: [system.operations]
+    - name: config_metadata
+      data_categories: [system.operations]
   - name: executionlog
     data_categories: []
     fields:
@@ -2811,6 +2840,8 @@ dataset:
         data_categories: [system.operations]
       - name: message
         data_categories: [system.operations]
+      - name: dismissed
+        data_categories: [system.operations]
       - name: monitor_config_id
         data_categories: [system.operations]
       - name: staged_resource_urns
@@ -3002,6 +3033,28 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: classification_benchmark
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: monitor_config_key
+        data_categories: [system.operations]
+      - name: dataset_fides_key
+        data_categories: [system.operations]
+      - name: resource_urns
+        data_categories: [system.operations]
+      - name: overall_metrics
+        data_categories: [system.operations]
+      - name: field_accuracy_details
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: messages
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
   - name: event_audit
     description: 'Table used to store audit events for tracking system changes and operations'
     fields:
@@ -3035,3 +3088,34 @@ dataset:
     - name: user_id
       description: 'ID of the user who triggered the audit event'
       data_categories: [user.unique_id]
+  - name: oauth_config
+    description: 'Fides Generated Description for Table: oauth_config'
+    data_categories: [ ]
+    fields:
+      - name: client_id
+        description: 'Fides Generated Description for Column: client_id'
+        data_categories: [ system.operations ]
+      - name: client_secret
+        description: 'Fides Generated Description for Column: client_secret'
+        data_categories: [ system.operations ]
+      - name: connection_config_id
+        description: 'Fides Generated Description for Column: connection_config_id'
+        data_categories: [ system.operations ]
+      - name: created_at
+        description: 'Fides Generated Description for Column: created_at'
+        data_categories: [ system.operations ]
+      - name: grant_type
+        description: 'Fides Generated Description for Column: grant_type'
+        data_categories: [ system.operations ]
+      - name: id
+        description: 'Fides Generated Description for Column: id'
+        data_categories: [ system.operations ]
+      - name: scope
+        description: 'Fides Generated Description for Column: scope'
+        data_categories: [ system.operations ]
+      - name: token_url
+        description: 'Fides Generated Description for Column: token_url'
+        data_categories: [ system.operations ]
+      - name: updated_at
+        description: 'Fides Generated Description for Column: updated_at'
+        data_categories: [ system.operations ]

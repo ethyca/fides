@@ -3,6 +3,8 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntSpace as Space,
   AntText as Text,
+  formatIsoLocation,
+  isoStringToEntry,
   useToast,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -61,7 +63,7 @@ interface UseDiscoveredAssetsTableConfig {
   monitorId: string;
   systemId: string;
   onSystemName?: (name: string) => void;
-  onShowBreakdown?: (
+  onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
@@ -71,7 +73,7 @@ export const useDiscoveredAssetsTable = ({
   monitorId,
   systemId,
   onSystemName,
-  onShowBreakdown,
+  onShowComplianceIssueDetails,
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const toast = useToast();
@@ -279,27 +281,37 @@ export const useDiscoveredAssetsTable = ({
             }
           },
         },
-        filters: convertToAntFilters(
-          filterOptions?.locations,
-          (location) =>
-            PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
-            location,
-        ),
+        filters: convertToAntFilters(filterOptions?.locations, (location) => {
+          const isoEntry = isoStringToEntry(location);
+
+          return isoEntry
+            ? formatIsoLocation({ isoEntry })
+            : (PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+                location);
+        }),
         filteredValue: columnFilters?.locations || null,
-        render: (locations: PrivacyNoticeRegion[]) => (
-          <TagExpandableCell
-            values={
-              locations?.map((location) => ({
-                label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
-                key: location,
-              })) ?? []
-            }
-            columnState={{
-              isExpanded: isLocationsExpanded,
-              version: locationsVersion,
-            }}
-          />
-        ),
+        render: (locations: PrivacyNoticeRegion[]) => {
+          return (
+            <TagExpandableCell
+              values={
+                locations?.map((location) => {
+                  const isoEntry = isoStringToEntry(location);
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry })
+                      : (PRIVACY_NOTICE_REGION_RECORD[location] ??
+                        location) /* fallback on internal list for now */,
+                    key: location,
+                  };
+                }) ?? []
+              }
+              columnState={{
+                isExpanded: isLocationsExpanded,
+                version: locationsVersion,
+              }}
+            />
+          );
+        },
       },
       {
         title: "Domain",
@@ -362,15 +374,8 @@ export const useDiscoveredAssetsTable = ({
             : null,
         filters: convertToAntFilters(
           filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
-          (status) => {
-            const statusMap: Record<string, string> = {
-              with_consent: DiscoveryStatusDisplayNames.WITH_CONSENT,
-              without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
-              exempt: DiscoveryStatusDisplayNames.EXEMPT,
-              unknown: DiscoveryStatusDisplayNames.UNKNOWN,
-            };
-            return statusMap[status] ?? status;
-          },
+          (status) =>
+            DiscoveryStatusDisplayNames[status as ConsentStatus] ?? status,
         ),
         filteredValue:
           columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
@@ -379,7 +384,6 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
             stagedResource={record}
-            onShowBreakdown={onShowBreakdown}
           />
         ),
       });
@@ -395,6 +399,7 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveredAssetActionsCell
             asset={record}
             onTabChange={onTabChange}
+            showComplianceIssueDetails={onShowComplianceIssueDetails}
           />
         ),
       });
@@ -416,7 +421,7 @@ export const useDiscoveredAssetsTable = ({
     locationsVersion,
     pagesVersion,
     firstItemConsentStatus,
-    onShowBreakdown,
+    onShowComplianceIssueDetails,
     onTabChange,
   ]);
 

@@ -1,4 +1,4 @@
-from typing import Annotated, Dict, List, Optional, Union
+from typing import Annotated, Dict, List, Literal, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
@@ -509,6 +509,8 @@ async def ls(  # pylint: disable=invalid-name
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
     show_deleted: bool = Query(False),
+    sort_by: Optional[List[Literal["name"]]] = Query(None),
+    sort_asc: Optional[bool] = Query(True),
 ) -> Union[List[System], Page[System]]:
     """Get a list of all of the Systems.
     If any parameters or filters are provided the response will be paginated and/or filtered.
@@ -524,6 +526,8 @@ async def ls(  # pylint: disable=invalid-name
         size=size,
         page=page,
         show_deleted=show_deleted,
+        sort_by=sort_by,
+        sort_asc=sort_asc,
     )
 
 

@@ -1,3 +1,5 @@
+import json
+import re
 import warnings
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
@@ -6,6 +8,7 @@ from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
+import requests
 import requests_mock
 from pydantic import ValidationError
 from sqlalchemy import exc as sa_exc
@@ -25,6 +28,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.policy import Policy
+from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
@@ -454,6 +458,138 @@ class TestPrivacyRequestTriggerWebhooks:
             )
             with pytest.raises(ValidationError):
                 privacy_request.trigger_policy_webhook(webhook)
+
+    def test_webhook_with_oauth_connection_config(
+        self,
+        db,
+        https_connection_config_with_oauth,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks_oauth2,
+    ):
+        webhook = policy_pre_execution_webhooks_oauth2[1]
+        identity = Identity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config_with_oauth.oauth_config.token_url,
+                json={"access_token": "test_token", "token_type": "Bearer"},
+                status_code=200,
+            )
+
+            def request_contains_oauth_bearer_token(request):
+                assert request.headers["Authorization"] == f"Bearer test_token"
+                return True
+
+            mock_response.post(
+                https_connection_config_with_oauth.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identity": identity.model_dump(mode="json"),
+                    "halt": True,
+                },
+                status_code=200,
+                additional_matcher=request_contains_oauth_bearer_token,
+            )
+
+            with pytest.raises(PrivacyRequestPaused):
+                privacy_request.trigger_policy_webhook(webhook)
+
+            assert mock_response.call_count == 2
+
+    def test_payload_contains_expected_fields(
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        privacy_request_with_custom_fields,
+        privacy_request_with_location,
+        policy,
+        policy_pre_execution_webhooks,
+        policy_post_execution_webhooks,
+        pre_approval_webhooks,
+    ):
+        policy_webhooks = [
+            *policy_pre_execution_webhooks,
+            *policy_post_execution_webhooks,
+            *pre_approval_webhooks,
+        ]
+
+        def match_dsr_has_policy_key(request: requests.Request):
+            payload_data = request.json()
+            dsr_data = payload_data["privacy_request"]
+            assert "policy" in dsr_data
+            dsr_policy = dsr_data["policy"]
+            assert dsr_policy["key"] == policy.key
+
+        def match_dsr_has_no_custom_fields(request: requests.Request):
+            payload_data = request.json()
+            # Validate timestamp is present and correctly formatted
+            assert "timestamp" in payload_data
+            assert (
+                re.match(
+                    "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}",
+                    payload_data["timestamp"],
+                )
+                is not None
+            )
+            dsr_data = payload_data["privacy_request"]
+            assert "custom_fields" in dsr_data
+            assert dsr_data["custom_fields"] is None
+
+        def match_dsr_has_custom_fields(request: requests.Request):
+            payload_data = request.json()
+            dsr_data = payload_data["privacy_request"]
+            assert "custom_fields" in dsr_data
+            assert dsr_data["custom_fields"] is not None
+            # Ensure that for each custom field in the request there is a corresponding entry in the payload with correct label and value
+            dsr_custom_fields = privacy_request_with_custom_fields.custom_fields
+            assert len(dsr_data["custom_fields"]) == len(dsr_custom_fields)
+            for field in dsr_custom_fields:
+                record = dsr_data["custom_fields"][field.field_name]
+                assert record["label"] == field.field_label
+                assert record["value"] == field.encrypted_value["value"]
+
+        def match_dsr_has_location(request: requests.Request):
+            payload_data = request.json()
+            dsr_data = payload_data["privacy_request"]
+            assert "location" in dsr_data
+            assert dsr_data["location"] is not None
+            assert dsr_data["location"] == privacy_request_with_location.location
+
+        test_cases = [
+            (privacy_request, match_dsr_has_no_custom_fields),
+            (privacy_request, match_dsr_has_policy_key),
+            (privacy_request_with_custom_fields, match_dsr_has_custom_fields),
+            (privacy_request_with_location, match_dsr_has_location),
+        ]
+
+        for webhook in policy_webhooks:
+            for test_case in test_cases:
+                identity = Identity(email="customer-1@example.com")
+                dsr = test_case[0]
+                dsr.cache_identity(identity)
+
+                with requests_mock.Mocker() as mock_response:
+                    mock_response.post(
+                        https_connection_config.secrets["url"],
+                        json={
+                            "privacy_request_id": dsr.id,
+                            "identity": identity.model_dump(mode="json"),
+                            "derived_identity": {"phone_number": "+5555555555"},
+                            "halt": False,
+                        },
+                        status_code=200,
+                    )
+
+                    mock_response.add_matcher(test_case[1])
+                    if isinstance(webhook, PreApprovalWebhook):
+                        dsr.trigger_pre_approval_webhook(webhook)
+                    else:
+                        dsr.trigger_policy_webhook(webhook)
 
 
 class TestCachePausedLocation:

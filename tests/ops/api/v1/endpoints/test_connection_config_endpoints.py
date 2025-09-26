@@ -1,13 +1,21 @@
 import json
 from datetime import datetime
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
@@ -22,6 +30,9 @@ from fides.api.models.manual_task import ManualTask
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.schemas.connection_configuration.connection_secrets import (
+    TestStatusMessage,
+)
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -2528,3 +2539,392 @@ class TestPatchConnectionConfigSecrets:
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
+
+
+class TestPutConnectionOAuthConfig:
+    """Test PUT /api/v1/connection/{connection_key}/oauth endpoint"""
+
+    @property
+    def url(self):
+        return V1_URL_PREFIX + "/connection/{}/oauth"
+
+    @property
+    def oauth_payload(self):
+        return {
+            "grant_type": "client_credentials",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "token_url": "https://example.com/oauth/token",
+            "scope": "read write",
+        }
+
+    def test_put_oauth_config_not_authenticated(self, api_client):
+        response = api_client.put(self.url.format("test_key"), json=self.oauth_payload)
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_put_oauth_config_wrong_scope(
+        self,
+        api_client,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        response = api_client.put(
+            self.url.format("test_key"), headers=auth_header, json=self.oauth_payload
+        )
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_put_oauth_config_connection_not_found(
+        self,
+        api_client,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.put(
+            self.url.format("nonexistent_key"),
+            headers=auth_header,
+            json=self.oauth_payload,
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_put_oauth_config_non_https_connection(
+        self, api_client, generate_auth_header, connection_config, db: Session
+    ):
+        """OAuth config can only be set for HTTPS connections"""
+        connection_config.connection_type = ConnectionType.postgres
+        connection_config.save(db=db)
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.put(
+            self.url.format(connection_config.key),
+            headers=auth_header,
+            json=self.oauth_payload,
+        )
+        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert (
+            "OAuth2 configuration can only be set for HTTPS connections"
+            in response.json()["detail"]
+        )
+
+    @pytest.mark.parametrize(
+        "verify", [True, False], ids=["with_verify", "without_verify"]
+    )
+    def test_put_oauth_config_success(
+        self,
+        verify,
+        api_client,
+        generate_auth_header,
+        https_connection_config,
+        db,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        # Assert there is no OAuth config initially
+        assert https_connection_config.oauth_config is None
+
+        with patch("fides.api.util.connection_util.connection_status") as mock_status:
+            mock_status.return_value = TestStatusMessage(
+                msg="OAuth2 configuration updated for ConnectionConfig with key: test_key.",
+                test_status="succeeded",
+            )
+
+            if not verify:
+                url = self.url.format(https_connection_config.key) + "?verify=False"
+            else:
+                url = self.url.format(https_connection_config.key)
+
+            response = api_client.put(
+                url,
+                headers=auth_header,
+                json=self.oauth_payload,
+            )
+
+        assert response.status_code == HTTP_200_OK
+        response_data = response.json()
+        assert "OAuth2 configuration updated" in response_data["msg"]
+
+        # Verify config was saved to database
+        db.refresh(https_connection_config)
+        assert https_connection_config.oauth_config is not None
+        assert https_connection_config.oauth_config.client_id == "test_client_id"
+        assert (
+            https_connection_config.oauth_config.client_secret == "test_client_secret"
+        )
+
+
+class TestPatchConnectionOAuthConfig:
+    """Test PATCH /api/v1/connection/{connection_key}/oauth endpoint"""
+
+    @property
+    def url(self):
+        return V1_URL_PREFIX + "/connection/{}/oauth"
+
+    @property
+    def patch_payload(self):
+        return {"client_secret": "updated_secret", "scope": "read write admin"}
+
+    @property
+    def complete_payload(self):
+        return {
+            "grant_type": "client_credentials",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "token_url": "https://example.com/oauth/token",
+            "scope": "read write",
+        }
+
+    def test_patch_oauth_config_not_authenticated(self, api_client):
+        response = api_client.patch(
+            self.url.format("test_key"), json=self.patch_payload
+        )
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_patch_oauth_config_wrong_scope(
+        self,
+        api_client,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        response = api_client.patch(
+            self.url.format("test_key"), headers=auth_header, json=self.patch_payload
+        )
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_patch_oauth_config_connection_not_found(
+        self,
+        api_client,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            self.url.format("nonexistent_key"),
+            headers=auth_header,
+            json=self.patch_payload,
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_patch_oauth_config_non_https_connection(
+        self,
+        api_client,
+        generate_auth_header,
+        connection_config,
+        db,
+    ):
+        """OAuth config can only be patched for HTTPS connections"""
+        connection_config.connection_type = ConnectionType.postgres
+        connection_config.save(db=db)
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            self.url.format(connection_config.key),
+            headers=auth_header,
+            json=self.patch_payload,
+        )
+        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert (
+            "OAuth2 configuration can only be set for HTTPS connections"
+            in response.json()["detail"]
+        )
+
+    def test_patch_oauth_config_success_with_existing_config(
+        self,
+        api_client,
+        generate_auth_header,
+        https_connection_config_with_oauth,
+        db,
+    ):
+        """Patch existing OAuth config"""
+        original_client_id = https_connection_config_with_oauth.oauth_config.client_id
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        with patch("fides.api.util.connection_util.connection_status") as mock_status:
+            mock_status.return_value = TestStatusMessage(
+                msg="OAuth2 configuration updated for ConnectionConfig with key: test_key.",
+                test_status="succeeded",
+            )
+
+            response = api_client.patch(
+                self.url.format(https_connection_config_with_oauth.key),
+                headers=auth_header,
+                json=self.patch_payload,
+            )
+
+        assert response.status_code == HTTP_200_OK
+        response_data = response.json()
+        assert "OAuth2 configuration updated" in response_data["msg"]
+
+        # Verify partial update - changed fields updated, others preserved
+        db.refresh(https_connection_config_with_oauth)
+        assert (
+            https_connection_config_with_oauth.oauth_config.client_secret
+            == "updated_secret"
+        )
+        assert (
+            https_connection_config_with_oauth.oauth_config.scope == "read write admin"
+        )
+
+        assert (
+            https_connection_config_with_oauth.oauth_config.client_id
+            == original_client_id
+        )  # Unchanged
+
+    @pytest.mark.parametrize(
+        "verify", [True, False], ids=["with_verify", "without_verify"]
+    )
+    def test_patch_oauth_config_success_no_existing_config(
+        self,
+        verify,
+        api_client,
+        generate_auth_header,
+        https_connection_config,
+        db,
+    ):
+        """Patch creates new config if none exists"""
+        assert https_connection_config.oauth_config is None
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        with patch("fides.api.util.connection_util.connection_status") as mock_status:
+            mock_status.return_value = TestStatusMessage(
+                msg="OAuth2 configuration updated for ConnectionConfig with key: test_key.",
+                test_status="succeeded",
+            )
+
+            if not verify:
+                url = self.url.format(https_connection_config.key) + "?verify=False"
+            else:
+                url = self.url.format(https_connection_config.key)
+
+            response = api_client.patch(
+                url,
+                headers=auth_header,
+                json=self.complete_payload,
+            )
+
+        assert response.status_code == HTTP_200_OK
+
+        # Verify new config was created
+        db.refresh(https_connection_config)
+        assert https_connection_config.oauth_config is not None
+        assert (
+            https_connection_config.oauth_config.client_secret == "test_client_secret"
+        )
+        assert https_connection_config.oauth_config.scope == "read write"
+
+    def test_patch_oauth_config_incomplete_config_no_existing_config(
+        self,
+        api_client,
+        generate_auth_header,
+        https_connection_config,
+        db,
+    ):
+        """Patch creates new config if none exists"""
+        assert https_connection_config.oauth_config is None
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        with patch("fides.api.util.connection_util.connection_status") as mock_status:
+            mock_status.return_value = TestStatusMessage(
+                msg="OAuth2 configuration updated for ConnectionConfig with key: test_key.",
+                test_status="succeeded",
+            )
+
+            response = api_client.patch(
+                self.url.format(https_connection_config.key),
+                headers=auth_header,
+                json=self.patch_payload,
+            )
+
+        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+
+        # Verify new config was not created due to incomplete data
+        db.refresh(https_connection_config)
+        assert https_connection_config.oauth_config is None
+
+
+class TestDeleteConnectionOAuthConfig:
+    """Test DELETE /api/v1/connection/{connection_key}/oauth endpoint"""
+
+    @property
+    def url(self):
+        return V1_URL_PREFIX + "/connection/{}/oauth"
+
+    def test_delete_oauth_config_not_authenticated(self, api_client):
+        response = api_client.delete(self.url.format("test_key"))
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_delete_oauth_config_wrong_scope(
+        self,
+        api_client,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        response = api_client.delete(self.url.format("test_key"), headers=auth_header)
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_delete_oauth_config_connection_not_found(
+        self,
+        api_client,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.delete(
+            self.url.format("nonexistent_key"), headers=auth_header
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_delete_oauth_config_non_https_connection(
+        self,
+        api_client,
+        generate_auth_header,
+        connection_config,
+        db,
+    ):
+        """OAuth config can only be deleted for HTTPS connections"""
+        connection_config.connection_type = ConnectionType.postgres
+        connection_config.save(db=db)
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.delete(
+            self.url.format(connection_config.key), headers=auth_header
+        )
+        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert (
+            "OAuth2 configuration can only be deleted for HTTPS connections"
+            in response.json()["detail"]
+        )
+
+    def test_delete_oauth_config_no_existing_config(
+        self,
+        api_client,
+        generate_auth_header,
+        https_connection_config,
+    ):
+        """Cannot delete OAuth config when none exists"""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.delete(
+            self.url.format(https_connection_config.key), headers=auth_header
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+        assert "No OAuth2 configuration found to delete" in response.json()["detail"]
+
+    def test_delete_oauth_config_success(
+        self,
+        api_client,
+        generate_auth_header,
+        https_connection_config_with_oauth,
+        db,
+    ):
+        # Verify OAuth config exists
+        assert https_connection_config_with_oauth.oauth_config is not None
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.delete(
+            self.url.format(https_connection_config_with_oauth.key), headers=auth_header
+        )
+
+        assert response.status_code == HTTP_204_NO_CONTENT
+
+        # Verify config was removed from database
+        db.refresh(https_connection_config_with_oauth)
+        assert https_connection_config_with_oauth.oauth_config is None

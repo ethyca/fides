@@ -1,4 +1,9 @@
-import { AntColumnsType as ColumnsType, AntSpace as Space } from "fidesui";
+import {
+  AntColumnsType as ColumnsType,
+  AntSpace as Space,
+  formatIsoLocation,
+  isoStringToEntry,
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -114,13 +119,18 @@ export const useDiscoveredSystemAggregateColumns = ({
           render: (locations: string[]) => (
             <TagExpandableCell
               values={
-                locations?.map((location) => ({
-                  label:
-                    PRIVACY_NOTICE_REGION_RECORD[
-                      location as PrivacyNoticeRegion
-                    ] ?? location,
-                  key: location,
-                })) ?? []
+                locations?.map((location) => {
+                  const isoEntry = isoStringToEntry(location);
+
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry })
+                      : (PRIVACY_NOTICE_REGION_RECORD[
+                          location as PrivacyNoticeRegion
+                        ] ?? location) /* fallback on internal list for now */,
+                    key: location,
+                  };
+                }) ?? []
               }
               columnState={{
                 isExpanded: isLocationsExpanded,

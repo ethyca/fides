@@ -1,7 +1,7 @@
 """adds optional duration field to assets
 
 Revision ID: f108fa05c579
-Revises: 4d8c0fcc5771
+Revises: e2cda8d6abc3
 Create Date: 2025-08-22 12:47:31.374493
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "f108fa05c579"
-down_revision = "4d8c0fcc5771"
+down_revision = "e2cda8d6abc3"
 branch_labels = None
 depends_on = None
 

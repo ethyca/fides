@@ -37,7 +37,7 @@ describe("systems table", () => {
       cy.get(".ant-table-filter-dropdown").within(() => {
         cy.get(".ant-btn-primary").click({ force: true });
         cy.wait("@getSystemsBySteward").then((interception) => {
-          expect(interception.request.query.data_steward).to.eql("user_3");
+          expect(interception.request.query.data_stewards).to.eql("user_3");
         });
       });
     });
@@ -45,7 +45,6 @@ describe("systems table", () => {
 
   describe("row selection and bulk actions", () => {
     beforeEach(() => {
-      cy.contains("button", "Actions").should("not.be.enabled");
       cy.getAntTableRow("fidesctl_system")
         .find("input[type='checkbox']")
         .click();
