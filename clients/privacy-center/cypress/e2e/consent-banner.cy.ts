@@ -6,7 +6,6 @@ import {
   ConsentMethod,
   ConsentNonApplicableFlagMode,
   encodeNoticeConsentString,
-  ExperienceConfig,
   FidesCookie,
   FidesInitOptions,
   Layer1ButtonOption,
@@ -1373,15 +1372,31 @@ describe("Consent overlay", () => {
             experience: {
               privacy_notices: [
                 mockPrivacyNotice({
-                  title: "Advertising with gpc enabled",
-                  id: "pri_notice-advertising",
-                  has_gpc_flag: true,
+                  title: "Marketing",
+                  notice_key: "marketing",
+                  consent_mechanism: ConsentMechanism.OPT_IN,
+                  data_uses: [
+                    "marketing.advertising.first_party.targeted",
+                    "marketing.advertising.third_party.targeted",
+                  ],
+                  default_preference: UserConsentPreference.OPT_OUT,
+                  id: "pri_marketing",
                 }),
                 mockPrivacyNotice({
-                  title: "one",
-                  id: "pri_notice-one",
-                  notice_key: "one",
+                  title: "Functional",
+                  notice_key: "functional",
+                  consent_mechanism: ConsentMechanism.OPT_IN,
+                  data_uses: ["personalize"],
+                  default_preference: UserConsentPreference.OPT_OUT,
+                  id: "pri_functional",
+                }),
+                mockPrivacyNotice({
+                  title: "Essential",
+                  notice_key: "essential",
                   consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+                  data_uses: ["essential"],
+                  default_preference: UserConsentPreference.ACKNOWLEDGE,
+                  id: "pri_essential",
                 }),
               ],
             },
@@ -1408,12 +1423,18 @@ describe("Consent overlay", () => {
               expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
             });
           cy.get("#fides-modal-link").click();
-          cy.getByTestId("toggle-one").within(() => {
+          cy.getByTestId("toggle-Essential").within(() => {
             cy.get("input").should("be.disabled");
             cy.get("input").should("be.checked");
           });
           cy.get(".fides-notice-toggle")
-            .contains("Advertising with gpc enabled")
+            .contains("Marketing")
+            .parents(".fides-notice-toggle-title")
+            .within(() => {
+              cy.get(".fides-gpc-label").contains("Applied");
+            });
+          cy.get(".fides-notice-toggle")
+            .contains("Functional")
             .parents(".fides-notice-toggle-title")
             .within(() => {
               cy.get(".fides-gpc-label").contains("Applied");
