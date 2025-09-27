@@ -10,7 +10,6 @@ from uuid import uuid4
 import pydash
 from fideslang.models import FidesDatasetReference
 from loguru import logger
-from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.execution import ExecutionNode

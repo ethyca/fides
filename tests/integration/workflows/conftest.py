@@ -1,11 +1,12 @@
 from typing import Generator
 from uuid import uuid4
+
 import pytest
 from sqlalchemy.orm import Session
+
 from fides.api.models.client import ClientDetail
-from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.storage import StorageConfig
-from fides.api.models.policy import ActionType
 from fides.api.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,

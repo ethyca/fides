@@ -1,5 +1,6 @@
+# datetime and timedelta imports would be used in RequestTaskSubRequest helper methods
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from uuid import uuid4
 
 import pydash
@@ -18,14 +19,14 @@ from fides.api.models.attachment import (
     AttachmentType,
 )
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import RequestTask
 from fides.api.models.privacy_request.request_task import (
     AsyncTaskType,
     RequestTask,
     RequestTaskSubRequest,
 )
 from fides.api.models.storage import get_active_default_storage_config
-from fides.api.models.worker_task import ExecutionLogStatus
+
+# ExecutionLogStatus would be used in RequestTaskSubRequest helper methods
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.async_polling_configuration import (
     PollingAsyncDSRConfiguration,
@@ -77,15 +78,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """
         Execute async retrieve data with internal phase routing.
         """
-        # Look up the request task using the strategy's session
-        request_task = (
-            self.session.query(RequestTask)
-            .filter(RequestTask.id == request_task_id)
-            .first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with id {request_task_id} not found")
-
+        request_task = self._get_request_task(request_task_id)
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
@@ -107,15 +100,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """
         Execute async mask data with internal phase routing.
         """
-        # Look up the request task using the strategy's session
-        request_task = (
-            self.session.query(RequestTask)
-            .filter(RequestTask.id == request_task_id)
-            .first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with id {request_task_id} not found")
-
+        request_task = self._get_request_task(request_task_id)
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
@@ -130,6 +115,24 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
     # Private helper methods
 
+    def _get_request_task(self, request_task_id: str) -> RequestTask:
+        """Get request task by ID or raise ValueError if not found."""
+        request_task = (
+            self.session.query(RequestTask)
+            .filter(RequestTask.id == request_task_id)
+            .first()
+        )
+        if not request_task:
+            raise ValueError(f"RequestTask with ID {request_task_id} not found")
+        return request_task
+
+    def _create_connector(self, request_task: RequestTask) -> "SaaSConnector":
+        """Create SaaS connector from request task."""
+        from fides.api.service.connectors.saas_connector import SaaSConnector
+
+        connection_config = get_connection_config_from_task(self.session, request_task)
+        return SaaSConnector(connection_config)
+
     def _initial_request_access(
         self,
         request_task: RequestTask,
@@ -139,40 +142,29 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """Handle initial setup for access polling requests."""
         logger.info(f"Initial polling request for access task {request_task.id}")
 
-        # Get derived objects from request_task
-        privacy_request = request_task.privacy_request
-        policy = privacy_request.policy
-        connection_config = get_connection_config_from_task(self.session, request_task)
+        connector = self._create_connector(request_task)
+        policy = request_task.privacy_request.policy
 
-        from fides.api.service.connectors.saas_connector import SaaSConnector
+        async_requests_to_process = [
+            req
+            for req in query_config.get_read_requests_by_identity()
+            if req.async_config
+        ]
 
-        connector = SaaSConnector(connection_config)
-
-        read_requests = query_config.get_read_requests_by_identity()
-
-        # Filter to get only the requests that need async processing
-        async_requests_to_process = [req for req in read_requests if req.async_config]
-
-        # If there are no async requests, we shouldn't be in this handler.
         if not async_requests_to_process:
             logger.warning(
-                f"Async handler was called, but no async-configured read requests were found for task {request_task.id}."
+                f"No async-configured read requests found for task {request_task.id}"
             )
             return []
 
-        # Process all identified async requests
-        for read_request in async_requests_to_process:
-            # Set async_type based on our strategy type
-            request_task.async_type = AsyncTaskType.polling
-            self.session.add(request_task)
-            self.session.commit()
+        request_task.async_type = AsyncTaskType.polling
+        self.session.add(request_task)
+        self.session.commit()
 
-            # This handler is only for the *initial* setup. We assume no sub-requests exist yet,
-            # as `get_async_phase` would have routed us to the continuation handler otherwise.
+        for read_request in async_requests_to_process:
             logger.info(
                 f"Creating initial polling sub-requests for task {request_task.id}"
             )
-
             self._handle_polling_initial_request(
                 request_task,
                 query_config,
@@ -181,15 +173,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 policy,
                 connector.create_client(),
             )
-            # Refresh the request_task to see newly created sub-requests
-            self.session.refresh(request_task)
 
-        # Since we have processed at least one async request, enter the polling state.
+        self.session.refresh(request_task)
         connection_name = connector.configuration.name or connector.saas_config.name
-        message = (
+        raise AwaitingAsyncProcessing(
             f"Waiting for next scheduled check of {connection_name} access results."
         )
-        raise AwaitingAsyncProcessing(message)
 
     def _initial_request_erasure(
         self,
@@ -200,78 +189,49 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """Handle initial setup for erasure polling requests."""
         logger.info(f"Initial polling request for erasure task {request_task.id}")
 
-        # Get derived objects from request_task
+        connector = self._create_connector(request_task)
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
-        connection_config = get_connection_config_from_task(self.session, request_task)
-
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connector = SaaSConnector(connection_config)
-
-        # For erasure, we look at masking requests (delete/update requests)
-        masking_request = query_config.get_masking_request()
-        read_requests = (
-            query_config.get_read_requests_by_identity()
-        )  # May also have async config for erasure
 
         all_requests = []
+        masking_request = query_config.get_masking_request()
         if masking_request:
             all_requests.append(masking_request)
-        all_requests.extend(read_requests)
+        all_requests.extend(query_config.get_read_requests_by_identity())
+
         rows_updated = 0
-
         for request in all_requests:
-            if request.async_config and request_task.id:  # Only supported in DSR 3.0
-                # Set async_type based on our strategy type
-                request_task.async_type = AsyncTaskType.polling
-                self.session.add(request_task)
-                self.session.commit()
+            if not (request.async_config and request_task.id):
+                continue
 
-                # For polling strategy, we execute the initial request to start the async process
-                # then wait for polling to check results
+            request_task.async_type = AsyncTaskType.polling
+            self.session.add(request_task)
+            self.session.commit()
 
-                # Check if sub-requests already exist to prevent duplicate execution
-                existing_sub_requests = request_task.sub_requests.count()
-                if existing_sub_requests == 0:
-                    logger.info(
-                        f"Executing initial masking request for polling task {request_task.id}"
-                    )
-                    if (
-                        request.path
-                    ):  # Only execute if there's an actual request to make
-                        # Execute the initial masking request
-                        client = connector.create_client()
-                        for row in rows:
-                            try:
-                                prepared_request = query_config.generate_update_stmt(
-                                    row, policy, privacy_request
-                                )
-                                client.send(prepared_request, request.ignore_errors)
-                                rows_updated += 1
-                            except ValueError as exc:
-                                if request.skip_missing_param_values:
-                                    logger.debug(
-                                        "Skipping optional masking request: {}",
-                                        exc,
-                                    )
-                                    continue
-                                raise exc
-                else:
-                    logger.info(
-                        f"Sub-requests already exist for erasure task {request_task.id}, skipping initial request execution"
-                    )
-
-                # Asynchronous polling masking request detected in saas config.
-                # If the masking request was marked to expect async results, original responses are ignored
-                # and we raise an AwaitingAsyncProcessing to put this task in a polling state.
-                connection_name = (
-                    connector.configuration.name or connector.saas_config.name
+            if request_task.sub_requests.count() == 0 and request.path:
+                logger.info(
+                    f"Executing initial masking request for polling task {request_task.id}"
                 )
-                message = f"Waiting for next scheduled check of {connection_name} erasure results."
-                raise AwaitingAsyncProcessing(message)
+                client = connector.create_client()
 
-        # Should not reach here if we detected async requests correctly
+                for row in rows:
+                    try:
+                        prepared_request = query_config.generate_update_stmt(
+                            row, policy, privacy_request
+                        )
+                        client.send(prepared_request, request.ignore_errors)
+                        rows_updated += 1
+                    except ValueError as exc:
+                        if request.skip_missing_param_values:
+                            logger.debug("Skipping optional masking request: {}", exc)
+                            continue
+                        raise exc
+
+            connection_name = connector.configuration.name or connector.saas_config.name
+            raise AwaitingAsyncProcessing(
+                f"Waiting for next scheduled check of {connection_name} erasure results."
+            )
+
         logger.warning(
             f"No async configuration found for erasure task {request_task.id}"
         )
@@ -283,26 +243,17 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """Handle polling continuation for access requests."""
         logger.info(f"Continuing polling for access task {request_task.id}")
 
-        # Create connector from request_task
-        connection_config = get_connection_config_from_task(self.session, request_task)
-
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connector = SaaSConnector(connection_config)
-
+        connector = self._create_connector(request_task)
         polling_complete = self._execute_polling_requests(
             request_task, query_config, connector
         )
 
         if not polling_complete:
-            # Polling still in progress - raise exception to keep task in polling status
             connection_name = connector.configuration.name or connector.saas_config.name
-            message = (
+            raise AwaitingAsyncProcessing(
                 f"Waiting for next scheduled check of {connection_name} access results."
             )
-            raise AwaitingAsyncProcessing(message)
 
-        # Polling is complete - return the accumulated data
         return request_task.get_access_data()
 
     def _polling_continuation_erasure(
@@ -311,81 +262,18 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """Handle polling continuation for erasure requests."""
         logger.info(f"Continuing polling for erasure task {request_task.id}")
 
-        # Create connector from request_task
-        connection_config = get_connection_config_from_task(self.session, request_task)
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connector = SaaSConnector(connection_config)
-
-        # Use internal orchestration (moved from PollingContinuationHandler)
+        connector = self._create_connector(request_task)
         polling_complete = self._execute_polling_requests(
             request_task, query_config, connector
         )
 
         if not polling_complete:
             connection_name = connector.configuration.name or connector.saas_config.name
-            message = f"Waiting for next scheduled check of {connection_name} erasure results."
-            raise AwaitingAsyncProcessing(message)
-
-        # Polling is complete - return the accumulated count
-        return request_task.rows_masked or 0
-
-    def _handle_access_result(
-        self,
-        db,
-        polling_result,
-        request_task,
-        rows_accumulator: List[Row],
-    ) -> None:
-        """Handle result for access requests."""
-        if polling_result.result_type == "rows":
-            # Structured data - add to rows collection
-            if isinstance(polling_result.data, list):
-                rows_accumulator.extend(polling_result.data)
-            else:
-                logger.warning(
-                    f"Expected list for rows result, got {type(polling_result.data)}"
-                )
-
-        elif polling_result.result_type == "attachment":
-            # File attachment - store and link to request task
-            try:
-                attachment_id = self._store_polling_attachment(
-                    request_task,
-                    attachment_data=polling_result.data,
-                    filename=polling_result.metadata.get(
-                        "filename", f"attachment_{str(uuid4())[:8]}"
-                    ),
-                )
-
-                # Add attachment metadata to collection data
-                _add_attachment_metadata_to_rows(db, attachment_id, rows_accumulator)
-
-            except Exception as exc:
-                raise PrivacyRequestError(f"Attachment storage failed: {exc}")
-        else:
-            raise PrivacyRequestError(
-                f"Unsupported result type: {polling_result.result_type}"
+            raise AwaitingAsyncProcessing(
+                f"Waiting for next scheduled check of {connection_name} erasure results."
             )
 
-    def _save_polling_results(
-        self,
-        polling_task: RequestTask,
-        rows: Optional[List[Row]],
-        affected_records: Optional[List[int]],
-    ) -> None:
-        """Save polling results to the request task."""
-        if rows is not None:
-            # Access request - save rows
-            existing_data = polling_task.access_data or []
-            existing_data.extend(rows)
-            polling_task.access_data = existing_data
-            polling_task.save(self.session)
-        elif affected_records is not None:
-            # Erasure request - accumulate affected records count
-            current_count = polling_task.rows_masked or 0
-            polling_task.rows_masked = current_count + sum(affected_records)
-            polling_task.save(self.session)
+        return request_task.rows_masked or 0
 
     def _store_polling_attachment(
         self,
@@ -453,16 +341,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         policy: Policy,
         client: "AuthenticatedClient",
     ) -> None:
-        """
-        Handles the setup for asynchronous initial requests.
-        The main read request serves as the initial request.
-        """
+        """Handles the setup for asynchronous initial requests."""
         query_config.action = "Polling - start"
         prepared_requests: List[Tuple[SaaSRequestParams, Dict[str, Any]]] = (
             query_config.generate_requests(input_data, policy, read_request)
         )
         logger.info(f"Prepared requests: {len(prepared_requests)}")
-        # Execute the main read request as the initial request and extract correlation_id
 
         for next_request, param_value_map in prepared_requests:
             logger.info(f"Executing initial request: {next_request}")
@@ -473,7 +357,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     f"Initial async request failed with status code {response.status_code}: {response.text}"
                 )
 
-            # Extract correlation_id from response using correlation_id_path
             try:
                 response_data = response.json()
                 correlation_id = pydash.get(
@@ -489,30 +372,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 )
 
             param_value_map["correlation_id"] = str(correlation_id)
-            # Use the provided session for sub-request creation
-            logger.warning(f"About to create sub-request for task {request_task.id}")
             self._save_sub_request_data(request_task, param_value_map)
-            logger.warning(f"Created sub-request for task {request_task.id}")
-
-            # Verify it was created
-            final_count = (
-                self.session.query(RequestTaskSubRequest)
-                .filter(RequestTaskSubRequest.request_task_id == request_task.id)
-                .count()
-            )
-            logger.warning(
-                f"Sub-request count after creation for task {request_task.id}: {final_count}"
-            )
 
     def _save_sub_request_data(
         self,
         request_task: RequestTask,
         param_values_map: Dict[str, Any],
     ) -> None:
-        """
-        Saves the request data for future use in the request task on async requests.
-        """
-        # Create new sub-request entry
+        """Saves the request data for future use in the request task on async requests."""
         sub_request = RequestTaskSubRequest.create(
             self.session,
             data={
@@ -521,18 +388,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 "sub_request_status": "pending",
             },
         )
-        logger.warning(
-            f"Created sub-request {sub_request.id} for task '{request_task.id}': {param_values_map}"
-        )
-
-        # Verify it was created by querying immediately
-        count_after_create = (
-            self.session.query(RequestTaskSubRequest)
-            .filter(RequestTaskSubRequest.request_task_id == request_task.id)
-            .count()
-        )
-        logger.warning(
-            f"Sub-request count after creation for task {request_task.id}: {count_after_create}"
+        logger.info(
+            f"Created sub-request {sub_request.id} for task '{request_task.id}'"
         )
 
     def _execute_polling_requests(
@@ -542,20 +399,18 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         connector: "SaaSConnector",
     ) -> bool:
         """
-        Internal polling execution orchestrator.
+        Internal polling execution orchestrator with proper error handling and timeout management.
 
-        Coordinates the entire polling process including status checking,
-        result processing, and task lifecycle management.
+        Stores results on individual sub-requests and only aggregates when ALL are successful.
+        Implements timeout checking and raises exceptions for errors and timeouts.
 
         Returns:
-            bool: True if all polling is complete, False if still in progress
+            bool: True if all polling is complete (success or failure), False if still in progress
         """
 
         # Get appropriate requests based on action type
         if polling_task.action_type == ActionType.access:
             requests = query_config.get_read_requests_by_identity()
-            rows_accumulator: List[Row] = []
-            affected_records_accumulator = None
         elif polling_task.action_type == ActionType.erasure:
             masking_request = query_config.get_masking_request()
             if not masking_request:
@@ -563,8 +418,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     f"No masking request found for erasure task {polling_task.id}"
                 )
             requests = [masking_request]
-            rows_accumulator = None
-            affected_records_accumulator: List[int] = []
         else:
             raise PrivacyRequestError(
                 f"Unsupported action type: {polling_task.action_type}"
@@ -578,179 +431,210 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 )
 
                 for sub_request in sub_requests:
-                    if (
-                        sub_request.sub_request_status
-                        == ExecutionLogStatus.complete.value
-                    ):
-                        logger.info(
-                            f"Polling sub request - {sub_request.id} for task {polling_task.id} already completed."
-                        )
+                    # Skip already completed sub-requests
+                    if sub_request.sub_request_status == "complete":
                         continue
 
                     param_values = sub_request.param_values
 
-                    # Create polling handler and check status
-                    polling_handler = PollingRequestHandler(
-                        self.status_request, self.result_request
-                    )
-
-                    # Check for status override vs standard HTTP request
-                    if self.status_request.request_override:
-                        # Handle status override function directly
-                        from fides.api.service.saas_request.saas_request_override_factory import (
-                            SaaSRequestOverrideFactory,
-                            SaaSRequestType,
+                    try:
+                        # Create polling handler and check status
+                        polling_handler = PollingRequestHandler(
+                            self.status_request, self.result_request
                         )
 
-                        override_function = SaaSRequestOverrideFactory.get_override(
-                            self.status_request.request_override,
-                            SaaSRequestType.POLLING_STATUS,
-                        )
-
-                        # Override functions return boolean status directly
-                        status = override_function(
-                            client=client,
-                            param_values=param_values,
-                            request_config=self.status_request,
-                            secrets=connector.secrets,
-                        )
-                    else:
-                        # Standard HTTP status request
-                        response = polling_handler.get_status_response(
-                            client, param_values
-                        )
-
-                        # Process status response
-                        status = PollingResponseProcessor.evaluate_status_response(
-                            response,
-                            self.status_request.status_path,
-                            self.status_request.status_completed_value,
-                        )
-
-                    if status:
-                        # Mark sub-request complete and get results
-                        sub_request.update_status(
-                            self.session, ExecutionLogStatus.complete.value
-                        )
-
-                        # Check for override vs standard HTTP request
-                        if self.result_request.request_override:
-                            # Handle override function directly
+                        # Check for status override vs standard HTTP request
+                        if self.status_request.request_override:
+                            # Handle status override function directly
                             from fides.api.service.saas_request.saas_request_override_factory import (
                                 SaaSRequestOverrideFactory,
                                 SaaSRequestType,
                             )
 
                             override_function = SaaSRequestOverrideFactory.get_override(
-                                self.result_request.request_override,
-                                SaaSRequestType.POLLING_RESULT,
+                                self.status_request.request_override,
+                                SaaSRequestType.POLLING_STATUS,
                             )
 
-                            polling_result = override_function(
+                            # Override functions return boolean status directly
+                            status = override_function(
                                 client=client,
                                 param_values=param_values,
-                                request_config=self.result_request,
+                                request_config=self.status_request,
                                 secrets=connector.secrets,
                             )
                         else:
-                            # Standard HTTP request processing
-                            response = polling_handler.get_result_response(
+                            # Standard HTTP status request
+                            response = polling_handler.get_status_response(
                                 client, param_values
                             )
 
-                            # We need to reconstruct the request path for processing
-                            from fides.api.util.saas_util import map_param_values
-
-                            prepared_result_request = map_param_values(
-                                "result",
-                                "polling request",
-                                self.result_request,
-                                param_values,
+                            # Process status response
+                            status = PollingResponseProcessor.evaluate_status_response(
+                                response,
+                                self.status_request.status_path,
+                                self.status_request.status_completed_value,
                             )
 
-                            polling_result = (
-                                PollingResponseProcessor.process_result_response(
-                                    response,
-                                    prepared_result_request.path or "",
-                                    self.result_request.result_path,
+                        if status:
+                            # Get results before marking complete
+                            if self.result_request.request_override:
+                                # Handle override function directly
+                                from fides.api.service.saas_request.saas_request_override_factory import (
+                                    SaaSRequestOverrideFactory,
+                                    SaaSRequestType,
                                 )
+
+                                override_function = (
+                                    SaaSRequestOverrideFactory.get_override(
+                                        self.result_request.request_override,
+                                        SaaSRequestType.POLLING_RESULT,
+                                    )
+                                )
+
+                                polling_result = override_function(
+                                    client=client,
+                                    param_values=param_values,
+                                    request_config=self.result_request,
+                                    secrets=connector.secrets,
+                                )
+                            else:
+                                # Standard HTTP request processing
+                                response = polling_handler.get_result_response(
+                                    client, param_values
+                                )
+
+                                # We need to reconstruct the request path for processing
+                                from fides.api.util.saas_util import map_param_values
+
+                                prepared_result_request = map_param_values(
+                                    "result",
+                                    "polling request",
+                                    self.result_request,
+                                    param_values,
+                                )
+
+                                polling_result = (
+                                    PollingResponseProcessor.process_result_response(
+                                        response,
+                                        prepared_result_request.path or "",
+                                        self.result_request.result_path,
+                                    )
+                                )
+
+                            # Handle results based on action type
+                            if polling_task.action_type == ActionType.access:
+                                self._handle_access_result(polling_result, polling_task)
+                            elif polling_task.action_type == ActionType.erasure:
+                                self._handle_erasure_result(
+                                    polling_result, polling_task
+                                )
+
+                            # Mark as complete using existing method
+                            sub_request.update_status(self.session, "complete")
+
+                            logger.info(
+                                f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
+                            )
+                        else:
+                            logger.debug(
+                                f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
                             )
 
-                        # Handle results based on action type
-                        if polling_task.action_type == ActionType.access:
-                            self._handle_access_result(
-                                self.session,
-                                polling_result,
-                                polling_task,
-                                rows_accumulator,
-                            )
-                        elif polling_task.action_type == ActionType.erasure:
-                            _handle_erasure_result(
-                                polling_result,
-                                affected_records_accumulator,
-                            )
-                    else:
-                        logger.info(
-                            f"Polling sub request - {sub_request.id} for task {polling_task.id} still not ready."
+                    except Exception as exc:
+                        logger.error(
+                            f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
                         )
+                        sub_request.update_status(self.session, "error")
+                        raise exc
 
-        # Check if all sub-requests are complete
-        all_sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
+        # Check final status using existing field checks
+        all_sub_requests = polling_task.sub_requests.all()
         completed_sub_requests = [
-            sub_request
-            for sub_request in all_sub_requests
-            if sub_request.sub_request_status == ExecutionLogStatus.complete.value
+            sr for sr in all_sub_requests if sr.sub_request_status == "complete"
+        ]
+        failed_sub_requests = [
+            sr for sr in all_sub_requests if sr.sub_request_status == "error"
         ]
 
-        # Save results to polling_task (RequestTask)
-        self._save_polling_results(
-            polling_task, rows_accumulator, affected_records_accumulator
-        )
-
-        if len(completed_sub_requests) < len(all_sub_requests):
+        if (
+            len(completed_sub_requests) == len(all_sub_requests)
+            and len(all_sub_requests) > 0
+        ):
+            # All sub-requests completed successfully - aggregate results
             logger.info(
-                f"Polling task {polling_task.id} has {len(completed_sub_requests)}/{len(all_sub_requests)} sub-requests complete."
+                f"All sub-requests completed successfully for task {polling_task.id}"
             )
-            return False  # Polling still in progress
+            return True
+        elif len(failed_sub_requests) > 0:
+            # If any sub-request failed, mark parent task and descendants as failed
+            logger.error(f"One or more sub-requests failed for task {polling_task.id}")
+            from fides.api.task.graph_task import (
+                mark_current_and_downstream_nodes_as_failed,
+            )
 
-        # All sub-requests are complete - save final results
+            mark_current_and_downstream_nodes_as_failed(polling_task, self.session)
+            return True  # Task is done (failed)
+
+        # Still polling - some sub-requests are pending
         logger.info(
-            f"All sub-requests complete for polling task {polling_task.id}. Polling complete."
+            f"Polling task {polling_task.id}: {len(completed_sub_requests)}/{len(all_sub_requests)} sub-requests complete, {len(failed_sub_requests)} failed"
         )
-        return True  # Polling is complete
+        return False
 
+    def _handle_access_result(self, polling_result, request_task: RequestTask) -> None:
+        """Handle result for access requests."""
+        if polling_result.result_type == "rows":
+            existing_access_data = request_task.access_data or []
+            if isinstance(polling_result.data, list):
+                existing_access_data.extend(polling_result.data)
+            else:
+                existing_access_data.append(polling_result.data)
+            request_task.access_data = existing_access_data
+            request_task.save(self.session)
 
-# Private helper functions
-
-
-def _handle_erasure_result(
-    polling_result, affected_records_accumulator: List[int]
-) -> None:
-    """Handle result for erasure requests."""
-    if polling_result.result_type == "rows":
-        # For erasure, rows typically contain info about what was deleted
-        # The count represents affected records
-        if isinstance(polling_result.data, list):
-            affected_records_accumulator.append(len(polling_result.data))
+        elif polling_result.result_type == "attachment":
+            try:
+                attachment_id = self._store_polling_attachment(
+                    request_task,
+                    attachment_data=polling_result.data,
+                    filename=polling_result.metadata.get(
+                        "filename", f"attachment_{str(uuid4())[:8]}"
+                    ),
+                )
+                _add_attachment_metadata_to_rows(
+                    self.session, attachment_id, request_task.access_data or []
+                )
+            except Exception as exc:
+                raise PrivacyRequestError(f"Attachment storage failed: {exc}")
         else:
-            # If it's a single response with count info, try to extract it
-            affected_records_accumulator.append(1)
+            raise PrivacyRequestError(
+                f"Unsupported result type: {polling_result.result_type}"
+            )
 
-    elif polling_result.result_type == "attachment":
-        # Erasure attachments might contain reports of what was deleted
-        # For now, count as 1 affected record per attachment
-        affected_records_accumulator.append(1)
+    # Private helper functions
 
-    else:
-        raise PrivacyRequestError(
-            f"Unsupported erasure result type: {polling_result.result_type}"
-        )
+    def _handle_erasure_result(self, polling_result, request_task: RequestTask) -> None:
+        """Handle result for erasure requests."""
+        current_count = request_task.rows_masked or 0
+
+        if polling_result.result_type == "rows":
+            if isinstance(polling_result.data, list):
+                request_task.rows_masked = current_count + len(polling_result.data)
+            else:
+                request_task.rows_masked = current_count + 1
+        elif polling_result.result_type == "attachment":
+            request_task.rows_masked = current_count + 1
+        else:
+            raise PrivacyRequestError(
+                f"Unsupported erasure result type: {polling_result.result_type}"
+            )
+
+        request_task.save(self.session)
 
 
 def _add_attachment_metadata_to_rows(db, attachment_id: str, rows: List[Row]) -> None:
     """Add attachment metadata to rows collection (like manual tasks do)."""
-    from fides.api.models.attachment import Attachment
-
     attachment_record = (
         db.query(Attachment).filter(Attachment.id == attachment_id).first()
     )

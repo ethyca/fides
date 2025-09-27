@@ -5,9 +5,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from unittest.mock import MagicMock, Mock
 from zipfile import ZipFile
 
+from requests import PreparedRequest, Request
+
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from requests import PreparedRequest, Request
 
 
 @dataclass

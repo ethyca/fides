@@ -2,10 +2,11 @@ from typing import Generator
 from unittest.mock import patch
 
 import pytest
+import yaml
+from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
-import yaml
+
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -18,7 +19,6 @@ from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-
 from fides.api.service.privacy_request.request_service import requeue_polling_tasks
 from tests.conftest import wait_for_privacy_request_status
 from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient

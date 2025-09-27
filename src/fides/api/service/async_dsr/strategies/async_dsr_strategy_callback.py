@@ -36,18 +36,8 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         query_config: "SaaSQueryConfig",
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """
-        Execute async retrieve data with internal phase routing.
-        """
-        # Look up the request task using the strategy's session
-        request_task = (
-            self.session.query(RequestTask)
-            .filter(RequestTask.id == request_task_id)
-            .first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with id {request_task_id} not found")
-
+        """Execute async retrieve data with internal phase routing."""
+        request_task = self._get_request_task(request_task_id)
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
@@ -66,18 +56,8 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         query_config: "SaaSQueryConfig",
         rows: List[Row],
     ) -> int:
-        """
-        Execute async mask data with internal phase routing.
-        """
-        # Look up the request task using the strategy's session
-        request_task = (
-            self.session.query(RequestTask)
-            .filter(RequestTask.id == request_task_id)
-            .first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with id {request_task_id} not found")
-
+        """Execute async mask data with internal phase routing."""
+        request_task = self._get_request_task(request_task_id)
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
@@ -89,6 +69,26 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
                 f"Unexpected async phase '{async_phase}' for callback erasure task {request_task.id}"
             )
             return 0
+
+    # Private helper methods
+
+    def _get_request_task(self, request_task_id: str) -> RequestTask:
+        """Get request task by ID or raise ValueError if not found."""
+        request_task = (
+            self.session.query(RequestTask)
+            .filter(RequestTask.id == request_task_id)
+            .first()
+        )
+        if not request_task:
+            raise ValueError(f"RequestTask with ID {request_task_id} not found")
+        return request_task
+
+    def _create_connector(self, request_task: RequestTask):
+        """Create SaaS connector from request task."""
+        from fides.api.service.connectors.saas_connector import SaaSConnector
+
+        connection_config = get_connection_config_from_task(self.session, request_task)
+        return SaaSConnector(connection_config)
 
     def _initial_request_access(
         self,
@@ -171,14 +171,9 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         """Handle initial setup for erasure callback requests."""
         logger.info(f"Initial callback request for erasure task {request_task.id}")
 
-        # Get derived objects from request_task
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
-        connection_config = get_connection_config_from_task(self.session, request_task)
-
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connector = SaaSConnector(connection_config)
+        connector = self._create_connector(request_task)
 
         # For erasure, we look at masking requests (delete/update requests)
         masking_request = query_config.get_masking_request()
@@ -199,11 +194,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
                 self.session.add(request_task)
                 self.session.commit()
 
-                # For callback strategy, we typically need to execute the initial request
-                # to trigger the async callback process, then wait for callback
-                # Execute the initial masking request here before raising AwaitingAsyncTask
-                if request.path:  # Only execute if there's an actual request to make
-                    # Execute the initial masking request
+                if request.path:
                     client = connector.create_client()
                     for row in rows:
                         try:
@@ -221,12 +212,8 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
                                 continue
                             raise exc
 
-                # Asynchronous callback masking request detected in saas config.
-                # If the masking request was marked to expect async results, original responses are ignored
-                # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
                 raise AwaitingAsyncTask("Awaiting erasure callback results")
 
-        # Should not reach here if we detected async requests correctly
         logger.warning(
             f"No async configuration found for erasure task {request_task.id}"
         )
@@ -240,5 +227,4 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
     def _callback_completion_erasure(self, request_task: RequestTask) -> int:
         """Handle completion of erasure callback requests."""
         logger.info(f"Masking callback succeeded for request task '{request_task.id}'")
-        # If we've received the callback for this task, return rows_masked directly
         return request_task.rows_masked or 0

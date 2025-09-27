@@ -52,12 +52,12 @@ from fides.api.models.privacy_request import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import DataUse, PrivacyDeclaration, sql_model_map
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.tasks import celery_app
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler

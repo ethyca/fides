@@ -77,12 +77,12 @@ def in_processing_privacy_request(db, policy):
 ## Request Task Fixtures
 @pytest.fixture
 def polling_request_task(db, in_processing_privacy_request):
-    """Create a request task that is awaiting processing and is a polling task"""
+    """Create a request task that is in polling status and is a polling task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.awaiting_processing,
+            "status": ExecutionLogStatus.polling,
             "privacy_request_id": in_processing_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
@@ -140,25 +140,26 @@ def callback_request_task(db, in_processing_privacy_request):
 
 @pytest.fixture
 def non_async_request_task(db, pending_privacy_request):
-    """Create a request task that is awaiting processing but is not a polling task"""
+    """Create a request task that is in polling status but is not a polling task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.awaiting_processing,
+            "status": ExecutionLogStatus.polling,
             "privacy_request_id": pending_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
             "collection_name": "customer",
             "upstream_tasks": [],
             "downstream_tasks": [],
+            # Note: no async_type set, so it won't be AsyncTaskType.polling
         },
     )
     yield request_task
     request_task.delete(db)
 
 
-## access graph fixtures
+# Access graph fixtures
 @pytest.fixture
 def async_graph(saas_async_polling_example_dataset_config, db, privacy_request):
     # Build proper async graph with persisted request tasks to test the connector

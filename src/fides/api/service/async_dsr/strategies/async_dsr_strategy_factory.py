@@ -9,7 +9,6 @@ from fides.api.common_exceptions import ValidationError as FidesopsValidationErr
 from fides.api.schemas.saas.async_polling_configuration import (
     PollingAsyncDSRConfiguration,
 )
-from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_callback import (
     AsyncCallbackStrategy,
