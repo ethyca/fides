@@ -131,6 +131,31 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         connector = SaaSConnector(connection_config)
         connection_name = connector.configuration.name or connector.saas_config.name
 
+        # Execute the initial callback request to trigger the async process
+        privacy_request = request_task.privacy_request
+        policy = privacy_request.policy
+        client = connector.create_client()
+
+        for read_request in async_requests_to_process:
+            if read_request.path:  # Only execute if there's an actual request to make
+                try:
+                    # Set the current request context
+                    query_config.current_request = read_request
+                    prepared_request = query_config.generate_query(input_data, policy)
+                    # Execute the initial request to trigger the callback
+                    client.send(prepared_request, read_request.ignore_errors)
+                    logger.info(
+                        f"Executed initial callback request for access task {request_task.id}"
+                    )
+                except ValueError as exc:
+                    if read_request.skip_missing_param_values:
+                        logger.debug(
+                            "Skipping optional access callback request: {}",
+                            exc,
+                        )
+                        continue
+                    raise exc
+
         # Asynchronous callback access request detected in saas config.
         # We raise AwaitingAsyncTask to put this task in an awaiting_processing state.
         raise AwaitingAsyncTask(

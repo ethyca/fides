@@ -1,4 +1,3 @@
-import pdb
 from typing import Generator
 from unittest.mock import patch
 
@@ -146,7 +145,7 @@ class TestPrivacyRequestWithAsyncPolling:
             db=db,
             privacy_request_id=privacy_request_id,
             target_status=PrivacyRequestStatus.in_processing,
-            timeout_seconds=60,
+            timeout_seconds=30,
             poll_interval_seconds=2,
         )
 
@@ -158,7 +157,7 @@ class TestPrivacyRequestWithAsyncPolling:
             db=db,
             privacy_request_id=privacy_request_id,
             target_status=PrivacyRequestStatus.complete,
-            timeout_seconds=60,
+            timeout_seconds=30,
             poll_interval_seconds=2,
         )
 
