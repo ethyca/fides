@@ -54,6 +54,7 @@ from fides.common.api.v1.urn_registry import DATASETS_CLEAN, V1_URL_PREFIX
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     DatasetService,
+    LinkedDatasetException,
 )
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 
@@ -126,7 +127,7 @@ async def update_dataset(
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail={"message": str(e)},
+            detail=str(e),
         )
 
 
@@ -248,7 +249,7 @@ async def get_dataset(
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail={"message": str(e)},
+            detail=str(e),
         )
 
 
@@ -275,7 +276,12 @@ async def delete_dataset(
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail={"message": str(e)},
+            detail=str(e),
+        )
+    except LinkedDatasetException as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(e),
         )
 
 
