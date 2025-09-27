@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 from loguru import logger
 
 from fides.api.models.attachment import Attachment, AttachmentType
-from fides.api.schemas.storage.storage import StorageDetails
+from fides.api.schemas.storage.storage import StorageDetails, StorageType
 
 
 @dataclass
@@ -84,12 +84,19 @@ def get_attachments_content(
                 continue
 
             processed_count += 1
+
+            # Handle bucket_name differently for different storage types
+            bucket_name = None
+            if attachment.config.type in [StorageType.s3, StorageType.gcs]:
+                bucket_name = attachment.config.details[StorageDetails.BUCKET.value]
+            # For local storage, bucket_name is not needed
+
             yield AttachmentData(
                 file_name=attachment.file_name,
                 file_size=size,
                 download_url=str(url) if url else None,
                 content_type=attachment.content_type,
-                bucket_name=attachment.config.details[StorageDetails.BUCKET.value],
+                bucket_name=bucket_name or "",  # Empty string for local storage
                 file_key=attachment.file_key,
                 storage_key=attachment.storage_key,
             )

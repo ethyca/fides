@@ -162,7 +162,10 @@ def can_run_task_body(
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
         return False
-    if request_task.status != ExecutionLogStatus.pending:
+    if request_task.status not in [
+        ExecutionLogStatus.pending,
+        ExecutionLogStatus.polling,
+    ]:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
             request_task.action_type,

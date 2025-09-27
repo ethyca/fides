@@ -30,6 +30,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
+    cache_task_tracking_key,
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -364,7 +365,7 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
-def initiate_async_tasks_status_polling() -> None:
+def initiate_polling_task_requeue() -> None:
     """Initiates scheduler to check for and requeue pending polling async tasks"""
     if CONFIG.test_mode:
         return
@@ -375,7 +376,7 @@ def initiate_async_tasks_status_polling() -> None:
 
     logger.info("Initiating scheduler for async tasks status polling")
     scheduler.add_job(
-        func=poll_async_tasks_status,
+        func=requeue_polling_tasks,
         trigger="interval",
         kwargs={},
         id=ASYNC_TASKS_STATUS_POLLING,
@@ -680,6 +681,27 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
+                            # Check if the Privacy request has a polling Rqeuest Task, that it exists
+                            polling_request_task_exists = db.query(
+                                db.query(RequestTask)
+                                .filter(
+                                    RequestTask.privacy_request_id
+                                    == privacy_request.id,
+                                    RequestTask.async_type == AsyncTaskType.polling,
+                                )
+                                .exists()
+                            ).scalar()
+
+                            if polling_request_task_exists:
+                                # If the polling request task has no cached task ID, it's stuck
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) Contains polling tasks - "
+                                    f"keeping request in current status as it may be waiting for polling task to complete"
+                                )
+                                should_requeue = False
+                                break
+
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
                                 db,
@@ -706,7 +728,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def poll_async_tasks_status(self: DatabaseTask) -> None:
+def requeue_polling_tasks(self: DatabaseTask) -> None:
     """
     Poll the status of async tasks that are awaiting processing.
     """
@@ -720,19 +742,21 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         with self.get_new_session() as db:
             logger.debug("Polling for async tasks status")
 
-            # Get all tasks that are awaiting processing and are from polling async tasks
+            # Get all tasks that are polling and are from polling async tasks
             async_tasks = (
                 db.query(RequestTask)
-                .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
+                .filter(RequestTask.status == ExecutionLogStatus.polling)
                 .filter(RequestTask.async_type == AsyncTaskType.polling)
                 .all()
             )
-            logger.info(f"Found {len(async_tasks)} async tasks awaiting processing")
+            logger.info(f"Found {len(async_tasks)} async polling tasks")
 
             if async_tasks:
-                from fides.api.service.async_dsr.async_dsr_service import (  # pylint: disable=cyclic-import
-                    requeue_polling_request,
-                )
+                # Avoiding cyclic imports
+                from fides.api.task.execute_request_tasks import queue_request_task
 
                 for async_task in async_tasks:
-                    requeue_polling_request(db, async_task)
+                    logger.info(
+                        f"Requeuing polling task {async_task.id} for processing"
+                    )
+                    queue_request_task(async_task, privacy_request_proceed=True)

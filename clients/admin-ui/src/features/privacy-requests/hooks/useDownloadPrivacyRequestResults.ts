@@ -30,9 +30,14 @@ const useDownloadPrivacyRequestResults = ({
   ]);
 
   const { data, isLoading, isError, error } =
-    useGetPrivacyRequestAccessResultsQuery({
-      privacy_request_id: privacyRequest.id,
-    });
+    useGetPrivacyRequestAccessResultsQuery(
+      {
+        privacy_request_id: privacyRequest.id,
+      },
+      {
+        skip: !isCompletedRequest,
+      },
+    );
   const accessResultUrl = data?.access_result_urls[0] ?? "";
   const downloadLinkIsAvailable =
     !!accessResultUrl && accessResultUrl !== "your local fides_uploads folder";
