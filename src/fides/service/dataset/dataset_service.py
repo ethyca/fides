@@ -88,9 +88,7 @@ class DatasetService:
                 connection_name = (
                     config.connection_config.name or config.connection_config.key
                 )
-                detail = (
-                    f"'{connection_name}' ({config.connection_config.connection_type})"
-                )
+                detail = f"'{connection_name}' ({config.connection_config.connection_type.value})"  # type: ignore[attr-defined]
 
                 # Add system information if available
                 if config.connection_config.system_id:
