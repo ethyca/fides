@@ -35,6 +35,9 @@ from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.async_dsr.handlers.polling_request_handler import (
     PollingRequestHandler,
 )
+from fides.api.service.async_dsr.handlers.polling_response_handler import (
+    PollingResponseProcessor,
+)
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.utils import (
     AsyncPhase,
@@ -618,10 +621,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                         )
 
                         # Process status response
-                        from fides.api.service.async_dsr.handlers.polling_response_handler import (
-                            PollingResponseProcessor,
-                        )
-
                         status = PollingResponseProcessor.evaluate_status_response(
                             response,
                             self.status_request.status_path,
