@@ -1,6 +1,6 @@
 {
   "static.gpc": "Controllo Globale della Privacy",
-  "static.gpc.description": "Le tue preferenze del Controllo Globale della Privacy sono state prese in carico. Sei stato automaticamente escluso dai casi di utilizzo dei dati che corrispondono al Controllo Globale della Privacy.",
+  "static.gpc.description": "Abbiamo rilevato il tuo segnale di Controllo Globale della Privacy e rispetteremo le tue preferenze di conseguenza.",
   "static.gpc.status.applied": "Applicato",
   "static.gpc.status.overridden": "Non applicato",
   "static.gpc.title": "Controllo Globale della Privacy rilevato"

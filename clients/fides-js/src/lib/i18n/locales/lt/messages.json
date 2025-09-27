@@ -1,6 +1,6 @@
 {
   "static.gpc": "Visuotinė privatumo kontrolė",
-  "static.gpc.description": "Buvo atsižvelgta į jūsų visuotinės privatumo kontrolės pageidavimą. Buvote automatiškai atšauktas iš duomenų naudojimo atvejų, kai laikomasi visuotinės privatumo kontrolės.",
+  "static.gpc.description": "Aptikome jūsų Global Privacy Control signalą ir atitinkamai gerbsime jūsų pageidavimus.",
   "static.gpc.status.applied": "Taikoma",
   "static.gpc.status.overridden": "Nebegaliojantis",
   "static.gpc.title": "Aptikta visuotinė privatumo kontrolė"

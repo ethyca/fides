@@ -1,6 +1,6 @@
 {
   "static.gpc": "全域隱私控制",
-  "static.gpc.description": "您的全域隱私控制偏好已被接受。根據您的選擇·，已自動將您退出符合全域隱私控制的資料使用案例。",
+  "static.gpc.description": "我們已檢測到您的全域隱私控制信號，並將相應地尊重您的偏好。",
   "static.gpc.status.applied": "已應用",
   "static.gpc.status.overridden": "已覆寫",
   "static.gpc.title": "檢測到全域隱私控制"
