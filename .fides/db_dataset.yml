@@ -2521,7 +2521,7 @@ dataset:
       data_categories: [system]
     - name: async_type
       data_categories: [system]
-  - name: requesttask_sub_request
+  - name: request_task_sub_request
     description: 'Model for storing request data for middle steps during the execution of a request task'
     fields:
     - name: id
