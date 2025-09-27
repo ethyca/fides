@@ -1422,6 +1422,15 @@ describe("Consent overlay", () => {
             .then((consentMethod) => {
               expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
             });
+          cy.get("@FidesUpdated")
+            .its("lastCall.args.0.detail.consent")
+            .then((consent) => {
+              expect(consent).to.eql({
+                marketing: false,
+                functional: false,
+                essential: true,
+              });
+            });
           cy.get("#fides-modal-link").click();
           cy.getByTestId("toggle-Essential").within(() => {
             cy.get("input").should("be.disabled");
@@ -1439,6 +1448,53 @@ describe("Consent overlay", () => {
             .within(() => {
               cy.get(".fides-gpc-label").contains("Applied");
             });
+          cy.wait(["@patchPrivacyPreference", "@patchPrivacyPreference"]).then(
+            (interceptions) => {
+              const [
+                privacyPreferenceInterception,
+                privacyPreferenceInterception2,
+              ] = interceptions;
+              const { method, preferences } =
+                privacyPreferenceInterception2.request.body;
+              expect(method).to.eql(ConsentMethod.ACKNOWLEDGE);
+              expect(preferences).to.eql([
+                {
+                  preference: "opt_out",
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                },
+                {
+                  preference: "opt_out",
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                },
+                {
+                  preference: "acknowledge",
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                },
+              ]);
+            },
+          );
+          // check that window.Fides.consent is updated
+          cy.window().its("Fides").its("consent").should("eql", {
+            marketing: false,
+            functional: false,
+            essential: true,
+          });
+          // check that the cookie is update with the new consent
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+              expect(cookieKeyConsent.consent).to.eql({
+                marketing: false,
+                functional: false,
+                essential: true,
+              });
+            });
+          });
         });
       });
 
