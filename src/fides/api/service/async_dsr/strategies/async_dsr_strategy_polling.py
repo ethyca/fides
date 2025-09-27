@@ -556,8 +556,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         elif polling_task.action_type == ActionType.erasure:
             masking_request = query_config.get_masking_request()
             if not masking_request:
-                from fides.api.common_exceptions import PrivacyRequestError
-
                 raise PrivacyRequestError(
                     f"No masking request found for erasure task {polling_task.id}"
                 )
@@ -565,8 +563,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             rows_accumulator = None
             affected_records_accumulator: List[int] = []
         else:
-            from fides.api.common_exceptions import PrivacyRequestError
-
             raise PrivacyRequestError(
                 f"Unsupported action type: {polling_task.action_type}"
             )

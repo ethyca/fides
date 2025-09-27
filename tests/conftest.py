@@ -47,10 +47,12 @@ from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
+    PrivacyRequest,
     RequestTask,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import DataUse, PrivacyDeclaration, sql_model_map
 from fides.api.oauth.jwt import generate_jwe
@@ -788,6 +790,10 @@ class DSRThreeTestRunnerTimedOut(Exception):
     """DSR 3.0 Test Runner Timed Out"""
 
 
+class PrivacyRequestStatusTimedOut(Exception):
+    """Privacy Request Status Polling Timed Out"""
+
+
 def wait_for_tasks_to_complete(
     db: Session, pr: PrivacyRequest, action_type: ActionType
 ):
@@ -811,6 +817,37 @@ def wait_for_tasks_to_complete(
         counter += 1
         if counter == 5:
             raise DSRThreeTestRunnerTimedOut()
+
+
+def wait_for_privacy_request_status(
+    db: Session,
+    privacy_request_id: str,
+    target_status: PrivacyRequestStatus,
+    timeout_seconds: int = 30,
+    poll_interval_seconds: int = 1,
+) -> PrivacyRequest:
+    """Testing Helper - repeatedly checks to see if a PrivacyRequest has reached
+    the target status, with configurable timeout and polling interval"""
+
+    counter = 0
+    max_attempts = timeout_seconds // poll_interval_seconds
+
+    while counter < max_attempts:
+        # Refresh the privacy request from the database
+        privacy_request = PrivacyRequest.get_by(
+            db, field="id", value=privacy_request_id
+        )
+
+        if privacy_request.status == target_status:
+            return privacy_request
+
+        time.sleep(poll_interval_seconds)
+        counter += 1
+
+    raise PrivacyRequestStatusTimedOut(
+        f"Privacy request {privacy_request.id} did not reach status '{target_status}' "
+        f"within {timeout_seconds} seconds. Current status: '{privacy_request.status}'"
+    )
 
 
 def access_runner_tester(
