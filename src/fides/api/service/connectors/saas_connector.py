@@ -531,6 +531,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 ActionType.erasure, query_config, db
             ):
                 return async_dsr_strategy.async_mask_data(
+                    client=self.create_client(),
                     request_task_id=request_task.id,
                     query_config=query_config,
                     rows=rows,
