@@ -3,9 +3,9 @@ from typing import Any, Dict, List
 
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.strategy import Strategy
 from fides.api.util.collection_util import Row
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
 
 class AsyncDSRStrategy(Strategy):

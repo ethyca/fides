@@ -41,10 +41,7 @@ from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
-from fides.api.service.async_dsr.utils import (
-    AsyncPhase,
-    get_async_phase,
-)
+from fides.api.service.async_dsr.utils import AsyncPhase, get_async_phase
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
 

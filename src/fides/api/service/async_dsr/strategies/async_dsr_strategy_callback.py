@@ -6,12 +6,9 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
-from fides.api.service.async_dsr.utils import (
-    AsyncPhase,
-    get_async_phase,
-)
-from fides.api.util.collection_util import Row
+from fides.api.service.async_dsr.utils import AsyncPhase, get_async_phase
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
