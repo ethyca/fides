@@ -13,6 +13,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     FidesopsException,
+    NoSuchStrategyException,
     PostProcessingException,
     SkippingConsentPropagation,
 )
@@ -41,7 +42,6 @@ from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRSt
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )
-from fides.api.service.async_dsr.utils import is_async_request
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -1093,8 +1093,8 @@ def _get_async_dsr_strategy(
     Returns the async DSR strategy if any of the read or masking requests have an async_config.
     """
     if action_type == ActionType.access:
-        read_request = query_config.get_read_requests_by_identity()
-        for request in read_request:
+        read_requests = query_config.get_read_requests_by_identity()
+        for request in read_requests:
             if request.async_config is not None:
                 return get_strategy(
                     request.async_config.strategy,
@@ -1111,3 +1111,5 @@ def _get_async_dsr_strategy(
             )
     else:
         raise ValueError(f"Invalid action type: {action_type}")
+
+    raise NoSuchStrategyException("No async DSR strategy configured for this action")

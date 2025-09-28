@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
         SaaSQueryConfig,
     )
+    from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
 class AsyncCallbackStrategy(AsyncDSRStrategy):
@@ -42,13 +43,13 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
         if async_phase == AsyncPhase.initial_async:
             return self._initial_request_access(request_task, query_config, input_data)
-        elif async_phase == AsyncPhase.callback_completion:
+        if async_phase == AsyncPhase.callback_completion:
             return self._callback_completion_access(request_task)
-        else:
-            logger.warning(
-                f"Unexpected async phase '{async_phase}' for callback access task {request_task.id}"
-            )
-            return []
+
+        logger.warning(
+            f"Unexpected async phase '{async_phase}' for callback access task {request_task.id}"
+        )
+        return []
 
     def async_mask_data(
         self,
@@ -62,13 +63,13 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
         if async_phase == AsyncPhase.initial_async:
             return self._initial_request_erasure(request_task, query_config, rows)
-        elif async_phase == AsyncPhase.callback_completion:
+        if async_phase == AsyncPhase.callback_completion:
             return self._callback_completion_erasure(request_task)
-        else:
-            logger.warning(
-                f"Unexpected async phase '{async_phase}' for callback erasure task {request_task.id}"
-            )
-            return 0
+
+        logger.warning(
+            f"Unexpected async phase '{async_phase}' for callback erasure task {request_task.id}"
+        )
+        return 0
 
     # Private helper methods
 
@@ -83,7 +84,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
             raise ValueError(f"RequestTask with ID {request_task_id} not found")
         return request_task
 
-    def _create_connector(self, request_task: RequestTask):
+    def _create_connector(self, request_task: RequestTask) -> "SaaSConnector":
         """Create SaaS connector from request task."""
         from fides.api.service.connectors.saas_connector import SaaSConnector
 

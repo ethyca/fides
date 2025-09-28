@@ -34,7 +34,7 @@ class PollingResponseProcessor:
 
     @classmethod
     def process_result_response(
-        cls, response: Response, request_url: str, result_path: str = None
+        cls, response: Response, request_url: str, result_path: Optional[str] = None
     ) -> PollingResult:
         """
         Process response with smart data type inference.
@@ -54,19 +54,19 @@ class PollingResponseProcessor:
         if _should_store_as_attachment(response, inferred_type):
             # Step 3a: Build attachment result
             return _build_attachment_result(response, request_url, inferred_type)
-        else:
-            # Step 3b: Parse as structured data
-            rows = _parse_to_rows(response, inferred_type, result_path)
-            return PollingResult(
-                data=rows,
-                result_type="rows",
-                metadata={
-                    "inferred_type": inferred_type.value,
-                    "content_type": response.headers.get("content-type", ""),
-                    "row_count": len(rows) if isinstance(rows, list) else 0,
-                    "parsed_to_rows": True,
-                },
-            )
+
+        # Step 3b: Parse as structured data
+        rows = _parse_to_rows(response, inferred_type, result_path)
+        return PollingResult(
+            data=rows,
+            result_type="rows",
+            metadata={
+                "inferred_type": inferred_type.value,
+                "content_type": response.headers.get("content-type", ""),
+                "row_count": len(rows) if isinstance(rows, list) else 0,
+                "parsed_to_rows": True,
+            },
+        )
 
     @staticmethod
     def evaluate_status_response(
@@ -124,11 +124,11 @@ def _infer_data_type(response: Response, request_url: str) -> SupportedDataType:
     content_type = response.headers.get("content-type", "").lower()
     if "application/json" in content_type:
         return SupportedDataType.json
-    elif "text/csv" in content_type or "application/csv" in content_type:
+    if "text/csv" in content_type or "application/csv" in content_type:
         return SupportedDataType.csv
-    elif "application/xml" in content_type or "text/xml" in content_type:
+    if "application/xml" in content_type or "text/xml" in content_type:
         return SupportedDataType.xml
-    elif any(
+    if any(
         t in content_type
         for t in ["application/octet-stream", "application/zip", "application/pdf"]
     ):
@@ -273,7 +273,7 @@ def _build_attachment_result(
 
 
 def _parse_to_rows(
-    response: Response, data_type: SupportedDataType, result_path: str = None
+    response: Response, data_type: SupportedDataType, result_path: Optional[str] = None
 ) -> List[Row]:
     """
     Parse response to List[Row] based on data type.
@@ -282,16 +282,18 @@ def _parse_to_rows(
     """
     if data_type == SupportedDataType.json:
         return _parse_json_to_rows(response, result_path)
-    elif data_type == SupportedDataType.csv:
+    if data_type == SupportedDataType.csv:
         return _parse_csv_to_rows(response)
-    elif data_type == SupportedDataType.xml:
+    if data_type == SupportedDataType.xml:
         # Basic XML handling - could be enhanced
         raise PrivacyRequestError("XML parsing not yet implemented")
-    else:
+    if data_type == SupportedDataType.attachment:
         raise PrivacyRequestError(f"Cannot parse {data_type} to rows")
 
 
-def _parse_json_to_rows(response: Response, result_path: str = None) -> List[Row]:
+def _parse_json_to_rows(
+    response: Response, result_path: Optional[str] = None
+) -> List[Row]:
     """Parse JSON response to List[Row]."""
     try:
         json_data = response.json()
@@ -310,12 +312,11 @@ def _parse_json_to_rows(response: Response, result_path: str = None) -> List[Row
     # Ensure we return a list of dictionaries
     if isinstance(json_data, list):
         return json_data
-    elif isinstance(json_data, dict):
+    if isinstance(json_data, dict):
         return [json_data]
-    else:
-        raise PrivacyRequestError(
-            f"Expected list or dict from result request, got: {type(json_data)}"
-        )
+    raise PrivacyRequestError(
+        f"Expected list or dict from result request, got: {type(json_data)}"
+    )
 
 
 def _parse_csv_to_rows(response: Response) -> List[Row]:

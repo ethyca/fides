@@ -4,44 +4,40 @@ import pytest
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.schemas.saas.async_polling_configuration import SupportedDataType
+from fides.api.schemas.saas.async_polling_configuration import (
+    PollingAsyncDSRConfiguration,
+    SupportedDataType,
+)
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.schemas.saas.strategy_configuration import (
-    PollingAsyncDSRAccessDataConfiguration,
-)
-from fides.api.service.async_dsr.async_dsr_strategy_polling_access_data import (
-    PollingAsyncDSRAccessDataStrategy,
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
+    AsyncPollingStrategy,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
 
-class TestPollingAsyncDSRStrategy:
+class TestAsyncPollingStrategyRequests:
     STATUS_PATH = "ready"
     RESULT_PATH = "data.results"
 
     @pytest.fixture
     def polling_strategy(self):
         """Create a PollingAsyncDSRStrategy with basic configuration"""
-        config = PollingAsyncDSRAccessDataConfiguration(
-            initial_request=SaaSRequest(
-                method=HTTPMethod.GET,
-                path="/api/initial/<request_id>",
-            ),
+        config = PollingAsyncDSRConfiguration(
             correlation_id_path="correlation_id",
             status_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/status/<request_id>",
+                status_path=self.STATUS_PATH,
+                status_completed_value="completed",
             ),
-            status_path=self.STATUS_PATH,
             result_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/result/<request_id>",
+                result_path=self.RESULT_PATH,
             ),
-            result_path=self.RESULT_PATH,
-            data_type=SupportedDataType.json.value,
         )
-        return PollingAsyncDSRAccessDataStrategy(configuration=config)
+        return AsyncPollingStrategy(configuration=config)
 
     @pytest.fixture
     def mock_client(self):
@@ -203,13 +199,13 @@ class TestPollingAsyncDSRStrategy:
             )
 
 
-class TestPollingAsyncDSRStrategyStatusPathTypes:
+class TestAsyncPollingStrategyStatusValueHandling:
     """Test different status path value types that the polling strategy handles"""
 
     @pytest.fixture
     def polling_strategy_with_string_status(self):
         """Create a strategy that expects string status values"""
-        config = PollingAsyncDSRAccessDataConfiguration(
+        config = PollingAsyncDSRConfiguration(
             initial_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/initial/<request_id>",
@@ -228,12 +224,12 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
             result_path="data.results",
             data_type=SupportedDataType.json.value,
         )
-        return PollingAsyncDSRAccessDataStrategy(configuration=config)
+        return AsyncPollingStrategy(configuration=config)
 
     @pytest.fixture
     def polling_strategy_with_list_status(self):
         """Create a strategy that expects list status values"""
-        config = PollingAsyncDSRAccessDataConfiguration(
+        config = AsyncPollingStrategy(
             initial_request=SaaSRequest(
                 method=HTTPMethod.GET,
                 path="/api/initial/<request_id>",
@@ -252,7 +248,7 @@ class TestPollingAsyncDSRStrategyStatusPathTypes:
             result_path="data.results",
             data_type=SupportedDataType.json.value,
         )
-        return PollingAsyncDSRAccessDataStrategy(configuration=config)
+        return AsyncPollingStrategy(configuration=config)
 
     @pytest.fixture
     def mock_client(self):

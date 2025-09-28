@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Any, Dict, List
 
 from fides.api.models.privacy_request.request_task import AsyncTaskType
@@ -11,6 +12,7 @@ class AsyncDSRStrategy(Strategy):
 
     type: AsyncTaskType
 
+    @abstractmethod
     def async_retrieve_data(
         self,
         request_task_id: str,
@@ -21,6 +23,7 @@ class AsyncDSRStrategy(Strategy):
         Execute async retrieve data.
         """
 
+    @abstractmethod
     def async_mask_data(
         self,
         request_task_id: str,

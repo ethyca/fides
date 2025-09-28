@@ -1,6 +1,6 @@
 # datetime and timedelta imports would be used in RequestTaskSubRequest helper methods
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union, cast
 from uuid import uuid4
 
 import pydash
@@ -30,6 +30,7 @@ from fides.api.models.storage import get_active_default_storage_config
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.async_polling_configuration import (
     PollingAsyncDSRConfiguration,
+    PollingResult,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
@@ -83,13 +84,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         if async_phase == AsyncPhase.initial_async:
             return self._initial_request_access(request_task, query_config, input_data)
-        elif async_phase == AsyncPhase.polling_continuation:
+
+        if async_phase == AsyncPhase.polling_continuation:
             return self._polling_continuation_access(request_task, query_config)
-        else:
-            logger.warning(
-                f"Unexpected async phase '{async_phase}' for polling access task {request_task.id}"
-            )
-            return []
+
+        logger.warning(
+            f"Unexpected async phase '{async_phase}' for polling access task {request_task.id}"
+        )
+        return []
 
     def async_mask_data(
         self,
@@ -105,13 +107,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         if async_phase == AsyncPhase.initial_async:
             return self._initial_request_erasure(request_task, query_config, rows)
-        elif async_phase == AsyncPhase.polling_continuation:
+
+        if async_phase == AsyncPhase.polling_continuation:
             return self._polling_continuation_erasure(request_task, query_config)
-        else:
-            logger.warning(
-                f"Unexpected async phase '{async_phase}' for polling erasure task {request_task.id}"
-            )
-            return 0
+
+        logger.warning(
+            f"Unexpected async phase '{async_phase}' for polling erasure task {request_task.id}"
+        )
+        return 0
 
     # Private helper methods
 
@@ -409,15 +412,16 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """
 
         # Get appropriate requests based on action type
+        requests: List[ReadSaaSRequest]
         if polling_task.action_type == ActionType.access:
-            requests = query_config.get_read_requests_by_identity()
+            requests = list(query_config.get_read_requests_by_identity())
         elif polling_task.action_type == ActionType.erasure:
             masking_request = query_config.get_masking_request()
             if not masking_request:
                 raise PrivacyRequestError(
                     f"No masking request found for erasure task {polling_task.id}"
                 )
-            requests = [masking_request]
+            requests = [cast(ReadSaaSRequest, masking_request)]
         else:
             raise PrivacyRequestError(
                 f"Unsupported action type: {polling_task.action_type}"
@@ -470,9 +474,16 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                             )
 
                             # Process status response
+                            status_path = self.status_request.status_path
+
+                            if status_path is None:
+                                raise PrivacyRequestError(
+                                    "status_path is required when request_override is not provided"
+                                )
+
                             status = PollingResponseProcessor.evaluate_status_response(
                                 response,
-                                self.status_request.status_path,
+                                status_path,
                                 self.status_request.status_completed_value,
                             )
 
@@ -522,6 +533,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                                     )
                                 )
 
+                            # Ensure we have the expected polling result type
+                            if not isinstance(polling_result, PollingResult):
+                                raise PrivacyRequestError(
+                                    "Polling result must be PollingResult instance"
+                                )
+
                             # Handle results based on action type
                             if polling_task.action_type == ActionType.access:
                                 self._handle_access_result(polling_result, polling_task)
@@ -566,7 +583,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"All sub-requests completed successfully for task {polling_task.id}"
             )
             return True
-        elif len(failed_sub_requests) > 0:
+        if len(failed_sub_requests) > 0:
             # If any sub-request failed, mark parent task and descendants as failed
             logger.error(f"One or more sub-requests failed for task {polling_task.id}")
             from fides.api.task.graph_task import (
@@ -582,7 +599,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         )
         return False
 
-    def _handle_access_result(self, polling_result, request_task: RequestTask) -> None:
+    def _handle_access_result(
+        self, polling_result: PollingResult, request_task: RequestTask
+    ) -> None:
         """Handle result for access requests."""
         if polling_result.result_type == "rows":
             existing_access_data = request_task.access_data or []
@@ -595,9 +614,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         elif polling_result.result_type == "attachment":
             try:
+                attachment_bytes = self._ensure_attachment_bytes(polling_result.data)
                 attachment_id = self._store_polling_attachment(
                     request_task,
-                    attachment_data=polling_result.data,
+                    attachment_data=attachment_bytes,
                     filename=polling_result.metadata.get(
                         "filename", f"attachment_{str(uuid4())[:8]}"
                     ),
@@ -614,7 +634,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
     # Private helper functions
 
-    def _handle_erasure_result(self, polling_result, request_task: RequestTask) -> None:
+    def _handle_erasure_result(
+        self, polling_result: PollingResult, request_task: RequestTask
+    ) -> None:
         """Handle result for erasure requests."""
         current_count = request_task.rows_masked or 0
 
@@ -632,8 +654,17 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         request_task.save(self.session)
 
+    @staticmethod
+    def _ensure_attachment_bytes(data: Union[List[Row], bytes]) -> bytes:
+        """Ensure attachment polling results provide bytes content."""
+        if isinstance(data, bytes):
+            return data
+        raise PrivacyRequestError("Expected bytes data for attachment polling result")
 
-def _add_attachment_metadata_to_rows(db, attachment_id: str, rows: List[Row]) -> None:
+
+def _add_attachment_metadata_to_rows(
+    db: Session, attachment_id: str, rows: List[Row]
+) -> None:
     """Add attachment metadata to rows collection (like manual tasks do)."""
     attachment_record = (
         db.query(Attachment).filter(Attachment.id == attachment_id).first()

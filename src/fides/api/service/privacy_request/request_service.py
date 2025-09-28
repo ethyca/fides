@@ -30,7 +30,6 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
-    cache_task_tracking_key,
     celery_tasks_in_flight,
     get_async_task_tracking_cache_key,
     get_cache,

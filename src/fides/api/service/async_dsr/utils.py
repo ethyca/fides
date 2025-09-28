@@ -6,7 +6,6 @@ These are helper functions that can be used across the async DSR system.
 """
 
 from enum import Enum
-from io import BytesIO
 
 # Type checking imports
 from typing import TYPE_CHECKING
@@ -17,7 +16,6 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.privacy_request import RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
 
 if TYPE_CHECKING:
@@ -54,7 +52,7 @@ def is_polling_continuation(request_task: RequestTask) -> bool:
 
 def is_callback_completion(request_task: RequestTask) -> bool:
     """Check if this is a completed callback request"""
-    return request_task.callback_succeeded
+    return bool(request_task.callback_succeeded)
 
 
 def is_async_request(
@@ -96,12 +94,11 @@ def get_async_phase(
     """
     if is_callback_completion(request_task):
         return AsyncPhase.callback_completion
-    elif is_polling_continuation(request_task):
+    if is_polling_continuation(request_task):
         return AsyncPhase.polling_continuation
-    elif has_async_requests(query_config):
+    if has_async_requests(query_config):
         return AsyncPhase.initial_async
-    else:
-        return AsyncPhase.sync
+    return AsyncPhase.sync
 
 
 def get_connection_config_from_task(

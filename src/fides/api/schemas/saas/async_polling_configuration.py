@@ -29,7 +29,7 @@ class PollingResult:
     result_type: str  # "rows", "attachment", "url"
     metadata: Dict[str, Any]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.metadata is None:
             self.metadata = {}
 
@@ -44,20 +44,18 @@ class PollingStatusRequest(SaaSRequest):
     status_completed_value: Optional[Union[str, bool, int]] = None
 
     @model_validator(mode="after")
-    def validate_status_fields(cls, values):
-        """Ensure required fields are present unless request_override is specified."""
-        if hasattr(values, "request_override") and values.request_override:
-            # Using override - standard fields are optional
-            return values
+    def validate_status_fields(self) -> "PollingStatusRequest":
+        """Ensure required fields are present unless using an override."""
+        if self.request_override:
+            return self
 
-        # Not using override - standard fields are required
-        if not values.status_path:
-            raise ValueError("status_path is required when not using request_override")
-        if values.status_completed_value is None:
+        if not self.status_path:
+            raise ValueError("status_path is required when request_override is not set")
+        if self.status_completed_value is None:
             raise ValueError(
-                "status_completed_value is required when not using request_override"
+                "status_completed_value is required when request_override is not set"
             )
-        return values
+        return self
 
 
 class PollingResultRequest(SaaSRequest):
