@@ -361,7 +361,7 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-unit",
         "ops-unit-api",
         "ops-unit-non-api",
-        "ops-integration",
+        "ops-integration",  # Also runs tests/integration/
         "ops-external-datastores",
         "ops-saas",
     ],
@@ -369,6 +369,7 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/integration/": ["ops-integration"],  # Workflow integration tests
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 
