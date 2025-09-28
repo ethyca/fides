@@ -2,19 +2,17 @@
 Enhanced tests for RequestTaskSubRequest functionality with polling strategies
 """
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.orm import Session
 
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import RequestTask
 from fides.api.models.privacy_request.request_task import (
     AsyncTaskType,
     RequestTaskSubRequest,
 )
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
