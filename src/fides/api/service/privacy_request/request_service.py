@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from asyncio import sleep
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
@@ -11,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import TextClause
 
-from fides.api.common_exceptions import PrivacyRequestError, PrivacyRequestNotFound
+from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
@@ -21,10 +20,7 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import (
-    PrivacyRequestResponse,
-    PrivacyRequestStatus,
-)
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
@@ -38,7 +34,6 @@ from fides.api.util.cache import (
     reset_privacy_request_retry_count,
 )
 from fides.api.util.lock import redis_lock
-from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
@@ -96,62 +91,6 @@ def cache_data(
 def get_async_client() -> AsyncClient:
     """Return an async client used to make API requests"""
     return AsyncClient()
-
-
-async def poll_server_for_completion(
-    privacy_request_id: str,
-    server_url: str,
-    token: str,
-    *,
-    poll_interval_seconds: int = 30,
-    timeout_seconds: int = 1800,  # 30 minutes
-    client: AsyncClient | None = None,
-) -> PrivacyRequestResponse:
-    """Poll a server for privacy request completion.
-
-    Requests will report complete with if they have a status of canceled, complete,
-    denied, or error. By default the polling will time out if not completed in 30
-    minutes, time can be overridden by setting the timeout_seconds.
-    """
-    url = (
-        f"{server_url}{V1_URL_PREFIX}{PRIVACY_REQUESTS}?request_id={privacy_request_id}"
-    )
-    start_time = datetime.now()
-    elapsed_time = 0.0
-    while elapsed_time < timeout_seconds:
-        if client:
-            response = await client.get(
-                url, headers={"Authorization": f"Bearer {token}"}
-            )
-        else:
-            async_client = get_async_client()
-            response = await async_client.get(
-                url, headers={"Authorization": f"Bearer {token}"}
-            )
-        response.raise_for_status()
-
-        # Privacy requests are returned paginated. Since this is searching for a specific
-        # privacy request there should only be one value present in items.
-        items = response.json()["items"]
-        if not items:
-            raise PrivacyRequestNotFound(
-                f"No privacy request found with id '{privacy_request_id}'"
-            )
-        status = PrivacyRequestResponse(**items[0])
-        if status.status and status.status in (
-            PrivacyRequestStatus.complete,
-            PrivacyRequestStatus.canceled,
-            PrivacyRequestStatus.error,
-            PrivacyRequestStatus.denied,
-        ):
-            return status
-
-        await sleep(poll_interval_seconds)
-        time_delta = datetime.now() - start_time
-        elapsed_time = time_delta.seconds
-    raise TimeoutError(
-        f"Timeout of {timeout_seconds} seconds has been exceeded while waiting for privacy request {privacy_request_id}"
-    )
 
 
 def initiate_poll_for_exited_privacy_request_tasks() -> None:

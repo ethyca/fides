@@ -139,11 +139,11 @@ def _infer_data_type(response: Response, request_url: str) -> SupportedDataType:
     path = parsed_url.path
     if path.endswith(".csv"):
         return SupportedDataType.csv
-    elif path.endswith(".json"):
+    if path.endswith(".json"):
         return SupportedDataType.json
-    elif path.endswith((".xml", ".xls", ".xlsx")):
+    if path.endswith((".xml", ".xls", ".xlsx")):
         return SupportedDataType.xml
-    elif path.endswith((".zip", ".pdf", ".tar", ".gz")):
+    if path.endswith((".zip", ".pdf", ".tar", ".gz")):
         return SupportedDataType.attachment
 
     # 3. Try parsing response body (small sample)

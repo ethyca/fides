@@ -13,7 +13,6 @@ from starlette.status import HTTP_204_NO_CONTENT
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     FidesopsException,
-    NoSuchStrategyException,
     PostProcessingException,
     SkippingConsentPropagation,
 )
@@ -1111,5 +1110,4 @@ def _get_async_dsr_strategy(
                 session,
                 masking_request.async_config.configuration,
             )
-    else:
-        raise ValueError(f"Invalid action type: {action_type}")
+    return None
