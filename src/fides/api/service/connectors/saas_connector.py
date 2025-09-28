@@ -236,6 +236,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 ActionType.access, query_config, db
             ):
                 return async_dsr_strategy.async_retrieve_data(
+                    client=self.create_client(),
                     request_task_id=request_task.id,
                     query_config=query_config,
                     input_data=input_data,
@@ -1088,7 +1089,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
 def _get_async_dsr_strategy(
     action_type: ActionType, query_config: SaaSQueryConfig, session: Session
-) -> AsyncDSRStrategy:
+) -> Optional[AsyncDSRStrategy]:
     """
     Returns the async DSR strategy if any of the read or masking requests have an async_config.
     """
@@ -1111,5 +1112,3 @@ def _get_async_dsr_strategy(
             )
     else:
         raise ValueError(f"Invalid action type: {action_type}")
-
-    raise NoSuchStrategyException("No async DSR strategy configured for this action")

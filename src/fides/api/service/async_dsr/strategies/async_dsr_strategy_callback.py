@@ -9,15 +9,14 @@ from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRSt
 from fides.api.service.async_dsr.utils import (
     AsyncPhase,
     get_async_phase,
-    get_connection_config_from_task,
 )
 from fides.api.util.collection_util import Row
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
 if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
         SaaSQueryConfig,
     )
-    from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
 class AsyncCallbackStrategy(AsyncDSRStrategy):
@@ -33,6 +32,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
     def async_retrieve_data(
         self,
+        client: AuthenticatedClient,
         request_task_id: str,
         query_config: "SaaSQueryConfig",
         input_data: Dict[str, List[Any]],
@@ -42,7 +42,9 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
-            return self._initial_request_access(request_task, query_config, input_data)
+            return self._initial_request_access(
+                client, request_task, query_config, input_data
+            )
         if async_phase == AsyncPhase.callback_completion:
             return self._callback_completion_access(request_task)
 
@@ -53,6 +55,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
     def async_mask_data(
         self,
+        client: AuthenticatedClient,
         request_task_id: str,
         query_config: "SaaSQueryConfig",
         rows: List[Row],
@@ -62,7 +65,9 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
-            return self._initial_request_erasure(request_task, query_config, rows)
+            return self._initial_request_erasure(
+                client, request_task, query_config, rows
+            )
         if async_phase == AsyncPhase.callback_completion:
             return self._callback_completion_erasure(request_task)
 
@@ -84,15 +89,9 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
             raise ValueError(f"RequestTask with ID {request_task_id} not found")
         return request_task
 
-    def _create_connector(self, request_task: RequestTask) -> "SaaSConnector":
-        """Create SaaS connector from request task."""
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connection_config = get_connection_config_from_task(self.session, request_task)
-        return SaaSConnector(connection_config)
-
     def _initial_request_access(
         self,
+        client: AuthenticatedClient,
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
         input_data: Dict[str, List[Any]],
@@ -126,16 +125,9 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         # The actual callback execution and data processing happens in the webhook endpoint
         # which will eventually call _callback_completion_access when the callback succeeds
 
-        connection_config = get_connection_config_from_task(self.session, request_task)
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connector = SaaSConnector(connection_config)
-        connection_name = connector.configuration.name or connector.saas_config.name
-
         # Execute the initial callback request to trigger the async process
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
-        client = connector.create_client()
 
         for read_request in async_requests_to_process:
             if read_request.path:  # Only execute if there's an actual request to make
@@ -160,11 +152,12 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         # Asynchronous callback access request detected in saas config.
         # We raise AwaitingAsyncTask to put this task in an awaiting_processing state.
         raise AwaitingAsyncTask(
-            f"Awaiting callback from {connection_name} for access results"
+            f"Awaiting callback from {request_task.dataset_name} for access results"
         )
 
     def _initial_request_erasure(
         self,
+        client: AuthenticatedClient,
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
         rows: List[Row],
@@ -174,7 +167,6 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
-        connector = self._create_connector(request_task)
 
         # For erasure, we look at masking requests (delete/update requests)
         masking_request = query_config.get_masking_request()
@@ -196,7 +188,6 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
                 self.session.commit()
 
                 if request.path:
-                    client = connector.create_client()
                     for row in rows:
                         try:
                             prepared_request = query_config.generate_update_stmt(

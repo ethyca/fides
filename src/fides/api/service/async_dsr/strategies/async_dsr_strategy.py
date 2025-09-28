@@ -5,6 +5,7 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.strategy import Strategy
 from fides.api.util.collection_util import Row
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 
 
 class AsyncDSRStrategy(Strategy):
@@ -15,6 +16,7 @@ class AsyncDSRStrategy(Strategy):
     @abstractmethod
     def async_retrieve_data(
         self,
+        client: AuthenticatedClient,
         request_task_id: str,
         query_config: SaaSQueryConfig,
         input_data: Dict[str, List[Any]],
@@ -26,6 +28,7 @@ class AsyncDSRStrategy(Strategy):
     @abstractmethod
     def async_mask_data(
         self,
+        client: AuthenticatedClient,
         request_task_id: str,
         query_config: SaaSQueryConfig,
         rows: List[Row],

@@ -44,7 +44,6 @@ from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRSt
 from fides.api.service.async_dsr.utils import (
     AsyncPhase,
     get_async_phase,
-    get_connection_config_from_task,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
@@ -53,7 +52,6 @@ if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
         SaaSQueryConfig,
     )
-    from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
 class AsyncPollingStrategy(AsyncDSRStrategy):
@@ -72,6 +70,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
     def async_retrieve_data(
         self,
+        client: AuthenticatedClient,
         request_task_id: str,
         query_config: "SaaSQueryConfig",
         input_data: Dict[str, List[Any]],
@@ -83,10 +82,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
-            return self._initial_request_access(request_task, query_config, input_data)
+            return self._initial_request_access(
+                client, request_task, query_config, input_data
+            )
 
         if async_phase == AsyncPhase.polling_continuation:
-            return self._polling_continuation_access(request_task, query_config)
+            return self._polling_continuation_access(client, request_task, query_config)
 
         logger.warning(
             f"Unexpected async phase '{async_phase}' for polling access task {request_task.id}"
@@ -95,6 +96,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
     def async_mask_data(
         self,
+        client: AuthenticatedClient,
         request_task_id: str,
         query_config: "SaaSQueryConfig",
         rows: List[Row],
@@ -106,10 +108,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         async_phase = get_async_phase(request_task, query_config)
 
         if async_phase == AsyncPhase.initial_async:
-            return self._initial_request_erasure(request_task, query_config, rows)
+            return self._initial_request_erasure(
+                client, request_task, query_config, rows
+            )
 
         if async_phase == AsyncPhase.polling_continuation:
-            return self._polling_continuation_erasure(request_task, query_config)
+            return self._polling_continuation_erasure(
+                client, request_task, query_config
+            )
 
         logger.warning(
             f"Unexpected async phase '{async_phase}' for polling erasure task {request_task.id}"
@@ -129,15 +135,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             raise ValueError(f"RequestTask with ID {request_task_id} not found")
         return request_task
 
-    def _create_connector(self, request_task: RequestTask) -> "SaaSConnector":
-        """Create SaaS connector from request task."""
-        from fides.api.service.connectors.saas_connector import SaaSConnector
-
-        connection_config = get_connection_config_from_task(self.session, request_task)
-        return SaaSConnector(connection_config)
-
     def _initial_request_access(
         self,
+        client: AuthenticatedClient,
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
         input_data: Dict[str, List[Any]],
@@ -145,7 +145,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """Handle initial setup for access polling requests."""
         logger.info(f"Initial polling request for access task {request_task.id}")
 
-        connector = self._create_connector(request_task)
         policy = request_task.privacy_request.policy
 
         async_requests_to_process = [
@@ -174,17 +173,17 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 read_request,
                 input_data,
                 policy,
-                connector.create_client(),
+                client,
             )
 
         self.session.refresh(request_task)
-        connection_name = connector.configuration.name or connector.saas_config.name
         raise AwaitingAsyncProcessing(
-            f"Waiting for next scheduled check of {connection_name} access results."
+            f"Waiting for next scheduled check of {request_task.dataset_name} access results."
         )
 
     def _initial_request_erasure(
         self,
+        client: AuthenticatedClient,
         request_task: RequestTask,
         query_config: "SaaSQueryConfig",
         rows: List[Row],
@@ -192,7 +191,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """Handle initial setup for erasure polling requests."""
         logger.info(f"Initial polling request for erasure task {request_task.id}")
 
-        connector = self._create_connector(request_task)
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
 
@@ -215,7 +213,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 logger.info(
                     f"Executing initial masking request for polling task {request_task.id}"
                 )
-                client = connector.create_client()
 
                 for row in rows:
                     try:
@@ -230,9 +227,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                             continue
                         raise exc
 
-            connection_name = connector.configuration.name or connector.saas_config.name
             raise AwaitingAsyncProcessing(
-                f"Waiting for next scheduled check of {connection_name} erasure results."
+                f"Waiting for next scheduled check of {request_task.dataset_name} erasure results."
             )
 
         logger.warning(
@@ -241,39 +237,41 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         return rows_updated
 
     def _polling_continuation_access(
-        self, request_task: RequestTask, query_config: "SaaSQueryConfig"
+        self,
+        client: AuthenticatedClient,
+        request_task: RequestTask,
+        query_config: "SaaSQueryConfig",
     ) -> List[Row]:
         """Handle polling continuation for access requests."""
         logger.info(f"Continuing polling for access task {request_task.id}")
 
-        connector = self._create_connector(request_task)
         polling_complete = self._execute_polling_requests(
-            request_task, query_config, connector
+            client, request_task, query_config
         )
 
         if not polling_complete:
-            connection_name = connector.configuration.name or connector.saas_config.name
             raise AwaitingAsyncProcessing(
-                f"Waiting for next scheduled check of {connection_name} access results."
+                f"Waiting for next scheduled check of {request_task.dataset_name} access results."
             )
 
         return request_task.get_access_data()
 
     def _polling_continuation_erasure(
-        self, request_task: RequestTask, query_config: "SaaSQueryConfig"
+        self,
+        client: AuthenticatedClient,
+        request_task: RequestTask,
+        query_config: "SaaSQueryConfig",
     ) -> int:
         """Handle polling continuation for erasure requests."""
         logger.info(f"Continuing polling for erasure task {request_task.id}")
 
-        connector = self._create_connector(request_task)
         polling_complete = self._execute_polling_requests(
-            request_task, query_config, connector
+            client, request_task, query_config
         )
 
         if not polling_complete:
-            connection_name = connector.configuration.name or connector.saas_config.name
             raise AwaitingAsyncProcessing(
-                f"Waiting for next scheduled check of {connection_name} erasure results."
+                f"Waiting for next scheduled check of {request_task.dataset_name} erasure results."
             )
 
         return request_task.rows_masked or 0
@@ -397,9 +395,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
     def _execute_polling_requests(
         self,
+        client: AuthenticatedClient,
         polling_task: RequestTask,
         query_config: "SaaSQueryConfig",
-        connector: "SaaSConnector",
     ) -> bool:
         """
         Internal polling execution orchestrator with proper error handling and timeout management.
@@ -429,7 +427,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         for request in requests:
             if request.async_config:
-                client = connector.create_client()
                 sub_requests: List[RequestTaskSubRequest] = (
                     polling_task.sub_requests.all()
                 )
@@ -465,7 +462,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                                 client=client,
                                 param_values=param_values,
                                 request_config=self.status_request,
-                                secrets=connector.secrets,
+                                secrets=client.configuration.secrets,
                             )
                         else:
                             # Standard HTTP status request
@@ -507,7 +504,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                                     client=client,
                                     param_values=param_values,
                                     request_config=self.result_request,
-                                    secrets=connector.secrets,
+                                    secrets=client.configuration.secrets,
                                 )
                             else:
                                 # Standard HTTP request processing
@@ -568,10 +565,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         # Check final status using existing field checks
         all_sub_requests = polling_task.sub_requests.all()
         completed_sub_requests = [
-            sr for sr in all_sub_requests if sr.sub_request_status == "complete"
+            sub_request
+            for sub_request in all_sub_requests
+            if sub_request.sub_request_status == "complete"
         ]
         failed_sub_requests = [
-            sr for sr in all_sub_requests if sr.sub_request_status == "error"
+            sub_request
+            for sub_request in all_sub_requests
+            if sub_request.sub_request_status == "error"
         ]
 
         if (
@@ -583,15 +584,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"All sub-requests completed successfully for task {polling_task.id}"
             )
             return True
-        if len(failed_sub_requests) > 0:
-            # If any sub-request failed, mark parent task and descendants as failed
-            logger.error(f"One or more sub-requests failed for task {polling_task.id}")
-            from fides.api.task.graph_task import (
-                mark_current_and_downstream_nodes_as_failed,
-            )
-
-            mark_current_and_downstream_nodes_as_failed(polling_task, self.session)
-            return True  # Task is done (failed)
 
         # Still polling - some sub-requests are pending
         logger.info(
