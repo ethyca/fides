@@ -1,7 +1,7 @@
 """Create new Sub Request Table
 
 Revision ID: 7db29f9cd77b
-Revises: e2cda8d6abc3
+Revises: 918aefc950c9
 Create Date: 2025-09-16 14:00:16.282996
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "7db29f9cd77b"
-down_revision = "e2cda8d6abc3"
+down_revision = "918aefc950c9"
 branch_labels = None
 depends_on = None
 
