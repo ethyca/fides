@@ -97,6 +97,7 @@ def retry(
     If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
+    # pylint: disable=too-many-return-statements
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def result(*args: Any, **kwargs: Any) -> Any:

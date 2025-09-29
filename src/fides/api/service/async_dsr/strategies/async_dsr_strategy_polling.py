@@ -521,8 +521,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
                                 polling_result = (
                                     PollingResponseProcessor.process_result_response(
+                                        prepared_result_request.path,
                                         response,
-                                        prepared_result_request.path or "",
                                         self.result_request.result_path,
                                     )
                                 )

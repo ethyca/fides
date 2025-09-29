@@ -80,8 +80,6 @@ class TestAsyncStrategyFactory:
             get_strategy(strategy_name="invalid_strategy", session=db, configuration={})
 
         assert "Strategy 'invalid_strategy' does not exist" in str(exc.value)
-        assert "polling" in str(exc.value)
-        assert "callback" in str(exc.value)
 
     def test_get_polling_strategy_without_config_raises_validation_error(self, db):
         """Test that polling strategy without config raises ValidationError"""

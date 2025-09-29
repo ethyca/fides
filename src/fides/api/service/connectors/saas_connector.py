@@ -232,7 +232,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # Delegate async requests
         with get_db() as db:
             if async_dsr_strategy := _get_async_dsr_strategy(
-                ActionType.access, query_config, db
+                db, request_task, query_config, ActionType.access
             ):
                 return async_dsr_strategy.async_retrieve_data(
                     client=self.create_client(),
@@ -527,7 +527,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # Delegate async requests
         with get_db() as db:
             if async_dsr_strategy := _get_async_dsr_strategy(
-                ActionType.erasure, query_config, db
+                db, request_task, query_config, ActionType.erasure
             ):
                 return async_dsr_strategy.async_mask_data(
                     client=self.create_client(),
@@ -1088,11 +1088,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
 
 def _get_async_dsr_strategy(
-    action_type: ActionType, query_config: SaaSQueryConfig, session: Session
+    session: Session,
+    request_task: RequestTask,
+    query_config: SaaSQueryConfig,
+    action_type: ActionType,
 ) -> Optional[AsyncDSRStrategy]:
     """
     Returns the async DSR strategy if any of the read or masking requests have an async_config.
     """
+
+    # Async processing is only supported for DSR 3.0.
+    # A request task with an ID of None is an indicator that the request is not DSR 3.0.
+    if request_task.id is None:
+        return None
+
     if action_type == ActionType.access:
         read_requests = query_config.get_read_requests_by_identity()
         for request in read_requests:

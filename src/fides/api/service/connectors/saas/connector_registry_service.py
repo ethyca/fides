@@ -398,7 +398,7 @@ def update_saas_configs(db: Session) -> None:
             saas_config_instance = SaaSConfig.model_validate(
                 connection_config.saas_config
             )
-            if True:
+            if parse_version(saas_config_instance.version) < template_version:
                 logger.info(
                     "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
                     saas_config_instance.fides_key,

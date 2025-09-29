@@ -34,26 +34,26 @@ class PollingResponseProcessor:
 
     @classmethod
     def process_result_response(
-        cls, response: Response, request_url: str, result_path: Optional[str] = None
+        cls, request_path: str, response: Response, result_path: Optional[str] = None
     ) -> PollingResult:
         """
         Process response with smart data type inference.
 
         Args:
             response: HTTP response object
-            request_url: URL that was requested
+            request_path: Path that was requested
             result_path: Optional path to extract data from JSON responses
 
         Returns:
             PollingResult with processed data
         """
         # Step 1: Infer data type
-        inferred_type = _infer_data_type(response, request_url)
+        inferred_type = _infer_data_type(request_path, response)
 
         # Step 2: Determine if this should be treated as an attachment
         if _should_store_as_attachment(response, inferred_type):
             # Step 3a: Build attachment result
-            return _build_attachment_result(response, request_url, inferred_type)
+            return _build_attachment_result(response, request_path, inferred_type)
 
         # Step 3b: Parse as structured data
         rows = _parse_to_rows(response, inferred_type, result_path)
@@ -118,7 +118,7 @@ class PollingResponseProcessor:
 # Private helpers
 
 
-def _infer_data_type(response: Response, request_url: str) -> SupportedDataType:
+def _infer_data_type(request_path: str, response: Response) -> SupportedDataType:
     """Infer data type from response characteristics."""
     # 1. Check Content-Type header
     content_type = response.headers.get("content-type", "").lower()
@@ -135,7 +135,7 @@ def _infer_data_type(response: Response, request_url: str) -> SupportedDataType:
         return SupportedDataType.attachment
 
     # 2. Check URL file extension
-    parsed_url = urlparse(request_url.lower())
+    parsed_url = urlparse(request_path.lower())
     path = parsed_url.path
     if path.endswith(".csv"):
         return SupportedDataType.csv
@@ -282,13 +282,18 @@ def _parse_to_rows(
     """
     if data_type == SupportedDataType.json:
         return _parse_json_to_rows(response, result_path)
+
     if data_type == SupportedDataType.csv:
         return _parse_csv_to_rows(response)
+
     if data_type == SupportedDataType.xml:
         # Basic XML handling - could be enhanced
         raise PrivacyRequestError("XML parsing not yet implemented")
+
     if data_type == SupportedDataType.attachment:
         raise PrivacyRequestError(f"Cannot parse {data_type} to rows")
+
+    raise PrivacyRequestError(f"Unsupported data type: {data_type}")
 
 
 def _parse_json_to_rows(
