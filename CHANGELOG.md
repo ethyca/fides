@@ -55,6 +55,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
 - Improved readability and maintainability around DSR packages and improved test coverage [#6540](https://github.com/ethyca/fides/pull/6540)
 
+### Fixed
+- Fixed FidesJS banner's Acknowledge button incorrectly overriding GPC settings [#6660](https://github.com/ethyca/fides/pull/6660)
+- Fix an issue where approver users wouldn't see the manual tasks associated with a privacy request from the detail view [#6638](https://github.com/ethyca/fides/pull/6638)
+
 ## [2.70.5](https://github.com/ethyca/fides/compare/2.70.3...2.70.5)
 
 ### Fixed
@@ -2496,7 +2500,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Datamap export mitigation for deleted taxonomy elements referenced by declarations [#3214](https://github.com/ethyca/fides/pull/3214)
 - Update datamap columns each time the page is visited [#3211](https://github.com/ethyca/fides/pull/3211)
 - Ensure inactive custom fields are not returned for datamap response [#3223](https://github.com/ethyca/fides/pull/3223)
-- Fix an issue where approver users wouldn't see the manual tasks associated with a privacy request from the detail view [#6638](https://github.com/ethyca/fides/pull/6638)
 
 ## [2.12.0](https://github.com/ethyca/fides/compare/2.11.0...2.12.0)
 

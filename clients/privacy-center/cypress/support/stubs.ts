@@ -1,4 +1,5 @@
 import {
+  ExperienceConfig,
   ExperienceConfigTranslation,
   FidesEndpointPaths,
   FidesInitOptions,
@@ -46,6 +47,7 @@ interface FidesConfigTesting {
   // We don't need all required props to override the default config
   consent?: Partial<LegacyConsentConfig> | OVERRIDE;
   experience?: Partial<PrivacyExperience> | OVERRIDE;
+  experienceConfig?: Partial<ExperienceConfig>;
   geolocation?: Partial<UserGeolocation> | OVERRIDE;
   options: Partial<FidesInitOptions> | OVERRIDE;
 }
@@ -67,7 +69,13 @@ export const overrideTranslation = (
  * @example stubExperience({experience: {component: ComponentType.PRIVACY_CENTER}})
  */
 export const stubConfig = (
-  { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
+  {
+    consent,
+    experience,
+    experienceConfig,
+    geolocation,
+    options,
+  }: Partial<FidesConfigTesting>,
   mockGeolocationApiResp?: any,
   mockExperienceApiResp?: any,
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null,
@@ -82,6 +90,10 @@ export const stubConfig = (
       tcfEnabled: config.options?.tcfEnabled,
     });
     const coreOptions = setNewConfig(defaultOptions.options, config.options);
+    config.experience.experience_config = {
+      ...config.experience.experience_config,
+      ...experienceConfig,
+    };
     const updatedConfig = {
       consent: setNewConfig(config.consent, consent),
       // this mocks the pre-fetched experience
