@@ -15,6 +15,7 @@ import {
   StagedResourceAPIResponse,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
+import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import {
   PaginationQueryParams,
   SearchQueryParams,
@@ -331,7 +332,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       SearchQueryParams &
         PaginationQueryParams & {
           task_types?: string[];
-          statuses?: string[];
+          statuses?: ExecutionLogStatus[];
           return_dismissed?: boolean;
         }
     >({

@@ -67,7 +67,7 @@ const SelectableIntegrationBox = ({
       <Flex justifyContent="space-between" alignItems="flex-start" width="100%">
         <Flex flexGrow={1} width="100%">
           <ConnectionTypeLogo
-            data={logoData ?? ""}
+            data={logoData}
             boxSize="40px"
             className="shrink-0"
           />

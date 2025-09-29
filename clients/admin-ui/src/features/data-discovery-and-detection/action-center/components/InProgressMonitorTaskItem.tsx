@@ -12,7 +12,9 @@ import {
   useToast,
 } from "fidesui";
 
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromMonitor,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import { ConnectionType, MonitorTaskInProgressResponse } from "~/types/api";
 
 import {
@@ -20,7 +22,6 @@ import {
   useGetAggregateMonitorResultsQuery,
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
-import type { MonitorAggregatedResults } from "../types";
 
 const { Text, Title } = Typography;
 
@@ -62,33 +63,31 @@ export const InProgressMonitorTaskItem = ({
     ? monitorAgg?.items?.find((m) => m.key === task.monitor_config_id)
     : undefined;
 
-  type LogoSourceLite = {
-    connection_type: ConnectionType;
-    saas_config?: { type?: string } | null;
-    name?: string | null;
-    key?: string | null;
-    secrets?: { url?: string } | null;
-  };
+  const logoSource = (() => {
+    if (aggItem) {
+      return connectionLogoFromMonitor({
+        connection_type: aggItem.connection_type,
+        name: aggItem.name,
+        key: aggItem.key ?? null,
+        saas_config: aggItem.saas_config
+          ? { type: aggItem.saas_config.type }
+          : null,
+        secrets: aggItem.secrets?.url ? { url: aggItem.secrets.url } : null,
+      });
+    }
 
-  let logoData: MonitorAggregatedResults | LogoSourceLite | undefined;
-  if (aggItem) {
-    const item = aggItem as MonitorAggregatedResults;
-    logoData = {
-      connection_type: item.connection_type,
-      saas_config: item.saas_config ? { type: item.saas_config.type } : null,
-      name: item.name,
-      key: item.key ?? null,
-      secrets: item.secrets?.url ? { url: item.secrets.url } : null,
-    };
-  } else if (task.connection_type) {
-    logoData = {
-      connection_type: task.connection_type as ConnectionType,
-      name: task.connection_name || task.connection_type || undefined,
-      key: null,
-      saas_config: null,
-      secrets: null,
-    };
-  }
+    if (task.connection_type) {
+      return connectionLogoFromMonitor({
+        connection_type: task.connection_type as ConnectionType,
+        name: task.connection_name || task.connection_type || undefined,
+        key: null,
+        saas_config: null,
+        secrets: null,
+      });
+    }
+
+    return undefined;
+  })();
 
   const taskCount = task.staged_resource_urns?.length || 0;
   const isInProgress = [
@@ -188,7 +187,9 @@ export const InProgressMonitorTaskItem = ({
       <Row gutter={12} className="w-full">
         <Col span={17} className="align-middle">
           <Space align="center" size={8} wrap>
-            {logoData && <ConnectionTypeLogo data={logoData} boxSize="24px" />}
+            {logoSource && (
+              <ConnectionTypeLogo data={logoSource} boxSize="24px" />
+            )}
             <Title level={5} style={{ margin: 0 }}>
               {taskTitle}
             </Title>

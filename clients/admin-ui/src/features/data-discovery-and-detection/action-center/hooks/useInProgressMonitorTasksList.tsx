@@ -1,66 +1,85 @@
 import { AntEmpty as Empty } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
+import { usePagination, useSearch } from "~/features/common/hooks";
+import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+
 import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
 export const useInProgressMonitorTasksList = () => {
-  const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize] = useState(20);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilters, setStatusFilters] = useState<string[]>([
-    "pending",
-    "in_processing",
-    "paused",
-    "retrying",
-    "error",
+  const {
+    pageIndex,
+    pageSize,
+    updatePageIndex,
+    resetPagination,
+    showSizeChanger,
+  } = usePagination({ defaultPageSize: 20, showSizeChanger: false });
+
+  const { searchQuery, updateSearch: setSearchQuery } = useSearch();
+
+  const [statusFilters, setStatusFilters] = useState<ExecutionLogStatus[]>([
+    ExecutionLogStatus.PENDING,
+    ExecutionLogStatus.IN_PROCESSING,
+    ExecutionLogStatus.PAUSED,
+    ExecutionLogStatus.RETRYING,
+    ExecutionLogStatus.ERROR,
   ]); // Default to all "in progress" states plus error tasks
   const [showDismissed, setShowDismissed] = useState(false); // Default to not showing dismissed tasks
 
-  const updateSearch = useCallback((newSearch: string) => {
-    setSearchQuery(newSearch);
-    setPageIndex(1); // Reset to first page when searching
-  }, []);
+  const updateSearch = useCallback(
+    (newSearch: string) => {
+      setSearchQuery(newSearch);
+      updatePageIndex(1); // Reset to first page when searching
+    },
+    [setSearchQuery, updatePageIndex],
+  );
 
-  const updateStatusFilters = useCallback((filters: string[]) => {
-    setStatusFilters(filters);
-    setPageIndex(1);
-  }, []);
+  const updateStatusFilters = useCallback(
+    (filters: ExecutionLogStatus[]) => {
+      setStatusFilters(filters);
+      updatePageIndex(1);
+    },
+    [updatePageIndex],
+  );
 
-  const updateShowDismissed = useCallback((show: boolean) => {
-    setShowDismissed(show);
-    setPageIndex(1);
-  }, []);
+  const updateShowDismissed = useCallback(
+    (show: boolean) => {
+      setShowDismissed(show);
+      updatePageIndex(1);
+    },
+    [updatePageIndex],
+  );
 
   // Default button: Reset to all "In Progress" states plus error tasks (pending, in_processing, paused, retrying, error)
   const resetToDefault = useCallback(() => {
     setStatusFilters([
-      "pending",
-      "in_processing",
-      "paused",
-      "retrying",
-      "error",
+      ExecutionLogStatus.PENDING,
+      ExecutionLogStatus.IN_PROCESSING,
+      ExecutionLogStatus.PAUSED,
+      ExecutionLogStatus.RETRYING,
+      ExecutionLogStatus.ERROR,
     ]);
     setShowDismissed(false);
-    setPageIndex(1);
-  }, []);
+    resetPagination();
+  }, [resetPagination]);
 
   // Clear button: Remove all filters
   const clearAllFilters = useCallback(() => {
     setStatusFilters([]);
     setShowDismissed(true); // When clearing all filters, show everything including dismissed
-    setPageIndex(1);
-  }, []);
+    resetPagination();
+  }, [resetPagination]);
 
   // All possible status values from ExecutionLogStatus enum
   // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
-  const allPossibleStatuses = [
-    "pending",
-    "in_processing",
-    "complete",
-    "error",
-    "paused", // This is the actual enum value for "awaiting_processing"
-    "retrying",
-    "skipped",
+  const allPossibleStatuses: ExecutionLogStatus[] = [
+    ExecutionLogStatus.PENDING,
+    ExecutionLogStatus.IN_PROCESSING,
+    ExecutionLogStatus.COMPLETE,
+    ExecutionLogStatus.ERROR,
+    ExecutionLogStatus.PAUSED, // This is the actual enum value for "awaiting_processing"
+    ExecutionLogStatus.RETRYING,
+    ExecutionLogStatus.SKIPPED,
   ];
 
   const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery({
@@ -70,9 +89,6 @@ export const useInProgressMonitorTasksList = () => {
     statuses: statusFilters.length > 0 ? statusFilters : undefined,
     return_dismissed: showDismissed,
   });
-
-  // Use all possible statuses instead of just what's in current data
-  const availableStatuses = allPossibleStatuses;
 
   const listProps = useMemo(
     () => ({
@@ -90,12 +106,21 @@ export const useInProgressMonitorTasksList = () => {
         current: pageIndex,
         pageSize,
         total: data?.total || 0,
-        showSizeChanger: false,
+        showSizeChanger,
         showQuickJumper: false,
-        onChange: (page: number) => setPageIndex(page),
+        onChange: (page: number) => updatePageIndex(page),
       },
     }),
-    [data?.items, data?.total, isLoading, isFetching, pageIndex, pageSize],
+    [
+      data?.items,
+      data?.total,
+      isLoading,
+      isFetching,
+      pageIndex,
+      pageSize,
+      showSizeChanger,
+      updatePageIndex,
+    ],
   );
 
   return {
@@ -114,7 +139,7 @@ export const useInProgressMonitorTasksList = () => {
     clearAllFilters,
 
     // Available filter options
-    availableStatuses,
+    availableStatuses: allPossibleStatuses,
 
     // Ant Design list integration
     listProps,

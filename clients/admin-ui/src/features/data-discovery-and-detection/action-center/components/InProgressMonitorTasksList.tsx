@@ -4,20 +4,21 @@ import {
   AntFlex as Flex,
   AntList as List,
   AntPopover as Popover,
-  AntSelect as Select,
   AntSpace as Space,
-  Icons,
 } from "fidesui";
-import { useState } from "react";
+import { useCallback } from "react";
 
 import { MonitorTaskInProgressResponse } from "~/types/api";
+import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
 import { InProgressMonitorTaskItem } from "./InProgressMonitorTaskItem";
 
 // Helper function to format status names for display
-const formatStatusForDisplay = (status: string): string => {
+const formatStatusForDisplay = (
+  status: ExecutionLogStatus | string,
+): string => {
   // Special case: "paused" should display as "Awaiting Processing"
   if (status === "paused") {
     return "Awaiting Processing";
@@ -30,8 +31,6 @@ const formatStatusForDisplay = (status: string): string => {
 };
 
 export const InProgressMonitorTasksList = () => {
-  const [showFilters, setShowFilters] = useState(false);
-
   const {
     // List state and data
     searchQuery,
@@ -54,89 +53,63 @@ export const InProgressMonitorTasksList = () => {
     listProps,
   } = useInProgressMonitorTasksList();
 
-  // Count active filters (status filters + whether dismissed is shown)
-  const activeFilterCount = statusFilters.length + (showDismissed ? 1 : 0);
+  const handleStatusesChanged = useCallback(
+    (values: Array<ExecutionLogStatus | string>) => {
+      updateStatusFilters(values as ExecutionLogStatus[]);
+    },
+    [updateStatusFilters],
+  );
 
   const filterContent = (
-    <div style={{ padding: "8px", minWidth: "200px" }}>
-      <Select
-        mode="multiple"
-        placeholder="Select status..."
+    <div className="min-w-[220px] space-y-3 p-2">
+      <Checkbox.Group
         value={statusFilters}
-        onChange={updateStatusFilters}
-        style={{ width: "100%", marginBottom: "12px" }}
-        options={availableStatuses.map((status) => ({
-          label: formatStatusForDisplay(status),
-          value: status,
-        }))}
-        allowClear
-      />
+        onChange={handleStatusesChanged}
+        className="flex flex-col gap-2"
+      >
+        {availableStatuses.map((status) => (
+          <Checkbox key={status} value={status}>
+            {formatStatusForDisplay(status)}
+          </Checkbox>
+        ))}
+      </Checkbox.Group>
       <Checkbox
         checked={showDismissed}
         onChange={(e) => updateShowDismissed(e.target.checked)}
-        style={{ marginBottom: "12px" }}
+        className="mb-2"
       >
         Show dismissed tasks
       </Checkbox>
-      <div>
-        <Space>
-          <Button size="small" onClick={resetToDefault}>
-            Default
-          </Button>
-          <Button size="small" onClick={clearAllFilters}>
-            Clear
-          </Button>
-        </Space>
-      </div>
+      <Space>
+        <Button size="small" onClick={resetToDefault}>
+          Default
+        </Button>
+        <Button size="small" onClick={clearAllFilters}>
+          Clear
+        </Button>
+      </Space>
     </div>
   );
 
   return (
     <>
       {/* Search Row */}
-      <Flex
-        justify="space-between"
-        align="center"
-        style={{ marginBottom: "16px" }}
-      >
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search by monitor name..."
-          style={{ minWidth: "300px" }}
-        />
+      <Flex justify="space-between" align="center" className="mb-4">
+        <div className="min-w-[300px]">
+          <DebouncedSearchInput
+            value={searchQuery ?? ""}
+            onChange={updateSearch}
+            placeholder="Search by monitor name..."
+          />
+        </div>
 
         {/* Filter Popover */}
         <Popover
           content={filterContent}
           trigger="click"
           placement="bottomRight"
-          open={showFilters}
-          onOpenChange={setShowFilters}
         >
-          <Button style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>Filter</span>
-              {activeFilterCount > 0 && (
-                <span
-                  style={{
-                    background: "#1890ff",
-                    color: "white",
-                    borderRadius: "10px",
-                    padding: "2px 6px",
-                    fontSize: "10px",
-                    minWidth: "16px",
-                    textAlign: "center",
-                    lineHeight: "1",
-                    fontWeight: "600",
-                  }}
-                >
-                  {activeFilterCount}
-                </span>
-              )}
-            </span>
-            {showFilters ? <Icons.ChevronDown /> : <Icons.ChevronRight />}
-          </Button>
+          <Button className="flex items-center gap-2">Filter</Button>
         </Popover>
       </Flex>
 

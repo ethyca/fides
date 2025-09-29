@@ -3,7 +3,9 @@ import {
   setConnectionOption,
   setStep,
 } from "connection-type/connection-type.slice";
-import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromSystemType,
+} from "datastore-connections/ConnectionTypeLogo";
 import { AntSpace as Space, AntTypography as Typography } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect } from "react";
@@ -84,7 +86,9 @@ const AddConnection = () => {
         <Title level={3} style={{ marginBottom: 0 }} className="mt-4">
           {connectionOption ? (
             <Space>
-              <ConnectionTypeLogo data={connectionOption} />
+              <ConnectionTypeLogo
+                data={connectionLogoFromSystemType(connectionOption)}
+              />
               {getLabel(step)}
             </Space>
           ) : (
