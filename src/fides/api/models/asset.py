@@ -200,8 +200,8 @@ class Asset(Base):
     # Expose related System attributes for API serialization convenience
     @property
     def system_name(self) -> Optional[str]:
-        return self.system.name if getattr(self, "system", None) else None
+        return self.system.name if self.system else None
 
     @property
     def system_fides_key(self) -> Optional[str]:
-        return self.system.fides_key if getattr(self, "system", None) else None
+        return self.system.fides_key if self.system else None

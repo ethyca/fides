@@ -241,7 +241,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @classmethod
     def load_cookie_data_for_notices(
-        cls, db: Session, notices: List["PrivacyNotice"]
+        cls,
+        db: Session,
+        notices: List["PrivacyNotice"],
+        exclude_cookies_from_systems: Optional[Set[str]] = None,
     ) -> None:
         """
         An efficient method to bulk-load cookie data for a list of PrivacyNotice objects.
@@ -256,7 +259,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         all_relevant_cookies: List[Asset] = []
         if all_data_uses:
             cookie_filter = cls._get_cookie_filter_for_data_uses(list(all_data_uses))
-            all_relevant_cookies = (
+            query = (
                 db.query(Asset)
                 .options(
                     selectinload("system")
@@ -265,19 +268,34 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                     Asset.asset_type == "Cookie",
                     cookie_filter,
                 )
-                .all()
             )
+            if exclude_cookies_from_systems:
+                query = query.outerjoin(System).filter(
+                    or_(
+                        Asset.system_id.is_(None),
+                        System.fides_key.not_in(exclude_cookies_from_systems),
+                    )
+                )
+
+            all_relevant_cookies = query.all()
 
         # Associate the pre-fetched cookies to notices based on their data uses
+        cookies_by_data_use: Dict[str, List[Asset]] = {}  # dict of data_use -> list of cookies
+
+        for cookie in all_relevant_cookies:
+            for data_use in cookie.data_uses:
+                if data_use not in cookies_by_data_use:
+                    cookies_by_data_use[data_use] = []
+                cookies_by_data_use[data_use].append(cookie)
+
         for notice in notices:
-            matching_cookies = [
-                cookie
-                for cookie in all_relevant_cookies
-                if any(
-                    ",".join(cookie.data_uses).lower().startswith(d.lower())
-                    for d in notice.data_uses
-                )
-            ]
+            # Remove duplicate cookies by object identity, e.g. if a cookie matches multiple data uses
+            flat_cookies_iter = itertools.chain.from_iterable(
+                cookies_by_data_use.get(data_use, [])
+                for data_use in (notice.data_uses or [])
+            )
+            matching_cookies = list(dict.fromkeys(flat_cookies_iter))
+
             # Pre-populate the cache of the 'cookies' cached_property.
             # This directly sets the attribute that the decorator would otherwise compute.
             setattr(notice, "cookies", matching_cookies)
