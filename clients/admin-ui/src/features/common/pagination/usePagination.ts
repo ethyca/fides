@@ -13,17 +13,27 @@ import {
  * NuQS parsers for pagination state - synced to URL
  */
 const createPaginationParsers = (
-  defaults: { pageSize?: number; pageSizeOptions?: readonly number[] } = {},
-) => ({
-  page: parseAsPositiveInteger.withDefault(DEFAULT_PAGE_INDEX),
-  size: defaults.pageSizeOptions
-    ? parseAsNumberLiteral(defaults.pageSizeOptions).withDefault(
-        defaults.pageSize ?? DEFAULT_PAGE_SIZE,
-      )
-    : parseAsPositiveInteger.withDefault(
-        defaults.pageSize ?? DEFAULT_PAGE_SIZE,
-      ),
-});
+  defaults: {
+    pageSize?: number;
+    pageSizeOptions?: readonly number[];
+    pageQueryKey?: string;
+    sizeQueryKey?: string;
+  } = {},
+) => {
+  const pageKey = defaults.pageQueryKey ?? "page";
+  const sizeKey = defaults.sizeQueryKey ?? "size";
+
+  return {
+    [pageKey]: parseAsPositiveInteger.withDefault(DEFAULT_PAGE_INDEX),
+    [sizeKey]: defaults.pageSizeOptions
+      ? parseAsNumberLiteral(defaults.pageSizeOptions).withDefault(
+          defaults.pageSize ?? DEFAULT_PAGE_SIZE,
+        )
+      : parseAsPositiveInteger.withDefault(
+          defaults.pageSize ?? DEFAULT_PAGE_SIZE,
+        ),
+  };
+};
 
 /**
  * Custom hook for managing pagination state with URL synchronization
@@ -58,6 +68,8 @@ export const usePagination = (config: PaginationConfig = {}) => {
     defaultPageSize = DEFAULT_PAGE_SIZE,
     pageSizeOptions,
     showSizeChanger = true,
+    pageQueryKey = "page",
+    sizeQueryKey = "size",
   } = config;
 
   // Use defaults for UI/display purposes, but keep original value for parser logic
@@ -69,8 +81,10 @@ export const usePagination = (config: PaginationConfig = {}) => {
     return createPaginationParsers({
       pageSize: defaultPageSize,
       pageSizeOptions, // Pass undefined if user didn't provide it
+      pageQueryKey,
+      sizeQueryKey,
     });
-  }, [defaultPageSize, pageSizeOptions]);
+  }, [defaultPageSize, pageSizeOptions, pageQueryKey, sizeQueryKey]);
 
   // Use NuQS for URL state management
   const [queryState, setQueryState] = useQueryStates(parsers, {
@@ -79,47 +93,47 @@ export const usePagination = (config: PaginationConfig = {}) => {
 
   // Create current state from query state (URL is the single source of truth)
   const currentState: PaginationState = {
-    pageIndex: queryState.page ?? DEFAULT_PAGE_INDEX,
-    pageSize: queryState.size ?? defaultPageSize,
+    pageIndex: queryState[pageQueryKey] ?? DEFAULT_PAGE_INDEX,
+    pageSize: queryState[sizeQueryKey] ?? defaultPageSize,
   };
 
   const updatePageIndex = (pageIndex: number) => {
-    setQueryState({ page: pageIndex });
+    setQueryState({ [pageQueryKey]: pageIndex });
   };
 
   const nextPage = () => {
-    setQueryState(({ page, size }) => {
+    setQueryState((prevState) => {
       return {
-        page: page + 1,
-        size,
+        [pageQueryKey]: prevState[pageQueryKey] + 1,
+        [sizeQueryKey]: prevState[sizeQueryKey],
       };
     });
   };
 
   const previousPage = () => {
-    setQueryState(({ page, size }) => {
+    setQueryState((prevState) => {
       return {
-        page: page - 1,
-        size,
+        [pageQueryKey]: prevState[pageQueryKey] - 1,
+        [sizeQueryKey]: prevState[sizeQueryKey],
       };
     });
   };
 
   const updatePageSize = (pageSize: number) => {
     setQueryState({
-      page:
+      [pageQueryKey]:
         pageSize !== currentState.pageSize
           ? DEFAULT_PAGE_INDEX
           : currentState.pageIndex,
-      size: pageSize,
+      [sizeQueryKey]: pageSize,
     });
   };
 
   const resetPagination = () => {
     // Reset pagination URL state
     setQueryState({
-      page: DEFAULT_PAGE_INDEX,
-      size: defaultPageSize,
+      [pageQueryKey]: DEFAULT_PAGE_INDEX,
+      [sizeQueryKey]: defaultPageSize,
     });
   };
 
