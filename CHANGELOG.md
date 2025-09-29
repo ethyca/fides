@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
+- Fixed an issue where using pagination on the consent issues modal affects the results of the page [#6665](https://github.com/ethyca/fides/pull/6665)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
