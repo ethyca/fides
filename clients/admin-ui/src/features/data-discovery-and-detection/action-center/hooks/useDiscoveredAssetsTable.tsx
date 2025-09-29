@@ -188,6 +188,12 @@ export const useDiscoveredAssetsTable = ({
     DiscoveredAssetsColumnKeys
   >(tableState, antTableConfig);
 
+  const {
+    selectedKeys: selectedUrns,
+    selectedRows,
+    resetSelections,
+  } = antTable;
+
   const columns: ColumnsType<StagedResourceAPIResponse> = useMemo(() => {
     const baseColumns: ColumnsType<StagedResourceAPIResponse> = [
       {
@@ -228,6 +234,9 @@ export const useDiscoveredAssetsTable = ({
               readonly={
                 actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
               }
+              onChange={() => {
+                resetSelections();
+              }}
             />
           ),
       },
@@ -260,6 +269,9 @@ export const useDiscoveredAssetsTable = ({
             columnState={{
               isExpanded: isDataUsesExpanded,
               version: dataUsesVersion,
+            }}
+            onChange={() => {
+              resetSelections();
             }}
           />
         ),
@@ -415,14 +427,15 @@ export const useDiscoveredAssetsTable = ({
     actionsDisabled,
     activeTab,
     isDataUsesExpanded,
-    isLocationsExpanded,
-    isPagesExpanded,
     dataUsesVersion,
+    resetSelections,
+    isLocationsExpanded,
     locationsVersion,
+    isPagesExpanded,
     pagesVersion,
     firstItemConsentStatus,
-    onShowComplianceIssueDetails,
     onTabChange,
+    onShowComplianceIssueDetails,
   ]);
 
   // Business logic effects
@@ -445,12 +458,6 @@ export const useDiscoveredAssetsTable = ({
       setFirstItemConsentStatus(consentStatus);
     }
   }, [data, firstItemConsentStatus]);
-
-  const {
-    selectedKeys: selectedUrns,
-    selectedRows,
-    resetSelections,
-  } = antTable;
 
   const handleBulkAdd = useCallback(async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -511,10 +518,17 @@ export const useDiscoveredAssetsTable = ({
               `Confirmed`,
             ),
           );
+          resetSelections();
         }
       }
     },
-    [updateAssetsSystemMutation, monitorId, selectedUrns, toast],
+    [
+      updateAssetsSystemMutation,
+      monitorId,
+      selectedUrns,
+      toast,
+      resetSelections,
+    ],
   );
 
   const handleBulkAddDataUse = useCallback(
@@ -548,6 +562,7 @@ export const useDiscoveredAssetsTable = ({
             `Confirmed`,
           ),
         );
+        resetSelections();
       }
     },
     [
@@ -557,6 +572,7 @@ export const useDiscoveredAssetsTable = ({
       selectedUrns,
       systemName,
       toast,
+      resetSelections,
     ],
   );
 
