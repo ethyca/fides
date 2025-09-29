@@ -1,8 +1,3 @@
-"""
-Enhanced tests for RequestTaskSubRequest functionality with polling strategies
-"""
-
-from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
@@ -13,13 +8,10 @@ from fides.api.models.privacy_request.request_task import (
     RequestTaskSubRequest,
 )
 from fides.api.schemas.policy import ActionType
-from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
-@pytest.mark.integration
+@pytest.mark.async_dsr
 class TestRequestTaskSubRequest:
-    """Test suite for RequestTaskSubRequest model and functionality (1:N relationship)"""
-
     def test_create_request_task_sub_request(self, db, polling_request_task):
         """Test creating RequestTaskSubRequest entry"""
         test_data = {
@@ -33,14 +25,14 @@ class TestRequestTaskSubRequest:
             data={
                 "request_task_id": polling_request_task.id,
                 "param_values": test_data,
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
         assert sub_request.request_task_id == polling_request_task.id
         assert sub_request.param_values == test_data
         assert sub_request.param_values["request_id"] == test_data["request_id"]
-        assert sub_request.sub_request_status == "pending"
+        assert sub_request.status == "pending"
 
     def test_request_task_relationship(self, db, polling_request_task):
         """Test the 1:N relationship between RequestTask and RequestTaskSubRequest"""
@@ -51,7 +43,7 @@ class TestRequestTaskSubRequest:
             data={
                 "request_task_id": polling_request_task.id,
                 "param_values": test_data,
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
@@ -72,7 +64,7 @@ class TestRequestTaskSubRequest:
             data={
                 "request_task_id": polling_request_task.id,
                 "param_values": initial_data,
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
@@ -83,42 +75,42 @@ class TestRequestTaskSubRequest:
             "result_url": "/api/results/123",
         }
         sub_request.param_values = updated_data
-        sub_request.sub_request_status = "completed"
+        sub_request.status = "completed"
         sub_request.save(db)
 
         # Verify update
         db.refresh(sub_request)
         assert sub_request.param_values == updated_data
         assert sub_request.param_values["status"] == "completed"
-        assert sub_request.sub_request_status == "completed"
+        assert sub_request.status == "completed"
 
     def test_multiple_sub_requests_per_task(self, db, polling_request_task):
         """Test that a RequestTask can have multiple sub-requests (1:N relationship)"""
         # Create multiple sub-requests for the same task
-        sub_request1 = RequestTaskSubRequest.create(
+        RequestTaskSubRequest.create(
             db,
             data={
                 "request_task_id": polling_request_task.id,
                 "param_values": {"request_id": "sub_req_1", "endpoint": "/users"},
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
-        sub_request2 = RequestTaskSubRequest.create(
+        RequestTaskSubRequest.create(
             db,
             data={
                 "request_task_id": polling_request_task.id,
                 "param_values": {"request_id": "sub_req_2", "endpoint": "/orders"},
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
-        sub_request3 = RequestTaskSubRequest.create(
+        RequestTaskSubRequest.create(
             db,
             data={
                 "request_task_id": polling_request_task.id,
                 "param_values": {"request_id": "sub_req_3", "endpoint": "/profiles"},
-                "sub_request_status": "completed",
+                "status": "completed",
             },
         )
 
@@ -169,7 +161,7 @@ class TestRequestTaskSubRequest:
             data={
                 "request_task_id": task1.id,
                 "param_values": {"request_id": "users_123", "endpoint": "/users"},
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
@@ -178,7 +170,7 @@ class TestRequestTaskSubRequest:
             data={
                 "request_task_id": task2.id,
                 "param_values": {"request_id": "orders_456", "endpoint": "/orders"},
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
 
@@ -195,146 +187,170 @@ class TestRequestTaskSubRequest:
         assert task2_sub_requests[0].param_values["request_id"] == "orders_456"
         assert data1.id != data2.id
 
+    def test_sub_request_creation_with_minimal_data(self, db, polling_request_task):
+        """Test creating RequestTaskSubRequest with minimal required data"""
+        minimal_data = {"request_id": "minimal_123"}
 
-@pytest.mark.integration_saas
-class TestSaaSConnectorSubRequestIntegration:
-    """Test integration between SaaSConnector and sub-request storage (1:N relationship)"""
-
-    @pytest.fixture
-    def mock_saas_connector(self):
-        """Create a mock SaaS connector"""
-        connector = Mock(spec=SaaSConnector)
-        connector.secrets = {"api_key": "test_key", "domain": "test.example.com"}
-        return connector
-
-    @pytest.fixture
-    def request_task_with_sub_requests(self, db, polling_request_task):
-        """Create a request task with stored sub-requests"""
-        # Add multiple sub-requests to the existing polling_request_task
-        RequestTaskSubRequest.create(
+        sub_request = RequestTaskSubRequest.create(
             db,
             data={
                 "request_task_id": polling_request_task.id,
-                "param_values": {
-                    "request_id": "async_req_12345",
-                    "initiated_at": "2023-01-01T10:00:00Z",
-                    "endpoint": "/api/v1/users",
-                },
-                "sub_request_status": "pending",
+                "param_values": minimal_data,
+                "status": "pending",
             },
         )
 
-        RequestTaskSubRequest.create(
+        assert sub_request.request_task_id == polling_request_task.id
+        assert sub_request.param_values == minimal_data
+        assert sub_request.status == "pending"
+        assert sub_request.id is not None
+
+    def test_sub_request_creation_with_complex_param_values(
+        self, db, polling_request_task
+    ):
+        """Test creating RequestTaskSubRequest with complex nested param_values"""
+        complex_data = {
+            "request_id": "complex_456",
+            "metadata": {
+                "endpoint": "/api/v1/users",
+                "headers": {"Authorization": "Bearer token123"},
+                "query_params": {"limit": 100, "offset": 0},
+            },
+            "timestamps": {
+                "initiated_at": "2023-01-01T10:00:00Z",
+                "updated_at": "2023-01-01T10:05:00Z",
+            },
+            "status_details": {
+                "code": 200,
+                "message": "Success",
+                "retry_count": 0,
+            },
+        }
+
+        sub_request = RequestTaskSubRequest.create(
             db,
             data={
                 "request_task_id": polling_request_task.id,
-                "param_values": {
-                    "request_id": "async_req_67890",
-                    "initiated_at": "2023-01-01T10:30:00Z",
-                    "endpoint": "/api/v1/orders",
-                },
-                "sub_request_status": "pending",
+                "param_values": complex_data,
+                "status": "completed",
             },
         )
 
-        return polling_request_task
+        assert sub_request.param_values == complex_data
+        assert sub_request.param_values["metadata"]["endpoint"] == "/api/v1/users"
+        assert (
+            sub_request.param_values["timestamps"]["initiated_at"]
+            == "2023-01-01T10:00:00Z"
+        )
+        assert sub_request.status == "completed"
 
-    def test_connector_save_sub_request(
-        self, db, polling_request_task, mock_saas_connector
-    ):
-        """Test SaaSConnector saving sub-request data with proper session"""
-        test_data = {"request_id": str(uuid4()), "api_endpoint": "/test"}
+    def test_sub_request_get_correlation_id_helper(self, db, polling_request_task):
+        """Test the get_correlation_id helper method"""
+        test_data = {"request_id": "helper_test_789", "other_field": "value"}
 
-        # Test the save method with session
-        mock_saas_connector._save_request_data(polling_request_task, test_data)
-
-        # Verify data was saved as a sub-request
-        db.refresh(polling_request_task)
-        sub_requests = polling_request_task.sub_requests.all()
-        assert len(sub_requests) == 1
-        assert sub_requests[0].param_values == test_data
-
-    def test_get_sub_requests_from_task(
-        self, db, request_task_with_sub_requests, mock_saas_connector
-    ):
-        """Test retrieving sub-requests from a task"""
-        db.refresh(request_task_with_sub_requests)
-        sub_requests = request_task_with_sub_requests.sub_requests.all()
-
-        assert len(sub_requests) == 2
-
-        # Verify both sub-requests exist
-        request_ids = [sr.param_values["request_id"] for sr in sub_requests]
-        assert "async_req_12345" in request_ids
-        assert "async_req_67890" in request_ids
-
-    def test_save_multiple_sub_requests(self, db, polling_request_task):
-        """Test that _save_request_data supports multiple sub-requests for the same task"""
-
-        # Create a real SaaSConnector instance for testing
-        from fides.api.models.connectionconfig import ConnectionConfig
-
-        connection_config = ConnectionConfig.create(
-            db=db,
+        sub_request = RequestTaskSubRequest.create(
+            db,
             data={
-                "key": "test_connector",
-                "connection_type": "saas",
-                "access": "read",
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
             },
         )
 
-        connector = SaaSConnector(connection_config)
+        assert sub_request.get_correlation_id() == "helper_test_789"
 
-        # Save first sub-request
-        first_data = {
-            "request_id": "first_sub_123",
-            "status": "initiated",
-            "endpoint": "/users",
-        }
-        connector._save_request_data(polling_request_task, first_data)
+    def test_sub_request_get_correlation_id_no_request_id(
+        self, db, polling_request_task
+    ):
+        """Test the get_correlation_id helper method when request_id is not present"""
+        test_data = {"other_field": "value", "status": "pending"}
 
-        # Save second sub-request
-        second_data = {
-            "request_id": "second_sub_456",
-            "status": "initiated",
-            "endpoint": "/orders",
-        }
-        connector._save_request_data(polling_request_task, second_data)
-
-        # Save third sub-request
-        third_data = {
-            "request_id": "third_sub_789",
-            "status": "completed",
-            "endpoint": "/profiles",
-        }
-        connector._save_request_data(polling_request_task, third_data)
-
-        # Verify all three entries exist as separate sub-requests
-        db.refresh(polling_request_task)
-        sub_requests = (
-            db.query(RequestTaskSubRequest)
-            .filter(RequestTaskSubRequest.request_task_id == polling_request_task.id)
-            .all()
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
         )
 
-        assert len(sub_requests) == 3  # Three separate sub-requests
+        assert sub_request.get_correlation_id() is None
 
-        # Verify each sub-request has the correct data
-        request_ids = [sr.param_values["request_id"] for sr in sub_requests]
-        assert "first_sub_123" in request_ids
-        assert "second_sub_456" in request_ids
-        assert "third_sub_789" in request_ids
-
-        # Verify all have different IDs
-        ids = [sr.id for sr in sub_requests]
-        assert len(set(ids)) == 3  # All unique IDs
-
-    def test_save_sub_requests_multiple_tasks_separate_entries(
-        self, db, in_processing_privacy_request
+    def test_sub_request_get_correlation_id_empty_param_values(
+        self, db, polling_request_task
     ):
-        """Test that different tasks get separate sub-request entries"""
-        # Create two different tasks
-        task1 = RequestTask.create(
+        """Test the get_correlation_id helper method with empty param_values"""
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": {},
+                "status": "pending",
+            },
+        )
+
+        assert sub_request.get_correlation_id() is None
+
+    def test_sub_request_update_status_helper(self, db, polling_request_task):
+        """Test the update_status helper method"""
+        test_data = {"request_id": "status_test_123"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
+        )
+
+        # Update status using helper method
+        sub_request.update_status(db, "completed")
+
+        # Verify the update
+        db.refresh(sub_request)
+        assert sub_request.status == "completed"
+
+    def test_sub_request_update_status_multiple_updates(self, db, polling_request_task):
+        """Test multiple status updates using the helper method"""
+        test_data = {"request_id": "multi_status_456"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
+        )
+
+        # Multiple status updates
+        sub_request.update_status(db, "processing")
+        db.refresh(sub_request)
+        assert sub_request.status == "processing"
+
+        sub_request.update_status(db, "completed")
+        db.refresh(sub_request)
+        assert sub_request.status == "completed"
+
+    def test_sub_request_database_constraints(self, db, polling_request_task):
+        """Test database constraints and validation"""
+        # Test that request_task_id is required
+        with pytest.raises(
+            Exception
+        ):  # Should raise an exception for missing required field
+            RequestTaskSubRequest.create(
+                db,
+                data={
+                    "param_values": {"request_id": "test"},
+                    "status": "pending",
+                },
+            )
+
+    def test_sub_request_cascade_delete(self, db, in_processing_privacy_request):
+        """Test that sub-requests are deleted when the parent RequestTask is deleted"""
+        # Create a request task
+        task = RequestTask.create(
             db=db,
             data={
                 "privacy_request_id": in_processing_privacy_request.id,
@@ -347,81 +363,274 @@ class TestSaaSConnectorSubRequestIntegration:
             },
         )
 
-        task2 = RequestTask.create(
-            db=db,
+        # Create sub-requests
+        RequestTaskSubRequest.create(
+            db,
             data={
-                "privacy_request_id": in_processing_privacy_request.id,
-                "action_type": ActionType.access,
+                "request_task_id": task.id,
+                "param_values": {"request_id": "cascade_test_1"},
                 "status": "pending",
-                "collection_address": "test_dataset:orders",
-                "dataset_name": "test_dataset",
-                "collection_name": "orders",
-                "async_type": AsyncTaskType.polling,
             },
         )
 
-        # Create connector
-        from fides.api.models.connectionconfig import ConnectionConfig
-
-        connection_config = ConnectionConfig.create(
-            db=db,
+        RequestTaskSubRequest.create(
+            db,
             data={
-                "key": "test_connector_multi",
-                "connection_type": "saas",
-                "access": "read",
+                "request_task_id": task.id,
+                "param_values": {"request_id": "cascade_test_2"},
+                "status": "pending",
             },
         )
 
-        connector = SaaSConnector(connection_config)
+        # Verify sub-requests exist
+        db.refresh(task)
+        sub_requests = task.sub_requests.all()
+        assert len(sub_requests) == 2
 
-        # Save multiple sub-requests for both tasks
-        task1_data1 = {
-            "request_id": "users_req_456",
-            "endpoint": "/api/users",
-            "batch": 1,
-        }
-        task1_data2 = {
-            "request_id": "users_req_457",
-            "endpoint": "/api/users",
-            "batch": 2,
-        }
-        task2_data1 = {
-            "request_id": "orders_req_789",
-            "endpoint": "/api/orders",
-            "batch": 1,
-        }
+        # Delete the parent task
+        task.delete(db)
 
-        connector._save_request_data(task1, task1_data1)
-        connector._save_request_data(task1, task1_data2)
-        connector._save_request_data(task2, task2_data1)
-
-        # Verify each task has its own sub-requests
-        db.refresh(task1)
-        db.refresh(task2)
-
-        task1_sub_requests = (
+        # Verify sub-requests are also deleted (cascade)
+        remaining_sub_requests = (
             db.query(RequestTaskSubRequest)
-            .filter(RequestTaskSubRequest.request_task_id == task1.id)
+            .filter(RequestTaskSubRequest.request_task_id == task.id)
+            .all()
+        )
+        assert len(remaining_sub_requests) == 0
+
+    def test_sub_request_query_by_status(self, db, polling_request_task):
+        """Test querying sub-requests by status"""
+        # Create sub-requests with different statuses
+        RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": {"request_id": "status_pending_1"},
+                "status": "pending",
+            },
+        )
+
+        RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": {"request_id": "status_completed_1"},
+                "status": "completed",
+            },
+        )
+
+        RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": {"request_id": "status_pending_2"},
+                "status": "pending",
+            },
+        )
+
+        # Query by status
+        pending_sub_requests = (
+            db.query(RequestTaskSubRequest)
+            .filter(
+                RequestTaskSubRequest.request_task_id == polling_request_task.id,
+                RequestTaskSubRequest.status == "pending",
+            )
             .all()
         )
 
-        task2_sub_requests = (
+        completed_sub_requests = (
             db.query(RequestTaskSubRequest)
-            .filter(RequestTaskSubRequest.request_task_id == task2.id)
+            .filter(
+                RequestTaskSubRequest.request_task_id == polling_request_task.id,
+                RequestTaskSubRequest.status == "completed",
+            )
             .all()
         )
 
-        assert len(task1_sub_requests) == 2  # Task1 has 2 sub-requests
-        assert len(task2_sub_requests) == 1  # Task2 has 1 sub-request
+        assert len(pending_sub_requests) == 2
+        assert len(completed_sub_requests) == 1
 
-        # Verify task1 sub-requests
-        task1_request_ids = [sr.param_values["request_id"] for sr in task1_sub_requests]
-        assert "users_req_456" in task1_request_ids
-        assert "users_req_457" in task1_request_ids
+        # Verify the correct request_ids
+        pending_ids = [sr.get_correlation_id() for sr in pending_sub_requests]
+        assert "status_pending_1" in pending_ids
+        assert "status_pending_2" in pending_ids
 
-        # Verify task2 sub-requests
-        assert task2_sub_requests[0].param_values["request_id"] == "orders_req_789"
+        completed_ids = [sr.get_correlation_id() for sr in completed_sub_requests]
+        assert "status_completed_1" in completed_ids
 
-        # Verify all sub-requests have unique IDs
-        all_ids = [sr.id for sr in task1_sub_requests + task2_sub_requests]
-        assert len(set(all_ids)) == 3  # All unique IDs
+    def test_sub_request_param_values_mutation(self, db, polling_request_task):
+        """Test that param_values can be mutated and changes are persisted"""
+        initial_data = {"request_id": "mutation_test", "count": 0}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": initial_data,
+                "status": "pending",
+            },
+        )
+
+        # Mutate the param_values by creating a new dictionary
+        updated_data = sub_request.param_values.copy()
+        updated_data["count"] = 5
+        updated_data["new_field"] = "added_value"
+        sub_request.param_values = updated_data
+        sub_request.save(db)
+
+        # Verify the mutation was persisted
+        db.refresh(sub_request)
+        assert sub_request.param_values["count"] == 5
+        assert sub_request.param_values["new_field"] == "added_value"
+        assert sub_request.param_values["request_id"] == "mutation_test"
+
+    def test_sub_request_access_data_storage(self, db, polling_request_task):
+        """Test storing and retrieving access data in sub-requests"""
+        test_data = {"request_id": "access_test_123"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
+        )
+
+        # Test initial state
+        assert sub_request.get_access_data() == []
+
+        # Set access data
+        access_data = [
+            {"id": 1, "name": "John Doe", "email": "john@example.com"},
+            {"id": 2, "name": "Jane Smith", "email": "jane@example.com"},
+        ]
+        sub_request.access_data = access_data
+        sub_request.save(db)
+
+        # Verify access data was stored
+        db.refresh(sub_request)
+        retrieved_data = sub_request.get_access_data()
+        assert len(retrieved_data) == 2
+        assert retrieved_data[0]["name"] == "John Doe"
+        assert retrieved_data[1]["email"] == "jane@example.com"
+
+    def test_sub_request_rows_masked_tracking(self, db, polling_request_task):
+        """Test tracking rows masked in sub-requests"""
+        test_data = {"request_id": "masking_test_789"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
+        )
+
+        # Initially no rows masked
+        assert sub_request.rows_masked is None
+
+        # Set rows masked
+        sub_request.rows_masked = 5
+        sub_request.save(db)
+
+        # Verify rows masked was stored
+        db.refresh(sub_request)
+        assert sub_request.rows_masked == 5
+
+    def test_sub_request_external_storage_cleanup(self, db, polling_request_task):
+        """Test that external storage cleanup works for sub-requests"""
+        test_data = {"request_id": "cleanup_test_101"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
+        )
+
+        # Set some data to trigger external storage
+        access_data = [{"id": 1, "data": "test"}]
+
+        sub_request.access_data = access_data
+        sub_request.save(db)
+
+        # Verify data is stored
+        db.refresh(sub_request)
+        assert len(sub_request.get_access_data()) == 1
+
+        # Test cleanup method
+        sub_request.cleanup_external_storage()
+
+        # Note: The actual cleanup behavior depends on the external storage implementation
+        # This test ensures the method can be called without errors
+
+    def test_sub_request_delete_with_cleanup(self, db, polling_request_task):
+        """Test that delete method properly cleans up external storage"""
+        test_data = {"request_id": "delete_test_202"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "pending",
+            },
+        )
+
+        # Set some data
+        sub_request.access_data = [{"id": 1, "data": "test"}]
+        sub_request.save(db)
+
+        # Verify sub-request exists
+        db.refresh(sub_request)
+        assert sub_request.id is not None
+
+        # Delete the sub-request (should trigger cleanup)
+        sub_request.delete(db)
+
+        # Verify sub-request is deleted
+        deleted_sub_request = (
+            db.query(RequestTaskSubRequest)
+            .filter(RequestTaskSubRequest.id == sub_request.id)
+            .first()
+        )
+        assert deleted_sub_request is None
+
+    def test_sub_request_comprehensive_data_storage(self, db, polling_request_task):
+        """Test comprehensive data storage including all new fields"""
+        test_data = {"request_id": "comprehensive_test_303"}
+
+        sub_request = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": polling_request_task.id,
+                "param_values": test_data,
+                "status": "completed",
+            },
+        )
+
+        # Set all types of data
+        access_data = [
+            {"user_id": 1, "name": "Alice", "email": "alice@example.com"},
+            {"user_id": 2, "name": "Bob", "email": "bob@example.com"},
+        ]
+
+        sub_request.access_data = access_data
+        sub_request.rows_masked = 2
+        sub_request.save(db)
+
+        # Verify all data is stored correctly
+        db.refresh(sub_request)
+
+        assert sub_request.get_correlation_id() == "comprehensive_test_303"
+        assert sub_request.status == "completed"
+        assert sub_request.rows_masked == 2
+
+        retrieved_access_data = sub_request.get_access_data()
+        assert len(retrieved_access_data) == 2
+        assert retrieved_access_data[0]["name"] == "Alice"
+        assert retrieved_access_data[1]["email"] == "bob@example.com"

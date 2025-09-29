@@ -7,7 +7,7 @@ and response parsing with no business logic dependencies.
 
 import io
 import re
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -82,7 +82,15 @@ class PollingResponseProcessor:
             return False  # Assuming non-JSON response means not complete
 
         status_path_value = pydash.get(response_data, status_path)
+        return PollingResponseProcessor._evaluate_status_value(
+            status_path_value, status_completed_value
+        )
 
+    @staticmethod
+    def _evaluate_status_value(
+        status_path_value: Any, status_completed_value: Optional[Any]
+    ) -> bool:
+        """Evaluate a status value against the completed value."""
         # Boolean direct check
         if isinstance(status_path_value, bool):
             return status_path_value
@@ -93,26 +101,53 @@ class PollingResponseProcessor:
 
         # String comparison
         if isinstance(status_path_value, str):
-            # If no completed value specified, any non-empty string is considered complete
-            if status_completed_value is None:
-                return bool(status_path_value)
-            return status_path_value == str(status_completed_value)
+            return PollingResponseProcessor._evaluate_string_status(
+                status_path_value, status_completed_value
+            )
 
         # List check (first element)
         if isinstance(status_path_value, list) and status_path_value:
-            first_element = status_path_value[0]
-            if status_completed_value is None:
-                return bool(first_element)
-            return first_element == status_completed_value
+            return PollingResponseProcessor._evaluate_list_status(
+                status_path_value, status_completed_value
+            )
 
         # Numeric comparison
         if isinstance(status_path_value, (int, float)):
-            if isinstance(status_completed_value, (int, float)):
-                return status_path_value == status_completed_value
-            return bool(status_path_value)
+            return PollingResponseProcessor._evaluate_numeric_status(
+                status_path_value, status_completed_value
+            )
 
         # Default to False for unexpected types
         return False
+
+    @staticmethod
+    def _evaluate_string_status(
+        status_path_value: str, status_completed_value: Optional[Any]
+    ) -> bool:
+        """Evaluate string status value."""
+        # If no completed value specified, any non-empty string is considered complete
+        if status_completed_value is None:
+            return bool(status_path_value)
+        return status_path_value == str(status_completed_value)
+
+    @staticmethod
+    def _evaluate_list_status(
+        status_path_value: list, status_completed_value: Optional[Any]
+    ) -> bool:
+        """Evaluate list status value (using first element)."""
+        first_element = status_path_value[0]
+        if status_completed_value is None:
+            return bool(first_element)
+        return first_element == status_completed_value
+
+    @staticmethod
+    def _evaluate_numeric_status(
+        status_path_value: Union[int, float], status_completed_value: Optional[Any]
+    ) -> bool:
+        """Evaluate numeric status value."""
+        if isinstance(status_completed_value, (int, float)):
+            return status_path_value == status_completed_value
+        return bool(status_path_value)
 
 
 # Private helpers
@@ -121,7 +156,28 @@ class PollingResponseProcessor:
 def _infer_data_type(request_path: str, response: Response) -> SupportedDataType:
     """Infer data type from response characteristics."""
     # 1. Check Content-Type header
+    content_type_result = _infer_from_content_type(response)
+    if content_type_result:
+        return content_type_result
+
+    # 2. Check URL file extension
+    extension_result = _infer_from_file_extension(request_path)
+    if extension_result:
+        return extension_result
+
+    # 3. Try parsing response body (small sample)
+    body_result = _infer_from_response_body(response)
+    if body_result:
+        return body_result
+
+    # 4. Default fallback
+    return SupportedDataType.json
+
+
+def _infer_from_content_type(response: Response) -> Optional[SupportedDataType]:
+    """Infer data type from Content-Type header."""
     content_type = response.headers.get("content-type", "").lower()
+
     if "application/json" in content_type:
         return SupportedDataType.json
     if "text/csv" in content_type or "application/csv" in content_type:
@@ -134,9 +190,14 @@ def _infer_data_type(request_path: str, response: Response) -> SupportedDataType
     ):
         return SupportedDataType.attachment
 
-    # 2. Check URL file extension
+    return None
+
+
+def _infer_from_file_extension(request_path: str) -> Optional[SupportedDataType]:
+    """Infer data type from file extension in URL."""
     parsed_url = urlparse(request_path.lower())
     path = parsed_url.path
+
     if path.endswith(".csv"):
         return SupportedDataType.csv
     if path.endswith(".json"):
@@ -146,7 +207,11 @@ def _infer_data_type(request_path: str, response: Response) -> SupportedDataType
     if path.endswith((".zip", ".pdf", ".tar", ".gz")):
         return SupportedDataType.attachment
 
-    # 3. Try parsing response body (small sample)
+    return None
+
+
+def _infer_from_response_body(response: Response) -> Optional[SupportedDataType]:
+    """Infer data type from response body content."""
     try:
         # Try JSON first
         response.json()
@@ -159,24 +224,37 @@ def _infer_data_type(request_path: str, response: Response) -> SupportedDataType
             if len(lines) >= 2 and len(lines[0].split(",")) == len(lines[1].split(",")):
                 return SupportedDataType.csv
 
-    # 4. Default fallback
-    return SupportedDataType.json
+    return None
 
 
 def _should_store_as_attachment(
     response: Response, inferred_type: SupportedDataType
 ) -> bool:
     """Determine if response should be treated as an attachment."""
-    # 1. Explicit attachment type
-    if inferred_type == SupportedDataType.attachment:
-        return True
+    # Check various indicators that suggest this should be an attachment
+    return (
+        _is_explicit_attachment_type(inferred_type)
+        or _has_attachment_content_disposition(response)
+        or _has_binary_content_type(response)
+        or _is_binary_content(response)
+        or _is_large_response(response)
+        or _has_file_extension_in_url(response)
+    )
 
-    # 2. Content-Disposition header indicates attachment
+
+def _is_explicit_attachment_type(inferred_type: SupportedDataType) -> bool:
+    """Check if the inferred type is explicitly an attachment."""
+    return inferred_type == SupportedDataType.attachment
+
+
+def _has_attachment_content_disposition(response: Response) -> bool:
+    """Check if Content-Disposition header indicates attachment."""
     content_disposition = response.headers.get("content-disposition", "").lower()
-    if "attachment" in content_disposition:
-        return True
+    return "attachment" in content_disposition
 
-    # 3. Check for binary/file content types
+
+def _has_binary_content_type(response: Response) -> bool:
+    """Check if content type indicates binary/file content."""
     content_type = response.headers.get("content-type", "").lower()
     binary_types = [
         "application/octet-stream",
@@ -191,42 +269,46 @@ def _should_store_as_attachment(
         "audio/",
         "video/",
     ]
+    return any(bt in content_type for bt in binary_types)
 
-    if any(bt in content_type for bt in binary_types):
-        return True
 
-    # 4. Check if response content is already bytes and appears to be binary
+def _is_binary_content(response: Response) -> bool:
+    """Check if response content is binary."""
     try:
         # If we can't decode as UTF-8, it's likely binary
         if hasattr(response.content, "__len__") and len(response.content) > 0:
             response.content.decode("utf-8")
+        return False
     except (UnicodeDecodeError, AttributeError):
         # Content is binary or can't be decoded - treat as attachment
         return True
 
-    # 5. Large responses are more likely to be file downloads
-    # Even if they're JSON/CSV, large responses often indicate file exports
+
+def _is_large_response(response: Response) -> bool:
+    """Check if response is large enough to be considered a file download."""
     content_length = response.headers.get("content-length")
     if content_length and int(content_length) > 10 * 1024 * 1024:  # > 10MB
         return True
-
-    # 6. Check response URL for file-like patterns
-    request_url = getattr(response, "url", "") or getattr(response.request, "url", "")
-    if isinstance(request_url, str):
-        file_extensions = [
-            ".json",
-            ".csv",
-            ".xml",
-            ".xlsx",
-            ".zip",
-            ".pdf",
-            ".tar",
-            ".gz",
-        ]
-        if any(request_url.lower().endswith(ext) for ext in file_extensions):
-            return True
-
     return False
+
+
+def _has_file_extension_in_url(response: Response) -> bool:
+    """Check if response URL has file-like extensions."""
+    request_url = getattr(response, "url", "") or getattr(response.request, "url", "")
+    if not isinstance(request_url, str):
+        return False
+
+    file_extensions = [
+        ".json",
+        ".csv",
+        ".xml",
+        ".xlsx",
+        ".zip",
+        ".pdf",
+        ".tar",
+        ".gz",
+    ]
+    return any(request_url.lower().endswith(ext) for ext in file_extensions)
 
 
 def _extract_filename(response: Response, request_url: str) -> str:

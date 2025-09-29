@@ -12,6 +12,7 @@ from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
 )
 
 
+@pytest.mark.async_dsr
 class TestAsyncStrategyFactory:
     def test_get_polling_strategy_returns_async_polling_strategy(self, db):
         """Test getting a polling strategy with valid configuration"""

@@ -19,6 +19,7 @@ from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from tests.conftest import wait_for_privacy_request_status
 
 
+@pytest.mark.async_dsr
 class TestPrivacyRequestWithAsyncCallback:
 
     @pytest.fixture

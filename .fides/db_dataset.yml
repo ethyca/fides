@@ -2561,7 +2561,11 @@ dataset:
       data_categories: [system]
     - name: param_values
       data_categories: [system]
-    - name: sub_request_status
+    - name: status
+      data_categories: [system]
+    - name: access_data
+      data_categories: [user]
+    - name: rows_masked
       data_categories: [system]
   - name: monitorconfig
     fields:

@@ -360,16 +360,59 @@ class RequestTaskSubRequest(Base):
 
     # Individual sub-request data (e.g., request_id, status, result data)
     # Additional fields for enhanced sub-request tracking
-    param_values = Column(MutableDict.as_mutable(JSONB), nullable=False)
-    sub_request_status = Column(String, nullable=False)
+    param_values = Column(  # An encrypted JSON String - saved as a dict
+        StringEncryptedType(
+            type_in=JSONTypeOverride,
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=False,
+    )
+    status = Column(String, nullable=False)
 
-    def get_request_id(self) -> Optional[str]:
-        """Helper method to extract request_id from param_values."""
+    # Raw data retrieved from an access request is stored here.  This contains all of the
+    # intermediate data we retrieved, needed for downstream tasks, but hasn't been filtered
+    # by data category for the end user.
+    _access_data = Column(  # An encrypted JSON String - saved as a list of Rows
+        "access_data",
+        StringEncryptedType(
+            type_in=JSONTypeOverride,
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # Use descriptors for automatic external storage handling
+    access_data = EncryptedLargeDataDescriptor(
+        field_name="access_data", empty_default=[]
+    )
+
+    # Written after an erasure is completed
+    rows_masked = Column(Integer)
+
+    def get_correlation_id(self) -> Optional[str]:
+        """Helper method to extract correlation_id from param_values."""
         if self.param_values and "request_id" in self.param_values:
             return self.param_values["request_id"]
         return None
 
     def update_status(self, db: Session, status: str) -> None:
         """Helper method to update the status of this sub-request."""
-        self.sub_request_status = status
+        self.status = status
         self.save(db)
+
+    def cleanup_external_storage(self) -> None:
+        """Clean up all external storage files for this sub-request"""
+        # Access the descriptor from the class to call cleanup
+        RequestTaskSubRequest.access_data.cleanup(self)
+
+    def get_access_data(self) -> List[Row]:
+        """Helper to retrieve access data or default to empty list"""
+        return self.access_data or []
+
+    def delete(self, db: Session) -> None:
+        """Override delete to cleanup external storage first"""
+        self.cleanup_external_storage()
+        super().delete(db)

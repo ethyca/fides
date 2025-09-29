@@ -12,6 +12,7 @@ from fides.api.service.async_dsr.handlers.polling_response_handler import (
 )
 
 
+@pytest.mark.async_dsr
 class TestPollingResponseProcessor:
     def test_process_result_response_json_rows(self):
         response = Mock(autospec=Response)

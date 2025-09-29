@@ -8,7 +8,13 @@ Create Date: 2025-09-16 14:00:16.282996
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
+
+from fides.api.db.base_class import JSONTypeOverride
+from fides.config import CONFIG
 
 # revision identifiers, used by Alembic.
 revision = "7db29f9cd77b"
@@ -35,9 +41,27 @@ def upgrade():
         ),
         sa.Column("request_task_id", sa.String(length=255), nullable=False),
         sa.Column(
-            "param_values", postgresql.JSONB(astext_type=sa.Text()), nullable=False
+            "param_values",
+            StringEncryptedType(
+                type_in=JSONTypeOverride,
+                key=CONFIG.security.app_encryption_key,
+                engine=AesGcmEngine,
+                padding="pkcs5",
+            ),
+            nullable=False,
         ),
-        sa.Column("sub_request_status", sa.String(), nullable=False),
+        sa.Column("status", sa.String(), nullable=False),
+        sa.Column(
+            "access_data",
+            StringEncryptedType(
+                type_in=JSONTypeOverride,
+                key=CONFIG.security.app_encryption_key,
+                engine=AesGcmEngine,
+                padding="pkcs5",
+            ),
+            nullable=True,
+        ),
+        sa.Column("rows_masked", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["request_task_id"],
             ["requesttask.id"],

@@ -24,6 +24,7 @@ from tests.conftest import wait_for_privacy_request_status
 from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient
 
 
+@pytest.mark.async_dsr
 class TestPrivacyRequestWithAsyncPolling:
     @pytest.fixture
     def async_polling_connector(self, db: Session) -> Generator:
@@ -180,7 +181,4 @@ class TestPrivacyRequestWithAsyncPolling:
         # Verify the request task sub request is complete
         request_task_sub_requests = db.query(RequestTaskSubRequest).all()
         assert len(request_task_sub_requests) == 1
-        assert (
-            request_task_sub_requests[0].sub_request_status
-            == ExecutionLogStatus.complete.value
-        )
+        assert request_task_sub_requests[0].status == ExecutionLogStatus.complete.value

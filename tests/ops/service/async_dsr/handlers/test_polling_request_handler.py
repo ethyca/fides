@@ -13,6 +13,7 @@ from fides.api.service.async_dsr.handlers.polling_request_handler import (
 from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient
 
 
+@pytest.mark.async_dsr
 class TestPollingRequestHandler:
 
     def test_get_status_response_success(self):

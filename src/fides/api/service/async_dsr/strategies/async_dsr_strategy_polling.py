@@ -43,7 +43,12 @@ from fides.api.service.async_dsr.handlers.polling_response_handler import (
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.utils import AsyncPhase, get_async_phase
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
+)
 from fides.api.util.collection_util import Row
+from fides.api.util.saas_util import map_param_values
 
 if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
@@ -383,193 +388,191 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             data={
                 "request_task_id": request_task.id,
                 "param_values": param_values_map,
-                "sub_request_status": "pending",
+                "status": "pending",
             },
         )
         logger.info(
             f"Created sub-request {sub_request.id} for task '{request_task.id}'"
         )
 
-    def _execute_polling_requests(
-        self,
-        client: AuthenticatedClient,
-        polling_task: RequestTask,
-        query_config: "SaaSQueryConfig",
-    ) -> bool:
+    def _get_requests_for_action(
+        self, polling_task: RequestTask, query_config: "SaaSQueryConfig"
+    ) -> List[ReadSaaSRequest]:
         """
-        Internal polling execution orchestrator with proper error handling and timeout management.
+        Get the appropriate requests based on the action type.
 
-        Stores results on individual sub-requests and only aggregates when ALL are successful.
-        Implements timeout checking and raises exceptions for errors and timeouts.
+        Args:
+            polling_task: The polling task to get requests for
+            query_config: The SaaS query configuration
 
         Returns:
-            bool: True if all polling is complete (success or failure), False if still in progress
-        """
+            List of ReadSaaSRequest objects for the given action type
 
-        # Get appropriate requests based on action type
-        requests: List[ReadSaaSRequest]
+        Raises:
+            PrivacyRequestError: If action type is unsupported or masking request not found
+        """
         if polling_task.action_type == ActionType.access:
-            requests = list(query_config.get_read_requests_by_identity())
-        elif polling_task.action_type == ActionType.erasure:
+            return list(query_config.get_read_requests_by_identity())
+        if polling_task.action_type == ActionType.erasure:
             masking_request = query_config.get_masking_request()
             if not masking_request:
                 raise PrivacyRequestError(
                     f"No masking request found for erasure task {polling_task.id}"
                 )
-            requests = [cast(ReadSaaSRequest, masking_request)]
-        else:
-            raise PrivacyRequestError(
-                f"Unsupported action type: {polling_task.action_type}"
+            return [cast(ReadSaaSRequest, masking_request)]
+        raise PrivacyRequestError(
+            f"Unsupported action type: {polling_task.action_type}"
+        )
+
+    def _check_sub_request_status(
+        self, client: AuthenticatedClient, param_values: Dict[str, Any]
+    ) -> bool:
+        """
+        Check the status of a sub-request using either override function or HTTP request.
+
+        Args:
+            client: The authenticated client
+            param_values: The parameter values for the request
+
+        Returns:
+            bool: True if the request is complete, False if still in progress
+
+        Raises:
+            PrivacyRequestError: If status_path is required but not provided
+        """
+        # Create polling handler
+        polling_handler = PollingRequestHandler(
+            self.status_request, self.result_request
+        )
+
+        # Check for status override vs standard HTTP request
+        if self.status_request.request_override:
+            # Handle status override function directly
+            override_function = SaaSRequestOverrideFactory.get_override(
+                self.status_request.request_override,
+                SaaSRequestType.POLLING_STATUS,
             )
 
-        for request in requests:
-            if request.async_config:
-                sub_requests: List[RequestTaskSubRequest] = (
-                    polling_task.sub_requests.all()
-                )
+            # Override functions return boolean status directly
+            return cast(
+                bool,
+                override_function(
+                    client=client,
+                    param_values=param_values,
+                    request_config=self.status_request,
+                    secrets=client.configuration.secrets,
+                ),
+            )
 
-                for sub_request in sub_requests:
-                    # Skip already completed sub-requests
-                    if sub_request.sub_request_status == "complete":
-                        continue
+        # Standard HTTP status request
+        response = polling_handler.get_status_response(client, param_values)
 
-                    param_values = sub_request.param_values
+        # Process status response
+        status_path = self.status_request.status_path
 
-                    try:
-                        # Create polling handler and check status
-                        polling_handler = PollingRequestHandler(
-                            self.status_request, self.result_request
-                        )
+        if status_path is None:
+            raise PrivacyRequestError(
+                "status_path is required when request_override is not provided"
+            )
 
-                        # Check for status override vs standard HTTP request
-                        if self.status_request.request_override:
-                            # Handle status override function directly
-                            from fides.api.service.saas_request.saas_request_override_factory import (
-                                SaaSRequestOverrideFactory,
-                                SaaSRequestType,
-                            )
+        return PollingResponseProcessor.evaluate_status_response(
+            response,
+            status_path,
+            self.status_request.status_completed_value,
+        )
 
-                            override_function = SaaSRequestOverrideFactory.get_override(
-                                self.status_request.request_override,
-                                SaaSRequestType.POLLING_STATUS,
-                            )
+    def _process_completed_sub_request(
+        self,
+        client: AuthenticatedClient,
+        param_values: Dict[str, Any],
+        sub_request: RequestTaskSubRequest,
+        polling_task: RequestTask,
+    ) -> None:
+        """
+        Process a completed sub-request by getting results and handling them appropriately.
 
-                            # Override functions return boolean status directly
-                            status = override_function(
-                                client=client,
-                                param_values=param_values,
-                                request_config=self.status_request,
-                                secrets=client.configuration.secrets,
-                            )
-                        else:
-                            # Standard HTTP status request
-                            response = polling_handler.get_status_response(
-                                client, param_values
-                            )
+        Args:
+            client: The authenticated client
+            param_values: The parameter values for the request
+            sub_request: The completed sub-request
+            polling_task: The parent polling task
 
-                            # Process status response
-                            status_path = self.status_request.status_path
+        Raises:
+            PrivacyRequestError: If polling result is not the expected type
+        """
+        # Get results before marking complete
+        if self.result_request.request_override:
+            # Handle override function directly
+            override_function = SaaSRequestOverrideFactory.get_override(
+                self.result_request.request_override,
+                SaaSRequestType.POLLING_RESULT,
+            )
 
-                            if status_path is None:
-                                raise PrivacyRequestError(
-                                    "status_path is required when request_override is not provided"
-                                )
+            polling_result = override_function(
+                client=client,
+                param_values=param_values,
+                request_config=self.result_request,
+                secrets=client.configuration.secrets,
+            )
+        else:
+            # Standard HTTP request processing
+            polling_handler = PollingRequestHandler(
+                self.status_request, self.result_request
+            )
+            response = polling_handler.get_result_response(client, param_values)
 
-                            status = PollingResponseProcessor.evaluate_status_response(
-                                response,
-                                status_path,
-                                self.status_request.status_completed_value,
-                            )
+            # We need to reconstruct the request path for processing
+            prepared_result_request = map_param_values(
+                "result",
+                "polling request",
+                self.result_request,
+                param_values,
+            )
 
-                        if status:
-                            # Get results before marking complete
-                            if self.result_request.request_override:
-                                # Handle override function directly
-                                from fides.api.service.saas_request.saas_request_override_factory import (
-                                    SaaSRequestOverrideFactory,
-                                    SaaSRequestType,
-                                )
+            polling_result = PollingResponseProcessor.process_result_response(
+                prepared_result_request.path,
+                response,
+                self.result_request.result_path,
+            )
 
-                                override_function = (
-                                    SaaSRequestOverrideFactory.get_override(
-                                        self.result_request.request_override,
-                                        SaaSRequestType.POLLING_RESULT,
-                                    )
-                                )
+        # Ensure we have the expected polling result type
+        if not isinstance(polling_result, PollingResult):
+            raise PrivacyRequestError("Polling result must be PollingResult instance")
 
-                                polling_result = override_function(
-                                    client=client,
-                                    param_values=param_values,
-                                    request_config=self.result_request,
-                                    secrets=client.configuration.secrets,
-                                )
-                            else:
-                                # Standard HTTP request processing
-                                response = polling_handler.get_result_response(
-                                    client, param_values
-                                )
+        # Handle results based on action type
+        if polling_task.action_type == ActionType.access:
+            self._handle_access_result(polling_result, polling_task)
+        elif polling_task.action_type == ActionType.erasure:
+            self._handle_erasure_result(polling_result, polling_task)
 
-                                # We need to reconstruct the request path for processing
-                                from fides.api.util.saas_util import map_param_values
+        # Mark as complete using existing method
+        sub_request.update_status(self.session, "complete")
 
-                                prepared_result_request = map_param_values(
-                                    "result",
-                                    "polling request",
-                                    self.result_request,
-                                    param_values,
-                                )
+        logger.info(
+            f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
+        )
 
-                                polling_result = (
-                                    PollingResponseProcessor.process_result_response(
-                                        prepared_result_request.path,
-                                        response,
-                                        self.result_request.result_path,
-                                    )
-                                )
+    def _check_polling_completion(self, polling_task: RequestTask) -> bool:
+        """
+        Check if all sub-requests for a polling task are complete.
 
-                            # Ensure we have the expected polling result type
-                            if not isinstance(polling_result, PollingResult):
-                                raise PrivacyRequestError(
-                                    "Polling result must be PollingResult instance"
-                                )
+        Args:
+            polling_task: The polling task to check
 
-                            # Handle results based on action type
-                            if polling_task.action_type == ActionType.access:
-                                self._handle_access_result(polling_result, polling_task)
-                            elif polling_task.action_type == ActionType.erasure:
-                                self._handle_erasure_result(
-                                    polling_result, polling_task
-                                )
-
-                            # Mark as complete using existing method
-                            sub_request.update_status(self.session, "complete")
-
-                            logger.info(
-                                f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
-                            )
-                        else:
-                            logger.debug(
-                                f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
-                            )
-
-                    except Exception as exc:
-                        logger.error(
-                            f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
-                        )
-                        sub_request.update_status(self.session, "error")
-                        raise exc
-
-        # Check final status using existing field checks
+        Returns:
+            bool: True if all sub-requests are complete, False if still in progress
+        """
+        # Get all sub-requests and categorize by status
         all_sub_requests = polling_task.sub_requests.all()
         completed_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.sub_request_status == "complete"
+            if sub_request.status == "complete"
         ]
         failed_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.sub_request_status == "error"
+            if sub_request.status == "error"
         ]
 
         if (
@@ -587,6 +590,76 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             f"Polling task {polling_task.id}: {len(completed_sub_requests)}/{len(all_sub_requests)} sub-requests complete, {len(failed_sub_requests)} failed"
         )
         return False
+
+    def _process_sub_requests_for_request(
+        self,
+        client: AuthenticatedClient,
+        request: ReadSaaSRequest,
+        polling_task: RequestTask,
+    ) -> None:
+        """
+        Process all sub-requests for a given request.
+
+        Args:
+            client: The authenticated client
+            request: The SaaS request being processed
+            polling_task: The parent polling task
+        """
+        sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
+
+        for sub_request in sub_requests:
+            # Skip already completed sub-requests
+            if sub_request.status == "complete":
+                continue
+
+            param_values = sub_request.param_values
+
+            try:
+                # Check status of the sub-request
+                status = self._check_sub_request_status(client, param_values)
+
+                if status:
+                    # Process the completed sub-request
+                    self._process_completed_sub_request(
+                        client, param_values, sub_request, polling_task
+                    )
+                else:
+                    logger.debug(
+                        f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
+                    )
+
+            except Exception as exc:
+                logger.error(
+                    f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
+                )
+                sub_request.update_status(self.session, "error")
+                raise exc
+
+    def _execute_polling_requests(
+        self,
+        client: AuthenticatedClient,
+        polling_task: RequestTask,
+        query_config: "SaaSQueryConfig",
+    ) -> bool:
+        """
+        Internal polling execution orchestrator with proper error handling and timeout management.
+
+        Stores results on individual sub-requests and only aggregates when ALL are successful.
+        Implements timeout checking and raises exceptions for errors and timeouts.
+
+        Returns:
+            bool: True if all polling is complete (success or failure), False if still in progress
+        """
+        # Get appropriate requests based on action type
+        requests = self._get_requests_for_action(polling_task, query_config)
+
+        # Process each request and its sub-requests
+        for request in requests:
+            if request.async_config:
+                self._process_sub_requests_for_request(client, request, polling_task)
+
+        # Check final status and return completion status
+        return self._check_polling_completion(polling_task)
 
     def _handle_access_result(
         self, polling_result: PollingResult, request_task: RequestTask
