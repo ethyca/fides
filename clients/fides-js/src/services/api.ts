@@ -90,13 +90,12 @@ export const fetchExperience = async <T = PrivacyExperience>({
     const excludeSystemsArray = Array.isArray(excludeNoticeAssetsBySystems)
       ? [...excludeNoticeAssetsBySystems]
       : excludeNoticeAssetsBySystems
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
     excludeSystemsCsv = excludeSystemsArray
-        .sort((a, b) => a.localeCompare(b))
-        .join(",");
-    }
+      .sort((a, b) => a.localeCompare(b))
+      .join(",");
   }
   let params: any = {
     show_disabled: "false",
