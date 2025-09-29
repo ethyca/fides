@@ -51,7 +51,7 @@ const DiscoveredAssetDataUseCell = ({
         `Consent category added to ${asset.resource_type} "${asset.name}" .`,
         `Confirmed`,
       );
-      onChange?.(currentDataUses);
+      onChange?.([...currentDataUses, newDataUse]);
     }
     setIsAdding(false);
   };
