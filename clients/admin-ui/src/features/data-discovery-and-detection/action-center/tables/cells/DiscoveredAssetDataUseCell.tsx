@@ -9,7 +9,6 @@ import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCe
 import { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
-import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 import { isErrorResult } from "~/types/errors";
 
@@ -73,12 +72,10 @@ const DiscoveredAssetDataUseCell = ({
     ? asset.user_assigned_data_uses
     : asset.data_uses;
 
-  const consentUses = dataUses?.filter((use) => isConsentCategory(use));
-
   if (readonly) {
     return (
       <TagExpandableCell
-        values={consentUses?.map((d) => ({
+        values={dataUses?.map((d) => ({
           label: getDataUseDisplayName(d),
           key: d,
         }))}
@@ -98,7 +95,7 @@ const DiscoveredAssetDataUseCell = ({
             aria-label="Add data use"
           />
           <TagExpandableCell
-            values={consentUses?.map((d) => ({
+            values={dataUses?.map((d) => ({
               label: getDataUseDisplayName(d),
               key: d,
             }))}
@@ -114,9 +111,13 @@ const DiscoveredAssetDataUseCell = ({
           style={{ backgroundColor: "var(--fides-color-white)" }}
         >
           <ConsentCategorySelect
-            selectedTaxonomies={consentUses || []}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
+            onKeyDown={(key) => {
+              if (key.key === "Escape") {
+                setIsAdding(false);
+              }
+            }}
             open
           />
         </div>
