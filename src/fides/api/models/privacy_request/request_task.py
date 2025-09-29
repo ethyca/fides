@@ -185,7 +185,7 @@ class RequestTask(WorkerTask, Base):
         uselist=False,
     )
 
-    # Stores the  sub-requests data for async polling tasks
+    # Stores the sub-requests data for async polling tasks
     sub_requests: RelationshipProperty[AppenderQuery] = relationship(
         "RequestTaskSubRequest",
         back_populates="request_task",

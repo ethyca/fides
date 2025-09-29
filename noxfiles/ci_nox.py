@@ -361,7 +361,7 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-unit",
         "ops-unit-api",
         "ops-unit-non-api",
-        "ops-integration",  # Also runs tests/integration/
+        "ops-integration",
         "ops-external-datastores",
         "ops-saas",
     ],
