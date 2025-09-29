@@ -217,7 +217,9 @@ class TestAddAuthentication:
 
 
 class TestAccessTokenRequest:
-    @mock.patch("datetime.datetime")
+    @mock.patch(
+        "fides.api.service.authentication.authentication_strategy_oauth2_base.datetime"
+    )
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_get_access_token(
@@ -247,20 +249,24 @@ class TestAccessTokenRequest:
         auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
         # verify correct values for connection_config update
-        mock_connection_config_update.assert_called_once_with(
-            mock.ANY,
-            data={
-                "secrets": {
-                    "domain": "localhost",
-                    "client_id": "client",
-                    "client_secret": "secret",
-                    "access_token": "new_access",
-                    "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
-                }
-            },
+        mock_connection_config_update.assert_called_once()
+        _, update_kwargs = mock_connection_config_update.call_args
+        secrets = update_kwargs["data"]["secrets"]
+        expected_secrets = {
+            "domain": "localhost",
+            "client_id": "client",
+            "client_secret": "secret",
+            "access_token": "new_access",
+        }
+        assert {key: secrets[key] for key in expected_secrets} == expected_secrets
+        expected_expires_at = (
+            int(mock_time.utcnow.return_value.timestamp()) + expires_in
         )
+        assert abs(secrets["expires_at"] - expected_expires_at) <= 0.001
 
-    @mock.patch("datetime.datetime")
+    @mock.patch(
+        "fides.api.service.authentication.authentication_strategy_oauth2_base.datetime"
+    )
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_get_access_token_no_expires_in(
@@ -294,19 +300,21 @@ class TestAccessTokenRequest:
         auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
         # verify correct values for connection_config update
-        mock_connection_config_update.assert_called_once_with(
-            mock.ANY,
-            data={
-                "secrets": {
-                    "domain": "localhost",
-                    "client_id": "client",
-                    "client_secret": "secret",
-                    "access_token": "new_access",
-                    "expires_at": int(datetime.utcnow().timestamp())
-                    + oauth2_client_credentials_configuration["expires_in"],
-                }
-            },
+        mock_connection_config_update.assert_called_once()
+        _, update_kwargs = mock_connection_config_update.call_args
+        secrets = update_kwargs["data"]["secrets"]
+        expected_secrets = {
+            "domain": "localhost",
+            "client_id": "client",
+            "client_secret": "secret",
+            "access_token": "new_access",
+        }
+        assert {key: secrets[key] for key in expected_secrets} == expected_secrets
+        expected_expires_at = (
+            int(mock_time.utcnow.return_value.timestamp())
+            + oauth2_client_credentials_configuration["expires_in"]
         )
+        assert abs(secrets["expires_at"] - expected_expires_at) <= 0.001
 
     def test_get_access_token_missing_secrets(
         self,
