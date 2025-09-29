@@ -68,7 +68,7 @@ class PollingResultRequest(SaaSRequest):
     result_path: Optional[str] = None
 
 
-class PollingAsyncDSRConfiguration(StrategyConfiguration):
+class AsyncPollingConfiguration(StrategyConfiguration):
     """
     Simplified configuration for polling async DSR requests.
     The main read request serves as the initial request.

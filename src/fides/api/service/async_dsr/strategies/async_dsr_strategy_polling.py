@@ -1,4 +1,5 @@
 # datetime and timedelta imports would be used in RequestTaskSubRequest helper methods
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union, cast
 from uuid import uuid4
@@ -25,11 +26,12 @@ from fides.api.models.privacy_request.request_task import (
     RequestTaskSubRequest,
 )
 from fides.api.models.storage import get_active_default_storage_config
+from fides.api.models.worker_task import ExecutionLogStatus
 
 # ExecutionLogStatus would be used in RequestTaskSubRequest helper methods
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.async_polling_configuration import (
-    PollingAsyncDSRConfiguration,
+    AsyncPollingConfiguration,
     PollingResult,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
@@ -49,6 +51,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import map_param_values
+from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
@@ -63,9 +66,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
     """
 
     type = AsyncTaskType.polling
-    configuration_model = PollingAsyncDSRConfiguration
+    configuration_model = AsyncPollingConfiguration
 
-    def __init__(self, session: Session, configuration: PollingAsyncDSRConfiguration):
+    def __init__(self, session: Session, configuration: AsyncPollingConfiguration):
         self.session = session
         self.status_request = configuration.status_request
         self.result_request = configuration.result_request
@@ -650,6 +653,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         Returns:
             bool: True if all polling is complete (success or failure), False if still in progress
         """
+        # Check for timeout before processing requests
+        self._check_polling_timeout(polling_task)
+
         # Get appropriate requests based on action type
         requests = self._get_requests_for_action(polling_task, query_config)
 
@@ -722,6 +728,38 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         if isinstance(data, bytes):
             return data
         raise PrivacyRequestError("Expected bytes data for attachment polling result")
+
+    def _check_polling_timeout(self, polling_task: RequestTask) -> None:
+        """
+        Check if any sub-requests have exceeded the polling timeout.
+
+        Raises:
+            PrivacyRequestError: If any sub-request has timed out
+        """
+
+        timeout_days = CONFIG.execution.async_polling_request_timeout_days
+        timeout_seconds = timeout_days * 24 * 60 * 60  # Convert days to seconds
+
+        # Check timeout for incomplete sub-requests only
+        timed_out_sub_requests = []
+
+        for sub_request in polling_task.sub_requests:
+            if sub_request.status != ExecutionLogStatus.complete:
+                # Check if this sub-request has timed out
+                if sub_request.created_at:
+                    timeout_threshold = sub_request.created_at + timedelta(
+                        seconds=timeout_seconds
+                    )
+                    current_time = datetime.now(timezone.utc)
+                    if current_time > timeout_threshold:
+                        timed_out_sub_requests.append(sub_request)
+
+        if timed_out_sub_requests:
+            sub_request_ids = [sr.id for sr in timed_out_sub_requests]
+            raise PrivacyRequestError(
+                f"Polling timeout exceeded for sub-requests {sub_request_ids} "
+                f"in task {polling_task.id}. Timeout interval: {timeout_days} days"
+            )
 
 
 def _add_attachment_metadata_to_rows(

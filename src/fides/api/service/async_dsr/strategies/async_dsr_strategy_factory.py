@@ -6,9 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import NoSuchStrategyException
 from fides.api.common_exceptions import ValidationError as FidesopsValidationError
-from fides.api.schemas.saas.async_polling_configuration import (
-    PollingAsyncDSRConfiguration,
-)
+from fides.api.schemas.saas.async_polling_configuration import AsyncPollingConfiguration
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_callback import (
     AsyncCallbackStrategy,
@@ -58,7 +56,7 @@ def get_strategy(
         if not configuration:
             raise FidesopsValidationError("Configuration required for polling strategy")
         try:
-            strategy_config = PollingAsyncDSRConfiguration(**configuration)
+            strategy_config = AsyncPollingConfiguration(**configuration)
             return strategy_class(session, strategy_config)
         except ValidationError as e:
             raise FidesopsValidationError(message=str(e))

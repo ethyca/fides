@@ -54,16 +54,20 @@ class ExecutionSettings(FidesSettings):
         description="Seconds between polling for Privacy Requests that should change state",
     )
     interrupted_task_requeue_interval: int = Field(
-        default=100,
+        default=300,
         description="Seconds between polling for interrupted tasks to requeue",
     )
     privacy_request_requeue_retry_count: int = Field(
         default=3,
         description="The number of times a privacy request will be requeued when its tasks are interrupted before being marked as error",
     )
-    async_tasks_status_polling_interval_seconds: int = Field(
-        default=20,
-        description="Seconds between polling for async tasks to requeue",
+    async_polling_interval_hours: int = Field(
+        default=24,
+        description="Hours between status checks for async tasks",
+    )
+    async_polling_request_timeout_days: int = Field(
+        default=30,
+        description="Maximum time in days to wait for an async polling request to complete before timing out",
     )
     erasure_request_finalization_required: bool = Field(
         default=False,
