@@ -280,7 +280,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             all_relevant_cookies = query.all()
 
         # Associate the pre-fetched cookies to notices based on their data uses
-        cookies_by_data_use: Dict[str, List[Asset]] = {}  # dict of data_use -> list of cookies
+        cookies_by_data_use: Dict[str, List[Asset]] = (
+            {}
+        )  # dict of data_use -> list of cookies
 
         for cookie in all_relevant_cookies:
             for data_use in cookie.data_uses:
