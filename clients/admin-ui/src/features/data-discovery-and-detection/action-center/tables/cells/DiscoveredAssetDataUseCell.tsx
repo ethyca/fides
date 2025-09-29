@@ -69,7 +69,7 @@ const DiscoveredAssetDataUseCell = ({
         `Consent category removed from ${asset.resource_type} "${asset.name}".`,
         `Confirmed`,
       );
-      onChange?.(currentDataUses);
+      onChange?.(currentDataUses.filter((use) => use !== useToDelete));
     }
   };
 
