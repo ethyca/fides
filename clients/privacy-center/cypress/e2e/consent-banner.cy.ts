@@ -8,6 +8,7 @@ import {
   encodeNoticeConsentString,
   FidesCookie,
   FidesInitOptions,
+  Layer1ButtonOption,
   PrivacyNotice,
   RecordConsentServedRequest,
   REQUEST_SOURCE,
@@ -1357,6 +1358,143 @@ describe("Consent overlay", () => {
           cy.get("button").contains("Manage preferences").click();
           cy.get("div.fides-gpc-banner").should("not.exist");
           cy.get("div.fides-gpc-badge").should("not.exist");
+        });
+      });
+
+      describe("when GPC flag is found, and notices apply to GPC and acknowledge button is used", () => {
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = true;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          stubConfig({
+            experience: {
+              privacy_notices: [
+                mockPrivacyNotice({
+                  title: "Marketing",
+                  notice_key: "marketing",
+                  consent_mechanism: ConsentMechanism.OPT_IN,
+                  data_uses: [
+                    "marketing.advertising.first_party.targeted",
+                    "marketing.advertising.third_party.targeted",
+                  ],
+                  default_preference: UserConsentPreference.OPT_OUT,
+                  id: "pri_marketing",
+                }),
+                mockPrivacyNotice({
+                  title: "Functional",
+                  notice_key: "functional",
+                  consent_mechanism: ConsentMechanism.OPT_IN,
+                  data_uses: ["personalize"],
+                  default_preference: UserConsentPreference.OPT_OUT,
+                  id: "pri_functional",
+                }),
+                mockPrivacyNotice({
+                  title: "Essential",
+                  notice_key: "essential",
+                  consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+                  data_uses: ["essential"],
+                  default_preference: UserConsentPreference.ACKNOWLEDGE,
+                  id: "pri_essential",
+                }),
+              ],
+            },
+            experienceConfig: {
+              layer1_button_options: Layer1ButtonOption.ACKNOWLEDGE,
+            },
+          });
+        });
+
+        it("does not get overridden by banner acknowledge button", () => {
+          cy.get("@FidesUpdated")
+            .should("have.been.calledOnce")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.GPC);
+            });
+          cy.get("div#fides-banner").within(() => {
+            cy.get("button").contains("OK").click();
+          });
+          cy.get("@FidesUpdated")
+            .should("have.been.calledTwice")
+            .its("lastCall.args.0.detail.extraDetails.consentMethod")
+            .then((consentMethod) => {
+              expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
+            });
+          cy.get("@FidesUpdated")
+            .its("lastCall.args.0.detail.consent")
+            .then((consent) => {
+              expect(consent).to.eql({
+                marketing: false,
+                functional: false,
+                essential: true,
+              });
+            });
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("be.disabled");
+            cy.get("input").should("be.checked");
+          });
+          cy.get(".fides-notice-toggle")
+            .contains("Marketing")
+            .parents(".fides-notice-toggle-title")
+            .within(() => {
+              cy.get(".fides-gpc-label").contains("Applied");
+            });
+          cy.get(".fides-notice-toggle")
+            .contains("Functional")
+            .parents(".fides-notice-toggle-title")
+            .within(() => {
+              cy.get(".fides-gpc-label").contains("Applied");
+            });
+          cy.wait(["@patchPrivacyPreference", "@patchPrivacyPreference"]).then(
+            (interceptions) => {
+              const [
+                privacyPreferenceInterception,
+                privacyPreferenceInterception2,
+              ] = interceptions;
+              const { method, preferences } =
+                privacyPreferenceInterception2.request.body;
+              expect(method).to.eql(ConsentMethod.ACKNOWLEDGE);
+              expect(preferences).to.eql([
+                {
+                  preference: "opt_out",
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                },
+                {
+                  preference: "opt_out",
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                },
+                {
+                  preference: "acknowledge",
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                },
+              ]);
+            },
+          );
+          // check that window.Fides.consent is updated
+          cy.window().its("Fides").its("consent").should("eql", {
+            marketing: false,
+            functional: false,
+            essential: true,
+          });
+          // check that the cookie is update with the new consent
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+              expect(cookieKeyConsent.consent).to.eql({
+                marketing: false,
+                functional: false,
+                essential: true,
+              });
+            });
+          });
         });
       });
 
