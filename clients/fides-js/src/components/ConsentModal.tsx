@@ -21,6 +21,12 @@ const ConsentModal = ({
 }) => {
   const { container, dialog, title, closeButton } = attributes;
   const { setTrigger } = useEvent();
+  if (!window.Fides) {
+    // since we rely on window.Fides for the hidden status of the close button,
+    // we need to make sure it's available before rendering the modal. This can cause
+    // issues in Admin UI preview, for example.
+    return null;
+  }
   return (
     <div
       data-testid="consent-modal"
