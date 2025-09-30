@@ -2,6 +2,7 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntFlex as Flex,
   AntSelect as Select,
+  AntSpace as Space,
   Icons,
   SparkleIcon,
 } from "fidesui";
@@ -60,20 +61,20 @@ const DataUseSelectWithSuggestions = ({
         },
         {
           label: (
-            <Flex gap="small" align="center">
-              <SparkleIcon />
-              <strong>Suggested data uses</strong>
-            </Flex>
+            <Space>
+              <SparkleIcon size={14} />
+              <span>Suggested data uses</span>
+            </Space>
           ),
           value: "suggested",
           options: optionsGroups.suggested,
         },
         {
           label: (
-            <Flex gap="small" align="center">
+            <Space>
               <Icons.Document />
-              <strong>All data uses</strong>
-            </Flex>
+              <span>All data uses</span>
+            </Space>
           ),
           value: "all",
           options: optionsGroups.all,
