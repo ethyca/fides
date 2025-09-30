@@ -1,5 +1,7 @@
 import {
   AntColumnsType as ColumnsType,
+  AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
   formatIsoLocation,
   isoStringToEntry,
@@ -11,6 +13,7 @@ import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import {
   ConsentBreakdown,
+  ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
@@ -19,6 +22,8 @@ import { useGetConsentBreakdownQuery } from "../action-center.slice";
 import {
   ConsentBreakdownColumnKeys,
   DiscoveryErrorStatuses,
+  DiscoveryStatusDescriptions,
+  DiscoveryStatusDisplayNames,
 } from "../constants";
 
 const { Link } = Typography;
@@ -99,6 +104,26 @@ export const useConsentBreakdownTable = ({
             {page}
           </Link>
         ),
+      },
+      {
+        title: "Compliance",
+        dataIndex: ConsentBreakdownColumnKeys.STATUS,
+        key: ConsentBreakdownColumnKeys.STATUS,
+        render: (status: ConsentStatus) => {
+          const isErrorStatus = DiscoveryErrorStatuses.includes(status);
+          const tagTooltip = DiscoveryStatusDescriptions[status];
+
+          return (
+            <Tooltip title={tagTooltip}>
+              <Tag
+                color={isErrorStatus ? "error" : undefined}
+                data-testid={`status-badge_${status.replace(/_/g, "-")}`}
+              >
+                {DiscoveryStatusDisplayNames[status]}
+              </Tag>
+            </Tooltip>
+          );
+        },
       },
     ],
     [],
