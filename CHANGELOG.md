@@ -34,6 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue where using pagination on the consent issues modal affects the results of the page [#6665](https://github.com/ethyca/fides/pull/6665)
 - Fixed Action Center modal not closing after successfully adding a Compass System [#6669](https://github.com/ethyca/fides/pull/6669)
 - Returning a user-friendly message when attempting to delete datasets linked to an integration [#6663](https://github.com/ethyca/fides/pull/6663)
+- Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
