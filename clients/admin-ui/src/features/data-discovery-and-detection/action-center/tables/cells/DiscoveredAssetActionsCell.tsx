@@ -28,12 +28,14 @@ interface DiscoveredAssetActionsCellProps {
   showComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
   ) => void;
+  showWarningForConsentIssues?: boolean;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
   onTabChange,
   showComplianceIssueDetails,
+  showWarningForConsentIssues,
 }: DiscoveredAssetActionsCellProps) => {
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -156,7 +158,7 @@ export const DiscoveredAssetActionsCell = ({
           >
             Ignore
           </Button>
-          {isErrorStatus && (
+          {isErrorStatus && showWarningForConsentIssues && (
             <Button
               data-testid="view-compliance-details-btn"
               size="small"
