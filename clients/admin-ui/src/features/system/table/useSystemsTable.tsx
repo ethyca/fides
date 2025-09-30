@@ -374,7 +374,7 @@ const useSystemsTable = () => {
     plusIsEnabled,
     allSystemGroups,
     columnFilters?.system_groups,
-    columnFilters?.data_steward,
+    columnFilters?.data_stewards,
     allUsers?.items,
     isGroupsExpanded,
     systemGroupMap,
