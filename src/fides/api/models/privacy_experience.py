@@ -512,7 +512,7 @@ class ExperienceTranslation(ExperienceTranslationBase, Base):
         this just returns the current corresponding historical record.
         """
         # Histories are sorted at the relationship level
-        return self.histories[-1] if self.histories.count() else None
+        return self.histories.first()
 
     @property
     def privacy_experience_config_history_id(self) -> Optional[str]:
