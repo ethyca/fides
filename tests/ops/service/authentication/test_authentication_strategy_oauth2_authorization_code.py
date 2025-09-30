@@ -3,6 +3,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from freezegun import freeze_time
 from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
@@ -340,21 +341,16 @@ class TestAuthorizationUrl:
 
 
 class TestAccessTokenRequest:
-    @mock.patch("datetime.datetime")
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_get_access_token(
         self,
         mock_send: Mock,
         mock_connection_config_update: Mock,
-        mock_time: Mock,
         db: Session,
         oauth2_authorization_code_connection_config,
         oauth2_authorization_code_configuration,
     ):
-        # cast some time magic
-        mock_time.utcnow.return_value = datetime(2022, 5, 22)
-
         # mock the json response from calling the access token request
         expires_in = 7200
         mock_send().json.return_value = {
@@ -372,7 +368,12 @@ class TestAccessTokenRequest:
             **oauth2_authorization_code_connection_config.secrets,
             "code": "auth_code",
         }
-        auth_strategy.get_access_token(oauth2_authorization_code_connection_config, db)
+
+        with freeze_time("2022-05-22"):
+            auth_strategy.get_access_token(
+                oauth2_authorization_code_connection_config, db
+            )
+            expected_expires_at = int(datetime.utcnow().timestamp()) + expires_in
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -386,19 +387,17 @@ class TestAccessTokenRequest:
                     "access_token": "new_access",
                     "refresh_token": "new_refresh",
                     "code": "auth_code",
-                    "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
+                    "expires_at": expected_expires_at,
                 }
             },
         )
 
-    @mock.patch("datetime.datetime")
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_get_access_token_no_expires_in(
         self,
         mock_send: Mock,
         mock_connection_config_update: Mock,
-        mock_time: Mock,
         db: Session,
         oauth2_authorization_code_connection_config,
         oauth2_authorization_code_configuration,
@@ -407,9 +406,6 @@ class TestAccessTokenRequest:
         Make sure we can use the expires_in value in the config if no expires_in
         is provided in the access token response.
         """
-
-        # set a fixed time
-        mock_time.utcnow.return_value = datetime(2022, 5, 22)
 
         # mock the json response from calling the access token request
         mock_send().json.return_value = {
@@ -427,7 +423,15 @@ class TestAccessTokenRequest:
             **oauth2_authorization_code_connection_config.secrets,
             "code": "auth_code",
         }
-        auth_strategy.get_access_token(oauth2_authorization_code_connection_config, db)
+
+        with freeze_time("2022-05-22"):
+            auth_strategy.get_access_token(
+                oauth2_authorization_code_connection_config, db
+            )
+            expected_expires_at = (
+                int(datetime.utcnow().timestamp())
+                + oauth2_authorization_code_configuration["expires_in"]
+            )
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -441,8 +445,7 @@ class TestAccessTokenRequest:
                     "access_token": "new_access",
                     "refresh_token": "new_refresh",
                     "code": "auth_code",
-                    "expires_at": int(datetime.utcnow().timestamp())
-                    + oauth2_authorization_code_configuration["expires_in"],
+                    "expires_at": expected_expires_at,
                 }
             },
         )
