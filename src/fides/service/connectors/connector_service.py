@@ -4,6 +4,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -37,6 +38,13 @@ class ConnectorService:
         ).model_dump(mode="json")
         # Save validated secrets, regardless of whether they've been verified.
         logger.info("Updating connection config secrets for '{}'", connection_key)
+
+        if (
+            connection_config.authorized
+            and connection_config.connection_type == ConnectionType.saas  # type: ignore[attr-defined]
+        ):
+            del connection_config.secrets["access_token"]
+
         connection_config.save(db=self.db)
 
         # Create audit event for secrets update

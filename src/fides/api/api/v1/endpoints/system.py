@@ -30,8 +30,7 @@ from fides.api.db.system import (
     upsert_system,
     validate_privacy_declarations,
 )
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.event_audit import EventAuditStatus, EventAuditType
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER
@@ -58,16 +57,13 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
-from fides.api.service.deps import get_event_audit_service, get_system_service
+from fides.api.service.deps import get_connector_service, get_system_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
-    connection_status,
     delete_connection_config,
     get_connection_config_or_error,
     patch_connection_configs,
-    validate_secrets,
 )
-from fides.api.util.event_audit_util import create_connection_secrets_audit_event
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -83,7 +79,7 @@ from fides.common.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
-from fides.service.event_audit_service import EventAuditService
+from fides.service.connectors.connector_service import ConnectorService
 from fides.service.system.system_service import SystemService
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
@@ -163,7 +159,7 @@ def patch_connection_secrets(
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
-    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+    connector_service: ConnectorService = Depends(get_connector_service),
 ) -> TestStatusMessage:
     """
     Patch secrets that will be used to connect to a specified connection_type.
@@ -187,40 +183,9 @@ def patch_connection_secrets(
     else:
         connection_config.secrets = {}
 
-    validated_secrets = validate_secrets(
-        db, unvalidated_secrets, connection_config
-    ).model_dump(mode="json")
-
-    for key, value in validated_secrets.items():
-        connection_config.secrets[key] = value  # type: ignore
-
-    # Deauthorize an OAuth connection when the secrets are updated. This is necessary because
-    # the existing access tokens may not be valid anymore. This only applies to SaaS connection
-    # configurations that use the "oauth2_authorization_code" authentication strategy.
-    if (
-        connection_config.authorized
-        and connection_config.connection_type == ConnectionType.saas
-    ):
-        del connection_config.secrets["access_token"]
-
-    # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '{}'", connection_config.key)
-    connection_config.save(db=db)
-
-    # Create audit event for secrets update
-    create_connection_secrets_audit_event(
-        event_audit_service,
-        event_type=EventAuditType.connection_secrets_updated,
-        connection_config=connection_config,
-        secrets_modified=unvalidated_secrets,  # type: ignore[arg-type]
-        status=EventAuditStatus.succeeded,
+    return connector_service.update_secrets(
+        connection_config.key, unvalidated_secrets, verify
     )
-
-    msg = f"Secrets updated for ConnectionConfig with key: {connection_config.key}."
-    if verify:
-        return connection_status(connection_config, msg, db)
-
-    return TestStatusMessage(msg=msg, test_status=None)
 
 
 @SYSTEM_CONNECTIONS_ROUTER.delete(
