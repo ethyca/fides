@@ -1,22 +1,24 @@
 # Table Hooks Documentation
 
-A reusable, standardized table system with always-on URL synchronization and Ant Design integration for the Admin UI.
+A reusable, standardized table system with optional URL synchronization and Ant Design integration for the Admin UI.
 
-> **Note:** URL sync currently only works for one table per page.
+> **Note:** For multiple tables on one page, use custom query keys (e.g., `pageQueryKey: "table1Page"`) to prevent conflicts. For modal tables or when URL sync isn't needed, use `disableUrlState: true`.
 
 ## Architecture
 
 ```
 useTableState (State + URL Sync) + RTK Query
-    ↓
+    +
 useAntTable (Ant Design Integration)
+    ↓
+useComponentTable (Combination of the 2 hooks + table business logic)
     ↓
 Table Component
 ```
 
 ## Quick Start
 
-### Basic Usage
+### Basic Usage (with URL sync)
 
 ```tsx
 import { useTableState, useAntTable } from "~/features/common/table/hooks";
@@ -46,6 +48,44 @@ const MyTable = ({ filters }) => {
 
   return (
     <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
+  );
+};
+```
+
+### Multiple Tables on One Page
+
+Use custom query keys to allow multiple tables with independent URL state:
+
+```tsx
+const PageWithTwoTables = () => {
+  // Table 1: Uses "users" prefix for query params
+  const usersTable = useTableState({
+    pagination: {
+      pageQueryKey: "usersPage",
+      sizeQueryKey: "usersSize",
+      defaultPageSize: 10
+    },
+    sorting: { defaultSortKey: "name" },
+  });
+
+  // Table 2: Uses "orders" prefix for query params
+  const ordersTable = useTableState({
+    pagination: {
+      pageQueryKey: "ordersPage",
+      sizeQueryKey: "ordersSize",
+      defaultPageSize: 25
+    },
+    sorting: { defaultSortKey: "date" },
+  });
+
+  // URL will have: ?usersPage=1&usersSize=10&ordersPage=1&ordersSize=25
+  // Each table maintains its own independent state in the URL
+
+  return (
+    <>
+      <UsersTable tableState={usersTable} />
+      <OrdersTable tableState={ordersTable} />
+    </>
   );
 };
 ```
@@ -110,20 +150,35 @@ export const MyTable = ({ filters }: Props) => {
 
 ### `useTableState(config)`
 
-Manages table state (pagination, sorting, filtering, search) with always-on URL synchronization.
+Manages table state (pagination, sorting, filtering, search) with optional URL synchronization.
 
 **Config:**
 
 ```tsx
 {
-  pagination?: { defaultPageSize?, pageSizeOptions? };
-  sorting?: { defaultSortKey?, defaultSortOrder?, validColumns? };
+  pagination?: {
+    defaultPageSize?,
+    pageSizeOptions?,
+    pageQueryKey?, // Custom URL param name (default: "page")
+    sizeQueryKey?, // Custom URL param name (default: "size")
+  };
+  sorting?: {
+    defaultSortKey?,
+    defaultSortOrder?,
+    validColumns?
+  };
   search?: { defaultSearchQuery? };
   onStateChange?: (state) => void;
+  disableUrlState?: boolean; // Set to true to use React state instead of URL
 }
 ```
 
 **Returns:** State management utilities and `.state` for API calls.
+
+**URL State Behavior:**
+- When `disableUrlState: false` (default): All state syncs to URL query parameters
+- When `disableUrlState: true`: All state stored in React state (in-memory only)
+- The flag applies to pagination, sorting, filters, and search
 
 ### `useAntTable(tableState, config)`
 
@@ -150,18 +205,25 @@ Integrates table state with Ant Design Table components.
 
 ### Standalone Hooks
 
-- `usePagination(config)`: Manage pagination state with URL sync.
-- `useSorting(config)`: Manage sorting state with URL sync.
-- `useSearch(config)`: Manage search state with URL sync.
+These hooks can be used independently and also support `disableUrlState`:
+
+- `usePagination(config)`: Manage pagination state with optional URL sync
+  - Supports `pageQueryKey` and `sizeQueryKey` for custom URL parameter names
+- `useSorting(config)`: Manage sorting state with optional URL sync
+- `useSearch(config)`: Manage search state with optional URL sync
 
 ## Features
 
-- **URL Synchronization**: Deep linking for pagination, sorting, filtering, and search (always enabled)
+- **URL Synchronization**: Optional deep linking for pagination, sorting, filtering, and search
+  - Enabled by default for primary page tables
+  - Supports multiple tables on one page via custom query keys
+  - Can be disabled with `disableUrlState: true` for modals or when not needed
 - **Selection Management**: Cross-page row selection with bulk actions
 - **Bulk Actions**: Configurable, with helpers for disabling/loading state
 - **Type Safety**: Full TypeScript support with generic column keys
 - **Performance**: Optimized re-renders and change detection
 - **Consistency**: Standardized table behavior across the app
+- **Flexibility**: Works with or without URL state management
 - **Accessibility**: Designed for keyboard and screen reader accessibility (see below)
 
 ## Configuration Examples
@@ -178,6 +240,32 @@ const tableState = useTableState({
   },
   search: { defaultSearchQuery: "" },
   onStateChange: (state) => handleStateChange(state),
+});
+
+// Multiple tables on one page (custom query keys to prevent conflicts)
+const table1State = useTableState({
+  pagination: {
+    pageQueryKey: "usersPage",
+    sizeQueryKey: "usersSize",
+    defaultPageSize: 25
+  },
+  sorting: { defaultSortKey: "name" },
+});
+
+const table2State = useTableState({
+  pagination: {
+    pageQueryKey: "ordersPage",
+    sizeQueryKey: "ordersSize",
+    defaultPageSize: 50
+  },
+  sorting: { defaultSortKey: "date" },
+});
+
+// Without URL sync (for modals or when URL sync not needed)
+const modalTableState = useTableState({
+  disableUrlState: true,
+  pagination: { defaultPageSize: 25 },
+  sorting: { defaultSortKey: "name" },
 });
 ```
 
@@ -233,7 +321,9 @@ const { tableProps, selectionProps } = useAntTable(tableState, {
 2. **Memoize column definitions** to prevent re-renders
 3. **Reset selections** when filters change
 4. **Use type-safe column keys** for sorting and filtering
-5. **Test with keyboard and screen readers** for accessibility
+5. **Use custom query keys** when multiple tables share a page (e.g., `pageQueryKey: "table1Page"`)
+6. **Disable URL state** for modals or drawers where URL sync doesn't make sense
+8. **Test with keyboard and screen readers** for accessibility
 
 ## Accessibility
 
