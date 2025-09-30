@@ -365,3 +365,107 @@ class TestPollingResponseProcessor:
         assert "Expected list or dict from result request, got: <class 'str'>" in str(
             exc_info.value
         )
+
+    def test_process_result_response_xml_treated_as_attachment(self):
+        """Test that XML files are treated as attachments rather than parsed data."""
+        response = Mock(autospec=Response)
+        response.headers = {"content-type": "application/xml"}
+        response.content = b'<?xml version="1.0"?><data><item>test</item></data>'
+
+        result = PollingResponseProcessor.process_result_response(
+            "/api/result/data.xml", response, "data.results"
+        )
+
+        # Should be treated as attachment, not parsed
+        assert result.result_type == "attachment"
+        assert result.data == b'<?xml version="1.0"?><data><item>test</item></data>'
+        assert result.metadata["inferred_type"] == "attachment"
+        assert result.metadata["content_type"] == "application/xml"
+        assert result.metadata["preserved_as_attachment"] is True
+        assert result.metadata["filename"] == "data.xml"
+        assert result.metadata["size"] == 51
+
+    def test_process_result_response_xml_by_extension(self):
+        """Test that XML files are detected as attachments by file extension."""
+        response = Mock(autospec=Response)
+        response.headers = {"content-type": "text/plain"}  # Generic content type
+        response.content = b"<root><data>test</data></root>"
+        # Make sure json() method raises an error so it doesn't get parsed as JSON
+        response.json.side_effect = ValueError("Not JSON")
+
+        result = PollingResponseProcessor.process_result_response(
+            "/api/result/export.xml", response, "data.results"
+        )
+
+        # Should be treated as attachment based on file extension
+        assert result.result_type == "attachment"
+        assert result.data == b"<root><data>test</data></root>"
+        assert result.metadata["inferred_type"] == "attachment"
+        assert result.metadata["preserved_as_attachment"] is True
+        assert result.metadata["filename"] == "export.xml"
+
+    def test_process_result_response_image_by_content_type(self):
+        """Test that images are treated as attachments by content type."""
+        response = Mock(autospec=Response)
+        response.headers = {"content-type": "image/png"}
+        response.content = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+
+        result = PollingResponseProcessor.process_result_response(
+            "/api/result/avatar.png", response, "data.results"
+        )
+
+        # Should be treated as attachment based on content type
+        assert result.result_type == "attachment"
+        assert result.data == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+        assert result.metadata["inferred_type"] == "attachment"
+        assert result.metadata["content_type"] == "image/png"
+        assert result.metadata["preserved_as_attachment"] is True
+        assert result.metadata["filename"] == "avatar.png"
+        assert result.metadata["size"] == 20
+
+    def test_process_result_response_image_by_extension(self):
+        """Test that images are detected as attachments by file extension."""
+        response = Mock(autospec=Response)
+        response.headers = {
+            "content-type": "application/octet-stream"
+        }  # Generic content type
+        response.content = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01"  # JPEG header
+        # Make sure json() method raises an error so it doesn't get parsed as JSON
+        response.json.side_effect = ValueError("Not JSON")
+
+        result = PollingResponseProcessor.process_result_response(
+            "/api/result/photo.jpg", response, "data.results"
+        )
+
+        # Should be treated as attachment based on file extension
+        assert result.result_type == "attachment"
+        assert result.data == b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01"
+        assert result.metadata["inferred_type"] == "attachment"
+        assert (
+            result.metadata["content_type"] == "image/jpeg"
+        )  # Inferred from extension
+        assert result.metadata["preserved_as_attachment"] is True
+        assert result.metadata["filename"] == "photo.jpg"
+
+    def test_process_result_response_svg_image(self):
+        """Test that SVG images are handled correctly."""
+        response = Mock(autospec=Response)
+        response.headers = {"content-type": "image/svg+xml"}
+        response.content = (
+            b'<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>'
+        )
+
+        result = PollingResponseProcessor.process_result_response(
+            "/api/result/icon.svg", response, "data.results"
+        )
+
+        # Should be treated as attachment
+        assert result.result_type == "attachment"
+        assert (
+            result.data
+            == b'<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>'
+        )
+        assert result.metadata["inferred_type"] == "attachment"
+        assert result.metadata["content_type"] == "image/svg+xml"
+        assert result.metadata["preserved_as_attachment"] is True
+        assert result.metadata["filename"] == "icon.svg"
