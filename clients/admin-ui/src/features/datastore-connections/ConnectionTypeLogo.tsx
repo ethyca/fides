@@ -1,7 +1,6 @@
 import { Image, ImageProps } from "fidesui";
 import React from "react";
 
-import type { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import type { ConnectionConfigurationResponse } from "~/types/api";
 import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
@@ -14,6 +13,29 @@ import {
   FALLBACK_CONNECTOR_LOGOS_PATH,
   SAAS_TYPE_LOGO_MAP,
 } from "./constants";
+
+type SaasConfigLite = {
+  type?: string | null;
+  name?: string | null;
+  fides_key?: string | null;
+};
+
+type SecretsLite = {
+  url?: string | null;
+};
+
+type ConnectionLike = {
+  connection_type: ConnectionTypeModel;
+  name?: string | null;
+  key?: string | null;
+  saas_config?: SaasConfigLite | null;
+  secrets?: SecretsLite | null;
+};
+
+type SystemTypeLike = Pick<
+  ConnectionSystemTypeMap,
+  "identifier" | "human_readable" | "encoded_icon"
+>;
 
 export type ConnectionLogoSource =
   | {
@@ -34,19 +56,6 @@ export type ConnectionLogoSource =
       kind: "static";
       key: string;
     };
-
-type ConnectionLike = {
-  connection_type: ConnectionTypeModel;
-  name?: string | null;
-  key?: string | null;
-  saas_config?: { type?: string | null } | null;
-  secrets?: { url?: string | null } | null;
-};
-
-type SystemTypeLike = Pick<
-  ConnectionSystemTypeMap,
-  "identifier" | "human_readable" | "encoded_icon"
->;
 
 const FALLBACK_WEBSITE_LOGO_PATH =
   CONNECTOR_LOGOS_PATH +
@@ -71,10 +80,7 @@ export const connectionLogoFromConfiguration = (
 ): ConnectionLogoSource => connectionLikeToLogo(connection);
 
 export const connectionLogoFromMonitor = (
-  monitor: Pick<
-    MonitorAggregatedResults,
-    "connection_type" | "name" | "key" | "saas_config" | "secrets"
-  >,
+  monitor: ConnectionLike,
 ): ConnectionLogoSource => connectionLikeToLogo(monitor);
 
 export const connectionLogoFromSystemType = (

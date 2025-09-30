@@ -67,10 +67,14 @@ export const InProgressMonitorTaskItem = ({
     if (aggItem) {
       return connectionLogoFromMonitor({
         connection_type: aggItem.connection_type,
-        name: aggItem.name,
+        name: aggItem.name ?? null,
         key: aggItem.key ?? null,
         saas_config: aggItem.saas_config
-          ? { type: aggItem.saas_config.type }
+          ? {
+              type: aggItem.saas_config.type ?? null,
+              name: aggItem.saas_config.name ?? null,
+              fides_key: aggItem.saas_config.fides_key ?? null,
+            }
           : null,
         secrets: aggItem.secrets?.url ? { url: aggItem.secrets.url } : null,
       });
@@ -79,7 +83,11 @@ export const InProgressMonitorTaskItem = ({
     if (task.connection_type) {
       return connectionLogoFromMonitor({
         connection_type: task.connection_type as ConnectionType,
-        name: task.connection_name || task.connection_type || undefined,
+        name:
+          task.connection_name ??
+          (task.connection_type
+            ? task.connection_type.toString()
+            : null),
         key: null,
         saas_config: null,
         secrets: null,
