@@ -11,6 +11,7 @@ export interface SearchState {
 export interface SearchConfig {
   defaultSearchQuery?: string;
   onSearchChange?: (state: SearchState) => void;
+  disableUrlState?: boolean;
 }
 
 /**
