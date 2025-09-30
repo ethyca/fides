@@ -31,6 +31,15 @@ class EventAuditType(str, EnumType):
     taxonomy_element_updated = "taxonomy.element.updated"
     taxonomy_element_deleted = "taxonomy.element.deleted"
 
+    # Connection operations
+    connection_created = "connection.created"
+    connection_updated = "connection.updated"
+    connection_deleted = "connection.deleted"
+
+    # Connection secrets operations
+    connection_secrets_created = "connection.secrets.created"
+    connection_secrets_updated = "connection.secrets.updated"
+
 
 class EventAuditStatus(str, EnumType):
     """Status enum for event audit logging."""

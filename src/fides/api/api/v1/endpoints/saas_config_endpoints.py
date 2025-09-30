@@ -21,6 +21,7 @@ from fides.api.api import deps
 from fides.api.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -49,6 +50,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets
+from fides.api.util.event_audit_util import create_connection_secrets_audit_event
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -66,6 +68,7 @@ from fides.common.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
+from fides.service.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 
@@ -346,6 +349,15 @@ def instantiate_connection(
         dataset_config: DatasetConfig = upsert_dataset_config_from_template(
             db, connection_config, connector_template, template_values
         )
+        audit_service = EventAuditService(db)
+        create_connection_secrets_audit_event(
+            audit_service,
+            event_type=EventAuditType.connection_secrets_created,
+            connection_config=connection_config,
+            secrets_modified=template_values.secrets,
+            status=EventAuditStatus.succeeded,
+        )
+
     except Exception:
         connection_config.delete(db)
         raise HTTPException(

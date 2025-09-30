@@ -6,6 +6,7 @@ from fides.api.api.deps import get_config, get_config_proxy, get_db
 from fides.api.db.ctl_session import get_async_db
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
+from fides.service.connectors.connector_service import ConnectorService
 from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetService
 from fides.service.event_audit_service import EventAuditService
@@ -57,6 +58,13 @@ def get_taxonomy_service(
     event_audit_service: EventAuditService = Depends(get_event_audit_service),
 ) -> TaxonomyService:
     return TaxonomyService(db, event_audit_service)
+
+
+def get_connector_service(
+    db: Session = Depends(get_db),
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+) -> ConnectorService:
+    return ConnectorService(db, event_audit_service)
 
 
 def get_system_service(db: AsyncSession = Depends(get_async_db)) -> SystemService:
