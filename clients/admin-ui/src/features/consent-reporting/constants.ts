@@ -43,4 +43,5 @@ export const REQUEST_ORIGIN_LABELS: Record<RequestOrigin, string> = {
   [RequestOrigin.OVERLAY]: "Overlay",
   [RequestOrigin.PRIVACY_CENTER]: "Privacy Center",
   [RequestOrigin.TCF_OVERLAY]: "TCF Overlay",
+  [RequestOrigin.HEADLESS]: "Headless",
 };
