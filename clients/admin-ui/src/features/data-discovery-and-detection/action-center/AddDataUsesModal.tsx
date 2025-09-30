@@ -44,7 +44,6 @@ const AddDataUsesModal = ({
         </Text>
         <ConsentCategorySelect
           mode="tags"
-          selectedTaxonomies={selectedDataUses}
           onSelect={(_, option) =>
             setSelectedDataUses([...selectedDataUses, option.value])
           }
