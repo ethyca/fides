@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
 - Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674)
 - Allow selecting from all data uses for discovered assets in Action Center [#6668](https://github.com/ethyca/fides/pull/6668)
+- Update UI to support for different consent compliance issues [#6680](https://github.com/ethyca/fides/pull/6680)
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
