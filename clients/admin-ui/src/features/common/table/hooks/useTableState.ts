@@ -1,6 +1,6 @@
 import { AntFilterValue as FilterValue } from "fidesui";
 import { parseAsJson, useQueryStates } from "nuqs";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { usePagination, useSearch, useSorting } from "../../hooks";
 import type { SortOrder } from "../../sorting";
@@ -23,24 +23,30 @@ const createFilterParsers = () => {
 };
 
 /**
- * Custom hook for managing table state with URL synchronization
+ * Custom hook for managing table state with optional URL synchronization
  *
  * This hook manages all table features (pagination, sorting, filtering, search) and
- * synchronizes them with URL query parameters using NuQS. The URL query parameters
- * are the single source of truth for table state.
+ * can optionally synchronize them with URL query parameters using NuQS. When URL sync
+ * is disabled, it uses React state for in-memory state management.
  *
  * @param config - Configuration for table state management
  * @returns Table state and update functions
  *
  * @example
  * ```tsx
- * // Basic usage with default settings
+ * // Basic usage with default settings (URL state enabled by default)
  * const tableState = useTableState();
  *
  * // With custom default values
  * const tableState = useTableState({
  *   pagination: { defaultPageSize: 50 },
  *   sorting: { defaultSortKey: 'name', defaultSortOrder: 'ascend' }
+ * });
+ *
+ * // Without URL state synchronization
+ * const tableState = useTableState({
+ *   disableUrlState: true,
+ *   pagination: { defaultPageSize: 50 },
  * });
  *
  * // Type-safe table state with enum constraints (recommended)
@@ -70,9 +76,10 @@ export const useTableState = <TSortKey extends string = string>(
     sorting: sortingConfig = {},
     search: searchConfig = {},
     onStateChange,
+    disableUrlState = false,
   } = config;
 
-  // Use the standalone pagination hook
+  // Use the standalone pagination hook (with disableUrlState passed through)
   const {
     pageIndex,
     pageSize,
@@ -81,45 +88,67 @@ export const useTableState = <TSortKey extends string = string>(
     updatePageSize,
     pageSizeOptions,
     showSizeChanger,
-  } = usePagination(paginationConfig);
+  } = usePagination({ ...paginationConfig, disableUrlState });
 
-  // Use the standalone sorting hook
+  // Use the standalone sorting hook (with disableUrlState passed through)
   const {
     sortKey,
     sortOrder,
     updateSorting: updateSortingOnly,
     resetSorting,
-  } = useSorting<TSortKey>(sortingConfig);
+  } = useSorting<TSortKey>({ ...sortingConfig, disableUrlState });
 
-  // Use the standalone search hook
+  // Use the standalone search hook (with disableUrlState passed through)
   const {
     searchQuery,
     updateSearch: updateSearchOnly,
     resetSearch,
-  } = useSearch(searchConfig);
+  } = useSearch({ ...searchConfig, disableUrlState });
+
+  // React state for filter management (when disableUrlState is true)
+  const [localFilters, setLocalFilters] = useState<
+    Record<string, FilterValue | null>
+  >({});
 
   // Create parsers for filter state
   // Note: Parsers must be stable across renders for NuQS to work properly
-  const parsers = useMemo(() => createFilterParsers(), []);
+  const parsers = useMemo(() => {
+    if (disableUrlState) {
+      return null;
+    }
+    return createFilterParsers();
+  }, [disableUrlState]);
 
-  // Use NuQS for URL state management
-  const [queryState, setQueryState] = useQueryStates(parsers, {
+  // Use NuQS for URL state management (only when disableUrlState is false)
+  const [queryState, setQueryState] = useQueryStates(parsers ?? {}, {
     history: "push",
   });
 
-  // Create current state from query state, pagination hook, sorting hook, and search hook (URL is the single source of truth)
+  // Create current state from either query state or local state
   const currentState: TableState<TSortKey> = useMemo(() => {
     const state = {
       pageIndex,
       pageSize,
       sortKey,
       sortOrder,
-      columnFilters: queryState.filters ?? {},
+      columnFilters: disableUrlState
+        ? localFilters
+        : ((queryState as { filters?: Record<string, FilterValue | null> })
+            .filters ?? {}),
       searchQuery,
     };
 
     return state;
-  }, [queryState, pageIndex, pageSize, sortKey, sortOrder, searchQuery]);
+  }, [
+    disableUrlState,
+    localFilters,
+    queryState,
+    pageIndex,
+    pageSize,
+    sortKey,
+    sortOrder,
+    searchQuery,
+  ]);
 
   const updateSorting = useCallback(
     (sf?: TSortKey, so?: SortOrder) => {
@@ -131,16 +160,21 @@ export const useTableState = <TSortKey extends string = string>(
 
   const updateFilters = useCallback(
     (filters: Record<string, FilterValue | null>) => {
-      // Clean up filters by removing null/undefined values before syncing to URL
-      const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([, value]) => value != null),
-      );
-      setQueryState({
-        filters: Object.keys(cleanFilters).length > 0 ? cleanFilters : null, // Use null to remove from URL when empty
-      });
+      if (disableUrlState) {
+        // Update local state
+        setLocalFilters(filters);
+      } else {
+        // Clean up filters by removing null/undefined values before syncing to URL
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([, value]) => value != null),
+        );
+        setQueryState({
+          filters: Object.keys(cleanFilters).length > 0 ? cleanFilters : null, // Use null to remove from URL when empty
+        });
+      }
       resetPagination();
     },
-    [setQueryState, resetPagination],
+    [disableUrlState, setQueryState, resetPagination],
   );
 
   const updateSearch = useCallback(
@@ -152,15 +186,26 @@ export const useTableState = <TSortKey extends string = string>(
   );
 
   const resetState = useCallback(() => {
-    // Reset all URL state
-    const urlUpdates: QueryStateUpdates = {
-      filters: null,
-    };
-    setQueryState(urlUpdates);
+    if (disableUrlState) {
+      // Reset local state
+      setLocalFilters({});
+    } else {
+      // Reset all URL state
+      const urlUpdates: QueryStateUpdates = {
+        filters: null,
+      };
+      setQueryState(urlUpdates);
+    }
     resetPagination();
     resetSorting();
     resetSearch();
-  }, [setQueryState, resetPagination, resetSorting, resetSearch]);
+  }, [
+    disableUrlState,
+    setQueryState,
+    resetPagination,
+    resetSorting,
+    resetSearch,
+  ]);
 
   // Call onStateChange when state changes
   useEffect(() => {
