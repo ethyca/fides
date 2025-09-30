@@ -27,12 +27,12 @@ def _create_connection_event_details(
     """
     event_details = {
         "operation_type": operation_type,
-        "connection_type": connection_config.connection_type.value,
+        "connection_type": connection_config.connection_type.value,  # type: ignore[attr-defined]
     }
 
     # Add SaaS connector type if applicable
     if (
-        connection_config.connection_type.value == "saas"
+        connection_config.connection_type.value == "saas"  # type: ignore[attr-defined]
         and connection_config.saas_config
     ):
         try:
@@ -43,7 +43,7 @@ def _create_connection_event_details(
         except Exception:
             # If SaaS config is invalid, try to get type directly from raw config
             if (
-                isinstance(connection_config.saas_config, dict)
+                isinstance(connection_config.saas_config, dict)  # type: ignore[attr-defined]
                 and "type" in connection_config.saas_config
             ):
                 event_details["saas_connector_type"] = connection_config.saas_config[
@@ -65,7 +65,7 @@ def create_connection_audit_event(
     *,
     user_id: Optional[str] = None,
     description: Optional[str] = None,
-):
+) -> None:
     """
     Create an audit event for connection operations.
 
@@ -87,25 +87,22 @@ def create_connection_audit_event(
 
         # Create standardized event details
         event_details = _create_connection_event_details(
-            event_audit_service,
             connection_config,
             operation_type,
         )
 
         # Generate description if not provided
         if not description:
+            connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
             connector_type = None
-            if (
-                connection_config.connection_type.value == "saas"
-                and connection_config.saas_config
-            ):
+            if connection_type == "saas" and connection_config.saas_config:
                 try:
                     saas_config = connection_config.get_saas_config()
                     if saas_config:
                         connector_type = saas_config.type
                 except Exception:
                     if (
-                        isinstance(connection_config.saas_config, dict)
+                        isinstance(connection_config.saas_config, dict)  # type: ignore[attr-defined]
                         and "type" in connection_config.saas_config
                     ):
                         connector_type = connection_config.saas_config["type"]
@@ -113,7 +110,7 @@ def create_connection_audit_event(
             if connector_type:
                 description = f"Connection {operation_type}: {connector_type} connector '{connection_config.key}'"
             else:
-                description = f"Connection {operation_type}: {connection_config.connection_type.value} connection '{connection_config.key}'"
+                description = f"Connection {operation_type}: {connection_type} connection '{connection_config.key}'"
 
         event_audit_service.create_event_audit(
             event_type=event_type,
@@ -142,7 +139,7 @@ def create_connection_secrets_audit_event(
     *,
     user_id: Optional[str] = None,
     description: Optional[str] = None,
-):
+) -> None:
     """
     Create an audit event for connection secrets operations.
 
@@ -164,11 +161,12 @@ def create_connection_secrets_audit_event(
         ]  # e.g., "created", "updated", "deleted"
 
         # Mask the secrets using the existing masking utility
+        saas_config = connection_config.get_saas_config()
+        connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
         connection_type = (
-            connection_config.get_saas_config().type
-            if connection_config.connection_type.value == "saas"
-            and connection_config.get_saas_config()
-            else connection_config.connection_type.value
+            saas_config.type
+            if connection_type == "saas" and saas_config
+            else connection_type
         )
 
         # Get the secret schema for this connection type
@@ -182,15 +180,12 @@ def create_connection_secrets_audit_event(
         # Create event details with masked secret values
         event_details = {
             "operation_type": operation_type,
-            "connection_type": connection_config.connection_type.value,
+            "connection_type": connection_type,
             "secrets": masked_secrets,
         }
 
         # Add SaaS connector type if applicable
-        if (
-            connection_config.connection_type.value == "saas"
-            and connection_config.saas_config
-        ):
+        if connection_type == "saas" and connection_config.saas_config:
             try:
                 saas_config = connection_config.get_saas_config()
                 if saas_config:
@@ -211,10 +206,7 @@ def create_connection_secrets_audit_event(
                 ", ".join(secrets_modified) if secrets_modified else "secrets"
             )
             connector_type = None
-            if (
-                connection_config.connection_type.value == "saas"
-                and connection_config.saas_config
-            ):
+            if connection_type == "saas" and connection_config.saas_config:
                 try:
                     saas_config = connection_config.get_saas_config()
                     if saas_config:
@@ -229,7 +221,7 @@ def create_connection_secrets_audit_event(
             if connector_type:
                 description = f"Connection secrets {operation_type}: {connector_type} connector '{connection_config.key}' - {secret_names}"
             else:
-                description = f"Connection secrets {operation_type}: {connection_config.connection_type.value} connection '{connection_config.key}' - {secret_names}"
+                description = f"Connection secrets {operation_type}: {connection_type} connection '{connection_config.key}' - {secret_names}"
 
         event_audit_service.create_event_audit(
             event_type=event_type,

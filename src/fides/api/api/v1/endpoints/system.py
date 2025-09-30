@@ -67,6 +67,7 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     validate_secrets,
 )
+from fides.api.util.event_audit_util import create_connection_secrets_audit_event
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -81,9 +82,6 @@ from fides.common.api.v1.urn_registry import (
     INSTANTIATE_SYSTEM_CONNECTION,
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
-)
-from fides.service.connectors.connector_service import (
-    create_connection_secrets_audit_event,
 )
 from fides.service.event_audit_service import EventAuditService
 from fides.service.system.system_service import SystemService
@@ -214,7 +212,7 @@ def patch_connection_secrets(
         event_audit_service,
         event_type=EventAuditType.connection_secrets_updated,
         connection_config=connection_config,
-        secrets_modified=unvalidated_secrets,
+        secrets_modified=unvalidated_secrets,  # type: ignore[arg-type]
         status=EventAuditStatus.succeeded,
     )
 

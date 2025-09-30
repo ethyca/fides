@@ -354,7 +354,7 @@ def instantiate_connection(
             audit_service,
             event_type=EventAuditType.connection_secrets_created,
             connection_config=connection_config,
-            secrets_modified=template_values.secrets,
+            secrets_modified=template_values.secrets,  # type: ignore[arg-type]
             status=EventAuditStatus.succeeded,
         )
 

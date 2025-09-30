@@ -277,7 +277,7 @@ def patch_connection_config_secrets(
         **patched_secrets,
         **unvalidated_secrets,  # type: ignore[dict-item]
     }
-    return connector_service.update_secrets(connection_key, patched_secrets, verify)
+    return connector_service.update_secrets(connection_key, patched_secrets, verify)  # type: ignore[arg-type]
 
 
 @router.get(

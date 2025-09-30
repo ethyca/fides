@@ -44,7 +44,7 @@ class ConnectorService:
             self.event_audit_service,
             EventAuditType.connection_secrets_updated,
             connection_config,
-            unvalidated_secrets,
+            unvalidated_secrets,  # type: ignore[arg-type]
             EventAuditStatus.succeeded,
         )
 
