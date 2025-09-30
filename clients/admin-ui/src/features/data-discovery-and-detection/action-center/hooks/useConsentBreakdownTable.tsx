@@ -120,13 +120,12 @@ export const useConsentBreakdownTable = ({
         key: ConsentBreakdownColumnKeys.STATUS,
         width: 160,
         render: (status: ConsentStatus) => {
-          const isErrorStatus = DiscoveryErrorStatuses.includes(status);
           const tagTooltip = DiscoveryStatusDescriptions[status];
 
           return (
             <Tooltip title={tagTooltip}>
               <Tag
-                color={isErrorStatus ? "error" : undefined}
+                color="error"
                 data-testid={`status-badge_${status.replace(/_/g, "-")}`}
               >
                 {DiscoveryStatusDisplayNames[status]}

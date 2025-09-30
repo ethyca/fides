@@ -54,6 +54,7 @@ import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActio
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
+import hasConsentComplianceIssue from "../utils/hasConsentComplianceIssue";
 import isConsentCategory from "../utils/isConsentCategory";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -354,11 +355,12 @@ export const useDiscoveredAssetsTable = ({
         title: () => (
           <Space>
             <div>Compliance</div>
-            {firstItemConsentStatus === ConsentStatus.WITHOUT_CONSENT && (
+            {hasConsentComplianceIssue(firstItemConsentStatus) && (
               <DiscoveryStatusIcon
                 consentStatus={{
                   status: AlertLevel.ALERT,
-                  message: "One or more assets were detected without consent",
+                  message:
+                    "One or more assets were detected with compliance issues",
                 }}
               />
             )}
@@ -399,7 +401,6 @@ export const useDiscoveredAssetsTable = ({
             asset={record}
             onTabChange={onTabChange}
             showComplianceIssueDetails={onShowComplianceIssueDetails}
-            showWarningForConsentIssues={assetConsentStatusLabels}
           />
         ),
       });
@@ -439,8 +440,8 @@ export const useDiscoveredAssetsTable = ({
     if (data?.items && !firstItemConsentStatus) {
       // this ensures that the column header remembers the consent status
       // even when the user navigates to a different paginated page
-      const consentStatus = data.items.find(
-        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
+      const consentStatus = data.items.find((item) =>
+        hasConsentComplianceIssue(item.consent_aggregated),
       )?.consent_aggregated;
       setFirstItemConsentStatus(consentStatus);
     }

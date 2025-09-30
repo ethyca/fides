@@ -7,10 +7,11 @@ import {
 } from "fidesui";
 import { useRouter } from "next/router";
 
+import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { ConsentStatus, DiffStatus } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 import {
@@ -18,9 +19,9 @@ import {
   useIgnoreMonitorResultAssetsMutation,
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
-import { DiscoveryErrorStatuses } from "../../constants";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
 import { SuccessToastContent } from "../../SuccessToastContent";
+import hasConsentComplianceIssue from "../../utils/hasConsentComplianceIssue";
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
@@ -28,15 +29,15 @@ interface DiscoveredAssetActionsCellProps {
   showComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
   ) => void;
-  showWarningForConsentIssues?: boolean;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
   onTabChange,
   showComplianceIssueDetails,
-  showWarningForConsentIssues,
 }: DiscoveredAssetActionsCellProps) => {
+  const { flags } = useFeatures();
+  const { assetConsentStatusLabels: isConsentStatusFlagEnabled } = flags;
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -64,9 +65,8 @@ export const DiscoveredAssetActionsCell = ({
   } = asset;
 
   // Check if the consent status is an error type
-  const isErrorStatus = consentAggregated
-    ? DiscoveryErrorStatuses.includes(consentAggregated)
-    : false;
+  const showConsentComplianceWarning =
+    hasConsentComplianceIssue(consentAggregated);
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -158,7 +158,7 @@ export const DiscoveredAssetActionsCell = ({
           >
             Ignore
           </Button>
-          {isErrorStatus && showWarningForConsentIssues && (
+          {showConsentComplianceWarning && isConsentStatusFlagEnabled && (
             <Button
               data-testid="view-compliance-details-btn"
               size="small"
