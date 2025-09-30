@@ -1,7 +1,7 @@
 import {
   AntForm as Form,
   AntFormInstance as FormInstance,
-  AntInput,
+  AntInput as Input,
 } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
@@ -68,10 +68,10 @@ const TaxonomyEditForm = ({
       form={form}
     >
       <Form.Item<string> label="Name" name="name">
-        <AntInput data-testid="edit-taxonomy-form_name" disabled={isDisabled} />
+        <Input data-testid="edit-taxonomy-form_name" disabled={isDisabled} />
       </Form.Item>
       <Form.Item<string> label="Description" name="description">
-        <AntInput.TextArea
+        <Input.TextArea
           rows={4}
           data-testid="edit-taxonomy-form_description"
           disabled={isDisabled}
