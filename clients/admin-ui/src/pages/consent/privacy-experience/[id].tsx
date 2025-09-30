@@ -11,12 +11,9 @@ import {
 const PrivacyExperienceDetailPage = () => {
   const router = useRouter();
 
-  let experienceId = "";
-  if (router.query.id) {
-    experienceId = Array.isArray(router.query.id)
-      ? router.query.id[0]
-      : router.query.id;
-  }
+  const experienceId =
+    (Array.isArray(router.query.id) ? router.query.id[0] : router.query.id) ??
+    "";
 
   const { data, isLoading } = useGetExperienceConfigByIdQuery(experienceId);
   const { data: availableTranslations, isLoading: isTranslationsLoading } =

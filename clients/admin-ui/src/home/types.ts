@@ -8,7 +8,7 @@ type ModuleCard = {
   name: string;
   sortOrder: number;
   title: string;
-  color: string;
+  color?: string;
 };
 
 export interface ModuleCardConfig extends ModuleCard {

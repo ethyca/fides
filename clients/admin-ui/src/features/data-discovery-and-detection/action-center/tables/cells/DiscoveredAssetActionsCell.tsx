@@ -101,7 +101,7 @@ export const DiscoveredAssetActionsCell = ({
           SuccessToastContent(
             `${type} "${name}" has been ignored and will not appear in future scans.`,
             async () => {
-              await onTabChange(ActionCenterTabHash.IGNORED);
+              await onTabChange("ignored");
             },
           ),
         ),

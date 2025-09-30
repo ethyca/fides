@@ -40,7 +40,7 @@ interface DatamapReportFilterModalProps
 }
 
 interface FilterModalAccordionItemProps extends AccordionItemProps {
-  label: string;
+  label?: string;
   children: React.ReactNode;
 }
 const FilterModalAccordionItem = ({

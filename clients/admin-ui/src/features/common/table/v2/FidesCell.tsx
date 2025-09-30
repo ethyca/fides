@@ -29,16 +29,16 @@ export const FidesCell = <T,>({
   let isLastRowOfGroupedRows = false;
   let hasOneSubRow = false;
   const { rows } = cell.getContext().table.getRowModel();
-  const isFirstRowOfPage = rows[0].id === cell.row.id;
-  const isLastRowOfPage = rows[rows.length - 1].id === cell.row.id;
+  const isFirstRowOfPage = rows[0]?.id === cell.row.id;
+  const isLastRowOfPage = rows[rows.length - 1]?.id === cell.row.id;
   if (cell.getValue() && isGroupedColumn) {
     const groupRow = cell
       .getContext()
       .table.getRow(`${cell.column.id}:${cell.getValue()}`);
     hasOneSubRow = groupRow.subRows.length === 1;
-    isFirstRowOfGroupedRows = groupRow.subRows[0].id === cell.row.id;
+    isFirstRowOfGroupedRows = groupRow.subRows[0]?.id === cell.row.id;
     isLastRowOfGroupedRows =
-      groupRow.subRows[groupRow.subRows.length - 1].id === cell.row.id;
+      groupRow.subRows[groupRow.subRows.length - 1]?.id === cell.row.id;
   }
   const hasCellClickEnabled =
     (!isGroupedColumn || isFirstRowOfGroupedRows) &&

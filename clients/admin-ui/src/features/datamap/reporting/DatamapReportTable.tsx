@@ -264,7 +264,10 @@ export const DatamapReportTable = () => {
 
     Object.entries(columnNameMapOverrides).forEach(([key, label]) => {
       if (columnMap[key]) {
-        columnMap[key].label = label;
+        columnMap[key] = {
+          ...columnMap[key],
+          label,
+        };
       } else {
         columnMap[key] = {
           label,

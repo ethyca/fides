@@ -18,6 +18,7 @@ import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAc
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
+import { ReadOnlyNonEmptyArray } from "~/features/common/utils/array";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
 import {
@@ -33,14 +34,22 @@ import { SystemResponse } from "~/types/api";
 
 import useOAuthStatusHandler from "./useOAuthStatusHandler";
 
-enum SystemTabKeys {
-  INFORMATION = "information",
-  DATA_USES = "data-uses",
-  DATA_FLOW = "data-flow",
-  INTEGRATIONS = "integrations",
-  ASSETS = "assets",
-  HISTORY = "history",
-}
+export type SystemTabKeys =
+  | "information"
+  | "data-uses"
+  | "data-flow"
+  | "integrations"
+  | "assets"
+  | "history";
+
+export const SYSTEM_TAB_KEYS: ReadOnlyNonEmptyArray<SystemTabKeys> = [
+  "information",
+  "data-uses",
+  "data-flow",
+  "integrations",
+  "assets",
+  "history",
+];
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -78,7 +87,7 @@ const useSystemFormTabs = ({
     onTabChange: baseOnTabChange,
     setActiveTab,
   } = useURLHashedTabs({
-    tabKeys: Object.values(SystemTabKeys),
+    tabKeys: SYSTEM_TAB_KEYS,
   });
 
   const [showSaveMessage, setShowSaveMessage] = useState(false);
@@ -149,7 +158,7 @@ const useSystemFormTabs = ({
   const { attemptAction } = useIsAnyFormDirty();
 
   const onTabChange = useCallback(
-    (key: string) => {
+    (key: SystemTabKeys) => {
       attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
           baseOnTabChange(key);
@@ -160,7 +169,18 @@ const useSystemFormTabs = ({
   );
 
   // Handle OAuth status parameters (e.g., ?status=succeeded)
-  useOAuthStatusHandler({ setActiveTab });
+  useOAuthStatusHandler({
+    setActiveTab: (tab) => {
+      const matchedTab = SYSTEM_TAB_KEYS.find((systemTab) => systemTab === tab);
+
+      /*
+       * New opportunity to handle incorrect tab navigation or prevent entirely
+       */
+      if (matchedTab) {
+        setActiveTab(matchedTab);
+      }
+    },
+  });
 
   const tabData: NonNullable<TabsProps["items"]> = [
     {

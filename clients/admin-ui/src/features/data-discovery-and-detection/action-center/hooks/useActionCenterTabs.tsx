@@ -1,20 +1,34 @@
 import { useMemo } from "react";
 
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
+import { ReadOnlyNonEmptyArray } from "~/features/common/utils/array";
 import { DiffStatus } from "~/types/api";
 
-export enum ActionCenterTabHash {
-  ATTENTION_REQUIRED = "attention-required",
-  ADDED = "added",
-  IGNORED = "ignored",
-}
+export type ActionCenterTabHash = "attention-required" | "added" | "ignored";
+
+const ACTION_CENTER_TAB_HASHES: ReadOnlyNonEmptyArray<ActionCenterTabHash> = [
+  "attention-required",
+  "added",
+  "ignored",
+] as const;
+
+type ActionCenterTab = {
+  label: "Attention required" | "Added" | "Ignored";
+  params: {
+    diff_status: Array<DiffStatus>;
+    system?: string;
+  };
+  hash: ActionCenterTabHash;
+};
+
+type ActionCenterTabs = [ActionCenterTab, ActionCenterTab, ActionCenterTab];
 
 const useActionCenterTabs = (systemId?: string) => {
   const { activeTab, onTabChange } = useURLHashedTabs({
-    tabKeys: Object.values(ActionCenterTabHash),
+    tabKeys: ACTION_CENTER_TAB_HASHES,
   });
 
-  const filterTabs = useMemo(
+  const filterTabs: ActionCenterTabs = useMemo(
     () => [
       {
         label: "Attention required",
@@ -22,14 +36,14 @@ const useActionCenterTabs = (systemId?: string) => {
           diff_status: [DiffStatus.ADDITION],
           system: systemId,
         },
-        hash: ActionCenterTabHash.ATTENTION_REQUIRED,
+        hash: "attention-required",
       },
       {
         label: "Added",
         params: {
           diff_status: [DiffStatus.MONITORED],
         },
-        hash: ActionCenterTabHash.ADDED,
+        hash: "added",
       },
       {
         label: "Ignored",
@@ -37,7 +51,7 @@ const useActionCenterTabs = (systemId?: string) => {
           diff_status: [DiffStatus.MUTED],
           system: systemId,
         },
-        hash: ActionCenterTabHash.IGNORED,
+        hash: "ignored",
       },
     ],
     [systemId],
