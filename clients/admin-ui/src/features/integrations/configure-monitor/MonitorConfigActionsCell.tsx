@@ -1,8 +1,7 @@
 import {
   AntButton as Button,
   AntTooltip as Tooltip,
-  DeleteIcon,
-  EditIcon,
+  Icons,
   useDisclosure,
 } from "fidesui";
 
@@ -22,10 +21,11 @@ const MonitorConfigActionsCell = ({
   isWebsiteMonitor,
   onEditClick,
 }: {
-  monitorId: string;
+  monitorId?: string | null;
   isWebsiteMonitor?: boolean;
   onEditClick: () => void;
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
   const { toastResult: toastDeleteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred deleting this monitor",
@@ -41,14 +41,16 @@ const MonitorConfigActionsCell = ({
       : "Monitor execution successfully started",
   });
 
+  if (!monitorId) {
+    return null;
+  }
+
   const handleDelete = async () => {
     const result = await deleteMonitor({
       monitor_config_id: monitorId,
     });
     toastDeleteResult(result);
   };
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleExecute = async () => {
     const result = await executeMonitor({
@@ -73,7 +75,7 @@ const MonitorConfigActionsCell = ({
           <Button
             onClick={onEditClick}
             size="small"
-            icon={<EditIcon />}
+            icon={<Icons.Edit />}
             data-testid="edit-monitor-btn"
             aria-label="Edit monitor"
           />
@@ -82,7 +84,7 @@ const MonitorConfigActionsCell = ({
           <Button
             onClick={onOpen}
             size="small"
-            icon={<DeleteIcon />}
+            icon={<Icons.TrashCan />}
             aria-label="Delete monitor"
             data-testid="delete-monitor-btn"
           />
