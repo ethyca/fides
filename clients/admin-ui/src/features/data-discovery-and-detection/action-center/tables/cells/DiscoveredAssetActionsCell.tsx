@@ -27,7 +27,6 @@ interface DiscoveredAssetActionsCellProps {
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   showComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
   ) => void;
 }
 
@@ -123,10 +122,7 @@ export const DiscoveredAssetActionsCell = ({
   };
 
   const handleViewComplianceDetails = () => {
-    showComplianceIssueDetails?.(
-      asset,
-      consentAggregated ?? ConsentStatus.UNKNOWN,
-    );
+    showComplianceIssueDetails?.(asset);
   };
 
   // TODO [HJ-369] update disabled and tooltip logic once the categories of consent feature is implemented

@@ -65,7 +65,6 @@ interface UseDiscoveredAssetsTableConfig {
   onSystemName?: (name: string) => void;
   onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
   ) => void;
 }
 

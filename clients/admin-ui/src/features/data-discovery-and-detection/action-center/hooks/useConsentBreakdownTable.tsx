@@ -11,24 +11,24 @@ import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import {
   ConsentBreakdown,
-  ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
 
 import { useGetConsentBreakdownQuery } from "../action-center.slice";
-import { ConsentBreakdownColumnKeys } from "../constants";
+import {
+  ConsentBreakdownColumnKeys,
+  DiscoveryErrorStatuses,
+} from "../constants";
 
 const { Link } = Typography;
 
 interface UseConsentBreakdownTableConfig {
   stagedResource: StagedResourceAPIResponse;
-  status: ConsentStatus;
 }
 
 export const useConsentBreakdownTable = ({
   stagedResource,
-  status,
 }: UseConsentBreakdownTableConfig) => {
   const tableState = useTableState<ConsentBreakdownColumnKeys>({
     pagination: {
@@ -41,7 +41,7 @@ export const useConsentBreakdownTable = ({
 
   const { data, isFetching, isError } = useGetConsentBreakdownQuery({
     stagedResourceUrn: stagedResource.urn,
-    status,
+    statuses: DiscoveryErrorStatuses,
     page: pageIndex,
     size: pageSize,
   });

@@ -7,7 +7,7 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 
-import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 import { useConsentBreakdownTable } from "./hooks/useConsentBreakdownTable";
 
@@ -16,7 +16,6 @@ const { Paragraph, Text } = Typography;
 interface ConsentBreakdownModalProps {
   isOpen: boolean;
   stagedResource: StagedResourceAPIResponse;
-  status: ConsentStatus;
   onCancel: () => void;
   onDownload?: () => void;
 }
@@ -24,13 +23,11 @@ interface ConsentBreakdownModalProps {
 export const ConsentBreakdownModal = ({
   isOpen,
   stagedResource,
-  status,
   onCancel,
   onDownload,
 }: ConsentBreakdownModalProps) => {
   const { columns, tableProps, isError } = useConsentBreakdownTable({
     stagedResource,
-    status,
   });
 
   return (
@@ -58,9 +55,9 @@ export const ConsentBreakdownModal = ({
       >
         <div>
           <Paragraph>
-            View all instances where this asset was detected without consent,
-            organized by location and page. Use this to investigate potential
-            compliance issues.
+            View all instances where this asset was detected with consent
+            compliance issues, organized by location and page. This includes
+            assets loaded without consent, before consent, or when CMP failed.
           </Paragraph>
           <Paragraph>
             <Text strong>Asset name:</Text>{" "}

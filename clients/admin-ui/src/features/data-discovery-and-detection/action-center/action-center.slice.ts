@@ -251,19 +251,28 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_ConsentBreakdown_,
       {
         stagedResourceUrn: string;
-        status: ConsentStatus;
+        statuses: ConsentStatus[];
       } & PaginationQueryParams
     >({
-      query: ({ stagedResourceUrn, status, page = 1, size = 20 }) => ({
-        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
-          stagedResourceUrn,
-        )}/consent`,
-        params: {
-          status,
-          page,
-          size,
-        },
-      }),
+      query: ({ stagedResourceUrn, statuses, page = 1, size = 20 }) => {
+        const params = new URLSearchParams();
+
+        // Add pagination params
+        params.append("page", String(page));
+        params.append("size", String(size));
+
+        // Add status array params
+        statuses.forEach((status) => {
+          params.append("status", status);
+        });
+
+        return {
+          url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+            stagedResourceUrn,
+          )}/consent`,
+          params,
+        };
+      },
     }),
     getWebsiteMonitorResourceFilters: build.query<
       WebsiteMonitorResourcesFilters,
