@@ -37,9 +37,15 @@ type SystemTypeLike = Pick<
   "identifier" | "human_readable" | "encoded_icon"
 >;
 
+export enum ConnectionLogoKind {
+  CONNECTION = "connection",
+  SYSTEM = "system",
+  STATIC = "static",
+}
+
 export type ConnectionLogoSource =
   | {
-      kind: "connection";
+      kind: ConnectionLogoKind.CONNECTION;
       connectionType: ConnectionTypeModel;
       name?: string | null;
       key?: string | null;
@@ -47,13 +53,13 @@ export type ConnectionLogoSource =
       websiteUrl?: string | null;
     }
   | {
-      kind: "system";
+      kind: ConnectionLogoKind.SYSTEM;
       identifier: string;
       humanReadable: string;
       encodedIcon?: string | null;
     }
   | {
-      kind: "static";
+      kind: ConnectionLogoKind.STATIC;
       key: string;
     };
 
@@ -64,7 +70,7 @@ const FALLBACK_WEBSITE_LOGO_PATH =
 const connectionLikeToLogo = (
   connection: ConnectionLike,
 ): ConnectionLogoSource => ({
-  kind: "connection",
+  kind: ConnectionLogoKind.CONNECTION,
   connectionType: connection.connection_type,
   name: connection.name ?? null,
   key: connection.key ?? null,
@@ -86,14 +92,14 @@ export const connectionLogoFromMonitor = (
 export const connectionLogoFromSystemType = (
   system: SystemTypeLike,
 ): ConnectionLogoSource => ({
-  kind: "system",
+  kind: ConnectionLogoKind.SYSTEM,
   identifier: system.identifier,
   humanReadable: system.human_readable,
   encodedIcon: system.encoded_icon ?? null,
 });
 
 export const connectionLogoFromKey = (key: string): ConnectionLogoSource => ({
-  kind: "static",
+  kind: ConnectionLogoKind.STATIC,
   key,
 });
 
@@ -120,7 +126,7 @@ const buildStaticLogoPath = (key: string) => {
 };
 
 const getImageSrc = (data: ConnectionLogoSource): string => {
-  if (data.kind === "system") {
+  if (data.kind === ConnectionLogoKind.SYSTEM) {
     if (data.encodedIcon) {
       return `data:image/svg+xml;base64,${data.encodedIcon}`;
     }
@@ -132,7 +138,7 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
       : FALLBACK_CONNECTOR_LOGOS_PATH;
   }
 
-  if (data.kind === "connection") {
+  if (data.kind === ConnectionLogoKind.CONNECTION) {
     if (data.connectionType === ConnectionTypeModel.WEBSITE) {
       if (!data.websiteUrl) {
         return FALLBACK_WEBSITE_LOGO_PATH;
@@ -158,10 +164,10 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
 };
 
 const getAltValue = (data: ConnectionLogoSource): string => {
-  if (data.kind === "connection") {
+  if (data.kind === ConnectionLogoKind.CONNECTION) {
     return data.name ?? data.key ?? "connection";
   }
-  if (data.kind === "system") {
+  if (data.kind === ConnectionLogoKind.SYSTEM) {
     return data.humanReadable;
   }
   return data.key || "connection";
@@ -169,7 +175,7 @@ const getAltValue = (data: ConnectionLogoSource): string => {
 
 const getFallbackSrc = (data: ConnectionLogoSource): string => {
   if (
-    data.kind === "connection" &&
+    data.kind === ConnectionLogoKind.CONNECTION &&
     data.connectionType === ConnectionTypeModel.WEBSITE
   ) {
     return FALLBACK_WEBSITE_LOGO_PATH;
