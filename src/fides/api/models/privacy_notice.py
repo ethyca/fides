@@ -215,6 +215,80 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         return or_(exact_matches_condition, *hierarchical_conditions)
 
+    @classmethod
+    def _query_cookie_assets_for_data_uses(
+        cls,
+        db: Session,
+        data_uses: Set[str],
+        exclude_cookies_from_systems: Optional[Set[str]] = None,
+    ) -> List[Asset]:
+        """
+        Query cookie Assets for the given set of data uses using the shared filter logic.
+        Applies optional exclusion by `System.fides_key` and eagerly loads the `system` relationship.
+        """
+        if not data_uses:
+            return []
+
+        cookie_filter = cls._get_cookie_filter_for_data_uses(list(data_uses))
+        query = (
+            db.query(Asset)
+            .options(selectinload("system"))
+            .filter(
+                Asset.asset_type == "Cookie",
+                cookie_filter,
+            )
+        )
+        if exclude_cookies_from_systems:
+            query = query.outerjoin(System).filter(
+                or_(
+                    Asset.system_id.is_(None),
+                    System.fides_key.not_in(exclude_cookies_from_systems),
+                )
+            )
+
+        return query.all()
+
+    @staticmethod
+    def _group_cookies_by_data_use(cookies: List[Asset]) -> Dict[str, List[Asset]]:
+        """Build a mapping of data_use -> list of cookie Assets."""
+        cookies_by_data_use: Dict[str, List[Asset]] = {}
+        for cookie in cookies:
+            for data_use in cookie.data_uses or []:
+                cookies_by_data_use.setdefault(data_use, []).append(cookie)
+        return cookies_by_data_use
+
+    @staticmethod
+    def _select_cookies_for_notice_data_uses(
+        notice_data_uses: List[str],
+        cookies_by_data_use: Dict[str, List[Asset]],
+    ) -> List[Asset]:
+        """
+        Return cookies that match the notice data uses either exactly or as hierarchical descendants.
+        Deduplicate by object identity while preserving order.
+        """
+        seen: Set[int] = set()
+        ordered_cookies: List[Asset] = []
+
+        for notice_data_use in notice_data_uses or []:
+            # Exact matches
+            for cookie in cookies_by_data_use.get(notice_data_use, []):
+                key = id(cookie)
+                if key not in seen:
+                    seen.add(key)
+                    ordered_cookies.append(cookie)
+
+            # Hierarchical descendants: e.g., "analytics" matches "analytics.reporting"
+            prefix = f"{notice_data_use}."
+            for du_key, cookie_list in cookies_by_data_use.items():
+                if du_key.startswith(prefix):
+                    for cookie in cookie_list:
+                        key = id(cookie)
+                        if key not in seen:
+                            seen.add(key)
+                            ordered_cookies.append(cookie)
+
+        return ordered_cookies
+
     @cached_property
     def cookies(self) -> List[Asset]:
         """
@@ -255,48 +329,15 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             return
 
         all_data_uses = set(itertools.chain.from_iterable(n.data_uses for n in notices))
-
-        all_relevant_cookies: List[Asset] = []
-        if all_data_uses:
-            cookie_filter = cls._get_cookie_filter_for_data_uses(list(all_data_uses))
-            query = (
-                db.query(Asset)
-                .options(
-                    selectinload("system")
-                )  # Eagerly load the system to prevent further N+1s
-                .filter(
-                    Asset.asset_type == "Cookie",
-                    cookie_filter,
-                )
-            )
-            if exclude_cookies_from_systems:
-                query = query.outerjoin(System).filter(
-                    or_(
-                        Asset.system_id.is_(None),
-                        System.fides_key.not_in(exclude_cookies_from_systems),
-                    )
-                )
-
-            all_relevant_cookies = query.all()
-
-        # Associate the pre-fetched cookies to notices based on their data uses
-        cookies_by_data_use: Dict[str, List[Asset]] = (
-            {}
-        )  # dict of data_use -> list of cookies
-
-        for cookie in all_relevant_cookies:
-            for data_use in cookie.data_uses:
-                if data_use not in cookies_by_data_use:
-                    cookies_by_data_use[data_use] = []
-                cookies_by_data_use[data_use].append(cookie)
+        all_relevant_cookies = cls._query_cookie_assets_for_data_uses(
+            db, all_data_uses, exclude_cookies_from_systems
+        )
+        cookies_by_data_use = cls._group_cookies_by_data_use(all_relevant_cookies)
 
         for notice in notices:
-            # Remove duplicate cookies by object identity, e.g. if a cookie matches multiple data uses
-            flat_cookies_iter = itertools.chain.from_iterable(
-                cookies_by_data_use.get(data_use, [])
-                for data_use in (notice.data_uses or [])
+            matching_cookies = cls._select_cookies_for_notice_data_uses(
+                notice.data_uses, cookies_by_data_use
             )
-            matching_cookies = list(dict.fromkeys(flat_cookies_iter))
 
             # Pre-populate the cache of the 'cookies' cached_property.
             # This directly sets the attribute that the decorator would otherwise compute.
