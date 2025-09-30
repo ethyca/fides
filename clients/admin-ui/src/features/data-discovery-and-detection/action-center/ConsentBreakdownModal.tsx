@@ -80,6 +80,8 @@ export const ConsentBreakdownModal = ({
             {...tableProps}
             columns={columns}
             data-testid="consent-breakdown-modal-table"
+            tableLayout="fixed"
+            scroll={{ scrollToFirstRowOnChange: true }}
           />
         )}
       </Flex>
