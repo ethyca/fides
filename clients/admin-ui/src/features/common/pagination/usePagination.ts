@@ -20,8 +20,8 @@ const createPaginationParsers = (
     sizeQueryKey?: string;
   } = {},
 ) => {
-  const pageKey = defaults.pageQueryKey ?? "page";
-  const sizeKey = defaults.sizeQueryKey ?? "size";
+  const pageKey = defaults.pageQueryKey || "page";
+  const sizeKey = defaults.sizeQueryKey || "size";
 
   return {
     [pageKey]: parseAsPositiveInteger.withDefault(DEFAULT_PAGE_INDEX),
