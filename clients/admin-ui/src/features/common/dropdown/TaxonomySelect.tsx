@@ -102,7 +102,7 @@ export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
    */
   const filterOption = (input: string, option?: TaxonomySelectOption) =>
     option?.formattedTitle?.toLowerCase().includes(input.toLowerCase()) ||
-    option?.value.toLowerCase().includes(input.toLowerCase()) ||
+    option?.value?.toLowerCase().includes(input.toLowerCase()) ||
     false;
 
   return (
