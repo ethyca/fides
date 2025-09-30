@@ -85,9 +85,7 @@ export const InProgressMonitorTaskItem = ({
         connection_type: task.connection_type as ConnectionType,
         name:
           task.connection_name ??
-          (task.connection_type
-            ? task.connection_type.toString()
-            : null),
+          (task.connection_type ? task.connection_type.toString() : null),
         key: null,
         saas_config: null,
         secrets: null,
