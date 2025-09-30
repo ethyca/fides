@@ -9,11 +9,12 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntFlex as Flex,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
   formatIsoLocation,
   isoStringToEntry,
-  Spacer,
   Text,
-  Tooltip,
   useDisclosure,
   VStack,
 } from "fidesui";
@@ -28,7 +29,6 @@ import {
   FidesTableV2,
   GroupCountBadgeCell,
   PaginationBar,
-  TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -361,37 +361,26 @@ const MonitorConfigTab = ({
 
   return (
     <>
-      <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
+      <Typography.Paragraph
+        className="mb-6 max-w-3xl"
+        data-testid="monitor-description"
+      >
         {monitorCopy}
-      </Text>
-      <TableActionBar>
+      </Typography.Paragraph>
+      <Flex justify="space-between" className="py-3">
         <SharedConfigModal />
-        <Spacer />
-        <Tooltip label={addMonitorButtonTooltip}>
-          <span>
-            <Button
-              onClick={modal.onOpen}
-              icon={<MonitorIcon />}
-              iconPosition="end"
-              data-testid="add-monitor-btn"
-              disabled={isAddMonitorButtonDisabled}
-            >
-              Add monitor
-            </Button>
-          </span>
+        <Tooltip title={addMonitorButtonTooltip}>
+          <Button
+            onClick={modal.onOpen}
+            icon={<MonitorIcon />}
+            iconPosition="end"
+            data-testid="add-monitor-btn"
+            disabled={isAddMonitorButtonDisabled}
+          >
+            Add monitor
+          </Button>
         </Tooltip>
-        <ConfigureMonitorModal
-          isOpen={modal.isOpen}
-          onClose={handleCloseModal}
-          formStep={formStep}
-          onAdvance={handleAdvanceForm}
-          monitor={workingMonitor}
-          isEditing={isEditing}
-          integration={integration}
-          integrationOption={integrationOption!}
-          isWebsiteMonitor={isWebsiteMonitor}
-        />
-      </TableActionBar>
+      </Flex>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleEditMonitor}
@@ -407,6 +396,17 @@ const MonitorConfigTab = ({
         isNextPageDisabled={isNextPageDisabled || isFetching}
         startRange={startRange}
         endRange={endRange}
+      />
+      <ConfigureMonitorModal
+        isOpen={modal.isOpen}
+        onClose={handleCloseModal}
+        formStep={formStep}
+        onAdvance={handleAdvanceForm}
+        monitor={workingMonitor}
+        isEditing={isEditing}
+        integration={integration}
+        integrationOption={integrationOption!}
+        isWebsiteMonitor={isWebsiteMonitor}
       />
     </>
   );
