@@ -34,7 +34,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResult,
 )
-from fides.api.schemas.saas.saas_config import ReadSaaSRequest
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.async_dsr.handlers.polling_request_handler import (
     PollingRequestHandler,
@@ -54,6 +54,7 @@ from fides.api.util.saas_util import map_param_values
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
+    from fides.api.models.privacy_request.privacy_request import PrivacyRequest
     from fides.api.service.connectors.query_configs.saas_query_config import (
         SaaSQueryConfig,
     )
@@ -203,43 +204,39 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         masking_request = query_config.get_masking_request()
         if masking_request:
             all_requests.append(masking_request)
-        all_requests.extend(query_config.get_read_requests_by_identity())
 
-        rows_updated = 0
+        # Set async type once for the task
+        request_task.async_type = AsyncTaskType.polling
+        self.session.add(request_task)
+        self.session.commit()
+
         for request in all_requests:
             if not (request.async_config and request_task.id):
                 continue
 
-            request_task.async_type = AsyncTaskType.polling
-            self.session.add(request_task)
-            self.session.commit()
-
-            if request_task.sub_requests.count() == 0 and request.path:
+            if request.path:
                 logger.info(
                     f"Executing initial masking request for polling task {request_task.id}"
                 )
+                self._handle_polling_initial_erasure_request(
+                    request_task,
+                    query_config,
+                    request,
+                    rows,
+                    policy,
+                    privacy_request,
+                    client,
+                )
 
-                for row in rows:
-                    try:
-                        prepared_request = query_config.generate_update_stmt(
-                            row, policy, privacy_request
-                        )
-                        client.send(prepared_request, request.ignore_errors)
-                        rows_updated += 1
-                    except ValueError as exc:
-                        if request.skip_missing_param_values:
-                            logger.debug("Skipping optional masking request: {}", exc)
-                            continue
-                        raise exc
-
+        # After processing all requests, raise AwaitingAsyncProcessing (like access flow)
+        # But only if we actually created any sub-requests
+        self.session.refresh(request_task)
+        if request_task.sub_requests:
             raise AwaitingAsyncProcessing(
                 f"Waiting for next scheduled check of {request_task.dataset_name} erasure results."
             )
-
-        logger.warning(
-            f"No async configuration found for erasure task {request_task.id}"
-        )
-        return rows_updated
+        # If no sub-requests were created (no rows to process), the task is already complete
+        return 0
 
     def _polling_continuation_access(
         self,
@@ -380,6 +377,60 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             param_value_map["correlation_id"] = str(correlation_id)
             self._save_sub_request_data(request_task, param_value_map)
 
+    def _handle_polling_initial_erasure_request(
+        self,
+        request_task: RequestTask,
+        query_config: "SaaSQueryConfig",
+        request: SaaSRequest,
+        rows: List[Row],
+        policy: Policy,
+        privacy_request: "PrivacyRequest",
+        client: "AuthenticatedClient",
+    ) -> None:
+        """Handles the setup for asynchronous initial erasure requests."""
+        logger.info(
+            f"Processing {len(rows)} rows for erasure request in task {request_task.id}"
+        )
+
+        # Create sub-requests for erasure operations (similar to access operations)
+        for row in rows or [{}]:
+            try:
+                # Generate parameter values first (like access requests)
+                param_value_map = query_config.generate_update_param_values(
+                    row, policy, privacy_request, request
+                )
+
+                # Generate the update request using the param_values
+                prepared_request = query_config.generate_update_stmt(
+                    row, policy, privacy_request
+                )
+                response = client.send(prepared_request, request.ignore_errors)
+
+                # Extract correlation ID from response (required, like access requests)
+                try:
+                    response_data = response.json()
+                    correlation_id = pydash.get(
+                        response_data, request.correlation_id_path
+                    )
+                    if not correlation_id:
+                        raise FidesopsException(
+                            f"Could not extract correlation ID from response using path: {request.correlation_id_path}"
+                        )
+                except ValueError as exc:
+                    raise FidesopsException(
+                        f"Invalid JSON response from initial erasure request: {exc}"
+                    )
+
+                # Add correlation_id to the existing param_value_map (like access requests)
+                param_value_map["correlation_id"] = str(correlation_id)
+                self._save_sub_request_data(request_task, param_value_map)
+
+            except ValueError as exc:
+                if request.skip_missing_param_values:
+                    logger.debug("Skipping optional masking request: {}", exc)
+                    continue
+                raise exc
+
     def _save_sub_request_data(
         self,
         request_task: RequestTask,
@@ -414,6 +465,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         Raises:
             PrivacyRequestError: If action type is unsupported or masking request not found
         """
+        # Validate result_request is provided for access operations
+        if polling_task.action_type == ActionType.access and not self.result_request:
+            raise PrivacyRequestError(
+                f"result_request is required for access operations but was not provided in polling configuration for task {polling_task.id}"
+            )
+
         if polling_task.action_type == ActionType.access:
             return list(query_config.get_read_requests_by_identity())
         if polling_task.action_type == ActionType.erasure:
@@ -503,7 +560,22 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         Raises:
             PrivacyRequestError: If polling result is not the expected type
         """
-        # Get results before marking complete
+        # Handle erasure operations differently - they don't need result_request
+        if polling_task.action_type == ActionType.erasure:
+            # For erasure operations, just mark as complete and handle the result
+            sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
+            self._handle_erasure_result(polling_task)
+            logger.info(
+                f"Sub-request {sub_request.id} for {polling_task.action_type} task {polling_task.id} completed"
+            )
+            return
+
+        # For access operations, we need result_request to get the data
+        if not self.result_request:
+            raise PrivacyRequestError(
+                f"result_request is required for processing completed sub-request {sub_request.id} but was not provided"
+            )
+
         if self.result_request.request_override:
             # Handle override function directly
             override_function = SaaSRequestOverrideFactory.get_override(
@@ -542,14 +614,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         if not isinstance(polling_result, PollingResult):
             raise PrivacyRequestError("Polling result must be PollingResult instance")
 
-        # Handle results based on action type
-        if polling_task.action_type == ActionType.access:
-            self._handle_access_result(polling_result, polling_task)
-        elif polling_task.action_type == ActionType.erasure:
-            self._handle_erasure_result(polling_result, polling_task)
+        # Handle results for access operations
+        self._handle_access_result(polling_result, polling_task)
 
         # Mark as complete using existing method
-        sub_request.update_status(self.session, "complete")
+        sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
 
         logger.info(
             f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
@@ -622,7 +691,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 status = self._check_sub_request_status(client, param_values)
 
                 if status:
-                    # Process the completed sub-request
                     self._process_completed_sub_request(
                         client, param_values, sub_request, polling_task
                     )
@@ -678,6 +746,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             else:
                 existing_access_data.append(polling_result.data)
             request_task.access_data = existing_access_data
+
+            # For structured data results, use the same data for erasures
+            request_task.data_for_erasures = existing_access_data
             request_task.save(self.session)
 
         elif polling_result.result_type == "attachment":
@@ -693,6 +764,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 _add_attachment_metadata_to_rows(
                     self.session, attachment_id, request_task.access_data or []
                 )
+
+                # For attachment results, we need to provide data for erasures
+                # This follows the same pattern as SaaSConnector.retrieve_data
+                # which returns [{}] when there's a delete request but no read request
+                request_task.data_for_erasures = [{}]
+                request_task.save(self.session)
             except Exception as exc:
                 raise PrivacyRequestError(f"Attachment storage failed: {exc}")
         else:
@@ -700,27 +777,16 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"Unsupported result type: {polling_result.result_type}"
             )
 
-    # Private helper functions
-
-    def _handle_erasure_result(
-        self, polling_result: PollingResult, request_task: RequestTask
-    ) -> None:
+    def _handle_erasure_result(self, request_task: RequestTask) -> None:
         """Handle result for erasure requests."""
-        current_count = request_task.rows_masked or 0
-
-        if polling_result.result_type == "rows":
-            if isinstance(polling_result.data, list):
-                request_task.rows_masked = current_count + len(polling_result.data)
-            else:
-                request_task.rows_masked = current_count + 1
-        elif polling_result.result_type == "attachment":
-            request_task.rows_masked = current_count + 1
-        else:
-            raise PrivacyRequestError(
-                f"Unsupported erasure result type: {polling_result.result_type}"
-            )
-
+        # For erasure operations, just increment the rows_masked counter
+        request_task.rows_masked = (request_task.rows_masked or 0) + 1
         request_task.save(self.session)
+        logger.info(
+            f"Erasure task {request_task.id} completed - rows_masked: {request_task.rows_masked}"
+        )
+
+    # Private helper functions
 
     @staticmethod
     def _ensure_attachment_bytes(data: Union[List[Row], bytes]) -> bytes:
@@ -744,7 +810,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         timed_out_sub_requests = []
 
         for sub_request in polling_task.sub_requests:
-            if sub_request.status != ExecutionLogStatus.complete:
+            if sub_request.status != ExecutionLogStatus.complete.value:
                 # Check if this sub-request has timed out
                 if sub_request.created_at:
                     timeout_threshold = sub_request.created_at + timedelta(

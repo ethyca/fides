@@ -117,6 +117,10 @@ class SaaSRequest(BaseModel):
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
     )
+    correlation_id_path: Optional[str] = PydanticField(
+        default=None,
+        description="The path to the correlation ID in the response. For use with async polling.",
+    )
     model_config = ConfigDict(
         from_attributes=True, use_enum_values=True, extra="forbid"
     )
@@ -219,10 +223,6 @@ class ReadSaaSRequest(SaaSRequest):
     """
 
     output: Optional[str] = None
-    correlation_id_path: Optional[str] = PydanticField(
-        default=None,
-        description="The path to the correlation ID in the response. For use with async polling.",
-    )
 
     @model_validator(mode="after")
     def validate_request(self) -> "ReadSaaSRequest":

@@ -40,3 +40,16 @@ saas_config:
               value: <reply_to>
             - name: reply-to-token
               value: <reply_to_token>
+        delete:
+          method: DELETE
+          path: /api/anonymize-user/<email>
+          param_values:
+            - name: email
+              identity: email
+          async_config:
+            strategy: callback
+          headers:
+            - name: reply-to
+              value: <reply_to>
+            - name: reply-to-token
+              value: <reply_to_token>

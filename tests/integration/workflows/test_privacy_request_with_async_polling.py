@@ -87,7 +87,7 @@ class TestPrivacyRequestWithAsyncPolling:
         client.add_response(
             "GET",
             "/api/access-package/status",
-            {"request_complete": True, "status": "completed"},
+            {"status": "completed"},
             status_code=200,
         )
 
@@ -102,10 +102,24 @@ class TestPrivacyRequestWithAsyncPolling:
             },
         )
 
+        client.add_response(
+            "DELETE",
+            "/api/anonymize-user/customer-1@example.com",
+            {"correlation_id": "123"},
+            status_code=200,
+        )
+
+        client.add_response(
+            "GET",
+            "/api/anonymize-user/123/status",
+            {"status": "completed"},
+            status_code=200,
+        )
+
         return client
 
     @patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
-    def test_privacy_request_with_async_polling(
+    def test_access_privacy_request_with_async_polling(
         self,
         mock_create_client,
         db,
@@ -116,7 +130,7 @@ class TestPrivacyRequestWithAsyncPolling:
         root_auth_header,
     ):
         """
-        Integration test for privacy request with async polling
+        Integration test for an access privacy request with async polling
 
         1) Submit a privacy request with async polling
         2) Wait for the privacy request to be in processing (awaiting polling)
@@ -182,3 +196,73 @@ class TestPrivacyRequestWithAsyncPolling:
         request_task_sub_requests = db.query(RequestTaskSubRequest).all()
         assert len(request_task_sub_requests) == 1
         assert request_task_sub_requests[0].status == ExecutionLogStatus.complete.value
+
+    @patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
+    def test_erasure_privacy_request_with_async_polling(
+        self,
+        mock_create_client,
+        db,
+        erasure_policy,
+        async_polling_connector,
+        api_client: TestClient,
+        mock_authenticated_client,
+        root_auth_header,
+    ):
+        """
+        Integration test for an erasure privacy request with async polling
+
+        1) Submit a privacy request with async polling
+        2) Wait for the privacy request to be in processing (awaiting polling)
+        3) Requeue the polling task
+        4) Mock the status response
+        5) Wait for the privacy request to be complete
+        6) Verify the DSR package includes the attachment
+        """
+        # Configure the mock to return our MockAuthenticatedClient instance
+        mock_create_client.return_value = mock_authenticated_client
+
+        response = api_client.post(
+            "/api/v1/privacy-request",
+            headers=root_auth_header,
+            json=[
+                {
+                    "identity": {"email": "customer-1@example.com"},
+                    "policy_key": erasure_policy.key,
+                }
+            ],
+        )
+        assert response.status_code == HTTP_200_OK
+        privacy_request_id = response.json()["succeeded"][0]["id"]
+
+        # Wait for the privacy request to be in processing (awaiting polling)
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.in_processing,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )
+
+        # Requeue the polling task
+        requeue_polling_tasks.apply().get()
+
+        # Wait for the privacy request to be in processing (awaiting polling)
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.in_processing,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )
+
+        # Requeue the polling task
+        requeue_polling_tasks.apply().get()
+
+        # Wait for the privacy request to be complete
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.complete,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )

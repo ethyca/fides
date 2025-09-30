@@ -75,4 +75,5 @@ class AsyncPollingConfiguration(StrategyConfiguration):
     """
 
     status_request: PollingStatusRequest
-    result_request: PollingResultRequest
+    # result_request is optional for delete/update operations
+    result_request: Optional[PollingResultRequest] = None

@@ -39,8 +39,23 @@ saas_config:
               status_request:
                 method: GET
                 path: /api/access-package/status
-                status_path: request_complete
+                status_path: status
                 status_completed_value: completed
               result_request:
                 method: GET
                 path: /api/access-package/result
+        delete:
+          method: DELETE
+          path: /api/anonymize-user/<email>
+          param_values:
+            - name: email
+              identity: email
+          correlation_id_path: correlation_id
+          async_config:
+            strategy: polling
+            configuration:
+              status_request:
+                method: GET
+                path: /api/anonymize-user/<correlation_id>/status
+                status_path: status
+                status_completed_value: completed
