@@ -192,7 +192,7 @@ describe("Consent banner with vendor asset disclosure", () => {
       cy.wait("@getPrivacyExperience").then((interception) => {
         const url = new URL(interception.request.url);
         expect(url.searchParams.get("exclude_notice_assets_by_systems")).to.eq(
-          "Example Vendor,Another Vendor",
+          "Another Vendor,Example Vendor", // Alphabetic deterministic order
         );
       });
     });
