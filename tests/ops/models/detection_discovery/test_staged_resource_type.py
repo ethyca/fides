@@ -45,3 +45,39 @@ class TestStagedResourceType:
         self, resource_type_string: str, expected_resource_type: StagedResourceType
     ):
         assert StagedResourceType(resource_type_string) == expected_resource_type
+
+    @pytest.mark.parametrize(
+        "resource_type,is_datastore,is_website_monitor",
+        [
+            (StagedResourceType.DATABASE, True, False),
+            (StagedResourceType.SCHEMA, True, False),
+            (StagedResourceType.TABLE, True, False),
+            (StagedResourceType.FIELD, True, False),
+            (StagedResourceType.ENDPOINT, True, False),
+            (StagedResourceType.COOKIE, False, True),
+            (StagedResourceType.BROWSER_REQUEST, False, True),
+            (StagedResourceType.IMAGE_BROWSER_REQUEST, False, True),
+            (StagedResourceType.IFRAME_BROWSER_REQUEST, False, True),
+            (StagedResourceType.JAVASCRIPT_BROWSER_REQUEST, False, True),
+        ],
+    )
+    def test_is_datastore_or_is_website_monitor(
+        self,
+        resource_type: StagedResourceType,
+        is_datastore: bool,
+        is_website_monitor: bool,
+    ):
+        assert resource_type.is_datastore_resource() == is_datastore
+        assert resource_type.is_website_monitor_resource() == is_website_monitor
+
+    def test_all_resource_types_are_either_datastore_or_website_monitor(self):
+        """
+        Tests that all resource types are either datastore or website monitor.
+        If a new resource type is added to the enum but not to either of the
+        datastore or website monitor lists, the test will fail.
+        """
+        for resource_type in StagedResourceType:
+            assert (
+                resource_type.is_datastore_resource()
+                or resource_type.is_website_monitor_resource()
+            )
