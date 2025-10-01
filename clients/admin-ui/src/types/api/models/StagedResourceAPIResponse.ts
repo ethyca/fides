@@ -96,4 +96,8 @@ export type StagedResourceAPIResponse = {
    * A map of diff statuses present in the descendants of this resource, e.g. {'addition': true}
    */
   child_diff_statuses?: Record<string, boolean>;
+  /** An array of the "preferred" data uses for the asset; this encapsulates backend logic
+   * that will use either user_assigned_data_uses or data_uses, depending on their values.
+   */
+  preferred_data_uses?: Array<string> | null;
 };
