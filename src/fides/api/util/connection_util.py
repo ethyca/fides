@@ -20,6 +20,7 @@ from fides.api.common_exceptions import (
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskParentEntityType,
@@ -50,6 +51,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
 )
+from fides.api.util.event_audit_util import generate_connection_secrets_event_details
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
@@ -209,6 +211,25 @@ def patch_connection_configs(
                         connection_config,
                     ).model_dump(mode="json")
                     connection_config.save(db=db)
+
+                    # Create audit event for secrets creation
+                    audit_service = EventAuditService(db)
+                    event_details, description = (
+                        generate_connection_secrets_event_details(
+                            EventAuditType.connection_secrets_created,
+                            connection_config=connection_config,
+                            secrets_modified=template_values.secrets,  # type: ignore[arg-type]
+                        )
+                    )
+                    audit_service.create_event_audit(
+                        event_type=EventAuditType.connection_secrets_created,
+                        status=EventAuditStatus.succeeded,
+                        resource_type="connection_config",
+                        resource_identifier=connection_config.key,
+                        description=description,
+                        event_details=event_details,
+                    )
+
                     created_or_updated.append(
                         ConnectionConfigurationResponse.model_validate(
                             connection_config
@@ -237,6 +258,25 @@ def patch_connection_configs(
             connection_config = ConnectionConfig.create_or_update(
                 db, data=config_dict, check_name=False
             )
+            if config.secrets:
+                audit_service = EventAuditService(db)
+                event_details, description = generate_connection_secrets_event_details(
+                    (
+                        EventAuditType.connection_secrets_updated
+                        if existing_connection_config
+                        else EventAuditType.connection_secrets_created
+                    ),
+                    connection_config=connection_config,
+                    secrets_modified=connection_config.secrets,  # type: ignore[arg-type]
+                )
+                audit_service.create_event_audit(
+                    event_type=EventAuditType.connection_secrets_created,
+                    status=EventAuditStatus.succeeded,
+                    resource_type="connection_config",
+                    resource_identifier=connection_config.key,
+                    description=description,
+                    event_details=event_details,
+                )
 
             # Automatically create a ManualTask if this is a connection config of type manual_task
             # and it doesn't already have one
