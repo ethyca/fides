@@ -108,6 +108,10 @@ class PrivacyExperienceConfigBase:
 
     show_layer1_notices = Column(Boolean, nullable=True, default=False)
 
+    # Vendor/Asset disclosure configuration
+    allow_vendor_asset_disclosure = Column(Boolean, nullable=True, default=False)
+    asset_disclosure_include_types = Column(ARRAY(String), nullable=True)
+
     @declared_attr
     def layer1_button_options(cls) -> Column:
         return Column(
@@ -141,6 +145,9 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     dismissable = Column(
         Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    allow_vendor_asset_disclosure = Column(
+        Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     name = Column(
         String, nullable=False
@@ -215,6 +222,9 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     )  # Overridding PrivacyExperienceConfigBase to index
     dismissable = Column(
         Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    allow_vendor_asset_disclosure = Column(
+        Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     name = Column(
         String, nullable=False
