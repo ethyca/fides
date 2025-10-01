@@ -63,7 +63,7 @@ const PageWithTwoTables = () => {
     pagination: {
       pageQueryKey: "usersPage",
       sizeQueryKey: "usersSize",
-      defaultPageSize: 10
+      defaultPageSize: 10,
     },
     sorting: { defaultSortKey: "name" },
   });
@@ -73,7 +73,7 @@ const PageWithTwoTables = () => {
     pagination: {
       pageQueryKey: "ordersPage",
       sizeQueryKey: "ordersSize",
-      defaultPageSize: 25
+      defaultPageSize: 25,
     },
     sorting: { defaultSortKey: "date" },
   });
@@ -176,6 +176,7 @@ Manages table state (pagination, sorting, filtering, search) with optional URL s
 **Returns:** State management utilities and `.state` for API calls.
 
 **URL State Behavior:**
+
 - When `disableUrlState: false` (default): All state syncs to URL query parameters
 - When `disableUrlState: true`: All state stored in React state (in-memory only)
 - The flag applies to pagination, sorting, filters, and search
@@ -247,7 +248,7 @@ const table1State = useTableState({
   pagination: {
     pageQueryKey: "usersPage",
     sizeQueryKey: "usersSize",
-    defaultPageSize: 25
+    defaultPageSize: 25,
   },
   sorting: { defaultSortKey: "name" },
 });
@@ -256,7 +257,7 @@ const table2State = useTableState({
   pagination: {
     pageQueryKey: "ordersPage",
     sizeQueryKey: "ordersSize",
-    defaultPageSize: 50
+    defaultPageSize: 50,
   },
   sorting: { defaultSortKey: "date" },
 });
