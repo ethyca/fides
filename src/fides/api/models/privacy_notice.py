@@ -530,6 +530,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         # to prevent the dry update from being added to Session.new
         updated_attributes.pop("translations", [])
         updated_attributes.pop("children", [])
+        # The source PrivacyNotice may have cached/computed attributes (e.g., @cached_property)
+        # stored on the instance dict. These should not be included in historical payloads.
+        # For example, 'cookies' is cached on the PrivacyNotice instance when accessed.
+        updated_attributes.pop("cookies", None)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
@@ -676,6 +680,10 @@ def create_historical_record_for_notice_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
     history_data.pop("parent_id", None)
+    # The source PrivacyNotice may have cached/computed attributes (e.g., @cached_property)
+    # stored on the instance dict. These should not be included in historical payloads.
+    # For example, 'cookies' is cached on the PrivacyNotice instance when accessed.
+    history_data.pop("cookies", None)
 
     updated_translation_data: dict = create_historical_data_from_record(
         notice_translation
