@@ -16,12 +16,13 @@ import type {
 export const DEFAULT_FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
 
 /**
- * Default value for how long to set the stale-while-revalidate header for the /fides.js bundle for, in seconds.
- * This allows the client to use a stale bundle while a new one is being fetched.
- * This can be overridden via the FIDES_PRIVACY_CENTER__FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS
+ * Default value for how long stale content can be served for the /fides.js bundle, in seconds.
+ * This applies to both stale-while-revalidate (serve stale while fetching fresh) and
+ * stale-if-error (serve stale if origin fails).
+ * This can be overridden via the FIDES_PRIVACY_CENTER__FIDES_JS_SERVE_STALE_SECONDS
  * environment variable.
  */
-export const DEFAULT_FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS =
+export const DEFAULT_FIDES_JS_SERVE_STALE_SECONDS =
   DEFAULT_FIDES_JS_MAX_AGE_SECONDS * 24;
 
 const defaultMissingExperienceBehavior = (
@@ -64,11 +65,9 @@ const loadEnvironmentVariables = () => {
     FIDES_JS_MAX_AGE_SECONDS:
       Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS) ||
       DEFAULT_FIDES_JS_MAX_AGE_SECONDS,
-    FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS:
-      Number(
-        process.env
-          .FIDES_PRIVACY_CENTER__FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS,
-      ) || DEFAULT_FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS,
+    FIDES_JS_SERVE_STALE_SECONDS:
+      Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_SERVE_STALE_SECONDS) ||
+      DEFAULT_FIDES_JS_SERVE_STALE_SECONDS,
     MISSING_EXPERIENCE_BEHAVIOR: defaultMissingExperienceBehavior(
       process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
     ),

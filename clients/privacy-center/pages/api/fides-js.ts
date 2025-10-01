@@ -494,10 +494,10 @@ export default async function handler(
   // Instruct any caches to store this response, since these bundles do not change often
   const cacheHeaders: CacheControl = {
     "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
-    // Only set stale-while-revalidate if it is greater than 0
-    ...(serverSettings.FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS > 0 && {
-      "stale-while-revalidate":
-        serverSettings.FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS,
+    // Only set stale serving directives if greater than 0
+    ...(serverSettings.FIDES_JS_SERVE_STALE_SECONDS > 0 && {
+      "stale-while-revalidate": serverSettings.FIDES_JS_SERVE_STALE_SECONDS,
+      "stale-if-error": serverSettings.FIDES_JS_SERVE_STALE_SECONDS,
     }),
     public: true,
   };

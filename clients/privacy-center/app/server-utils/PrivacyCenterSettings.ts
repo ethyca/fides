@@ -37,7 +37,7 @@ export interface PrivacyCenterSettings {
   ROOT_PROPERTY_PATH: string | null; // (optional) force a property path to be fetched from the API. If "/foo" is set, it will attempt to return the property with "/foo" path.
   USE_API_CONFIG: boolean; // (optional) (default: false) when set to true, the privacy center will attempt to fetch a property from the API before falling back to the static config.
   FIDES_JS_MAX_AGE_SECONDS: number; // (optional) how long to cache the /fides.js bundle for, in seconds. Defaults to 1 hour (DEFAULT_FIDES_JS_MAX_AGE_SECONDS)
-  FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS: number; // (optional) how long to cache the /fides.js bundle for, in seconds. Defaults to 24 hours (DEFAULT_FIDES_JS_STALE_WHILE_REVALIDATE_SECONDS)
+  FIDES_JS_SERVE_STALE_SECONDS: number; // (optional) how long stale content can be served (for stale-while-revalidate and stale-if-error), in seconds. Defaults to 24 hours (DEFAULT_FIDES_JS_SERVE_STALE_SECONDS)
   MISSING_EXPERIENCE_BEHAVIOR: MissingExperienceBehaviors; // (optional) controls what Privacy Center does when the api call to fetch an experience fails
   LOG_LEVEL: LogLevels; // (optional) controls the log level of the Privacy Center. Defaults to info.
   ENABLE_EXTERNAL_TASK_PORTAL: boolean; // whether the external task portal is enabled
