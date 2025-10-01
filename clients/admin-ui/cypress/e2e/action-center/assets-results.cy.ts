@@ -325,15 +325,15 @@ describe("Action center Asset Results", () => {
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
       cy.getAntTableRow(rowUrns[0]).within(() => {
-        cy.findByRole("checkbox").should("be.checked");
+        cy.findByRole("checkbox").should("not.be.checked");
       });
       cy.getAntTableRow(rowUrns[2]).within(() => {
-        cy.findByRole("checkbox").should("be.checked");
+        cy.findByRole("checkbox").should("not.be.checked");
       });
       cy.getAntTableRow(rowUrns[3]).within(() => {
-        cy.findByRole("checkbox").should("be.checked");
+        cy.findByRole("checkbox").should("not.be.checked");
       });
-      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
     });
 
     describe("tab navigation", () => {

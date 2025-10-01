@@ -13,12 +13,14 @@ interface SystemCellProps {
   aggregateSystem: StagedResourceAPIResponse;
   monitorConfigId: string;
   readonly?: boolean;
+  onChange?: (systemKey: string) => void;
 }
 
 export const SystemCell = ({
   aggregateSystem,
   monitorConfigId,
   readonly,
+  onChange,
 }: SystemCellProps) => {
   const {
     resource_type: assetType,
@@ -62,6 +64,7 @@ export const SystemCell = ({
           : `${assetType} "${assetName}" has been assigned to ${newSystemName}.`,
         `Confirmed`,
       );
+      onChange?.(fidesKey);
     }
     setIsEditing(false);
   };
