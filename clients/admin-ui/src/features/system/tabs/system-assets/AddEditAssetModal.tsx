@@ -33,7 +33,7 @@ interface AddEditAssetModalProps extends Omit<ModalProps, "children"> {
 
 const FORM_COPY = `Create and configure assets (e.g. cookies, pixels, tags) for this system to ensure proper consent enforcement. Adding assets manually allows you to define key attributes, assign categories, and align them with compliance requirements.`;
 
-enum AssetType {
+export enum AssetType {
   COOKIE = "Cookie",
   BROWSER_REQUEST = "Browser Request",
   I_FRAME = "iFrame",
@@ -56,6 +56,7 @@ const validationSchema = Yup.object().shape({
 const DEFAULT_VALUES: Asset = {
   name: "",
   description: "",
+  duration: "",
   data_uses: [] as string[],
   domain: "",
   asset_type: "",
@@ -129,6 +130,10 @@ const AddEditAssetModal = ({
         validationSchema={validationSchema}
       >
         {({ values, isValid, dirty }) => {
+          const isCookieAsset =
+            !!values.asset_type && values.asset_type === AssetType.COOKIE;
+          const isNotCookieAsset =
+            !!values.asset_type && values.asset_type !== AssetType.COOKIE;
           return (
             <Form>
               <Flex vertical className="pb-6 pt-4">
@@ -172,21 +177,24 @@ const AddEditAssetModal = ({
                     label="Description"
                     variant="stacked"
                   />
-                  <Collapse
-                    in={
-                      !!values.asset_type &&
-                      values.asset_type !== AssetType.COOKIE
-                    }
-                  >
+                  <Collapse in={isCookieAsset}>
+                    <CustomTextInput
+                      id="duration"
+                      name="duration"
+                      label="Duration"
+                      variant="stacked"
+                      placeholder="e.g. '1 day', '30 minutes', '1 year'"
+                      tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
+                      isRequired={isCookieAsset}
+                    />
+                  </Collapse>
+                  <Collapse in={isNotCookieAsset}>
                     <CustomTextInput
                       id="base_url"
                       name="base_url"
                       label="Base URL"
                       variant="stacked"
-                      isRequired={
-                        !!values.asset_type &&
-                        values.asset_type !== AssetType.COOKIE
-                      }
+                      isRequired={isNotCookieAsset}
                     />
                   </Collapse>
                 </Flex>

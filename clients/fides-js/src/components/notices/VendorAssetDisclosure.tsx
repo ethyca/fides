@@ -1,0 +1,118 @@
+import { ComponentChildren } from "preact";
+
+import { Cookies } from "../../lib/consent-types";
+import { useI18n } from "../../lib/i18n/i18n-context";
+import DataUseToggle from "../DataUseToggle";
+
+export type CookieRecord = {
+  title: string;
+  description?: ComponentChildren;
+};
+
+const VendorAssetDisclosure = ({
+  cookiesByNotice,
+  onBack,
+}: {
+  cookiesByNotice: Array<{
+    noticeKey: string;
+    title: string;
+    cookies: Cookies[];
+  }>;
+  onBack: () => void;
+}) => {
+  const { i18n } = useI18n();
+  return (
+    <div>
+      <button
+        type="button"
+        className="fides-link-button"
+        onClick={onBack}
+        aria-label="back"
+      >
+        <span
+          className="fides-flex-center fides-back-link"
+          style={{ marginBottom: "12px" }}
+        >
+          {i18n.t("static.other.back")}
+        </span>
+      </button>
+      {cookiesByNotice.length >= 1 ? (
+        <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+          <strong>{i18n.t("static.other.vendors")}</strong>
+        </div>
+      ) : null}
+      <div className="fides-modal-notices" style={{ marginTop: "12px" }}>
+        {(() => {
+          // Group cookies across notices by system (vendor) name
+          const vendorToCookies = new Map<string, Cookies[]>();
+          cookiesByNotice.forEach((group) => {
+            (group.cookies || []).forEach((cookie) => {
+              const vendorName = cookie.system_name || "Other";
+              const arr = vendorToCookies.get(vendorName) || [];
+              arr.push(cookie);
+              vendorToCookies.set(vendorName, arr);
+            });
+          });
+
+          const vendorGroups = Array.from(vendorToCookies.entries());
+
+          return vendorGroups.map(([vendorName, vendorCookies]) => {
+            const hasRetentionInfo = vendorCookies.some(
+              (ck) => ck.duration != null && ck.duration !== "",
+            );
+            return (
+              <div key={`vendor-${vendorName}`}>
+                <DataUseToggle
+                  noticeKey={`vendor-${vendorName}`}
+                  title={vendorName}
+                  checked={false}
+                  onToggle={() => {}}
+                  includeToggle={false}
+                >
+                  <table className="fides-vendor-details-table">
+                    <thead>
+                      <tr>
+                        <th width={hasRetentionInfo ? "80%" : undefined}>
+                          {i18n.t("static.other.cookies")}
+                        </th>
+                        {hasRetentionInfo ? (
+                          <th width="20%" style={{ textAlign: "right" }}>
+                            {i18n.t("static.other.retention")}
+                          </th>
+                        ) : null}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendorCookies.map((ck) => (
+                        <tr key={`${vendorName}-${ck.name}`}>
+                          <td
+                            style={{ paddingBottom: "2px", paddingTop: "2px" }}
+                          >
+                            <div>{ck.name}</div>
+                            {ck.description ? (
+                              <div>
+                                {i18n.t("static.other.description")}:{" "}
+                                {ck.description}
+                              </div>
+                            ) : null}
+                          </td>
+                          {hasRetentionInfo ? (
+                            <td style={{ textAlign: "right" }}>
+                              {ck.duration ? ck.duration : "-"}
+                            </td>
+                          ) : null}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </DataUseToggle>
+              </div>
+            );
+          });
+        })()}
+      </div>
+    </div>
+  );
+};
+
+export default VendorAssetDisclosure;

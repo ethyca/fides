@@ -262,6 +262,7 @@ export const initialize = async ({
         apiOptions: options.apiOptions,
         requestMinimalTCF: false,
         propertyId: fides.config?.propertyId,
+        excludeNoticeAssetsBySystems: options.fidesDisabledSystems || undefined,
       });
     }
 
