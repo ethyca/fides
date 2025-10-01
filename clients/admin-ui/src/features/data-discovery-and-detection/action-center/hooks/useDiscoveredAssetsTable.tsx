@@ -526,7 +526,7 @@ export const useDiscoveredAssetsTable = ({
       const assets = selectedRows.map((asset) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const user_assigned_data_uses = uniq([
-          ...(asset.user_assigned_data_uses || asset.data_uses || []),
+          ...(asset.preferred_data_uses || []),
           ...newDataUses,
         ]);
         return {

@@ -28,12 +28,7 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  // eslint-disable-next-line no-nested-ternary
-  const currentDataUses = asset.user_assigned_data_uses?.length
-    ? asset.user_assigned_data_uses
-    : asset.data_uses?.length
-      ? asset.data_uses
-      : [];
+  const currentDataUses = asset.preferred_data_uses || [];
 
   const handleAddDataUse = async (newDataUse: string) => {
     const result = await updateAssetsDataUseMutation({
@@ -68,14 +63,10 @@ const DiscoveredAssetDataUseCell = ({
     }
   };
 
-  const dataUses = asset.user_assigned_data_uses?.length
-    ? asset.user_assigned_data_uses
-    : asset.data_uses;
-
   if (readonly) {
     return (
       <TagExpandableCell
-        values={dataUses?.map((d) => ({
+        values={currentDataUses?.map((d) => ({
           label: getDataUseDisplayName(d),
           key: d,
         }))}
@@ -95,7 +86,7 @@ const DiscoveredAssetDataUseCell = ({
             aria-label="Add data use"
           />
           <TagExpandableCell
-            values={dataUses?.map((d) => ({
+            values={currentDataUses?.map((d) => ({
               label: getDataUseDisplayName(d),
               key: d,
             }))}
