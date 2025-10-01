@@ -264,30 +264,23 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     ) -> List[Asset]:
         """
         Return cookies that match the notice data uses either exactly or as hierarchical descendants.
-        Deduplicate by object identity while preserving order.
+        Deduplicate by object identity; ordering is not guaranteed.
         """
-        seen: Set[int] = set()
-        ordered_cookies: List[Asset] = []
+        unique_cookies_by_id: Dict[int, Asset] = {}
 
         for notice_data_use in notice_data_uses or []:
             # Exact matches
             for cookie in cookies_by_data_use.get(notice_data_use, []):
-                key = id(cookie)
-                if key not in seen:
-                    seen.add(key)
-                    ordered_cookies.append(cookie)
+                unique_cookies_by_id[id(cookie)] = cookie
 
             # Hierarchical descendants: e.g., "analytics" matches "analytics.reporting"
             prefix = f"{notice_data_use}."
             for du_key, cookie_list in cookies_by_data_use.items():
                 if du_key.startswith(prefix):
                     for cookie in cookie_list:
-                        key = id(cookie)
-                        if key not in seen:
-                            seen.add(key)
-                            ordered_cookies.append(cookie)
+                        unique_cookies_by_id[id(cookie)] = cookie
 
-        return ordered_cookies
+        return list(unique_cookies_by_id.values())
 
     @cached_property
     def cookies(self) -> List[Asset]:

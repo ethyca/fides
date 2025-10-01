@@ -124,7 +124,7 @@ const useSystemAssetColumns = ({
   const duration = columnHelper.accessor((row) => row.duration, {
     id: "duration",
     cell: (props) =>
-      props.row.original.asset_type?.toLowerCase() === AssetType.COOKIE ? (
+      props.row.original.asset_type === AssetType.COOKIE ? (
         <DefaultCell value={props.getValue()} />
       ) : null,
     header: "Duration",
