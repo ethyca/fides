@@ -37,8 +37,8 @@ class EventAuditType(str, EnumType):
     digest_execution_failed = "digest.execution.failed"
     digest_execution_interrupted = "digest.execution.interrupted"
     digest_execution_resumed = "digest.execution.resumed"
-    digest_email_sent = "digest.email.sent"
-    digest_email_failed = "digest.email.failed"
+    digest_communications_sent = "digest.communications.sent"
+    digest_communications_failed = "digest.communications.failed"
     digest_checkpoint_created = "digest.checkpoint.created"
 
 
