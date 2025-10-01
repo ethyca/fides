@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base
@@ -34,17 +35,21 @@ def create_historical_data_from_record(resource: Base) -> Dict:
 
 def clone_object_attributes(resource: Base) -> Dict:
     """
-    Copies an objects attributes into a dictionary.
+    Build a dictionary of the SQLAlchemy-mapped column attributes for this resource.
 
-    Removes protected fields like the SQLAlchemy instance state and id.
+    Avoid copying the raw __dict__ to prevent cached/computed attributes (e.g.,
+    @cached_property) from leaking into historical payloads.
     """
-    cloned_attributes = resource.__dict__.copy()
-    # remove protected fields from the cloned dict
-    cloned_attributes.pop("_sa_instance_state", None)
-    cloned_attributes.pop("id", None)
-    # remove datetime fields
-    cloned_attributes.pop("created_at", None)
-    cloned_attributes.pop("updated_at", None)
+    mapper = sa_inspect(resource.__class__)
+    cloned_attributes: Dict = {}
+
+    # Collect only mapped column keys
+    for column in mapper.columns:
+        key = column.key
+        if key in ("id", "created_at", "updated_at"):
+            continue
+        cloned_attributes[key] = getattr(resource, key)
+
     return cloned_attributes
 
 

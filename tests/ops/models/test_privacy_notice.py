@@ -463,6 +463,35 @@ class TestPrivacyNoticeModel:
         assert notice_history.title == "Example privacy notice with updated title"
         assert notice_history.version == 2.0
 
+    def test_history_excludes_cached_properties(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        """Access cached property, trigger history creation, assert no 'cookies' on history."""
+        # Access cached property to ensure it would be cached on the instance
+        _ = privacy_notice.cookies
+
+        # Trigger a history-creating update
+        privacy_notice.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "Updated title for cached test",
+                    }
+                ]
+            },
+        )
+
+        # Fetch latest history and ensure it does not have a 'cookies' attribute
+        latest_history = (
+            PrivacyNoticeHistory.query(db)
+            .order_by(PrivacyNoticeHistory.created_at.desc())
+            .first()
+        )
+        assert latest_history is not None
+        assert not hasattr(latest_history, "cookies")
+
         # and that previous record hasn't changed
         notice_history = (
             PrivacyNoticeHistory.query(db)
