@@ -323,7 +323,7 @@ const { tableProps, selectionProps } = useAntTable(tableState, {
 4. **Use type-safe column keys** for sorting and filtering
 5. **Use custom query keys** when multiple tables share a page (e.g., `pageQueryKey: "table1Page"`)
 6. **Disable URL state** for modals or drawers where URL sync doesn't make sense
-8. **Test with keyboard and screen readers** for accessibility
+7. **Test with keyboard and screen readers** for accessibility
 
 ## Accessibility
 
