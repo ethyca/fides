@@ -725,13 +725,12 @@ describe("Action center Asset Results", () => {
     it("should show preferred_data_uses as categories of consent", () => {
       // Rows with preferred_data_uses should display their consent category
       cy.getAntTableRow(rowUrns[2]).within(() => {
-        cy.contains("analytics").should("exist");
+        cy.getAntCellWithinRow(3).should("contain", "analytics");
       });
       cy.getAntTableRow(rowUrns[3]).within(() => {
-        cy.contains("marketing.advertising.first_party.targeted").should(
-          "exist",
-        );
-        cy.contains("analytics").should("exist");
+        cy.getAntCellWithinRow(3)
+          .should("contain", "marketing.advertising.first_party.targeted")
+          .should("contain", "analytics");
       });
 
       // All rows should show the add button
@@ -764,8 +763,8 @@ describe("Action center Asset Results", () => {
     it("should allow removing categories of consent from assets", () => {
       // Remove the only category of consent
       cy.getAntTableRow(rowUrns[2]).within(() => {
-        cy.contains("analytics")
-          .should("exist")
+        cy.getAntCellWithinRow(3)
+          .should("contain", "analytics")
           .parent()
           .findByLabelText("Remove data use")
           .click({ force: true });
@@ -786,8 +785,8 @@ describe("Action center Asset Results", () => {
 
       // Remove a single category of consent
       cy.getAntTableRow(rowUrns[3]).within(() => {
-        cy.contains("First Party Personalized Advertising")
-          .should("exist")
+        cy.getAntCellWithinRow(3)
+          .should("contain", "First Party Personalized Advertising")
           .parent()
           .findByLabelText("Remove data use")
           .click({ force: true });
