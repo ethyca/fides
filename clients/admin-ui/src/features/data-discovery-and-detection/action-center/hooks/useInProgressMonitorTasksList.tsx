@@ -105,7 +105,7 @@ export const useInProgressMonitorTasksList = () => {
       pagination: {
         current: pageIndex,
         pageSize,
-        total: data?.total || 0,
+        total: data?.total,
         showSizeChanger,
         showQuickJumper: false,
         onChange: (page: number) => updatePageIndex(page),

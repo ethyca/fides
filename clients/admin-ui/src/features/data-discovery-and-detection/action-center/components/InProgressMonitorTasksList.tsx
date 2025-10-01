@@ -10,6 +10,7 @@ import { useCallback } from "react";
 
 import { MonitorTaskInProgressResponse } from "~/types/api";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+import { capitalize } from "~/features/common/utils";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
@@ -26,7 +27,7 @@ const formatStatusForDisplay = (
 
   return status
     .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(capitalize)
     .join(" ");
 };
 

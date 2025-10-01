@@ -149,7 +149,12 @@ const ActionCenterPage = () => {
         }))}
         selectedKeys={[activeTab]}
         onClick={async (menuInfo) => {
-          await onTabChange(menuInfo.key as TopLevelActionCenterTabHash);
+          const validKey = Object.values(TopLevelActionCenterTabHash).find(
+            (value) => value === menuInfo.key,
+          );
+          if (validKey) {
+            await onTabChange(validKey);
+          }
         }}
         className="mb-4"
         data-testid="action-center-tabs"

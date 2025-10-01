@@ -12,6 +12,7 @@ import {
   useToast,
 } from "fidesui";
 
+import { capitalize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -34,7 +35,7 @@ const formatStatusForDisplay = (status: string): string => {
 
   return status
     .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(capitalize)
     .join(" ");
 };
 
@@ -189,14 +190,14 @@ export const InProgressMonitorTaskItem = ({
   };
 
   return (
-    <div {...props} style={{ width: "100%" }}>
+    <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
         <Col span={17} className="align-middle">
           <Space align="center" size={8} wrap>
             {logoSource && (
               <ConnectionTypeLogo data={logoSource} boxSize="24px" />
             )}
-            <Title level={5} style={{ margin: 0 }}>
+            <Title level={5} className="m-0">
               {taskTitle}
             </Title>
             {!isInProgress && (
@@ -226,7 +227,7 @@ export const InProgressMonitorTaskItem = ({
                   </Button>
                 )}
                 <Popover
-                  content={<div style={{ maxWidth: 360 }}>{task.message}</div>}
+                  content={<div className="max-w-[360px]">{task.message}</div>}
                   title={null}
                   trigger="click"
                 >
@@ -239,7 +240,7 @@ export const InProgressMonitorTaskItem = ({
           </Space>
         </Col>
         <Col span={4} className="flex items-center justify-end">
-          <Text type="secondary" style={{ fontSize: "12px" }}>
+          <Text type="secondary" size="sm">
             {monitorGroupLabel}
           </Text>
         </Col>
@@ -247,7 +248,7 @@ export const InProgressMonitorTaskItem = ({
           {isInProgress ? (
             <Spinner size="sm" color="primary" thickness="2px" speed="0.6s" />
           ) : (
-            <Text type="secondary" style={{ fontSize: "12px" }}>
+            <Text type="secondary" size="sm">
               {formatDistanceStrict(new Date(task.updated_at), new Date(), {
                 addSuffix: true,
               })}
