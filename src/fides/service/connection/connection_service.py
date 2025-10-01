@@ -154,7 +154,7 @@ class ConnectionService:
         event_details, description = generate_connection_secrets_event_details(
             EventAuditType.connection_secrets_updated,
             connection_config,
-            unvalidated_secrets,  # type: ignore[arg-type]
+            merged_secrets,  # type: ignore[arg-type]
         )
         self.event_audit_service.create_event_audit(
             EventAuditType.connection_secrets_updated,
