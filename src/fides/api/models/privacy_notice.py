@@ -676,8 +676,6 @@ def create_historical_record_for_notice_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
     history_data.pop("parent_id", None)
-    # Drop cached/computed attributes that are not mapped on the history model
-    history_data.pop("cookies", None)
 
     updated_translation_data: dict = create_historical_data_from_record(
         notice_translation
