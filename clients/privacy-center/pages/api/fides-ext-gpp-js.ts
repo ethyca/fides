@@ -13,6 +13,33 @@ import { LOCATION_HEADERS } from "~/common/geolocation";
 // one hour, how long the client should cache gpp-ext.js for
 const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
 
+// File path for the GPP extension bundle
+const FIDES_GPP_JS_PATH = "public/lib/fides-ext-gpp.js";
+
+// In-memory cache for the GPP extension bundle to avoid repeated file I/O
+let cachedGppJs: string = "";
+let gppBundleLoaded: boolean = false;
+
+/**
+ * Load the GPP extension bundle into memory to avoid repeated file I/O.
+ * This is called on the first request and caches the bundle for the lifetime
+ * of the server process.
+ */
+async function loadGppBundle(): Promise<void> {
+  if (gppBundleLoaded) {
+    return;
+  }
+
+  try {
+    const gppJsBuffer = await fsPromises.readFile(FIDES_GPP_JS_PATH);
+    cachedGppJs = gppJsBuffer.toString();
+    gppBundleLoaded = true;
+  } catch (error) {
+    gppBundleLoaded = false;
+    throw new Error(`Failed to load GPP extension bundle: ${error}`);
+  }
+}
+
 /**
  * @swagger
  * /fides-ext-gpp.js:
@@ -34,10 +61,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const gppJsFile = "public/lib/fides-ext-gpp.js";
+  // Load bundle into memory cache on first request to avoid file I/O
+  await loadGppBundle();
 
-  const gppJsBuffer = await fsPromises.readFile(gppJsFile);
-  const gppJs: string = gppJsBuffer.toString();
+  const gppJs: string = cachedGppJs;
   if (!gppJs || gppJs === "") {
     throw new Error("Unable to load latest gpp-ext.js script from server!");
   }
