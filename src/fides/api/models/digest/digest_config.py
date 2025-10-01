@@ -60,6 +60,12 @@ class DigestConfig(Base):
         back_populates="digest_config",
         cascade="all, delete-orphan",
     )
+    executions = relationship(
+        "DigestTaskExecution",
+        back_populates="digest_config",
+        cascade="all, delete-orphan",
+        order_by="DigestTaskExecution.created_at.desc()",
+    )
 
     def get_receiver_condition(
         self, db: Session
