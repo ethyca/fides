@@ -118,7 +118,7 @@ const MonitorConfigTab = ({
         <SharedConfigModal />
         <Tooltip title={addMonitorButtonTooltip}>
           <span>
-            {/* This span wrapper is needed to ensure the tooltip works when the butotn is disabled */}
+            {/* This span wrapper is needed to ensure the tooltip works when the button is disabled */}
             <Button
               onClick={modal.onOpen}
               icon={<MonitorIcon />}
