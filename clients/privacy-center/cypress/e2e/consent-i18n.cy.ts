@@ -131,7 +131,7 @@ const ENGLISH_MODAL: TestModalTranslations = {
   accept_button_label: "Opt in to all",
   acknowledge_button_label: "OK",
   gpc_title: "Global Privacy Control detected",
-  gpc_description: "Your global privacy control preference has been honored.",
+  gpc_description: "We have detected your Global Privacy Control signal",
   gpc_label: "Global Privacy Control",
   gpc_applied_label: "Applied",
   gpc_overridden_label: "Overridden",
