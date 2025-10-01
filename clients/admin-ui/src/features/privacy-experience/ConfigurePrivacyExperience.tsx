@@ -80,6 +80,23 @@ const validationSchema = Yup.object().shape({
   translations: Yup.array().when("component", ([component], schema) =>
     schema.of(translationSchema({ componentType: component })),
   ),
+  allow_vendor_asset_disclosure: Yup.boolean().nullable(),
+  asset_disclosure_include_types: Yup.array()
+    .of(Yup.string())
+    .when(
+      ["allow_vendor_asset_disclosure", "component"],
+      ([allow, component], schema) => {
+        if (
+          allow &&
+          (component === ComponentType.BANNER_AND_MODAL ||
+            component === ComponentType.MODAL)
+        ) {
+          return schema.min(1).label("Asset types to disclose");
+        }
+        // When disabled, explicitly make this field optional and nullable so it doesn't block saves
+        return schema.notRequired().nullable();
+      },
+    ),
 });
 
 const ConfigurePrivacyExperience = ({

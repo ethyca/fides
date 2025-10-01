@@ -157,3 +157,15 @@ h6 {
     }
   }
 }
+
+.ant-select-dropdown {
+  & .ant-select-item-group {
+    font-weight: 600;
+    font-size: var(--ant-select-option-font-size);
+    color: var(--ant-color-text);
+    border-radius: 0;
+    &:not(:first-child) {
+      border-top: 1px solid var(--ant-color-border);
+    }
+  }
+}

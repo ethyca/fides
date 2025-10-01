@@ -145,6 +145,7 @@ export const AddNewSystemModal = ({
         if (toastOnSuccess) {
           successAlert(`${data.name} has been added to your system inventory.`);
         }
+        handleCloseModal();
       }
     } else {
       const payload = {
