@@ -11,6 +11,12 @@ def test_get_email_template_returns_template():
     assert type(result) == Template
 
 
+def test_get_email_template_manual_task_digest():
+    """Test that manual task digest template loads successfully."""
+    result = get_email_template(MessagingActionType.MANUAL_TASK_DIGEST)
+    assert type(result) == Template
+
+
 def test_get_email_template_exception():
     fake_template = "templateThatDoesNotExist"
     with pytest.raises(EmailTemplateUnhandledActionType) as e:

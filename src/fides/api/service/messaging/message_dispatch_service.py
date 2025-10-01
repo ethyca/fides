@@ -494,6 +494,24 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             template_variables=variables,
         )
 
+    if action_type == MessagingActionType.MANUAL_TASK_DIGEST:
+        base_template = get_email_template(action_type)
+
+        variables = {
+            "vendor_contact_name": body_params.vendor_contact_name,
+            "organization_name": body_params.organization_name,
+            "portal_url": body_params.portal_url,
+            "imminent_task_count": body_params.imminent_task_count,
+            "upcoming_task_count": body_params.upcoming_task_count,
+            "company_logo_url": body_params.company_logo_url,
+        }
+
+        return EmailForActionType(
+            subject=f"Weekly DSR Summary from {body_params.organization_name}",
+            body=base_template.render(variables),
+            template_variables=variables,
+        )
+
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"
