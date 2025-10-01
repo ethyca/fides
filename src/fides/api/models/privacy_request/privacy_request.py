@@ -369,7 +369,7 @@ class PrivacyRequest(
         return {
             "id": self.id,
             "external_id": self.external_id,
-            "status": self.status.value,
+            "status": self.status.value if self.status is not None else None,
             "requested_at": (
                 self.requested_at.isoformat() if self.requested_at else None
             ),
