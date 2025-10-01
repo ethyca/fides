@@ -41,8 +41,8 @@ class DigestTaskExecution(
     # Progress tracking
     total_recipients = Column(Integer, nullable=True)
     processed_recipients = Column(Integer, nullable=False, default=0)
-    successful_emails = Column(Integer, nullable=False, default=0)
-    failed_emails = Column(Integer, nullable=False, default=0)
+    successful_communications = Column(Integer, nullable=False, default=0)
+    failed_communications = Column(Integer, nullable=False, default=0)
 
     # State persistence for resumption
     execution_state = Column(JSONB, nullable=True, default={})
@@ -87,8 +87,8 @@ class DigestTaskExecution(
     ) -> None:
         """Update execution progress and create checkpoint."""
         self.processed_recipients = processed_count
-        self.successful_emails = successful_count
-        self.failed_emails = failed_count
+        self.successful_communications = successful_count
+        self.failed_communications = failed_count
         self.processed_user_ids = processed_user_ids
         self.last_checkpoint_at = func.now()
 
@@ -128,6 +128,6 @@ class DigestTaskExecution(
             "processed_user_ids": self.processed_user_ids or [],
             "execution_state": self.execution_state or {},
             "processed_count": self.processed_recipients or 0,
-            "successful_count": self.successful_emails,
-            "failed_count": self.failed_emails,
+            "successful_count": self.successful_communications,
+            "failed_count": self.failed_communications,
         }

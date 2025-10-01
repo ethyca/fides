@@ -13,8 +13,8 @@ def assert_default_values(execution: DigestTaskExecution):
     assert execution.id is not None
     assert execution.status == ExecutionLogStatus.pending
     assert execution.processed_recipients == 0
-    assert execution.successful_emails == 0
-    assert execution.failed_emails == 0
+    assert execution.successful_communications == 0
+    assert execution.failed_communications == 0
     assert execution.execution_state == {}
     assert execution.processed_user_ids == []
     assert execution.started_at is None
@@ -131,8 +131,8 @@ class TestDigestTaskExecutionCreation:
                 "execution_state": complex_state,
                 "processed_user_ids": processed_users,
                 "processed_recipients": 3,
-                "successful_emails": 2,
-                "failed_emails": 1,
+                "successful_communications": 2,
+                "failed_communications": 1,
             },
         )
 
@@ -212,8 +212,8 @@ class TestDigestTaskExecutionProgressTracking:
         )
 
         assert digest_execution.processed_recipients == 3
-        assert digest_execution.successful_emails == 2
-        assert digest_execution.failed_emails == 1
+        assert digest_execution.successful_communications == 2
+        assert digest_execution.failed_communications == 1
         assert digest_execution.processed_user_ids == processed_users
         assert digest_execution.last_checkpoint_at is not None
 
@@ -238,8 +238,8 @@ class TestDigestTaskExecutionProgressTracking:
         )
 
         assert digest_execution.processed_recipients == 2
-        assert digest_execution.successful_emails == 2
-        assert digest_execution.failed_emails == 0
+        assert digest_execution.successful_communications == 2
+        assert digest_execution.failed_communications == 0
         assert digest_execution.processed_user_ids == processed_users
         assert digest_execution.execution_state == execution_state
         assert digest_execution.execution_state["current_batch"] == 1
@@ -299,8 +299,8 @@ class TestDigestTaskExecutionProgressTracking:
         )
 
         assert digest_execution.processed_recipients == 10
-        assert digest_execution.successful_emails == 8
-        assert digest_execution.failed_emails == 2
+        assert digest_execution.successful_communications == 8
+        assert digest_execution.failed_communications == 2
         assert len(digest_execution.processed_user_ids) == 10
 
 
@@ -559,8 +559,8 @@ class TestDigestTaskExecutionQueries:
                 "celery_task_id": "completed-task",
                 "total_recipients": 15,
                 "processed_recipients": 15,
-                "successful_emails": 14,
-                "failed_emails": 1,
+                "successful_communications": 14,
+                "failed_communications": 1,
             },
         )
         executions.append(exec3)

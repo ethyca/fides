@@ -44,8 +44,8 @@ def upgrade():
         ),
         sa.Column("total_recipients", sa.Integer(), nullable=True),
         sa.Column("processed_recipients", sa.Integer(), nullable=False),
-        sa.Column("successful_emails", sa.Integer(), nullable=False),
-        sa.Column("failed_emails", sa.Integer(), nullable=False),
+        sa.Column("successful_communications", sa.Integer(), nullable=False),
+        sa.Column("failed_communications", sa.Integer(), nullable=False),
         sa.Column(
             "execution_state", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
