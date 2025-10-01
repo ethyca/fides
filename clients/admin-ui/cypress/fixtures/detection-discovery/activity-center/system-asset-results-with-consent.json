@@ -2,7 +2,10 @@
   "items": [
     {
       "urn": "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/11020051272",
-      "user_assigned_data_categories": [],
+      "user_assigned_data_categories": [
+        "marketing.advertising.first_party.targeted"
+      ],
+      "user_assigned_data_uses": null,
       "system_key": "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       "name": "11020051272",
       "description": null,
@@ -15,7 +18,8 @@
       "locations": ["USA", "Canada"],
       "with_consent": false,
       "consent_aggregated": "without_consent",
-      "data_uses": [],
+      "data_uses": ["marketing.advertising.first_party.targeted"],
+      "preferred_data_uses": [],
       "vendor_id": "fds.1046",
       "system_id": "ctl_e0ac4744-0f2e-4feb-b281-5877f9e464d1",
       "source_modified": null,
@@ -40,6 +44,7 @@
     {
       "urn": "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",
       "user_assigned_data_categories": [],
+      "user_assigned_data_uses": null,
       "system_key": "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       "name": "collect",
       "description": null,
@@ -53,6 +58,7 @@
       "with_consent": false,
       "consent_aggregated": "without_consent",
       "data_uses": [],
+      "preferred_data_uses": [],
       "vendor_id": "fds.1046",
       "system_id": "ctl_e0ac4744-0f2e-4feb-b281-5877f9e464d1",
       "source_modified": null,
@@ -77,6 +83,7 @@
     {
       "urn": "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/anchor",
       "user_assigned_data_categories": [],
+      "user_assigned_data_uses": null,
       "system_key": "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       "name": "anchor",
       "description": null,
@@ -89,7 +96,8 @@
       "locations": ["USA", "Canada"],
       "with_consent": false,
       "consent_aggregated": "pre_consent",
-      "data_uses": [],
+      "data_uses": ["analytics"],
+      "preferred_data_uses": ["analytics"],
       "vendor_id": "fds.1046",
       "system_id": "ctl_e0ac4744-0f2e-4feb-b281-5877f9e464d1",
       "source_modified": null,
@@ -114,6 +122,10 @@
     {
       "urn": "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
       "user_assigned_data_categories": [],
+      "user_assigned_data_uses": [
+        "analytics",
+        "marketing.advertising.first_party.targeted"
+      ],
       "system_key": "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       "name": "697301175",
       "description": null,
@@ -127,6 +139,10 @@
       "with_consent": true,
       "consent_aggregated": "with_consent",
       "data_uses": [],
+      "preferred_data_uses": [
+        "analytics",
+        "marketing.advertising.first_party.targeted"
+      ],
       "vendor_id": "fds.1046",
       "system_id": "ctl_e0ac4744-0f2e-4feb-b281-5877f9e464d1",
       "source_modified": null,
