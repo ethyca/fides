@@ -763,11 +763,13 @@ describe("Action center Asset Results", () => {
     it("should allow removing categories of consent from assets", () => {
       // Remove the only category of consent
       cy.getAntTableRow(rowUrns[2]).within(() => {
-        cy.getAntCellWithinRow(3)
-          .should("contain", "analytics")
-          .parent()
-          .findByLabelText("Remove data use")
-          .click({ force: true });
+        cy.getAntCellWithinRow(3).within(() => {
+          cy.contains("analytics")
+            .should("exist")
+            .parent()
+            .findByLabelText("Remove data use")
+            .click({ force: true });
+        });
       });
       // Since we removed the only category of consent, user_assigned_data_uses should be empty
       cy.wait("@patchAssets").then((interception) => {
@@ -785,11 +787,13 @@ describe("Action center Asset Results", () => {
 
       // Remove a single category of consent
       cy.getAntTableRow(rowUrns[3]).within(() => {
-        cy.getAntCellWithinRow(3)
-          .should("contain", "First Party Personalized Advertising")
-          .parent()
-          .findByLabelText("Remove data use")
-          .click({ force: true });
+        cy.getAntCellWithinRow(3).within(() => {
+          cy.contains("First Party Personalized Advertising")
+            .should("exist")
+            .parent()
+            .findByLabelText("Remove data use")
+            .click({ force: true });
+        });
       });
       // Should still have the other category of consent
       cy.wait("@patchAssets").then((interception) => {
