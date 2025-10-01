@@ -10,12 +10,46 @@ import toml
 from click import echo
 from pydantic_settings import BaseSettings
 
+from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.cli.utils import request_analytics_consent
 from fides.config import FidesConfig, build_config
 from fides.config.utils import replace_config_value
 
 CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
 HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}"
+
+
+def _ensure_security_credentials(
+    config: FidesConfig,
+) -> Tuple[FidesConfig, Dict[str, str]]:
+    """Populate required security credentials if they are missing."""
+
+    generated: Dict[str, str] = {}
+    security_lengths = {
+        "app_encryption_key": config.security.aes_encryption_key_length,
+        "oauth_root_client_id": config.security.oauth_client_id_length_bytes,
+        "oauth_root_client_secret": config.security.oauth_client_secret_length_bytes,
+    }
+
+    config_dict = config.model_dump(mode="json")
+    security_dict = config_dict.setdefault("security", {})
+
+    for key, length in security_lengths.items():
+        if not security_dict.get(key):
+            generated_value = generate_secure_random_string(length)
+            security_dict[key] = generated_value
+            generated[key] = generated_value
+
+    if generated:
+        config = build_config(config_dict)
+
+    return config, generated
+
+
+def _format_string_value(value: str) -> str:
+    """Format a string literal for the generated TOML file."""
+
+    return f'"{value}" # string'
 
 
 def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
@@ -255,6 +289,9 @@ def create_and_update_config_file(
     # request explicit consent for analytics collection
     config = request_analytics_consent(config=config, opt_in=opt_in)
 
+    # ensure required security credentials are present
+    config, generated_security_values = _ensure_security_credentials(config)
+
     # create the config file as needed
     config_path = create_config_file(
         config=config, fides_directory_location=fides_directory_location
@@ -267,5 +304,13 @@ def create_and_update_config_file(
             key="analytics_opt_out",
             old_value="true",
             new_value="false",
+        )
+
+    for key, value in generated_security_values.items():
+        replace_config_value(
+            fides_directory_location=fides_directory_location,
+            key=key,
+            old_value='"" # string',
+            new_value=_format_string_value(value),
         )
     return (config, config_path)
