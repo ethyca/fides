@@ -42,6 +42,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed a bug that prevented users from removing categories of consent from web monitor resources [#6679](https://github.com/ethyca/fides/pull/6679)
 - Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
 
+### Developer Experience
+- Added `disableUrlState` option to pagination, sorting, table state, and search hooks to support in-memory state management without URL synchronization [#6685](https://github.com/ethyca/fides/pull/6685)
+
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
 ### Added
