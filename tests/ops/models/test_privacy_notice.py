@@ -17,7 +17,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
-from fides.api.models.sql_models import PrivacyDeclaration
+from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -995,6 +995,217 @@ class TestPrivacyNoticeModel:
             f"Expected no cookies for privacy notice with empty data uses, "
             f"but found {len(cookies)}: {[c.name for c in cookies]}. "
         )
+
+    def test_group_cookies_by_data_use(self):
+        """Ensure cookies are grouped under each of their data uses accurately."""
+        # Create unsaved assets sufficient for grouping logic
+        a1 = Asset(name="a1", asset_type="Cookie", data_uses=["analytics", "marketing.advertising"])  # type: ignore[arg-type]
+        a2 = Asset(name="a2", asset_type="Cookie", data_uses=["analytics.reporting"])  # type: ignore[arg-type]
+        a3 = Asset(name="a3", asset_type="Cookie", data_uses=["marketing"])  # type: ignore[arg-type]
+
+        grouped = PrivacyNotice._group_cookies_by_data_use([a1, a2, a3])
+
+        # Assert keys and contents precisely
+        assert set(grouped.keys()) == {
+            "analytics",
+            "marketing.advertising",
+            "analytics.reporting",
+            "marketing",
+        }
+        assert grouped["analytics"] == [a1]
+        assert grouped["marketing.advertising"] == [a1]
+        assert grouped["analytics.reporting"] == [a2]
+        assert grouped["marketing"] == [a3]
+
+    def test_select_cookies_for_notice_data_uses_dedup_and_hierarchy(self):
+        """Selecting supports exact + hierarchical matches and dedupes the same Asset instance."""
+        # Same asset appears under both an exact and a hierarchical child data_use
+        shared = Asset(name="shared", asset_type="Cookie", data_uses=["analytics", "analytics.reporting"])  # type: ignore[arg-type]
+        child_only = Asset(name="child", asset_type="Cookie", data_uses=["analytics.reporting.dashboard"])  # type: ignore[arg-type]
+        other = Asset(name="other", asset_type="Cookie", data_uses=["functional.storage"])  # type: ignore[arg-type]
+
+        cookies_by_data_use = {
+            "analytics": [shared],
+            "analytics.reporting": [shared],
+            "analytics.reporting.dashboard": [child_only],
+            "functional.storage": [other],
+        }
+
+        # Notice asks for parent "analytics"; should include shared and child_only (hierarchical), but not other.
+        selected = PrivacyNotice._select_cookies_for_notice_data_uses(
+            ["analytics"], cookies_by_data_use
+        )
+        names = sorted([c.name for c in selected])
+        assert names == ["child", "shared"]
+
+        # No matches
+        assert (
+            PrivacyNotice._select_cookies_for_notice_data_uses(
+                ["marketing"], cookies_by_data_use
+            )
+            == []
+        )
+
+    def test_query_cookie_assets_for_data_uses_hierarchy_and_exclusions(
+        self, db: Session, system: System, system_third_party_sharing: System
+    ):
+        """Querying finds exact and hierarchical matches, and can exclude by System fides_key."""
+        # Clean slate
+        db.query(Asset).filter(Asset.asset_type == "Cookie").delete()
+        db.commit()
+
+        # Create cookies on two different systems and one without a system
+        asset_exact_parent = Asset.create(
+            db,
+            data={
+                "name": "parent_marketing",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+                "system_id": system.id,
+                "data_uses": ["marketing"],
+            },
+            check_name=False,
+        )
+        asset_child = Asset.create(
+            db,
+            data={
+                "name": "child_marketing_advertising",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+                "system_id": system_third_party_sharing.id,
+                "data_uses": ["marketing.advertising.reporting"],
+            },
+            check_name=False,
+        )
+        asset_nonmatch = Asset.create(
+            db,
+            data={
+                "name": "analytics_only",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+                "data_uses": ["analytics.reporting"],
+            },
+            check_name=False,
+        )
+
+        try:
+            # Query with parent data_use should include exact and hierarchical children
+            results = PrivacyNotice._query_cookie_assets_for_data_uses(
+                db, {"marketing"}
+            )
+            result_names = {r.name for r in results}
+            assert result_names == {"parent_marketing", "child_marketing_advertising"}
+
+            # Exclude cookies from the first system only
+            excluded = PrivacyNotice._query_cookie_assets_for_data_uses(
+                db,
+                {"marketing"},
+                exclude_cookies_from_systems={system.fides_key},
+            )
+            excluded_names = {r.name for r in excluded}
+            assert excluded_names == {"child_marketing_advertising"}
+
+            # Excluding both systems yields none for this data_use
+            excluded_all = PrivacyNotice._query_cookie_assets_for_data_uses(
+                db,
+                {"marketing"},
+                exclude_cookies_from_systems={
+                    system.fides_key,
+                    system_third_party_sharing.fides_key,
+                },
+            )
+            assert excluded_all == []
+        finally:
+            for asset in (asset_exact_parent, asset_child, asset_nonmatch):
+                db.delete(asset)
+            db.commit()
+
+    def test_load_cookie_data_for_notices_bulk_preload_and_exclusions(
+        self,
+        db: Session,
+        privacy_notice: PrivacyNotice,
+        privacy_notice_2: PrivacyNotice,
+        system: System,
+        system_third_party_sharing: System,
+    ):
+        """Bulk loader should pre-populate `cookies` for each notice and honor exclusions."""
+        # Clear any existing cookie assets
+        db.query(Asset).filter(Asset.asset_type == "Cookie").delete()
+        db.commit()
+
+        # Set distinct data_uses across notices
+        privacy_notice.data_uses = ["marketing"]
+        privacy_notice.save(db)
+        privacy_notice_2.data_uses = ["third_party_sharing"]
+        privacy_notice_2.save(db)
+
+        # Cookies for both notices
+        cookie_marketing_sys1 = Asset.create(
+            db,
+            data={
+                "name": "mkting_s1",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+                "system_id": system.id,
+                "data_uses": ["marketing.advertising"],
+            },
+            check_name=False,
+        )
+        cookie_marketing_sys2 = Asset.create(
+            db,
+            data={
+                "name": "mkting_s2",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+                "system_id": system_third_party_sharing.id,
+                "data_uses": ["marketing.advertising.first_party"],
+            },
+            check_name=False,
+        )
+        cookie_tps_sys2 = Asset.create(
+            db,
+            data={
+                "name": "tps_s2",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+                "system_id": system_third_party_sharing.id,
+                "data_uses": ["third_party_sharing"],
+            },
+            check_name=False,
+        )
+
+        try:
+            # Preload with exclusion of system_third_party_sharing; notice 1 should only see mkting_s1
+            PrivacyNotice.load_cookie_data_for_notices(
+                db,
+                [privacy_notice, privacy_notice_2],
+                exclude_cookies_from_systems={system_third_party_sharing.fides_key},
+            )
+
+            names_notice_1 = sorted([c.name for c in privacy_notice.cookies])
+            assert names_notice_1 == ["mkting_s1"]
+
+            # Notice 2 should have no cookies due to exclusion
+            assert [c.name for c in privacy_notice_2.cookies] == []
+
+            # Now preload again without exclusions; both notices should be populated
+            PrivacyNotice.load_cookie_data_for_notices(
+                db,
+                [privacy_notice, privacy_notice_2],
+                exclude_cookies_from_systems=None,
+            )
+
+            names_notice_1 = sorted([c.name for c in privacy_notice.cookies])
+            assert names_notice_1 == ["mkting_s1", "mkting_s2"]
+            assert sorted([c.name for c in privacy_notice_2.cookies]) == ["tps_s2"]
+        finally:
+            for asset in (
+                cookie_marketing_sys1,
+                cookie_marketing_sys2,
+                cookie_tps_sys2,
+            ):
+                db.delete(asset)
+            db.commit()
 
 
 class TestHierarchicalNotices:

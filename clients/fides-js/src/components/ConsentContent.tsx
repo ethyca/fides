@@ -12,6 +12,11 @@ export interface ConsentContentProps {
   className?: string;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
+  headerContent: {
+    title: string;
+    description: string;
+  };
+  isVendorAssetDisclosureView?: boolean;
 }
 
 const ConsentContent = ({
@@ -20,11 +25,12 @@ const ConsentContent = ({
   renderModalFooter,
   children,
   onVendorPageClick,
+  headerContent,
+  isVendorAssetDisclosureView,
 }: ConsentContentProps) => {
+  const { title, description } = headerContent;
   const { i18n } = useI18n();
-  const title = i18n.t("exp.title");
-  const description = i18n.t("exp.description");
-  const showGpcInfo = getConsentContext().globalPrivacyControl;
+  const gpcEnabled = getConsentContext().globalPrivacyControl;
   const gpcTitle = i18n.t("static.gpc.title");
   const gpcDescription = i18n.t("static.gpc.description");
 
@@ -53,7 +59,7 @@ const ConsentContent = ({
               allowHTMLDescription={window.Fides?.options?.allowHTMLDescription}
             />
           </p>
-          {showGpcInfo && (
+          {!isVendorAssetDisclosureView && gpcEnabled && (
             <GpcInfo title={gpcTitle} description={gpcDescription} />
           )}
           {children}
