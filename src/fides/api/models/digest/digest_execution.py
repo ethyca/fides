@@ -1,13 +1,4 @@
-"""
-Models for tracking digest task execution state and progress.
-
-This module provides database models to track digest task execution state,
-enabling graceful resumption after worker interruptions.
-"""
-
-import enum
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -16,21 +7,15 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base
-from fides.api.db.util import EnumColumn
-from fides.api.models.worker_task import WorkerTask
+from fides.api.models.worker_task import ExecutionLogStatus, WorkerTask
+
+if TYPE_CHECKING:
+    from fides.api.models.digest.digest_config import DigestConfig
 
 
-class DigestExecutionStatus(enum.Enum):
-    """Status enum for digest task execution tracking."""
-
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    INTERRUPTED = "interrupted"
-
-
-class DigestTaskExecution(WorkerTask, Base):
+class DigestTaskExecution(
+    WorkerTask, Base
+):  # pylint: disable=too-many-instance-attributes
     """
     Model for tracking digest task execution state and progress.
 
@@ -52,14 +37,6 @@ class DigestTaskExecution(WorkerTask, Base):
 
     # Celery task tracking
     celery_task_id = Column(String, nullable=True, index=True)
-
-    # Execution state
-    status = Column(
-        EnumColumn(DigestExecutionStatus),
-        nullable=False,
-        default=DigestExecutionStatus.PENDING,
-        index=True,
-    )
 
     # Progress tracking
     total_recipients = Column(Integer, nullable=True)
@@ -89,9 +66,14 @@ class DigestTaskExecution(WorkerTask, Base):
 
     def mark_started(self, db: Session, celery_task_id: str) -> None:
         """Mark the execution as started."""
-        self.status = DigestExecutionStatus.IN_PROGRESS
+        self.status = ExecutionLogStatus.in_processing
         self.celery_task_id = celery_task_id
         self.started_at = func.now()
+        self.save(db)
+
+    def mark_awaiting_processing(self, db: Session) -> None:
+        """Mark the execution as awaiting processing."""
+        self.status = ExecutionLogStatus.awaiting_processing
         self.save(db)
 
     def update_progress(
@@ -117,28 +99,27 @@ class DigestTaskExecution(WorkerTask, Base):
 
     def mark_completed(self, db: Session) -> None:
         """Mark the execution as completed."""
-        self.status = DigestExecutionStatus.COMPLETED
+        self.status = ExecutionLogStatus.complete
         self.completed_at = func.now()
         self.save(db)
 
     def mark_failed(self, db: Session, error_message: str) -> None:
         """Mark the execution as failed."""
-        self.status = DigestExecutionStatus.FAILED
+        self.status = ExecutionLogStatus.error
         self.error_message = error_message
         self.completed_at = func.now()
-        self.save(db)
-
-    def mark_interrupted(self, db: Session) -> None:
-        """Mark the execution as interrupted (for later resumption)."""
-        self.status = DigestExecutionStatus.INTERRUPTED
         self.save(db)
 
     def can_resume(self) -> bool:
         """Check if this execution can be resumed."""
         return (
             self.status
-            in [DigestExecutionStatus.INTERRUPTED, DigestExecutionStatus.IN_PROGRESS]
+            in [
+                ExecutionLogStatus.in_processing,
+                ExecutionLogStatus.awaiting_processing,
+            ]
             and self.processed_user_ids is not None
+            and len(self.processed_user_ids) > 0
         )
 
     def get_remaining_work(self) -> Dict[str, Any]:

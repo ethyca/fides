@@ -1090,6 +1090,8 @@ dataset:
       data_categories: [system.operations]
     - name: celery_task_id
       data_categories: [system.operations]
+    - name: action_type
+      data_categories: [system.operations]
     - name: status
       data_categories: [system.operations]
     - name: total_recipients

@@ -5,10 +5,7 @@ from fides.api.models.digest.conditional_dependencies import (
     DigestConditionType,
 )
 from fides.api.models.digest.digest_config import DigestConfig, DigestType
-from fides.api.models.digest.digest_execution import (
-    DigestExecutionStatus,
-    DigestTaskExecution,
-)
+from fides.api.models.digest.digest_execution import DigestTaskExecution
 
 __all__ = [
     "DigestConfig",
@@ -16,5 +13,4 @@ __all__ = [
     "DigestCondition",
     "DigestConditionType",
     "DigestTaskExecution",
-    "DigestExecutionStatus",
 ]
