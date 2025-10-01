@@ -8,9 +8,9 @@ import {
 } from "fidesui";
 import { useCallback } from "react";
 
+import { capitalize } from "~/features/common/utils";
 import { MonitorTaskInProgressResponse } from "~/types/api";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
-import { capitalize } from "~/features/common/utils";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useInProgressMonitorTasksList } from "../hooks/useInProgressMonitorTasksList";
@@ -25,10 +25,7 @@ const formatStatusForDisplay = (
     return "Awaiting Processing";
   }
 
-  return status
-    .split("_")
-    .map(capitalize)
-    .join(" ");
+  return status.split("_").map(capitalize).join(" ");
 };
 
 export const InProgressMonitorTasksList = () => {

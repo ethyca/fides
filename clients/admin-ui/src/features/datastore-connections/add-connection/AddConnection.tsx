@@ -83,7 +83,7 @@ const AddConnection = () => {
           { title: "New connection" },
         ]}
       >
-        <Title level={3}  className="mt-4 mb-0">
+        <Title level={3} className="mb-0 mt-4">
           {connectionOption ? (
             <Space>
               <ConnectionTypeLogo

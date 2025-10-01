@@ -33,10 +33,7 @@ const formatStatusForDisplay = (status: string): string => {
     return "Awaiting Processing";
   }
 
-  return status
-    .split("_")
-    .map(capitalize)
-    .join(" ");
+  return status.split("_").map(capitalize).join(" ");
 };
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
