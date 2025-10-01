@@ -119,7 +119,6 @@ class DigestTaskExecution(
                 ExecutionLogStatus.awaiting_processing,
             ]
             and self.processed_user_ids is not None
-            and len(self.processed_user_ids) > 0
         )
 
     def get_remaining_work(self) -> Dict[str, Any]:

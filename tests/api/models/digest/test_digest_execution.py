@@ -345,12 +345,22 @@ class TestDigestTaskExecutionResumption:
         assert digest_execution.status == ExecutionLogStatus.pending
         assert digest_execution.can_resume() is False
 
-    def test_cannot_resume_without_processed_user_ids(
+    def test_can_resume_with_empty_processed_user_ids(
         self, db: Session, digest_execution: DigestTaskExecution
     ):
-        """Test that tasks without processed_user_ids cannot be resumed."""
+        """Test that tasks with empty processed_user_ids can be resumed."""
         digest_execution.mark_started(db, "test-celery-id")
-        # Don't set processed_user_ids
+        # processed_user_ids defaults to [] (empty list)
+
+        assert digest_execution.can_resume() is True
+
+    def test_cannot_resume_with_null_processed_user_ids(
+        self, db: Session, digest_execution: DigestTaskExecution
+    ):
+        """Test that tasks with null processed_user_ids cannot be resumed."""
+        digest_execution.mark_started(db, "test-celery-id")
+        digest_execution.processed_user_ids = None
+        digest_execution.save(db)
 
         assert digest_execution.can_resume() is False
 
