@@ -12,7 +12,8 @@ import { LOCATION_HEADERS } from "~/common/geolocation";
 
 // one hour, how long the client should cache gpp-ext.js for
 const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
-const GPP_JS_STALE_WHILE_REVALIDATE_SECONDS = 24 * GPP_JS_MAX_AGE_SECONDS;
+// how long stale content can be served (24 hours)
+const GPP_JS_SERVE_STALE_SECONDS = 24 * GPP_JS_MAX_AGE_SECONDS;
 
 // File path for the GPP extension bundle
 const FIDES_GPP_JS_PATH = "public/lib/fides-ext-gpp.js";
@@ -73,7 +74,11 @@ export default async function handler(
   // Instruct any caches to store this response, since these bundles do not change often
   const cacheHeaders: CacheControl = {
     "max-age": GPP_JS_MAX_AGE_SECONDS,
-    "stale-while-revalidate": GPP_JS_STALE_WHILE_REVALIDATE_SECONDS,
+    // Only set stale serving directives if greater than 0
+    ...(GPP_JS_SERVE_STALE_SECONDS > 0 && {
+      "stale-while-revalidate": GPP_JS_SERVE_STALE_SECONDS,
+      "stale-if-error": GPP_JS_SERVE_STALE_SECONDS,
+    }),
     public: true,
   };
 
