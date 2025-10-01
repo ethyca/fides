@@ -1098,9 +1098,9 @@ dataset:
       data_categories: [system.operations]
     - name: processed_recipients
       data_categories: [system.operations]
-    - name: successful_communicationss
+    - name: successful_communications
       data_categories: [system.operations]
-    - name: failed_communicationss
+    - name: failed_communications
       data_categories: [system.operations]
     - name: execution_state
       data_categories: [system.operations]
