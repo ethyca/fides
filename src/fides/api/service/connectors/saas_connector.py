@@ -65,7 +65,7 @@ from fides.api.util.logger_context_utils import (
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
-    PRIVACY_REQUEST,
+    PRIVACY_REQUEST_OBJECT,
     assign_placeholders,
     map_param_values,
 )
@@ -265,7 +265,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if custom_privacy_request_fields:
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
-        input_data[PRIVACY_REQUEST] = [privacy_request.to_safe_dict()]
+        input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
 
         rows: List[Row] = []
         awaiting_async_processing: bool = False

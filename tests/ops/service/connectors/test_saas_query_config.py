@@ -20,7 +20,7 @@ from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
     FIELD_LIST,
-    PRIVACY_REQUEST,
+    PRIVACY_REQUEST_OBJECT,
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
@@ -762,7 +762,7 @@ class TestSaaSQueryConfig:
                     "subscriber_ids": ["123", "456"],
                     "account_ids": [123, 456],
                 },
-                PRIVACY_REQUEST: privacy_request.to_safe_dict(),
+                PRIVACY_REQUEST_OBJECT: privacy_request.to_safe_dict(),
             },
             policy,
             endpoints["internal_information"].requests.read,
@@ -787,7 +787,7 @@ class TestSaaSQueryConfig:
                 "subscriber_ids": ["123", "456"],
                 "account_ids": [123, 456],
             },
-            "privacy_request_object": privacy_request.to_safe_dict(),
+            "privacy_request": privacy_request.to_safe_dict(),
         }
 
         update_request: SaaSRequestParams = config.generate_update_stmt(
