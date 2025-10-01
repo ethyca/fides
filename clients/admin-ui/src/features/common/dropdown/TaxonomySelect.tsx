@@ -4,6 +4,7 @@ import {
   ICustomMultiSelectProps,
   ICustomSelectProps,
 } from "fidesui";
+import { ReactNode } from "react";
 
 import styles from "./TaxonomySelect.module.scss";
 
@@ -13,17 +14,24 @@ export interface TaxonomySelectOption {
   primaryName?: string;
   description: string;
   className?: string;
+  formattedTitle?: string;
 }
 
-interface ExtendedTaxonomySelectOption extends TaxonomySelectOption {
-  // The visual title of the select element
-  formattedTitle: string;
+export interface TaxonomySelectOptionGroup {
+  label: ReactNode;
+  value?: string;
+  options: TaxonomySelectOption[];
 }
 
-export const TaxonomyOption = ({
+export type TaxonomySelectOptions = (
+  | TaxonomySelectOption
+  | TaxonomySelectOptionGroup
+)[];
+
+const TaxonomyOption = ({
   data: { formattedTitle, description, name, primaryName },
 }: {
-  data: ExtendedTaxonomySelectOption;
+  data: TaxonomySelectOption;
 }) => {
   return (
     <Flex gap={12} title={`${formattedTitle} - ${description}`}>
@@ -37,9 +45,16 @@ export const TaxonomyOption = ({
 };
 
 interface ITaxonomySelectProps
-  extends ICustomSelectProps<string, TaxonomySelectOption> {}
+  extends Omit<ICustomSelectProps<string, TaxonomySelectOption>, "options"> {
+  options?: TaxonomySelectOptions;
+}
 interface ITaxonomyMultiSelectProps
-  extends ICustomMultiSelectProps<string, TaxonomySelectOption> {}
+  extends Omit<
+    ICustomMultiSelectProps<string, TaxonomySelectOption>,
+    "options"
+  > {
+  options?: TaxonomySelectOptions;
+}
 
 export type TaxonomySelectProps = (
   | ITaxonomySelectProps
@@ -49,26 +64,50 @@ export type TaxonomySelectProps = (
   selectedTaxonomies?: string[];
 };
 
+// Helper function to check if options are grouped
+const isOptionGroup = (
+  option: TaxonomySelectOption | TaxonomySelectOptionGroup,
+): option is TaxonomySelectOptionGroup => {
+  return "options" in option && Array.isArray(option.options);
+};
+
+// Helper function to format a single option
+const formatTaxonomyOption = (
+  opt: TaxonomySelectOption,
+): TaxonomySelectOption => ({
+  ...opt,
+  className: styles.option,
+  formattedTitle:
+    opt.formattedTitle ||
+    [opt.primaryName, opt.name].filter((maybeString) => maybeString).join(": "),
+});
+
 export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
-  const selectOptions = options?.map((opt) => ({
-    ...opt,
-    className: styles.option,
-    formattedTitle: [opt.primaryName, opt.name]
-      .filter((maybeString) => maybeString)
-      .join(": "),
-  }));
+  const selectOptions: TaxonomySelectOptions | undefined = options?.map(
+    (item) => {
+      if (isOptionGroup(item)) {
+        // Handle option groups
+        return {
+          ...item,
+          options: item.options.map(formatTaxonomyOption),
+        };
+      }
+      // Handle flat options
+      return formatTaxonomyOption(item);
+    },
+  );
 
   /*
    * @description Matches options where the displayed value or the underlying value includes the input text
    */
-  const filterOption = (input: string, option?: ExtendedTaxonomySelectOption) =>
-    option?.formattedTitle.toLowerCase().includes(input.toLowerCase()) ||
-    option?.value.toLowerCase().includes(input.toLowerCase()) ||
+  const filterOption = (input: string, option?: TaxonomySelectOption) =>
+    option?.formattedTitle?.toLowerCase().includes(input.toLowerCase()) ||
+    option?.value?.toLowerCase().includes(input.toLowerCase()) ||
     false;
 
   return (
-    <Select<string, ExtendedTaxonomySelectOption>
-      options={selectOptions}
+    <Select<string, TaxonomySelectOption>
+      options={selectOptions as never} // Ant seems to want Options and Groups to use the same interface. Since we've added a bunch of fields to the Options that don't make sense for the Group type, it's easiest just to tell Ant to ignore this type for now.
       filterOption={filterOption}
       optionFilterProp="label"
       autoFocus
