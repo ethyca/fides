@@ -14,16 +14,11 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
     KeyOrNameAlreadyExists,
+    SaaSConfigNotFoundException,
 )
 from fides.api.common_exceptions import ValidationError as FidesValidationError
-from fides.api.models.connectionconfig import (
-    ConnectionConfig,
-    ConnectionTestStatus,
-    ConnectionType,
-)
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_task import (
     ManualTask,
@@ -38,7 +33,6 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
     connection_secrets_schemas,
-    get_connection_secrets_schema,
 )
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -48,23 +42,17 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
-    validate_dynamic_erasure_email_dataset_references,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_saas import (
-    validate_saas_secrets_external_references,
-)
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
 )
-from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 from fides.service.privacy_request.privacy_request_service import queue_privacy_request
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
@@ -95,7 +83,7 @@ def requeue_requires_input_requests(db: Session) -> None:
             )
 
 
-def _validate_secrets_error_message() -> str:
+def validate_secrets_error_message() -> str:
     return f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
 
 
@@ -106,55 +94,29 @@ def validate_secrets(
 ) -> ConnectionConfigSecretsSchema:
     """Validate incoming connection configuration secrets."""
 
-    connection_type = connection_config.connection_type
-    saas_config = connection_config.get_saas_config()
-    if connection_type == ConnectionType.saas and saas_config is None:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=_validate_secrets_error_message(),
-        )
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
 
     try:
-        schema = get_connection_secrets_schema(connection_type.value, saas_config)  # type: ignore
-        logger.info(
-            "Validating secrets on connection config with key '{}'",
-            connection_config.key,
+        return connection_service.validate_secrets(request_body, connection_config)
+    except SaaSConfigNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=validate_secrets_error_message(),
         )
-        connection_secrets = schema.model_validate(request_body)
+    except FidesValidationError as e:
+        # Check if the exception has the original pydantic errors attached
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
     except ValidationError as e:
-        # Intentionally excluding the pydantic url, input, and ctx fields from the error response to hide
-        # potentially sensitive information
         errors = e.errors(include_url=False, include_input=False)
         for err in errors:
             # Additionally, manually remove the context from the error message -
             # this may contain sensitive information
             err.pop("ctx", None)
-
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=jsonable_encoder(errors),
         )
-
-    # SaaS secrets with external references must go through extra validation
-    if connection_type == ConnectionType.saas:
-        try:
-            validate_saas_secrets_external_references(db, schema, connection_secrets)  # type: ignore
-
-        except FidesValidationError as e:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
-            )
-
-    # For dynamic erasure emails we must validate the recipient email address
-    if connection_type == ConnectionType.dynamic_erasure_email:
-        try:
-            validate_dynamic_erasure_email_dataset_references(db, connection_secrets)
-        except FidesValidationError as e:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
-            )
-
-    return connection_secrets
 
 
 def patch_connection_configs(
@@ -382,30 +344,6 @@ def connection_status(
 ) -> TestStatusMessage:
     """Connect, verify with a trivial query or API request, and report the status."""
 
-    connector = get_connector(connection_config)
-
-    try:
-        status: Optional[ConnectionTestStatus] = connector.test_connection()
-
-    except (ConnectionException, ClientUnsuccessfulException) as exc:
-        logger.warning(
-            "Connection test failed on {}: {}",
-            connection_config.key,
-            Pii(str(exc)),
-        )
-        connection_config.update_test_status(
-            test_status=ConnectionTestStatus.failed, db=db
-        )
-        return TestStatusMessage(
-            msg=msg,
-            test_status=ConnectionTestStatus.failed,
-            failure_reason=str(exc),
-        )
-
-    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
-    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
-
-    return TestStatusMessage(
-        msg=msg,
-        test_status=status,
-    )
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
+    return connection_service.connection_status(connection_config, msg)

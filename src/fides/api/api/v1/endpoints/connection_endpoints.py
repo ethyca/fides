@@ -4,13 +4,14 @@ from typing import Annotated, Any, Dict, List, Optional
 
 import sqlalchemy
 from fastapi import Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import Field
+from pydantic import Field, ValidationError
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
@@ -22,7 +23,11 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.common_exceptions import ConnectionNotFoundException
+from fides.api.common_exceptions import (
+    ConnectionNotFoundException,
+    SaaSConfigNotFoundException,
+)
+from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.oauth.utils import verify_oauth_client
@@ -48,6 +53,7 @@ from fides.api.util.connection_util import (
     delete_connection_config,
     get_connection_config_or_error,
     patch_connection_configs,
+    validate_secrets_error_message,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -251,6 +257,24 @@ def put_connection_config_secrets(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No connection config found with key {connection_key}",
         )
+    except SaaSConfigNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=validate_secrets_error_message(),
+        )
+    except ValidationError as e:
+        errors = e.errors(include_url=False, include_input=False)
+        for err in errors:
+            # Additionally, manually remove the context from the error message -
+            # this may contain sensitive information
+            err.pop("ctx", None)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(errors),
+        )
+    except FidesValidationError as e:
+        # Check if the exception has the original pydantic errors attached
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
 
 @router.patch(
@@ -282,6 +306,24 @@ def patch_connection_config_secrets(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No connection config found with key {connection_key}",
         )
+    except SaaSConfigNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=validate_secrets_error_message(),
+        )
+    except ValidationError as e:
+        errors = e.errors(include_url=False, include_input=False)
+        for err in errors:
+            # Additionally, manually remove the context from the error message -
+            # this may contain sensitive information
+            err.pop("ctx", None)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(errors),
+        )
+    except FidesValidationError as e:
+        # Check if the exception has the original pydantic errors attached
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
 
 
 @router.get(
