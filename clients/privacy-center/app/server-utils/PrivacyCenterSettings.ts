@@ -67,6 +67,7 @@ export interface PrivacyCenterSettings {
   SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
   FIDES_CONSENT_OVERRIDE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
   FIDES_DISABLED_NOTICES: string | null; // (optional) comma-separated list of notice_keys to disable in the CMP Overlay
+  FIDES_DISABLED_SYSTEMS: string | null; // (optional) comma-separated list of systems to exclude notice assets by
   FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE: ConsentNonApplicableFlagMode | null; // (optional) determines how non-applicable privacy notices are handled (omit|include)
   FIDES_CONSENT_FLAG_TYPE: ConsentFlagType | null; // (optional) determines the type of value to use for consent (boolean|consent_mechanism)
   FIDES_INITIALIZED_EVENT_MODE: "multiple" | "once" | "disable"; // (optional) controls when the deprecated FidesInitialized event should be dispatched (defaults to "once")

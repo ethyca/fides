@@ -3,5 +3,10 @@
   "static.gpc.description": "Vaša nastavitev globalnega nadzora zasebnosti je bila upoštevana. Samodejno je bilo preklicano vaše soglasje za tiste primere uporabe podatkov, ki se ravnajo po globalnem nadzoru zasebnosti.",
   "static.gpc.status.applied": "Uporabljeno",
   "static.gpc.status.overridden": "Preglašeno",
-  "static.gpc.title": "Zaznan globalni nadzor zasebnosti »Global Privacy Control«"
+  "static.gpc.title": "Zaznan je globalni nadzor nad zasebnostjo",
+  "static.other.cookies": "Piškotki",
+  "static.other.back": "Nazaj",
+  "static.other.vendors": "Partnerji",
+  "static.other.retention": "Hramba",
+  "static.other.description": "Opis"
 }

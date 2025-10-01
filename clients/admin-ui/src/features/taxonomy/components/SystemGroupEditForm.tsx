@@ -1,8 +1,9 @@
 import {
   AntForm as Form,
   AntFormInstance as FormInstance,
-  AntInput,
+  AntInput as Input,
   AntSelect as Select,
+  AntSpace as Space,
   Icons,
   SparkleIcon,
 } from "fidesui";
@@ -123,19 +124,19 @@ const SystemGroupEditForm = ({
       },
       {
         label: (
-          <span className="flex items-center gap-2">
-            <SparkleIcon />
-            <strong>Suggested data uses</strong>
-          </span>
+          <Space>
+            <SparkleIcon size={14} />
+            <span>Suggested data uses</span>
+          </Space>
         ),
         options: suggestedOptions,
       },
       {
         label: (
-          <span className="flex items-center gap-2">
+          <Space>
             <Icons.Document />
-            <strong>All data uses</strong>
-          </span>
+            <span>All data uses</span>
+          </Space>
         ),
         options: allOptions,
       },
@@ -151,10 +152,10 @@ const SystemGroupEditForm = ({
       form={form}
     >
       <Form.Item<string> label="Name" name="name">
-        <AntInput data-testid="edit-taxonomy-form_name" disabled={isDisabled} />
+        <Input data-testid="edit-taxonomy-form_name" disabled={isDisabled} />
       </Form.Item>
       <Form.Item<string> label="Description" name="description">
-        <AntInput.TextArea
+        <Input.TextArea
           rows={4}
           data-testid="edit-taxonomy-form_description"
           disabled={isDisabled}

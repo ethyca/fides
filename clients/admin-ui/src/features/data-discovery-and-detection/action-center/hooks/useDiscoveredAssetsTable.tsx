@@ -412,6 +412,7 @@ export const useDiscoveredAssetsTable = ({
             asset={record}
             onTabChange={onTabChange}
             showComplianceIssueDetails={onShowComplianceIssueDetails}
+            showWarningForConsentIssues={assetConsentStatusLabels}
           />
         ),
       });
