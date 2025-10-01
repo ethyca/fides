@@ -1081,7 +1081,7 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-  - name: digest_execution
+  - name: digest_task_execution
     data_categories: []
     fields:
     - name: id
@@ -1098,9 +1098,9 @@ dataset:
       data_categories: [system.operations]
     - name: processed_recipients
       data_categories: [system.operations]
-    - name: successful_emails
+    - name: successful_communicationss
       data_categories: [system.operations]
-    - name: failed_emails
+    - name: failed_communicationss
       data_categories: [system.operations]
     - name: execution_state
       data_categories: [system.operations]
