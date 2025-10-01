@@ -16,10 +16,12 @@ const DiscoveredAssetDataUseCell = ({
   asset,
   readonly,
   columnState,
+  onChange,
 }: {
   asset: StagedResourceAPIResponse;
   readonly?: boolean;
   columnState?: ColumnState;
+  onChange?: (dataUses: string[]) => void;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -43,6 +45,7 @@ const DiscoveredAssetDataUseCell = ({
         `Consent category added to ${asset.resource_type} "${asset.name}" .`,
         `Confirmed`,
       );
+      onChange?.([...currentDataUses, newDataUse]);
     }
     setIsAdding(false);
   };
@@ -60,6 +63,7 @@ const DiscoveredAssetDataUseCell = ({
         `Consent category removed from ${asset.resource_type} "${asset.name}".`,
         `Confirmed`,
       );
+      onChange?.(currentDataUses.filter((use) => use !== useToDelete));
     }
   };
 
