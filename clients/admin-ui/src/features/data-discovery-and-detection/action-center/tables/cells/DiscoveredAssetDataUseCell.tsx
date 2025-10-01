@@ -63,12 +63,10 @@ const DiscoveredAssetDataUseCell = ({
     }
   };
 
-  const dataUses = asset.preferred_data_uses;
-
   if (readonly) {
     return (
       <TagExpandableCell
-        values={dataUses?.map((d) => ({
+        values={currentDataUses?.map((d) => ({
           label: getDataUseDisplayName(d),
           key: d,
         }))}
@@ -88,7 +86,7 @@ const DiscoveredAssetDataUseCell = ({
             aria-label="Add data use"
           />
           <TagExpandableCell
-            values={dataUses?.map((d) => ({
+            values={currentDataUses?.map((d) => ({
               label: getDataUseDisplayName(d),
               key: d,
             }))}
