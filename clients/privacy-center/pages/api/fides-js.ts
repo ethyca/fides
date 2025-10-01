@@ -97,8 +97,6 @@ async function loadStaticBundles(): Promise<void> {
 
     bundlesLoaded = true;
   } catch (error) {
-    // If loading fails, don't mark as loaded so it will retry on next request
-    bundlesLoaded = false;
     throw new Error(`Failed to load static fides-js bundles: ${error}`);
   }
 }
