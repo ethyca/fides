@@ -21,6 +21,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
+from fides.api.common_exceptions import ConnectionNotFoundException
 from fides.api.db.crud import get_resource, get_resource_with_custom_fields
 from fides.api.db.ctl_session import get_async_db
 from fides.api.db.system import (
@@ -57,11 +58,10 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
-from fides.api.service.deps import get_connector_service, get_system_service
+from fides.api.service.deps import get_connection_service, get_system_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     delete_connection_config,
-    get_connection_config_or_error,
     patch_connection_configs,
 )
 from fides.common.api.scope_registry import (
@@ -79,7 +79,7 @@ from fides.common.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
-from fides.service.connectors.connector_service import ConnectorService
+from fides.service.connection.connection_service import ConnectionService
 from fides.service.system.system_service import SystemService
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
@@ -159,7 +159,7 @@ def patch_connection_secrets(
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
-    connector_service: ConnectorService = Depends(get_connector_service),
+    connection_service: ConnectionService = Depends(get_connection_service),
 ) -> TestStatusMessage:
     """
     Patch secrets that will be used to connect to a specified connection_type.
@@ -169,23 +169,18 @@ def patch_connection_secrets(
     """
 
     system = get_system(db, fides_key)
-    connection_config: ConnectionConfig = get_connection_config_or_error(
-        db, system.connection_configs.key
-    )
-    # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
-    if connection_config.secrets is not None:
-        for key, value in connection_config.secrets.items():
-            if key not in unvalidated_secrets:
-                # unvalidated_secrets is actually a dictionary here.  connection_secrets_schemas
-                # are just provided for documentation but the data was not parsed up front.
-                # That happens below in validate_secrets.
-                unvalidated_secrets[key] = value  # type: ignore
-    else:
-        connection_config.secrets = {}
-
-    return connector_service.update_secrets(
-        connection_config.key, unvalidated_secrets, verify
-    )
+    try:
+        return connection_service.update_secrets(
+            system.connection_configs.key,
+            unvalidated_secrets,
+            verify,
+            merge_with_existing=True,
+        )
+    except ConnectionNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection config found with key {system.connection_configs.key}",
+        )
 
 
 @SYSTEM_CONNECTIONS_ROUTER.delete(

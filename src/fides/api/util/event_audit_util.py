@@ -1,12 +1,10 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
-from loguru import logger
-
+from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.event_audit import EventAuditStatus, EventAuditType
+from fides.api.models.event_audit import EventAuditType
 from fides.api.util.connection_type import get_connection_type_secret_schema
 from fides.api.util.masking_util import mask_sensitive_fields
-from fides.service.event_audit_service import EventAuditService
 
 
 def _create_connection_event_details(
@@ -57,15 +55,11 @@ def _create_connection_event_details(
     return event_details
 
 
-def create_connection_audit_event(
-    event_audit_service: EventAuditService,
+def generate_connection_audit_event_details(
     event_type: EventAuditType,
     connection_config: ConnectionConfig,
-    status: EventAuditStatus = EventAuditStatus.succeeded,
-    *,
-    user_id: Optional[str] = None,
     description: Optional[str] = None,
-) -> None:
+) -> Tuple[Dict[str, Any], str]:
     """
     Create an audit event for connection operations.
 
@@ -79,67 +73,45 @@ def create_connection_audit_event(
     Returns:
         Created EventAudit instance
     """
-    try:
-        # Determine operation type from event type
-        operation_type = event_type.value.split(".")[
-            -1
-        ]  # e.g., "created", "updated", "deleted"
+    # Determine operation type from event type
+    operation_type = event_type.value.split(".")[
+        -1
+    ]  # e.g., "created", "updated", "deleted"
 
-        # Create standardized event details
-        event_details = _create_connection_event_details(
-            connection_config,
-            operation_type,
-        )
+    # Create standardized event details
+    event_details = _create_connection_event_details(
+        connection_config,
+        operation_type,
+    )
 
-        # Generate description if not provided
-        if not description:
-            connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
-            connector_type = None
-            if connection_type == "saas" and connection_config.saas_config:
-                try:
-                    saas_config = connection_config.get_saas_config()
-                    if saas_config:
-                        connector_type = saas_config.type
-                except Exception:
-                    if (
-                        isinstance(connection_config.saas_config, dict)  # type: ignore[attr-defined]
-                        and "type" in connection_config.saas_config
-                    ):
-                        connector_type = connection_config.saas_config["type"]
+    # Generate description if not provided
+    connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
+    connector_type = None
+    if connection_type == "saas" and connection_config.saas_config:
+        try:
+            saas_config = connection_config.get_saas_config()
+            if saas_config:
+                connector_type = saas_config.type
+        except Exception:
+            if (
+                isinstance(connection_config.saas_config, dict)  # type: ignore[attr-defined]
+                and "type" in connection_config.saas_config
+            ):
+                connector_type = connection_config.saas_config["type"]
 
-            if connector_type:
-                description = f"Connection {operation_type}: {connector_type} connector '{connection_config.key}'"
-            else:
-                description = f"Connection {operation_type}: {connection_type} connection '{connection_config.key}'"
+    if connector_type:
+        description = f"Connection {operation_type}: {connector_type} connector '{connection_config.key}'"
+    else:
+        description = f"Connection {operation_type}: {connection_type} connection '{connection_config.key}'"
 
-        event_audit_service.create_event_audit(
-            event_type=event_type,
-            status=status,
-            user_id=user_id,
-            resource_type="connection_config",
-            resource_identifier=connection_config.key,
-            description=description,
-            event_details=event_details,
-        )
-    except Exception as audit_error:
-        # Log audit failure but don't fail the main operation
-        logger.warning(
-            "Failed to create audit event for connection '{}': {}",
-            connection_config.key,
-            str(audit_error),
-        )
+    return event_details, description
 
 
-def create_connection_secrets_audit_event(
-    event_audit_service: EventAuditService,
+def generate_connection_secrets_event_details(
     event_type: EventAuditType,
     connection_config: ConnectionConfig,
     secrets_modified: Dict[str, Any],
-    status: EventAuditStatus = EventAuditStatus.succeeded,
-    *,
-    user_id: Optional[str] = None,
-    description: Optional[str] = None,
-) -> None:
+) -> Tuple[Dict[str, Any], str]:
     """
     Create an audit event for connection secrets operations.
 
@@ -154,89 +126,70 @@ def create_connection_secrets_audit_event(
     Returns:
         Created EventAudit instance
     """
+    # Determine operation type from event type
+    operation_type = event_type.value.split(".")[
+        -1
+    ]  # e.g., "created", "updated", "deleted"
+
+    # Mask the secrets using the existing masking utility
+    saas_config = connection_config.get_saas_config()
+    connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
+    connection_type = (
+        saas_config.type
+        if connection_type == "saas" and saas_config
+        else connection_type
+    )
+
+    # Get the secret schema for this connection type
     try:
-        # Determine operation type from event type
-        operation_type = event_type.value.split(".")[
-            -1
-        ]  # e.g., "created", "updated", "deleted"
-
-        # Mask the secrets using the existing masking utility
-        saas_config = connection_config.get_saas_config()
-        connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
-        connection_type = (
-            saas_config.type
-            if connection_type == "saas" and saas_config
-            else connection_type
-        )
-
-        # Get the secret schema for this connection type
         secret_schema = get_connection_type_secret_schema(
             connection_type=connection_type
         )
-
         # Use existing masking function
         masked_secrets = mask_sensitive_fields(secrets_modified, secret_schema)
+    except NoSuchConnectionTypeSecretSchemaError:
+        # if there is no schema, mask every secret
+        masked_secrets = {key: "**********" for key in secrets_modified}
 
-        # Create event details with masked secret values
-        event_details = {
-            "operation_type": operation_type,
-            "connection_type": connection_type,
-            "secrets": masked_secrets,
-        }
+    # Create event details with masked secret values
+    event_details: dict[str, Any] = {
+        "secrets": masked_secrets,
+    }
 
-        # Add SaaS connector type if applicable
-        if connection_type == "saas" and connection_config.saas_config:
-            try:
-                saas_config = connection_config.get_saas_config()
-                if saas_config:
-                    event_details["saas_connector_type"] = saas_config.type
-            except Exception:
-                # If SaaS config is invalid, try to get type directly from raw config
-                if (
-                    isinstance(connection_config.saas_config, dict)
-                    and "type" in connection_config.saas_config
-                ):
-                    event_details["saas_connector_type"] = (
-                        connection_config.saas_config["type"]
-                    )
+    # Add SaaS connector type if applicable
+    if connection_type == "saas" and connection_config.saas_config:
+        try:
+            saas_config = connection_config.get_saas_config()
+            if saas_config:
+                event_details["saas_connector_type"] = saas_config.type
+        except Exception:
+            # If SaaS config is invalid, try to get type directly from raw config
+            if (
+                isinstance(connection_config.saas_config, dict)
+                and "type" in connection_config.saas_config
+            ):
+                event_details["saas_connector_type"] = connection_config.saas_config[
+                    "type"
+                ]
 
-        # Generate description if not provided
-        if not description:
-            secret_names = (
-                ", ".join(secrets_modified) if secrets_modified else "secrets"
-            )
-            connector_type = None
-            if connection_type == "saas" and connection_config.saas_config:
-                try:
-                    saas_config = connection_config.get_saas_config()
-                    if saas_config:
-                        connector_type = saas_config.type
-                except Exception:
-                    if (
-                        isinstance(connection_config.saas_config, dict)
-                        and "type" in connection_config.saas_config
-                    ):
-                        connector_type = connection_config.saas_config["type"]
+    # Generate description
+    secret_names = ", ".join(secrets_modified) if secrets_modified else "secrets"
+    connector_type = None
+    if connection_type == "saas" and connection_config.saas_config:
+        try:
+            saas_config = connection_config.get_saas_config()
+            if saas_config:
+                connector_type = saas_config.type
+        except Exception:
+            if (
+                isinstance(connection_config.saas_config, dict)
+                and "type" in connection_config.saas_config
+            ):
+                connector_type = connection_config.saas_config["type"]
 
-            if connector_type:
-                description = f"Connection secrets {operation_type}: {connector_type} connector '{connection_config.key}' - {secret_names}"
-            else:
-                description = f"Connection secrets {operation_type}: {connection_type} connection '{connection_config.key}' - {secret_names}"
+    if connector_type:
+        description = f"Connection secrets {operation_type}: {connector_type} connector '{connection_config.key}' - {secret_names}"
+    else:
+        description = f"Connection secrets {operation_type}: {connection_type} connection '{connection_config.key}' - {secret_names}"
 
-        event_audit_service.create_event_audit(
-            event_type=event_type,
-            status=status,
-            user_id=user_id,
-            resource_type="connection_config",
-            resource_identifier=connection_config.key,
-            description=description,
-            event_details=event_details,
-        )
-
-    except Exception as audit_error:
-        # Log audit failure but don't fail the main operation
-        logger.warning(
-            "Failed to create audit event for connection secrets update '{}': {}",
-            connection_config.key,
-            str(audit_error),
-        )
+    return event_details, description

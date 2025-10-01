@@ -50,7 +50,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets
-from fides.api.util.event_audit_util import create_connection_secrets_audit_event
+from fides.api.util.event_audit_util import generate_connection_secrets_event_details
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -349,14 +349,6 @@ def instantiate_connection(
         dataset_config: DatasetConfig = upsert_dataset_config_from_template(
             db, connection_config, connector_template, template_values
         )
-        audit_service = EventAuditService(db)
-        create_connection_secrets_audit_event(
-            audit_service,
-            event_type=EventAuditType.connection_secrets_created,
-            connection_config=connection_config,
-            secrets_modified=template_values.secrets,  # type: ignore[arg-type]
-            status=EventAuditStatus.succeeded,
-        )
 
     except Exception:
         connection_config.delete(db)
@@ -369,7 +361,20 @@ def instantiate_connection(
         template_values.instance_key,
         saas_connector_type,
     )
-
+    audit_service = EventAuditService(db)
+    event_details, description = generate_connection_secrets_event_details(
+        EventAuditType.connection_secrets_created,
+        connection_config=connection_config,
+        secrets_modified=template_values.secrets,  # type: ignore[arg-type]
+    )
+    audit_service.create_event_audit(
+        event_type=EventAuditType.connection_secrets_created,
+        status=EventAuditStatus.succeeded,
+        resource_type="connection_config",
+        resource_identifier=connection_config.key,
+        description=description,
+        event_details=event_details,
+    )
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.ctl_dataset
     )
