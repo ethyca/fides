@@ -309,6 +309,19 @@ Defaults to `undefined`.
 
 ***
 
+### fides\_disabled\_systems?
+
+> `optional` **fides\_disabled\_systems**: `string`
+
+A comma-separated list of systems whose related notice assets (e.g., cookies) should be excluded
+from responses. This is used to filter out assets by system name when rendering disclosures.
+
+For example: "google_analytics,facebook_ads"
+
+Defaults to `undefined`.
+
+***
+
 ### fides\_initialized\_event\_mode
 
 > **fides\_initialized\_event\_mode**: `"multiple"` \| `"once"` \| `"disable"`

@@ -31,6 +31,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
 - Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674)
 
+### Added
+- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
+
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
 - Fixed an issue where using pagination on the consent issues modal affects the results of the page [#6665](https://github.com/ethyca/fides/pull/6665)
