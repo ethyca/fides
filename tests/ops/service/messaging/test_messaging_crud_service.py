@@ -85,8 +85,8 @@ class TestMessagingTemplates:
         )
         assert template.type == template_type
         assert template.content == content
-        assert "{{organization_name}}" in template.content["subject"]
-        assert "{{vendor_contact_name}}" in template.content["body"]
+        assert "__ORGANIZATION_NAME__" in template.content["subject"]
+        assert "__VENDOR_CONTACT_NAME__" in template.content["body"]
 
     def test_create_or_update_basic_templates_existing_type(
         self, db: Session, messaging_template_no_property
