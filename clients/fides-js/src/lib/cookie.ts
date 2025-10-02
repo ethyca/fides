@@ -365,8 +365,8 @@ export const removeCookiesFromBrowser = (
   cookiesToRemove: CookiesType[],
   removeSubdomainCookies: boolean = true,
 ) => {
+  const { hostname } = window.location;
   cookiesToRemove.forEach((cookie) => {
-    const { hostname } = window.location;
     // If domain is specified, use it. Otherwise, try hostname
     if (cookie.domain) {
       cookies.remove(cookie.name, {
