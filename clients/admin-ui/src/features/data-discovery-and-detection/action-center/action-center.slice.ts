@@ -170,7 +170,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         size = 20,
         search,
         diff_status = [DiffStatus.ADDITION],
-        sort_by = [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"],
+        sort_by = [DiscoveredAssetsColumnKeys.NAME],
         sort_asc = true,
         resource_type,
         data_uses,

@@ -1,6 +1,5 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import {
@@ -8,15 +7,24 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
+import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 const MonitorResultAssets: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const systemId = decodeURIComponent(router.query.systemId as string);
-  const [systemName, setSystemName] = useState(
-    systemId === UNCATEGORIZED_SEGMENT ? "Uncategorized assets" : systemId,
-  );
+
+  const { data: systemResults } = useGetDiscoveredSystemAggregateQuery({
+    key: monitorId,
+    page: 1,
+    size: 1,
+    search: "",
+    diff_status: [DiffStatus.ADDITION],
+    resolved_system_id: systemId,
+  });
+  const system = systemResults?.items[0];
 
   return (
     <FixedLayout title="Action center - Discovered assets">
@@ -29,14 +37,14 @@ const MonitorResultAssets: NextPage = () => {
             title:
               systemId === UNCATEGORIZED_SEGMENT
                 ? "Uncategorized assets"
-                : systemName,
+                : system?.name,
           },
         ]}
       />
       <DiscoveredAssetsTable
         monitorId={monitorId}
         systemId={systemId}
-        onSystemName={setSystemName}
+        consentStatus={system?.consent_status}
       />
     </FixedLayout>
   );

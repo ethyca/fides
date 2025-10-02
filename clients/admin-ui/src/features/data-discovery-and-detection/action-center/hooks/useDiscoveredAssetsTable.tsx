@@ -29,6 +29,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
+  ConsentAlertInfo,
   ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
@@ -62,7 +63,7 @@ import useActionCenterTabs, {
 interface UseDiscoveredAssetsTableConfig {
   monitorId: string;
   systemId: string;
-  onSystemName?: (name: string) => void;
+  consentStatus?: ConsentAlertInfo | null;
   onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
@@ -72,16 +73,13 @@ interface UseDiscoveredAssetsTableConfig {
 export const useDiscoveredAssetsTable = ({
   monitorId,
   systemId,
-  onSystemName,
+  consentStatus,
   onShowComplianceIssueDetails,
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const toast = useToast();
 
   const [systemName, setSystemName] = useState(systemId);
-  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
-    ConsentStatus | null | undefined
-  >();
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
@@ -369,13 +367,8 @@ export const useDiscoveredAssetsTable = ({
         title: () => (
           <Space>
             <div>Compliance</div>
-            {firstItemConsentStatus === ConsentStatus.WITHOUT_CONSENT && (
-              <DiscoveryStatusIcon
-                consentStatus={{
-                  status: AlertLevel.ALERT,
-                  message: "One or more assets were detected without consent",
-                }}
-              />
+            {consentStatus?.status === AlertLevel.ALERT && (
+              <DiscoveryStatusIcon consentStatus={consentStatus} />
             )}
           </Space>
         ),
@@ -436,7 +429,7 @@ export const useDiscoveredAssetsTable = ({
     locationsVersion,
     isPagesExpanded,
     pagesVersion,
-    firstItemConsentStatus,
+    consentStatus,
     onTabChange,
     onShowComplianceIssueDetails,
   ]);
@@ -447,20 +440,8 @@ export const useDiscoveredAssetsTable = ({
       const firstSystemName =
         data.items[0]?.system || systemName || systemId || "";
       setSystemName(firstSystemName);
-      onSystemName?.(firstSystemName);
     }
-  }, [data, systemId, onSystemName, systemName]);
-
-  useEffect(() => {
-    if (data?.items && !firstItemConsentStatus) {
-      // this ensures that the column header remembers the consent status
-      // even when the user navigates to a different paginated page
-      const consentStatus = data.items.find(
-        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
-      )?.consent_aggregated;
-      setFirstItemConsentStatus(consentStatus);
-    }
-  }, [data, firstItemConsentStatus]);
+  }, [data, systemId, systemName]);
 
   const handleBulkAdd = useCallback(async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -699,7 +680,7 @@ export const useDiscoveredAssetsTable = ({
 
     // Business state
     systemName,
-    firstItemConsentStatus,
+    consentStatus,
 
     // Business actions
     handleBulkAdd,
