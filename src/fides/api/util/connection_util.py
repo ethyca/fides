@@ -14,6 +14,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
+    ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
     SaaSConfigNotFoundException,
 )
@@ -387,3 +388,39 @@ def connection_status(
     event_audit_service = EventAuditService(db)
     connection_service = ConnectionService(db, event_audit_service)
     return connection_service.connection_status(connection_config, msg)
+
+
+def update_connection_secrets(
+    connection_service: ConnectionService,
+    connection_key: FidesKey,
+    unvalidated_secrets: connection_secrets_schemas,
+    verify: Optional[bool],
+    merge_with_existing: Optional[bool] = False,
+) -> TestStatusMessage:
+    try:
+        return connection_service.update_secrets(
+            connection_key, unvalidated_secrets, verify, merge_with_existing
+        )
+    except ConnectionNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection config found with key {connection_key}",
+        )
+    except SaaSConfigNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=validate_secrets_error_message(),
+        )
+    except ValidationError as e:
+        errors = e.errors(include_url=False, include_input=False)
+        for err in errors:
+            # Additionally, manually remove the context from the error message -
+            # this may contain sensitive information
+            err.pop("ctx", None)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(errors),
+        )
+    except FidesValidationError as e:
+        # Check if the exception has the original pydantic errors attached
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)

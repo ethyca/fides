@@ -21,7 +21,6 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.api.common_exceptions import ConnectionNotFoundException
 from fides.api.db.crud import get_resource, get_resource_with_custom_fields
 from fides.api.db.ctl_session import get_async_db
 from fides.api.db.system import (
@@ -63,6 +62,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     delete_connection_config,
     patch_connection_configs,
+    update_connection_secrets,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -169,18 +169,13 @@ def patch_connection_secrets(
     """
 
     system = get_system(db, fides_key)
-    try:
-        return connection_service.update_secrets(
-            system.connection_configs.key,
-            unvalidated_secrets,
-            verify,
-            merge_with_existing=True,
-        )
-    except ConnectionNotFoundException:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connection config found with key {system.connection_configs.key}",
-        )
+    return update_connection_secrets(
+        connection_service,
+        system.connection_configs.key,
+        unvalidated_secrets,
+        verify,
+        merge_with_existing=True,
+    )
 
 
 @SYSTEM_CONNECTIONS_ROUTER.delete(
