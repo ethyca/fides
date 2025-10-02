@@ -150,6 +150,11 @@ export const useMonitorConfigTable = ({
           .map((location) => {
             const isoEntry = isoStringToEntry(location);
 
+            // Early return if we have a valid ISO entry to avoid problematic enum navigation
+            if (isoEntry) {
+              return formatIsoLocation({ isoEntry });
+            }
+
             /**
              * regionCode and regionRecord are the result of navigating enums that should be deprecated.
              * if the backend decides to maintain a list of values for the frontend to use, a less convoluted
@@ -165,7 +170,7 @@ export const useMonitorConfigTable = ({
                 regionCode[1]
               ]; /* regionCode[1] refers to enum value that is the key for the region records enum (enum-ception) */
 
-            return isoEntry ? formatIsoLocation({ isoEntry }) : regionRecord;
+            return regionRecord;
           })
           .join(", ");
 
