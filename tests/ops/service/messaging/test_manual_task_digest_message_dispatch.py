@@ -12,7 +12,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.common.api.v1.urn_registry import MessagingServiceType
+from fides.api.schemas.messaging.messaging import MessagingServiceType
 
 
 @pytest.mark.unit
