@@ -16,83 +16,9 @@ useComponentTable (Combination of the 2 hooks + table business logic)
 Table Component
 ```
 
-## Quick Start
-
-### Basic Usage (with URL sync)
-
-```tsx
-import { useTableState, useAntTable } from "~/features/common/table/hooks";
-
-const MyTable = ({ filters }) => {
-  // 1. Table state with URL sync (pagination, sorting, filtering, search)
-  const tableState = useTableState({
-    pagination: { defaultPageSize: 10, pageSizeOptions: [10, 50] },
-    sorting: { defaultSortKey: "name", defaultSortOrder: "ascend" },
-    search: { defaultSearchQuery: "gtm" },
-  });
-
-  // 2. API data
-  const queryResult = useGetDataQuery({
-    ...tableState.state, // Use .state for all query params
-    ...filters,
-  });
-
-  // 3. Ant Design integration
-  const { tableProps, selectionProps } = useAntTable(tableState, {
-    enableSelection: true,
-    getRowKey: (record) => record.id,
-    dataSource: queryResult.data?.items,
-    totalRows: queryResult.data?.total,
-    isLoading: queryResult.isLoading,
-  });
-
-  return (
-    <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
-  );
-};
-```
-
-### Multiple Tables on One Page
-
-Use custom query keys to allow multiple tables with independent URL state:
-
-```tsx
-const PageWithTwoTables = () => {
-  // Table 1: Uses "users" prefix for query params
-  const usersTable = useTableState({
-    pagination: {
-      pageQueryKey: "usersPage",
-      sizeQueryKey: "usersSize",
-      defaultPageSize: 10,
-    },
-    sorting: { defaultSortKey: "name" },
-  });
-
-  // Table 2: Uses "orders" prefix for query params
-  const ordersTable = useTableState({
-    pagination: {
-      pageQueryKey: "ordersPage",
-      sizeQueryKey: "ordersSize",
-      defaultPageSize: 25,
-    },
-    sorting: { defaultSortKey: "date" },
-  });
-
-  // URL will have: ?usersPage=1&usersSize=10&ordersPage=1&ordersSize=25
-  // Each table maintains its own independent state in the URL
-
-  return (
-    <>
-      <UsersTable tableState={usersTable} />
-      <OrdersTable tableState={ordersTable} />
-    </>
-  );
-};
-```
-
 ## Recommended Pattern
 
-For complex tables, use a dedicated business logic hook to encapsulate all table logic, actions, and column definitions.
+Use a dedicated business logic hook to encapsulate all table logic, actions, and column definitions.
 
 ### Business Logic Hook
 
@@ -141,6 +67,44 @@ export const MyTable = ({ filters }: Props) => {
       <SearchInput value={searchQuery} onChange={updateSearch} />
       {selectedRows.length > 0 && <BulkActions onAction={handleBulkAction} />}
       <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
+    </>
+  );
+};
+```
+
+### Multiple Tables on One Page
+
+Use custom query keys to allow multiple tables with independent URL state:
+
+```tsx
+const PageWithTwoTables = () => {
+  // Table 1: Uses "users" prefix for query params
+  const usersTable = useTableState({
+    pagination: {
+      pageQueryKey: "usersPage",
+      sizeQueryKey: "usersSize",
+      defaultPageSize: 10,
+    },
+    sorting: { defaultSortKey: "name" },
+  });
+
+  // Table 2: Uses "orders" prefix for query params
+  const ordersTable = useTableState({
+    pagination: {
+      pageQueryKey: "ordersPage",
+      sizeQueryKey: "ordersSize",
+      defaultPageSize: 25,
+    },
+    sorting: { defaultSortKey: "date" },
+  });
+
+  // URL will have: ?usersPage=1&usersSize=10&ordersPage=1&ordersSize=25
+  // Each table maintains its own independent state in the URL
+
+  return (
+    <>
+      <UsersTable tableState={usersTable} />
+      <OrdersTable tableState={ordersTable} />
     </>
   );
 };
