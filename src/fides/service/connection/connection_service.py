@@ -19,9 +19,18 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskParentEntityType,
+    ManualTaskType,
+)
 from fides.api.schemas.connection_configuration import (
     connection_secrets_schemas,
     get_connection_secrets_schema,
+)
+from fides.api.schemas.connection_configuration.connection_config import (
+    ConnectionConfigurationResponse,
+    CreateConnectionConfigurationWithSecrets,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -67,6 +76,27 @@ class ConnectionService:
                 f"No connection config found with key {connection_key}"
             )
         return connection_config
+
+    def _create_secrets_audit_event(
+        self,
+        event_type: EventAuditType,
+        connection_config: ConnectionConfig,
+        secrets_modified: connection_secrets_schemas,
+    ) -> None:
+        """Create an audit event for connection secrets operations."""
+        event_details, description = generate_connection_secrets_event_details(
+            event_type,
+            connection_config=connection_config,
+            secrets_modified=secrets_modified,  # type: ignore[arg-type]
+        )
+        self.event_audit_service.create_event_audit(
+            event_type=event_type,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier=connection_config.key,
+            description=description,
+            event_details=event_details,
+        )
 
     def validate_secrets(
         self,
@@ -168,18 +198,10 @@ class ConnectionService:
         connection_config.save(db=self.db)
 
         # Create audit event for secrets update
-        event_details, description = generate_connection_secrets_event_details(
+        self._create_secrets_audit_event(
             EventAuditType.connection_secrets_updated,
             connection_config,
             unvalidated_secrets,  # type: ignore[arg-type]
-        )
-        self.event_audit_service.create_event_audit(
-            EventAuditType.connection_secrets_updated,
-            EventAuditStatus.succeeded,
-            resource_type="connection_config",
-            resource_identifier=connection_config.key,
-            description=description,
-            event_details=event_details,
         )
 
         msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
@@ -247,17 +269,153 @@ class ConnectionService:
             template_values.instance_key,
             saas_connector_type,
         )
-        event_details, description = generate_connection_secrets_event_details(
+        self._create_secrets_audit_event(
             EventAuditType.connection_secrets_created,
-            connection_config=connection_config,
-            secrets_modified=template_values.secrets,  # type: ignore[arg-type]
-        )
-        self.event_audit_service.create_event_audit(
-            event_type=EventAuditType.connection_secrets_created,
-            status=EventAuditStatus.succeeded,
-            resource_type="connection_config",
-            resource_identifier=connection_config.key,
-            description=description,
-            event_details=event_details,
+            connection_config,
+            template_values.secrets,  # type: ignore[arg-type]
         )
         return connection_config, dataset_config
+
+    def create_or_update_connection_config(
+        self,
+        config: CreateConnectionConfigurationWithSecrets,
+        system: Optional[System] = None,
+    ) -> ConnectionConfigurationResponse:
+        """
+        Create or update a single connection configuration.
+
+        This method handles both SaaS and non-SaaS connection types
+        """
+        # Retrieve the existing connection config from the database
+        existing_connection_config = None
+        if config.key:
+            existing_connection_config = ConnectionConfig.get_by(
+                self.db, field="key", value=config.key
+            )
+
+        # Handle SaaS connections with special template-based creation
+        if config.connection_type == "saas" and config.secrets:
+            if existing_connection_config:
+                # For existing SaaS configs, validate secrets normally
+                config.secrets = self.validate_secrets(
+                    config.secrets, existing_connection_config
+                )
+            else:
+                # For new SaaS configs, create from template
+                return self._create_saas_connection_from_template(config, system)
+
+        # Handle non-SaaS connections or SaaS without secrets
+        return self._create_or_update_standard_connection(
+            config, existing_connection_config, system
+        )
+
+    def _create_saas_connection_from_template(
+        self,
+        config: CreateConnectionConfigurationWithSecrets,
+        system: Optional[System] = None,
+    ) -> ConnectionConfigurationResponse:
+        """Create a new SaaS connection from a connector template."""
+        if not config.saas_connector_type:
+            raise ValueError("saas_connector_type is missing")
+
+        connector_template = ConnectorRegistry.get_connector_template(
+            config.saas_connector_type
+        )
+        if not connector_template:
+            raise ConnectorTemplateNotFound(
+                f"SaaS connector type '{config.saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}."
+            )
+
+        template_values = SaasConnectionTemplateValues(
+            name=config.name,
+            key=config.key,
+            description=config.description,
+            secrets=config.secrets,
+            instance_key=config.key,
+        )
+
+        if system:
+            connection_config = create_connection_config_from_template_no_save(
+                self.db,
+                connector_template,
+                template_values,
+                system_id=system.id,  # type: ignore[attr-defined]
+            )
+        else:
+            connection_config = create_connection_config_from_template_no_save(
+                self.db,
+                connector_template,
+                template_values,
+            )
+        connection_config.secrets = self.validate_secrets(
+            template_values.secrets,
+            connection_config,
+        ).model_dump(mode="json")
+        connection_config.save(db=self.db)
+
+        # Create audit event for secrets creation
+        self._create_secrets_audit_event(
+            EventAuditType.connection_secrets_created,
+            connection_config,
+            template_values.secrets,  # type: ignore[arg-type]
+        )
+
+        return ConnectionConfigurationResponse.model_validate(connection_config)
+
+    def _create_or_update_standard_connection(
+        self,
+        config: CreateConnectionConfigurationWithSecrets,
+        existing_connection_config: Optional[ConnectionConfig],
+        system: Optional[System] = None,
+    ) -> ConnectionConfigurationResponse:
+        """Create or update a standard (non-template-based) connection configuration."""
+        config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
+        config_dict.pop("saas_connector_type", None)
+
+        if existing_connection_config:
+            # Merge existing config with new values
+            config_dict = {
+                key: value
+                for key, value in {
+                    **existing_connection_config.__dict__,
+                    **config.model_dump(serialize_as_any=True, exclude_unset=True),
+                }.items()
+                if isinstance(value, bool) or value
+            }
+
+        if system:
+            config_dict["system_id"] = system.id  # type: ignore[attr-defined]
+
+        connection_config = ConnectionConfig.create_or_update(
+            self.db, data=config_dict, check_name=False
+        )
+
+        # Handle secrets validation and audit events
+        if config.secrets:
+            event_type = (
+                EventAuditType.connection_secrets_updated
+                if existing_connection_config
+                else EventAuditType.connection_secrets_created
+            )
+            self._create_secrets_audit_event(
+                event_type,
+                connection_config,
+                connection_config.secrets,  # type: ignore[arg-type]
+            )
+
+        # Automatically create a ManualTask if this is a manual_task connection
+        # and it doesn't already have one
+        if (
+            connection_config.connection_type == ConnectionType.manual_task
+            and not connection_config.manual_task
+        ):
+            ManualTask.create(
+                db=self.db,
+                data={
+                    "task_type": ManualTaskType.privacy_request,
+                    "parent_entity_id": connection_config.id,
+                    "parent_entity_type": ManualTaskParentEntityType.connection_config,
+                },
+            )
+
+        return ConnectionConfigurationResponse.model_validate(connection_config)

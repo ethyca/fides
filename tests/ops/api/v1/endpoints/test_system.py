@@ -920,7 +920,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
+        "fides.service.connection.connection_service.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url

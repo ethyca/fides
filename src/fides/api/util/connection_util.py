@@ -6,11 +6,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -21,12 +17,6 @@ from fides.api.common_exceptions import (
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.event_audit import EventAuditStatus, EventAuditType
-from fides.api.models.manual_task import (
-    ManualTask,
-    ManualTaskParentEntityType,
-    ManualTaskType,
-)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore
@@ -44,17 +34,12 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.api.schemas.connection_configuration.saas_config_template_values import (
-    SaasConnectionTemplateValues,
-)
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-    create_connection_config_from_template_no_save,
+from fides.common.api.v1.urn_registry import SAAS_CONFIG
+from fides.service.connection.connection_service import (
+    ConnectionService,
+    ConnectorTemplateNotFound,
 )
-from fides.api.util.event_audit_util import generate_connection_secrets_event_details
-from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
-from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 from fides.service.privacy_request.privacy_request_service import queue_privacy_request
 
@@ -131,172 +116,20 @@ def patch_connection_configs(
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
 
+    # Initialize the connection service
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
+
     for config in configs:
-        # Retrieve the existing connection config from the database
-        existing_connection_config = None
-        if config.key:
-            existing_connection_config = ConnectionConfig.get_by(
-                db, field="key", value=config.key
-            )
-
-        if config.connection_type == "saas":
-            if config.secrets:
-                # This is here rather than with the get_connection_config_or_error because
-                # it will also throw an HTTPException if validation fails and we don't want
-                # to catch it in this case.
-                if existing_connection_config:
-                    config.secrets = validate_secrets(
-                        db, config.secrets, existing_connection_config
-                    )
-                else:
-                    if not config.saas_connector_type:
-                        raise HTTPException(
-                            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail="saas_connector_type is missing",
-                        )
-
-                    connector_template = ConnectorRegistry.get_connector_template(
-                        config.saas_connector_type
-                    )
-                    if not connector_template:
-                        raise HTTPException(
-                            status_code=HTTP_404_NOT_FOUND,
-                            detail=f"SaaS connector type '{config.saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
-                        )
-                    try:
-                        template_values = SaasConnectionTemplateValues(
-                            name=config.name,
-                            key=config.key,
-                            description=config.description,
-                            secrets=config.secrets,
-                            instance_key=config.key,
-                        )
-                        if system:
-                            connection_config = (
-                                create_connection_config_from_template_no_save(
-                                    db,
-                                    connector_template,
-                                    template_values,
-                                    system_id=system.id,
-                                )
-                            )
-                        else:
-                            connection_config = (
-                                create_connection_config_from_template_no_save(
-                                    db,
-                                    connector_template,
-                                    template_values,
-                                )
-                            )
-                    except KeyOrNameAlreadyExists as exc:
-                        raise HTTPException(
-                            status_code=HTTP_400_BAD_REQUEST,
-                            detail=exc.args[0],
-                        )
-                    except ValidationError as e:
-                        # The "input" potentially contains sensitive info and the Pydantic-specific "url" is not helpful
-                        errors = e.errors(include_url=False, include_input=False)
-                        for err in errors:
-                            # Additionally, manually remove the context from the error message -
-                            # this may contain sensitive information
-                            err.pop("ctx", None)
-
-                        raise HTTPException(
-                            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=jsonable_encoder(errors),
-                        )
-
-                    connection_config.secrets = validate_secrets(
-                        db,
-                        template_values.secrets,
-                        connection_config,
-                    ).model_dump(mode="json")
-                    connection_config.save(db=db)
-
-                    # Create audit event for secrets creation
-                    audit_service = EventAuditService(db)
-                    event_details, description = (
-                        generate_connection_secrets_event_details(
-                            EventAuditType.connection_secrets_created,
-                            connection_config=connection_config,
-                            secrets_modified=template_values.secrets,  # type: ignore[arg-type]
-                        )
-                    )
-                    audit_service.create_event_audit(
-                        event_type=EventAuditType.connection_secrets_created,
-                        status=EventAuditStatus.succeeded,
-                        resource_type="connection_config",
-                        resource_identifier=connection_config.key,
-                        description=description,
-                        event_details=event_details,
-                    )
-
-                    created_or_updated.append(
-                        ConnectionConfigurationResponse.model_validate(
-                            connection_config
-                        )
-                    )
-                    continue
-
         orig_data = config.model_dump(serialize_as_any=True, mode="json").copy()
-        config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
-        config_dict.pop("saas_connector_type", None)
-
-        if existing_connection_config:
-            config_dict = {
-                key: value
-                for key, value in {
-                    **existing_connection_config.__dict__,
-                    **config.model_dump(serialize_as_any=True, exclude_unset=True),
-                }.items()
-                if isinstance(value, bool) or value
-            }
-
-        if system:
-            config_dict["system_id"] = system.id
 
         try:
-            connection_config = ConnectionConfig.create_or_update(
-                db, data=config_dict, check_name=False
+            # Use the service to handle individual connection config processing
+            connection_response = connection_service.create_or_update_connection_config(
+                config, system
             )
-            if config.secrets:
-                audit_service = EventAuditService(db)
-                event_details, description = generate_connection_secrets_event_details(
-                    (
-                        EventAuditType.connection_secrets_updated
-                        if existing_connection_config
-                        else EventAuditType.connection_secrets_created
-                    ),
-                    connection_config=connection_config,
-                    secrets_modified=connection_config.secrets,  # type: ignore[arg-type]
-                )
-                audit_service.create_event_audit(
-                    event_type=EventAuditType.connection_secrets_created,
-                    status=EventAuditStatus.succeeded,
-                    resource_type="connection_config",
-                    resource_identifier=connection_config.key,
-                    description=description,
-                    event_details=event_details,
-                )
+            created_or_updated.append(connection_response)
 
-            # Automatically create a ManualTask if this is a connection config of type manual_task
-            # and it doesn't already have one
-            if (
-                connection_config.connection_type == ConnectionType.manual_task
-                and not connection_config.manual_task
-            ):
-                ManualTask.create(
-                    db=db,
-                    data={
-                        "task_type": ManualTaskType.privacy_request,
-                        "parent_entity_id": connection_config.id,
-                        "parent_entity_type": ManualTaskParentEntityType.connection_config,
-                    },
-                )
-
-            created_or_updated.append(
-                ConnectionConfigurationResponse.model_validate(connection_config)
-            )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
                 "Create/update failed for connection config with key '{}': {}",
@@ -311,6 +144,29 @@ def patch_connection_configs(
                     message=exc.args[0],
                     data=orig_data,
                 )
+            )
+        except ConnectorTemplateNotFound as exc:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            )
+        except ValidationError as e:
+            # The "input" potentially contains sensitive info and the Pydantic-specific "url" is not helpful
+            errors = e.errors(include_url=False, include_input=False)
+            for err in errors:
+                # Additionally, manually remove the context from the error message -
+                # this may contain sensitive information
+                err.pop("ctx", None)
+
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=jsonable_encoder(errors),
+            )
+        except ValueError as exc:
+            # Handle missing saas_connector_type and other validation errors
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
             )
         except Exception as e:
             logger.warning(
@@ -330,6 +186,12 @@ def patch_connection_configs(
     # Check if possibly disabling a manual webhook here causes us to need to queue affected privacy requests
     requeue_requires_input_requests(db)
 
+    logger.info(
+        "Completed bulk upsert for {} connection configuration(s): {} succeeded, {} failed",
+        len(configs),
+        len(created_or_updated),
+        len(failed),
+    )
     return BulkPutConnectionConfiguration(
         succeeded=created_or_updated,
         failed=failed,
