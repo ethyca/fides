@@ -6,8 +6,6 @@ from fides.api.schemas.messaging.messaging import MessagingActionType
 from tests.ops.test_helpers.email_test_utils import assert_url_hostname_present
 
 
-
-
 def test_manual_task_digest_template_retrieval() -> None:
     """Ensure the manual task digest template loads successfully as a Jinja Template object."""
     template = get_email_template(MessagingActionType.MANUAL_TASK_DIGEST)

@@ -69,7 +69,9 @@ def assert_url_hostname_present(html_content: str, expected_hostname: str) -> No
     )
 
 
-def assert_html_contains_url_with_hostname(html_content: str, expected_hostname: str) -> None:
+def assert_html_contains_url_with_hostname(
+    html_content: str, expected_hostname: str
+) -> None:
     """
     Alias for assert_url_hostname_present for consistency with other HTML assertion helpers.
 

@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from fides.api.schemas.messaging.messaging import (
     ManualTaskDigestBodyParams,
     MessagingActionType,
+    MessagingServiceType,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.api.schemas.messaging.messaging import MessagingServiceType
 from tests.ops.test_helpers.email_test_utils import assert_url_hostname_present
 
 
