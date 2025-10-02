@@ -22,7 +22,9 @@ import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
 } from "~/features/connection-type";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromSystemType,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -281,7 +283,9 @@ const ConnectionListDropdown = ({
                     bg: "gray.100",
                   }}
                 >
-                  <ConnectionTypeLogo data={option.value} />
+                  <ConnectionTypeLogo
+                    data={connectionLogoFromSystemType(option.value)}
+                  />
                   <Text
                     ml={2}
                     fontSize="0.75rem"

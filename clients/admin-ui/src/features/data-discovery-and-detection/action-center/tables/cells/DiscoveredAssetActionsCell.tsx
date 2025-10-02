@@ -5,6 +5,7 @@ import {
   Icons,
   useToast,
 } from "fidesui";
+import { truncate } from "lodash";
 import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -64,6 +65,8 @@ export const DiscoveredAssetActionsCell = ({
     consent_aggregated: consentAggregated,
   } = asset;
 
+  const truncatedAssetName = truncate(name || "", { length: 50 });
+
   // Check if the consent status is an error type
   const isErrorStatus = consentAggregated
     ? DiscoveryErrorStatuses.includes(consentAggregated)
@@ -81,7 +84,7 @@ export const DiscoveredAssetActionsCell = ({
       toast(
         successToastParams(
           SuccessToastContent(
-            `${type} "${name}" has been added to the system inventory.`,
+            `${type} "${truncatedAssetName}" has been added to the system inventory.`,
             systemToLink ? () => router.push(href) : undefined,
           ),
         ),
@@ -99,7 +102,7 @@ export const DiscoveredAssetActionsCell = ({
       toast(
         successToastParams(
           SuccessToastContent(
-            `${type} "${name}" has been ignored and will not appear in future scans.`,
+            `${type} "${truncatedAssetName}" has been ignored and will not appear in future scans.`,
             async () => {
               await onTabChange(ActionCenterTabHash.IGNORED);
             },
@@ -118,7 +121,7 @@ export const DiscoveredAssetActionsCell = ({
     } else {
       toast(
         successToastParams(
-          `${type} "${name}" is no longer ignored and will appear in future scans.`,
+          `${type} "${truncatedAssetName}" is no longer ignored and will appear in future scans.`,
         ),
       );
     }

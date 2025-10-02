@@ -1,4 +1,5 @@
 import { AntSpace as Space, AntTag as Tag } from "fidesui";
+import { truncate } from "lodash";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -16,10 +17,12 @@ const DiscoveredAssetDataUseCell = ({
   asset,
   readonly,
   columnState,
+  onChange,
 }: {
   asset: StagedResourceAPIResponse;
   readonly?: boolean;
   columnState?: ColumnState;
+  onChange?: (dataUses: string[]) => void;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -29,6 +32,8 @@ const DiscoveredAssetDataUseCell = ({
   const { getDataUseDisplayName } = useTaxonomies();
 
   const currentDataUses = asset.preferred_data_uses || [];
+
+  const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 
   const handleAddDataUse = async (newDataUse: string) => {
     const result = await updateAssetsDataUseMutation({
@@ -40,9 +45,10 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category added to ${asset.resource_type} "${asset.name}" .`,
+        `Consent category added to ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
+      onChange?.([...currentDataUses, newDataUse]);
     }
     setIsAdding(false);
   };
@@ -57,9 +63,10 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category removed from ${asset.resource_type} "${asset.name}".`,
+        `Consent category removed from ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
+      onChange?.(currentDataUses.filter((use) => use !== useToDelete));
     }
   };
 
