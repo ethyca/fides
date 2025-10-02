@@ -7,7 +7,10 @@ import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromKey,
+  connectionLogoFromSystemType,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
 import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
@@ -18,7 +21,14 @@ const DESCRIBE_SYSTEM_COPY =
 
 const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
   <Box display="flex" mb={4} alignItems="center" data-testid="header">
-    <ConnectionTypeLogo data={connector ?? "ethyca"} mr={2} />
+    <ConnectionTypeLogo
+      data={
+        connector
+          ? connectionLogoFromSystemType(connector)
+          : connectionLogoFromKey("ethyca")
+      }
+      mr={2}
+    />
     <Heading fontSize="md">
       Describe your {connector ? connector.human_readable : "new"} system
     </Heading>

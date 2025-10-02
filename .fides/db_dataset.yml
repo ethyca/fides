@@ -1081,6 +1081,43 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: digest_task_execution
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: digest_config_id
+      data_categories: [system.operations]
+    - name: celery_task_id
+      data_categories: [system.operations]
+    - name: action_type
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: total_recipients
+      data_categories: [system.operations]
+    - name: processed_recipients
+      data_categories: [system.operations]
+    - name: successful_communications
+      data_categories: [system.operations]
+    - name: failed_communications
+      data_categories: [system.operations]
+    - name: execution_state
+      data_categories: [system.operations]
+    - name: processed_user_ids
+      data_categories: [system.operations]
+    - name: started_at
+      data_categories: [system.operations]
+    - name: completed_at
+      data_categories: [system.operations]
+    - name: last_checkpoint_at
+      data_categories: [system.operations]
+    - name: error_message
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: executionlog
     data_categories: []
     fields:

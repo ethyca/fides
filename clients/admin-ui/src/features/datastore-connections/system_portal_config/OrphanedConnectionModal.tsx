@@ -1,5 +1,7 @@
 import { useAlert, useAPIHelper } from "common/hooks";
-import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromConfiguration,
+} from "datastore-connections/ConnectionTypeLogo";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import {
   AntButton as Button,
@@ -153,7 +155,7 @@ const OrphanedConnectionModal = ({
                     className="mb-2"
                   >
                     <ConnectionTypeLogo
-                      data={connectionConfig}
+                      data={connectionLogoFromConfiguration(connectionConfig)}
                       className="mr-2"
                     />
                     <Text>{connectionConfig.name}</Text>

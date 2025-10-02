@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from sqlalchemy import Boolean, Column, DateTime, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -18,6 +18,9 @@ from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
 )
+
+if TYPE_CHECKING:
+    from fides.api.models.digest.digest_execution import DigestTaskExecution
 
 
 class DigestType(str, Enum):
@@ -59,6 +62,12 @@ class DigestConfig(Base):
         "DigestCondition",
         back_populates="digest_config",
         cascade="all, delete-orphan",
+    )
+    executions = relationship(
+        "DigestTaskExecution",
+        back_populates="digest_config",
+        cascade="all, delete-orphan",
+        order_by="DigestTaskExecution.created_at.desc()",
     )
 
     def get_receiver_condition(

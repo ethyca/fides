@@ -2,10 +2,12 @@ import { useMemo } from "react";
 
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
-} from "~/types/api";
+  connectionLogoFromConfiguration,
+  connectionLogoFromKey,
+  connectionLogoFromSystemType,
+  type ConnectionLogoSource,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
+import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 /**
  * Custom hook to get the correct logo data for ConnectionTypeLogo component.
@@ -19,7 +21,7 @@ import {
  */
 export const useConnectionLogo = (
   integration?: ConnectionConfigurationResponse,
-): ConnectionConfigurationResponse | ConnectionSystemTypeMap | "" => {
+): ConnectionLogoSource => {
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
   const connectionTypes = useMemo(
     () => connectionTypesData?.items || [],
@@ -28,10 +30,9 @@ export const useConnectionLogo = (
 
   return useMemo(() => {
     if (!integration) {
-      return "";
+      return connectionLogoFromKey("");
     }
 
-    // For SAAS integrations, find the corresponding ConnectionSystemTypeMap with encoded_icon
     if (
       integration.connection_type === ConnectionType.SAAS &&
       integration.saas_config?.type
@@ -40,11 +41,10 @@ export const useConnectionLogo = (
         (ct) => ct.identifier === integration.saas_config?.type,
       );
       if (connectionTypeMap) {
-        return connectionTypeMap;
+        return connectionLogoFromSystemType(connectionTypeMap);
       }
     }
 
-    // For non-SAAS integrations, use the original integration object
-    return integration;
+    return connectionLogoFromConfiguration(integration);
   }, [integration, connectionTypes]);
 };

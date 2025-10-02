@@ -8,7 +8,10 @@ import { ConnectionConfigurationResponse } from "~/types/api";
 
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
-import ConnectionTypeLogo from "./ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromConfiguration,
+  connectionLogoFromSystemType,
+} from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
 import { TestData } from "./TestData";
 
@@ -20,16 +23,20 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
-  const connectionType = useMemo(
-    () =>
-      connectionOptions.find(
-        (ct) =>
-          ct.identifier === connectionData.connection_type ||
-          (connectionData.saas_config &&
-            ct.identifier === connectionData.saas_config.type),
-      ) || "ethyca",
-    [connectionData, connectionOptions],
-  );
+  const logoSource = useMemo(() => {
+    const connectionType = connectionOptions.find(
+      (ct) =>
+        ct.identifier === connectionData.connection_type ||
+        (connectionData.saas_config &&
+          ct.identifier === connectionData.saas_config.type),
+    );
+
+    if (connectionType) {
+      return connectionLogoFromSystemType(connectionType);
+    }
+
+    return connectionLogoFromConfiguration(connectionData);
+  }, [connectionData, connectionOptions]);
 
   return (
     <Box
@@ -39,7 +46,7 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
       data-testid={`connection-grid-item-${connectionData.name}`}
     >
       <Flex justifyContent="center" alignItems="center">
-        <ConnectionTypeLogo data={connectionType} />
+        <ConnectionTypeLogo data={logoSource} />
         <Text
           color="gray.900"
           fontSize="md"

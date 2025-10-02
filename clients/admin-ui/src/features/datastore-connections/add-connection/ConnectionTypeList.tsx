@@ -1,4 +1,6 @@
-import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromSystemType,
+} from "datastore-connections/ConnectionTypeLogo";
 import { Box, Flex, SimpleGrid, Text } from "fidesui";
 import NextLink from "next/link";
 import React from "react";
@@ -42,7 +44,7 @@ const ConnectionTypeList = ({ items }: ConnectionTypeListProps) => (
             lineHeight="20px"
             h="80px"
           >
-            <ConnectionTypeLogo data={i} />
+            <ConnectionTypeLogo data={connectionLogoFromSystemType(i)} />
             <Text ml="12px">{i.human_readable}</Text>
           </Flex>
         </Box>

@@ -1,4 +1,5 @@
 import { AntTag as Tag, Icons } from "fidesui";
+import { truncate } from "lodash";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
@@ -13,12 +14,14 @@ interface SystemCellProps {
   aggregateSystem: StagedResourceAPIResponse;
   monitorConfigId: string;
   readonly?: boolean;
+  onChange?: (systemKey: string) => void;
 }
 
 export const SystemCell = ({
   aggregateSystem,
   monitorConfigId,
   readonly,
+  onChange,
 }: SystemCellProps) => {
   const {
     resource_type: assetType,
@@ -28,6 +31,7 @@ export const SystemCell = ({
     user_assigned_system_key: userAssignedSystemKey,
     system_key: systemKey,
   } = aggregateSystem;
+  const truncatedAssetName = truncate(assetName || "", { length: 50 });
   const [isEditing, setIsEditing] = useState(false);
   const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
   const [updateResourceCategoryMutation, { isLoading }] =
@@ -53,15 +57,17 @@ export const SystemCell = ({
       monitor_config_id: monitorConfigId,
       user_assigned_system_key: fidesKey,
     });
+    const truncatedNewSystemName = truncate(newSystemName, { length: 50 });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
         isNewSystem
-          ? `${newSystemName} has been added to your system inventory and the ${assetType} "${assetName}" has been assigned to that system.`
-          : `${assetType} "${assetName}" has been assigned to ${newSystemName}.`,
+          ? `${truncatedNewSystemName} has been added to your system inventory and the ${assetType} "${truncatedAssetName}" has been assigned to that system.`
+          : `${assetType} "${truncatedAssetName}" has been assigned to ${truncatedNewSystemName}.`,
         `Confirmed`,
       );
+      onChange?.(fidesKey);
     }
     setIsEditing(false);
   };

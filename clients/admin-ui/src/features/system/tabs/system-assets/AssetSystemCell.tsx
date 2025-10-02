@@ -4,6 +4,7 @@ import {
   Icons,
   useDisclosure,
 } from "fidesui";
+import { truncate } from "lodash";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
@@ -44,6 +45,7 @@ const AssetSystemCell = ({
   const confirmationModal = useDisclosure();
 
   const { asset_type: assetType, name: assetName } = asset;
+  const truncatedAssetName = truncate(assetName || "", { length: 50 });
 
   const onAddSystem: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
     e.preventDefault();
@@ -55,6 +57,7 @@ const AssetSystemCell = ({
       return;
     }
     const { newSystemKey, newSystemName, isNewSystem } = params;
+    const truncatedNewSystemName = truncate(newSystemName, { length: 50 });
     const result = await updateAsset({
       systemKey,
       assets: [{ id: asset.id, system_key: newSystemKey }],
@@ -64,8 +67,8 @@ const AssetSystemCell = ({
     } else {
       successAlert(
         isNewSystem
-          ? `${newSystemName} has been added to your system inventory and the ${assetType} "${assetName}" has been assigned to that system.`
-          : `${assetType} ${assetName} has been assigned to ${newSystemName}`,
+          ? `${truncatedNewSystemName} has been added to your system inventory and the ${assetType} "${truncatedAssetName}" has been assigned to that system.`
+          : `${assetType} "${truncatedAssetName}" has been assigned to ${truncatedNewSystemName}`,
       );
     }
     setIsEditing(false);
