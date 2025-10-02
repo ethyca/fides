@@ -11,7 +11,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
-from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -186,10 +185,9 @@ class RequestTask(WorkerTask, Base):
     )
 
     # Stores the sub-requests data for async polling tasks
-    sub_requests: RelationshipProperty[AppenderQuery] = relationship(
+    sub_requests: "RelationshipProperty[List[RequestTaskSubRequest]]" = relationship(
         "RequestTaskSubRequest",
         back_populates="request_task",
-        lazy="dynamic",
         cascade="all, delete-orphan",
         order_by="RequestTaskSubRequest.created_at",
     )

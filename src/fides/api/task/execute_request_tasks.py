@@ -22,7 +22,10 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
-from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.models.worker_task import (
+    RESUMABLE_EXECUTION_LOG_STATUSES,
+    ExecutionLogStatus,
+)
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import (
@@ -162,10 +165,7 @@ def can_run_task_body(
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
         return False
-    if request_task.status not in [
-        ExecutionLogStatus.pending,
-        ExecutionLogStatus.polling,
-    ]:
+    if request_task.status not in RESUMABLE_EXECUTION_LOG_STATUSES:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
             request_task.action_type,

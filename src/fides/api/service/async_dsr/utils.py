@@ -8,7 +8,7 @@ These are helper functions that can be used across the async DSR system.
 from enum import Enum
 
 # Type checking imports
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, cast
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
+from fides.api.schemas.saas.saas_config import SaaSRequest
 
 if TYPE_CHECKING:
     from fides.api.service.connectors.query_configs.saas_query_config import (
@@ -25,21 +26,20 @@ if TYPE_CHECKING:
 
 
 def has_async_requests(query_config: "SaaSQueryConfig") -> bool:
-    """Check if any read/delete requests have async configuration"""
-    read_requests = query_config.get_read_requests_by_identity()
-
-    # For masking requests, we need a session to get the masking request
-    # Since this is a utility function, we'll just check read requests for async config
-    # The masking request async config will be checked in the actual handlers
-    all_requests = read_requests
-
+    """Check if any read/update/delete requests have async configuration"""
+    all_requests: List[SaaSRequest] = cast(
+        List[SaaSRequest], query_config.get_read_requests_by_identity()
+    )
+    masking_request = query_config.get_masking_request()
+    if masking_request:
+        all_requests.append(masking_request)
     return any(request.async_config is not None for request in all_requests)
 
 
 def is_polling_continuation(request_task: RequestTask) -> bool:
     """Check if this is a polling continuation (not initial request)"""
     async_type_check = request_task.async_type == AsyncTaskType.polling
-    sub_requests_count = request_task.sub_requests.count()
+    sub_requests_count = len(request_task.sub_requests)
 
     logger.warning(
         f"is_polling_continuation for task {request_task.id}: "

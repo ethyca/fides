@@ -6,7 +6,9 @@ and response parsing with no business logic dependencies.
 """
 
 import io
-import re
+import mimetypes
+import os
+from email.message import Message
 from typing import Any, List, Optional
 from urllib.parse import urlparse
 
@@ -18,9 +20,13 @@ from requests import Response
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.async_polling_configuration import (
     PollingResult,
+    PollingResultType,
     SupportedDataType,
 )
 from fides.api.util.collection_util import Row
+
+CONTENT_TYPE = "content-type"
+CONTENT_DISPOSITION = "content-disposition"
 
 # Content type mappings for data type detection
 CONTENT_TYPE_MAP = {
@@ -59,26 +65,8 @@ ATTACHMENT_CONTENT_TYPES = {
     "video/",
 }
 
-# Content type inference from file extensions
-EXTENSION_CONTENT_TYPES = {
-    ".pdf": "application/pdf",
-    ".zip": "application/zip",
-    ".tar": "application/x-tar",
-    ".gz": "application/gzip",
-    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ".xls": "application/vnd.ms-excel",
-    ".json": "application/json",
-    ".csv": "text/csv",
-    ".xml": "application/xml",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-    ".gif": "image/gif",
-    ".bmp": "image/bmp",
-    ".tiff": "image/tiff",
-    ".webp": "image/webp",
-    ".svg": "image/svg+xml",
-}
+# Initialize mimetypes module for content type inference
+mimetypes.init()
 
 
 class PollingResponseProcessor:
@@ -89,18 +77,18 @@ class PollingResponseProcessor:
         cls, request_path: str, response: Response, result_path: Optional[str] = None
     ) -> PollingResult:
         """Process response with smart data type inference."""
-        inferred_type = _infer_data_type(request_path, response)
+        inferred_type = cls._infer_data_type(request_path, response)
 
-        if _should_store_as_attachment(response, request_path, inferred_type):
-            return _build_attachment_result(response, request_path, inferred_type)
+        if cls._should_store_as_attachment(response, request_path, inferred_type):
+            return cls._build_attachment_result(response, request_path, inferred_type)
 
-        rows = _parse_to_rows(response, inferred_type, result_path)
+        rows = cls._parse_to_rows(response, inferred_type, result_path)
         return PollingResult(
             data=rows,
-            result_type="rows",
+            result_type=PollingResultType.rows,
             metadata={
                 "inferred_type": inferred_type.value,
-                "content_type": response.headers.get("content-type", ""),
+                "content_type": response.headers.get(CONTENT_TYPE, ""),
                 "row_count": len(rows),
                 "parsed_to_rows": True,
             },
@@ -114,7 +102,7 @@ class PollingResponseProcessor:
     ) -> bool:
         """Process status response and extract completion status."""
         # Check if response is JSON
-        content_type = response.headers.get("content-type", "").lower()
+        content_type = response.headers.get(CONTENT_TYPE, "").lower()
         if "application/json" not in content_type:
             return False
 
@@ -135,145 +123,145 @@ class PollingResponseProcessor:
         # Otherwise, check truthiness
         return bool(status_value)
 
+    @staticmethod
+    def _infer_data_type(request_path: str, response: Response) -> SupportedDataType:
+        """Infer data type from response characteristics."""
+        content_type = response.headers.get(CONTENT_TYPE, "").lower()
 
-# Private helpers
+        # Check for attachment content types first
+        if any(ct in content_type for ct in ATTACHMENT_CONTENT_TYPES):
+            return SupportedDataType.attachment
 
+        # Check content-type header (most reliable)
+        for content_type_pattern, data_type in CONTENT_TYPE_MAP.items():
+            if content_type_pattern in content_type:
+                return data_type
 
-def _infer_data_type(request_path: str, response: Response) -> SupportedDataType:
-    """Infer data type from response characteristics."""
-    content_type = response.headers.get("content-type", "").lower()
+        # Check URL extension
+        path = urlparse(request_path.lower()).path
+        if path.endswith(".csv"):
+            return SupportedDataType.csv
 
-    # Check for attachment content types first
-    if any(ct in content_type for ct in ATTACHMENT_CONTENT_TYPES):
-        return SupportedDataType.attachment
-
-    # Check content-type header (most reliable)
-    for content_type_pattern, data_type in CONTENT_TYPE_MAP.items():
-        if content_type_pattern in content_type:
-            return data_type
-
-    # Check URL extension
-    path = urlparse(request_path.lower()).path
-    if path.endswith(".csv"):
-        return SupportedDataType.csv
-
-    # Try parsing as JSON
-    try:
-        response.json()
-        return SupportedDataType.json
-    except (ValueError, TypeError):
-        pass
-
-    return SupportedDataType.attachment  # Preserve unknown types as raw data
-
-
-def _should_store_as_attachment(
-    response: Response, request_path: str, inferred_type: SupportedDataType
-) -> bool:
-    """Determine if response should be treated as an attachment."""
-    content_type = response.headers.get("content-type", "").lower()
-
-    # Check attachment-specific indicators
-    if inferred_type == SupportedDataType.attachment:
-        return True
-
-    if "attachment" in response.headers.get("content-disposition", "").lower():
-        return True
-
-    if any(ct in content_type for ct in ATTACHMENT_CONTENT_TYPES):
-        return True
-
-    # Check file extension in URL
-    path = urlparse(request_path.lower()).path
-    if any(path.endswith(ext) for ext in ATTACHMENT_EXTENSIONS):
-        return True
-
-    return False
-
-
-def _extract_filename(response: Response, request_url: str) -> str:
-    """Extract filename from response or URL."""
-    # Try Content-Disposition header
-    disposition = response.headers.get("content-disposition", "")
-    match = re.search(r'filename[^;=\n]*=(([\'"]).*?\2|[^;\n]*)', disposition)
-    if match:
-        filename = match.group(1).strip("'\"")
-        if filename:
-            return filename
-
-    # Extract from URL path
-    path = urlparse(request_url).path
-    if path:
-        filename = path.split("/")[-1]
-        if filename:
-            return filename
-
-    return "polling_result"
-
-
-def _build_attachment_result(
-    response: Response, request_url: str, inferred_type: SupportedDataType
-) -> PollingResult:
-    """Build a PollingResult for attachment data."""
-    filename = _extract_filename(response, request_url)
-
-    # Get content type from header, or infer from filename extension
-    content_type = response.headers.get("content-type")
-
-    # If no content type or it's generic, try to infer from filename extension
-    if not content_type or content_type in ("application/octet-stream", "text/plain"):
-        for ext, mime_type in EXTENSION_CONTENT_TYPES.items():
-            if filename.lower().endswith(ext):
-                content_type = mime_type
-                break
-        else:
-            content_type = (
-                content_type or "application/octet-stream"
-            )  # Keep original or fallback
-
-    return PollingResult(
-        data=response.content,
-        result_type="attachment",
-        metadata={
-            "inferred_type": inferred_type.value,
-            "content_type": content_type,
-            "filename": filename,
-            "size": len(response.content),
-            "preserved_as_attachment": True,
-        },
-    )
-
-
-def _parse_to_rows(
-    response: Response, data_type: SupportedDataType, result_path: Optional[str] = None
-) -> List[Row]:
-    """Parse response to List[Row] based on data type."""
-    if data_type == SupportedDataType.json:
+        # Try parsing as JSON
         try:
-            data = response.json()
-            if result_path:
-                data = pydash.get(data, result_path)
-                if data is None:
-                    raise PrivacyRequestError(
-                        f"Could not extract data from response using path: {result_path}"
-                    )
+            response.json()
+            return SupportedDataType.json
+        except (ValueError, TypeError):
+            pass
 
-            if isinstance(data, list):
-                return data
-            if isinstance(data, dict):
-                return [data]
-            raise PrivacyRequestError(
-                f"Expected list or dict from result request, got: {type(data)}"
-            )
+        return SupportedDataType.attachment  # Preserve unknown types as raw data
 
-        except ValueError as e:
-            raise PrivacyRequestError(f"Invalid JSON response: {e}")
+    @staticmethod
+    def _should_store_as_attachment(
+        response: Response, request_path: str, inferred_type: SupportedDataType
+    ) -> bool:
+        """Determine if response should be treated as an attachment."""
+        content_type = response.headers.get(CONTENT_TYPE, "").lower()
 
-    if data_type == SupportedDataType.csv:
-        try:
-            df = pd.read_csv(io.StringIO(response.text))
-            return df.to_dict(orient="records")
-        except Exception as e:
-            raise PrivacyRequestError(f"Failed to parse CSV: {e}")
+        # Check attachment-specific indicators
+        if inferred_type == SupportedDataType.attachment:
+            return True
 
-    raise PrivacyRequestError(f"Cannot parse {data_type} to rows")
+        if "attachment" in response.headers.get(CONTENT_DISPOSITION, "").lower():
+            return True
+
+        if any(ct in content_type for ct in ATTACHMENT_CONTENT_TYPES):
+            return True
+
+        # Check file extension in URL
+        path = urlparse(request_path.lower()).path
+        if any(path.endswith(ext) for ext in ATTACHMENT_EXTENSIONS):
+            return True
+
+        return False
+
+    @staticmethod
+    def _extract_filename(response: Response, request_url: str) -> str:
+        """Extract filename from response or URL."""
+        # Try Content-Disposition header using email.message for proper parsing
+        disposition = response.headers.get(CONTENT_DISPOSITION)
+        if disposition:
+            msg = Message()
+            msg[CONTENT_DISPOSITION] = disposition
+            filename = msg.get_filename()
+            if filename:
+                return filename
+
+        # Extract from URL path using os.path.basename
+        path = urlparse(request_url).path
+        if path:
+            filename = os.path.basename(path)
+            if filename:
+                return filename
+
+        return "polling_result"
+
+    @staticmethod
+    def _build_attachment_result(
+        response: Response, request_url: str, inferred_type: SupportedDataType
+    ) -> PollingResult:
+        """Build a PollingResult for attachment data."""
+        filename = PollingResponseProcessor._extract_filename(response, request_url)
+
+        # Get content type from header, or infer from filename extension
+        content_type = response.headers.get(CONTENT_TYPE)
+
+        # If no content type or it's generic, try to infer from filename extension using mimetypes
+        if not content_type or content_type in (
+            "application/octet-stream",
+            "text/plain",
+        ):
+            guessed_type, _ = mimetypes.guess_type(filename)
+            if guessed_type:
+                content_type = guessed_type
+            else:
+                content_type = content_type or "application/octet-stream"
+
+        return PollingResult(
+            data=response.content,
+            result_type=PollingResultType.attachment,
+            metadata={
+                "inferred_type": inferred_type.value,
+                "content_type": content_type,
+                "filename": filename,
+                "size": len(response.content),
+                "preserved_as_attachment": True,
+            },
+        )
+
+    @staticmethod
+    def _parse_to_rows(
+        response: Response,
+        data_type: SupportedDataType,
+        result_path: Optional[str] = None,
+    ) -> List[Row]:
+        """Parse response to List[Row] based on data type."""
+        if data_type == SupportedDataType.json:
+            try:
+                data = response.json()
+                if result_path:
+                    data = pydash.get(data, result_path)
+                    if data is None:
+                        raise PrivacyRequestError(
+                            f"Could not extract data from response using path: {result_path}"
+                        )
+
+                if isinstance(data, list):
+                    return data
+                if isinstance(data, dict):
+                    return [data]
+                raise PrivacyRequestError(
+                    f"Expected list or dict from result request, got: {type(data)}"
+                )
+
+            except ValueError as e:
+                raise PrivacyRequestError(f"Invalid JSON response: {e}")
+
+        if data_type == SupportedDataType.csv:
+            try:
+                df = pd.read_csv(io.StringIO(response.text))
+                return df.to_dict(orient="records")
+            except Exception as e:
+                raise PrivacyRequestError(f"Failed to parse CSV: {e}")
+
+        raise PrivacyRequestError(f"Cannot parse {data_type} to rows")

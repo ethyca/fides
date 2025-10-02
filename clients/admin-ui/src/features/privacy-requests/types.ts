@@ -48,7 +48,7 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.COMPLETE]: undefined,
   [ExecutionLogStatus.PAUSED]: undefined,
   [ExecutionLogStatus.RETRYING]: undefined,
-  [ExecutionLogStatus.POLLING]: undefined,
+  [ExecutionLogStatus.POLLING]: "warning",
 };
 
 export interface ExecutionLog {

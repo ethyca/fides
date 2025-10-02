@@ -480,6 +480,27 @@ def _get_request_task_ids_in_progress(
     return [task[0] for task in request_tasks_in_progress]
 
 
+def _has_polling_tasks(db: Session, privacy_request_id: str) -> bool:
+    """
+    Check if a privacy request has any polling async tasks.
+
+    Args:
+        db: Database session
+        privacy_request_id: The ID of the privacy request to check
+
+    Returns:
+        bool: True if the privacy request has polling tasks, False otherwise
+    """
+    return db.query(
+        db.query(RequestTask)
+        .filter(
+            RequestTask.privacy_request_id == privacy_request_id,
+            RequestTask.async_type == AsyncTaskType.polling,
+        )
+        .exists()
+    ).scalar()
+
+
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -619,18 +640,8 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # Check if the Privacy request has a polling Rqeuest Task, that it exists
-                            polling_request_task_exists = db.query(
-                                db.query(RequestTask)
-                                .filter(
-                                    RequestTask.privacy_request_id
-                                    == privacy_request.id,
-                                    RequestTask.async_type == AsyncTaskType.polling,
-                                )
-                                .exists()
-                            ).scalar()
-
-                            if polling_request_task_exists:
+                            # Check if the Privacy request has polling tasks
+                            if _has_polling_tasks(db, privacy_request.id):
                                 # If the polling request task has no cached task ID, it's stuck
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "

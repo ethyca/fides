@@ -227,7 +227,7 @@ class ReadSaaSRequest(SaaSRequest):
     @model_validator(mode="after")
     def validate_request(self) -> "ReadSaaSRequest":
         """Validate that configs related to read requests are set properly"""
-        if not self.request_override and not self.async_config:
+        if not self.request_override:
             if not (self.path or self.output):
                 raise ValueError(
                     "A read request must specify either a path or an output if no request_override is provided"

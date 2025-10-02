@@ -20,6 +20,13 @@ class ExecutionLogStatus(enum.Enum):
     polling = "polling"
 
 
+# Statuses that can be resumed
+RESUMABLE_EXECUTION_LOG_STATUSES = [
+    ExecutionLogStatus.pending,
+    ExecutionLogStatus.polling,
+]
+
+
 class WorkerTask:
     """
     A task for a worker to execute.

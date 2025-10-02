@@ -197,7 +197,7 @@ class TestAsyncPollingStrategy:
         assert "Waiting for next scheduled check" in str(exc.value)
 
         # Mark 2 out of 3 sub-requests as complete - should still wait
-        sub_requests = request_task.sub_requests.all()
+        sub_requests = request_task.sub_requests
         sub_requests[0].update_status(db, ExecutionLogStatus.complete.value)
         sub_requests[1].update_status(db, ExecutionLogStatus.complete.value)
         db.commit()
@@ -239,7 +239,7 @@ class TestAsyncPollingStrategy:
         mock_query_config = MagicMock()
 
         # Test with mixed statuses: complete, error, pending
-        sub_requests = request_task.sub_requests.all()
+        sub_requests = request_task.sub_requests
         sub_requests[0].update_status(db, ExecutionLogStatus.complete.value)
         sub_requests[1].update_status(db, ExecutionLogStatus.error.value)
         # sub_requests[2] remains pending
@@ -284,7 +284,7 @@ class TestAsyncPollingStrategy:
         request_task = access_request_task
 
         # Remove the existing sub-request by deleting each one individually
-        for sub_request in request_task.sub_requests.all():
+        for sub_request in request_task.sub_requests:
             db.delete(sub_request)
         db.commit()
 

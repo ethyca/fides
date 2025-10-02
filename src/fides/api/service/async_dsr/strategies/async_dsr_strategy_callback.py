@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -7,13 +7,9 @@ from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.utils import AsyncPhase, get_async_phase
+from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.collection_util import Row
-
-if TYPE_CHECKING:
-    from fides.api.service.connectors.query_configs.saas_query_config import (
-        SaaSQueryConfig,
-    )
 
 
 class AsyncCallbackStrategy(AsyncDSRStrategy):
@@ -31,7 +27,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         self,
         client: AuthenticatedClient,
         request_task_id: str,
-        query_config: "SaaSQueryConfig",
+        query_config: SaaSQueryConfig,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Execute async retrieve data with internal phase routing."""
@@ -54,7 +50,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         self,
         client: AuthenticatedClient,
         request_task_id: str,
-        query_config: "SaaSQueryConfig",
+        query_config: SaaSQueryConfig,
         rows: List[Row],
     ) -> int:
         """Execute async mask data with internal phase routing."""
@@ -75,22 +71,11 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
 
     # Private helper methods
 
-    def _get_request_task(self, request_task_id: str) -> RequestTask:
-        """Get request task by ID or raise ValueError if not found."""
-        request_task = (
-            self.session.query(RequestTask)
-            .filter(RequestTask.id == request_task_id)
-            .first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with ID {request_task_id} not found")
-        return request_task
-
     def _initial_request_access(
         self,
         client: AuthenticatedClient,
         request_task: RequestTask,
-        query_config: "SaaSQueryConfig",
+        query_config: SaaSQueryConfig,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Handle initial setup for access callback requests."""
@@ -110,17 +95,15 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
             )
             return []
 
-        # Process all identified async requests
-        for read_request in async_requests_to_process:
-            # Set async_type based on our strategy type
-            request_task.async_type = AsyncTaskType.callback
-            self.session.add(request_task)
-            self.session.commit()
+        # Set async_type once for the request task
+        request_task.async_type = AsyncTaskType.callback
+        self.session.commit()
 
         # For callback strategy, we execute the initial request to trigger the callback
-        # then wait for the external system to call us back via webhook
-        # The actual callback execution and data processing happens in the webhook endpoint
-        # which will eventually call _callback_completion_access when the callback succeeds
+        # then wait for the external system to call us back via webhook.
+        # The callback endpoint logic will then queue the request task for it
+        # to be executed again with
+        # AsyncCallbackStrategy.async_retrieve_data -> _callback_completion_access
 
         # Execute the initial callback request to trigger the async process
         privacy_request = request_task.privacy_request
@@ -156,7 +139,7 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         self,
         client: AuthenticatedClient,
         request_task: RequestTask,
-        query_config: "SaaSQueryConfig",
+        query_config: SaaSQueryConfig,
         rows: List[Row],
     ) -> int:
         """Handle initial setup for erasure callback requests."""
@@ -165,43 +148,40 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
 
-        # For erasure, we look at masking requests (delete/update requests)
+        # For erasure, we only execute masking requests (delete/update requests)
         masking_request = query_config.get_masking_request()
-        read_requests = (
-            query_config.get_read_requests_by_identity()
-        )  # May also have async config for erasure
 
-        all_requests = []
-        if masking_request:
-            all_requests.append(masking_request)
-        all_requests.extend(read_requests)
+        if not masking_request:
+            logger.warning(
+                f"No masking request found for erasure task {request_task.id}"
+            )
+            return 0
+
         rows_updated = 0
 
-        for request in all_requests:
-            if request.async_config and request_task.id:
-                # Set async_type based on our strategy type
-                request_task.async_type = AsyncTaskType.callback
-                self.session.add(request_task)
-                self.session.commit()
+        # Check if the masking request has async_config and set async_type once
+        if masking_request.async_config and request_task.id:
+            request_task.async_type = AsyncTaskType.callback
+            self.session.commit()
 
-                if request.path:
-                    for row in rows:
-                        try:
-                            prepared_request = query_config.generate_update_stmt(
-                                row, policy, privacy_request
+            if masking_request.path:
+                for row in rows:
+                    try:
+                        prepared_request = query_config.generate_update_stmt(
+                            row, policy, privacy_request
+                        )
+                        client.send(prepared_request, masking_request.ignore_errors)
+                        rows_updated += 1
+                    except ValueError as exc:
+                        if masking_request.skip_missing_param_values:
+                            logger.debug(
+                                "Skipping optional masking request: {}",
+                                exc,
                             )
-                            client.send(prepared_request, request.ignore_errors)
-                            rows_updated += 1
-                        except ValueError as exc:
-                            if request.skip_missing_param_values:
-                                logger.debug(
-                                    "Skipping optional masking request: {}",
-                                    exc,
-                                )
-                                continue
-                            raise exc
+                            continue
+                        raise exc
 
-                raise AwaitingAsyncTask("Awaiting erasure callback results")
+            raise AwaitingAsyncTask("Awaiting erasure callback results")
 
         logger.warning(
             f"No async configuration found for erasure task {request_task.id}"

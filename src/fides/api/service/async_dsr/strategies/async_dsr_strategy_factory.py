@@ -63,8 +63,8 @@ def get_strategy(
     elif strategy_name == "callback":
         # Callback strategy only requires session
         return strategy_class(session)
-    else:
-        raise NoSuchStrategyException(f"Unsupported strategy: {strategy_name}")
+
+    raise NoSuchStrategyException(f"Unsupported strategy: {strategy_name}")
 
 
 def get_strategy_names() -> List[str]:

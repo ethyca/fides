@@ -1,8 +1,7 @@
-from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
@@ -12,26 +11,29 @@ from fides.api.util.collection_util import Row
 class SupportedDataType(Enum):
     """Supported data types for polling async DSR result requests."""
 
-    json = "json"
-    csv = "csv"
-    xml = "xml"
-    attachment = "attachment"
+    # Structured data types that can be parsed into rows
+    json = "json"  # Parsed into List[Row] from JSON response
+    csv = "csv"  # Parsed into List[Row] from CSV response
+    # Binary/non-parseable data stored as raw bytes
+    attachment = "attachment"  # Binary files (.zip, .pdf, .xml, etc.) stored as bytes
 
 
-@dataclass
-class PollingResult:
+class PollingResultType(Enum):
+    """Types of results from async polling operations."""
+
+    rows = "rows"  # Structured data parsed into List[Row]
+    attachment = "attachment"  # Binary file data stored as bytes
+
+
+class PollingResult(BaseModel):
     """
     Flexible result container for async polling operations.
     Handles both structured data and file attachments.
     """
 
     data: Union[List[Row], bytes]
-    result_type: str  # "rows", "attachment", "url"
-    metadata: Dict[str, Any]
-
-    def __post_init__(self) -> None:
-        if self.metadata is None:
-            self.metadata = {}
+    result_type: PollingResultType
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class PollingStatusRequest(SaaSRequest):

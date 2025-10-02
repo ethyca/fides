@@ -39,9 +39,16 @@ class PollingRequestHandler:
         param_values: Dict[str, Any],
     ) -> Response:
         """Execute HTTP status request and return raw response."""
+        if not self.status_request:
+            raise PrivacyRequestError(
+                "status_request is not configured in the async polling configuration"
+            )
 
         prepared_status_request = map_param_values(
-            "status", "polling request", self.status_request, param_values
+            action="status",
+            context="polling request",
+            current_request=self.status_request,
+            param_values=param_values,
         )
 
         response: Response = client.send(prepared_status_request)
@@ -65,7 +72,10 @@ class PollingRequestHandler:
             )
 
         prepared_result_request = map_param_values(
-            "result", "polling request", self.result_request, param_values
+            action="result",
+            context="polling request",
+            current_request=self.result_request,
+            param_values=param_values,
         )
 
         response: Response = client.send(prepared_result_request)

@@ -1,7 +1,4 @@
-# datetime and timedelta imports would be used in RequestTaskSubRequest helper methods
-from datetime import datetime, timedelta, timezone
-from io import BytesIO
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, cast
 from uuid import uuid4
 
 import pydash
@@ -13,34 +10,32 @@ from fides.api.common_exceptions import (
     FidesopsException,
     PrivacyRequestError,
 )
-from fides.api.models.attachment import (
-    Attachment,
-    AttachmentReference,
-    AttachmentReferenceType,
-    AttachmentType,
-)
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request.request_task import (
     AsyncTaskType,
     RequestTask,
     RequestTaskSubRequest,
 )
-from fides.api.models.storage import get_active_default_storage_config
 from fides.api.models.worker_task import ExecutionLogStatus
-
-# ExecutionLogStatus would be used in RequestTaskSubRequest helper methods
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResult,
+    PollingResultType,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.service.async_dsr.handlers.polling_attachment_handler import (
+    PollingAttachmentHandler,
+)
 from fides.api.service.async_dsr.handlers.polling_request_handler import (
     PollingRequestHandler,
 )
 from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
+)
+from fides.api.service.async_dsr.handlers.polling_sub_request_handler import (
+    PollingSubRequestHandler,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.utils import AsyncPhase, get_async_phase
@@ -129,17 +124,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         return 0
 
     # Private helper methods
-
-    def _get_request_task(self, request_task_id: str) -> RequestTask:
-        """Get request task by ID or raise ValueError if not found."""
-        request_task = (
-            self.session.query(RequestTask)
-            .filter(RequestTask.id == request_task_id)
-            .first()
-        )
-        if not request_task:
-            raise ValueError(f"RequestTask with ID {request_task_id} not found")
-        return request_task
 
     def _initial_request_access(
         self,
@@ -278,63 +262,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         return request_task.rows_masked or 0
 
-    def _store_polling_attachment(
-        self,
-        request_task: RequestTask,
-        attachment_data: bytes,
-        filename: str,
-    ) -> str:
-        """
-        Store polling attachment data and return attachment ID.
-
-        This utility function handles the storage of attachment data
-        from polling results and creates the necessary database records.
-        """
-        try:
-            # Get active storage config
-            storage_config = get_active_default_storage_config(self.session)
-            if not storage_config:
-                raise PrivacyRequestError("No active storage configuration found")
-
-            # Create attachment record and upload to storage
-            attachment = Attachment.create_and_upload(
-                db=self.session,
-                data={
-                    "file_name": filename,
-                    "attachment_type": AttachmentType.include_with_access_package,
-                    "storage_key": storage_config.key,
-                },
-                attachment_file=BytesIO(attachment_data),
-            )
-
-            # Create attachment references
-            AttachmentReference.create(
-                db=self.session,
-                data={
-                    "attachment_id": attachment.id,
-                    "reference_id": request_task.id,
-                    "reference_type": AttachmentReferenceType.request_task,
-                },
-            )
-
-            AttachmentReference.create(
-                db=self.session,
-                data={
-                    "attachment_id": attachment.id,
-                    "reference_id": request_task.privacy_request.id,
-                    "reference_type": AttachmentReferenceType.privacy_request,
-                },
-            )
-
-            logger.info(
-                f"Successfully stored polling attachment {attachment.id} for request_task {request_task.id}"
-            )
-            return attachment.id
-
-        except Exception as e:
-            logger.error(f"Failed to store polling attachment: {e}")
-            raise PrivacyRequestError(f"Failed to store polling attachment: {e}")
-
     def _handle_polling_initial_request(
         self,
         request_task: RequestTask,
@@ -375,7 +302,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 )
 
             param_value_map["correlation_id"] = str(correlation_id)
-            self._save_sub_request_data(request_task, param_value_map)
+            PollingSubRequestHandler.create_sub_request(
+                self.session, request_task, param_value_map
+            )
 
     def _handle_polling_initial_erasure_request(
         self,
@@ -423,31 +352,15 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
                 # Add correlation_id to the existing param_value_map (like access requests)
                 param_value_map["correlation_id"] = str(correlation_id)
-                self._save_sub_request_data(request_task, param_value_map)
+                PollingSubRequestHandler.create_sub_request(
+                    self.session, request_task, param_value_map
+                )
 
             except ValueError as exc:
                 if request.skip_missing_param_values:
                     logger.debug("Skipping optional masking request: {}", exc)
                     continue
                 raise exc
-
-    def _save_sub_request_data(
-        self,
-        request_task: RequestTask,
-        param_values_map: Dict[str, Any],
-    ) -> None:
-        """Saves the request data for future use in the request task on async requests."""
-        sub_request = RequestTaskSubRequest.create(
-            self.session,
-            data={
-                "request_task_id": request_task.id,
-                "param_values": param_values_map,
-                "status": "pending",
-            },
-        )
-        logger.info(
-            f"Created sub-request {sub_request.id} for task '{request_task.id}'"
-        )
 
     def _get_requests_for_action(
         self, polling_task: RequestTask, query_config: "SaaSQueryConfig"
@@ -598,10 +511,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
             # We need to reconstruct the request path for processing
             prepared_result_request = map_param_values(
-                "result",
-                "polling request",
-                self.result_request,
-                param_values,
+                action="result",
+                context="polling request",
+                current_request=self.result_request,
+                param_values=param_values,
             )
 
             polling_result = PollingResponseProcessor.process_result_response(
@@ -624,45 +537,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
         )
 
-    def _check_polling_completion(self, polling_task: RequestTask) -> bool:
-        """
-        Check if all sub-requests for a polling task are complete.
-
-        Args:
-            polling_task: The polling task to check
-
-        Returns:
-            bool: True if all sub-requests are complete, False if still in progress
-        """
-        # Get all sub-requests and categorize by status
-        all_sub_requests = polling_task.sub_requests.all()
-        completed_sub_requests = [
-            sub_request
-            for sub_request in all_sub_requests
-            if sub_request.status == "complete"
-        ]
-        failed_sub_requests = [
-            sub_request
-            for sub_request in all_sub_requests
-            if sub_request.status == "error"
-        ]
-
-        if (
-            len(completed_sub_requests) == len(all_sub_requests)
-            and len(all_sub_requests) > 0
-        ):
-            # All sub-requests completed successfully - aggregate results
-            logger.info(
-                f"All sub-requests completed successfully for task {polling_task.id}"
-            )
-            return True
-
-        # Still polling - some sub-requests are pending
-        logger.info(
-            f"Polling task {polling_task.id}: {len(completed_sub_requests)}/{len(all_sub_requests)} sub-requests complete, {len(failed_sub_requests)} failed"
-        )
-        return False
-
     def _process_sub_requests_for_request(
         self,
         client: AuthenticatedClient,
@@ -677,7 +551,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             request: The SaaS request being processed
             polling_task: The parent polling task
         """
-        sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests.all()
+        sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
 
         for sub_request in sub_requests:
             # Skip already completed sub-requests
@@ -722,7 +596,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             bool: True if all polling is complete (success or failure), False if still in progress
         """
         # Check for timeout before processing requests
-        self._check_polling_timeout(polling_task)
+        timeout_days = CONFIG.execution.async_polling_request_timeout_days
+        PollingSubRequestHandler.check_timeout(polling_task, timeout_days)
 
         # Get appropriate requests based on action type
         requests = self._get_requests_for_action(polling_task, query_config)
@@ -733,13 +608,13 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 self._process_sub_requests_for_request(client, request, polling_task)
 
         # Check final status and return completion status
-        return self._check_polling_completion(polling_task)
+        return PollingSubRequestHandler.check_completion(polling_task)
 
     def _handle_access_result(
         self, polling_result: PollingResult, request_task: RequestTask
     ) -> None:
         """Handle result for access requests."""
-        if polling_result.result_type == "rows":
+        if polling_result.result_type == PollingResultType.rows:
             existing_access_data = request_task.access_data or []
             if isinstance(polling_result.data, list):
                 existing_access_data.extend(polling_result.data)
@@ -751,17 +626,20 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             request_task.data_for_erasures = existing_access_data
             request_task.save(self.session)
 
-        elif polling_result.result_type == "attachment":
+        elif polling_result.result_type == PollingResultType.attachment:
             try:
-                attachment_bytes = self._ensure_attachment_bytes(polling_result.data)
-                attachment_id = self._store_polling_attachment(
+                attachment_bytes = PollingAttachmentHandler.ensure_attachment_bytes(
+                    polling_result.data
+                )
+                attachment_id = PollingAttachmentHandler.store_attachment(
+                    self.session,
                     request_task,
                     attachment_data=attachment_bytes,
                     filename=polling_result.metadata.get(
                         "filename", f"attachment_{str(uuid4())[:8]}"
                     ),
                 )
-                _add_attachment_metadata_to_rows(
+                PollingAttachmentHandler.add_metadata_to_rows(
                     self.session, attachment_id, request_task.access_data or []
                 )
 
@@ -785,84 +663,3 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         logger.info(
             f"Erasure task {request_task.id} completed - rows_masked: {request_task.rows_masked}"
         )
-
-    # Private helper functions
-
-    @staticmethod
-    def _ensure_attachment_bytes(data: Union[List[Row], bytes]) -> bytes:
-        """Ensure attachment polling results provide bytes content."""
-        if isinstance(data, bytes):
-            return data
-        raise PrivacyRequestError("Expected bytes data for attachment polling result")
-
-    def _check_polling_timeout(self, polling_task: RequestTask) -> None:
-        """
-        Check if any sub-requests have exceeded the polling timeout.
-
-        Raises:
-            PrivacyRequestError: If any sub-request has timed out
-        """
-
-        timeout_days = CONFIG.execution.async_polling_request_timeout_days
-        timeout_seconds = timeout_days * 24 * 60 * 60  # Convert days to seconds
-
-        # Check timeout for incomplete sub-requests only
-        timed_out_sub_requests = []
-
-        for sub_request in polling_task.sub_requests:
-            if sub_request.status != ExecutionLogStatus.complete.value:
-                # Check if this sub-request has timed out
-                if sub_request.created_at:
-                    timeout_threshold = sub_request.created_at + timedelta(
-                        seconds=timeout_seconds
-                    )
-                    current_time = datetime.now(timezone.utc)
-                    if current_time > timeout_threshold:
-                        timed_out_sub_requests.append(sub_request)
-
-        if timed_out_sub_requests:
-            sub_request_ids = [sr.id for sr in timed_out_sub_requests]
-            raise PrivacyRequestError(
-                f"Polling timeout exceeded for sub-requests {sub_request_ids} "
-                f"in task {polling_task.id}. Timeout interval: {timeout_days} days"
-            )
-
-
-def _add_attachment_metadata_to_rows(
-    db: Session, attachment_id: str, rows: List[Row]
-) -> None:
-    """Add attachment metadata to rows collection (like manual tasks do)."""
-    attachment_record = (
-        db.query(Attachment).filter(Attachment.id == attachment_id).first()
-    )
-
-    if attachment_record:
-        try:
-            size, url = attachment_record.retrieve_attachment()
-            attachment_info = {
-                "file_name": attachment_record.file_name,
-                "download_url": str(url) if url else None,
-                "file_size": size,
-            }
-        except Exception as exc:
-            logger.warning(
-                f"Could not retrieve attachment content for {attachment_record.file_name}: {exc}"
-            )
-            attachment_info = {
-                "file_name": attachment_record.file_name,
-                "download_url": None,
-                "file_size": None,
-            }
-
-        # Add attachment to the polling results
-        attachments_item = None
-        for item in rows:
-            if isinstance(item, dict) and "retrieved_attachments" in item:
-                attachments_item = item
-                break
-
-        if attachments_item is None:
-            attachments_item = {"retrieved_attachments": []}
-            rows.append(attachments_item)
-
-        attachments_item["retrieved_attachments"].append(attachment_info)

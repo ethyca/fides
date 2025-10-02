@@ -51,7 +51,7 @@ class TestRequestTaskSubRequest:
         db.refresh(polling_request_task)
 
         # Test dynamic relationship - sub_requests returns a query object
-        sub_requests = polling_request_task.sub_requests.all()
+        sub_requests = polling_request_task.sub_requests
         assert len(sub_requests) == 1
         assert sub_requests[0].param_values == test_data
 
@@ -116,7 +116,7 @@ class TestRequestTaskSubRequest:
 
         # Verify the task has multiple sub-requests
         db.refresh(polling_request_task)
-        sub_requests = polling_request_task.sub_requests.all()
+        sub_requests = polling_request_task.sub_requests
 
         assert len(sub_requests) == 3
         request_ids = [sr.param_values["request_id"] for sr in sub_requests]
@@ -178,8 +178,8 @@ class TestRequestTaskSubRequest:
         db.refresh(task1)
         db.refresh(task2)
 
-        task1_sub_requests = task1.sub_requests.all()
-        task2_sub_requests = task2.sub_requests.all()
+        task1_sub_requests = task1.sub_requests
+        task2_sub_requests = task2.sub_requests
 
         assert len(task1_sub_requests) == 1
         assert len(task2_sub_requests) == 1
@@ -384,7 +384,7 @@ class TestRequestTaskSubRequest:
 
         # Verify sub-requests exist
         db.refresh(task)
-        sub_requests = task.sub_requests.all()
+        sub_requests = task.sub_requests
         assert len(sub_requests) == 2
 
         # Delete the parent task

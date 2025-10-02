@@ -6,7 +6,10 @@ import pytest
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
-from fides.api.schemas.saas.async_polling_configuration import PollingResult
+from fides.api.schemas.saas.async_polling_configuration import (
+    PollingResult,
+    PollingResultType,
+)
 from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
 )
@@ -54,7 +57,7 @@ class TestPollingResponseProcessor:
                 {"id": 1, "name": "John Doe", "email": "john@example.com"},
                 {"id": 2, "name": "Jane Smith", "email": "jane@example.com"},
             ],
-            result_type="rows",
+            result_type=PollingResultType.rows,
             metadata={
                 "inferred_type": "csv",
                 "content_type": "text/csv",
@@ -66,18 +69,19 @@ class TestPollingResponseProcessor:
     def test_process_result_response_attachment_detected(self):
         response = Mock(autospec=Response)
         response.headers = {
-            "content-type": "application/octet-stream",
+            "content-type": "text/plain",
             "content-disposition": "attachment; filename=test_attachment.txt",
         }
         response.content = b"test attachment"
+        response.json.side_effect = ValueError("Not JSON")
         assert PollingResponseProcessor.process_result_response(
             "/api/result/", response, "data.results"
         ) == PollingResult(
             data=b"test attachment",
-            result_type="attachment",
+            result_type=PollingResultType.attachment,
             metadata={
                 "inferred_type": "attachment",
-                "content_type": "application/octet-stream",
+                "content_type": "text/plain",
                 "filename": "test_attachment.txt",
                 "size": 15,
                 "preserved_as_attachment": True,
@@ -112,7 +116,7 @@ class TestPollingResponseProcessor:
                     }
                 }
             ],
-            result_type="rows",
+            result_type=PollingResultType.rows,
             metadata={
                 "inferred_type": "json",
                 "content_type": "application/json",
@@ -319,7 +323,7 @@ class TestPollingResponseProcessor:
             {"id": 2, "name": "Jane Smith", "email": "jane@example.com"},
         ]
         assert result.data == expected_data
-        assert result.result_type == "rows"
+        assert result.result_type == PollingResultType.rows
         assert result.metadata["inferred_type"] == "json"
         assert result.metadata["row_count"] == 2
 
@@ -377,7 +381,7 @@ class TestPollingResponseProcessor:
         )
 
         # Should be treated as attachment, not parsed
-        assert result.result_type == "attachment"
+        assert result.result_type == PollingResultType.attachment
         assert result.data == b'<?xml version="1.0"?><data><item>test</item></data>'
         assert result.metadata["inferred_type"] == "attachment"
         assert result.metadata["content_type"] == "application/xml"
@@ -398,7 +402,7 @@ class TestPollingResponseProcessor:
         )
 
         # Should be treated as attachment based on file extension
-        assert result.result_type == "attachment"
+        assert result.result_type == PollingResultType.attachment
         assert result.data == b"<root><data>test</data></root>"
         assert result.metadata["inferred_type"] == "attachment"
         assert result.metadata["preserved_as_attachment"] is True
@@ -415,7 +419,7 @@ class TestPollingResponseProcessor:
         )
 
         # Should be treated as attachment based on content type
-        assert result.result_type == "attachment"
+        assert result.result_type == PollingResultType.attachment
         assert result.data == b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
         assert result.metadata["inferred_type"] == "attachment"
         assert result.metadata["content_type"] == "image/png"
@@ -438,7 +442,7 @@ class TestPollingResponseProcessor:
         )
 
         # Should be treated as attachment based on file extension
-        assert result.result_type == "attachment"
+        assert result.result_type == PollingResultType.attachment
         assert result.data == b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01"
         assert result.metadata["inferred_type"] == "attachment"
         assert (
@@ -460,7 +464,7 @@ class TestPollingResponseProcessor:
         )
 
         # Should be treated as attachment
-        assert result.result_type == "attachment"
+        assert result.result_type == PollingResultType.attachment
         assert (
             result.data
             == b'<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>'
