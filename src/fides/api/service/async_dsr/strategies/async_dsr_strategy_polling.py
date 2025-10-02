@@ -240,7 +240,13 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"Waiting for next scheduled check of {request_task.dataset_name} access results."
             )
 
-        return request_task.get_access_data()
+        # Aggregate all sub-request results
+        aggregated_results: List[Row] = []
+        for sub_request in request_task.sub_requests:
+            if sub_request.access_data:
+                aggregated_results.extend(sub_request.access_data)
+
+        return aggregated_results
 
     def _polling_continuation_erasure(
         self,
@@ -260,7 +266,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"Waiting for next scheduled check of {request_task.dataset_name} erasure results."
             )
 
-        return request_task.rows_masked or 0
+        # Aggregate rows_masked from all sub-requests
+        total_rows_masked = sum(
+            sub_request.rows_masked or 0 for sub_request in request_task.sub_requests
+        )
+        return total_rows_masked
 
     def _handle_polling_initial_request(
         self,
@@ -473,9 +483,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         """
         # Handle erasure operations differently - they don't need result_request
         if polling_task.action_type == ActionType.erasure:
-            # For erasure operations, just mark as complete and handle the result
+            # For erasure operations, just mark as complete and increment counter
+            sub_request.rows_masked = 1
             sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
-            self._handle_erasure_result(polling_task)
             logger.info(
                 f"Sub-request {sub_request.id} for {polling_task.action_type} task {polling_task.id} completed"
             )
@@ -525,8 +535,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         if not isinstance(polling_result, PollingResult):
             raise PrivacyRequestError("Polling result must be PollingResult instance")
 
-        # Handle results for access operations
-        self._handle_access_result(polling_result, polling_task)
+        # Store results on the sub-request
+        self._store_sub_request_result(polling_result, sub_request, polling_task)
 
         # Mark as complete using existing method
         sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
@@ -608,21 +618,17 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         # Check final status and return completion status
         return PollingSubRequestHandler.check_completion(polling_task)
 
-    def _handle_access_result(
-        self, polling_result: PollingResult, request_task: RequestTask
+    def _store_sub_request_result(
+        self,
+        polling_result: PollingResult,
+        sub_request: RequestTaskSubRequest,
+        polling_task: RequestTask,
     ) -> None:
-        """Handle result for access requests."""
+        """Store result data on the individual sub-request."""
         if polling_result.result_type == PollingResultType.rows:
-            existing_access_data = request_task.access_data or []
-            if isinstance(polling_result.data, list):
-                existing_access_data.extend(polling_result.data)
-            else:
-                existing_access_data.append(polling_result.data)
-            request_task.access_data = existing_access_data
-
-            # For structured data results, use the same data for erasures
-            request_task.data_for_erasures = existing_access_data
-            request_task.save(self.session)
+            # Store rows directly on the sub-request (data is always a list for rows)
+            sub_request.access_data = polling_result.data
+            sub_request.save(self.session)
 
         elif polling_result.result_type == PollingResultType.attachment:
             try:
@@ -631,39 +637,23 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 )
                 attachment_id = PollingAttachmentHandler.store_attachment(
                     self.session,
-                    request_task,
+                    polling_task,
                     attachment_data=attachment_bytes,
                     filename=polling_result.metadata.get(
                         "filename", f"attachment_{str(uuid4())[:8]}"
                     ),
                 )
 
-                # Get or create access_data list, add metadata, and persist it
-                access_data = request_task.access_data or []
+                # Store attachment metadata on sub-request
+                attachment_metadata: List[Row] = [{"retrieved_attachments": []}]
                 PollingAttachmentHandler.add_metadata_to_rows(
-                    self.session, attachment_id, access_data
+                    self.session, attachment_id, attachment_metadata
                 )
-                request_task.access_data = access_data
-
-                # For attachment results, we need to provide data for erasures
-                # This follows the same pattern as SaaSConnector.retrieve_data
-                # which returns [{}] when there's a delete request but no read request
-                # Only set data_for_erasures if it hasn't been set yet (to avoid overwriting row data)
-                if not request_task.data_for_erasures:
-                    request_task.data_for_erasures = [{}]
-                request_task.save(self.session)
+                sub_request.access_data = attachment_metadata
+                sub_request.save(self.session)
             except Exception as exc:
                 raise PrivacyRequestError(f"Attachment storage failed: {exc}")
         else:
             raise PrivacyRequestError(
                 f"Unsupported result type: {polling_result.result_type}"
             )
-
-    def _handle_erasure_result(self, request_task: RequestTask) -> None:
-        """Handle result for erasure requests."""
-        # For erasure operations, just increment the rows_masked counter
-        request_task.rows_masked = (request_task.rows_masked or 0) + 1
-        request_task.save(self.session)
-        logger.info(
-            f"Erasure task {request_task.id} completed - rows_masked: {request_task.rows_masked}"
-        )

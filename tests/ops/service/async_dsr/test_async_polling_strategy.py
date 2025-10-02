@@ -215,8 +215,10 @@ class TestAsyncPollingStrategy:
         sub_requests[2].update_status(db, ExecutionLogStatus.complete.value)
         db.commit()
 
-        # Mock the access data to be returned
-        request_task.access_data = [{"id": 1, "name": "test"}]
+        # Mock the access data on sub-requests (now aggregated from sub-requests)
+        sub_requests[0].access_data = [{"id": 1, "name": "test1"}]
+        sub_requests[1].access_data = [{"id": 2, "name": "test2"}]
+        sub_requests[2].access_data = [{"id": 3, "name": "test3"}]
         db.commit()
 
         result = async_polling_strategy.async_retrieve_data(
@@ -226,7 +228,12 @@ class TestAsyncPollingStrategy:
             input_data=MagicMock(),
         )
 
-        assert result == [{"id": 1, "name": "test"}]
+        # Should aggregate all sub-request data
+        assert result == [
+            {"id": 1, "name": "test1"},
+            {"id": 2, "name": "test2"},
+            {"id": 3, "name": "test3"},
+        ]
 
     def test_polling_completion_with_mixed_sub_request_statuses(
         self, multi_sub_request_task, async_polling_strategy, db
@@ -264,8 +271,10 @@ class TestAsyncPollingStrategy:
         )  # Complete the pending one
         db.commit()
 
-        # Mock the access data to be returned
-        request_task.access_data = [{"id": 1, "name": "test"}]
+        # Mock the access data on sub-requests
+        sub_requests[0].access_data = [{"id": 1, "name": "test1"}]
+        sub_requests[1].access_data = [{"id": 2, "name": "test2"}]
+        sub_requests[2].access_data = [{"id": 3, "name": "test3"}]
         db.commit()
 
         result = async_polling_strategy.async_retrieve_data(
@@ -275,7 +284,12 @@ class TestAsyncPollingStrategy:
             input_data=MagicMock(),
         )
 
-        assert result == [{"id": 1, "name": "test"}]
+        # Should aggregate all sub-request data
+        assert result == [
+            {"id": 1, "name": "test1"},
+            {"id": 2, "name": "test2"},
+            {"id": 3, "name": "test3"},
+        ]
 
     def test_polling_completion_with_no_sub_requests(
         self, access_request_task, async_polling_strategy, db
