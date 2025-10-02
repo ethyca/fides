@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added digest conditional dependency sql model. [#6627](https://github.com/ethyca/fides/pull/6627) https://github.com/ethyca/fides/labels/db-migration
 - Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
+- Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
@@ -39,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
 - Fixed an issue where updating an Experience in Admin UI could potentially result in a browser error [#6676](https://github.com/ethyca/fides/pull/6676)
 - Fixed a bug that prevented users from removing categories of consent from web monitor resources [#6679](https://github.com/ethyca/fides/pull/6679)
+- Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
