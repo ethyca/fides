@@ -58,6 +58,13 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
             "body": "Your erasure request has been completed.",
         },
     },
+    MessagingActionType.MANUAL_TASK_DIGEST.value: {
+        "label": "Manual task digest",
+        "content": {
+            "subject": "Weekly DSR Summary from {{organization_name}}",
+            "body": "Hi {{vendor_contact_name}},\n\nThis is your weekly summary of open data subject requests tasks from {{organization_name}} that require your attention.\n\nDue in the Next 7 Days: You have {{imminent_task_count}} request(s) due in the next week.\nUpcoming Tasks: You have {{upcoming_task_count}} request(s) due in the next period.\n\nPlease review the tasks in our Privacy Center: {{portal_url}}\n\nBest regards,\nThe {{organization_name}} Privacy Team",
+        },
+    },
 }
 
 

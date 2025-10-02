@@ -28,6 +28,7 @@ from fides.api.schemas.messaging.messaging import (
     ErrorNotificationBodyParams,
     ExternalUserWelcomeBodyParams,
     FidesopsMessage,
+    ManualTaskDigestBodyParams,
     MessagingActionType,
     MessagingMethod,
     MessagingServiceDetails,
@@ -177,6 +178,7 @@ def dispatch_message(
             UserInviteBodyParams,
             ErrorNotificationBodyParams,
             ExternalUserWelcomeBodyParams,
+            ManualTaskDigestBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -495,8 +497,6 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
         )
 
     if action_type == MessagingActionType.MANUAL_TASK_DIGEST:
-        base_template = get_email_template(action_type)
-
         variables = {
             "vendor_contact_name": body_params.vendor_contact_name,
             "organization_name": body_params.organization_name,
@@ -506,6 +506,17 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "company_logo_url": body_params.company_logo_url,
         }
 
+        # Use custom template if available, otherwise fall back to hard-coded HTML template
+        if messaging_template:
+            # Custom template from UI - render subject and body from template content
+            return EmailForActionType(
+                subject=_render(messaging_template.content["subject"], variables),
+                body=_render(messaging_template.content["body"], variables),
+                template_variables=variables,
+            )
+
+        # Fall back to hard-coded HTML template
+        base_template = get_email_template(action_type)
         return EmailForActionType(
             subject=f"Weekly DSR Summary from {body_params.organization_name}",
             body=base_template.render(variables),

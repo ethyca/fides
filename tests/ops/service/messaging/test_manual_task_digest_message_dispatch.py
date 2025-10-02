@@ -212,3 +212,119 @@ class TestManualTaskDigestMessageDispatch:
         template_vars = email_for_action_type.template_variables
         assert template_vars["vendor_contact_name"] == "María José García-López"
         assert template_vars["organization_name"] == "Acme Corp & Associates, LLC"
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_manual_task_digest_email_dispatch_with_custom_template(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+    ) -> None:
+        """Test manual task digest email dispatch using custom template from UI."""
+        from fides.api.models.messaging_template import MessagingTemplate
+
+        # Create a custom template
+        custom_template = MessagingTemplate.create(
+            db=db,
+            data={
+                "type": MessagingActionType.MANUAL_TASK_DIGEST.value,
+                "content": {
+                    "subject": "Custom Digest: {{organization_name}} Tasks",
+                    "body": "Hello {{vendor_contact_name}}, you have {{imminent_task_count}} urgent tasks and {{upcoming_task_count}} upcoming tasks from {{organization_name}}. Visit: {{portal_url}}",
+                },
+                "is_enabled": True,
+            },
+        )
+
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.MANUAL_TASK_DIGEST,
+            to_identity=Identity(**{"email": "vendor@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=ManualTaskDigestBodyParams(
+                vendor_contact_name="John Smith",
+                organization_name="Custom Corp",
+                portal_url="https://privacy.example.com/tasks",
+                imminent_task_count=2,
+                upcoming_task_count=5,
+                company_logo_url=None,
+            ),
+        )
+
+        # Verify custom template was used
+        mock_mailgun_dispatcher.assert_called_once()
+        call_args = mock_mailgun_dispatcher.call_args
+        email_for_action_type = call_args[0][1]
+
+        # Check that custom template content was used (not HTML template)
+        assert email_for_action_type.subject == "Custom Digest: Custom Corp Tasks"
+        assert "Hello John Smith" in email_for_action_type.body
+        assert (
+            "you have 2 urgent tasks and 5 upcoming tasks" in email_for_action_type.body
+        )
+        assert "Custom Corp" in email_for_action_type.body
+        assert "https://privacy.example.com/tasks" in email_for_action_type.body
+
+        # Should not contain HTML tags (since it's a custom text template)
+        assert "<div" not in email_for_action_type.body
+        assert "<html" not in email_for_action_type.body
+
+        # Clean up
+        custom_template.delete(db)
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_manual_task_digest_email_dispatch_fallback_to_html_template(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+    ) -> None:
+        """Test manual task digest falls back to HTML template when no custom template exists."""
+        # Ensure no custom template exists
+        from fides.api.models.messaging_template import MessagingTemplate
+
+        existing_templates = (
+            MessagingTemplate.query(db)
+            .filter(
+                MessagingTemplate.type == MessagingActionType.MANUAL_TASK_DIGEST.value
+            )
+            .all()
+        )
+        for template in existing_templates:
+            template.delete(db)
+
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.MANUAL_TASK_DIGEST,
+            to_identity=Identity(**{"email": "vendor@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=ManualTaskDigestBodyParams(
+                vendor_contact_name="Jane Doe",
+                organization_name="Fallback Corp",
+                portal_url="https://privacy.example.com/tasks",
+                imminent_task_count=1,
+                upcoming_task_count=3,
+                company_logo_url=None,
+            ),
+        )
+
+        # Verify HTML template was used as fallback
+        mock_mailgun_dispatcher.assert_called_once()
+        call_args = mock_mailgun_dispatcher.call_args
+        email_for_action_type = call_args[0][1]
+
+        # Check that HTML template content was used
+        assert email_for_action_type.subject == "Weekly DSR Summary from Fallback Corp"
+        assert "Hi Jane Doe," in email_for_action_type.body
+
+        # Should contain HTML tags (since it's the HTML template)
+        assert "<div" in email_for_action_type.body
+        assert "<html" in email_for_action_type.body
+        assert "email-container" in email_for_action_type.body
+
+        # Validate that URLs with the expected hostname are present in the email
+        assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")

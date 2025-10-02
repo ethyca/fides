@@ -75,6 +75,19 @@ class TestMessagingTemplates:
             is None
         )
 
+    def test_get_basic_messaging_template_manual_task_digest_default(self, db: Session):
+        """Test that Manual Task Digest has a default template."""
+        template_type = MessagingActionType.MANUAL_TASK_DIGEST.value
+        content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
+
+        template = get_basic_messaging_template_by_type_or_default(
+            db=db, template_type=template_type
+        )
+        assert template.type == template_type
+        assert template.content == content
+        assert "{{organization_name}}" in template.content["subject"]
+        assert "{{vendor_contact_name}}" in template.content["body"]
+
     def test_create_or_update_basic_templates_existing_type(
         self, db: Session, messaging_template_no_property
     ):
