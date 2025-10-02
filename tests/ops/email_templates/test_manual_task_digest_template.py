@@ -1,53 +1,11 @@
-import re
-from urllib.parse import urlparse
-
 import pytest
 from jinja2 import Template
 
 from fides.api.email_templates import get_email_template
 from fides.api.schemas.messaging.messaging import MessagingActionType
+from tests.ops.test_helpers.email_test_utils import assert_url_hostname_present
 
 
-def _extract_urls_from_html(html_content: str) -> list[str]:
-    """Extract URLs from HTML content using regex."""
-    urls = []
-
-    # Pattern to match URLs in href attributes
-    href_pattern = r'href=["\']([^"\']*)["\']'
-    href_matches = re.findall(href_pattern, html_content)
-    for url in href_matches:
-        if url and url.startswith("http"):
-            urls.append(url)
-
-    # Pattern to match plain text URLs (not in attributes)
-    url_pattern = r'https?://[^\s<>"\']+'
-    url_matches = re.findall(url_pattern, html_content)
-    for url in url_matches:
-        if url not in urls:  # Avoid duplicates
-            urls.append(url)
-
-    return urls
-
-
-def _assert_url_hostname_present(html_content: str, expected_hostname: str) -> None:
-    """Assert that at least one URL in the HTML content has the expected hostname."""
-    urls = _extract_urls_from_html(html_content)
-
-    found_hostnames = []
-    for url in urls:
-        try:
-            parsed_url = urlparse(url)
-            found_hostnames.append(parsed_url.hostname)
-            if parsed_url.hostname == expected_hostname:
-                return  # Found the expected hostname
-        except Exception:
-            continue  # Skip malformed URLs
-
-    # If we get here, the expected hostname was not found
-    raise AssertionError(
-        f"Expected hostname '{expected_hostname}' not found in any URLs. "
-        f"Found URLs: {urls}, Found hostnames: {found_hostnames}"
-    )
 
 
 def test_manual_task_digest_template_retrieval() -> None:
@@ -166,7 +124,7 @@ def test_manual_task_digest_template_edge_cases() -> None:
     assert "María José García-López" in rendered_html
     assert "Acme Corp &amp; Associates, LLC" in rendered_html  # HTML escaped
     # Validate that URLs with the expected hostname are present in the rendered HTML
-    _assert_url_hostname_present(rendered_html, "privacy.example.com")
+    assert_url_hostname_present(rendered_html, "privacy.example.com")
     assert "You have 0 requests due" in rendered_html
 
 
