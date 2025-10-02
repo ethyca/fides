@@ -189,6 +189,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
       },
       {
+        title: "Digests",
+        path: routes.DIGEST_CONFIG_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DIGEST_CONFIG_READ],
+      },
+      {
         title: "Users",
         path: routes.USER_MANAGEMENT_ROUTE,
         scopes: [
