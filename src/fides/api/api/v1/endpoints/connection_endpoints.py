@@ -40,13 +40,14 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
+from fides.api.service.deps import get_connection_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
     delete_connection_config,
     get_connection_config_or_error,
     patch_connection_configs,
-    validate_secrets,
+    update_connection_secrets,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -61,6 +62,7 @@ from fides.common.api.v1.urn_registry import (
     CONNECTIONS,
     V1_URL_PREFIX,
 )
+from fides.service.connection.connection_service import ConnectionService
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -220,28 +222,6 @@ def delete_connection(
     delete_connection_config(db, connection_key)
 
 
-def validate_and_update_secrets(
-    connection_key: FidesKey,
-    connection_config: ConnectionConfig,
-    db: Session,
-    unvalidated_secrets: connection_secrets_schemas,
-    verify: Optional[bool],
-) -> TestStatusMessage:
-    connection_config.secrets = validate_secrets(
-        db, unvalidated_secrets, connection_config
-    ).model_dump(mode="json")
-    # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '{}'", connection_key)
-    connection_config.save(db=db)
-
-    msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
-
-    if verify:
-        return connection_status(connection_config, msg, db)
-
-    return TestStatusMessage(msg=msg, test_status=None)
-
-
 @router.put(
     CONNECTION_SECRETS,
     status_code=HTTP_200_OK,
@@ -252,6 +232,7 @@ def put_connection_config_secrets(
     connection_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
+    connection_service: ConnectionService = Depends(get_connection_service),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
@@ -261,10 +242,8 @@ def put_connection_config_secrets(
     The specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB
     will differ from Dynamo DB.
     """
-    connection_config = get_connection_config_or_error(db, connection_key)
-
-    return validate_and_update_secrets(
-        connection_key, connection_config, db, unvalidated_secrets, verify
+    return update_connection_secrets(
+        connection_service, connection_key, unvalidated_secrets, verify
     )
 
 
@@ -277,7 +256,7 @@ def put_connection_config_secrets(
 def patch_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    connection_service: ConnectionService = Depends(get_connection_service),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
@@ -287,22 +266,12 @@ def patch_connection_config_secrets(
     The specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB
     will differ from Dynamo DB.
     """
-    connection_config = get_connection_config_or_error(db, connection_key)
-
-    existing_secrets: Optional[Dict[str, Any]] = connection_config.secrets
-
-    # We create the new secrets object by combining the existing secrets with the new secrets.
-    patched_secrets = {}
-    if existing_secrets:
-        patched_secrets = {**existing_secrets}
-
-    patched_secrets = {
-        **patched_secrets,
-        **unvalidated_secrets,  # type: ignore[dict-item]
-    }
-
-    return validate_and_update_secrets(
-        connection_key, connection_config, db, patched_secrets, verify  # type: ignore[arg-type]
+    return update_connection_secrets(
+        connection_service,
+        connection_key,
+        unvalidated_secrets,
+        verify,
+        merge_with_existing=True,
     )
 
 

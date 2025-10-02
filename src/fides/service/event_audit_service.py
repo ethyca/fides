@@ -29,32 +29,26 @@ class EventAuditService:
         """Create a new audit event record."""
 
         # Uses the passed in user_id or falls back to the authenticated user via get_user_id()
+        data = {
+            "event_type": event_type,
+            "status": status,
+            "user_id": user_id or get_user_id(),
+            "resource_type": resource_type,
+            "resource_identifier": resource_identifier,
+            "description": description,
+            "event_details": event_details,
+        }
         event_audit = EventAudit.create(
             db=self.db,
-            data={
-                "event_type": event_type,
-                "status": status,
-                "user_id": user_id or get_user_id(),
-                "resource_type": resource_type,
-                "resource_identifier": resource_identifier,
-                "description": description,
-                "event_details": event_details,
-            },
+            data=data,
         )
 
-        if resource_identifier:
-            logger.debug(
-                "Created event audit: {} for resource: {} ({})",
-                event_type,
-                resource_type,
-                resource_identifier,
-            )
-        else:
-            logger.debug(
-                "Created event audit: {} for resource: {}",
-                event_type,
-                resource_type,
-            )
+        msg_payload = {**data}
+        msg_payload.pop("event_type")
+        msg_payload["status"] = status.value
+        msg = f"Created event audit {event_type} for resource: {resource_type}. {msg_payload}"
+
+        logger.info(msg)
 
         return event_audit
 
