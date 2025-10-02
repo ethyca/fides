@@ -3,10 +3,12 @@ from typing import Optional
 from zipfile import BadZipFile, ZipFile
 
 from fastapi import Body, Depends, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
 from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -18,10 +20,14 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.common_exceptions import FidesopsException, KeyOrNameAlreadyExists
+from fides.api.common_exceptions import (
+    FidesopsException,
+    KeyOrNameAlreadyExists,
+    SaaSConfigNotFoundException,
+)
+from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -30,7 +36,6 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
@@ -43,14 +48,10 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
     CustomConnectorTemplateLoader,
-    create_connection_config_from_template_no_save,
-    upsert_dataset_config_from_template,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.connection_util import validate_secrets
-from fides.api.util.event_audit_util import generate_connection_secrets_event_details
+from fides.api.util.connection_util import validate_secrets_error_message
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -61,12 +62,15 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     AUTHORIZE,
-    CONNECTION_TYPES,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
+)
+from fides.service.connection.connection_service import (
+    ConnectionService,
+    ConnectorTemplateNotFound,
 )
 from fides.service.event_audit_service import EventAuditService
 
@@ -308,73 +312,45 @@ def instantiate_connection(
     Looks up the connector type in the SaaS connector registry and, if all required
     fields are provided, persists the associated connection config and dataset to the database.
     """
-    connector_template: Optional[ConnectorTemplate] = (
-        ConnectorRegistry.get_connector_template(saas_connector_type)
-    )
-    if not connector_template:
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
+    try:
+        connection_config, dataset_config = connection_service.instantiate_connection(
+            saas_connector_type, template_values, system
+        )
+    except ConnectorTemplateNotFound as exc:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
-        )
-
-    if DatasetConfig.filter(
-        db=db,
-        conditions=(DatasetConfig.fides_key == template_values.instance_key),  # type: ignore[arg-type]
-    ).count():
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"SaaS connector instance key '{template_values.instance_key}' already exists.",
-        )
-
-    try:
-        connection_config: ConnectionConfig = (
-            create_connection_config_from_template_no_save(
-                db, connector_template, template_values
-            )
+            detail=f"{exc.args[0]}",
         )
     except KeyOrNameAlreadyExists as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
-
-    connection_config.secrets = validate_secrets(
-        db, template_values.secrets, connection_config
-    ).model_dump(mode="json")
-    if system:
-        connection_config.system_id = system.id
-    connection_config.save(db=db)  # Not persisted to db until secrets are validated
-
-    try:
-        dataset_config: DatasetConfig = upsert_dataset_config_from_template(
-            db, connection_config, connector_template, template_values
+    except SaaSConfigNotFoundException:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=validate_secrets_error_message(),
         )
-
-    except Exception:
-        connection_config.delete(db)
+    except FidesValidationError as e:
+        # Check if the exception has the original pydantic errors attached
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
+    except ValidationError as e:
+        errors = e.errors(include_url=False, include_input=False)
+        for err in errors:
+            # Additionally, manually remove the context from the error message -
+            # this may contain sensitive information
+            err.pop("ctx", None)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(errors),
+        )
+    except Exception as exc:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
+            detail=f"{exc.args[0]}",
         )
-    logger.info(
-        "SaaS Connector and Dataset {} successfully created from '{}' template.",
-        template_values.instance_key,
-        saas_connector_type,
-    )
-    audit_service = EventAuditService(db)
-    event_details, description = generate_connection_secrets_event_details(
-        EventAuditType.connection_secrets_created,
-        connection_config=connection_config,
-        secrets_modified=template_values.secrets,  # type: ignore[arg-type]
-    )
-    audit_service.create_event_audit(
-        event_type=EventAuditType.connection_secrets_created,
-        status=EventAuditStatus.succeeded,
-        resource_type="connection_config",
-        resource_identifier=connection_config.key,
-        description=description,
-        event_details=event_details,
-    )
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.ctl_dataset
     )

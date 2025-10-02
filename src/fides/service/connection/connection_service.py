@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Tuple
 
+from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
     ConnectionNotFoundException,
+    KeyOrNameAlreadyExists,
     SaaSConfigNotFoundException,
 )
 from fides.api.models.connectionconfig import (
@@ -15,6 +17,7 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.schemas.connection_configuration import (
     connection_secrets_schemas,
@@ -30,10 +33,24 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasu
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
 )
+from fides.api.schemas.connection_configuration.saas_config_template_values import (
+    SaasConnectionTemplateValues,
+)
+from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    create_connection_config_from_template_no_save,
+    upsert_dataset_config_from_template,
+)
 from fides.api.util.event_audit_util import generate_connection_secrets_event_details
 from fides.api.util.logger import Pii
+from fides.common.api.v1.urn_registry import CONNECTION_TYPES
 from fides.service.event_audit_service import EventAuditService
+
+
+class ConnectorTemplateNotFound(Exception):
+    """Raised when a connector template is not found"""
 
 
 class ConnectionService:
@@ -171,3 +188,76 @@ class ConnectionService:
             return self.connection_status(connection_config, msg)
 
         return TestStatusMessage(msg=msg, test_status=None)
+
+    def instantiate_connection(
+        self,
+        saas_connector_type: str,
+        template_values: SaasConnectionTemplateValues,
+        system: Optional[System] = None,
+    ) -> Tuple[ConnectionConfig, DatasetConfig]:
+        """
+        Creates a SaaS Connector and a SaaS Dataset from a template.
+
+        Looks up the connector type in the SaaS connector registry and, if all required
+        fields are provided, persists the associated connection config and dataset to the database.
+        """
+        connector_template: Optional[ConnectorTemplate] = (
+            ConnectorRegistry.get_connector_template(saas_connector_type)
+        )
+        if not connector_template:
+            raise ConnectorTemplateNotFound(
+                f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+            )
+
+        if DatasetConfig.filter(
+            db=self.db,
+            conditions=(DatasetConfig.fides_key == template_values.instance_key),  # type: ignore[arg-type]
+        ).count():
+            raise KeyOrNameAlreadyExists(
+                f"SaaS connector instance key '{template_values.instance_key}' already exists.",
+            )
+
+        connection_config: ConnectionConfig = (
+            create_connection_config_from_template_no_save(
+                self.db, connector_template, template_values
+            )
+        )
+
+        connection_config.secrets = self.validate_secrets(
+            template_values.secrets, connection_config
+        ).model_dump(mode="json")
+        if system:
+            connection_config.system_id = system.id  # type: ignore[attr-defined]
+        connection_config.save(
+            db=self.db
+        )  # Not persisted to db until secrets are validated
+
+        try:
+            dataset_config: DatasetConfig = upsert_dataset_config_from_template(
+                self.db, connection_config, connector_template, template_values
+            )
+        except Exception:
+            connection_config.delete(self.db)
+            raise Exception(
+                f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time."
+            )
+
+        logger.info(
+            "SaaS Connector and Dataset {} successfully created from '{}' template.",
+            template_values.instance_key,
+            saas_connector_type,
+        )
+        event_details, description = generate_connection_secrets_event_details(
+            EventAuditType.connection_secrets_created,
+            connection_config=connection_config,
+            secrets_modified=template_values.secrets,  # type: ignore[arg-type]
+        )
+        self.event_audit_service.create_event_audit(
+            event_type=EventAuditType.connection_secrets_created,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier=connection_config.key,
+            description=description,
+            event_details=event_details,
+        )
+        return connection_config, dataset_config
