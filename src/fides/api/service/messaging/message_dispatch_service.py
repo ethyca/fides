@@ -508,7 +508,7 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
 
         # Use custom template if available, otherwise fall back to hard-coded HTML template
         if messaging_template:
-            # Custom template from UI - render subject and body from template content
+            # Template from UI or default - render subject and body from template content
             return EmailForActionType(
                 subject=_render(messaging_template.content["subject"], variables),
                 body=_render(messaging_template.content["body"], variables),

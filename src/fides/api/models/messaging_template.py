@@ -61,8 +61,8 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
     MessagingActionType.MANUAL_TASK_DIGEST.value: {
         "label": "Manual task digest",
         "content": {
-            "subject": "Weekly DSR Summary from {{organization_name}}",
-            "body": "Hi {{vendor_contact_name}},\n\nThis is your weekly summary of open data subject requests tasks from {{organization_name}} that require your attention.\n\nDue in the Next 7 Days: You have {{imminent_task_count}} request(s) due in the next week.\nUpcoming Tasks: You have {{upcoming_task_count}} request(s) due in the next period.\n\nPlease review the tasks in our Privacy Center: {{portal_url}}\n\nBest regards,\nThe {{organization_name}} Privacy Team",
+            "subject": "Weekly DSR Summary from __ORGANIZATION_NAME__",
+            "body": "Hi __VENDOR_CONTACT_NAME__,\n\nThis is your weekly summary of open data subject requests tasks from __ORGANIZATION_NAME__ that require your attention.\n\nDue in the Next 7 Days: You have __IMMINENT_TASK_COUNT__ request(s) due in the next week.\nUpcoming Tasks: You have __UPCOMING_TASK_COUNT__ request(s) due in the next period.\n\nPlease review the tasks in our Privacy Center: __PORTAL_URL__\n\nBest regards,\nThe __ORGANIZATION_NAME__ Privacy Team",
         },
     },
 }

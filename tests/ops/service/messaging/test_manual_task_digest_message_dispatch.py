@@ -231,8 +231,8 @@ class TestManualTaskDigestMessageDispatch:
             data={
                 "type": MessagingActionType.MANUAL_TASK_DIGEST.value,
                 "content": {
-                    "subject": "Custom Digest: {{organization_name}} Tasks",
-                    "body": "Hello {{vendor_contact_name}}, you have {{imminent_task_count}} urgent tasks and {{upcoming_task_count}} upcoming tasks from {{organization_name}}. Visit: {{portal_url}}",
+                    "subject": "Custom Digest: __ORGANIZATION_NAME__ Tasks",
+                    "body": "Hello __VENDOR_CONTACT_NAME__, you have __IMMINENT_TASK_COUNT__ urgent tasks and __UPCOMING_TASK_COUNT__ upcoming tasks from __ORGANIZATION_NAME__. Visit: __PORTAL_URL__",
                 },
                 "is_enabled": True,
             },
@@ -277,14 +277,14 @@ class TestManualTaskDigestMessageDispatch:
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    def test_manual_task_digest_email_dispatch_fallback_to_html_template(
+    def test_manual_task_digest_email_dispatch_uses_default_template(
         self,
         mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
     ) -> None:
-        """Test manual task digest falls back to HTML template when no custom template exists."""
-        # Ensure no custom template exists
+        """Test manual task digest uses default template when no custom template exists in DB."""
+        # Ensure no custom template exists in database
         from fides.api.models.messaging_template import MessagingTemplate
 
         existing_templates = (
@@ -296,6 +296,58 @@ class TestManualTaskDigestMessageDispatch:
         )
         for template in existing_templates:
             template.delete(db)
+
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.MANUAL_TASK_DIGEST,
+            to_identity=Identity(**{"email": "vendor@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=ManualTaskDigestBodyParams(
+                vendor_contact_name="Jane Doe",
+                organization_name="Fallback Corp",
+                portal_url="https://privacy.example.com/tasks",
+                imminent_task_count=1,
+                upcoming_task_count=3,
+                company_logo_url=None,
+            ),
+        )
+
+        # Verify default template was used
+        mock_mailgun_dispatcher.assert_called_once()
+        call_args = mock_mailgun_dispatcher.call_args
+        email_for_action_type = call_args[0][1]
+
+        # Check that default template content was used (text-based, not HTML)
+        assert email_for_action_type.subject == "Weekly DSR Summary from Fallback Corp"
+        assert "Hi Jane Doe," in email_for_action_type.body
+        assert "This is your weekly summary" in email_for_action_type.body
+        assert "1 request(s) due in the next week" in email_for_action_type.body
+        assert "3 request(s) due in the next period" in email_for_action_type.body
+
+        # Should NOT contain HTML tags (since it's the default text template)
+        assert "<div" not in email_for_action_type.body
+        assert "<html" not in email_for_action_type.body
+        assert "email-container" not in email_for_action_type.body
+
+        # Validate that URLs with the expected hostname are present in the email
+        assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service.get_basic_messaging_template_by_type_or_default"
+    )
+    def test_manual_task_digest_email_dispatch_fallback_to_html_template(
+        self,
+        mock_get_template: Mock,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+    ) -> None:
+        """Test manual task digest falls back to HTML template when no template is available."""
+        # Mock the template retrieval to return None (simulating no template available)
+        mock_get_template.return_value = None
 
         dispatch_message(
             db=db,
