@@ -276,7 +276,7 @@
                 <div class="greeting">Hi {{ vendor_contact_name }},</div>
 
                 <div class="intro-text">
-                    This is your weekly summary of open data subject requests tasks from {{ organization_name }} that require your attention. Please review the tasks listed below in our <a href="{{ portal_url }}" style="color: #000000; text-decoration: underline; font-weight: 600;">Privacy Center</a> to ensure timely completion.
+                    {{ intro_text | default("This is your weekly summary of open data subject requests tasks from " + organization_name + " that require your attention. Please review the tasks listed below in our Privacy Center to ensure timely completion.") | safe }}
                 </div>
 
                 <!-- Due in Next 7 Days Section -->
@@ -308,12 +308,11 @@
                 <!-- Closing -->
                 <div style="margin-top: 32px;">
                     <p style="color: #333333; margin-bottom: 24px;">
-                        Thank you for your partnership in processing these requests efficiently. If you have any questions or issues, please reach out to your contacts at {{ organization_name }}.
+                        {{ closing_text | default("Thank you for your partnership in processing these requests efficiently. If you have any questions or issues, please reach out to your contacts at " + organization_name + ".") | safe }}
                     </p>
 
                     <div class="signature">
-                        Best regards,<br>
-                        The {{ organization_name }} Privacy Team
+                        {{ signature | default("Best regards,<br>The " + organization_name + " Privacy Team") | safe }}
                     </div>
                 </div>
             </div>

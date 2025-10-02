@@ -98,11 +98,18 @@ class TestManualTaskDigestMessageDispatch:
         mock_mailgun_dispatcher.assert_called_once()
         email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
 
-        # Check that the default text template is used (no HTML logo tags)
+        # Check that the HTML template is used with logo functionality
         assert "Test Organization" in email_for_action_type.body
         assert "John Smith" in email_for_action_type.body
-        assert "0 request(s) due in the next week" in email_for_action_type.body
-        assert "5 request(s) due in the next period" in email_for_action_type.body
+        assert (
+            "0 request" in email_for_action_type.body
+        )  # HTML template uses different text
+        assert "5 request" in email_for_action_type.body
+
+        # Should contain HTML tags (since it's the HTML template)
+        assert "<div" in email_for_action_type.body
+        assert "<html" in email_for_action_type.body
+        assert "email-container" in email_for_action_type.body
 
         # Check template variables include logo URL (even though not used in text template)
         template_vars = email_for_action_type.template_variables
@@ -136,13 +143,15 @@ class TestManualTaskDigestMessageDispatch:
         mock_mailgun_dispatcher.assert_called_once()
         email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
 
-        # Check that zero counts are handled correctly
+        # Check that zero counts are handled correctly (HTML template format)
         assert (
-            "You have 0 request(s) due in the next week" in email_for_action_type.body
-        )
-        assert (
-            "You have 0 request(s) due in the next period" in email_for_action_type.body
-        )
+            "You have 0 request" in email_for_action_type.body
+        )  # HTML template handles pluralization
+
+        # Should contain HTML tags (since it's the HTML template)
+        assert "<div" in email_for_action_type.body
+        assert "<html" in email_for_action_type.body
+        assert "email-container" in email_for_action_type.body
 
         # Check template variables
         template_vars = email_for_action_type.template_variables
@@ -210,8 +219,13 @@ class TestManualTaskDigestMessageDispatch:
 
         # Check that special characters are handled correctly
         assert "María José García-López" in email_for_action_type.body
-        # Text template doesn't escape HTML (no HTML escaping needed)
-        assert "Acme Corp & Associates, LLC" in email_for_action_type.body
+        # HTML template should escape HTML entities
+        assert "Acme Corp &amp; Associates, LLC" in email_for_action_type.body
+
+        # Should contain HTML tags (since it's the HTML template)
+        assert "<div" in email_for_action_type.body
+        assert "<html" in email_for_action_type.body
+        assert "email-container" in email_for_action_type.body
         # Validate that URLs with the expected hostname are present in the email
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
 
@@ -232,14 +246,14 @@ class TestManualTaskDigestMessageDispatch:
         """Test manual task digest email dispatch using custom template from UI."""
         from fides.api.models.messaging_template import MessagingTemplate
 
-        # Create a custom template
+        # Create a custom template using hybrid format
         custom_template = MessagingTemplate.create(
             db=db,
             data={
                 "type": MessagingActionType.MANUAL_TASK_DIGEST.value,
                 "content": {
                     "subject": "Custom Digest: __ORGANIZATION_NAME__ Tasks",
-                    "body": "Hello __VENDOR_CONTACT_NAME__, you have __IMMINENT_TASK_COUNT__ urgent tasks and __UPCOMING_TASK_COUNT__ upcoming tasks from __ORGANIZATION_NAME__. Visit: __PORTAL_URL__",
+                    "body": "intro_text: Hello __VENDOR_CONTACT_NAME__, you have __IMMINENT_TASK_COUNT__ urgent tasks and __UPCOMING_TASK_COUNT__ upcoming tasks from __ORGANIZATION_NAME__.\nclosing_text: Please visit our portal to review these tasks.\nsignature: Custom Team,<br>The __ORGANIZATION_NAME__ Privacy Team",
                 },
                 "is_enabled": True,
             },
@@ -265,18 +279,23 @@ class TestManualTaskDigestMessageDispatch:
         call_args = mock_mailgun_dispatcher.call_args
         email_for_action_type = call_args[0][1]
 
-        # Check that custom template content was used (not HTML template)
+        # Check that custom template content was used within HTML template
         assert email_for_action_type.subject == "Custom Digest: Custom Corp Tasks"
-        assert "Hello John Smith" in email_for_action_type.body
+        assert "Hello John Smith" in email_for_action_type.body  # Custom intro text
         assert (
             "you have 2 urgent tasks and 5 upcoming tasks" in email_for_action_type.body
         )
         assert "Custom Corp" in email_for_action_type.body
-        assert "https://privacy.example.com/tasks" in email_for_action_type.body
+        assert (
+            "Please visit our portal to review these tasks"
+            in email_for_action_type.body
+        )  # Custom closing
+        assert "Custom Team" in email_for_action_type.body  # Custom signature
 
-        # Should not contain HTML tags (since it's a custom text template)
-        assert "<div" not in email_for_action_type.body
-        assert "<html" not in email_for_action_type.body
+        # Should contain HTML tags (since it uses HTML template with custom content)
+        assert "<div" in email_for_action_type.body
+        assert "<html" in email_for_action_type.body
+        assert "email-container" in email_for_action_type.body
 
         # Clean up
         custom_template.delete(db)
@@ -324,17 +343,19 @@ class TestManualTaskDigestMessageDispatch:
         call_args = mock_mailgun_dispatcher.call_args
         email_for_action_type = call_args[0][1]
 
-        # Check that default template content was used (text-based, not HTML)
+        # Check that HTML template with default content is used
         assert email_for_action_type.subject == "Weekly DSR Summary from Fallback Corp"
         assert "Hi Jane Doe," in email_for_action_type.body
-        assert "This is your weekly summary" in email_for_action_type.body
-        assert "1 request(s) due in the next week" in email_for_action_type.body
-        assert "3 request(s) due in the next period" in email_for_action_type.body
+        assert (
+            "This is your weekly summary" in email_for_action_type.body
+        )  # Default intro text
+        assert "1 request" in email_for_action_type.body  # HTML template format
+        assert "3 request" in email_for_action_type.body
 
-        # Should NOT contain HTML tags (since it's the default text template)
-        assert "<div" not in email_for_action_type.body
-        assert "<html" not in email_for_action_type.body
-        assert "email-container" not in email_for_action_type.body
+        # Should contain HTML tags (since it's the HTML template)
+        assert "<div" in email_for_action_type.body
+        assert "<html" in email_for_action_type.body
+        assert "email-container" in email_for_action_type.body
 
         # Validate that URLs with the expected hostname are present in the email
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")

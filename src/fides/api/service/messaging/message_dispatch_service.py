@@ -237,6 +237,7 @@ def dispatch_message(
             action_type=action_type,
             body_params=message_body_params,
             messaging_template=messaging_template,
+            db=db,
         )
     elif messaging_method == MessagingMethod.SMS:
         message = _build_sms(
@@ -354,11 +355,12 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
     return template_str
 
 
-def _build_email(  # pylint: disable=too-many-return-statements, too-many-branches
+def _build_email(  # pylint: disable=too-many-return-statements, too-many-branches, too-many-statements
     config_proxy: ConfigProxy,
     action_type: MessagingActionType,
     body_params: Any,
     messaging_template: Optional[MessagingTemplate] = None,
+    db: Optional[Session] = None,
 ) -> EmailForActionType:
     """
     Builds an email for a specified messaging action type, using the provided parameters.
@@ -506,19 +508,55 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "company_logo_url": body_params.company_logo_url,
         }
 
-        # Use custom template if available, otherwise fall back to hard-coded HTML template
-        if messaging_template:
-            # Template from UI or default - render subject and body from template content
-            return EmailForActionType(
-                subject=_render(messaging_template.content["subject"], variables),
-                body=_render(messaging_template.content["body"], variables),
-                template_variables=variables,
-            )
+        # Always use the HTML template, but allow customization of content sections
+        from fides.api.service.messaging.messaging_crud_service import (
+            _basic_messaging_template_by_type,
+        )
 
-        # Fall back to hard-coded HTML template
+        custom_template = None
+        if db is not None:
+            custom_template = _basic_messaging_template_by_type(db, action_type.value)
+
+        # Start with default subject
+        subject = f"Weekly DSR Summary from {body_params.organization_name}"
+
+        # If custom template exists, extract customizable content
+        if custom_template:
+            # Use custom subject if provided
+            if "subject" in custom_template.content:
+                subject = _render(custom_template.content["subject"], variables)
+
+            # Extract customizable text sections from custom template body
+            custom_body = custom_template.content.get("body", "")
+
+            # Parse custom content sections (simple approach - look for specific markers)
+            # Users can provide: intro_text, closing_text, signature in their custom template
+            intro_text = None
+            closing_text = None
+            signature = None
+
+            # Simple parsing: look for lines that start with specific prefixes
+            for line in custom_body.split("\n"):
+                line = line.strip()
+                if line.startswith("intro_text:"):
+                    intro_text = _render(line[11:].strip(), variables)
+                elif line.startswith("closing_text:"):
+                    closing_text = _render(line[13:].strip(), variables)
+                elif line.startswith("signature:"):
+                    signature = _render(line[10:].strip(), variables)
+
+            # Add custom content to variables
+            if intro_text:
+                variables["intro_text"] = intro_text
+            if closing_text:
+                variables["closing_text"] = closing_text
+            if signature:
+                variables["signature"] = signature
+
+        # Always use the HTML template
         base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject=f"Weekly DSR Summary from {body_params.organization_name}",
+            subject=subject,
             body=base_template.render(variables),
             template_variables=variables,
         )
