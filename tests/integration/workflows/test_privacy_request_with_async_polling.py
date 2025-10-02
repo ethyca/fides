@@ -266,3 +266,12 @@ class TestPrivacyRequestWithAsyncPolling:
             timeout_seconds=30,
             poll_interval_seconds=2,
         )
+
+        privacy_request = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
+        assert privacy_request.get_raw_masking_counts() == {
+            "async_polling:test_collection": 1
+        }
