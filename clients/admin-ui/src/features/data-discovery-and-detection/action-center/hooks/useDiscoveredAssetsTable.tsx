@@ -122,7 +122,7 @@ export const useDiscoveredAssetsTable = ({
     search: searchQuery,
     sort_by: sortKey
       ? [sortKey] // User selected a column to sort by
-      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
+      : [DiscoveredAssetsColumnKeys.NAME], // Default,
     sort_asc: sortOrder !== "descend",
     ...activeParams,
     ...columnFilters,
@@ -170,6 +170,8 @@ export const useDiscoveredAssetsTable = ({
       isFetching,
       dataSource: data?.items || [],
       totalRows: data?.total || 0,
+      sortBy: [DiscoveredAssetsColumnKeys.NAME],
+      sortAsc: true,
       customTableProps: {
         locale: {
           emptyText: (
