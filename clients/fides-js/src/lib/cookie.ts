@@ -366,12 +366,16 @@ export const removeCookiesFromBrowser = (
   removeSubdomainCookies: boolean = true,
 ) => {
   cookiesToRemove.forEach((cookie) => {
+    const { hostname } = window.location;
     cookies.remove(cookie.name, {
       path: cookie.path ?? "/",
       domain: cookie.domain,
     });
+    cookies.remove(cookie.name, {
+      path: cookie.path ?? "/",
+      domain: hostname,
+    });
     if (removeSubdomainCookies) {
-      const { hostname } = window.location;
       cookies.remove(cookie.name, { domain: `.${hostname}` });
     }
   });
