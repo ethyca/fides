@@ -79,7 +79,7 @@ class TestManualTaskDigestMessageDispatch:
         db: Session,
         messaging_config,
     ) -> None:
-        """Test manual task digest email dispatch with company logo."""
+        """Test manual task digest email dispatch with company logo URL in template variables."""
         dispatch_message(
             db=db,
             action_type=MessagingActionType.MANUAL_TASK_DIGEST,
@@ -98,11 +98,13 @@ class TestManualTaskDigestMessageDispatch:
         mock_mailgun_dispatcher.assert_called_once()
         email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
 
-        # Check that logo URL is included in the rendered template
-        assert 'src="https://example.com/logo.png"' in email_for_action_type.body
-        assert 'alt="Test Organization Logo"' in email_for_action_type.body
+        # Check that the default text template is used (no HTML logo tags)
+        assert "Test Organization" in email_for_action_type.body
+        assert "John Smith" in email_for_action_type.body
+        assert "0 request(s) due in the next week" in email_for_action_type.body
+        assert "5 request(s) due in the next period" in email_for_action_type.body
 
-        # Check template variables include logo URL
+        # Check template variables include logo URL (even though not used in text template)
         template_vars = email_for_action_type.template_variables
         assert template_vars["company_logo_url"] == "https://example.com/logo.png"
 
@@ -135,7 +137,12 @@ class TestManualTaskDigestMessageDispatch:
         email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
 
         # Check that zero counts are handled correctly
-        assert "You have 0 requests due" in email_for_action_type.body
+        assert (
+            "You have 0 request(s) due in the next week" in email_for_action_type.body
+        )
+        assert (
+            "You have 0 request(s) due in the next period" in email_for_action_type.body
+        )
 
         # Check template variables
         template_vars = email_for_action_type.template_variables
@@ -203,8 +210,8 @@ class TestManualTaskDigestMessageDispatch:
 
         # Check that special characters are handled correctly
         assert "María José García-López" in email_for_action_type.body
-        # HTML should be escaped in the template
-        assert "Acme Corp &amp; Associates, LLC" in email_for_action_type.body
+        # Text template doesn't escape HTML (no HTML escaping needed)
+        assert "Acme Corp & Associates, LLC" in email_for_action_type.body
         # Validate that URLs with the expected hostname are present in the email
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
 
