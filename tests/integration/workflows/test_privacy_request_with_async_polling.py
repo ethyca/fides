@@ -182,6 +182,26 @@ class TestPrivacyRequestWithAsyncPolling:
             .filter(PrivacyRequest.id == privacy_request_id)
             .first()
         )
+        access_results = privacy_request.get_raw_access_results()
+        assert (
+            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
+                "file_name"
+            ]
+            == "report.pdf"
+        )
+        assert (
+            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
+                "download_url"
+            ]
+            is not None
+        )
+        assert (
+            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
+                "file_size"
+            ]
+            == 17
+        )
+
         attachments = privacy_request.attachments
         assert len(attachments) == 1
 
@@ -272,6 +292,25 @@ class TestPrivacyRequestWithAsyncPolling:
             .filter(PrivacyRequest.id == privacy_request_id)
             .first()
         )
+        access_results = privacy_request.get_raw_access_results()
+        assert (
+            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
+                "file_name"
+            ]
+            == "report.pdf"
+        )
+        assert (
+            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
+                "download_url"
+            ]
+            is not None
+        )
+        assert (
+            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
+                "file_size"
+            ]
+            == 17
+        )
         assert privacy_request.get_raw_masking_counts() == {
-            "async_polling:test_collection": 1
+            "async_polling_example:user": 1
         }

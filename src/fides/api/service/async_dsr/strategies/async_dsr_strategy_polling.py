@@ -413,11 +413,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         Raises:
             PrivacyRequestError: If status_path is required but not provided
         """
-        # Create polling handler
-        polling_handler = PollingRequestHandler(
-            self.status_request, self.result_request
-        )
-
         # Check for status override vs standard HTTP request
         if self.status_request.request_override:
             # Handle status override function directly
@@ -437,7 +432,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 ),
             )
 
-        # Standard HTTP status request
+        # Standard HTTP status request - create handler only when needed
+        polling_handler = PollingRequestHandler(
+            self.status_request, self.result_request
+        )
         response = polling_handler.get_status_response(client, param_values)
 
         # Process status response
@@ -555,7 +553,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         for sub_request in sub_requests:
             # Skip already completed sub-requests
-            if sub_request.status == "complete":
+            if sub_request.status == ExecutionLogStatus.complete.value:
                 continue
 
             param_values = sub_request.param_values
@@ -577,7 +575,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 logger.error(
                     f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
                 )
-                sub_request.update_status(self.session, "error")
+                sub_request.update_status(self.session, ExecutionLogStatus.error.value)
                 raise exc
 
     def _execute_polling_requests(
@@ -639,14 +637,20 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                         "filename", f"attachment_{str(uuid4())[:8]}"
                     ),
                 )
+
+                # Get or create access_data list, add metadata, and persist it
+                access_data = request_task.access_data or []
                 PollingAttachmentHandler.add_metadata_to_rows(
-                    self.session, attachment_id, request_task.access_data or []
+                    self.session, attachment_id, access_data
                 )
+                request_task.access_data = access_data
 
                 # For attachment results, we need to provide data for erasures
                 # This follows the same pattern as SaaSConnector.retrieve_data
                 # which returns [{}] when there's a delete request but no read request
-                request_task.data_for_erasures = [{}]
+                # Only set data_for_erasures if it hasn't been set yet (to avoid overwriting row data)
+                if not request_task.data_for_erasures:
+                    request_task.data_for_erasures = [{}]
                 request_task.save(self.session)
             except Exception as exc:
                 raise PrivacyRequestError(f"Attachment storage failed: {exc}")

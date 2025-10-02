@@ -39,7 +39,7 @@ class PollingSubRequestHandler:
             data={
                 "request_task_id": request_task.id,
                 "param_values": param_values_map,
-                "status": "pending",
+                "status": ExecutionLogStatus.pending.value,
             },
         )
         logger.info(
@@ -63,12 +63,12 @@ class PollingSubRequestHandler:
         completed_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.status == "complete"
+            if sub_request.status == ExecutionLogStatus.complete.value
         ]
         failed_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.status == "error"
+            if sub_request.status == ExecutionLogStatus.error.value
         ]
 
         if (
