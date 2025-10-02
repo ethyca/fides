@@ -253,7 +253,7 @@ class TestManualTaskDigestMessageDispatch:
                 "type": MessagingActionType.MANUAL_TASK_DIGEST.value,
                 "content": {
                     "subject": "Custom Digest: __ORGANIZATION_NAME__ Tasks",
-                    "body": "intro_text: Hello __VENDOR_CONTACT_NAME__, you have __IMMINENT_TASK_COUNT__ urgent tasks and __UPCOMING_TASK_COUNT__ upcoming tasks from __ORGANIZATION_NAME__.\nclosing_text: Please visit our portal to review these tasks.\nsignature: Custom Team,<br>The __ORGANIZATION_NAME__ Privacy Team",
+                    "body": "Hello __VENDOR_CONTACT_NAME__, you have __IMMINENT_TASK_COUNT__ urgent tasks and __UPCOMING_TASK_COUNT__ upcoming tasks from __ORGANIZATION_NAME__. Please visit our portal to review these tasks.",
                 },
                 "is_enabled": True,
             },
@@ -289,8 +289,7 @@ class TestManualTaskDigestMessageDispatch:
         assert (
             "Please visit our portal to review these tasks"
             in email_for_action_type.body
-        )  # Custom closing
-        assert "Custom Team" in email_for_action_type.body  # Custom signature
+        )  # Custom content
 
         # Should contain HTML tags (since it uses HTML template with custom content)
         assert "<div" in email_for_action_type.body
@@ -348,7 +347,7 @@ class TestManualTaskDigestMessageDispatch:
         assert "Hi Jane Doe," in email_for_action_type.body
         assert (
             "This is your weekly summary" in email_for_action_type.body
-        )  # Default intro text
+        )  # Default intro text from template
         assert "1 request" in email_for_action_type.body  # HTML template format
         assert "3 request" in email_for_action_type.body
 

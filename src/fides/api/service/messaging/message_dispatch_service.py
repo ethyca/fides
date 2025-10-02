@@ -526,32 +526,12 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             if "subject" in custom_template.content:
                 subject = _render(custom_template.content["subject"], variables)
 
-            # Extract customizable text sections from custom template body
+            # Use custom body content to replace the intro text in HTML template
             custom_body = custom_template.content.get("body", "")
-
-            # Parse custom content sections (simple approach - look for specific markers)
-            # Users can provide: intro_text, closing_text, signature in their custom template
-            intro_text = None
-            closing_text = None
-            signature = None
-
-            # Simple parsing: look for lines that start with specific prefixes
-            for line in custom_body.split("\n"):
-                line = line.strip()
-                if line.startswith("intro_text:"):
-                    intro_text = _render(line[11:].strip(), variables)
-                elif line.startswith("closing_text:"):
-                    closing_text = _render(line[13:].strip(), variables)
-                elif line.startswith("signature:"):
-                    signature = _render(line[10:].strip(), variables)
-
-            # Add custom content to variables
-            if intro_text:
-                variables["intro_text"] = intro_text
-            if closing_text:
-                variables["closing_text"] = closing_text
-            if signature:
-                variables["signature"] = signature
+            if custom_body.strip():
+                # Replace the default intro text with the custom body content
+                rendered_custom_body = _render(custom_body, variables)
+                variables["intro_text"] = rendered_custom_body
 
         # Always use the HTML template
         base_template = get_email_template(action_type)
