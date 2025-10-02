@@ -1,5 +1,7 @@
+import re
 from unittest import mock
 from unittest.mock import Mock
+from urllib.parse import urlparse
 
 import pytest
 from sqlalchemy.orm import Session
@@ -16,6 +18,48 @@ from fides.common.api.v1.urn_registry import MessagingServiceType
 @pytest.mark.unit
 class TestManualTaskDigestMessageDispatch:
     """Test manual task digest message dispatch functionality."""
+
+    def _extract_urls_from_email_body(self, email_body: str) -> list[str]:
+        """Extract URLs from email body using regex."""
+        urls = []
+
+        # Pattern to match URLs in href attributes
+        href_pattern = r'href=["\']([^"\']*)["\']'
+        href_matches = re.findall(href_pattern, email_body)
+        for url in href_matches:
+            if url and url.startswith("http"):
+                urls.append(url)
+
+        # Pattern to match plain text URLs (not in attributes)
+        url_pattern = r'https?://[^\s<>"\']+'
+        url_matches = re.findall(url_pattern, email_body)
+        for url in url_matches:
+            if url not in urls:  # Avoid duplicates
+                urls.append(url)
+
+        return urls
+
+    def _assert_url_hostname_present(
+        self, email_body: str, expected_hostname: str
+    ) -> None:
+        """Assert that at least one URL in the email body has the expected hostname."""
+        urls = self._extract_urls_from_email_body(email_body)
+
+        found_hostnames = []
+        for url in urls:
+            try:
+                parsed_url = urlparse(url)
+                found_hostnames.append(parsed_url.hostname)
+                if parsed_url.hostname == expected_hostname:
+                    return  # Found the expected hostname
+            except Exception:
+                continue  # Skip malformed URLs
+
+        # If we get here, the expected hostname was not found
+        raise AssertionError(
+            f"Expected hostname '{expected_hostname}' not found in any URLs. "
+            f"Found URLs: {urls}, Found hostnames: {found_hostnames}"
+        )
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -59,7 +103,10 @@ class TestManualTaskDigestMessageDispatch:
         assert "Acme Corp" in email_for_action_type.body
         assert "You have 3 request" in email_for_action_type.body  # imminent tasks
         assert "You have 7 request" in email_for_action_type.body  # upcoming tasks
-        assert "privacy.example.com" in email_for_action_type.body
+        # Validate that URLs with the expected hostname are present in the email
+        self._assert_url_hostname_present(
+            email_for_action_type.body, "privacy.example.com"
+        )
 
         # Check template variables
         template_vars = email_for_action_type.template_variables
@@ -203,7 +250,10 @@ class TestManualTaskDigestMessageDispatch:
         assert "María José García-López" in email_for_action_type.body
         # HTML should be escaped in the template
         assert "Acme Corp &amp; Associates, LLC" in email_for_action_type.body
-        assert "privacy.example.com" in email_for_action_type.body
+        # Validate that URLs with the expected hostname are present in the email
+        self._assert_url_hostname_present(
+            email_for_action_type.body, "privacy.example.com"
+        )
 
         # Check template variables
         template_vars = email_for_action_type.template_variables
