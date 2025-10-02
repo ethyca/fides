@@ -26,7 +26,9 @@ import {
 import DatasetConfiguration from "../add-connection/DatasetConfiguration";
 import DSRCustomization from "../add-connection/manual/DSRCustomization";
 import { ConnectorParameterOption } from "../add-connection/types";
-import ConnectionTypeLogo from "../ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromSystemType,
+} from "../ConnectionTypeLogo";
 
 const EditConnection = () => {
   const dispatch = useAppDispatch();
@@ -112,7 +114,9 @@ const EditConnection = () => {
         whiteSpace="nowrap"
       >
         <Box alignItems="center" display="flex">
-          <ConnectionTypeLogo data={connectionOption} />
+          <ConnectionTypeLogo
+            data={connectionLogoFromSystemType(connectionOption)}
+          />
           <Text ml="8px">{connection.name}</Text>
         </Box>
       </Heading>
