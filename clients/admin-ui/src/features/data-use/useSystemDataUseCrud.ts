@@ -16,6 +16,16 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+interface HandleResultParams {
+  systemResult:
+    | { data: SystemResponse }
+    | { error: FetchBaseQueryError | SerializedError };
+  customFieldsResult?:
+    | { data: unknown }
+    | { error: FetchBaseQueryError | SerializedError };
+  isDelete?: boolean;
+}
+
 const buildCustomFieldsPayload = (
   customFieldValues: Record<string, any>,
   resourceId: string,
@@ -64,24 +74,30 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     return false;
   };
 
-  const handleResult = (
-    result:
-      | { data: SystemResponse }
-      | { error: FetchBaseQueryError | SerializedError },
-    isDelete?: boolean,
-  ) => {
-    if (isErrorResult(result)) {
+  const handleResult = ({
+    systemResult,
+    customFieldsResult,
+    isDelete,
+  }: HandleResultParams) => {
+    if (isErrorResult(systemResult)) {
       const errorMsg = getErrorMessage(
-        result.error,
+        systemResult.error,
         "An unexpected error occurred while updating the system. Please try again.",
       );
 
       toast(errorToastParams(errorMsg));
       return undefined;
     }
-    toast.closeAll();
+    if (customFieldsResult && isErrorResult(customFieldsResult)) {
+      const errorMsg = getErrorMessage(
+        customFieldsResult.error,
+        "Data use was updated, but an error occurred while updating custom fields. Please try again.",
+      );
+      toast(errorToastParams(errorMsg));
+      return undefined;
+    }
     toast(successToastParams(isDelete ? "Data use deleted" : "Data use saved"));
-    return result.data.privacy_declarations;
+    return systemResult.data.privacy_declarations;
   };
 
   const patchDataUses = async (
@@ -102,32 +118,28 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
       privacy_declarations: transformedDeclarations,
     };
 
-    const updateSystemResult = await updateSystem(systemBodyWithDeclaration);
+    const systemResult = await updateSystem(systemBodyWithDeclaration);
+    let customFieldsResult;
 
     // get the ID of the modified declaration from the response and update
     // its custom fields if provided
     if (customFieldValues && updatedDeclarationDataUse) {
-      const newDeclaration =
-        updateSystemResult?.data?.privacy_declarations?.find(
-          (d) => d.data_use === updatedDeclarationDataUse,
-        );
+      const newDeclaration = systemResult?.data?.privacy_declarations?.find(
+        (d) => d.data_use === updatedDeclarationDataUse,
+      );
       if (newDeclaration) {
         const customFieldsPayload = buildCustomFieldsPayload(
           customFieldValues,
           newDeclaration.id,
         );
-        const bulkUpdateResult =
-          await bulkUpdateCustomFields(customFieldsPayload);
-        if (isErrorResult(bulkUpdateResult)) {
-          const errorMsg = getErrorMessage(
-            bulkUpdateResult.error,
-            "An unexpected error occurred while updating custom fields for this data use. Please try again.",
-          );
-          toast(errorToastParams(errorMsg));
-        }
+        customFieldsResult = await bulkUpdateCustomFields(customFieldsPayload);
       }
     }
-    return handleResult(updateSystemResult, isDelete);
+    return handleResult({
+      systemResult,
+      customFieldsResult,
+      isDelete,
+    });
   };
 
   const createDataUse = async (
