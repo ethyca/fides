@@ -16,7 +16,6 @@ const CustomizableMessagingTemplatesLabelEnum: Record<
     "Privacy request denied",
   [CustomizableMessagingTemplatesEnum.SUBJECT_IDENTITY_VERIFICATION]:
     "Subject identity verification",
-  [CustomizableMessagingTemplatesEnum.MANUAL_TASK_DIGEST]:
-    "Manual task digest",
+  [CustomizableMessagingTemplatesEnum.MANUAL_TASK_DIGEST]: "Manual task digest",
 };
 export default CustomizableMessagingTemplatesLabelEnum;
