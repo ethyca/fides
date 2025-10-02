@@ -26,7 +26,8 @@ const MonitorConfigActionsCell = ({
   onEditClick: () => void;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
+  const [deleteMonitor, { isLoading: isDeleting }] =
+    useDeleteDiscoveryMonitorMutation();
   const { toastResult: toastDeleteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred deleting this monitor",
     defaultSuccessMsg: "Monitor deleted successfully",
@@ -69,6 +70,7 @@ const MonitorConfigActionsCell = ({
         message="Are you sure you want to delete this discovery monitor?"
         continueButtonText="Delete"
         isCentered
+        isLoading={isDeleting}
       />
       <div className="flex gap-2">
         <Tooltip title="Edit">
