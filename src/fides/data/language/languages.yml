@@ -9,6 +9,8 @@ languages:
   name: Catalan
 - id: cs
   name: Czech
+- id: cy
+  name: Welsh
 - id: da
   name: Danish
 - id: de
