@@ -150,6 +150,9 @@ export interface FidesInitOptions {
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
 
+  // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
+  fidesDisabledSystems?: string[] | null;
+
   // Determines how non-applicable privacy notices are handled (omit or include)
   fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode | null;
 
@@ -614,6 +617,8 @@ export interface PrivacyExperienceMinimal
 export interface ExperienceConfig extends FidesExperienceConfig {
   component: ComponentType;
   layer1_button_options?: Layer1ButtonOption;
+  allow_vendor_asset_disclosure?: boolean;
+  asset_disclosure_include_types?: Array<string>;
   /**
    * List of regions that apply to this ExperienceConfig.
    *
@@ -664,6 +669,18 @@ export type Cookies = {
   name: string;
   path?: string;
   domain?: string;
+  /**
+   * Optional name of the vendor/system that sets this cookie. Used for grouping in UI.
+   */
+  system_name?: string;
+  /**
+   * The storage duration for this cookie, if available (e.g., "A few seconds", "4 hours").
+   */
+  duration?: string;
+  /**
+   * A human-readable description of what this cookie does.
+   */
+  description?: string;
 };
 
 export enum PrivacyNoticeFramework {
@@ -749,6 +766,14 @@ export enum ConsentMechanism {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
   NOTICE_ONLY = "notice_only",
+}
+
+export enum AssetType {
+  COOKIE = "Cookie",
+  BROWSER_REQUEST = "Browser Request",
+  I_FRAME = "iFrame",
+  JAVASCRIPT_TAG = "Javascript tag",
+  IMAGE = "Image",
 }
 
 export enum UserConsentPreference {
@@ -839,6 +864,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentOverride"
   | "otFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
   | "fidesInitializedEventMode"

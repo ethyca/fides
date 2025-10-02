@@ -34,6 +34,8 @@ export const useConsentBreakdownTable = ({
     pagination: {
       defaultPageSize: 10,
       pageSizeOptions: [10, ...DEFAULT_PAGE_SIZES],
+      pageQueryKey: "modalPage",
+      sizeQueryKey: "modalSize",
     },
   });
 

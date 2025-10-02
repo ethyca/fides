@@ -3,5 +3,10 @@
   "static.gpc.description": "Le tue preferenze del Controllo Globale della Privacy sono state prese in carico. Sei stato automaticamente escluso dai casi di utilizzo dei dati che corrispondono al Controllo Globale della Privacy.",
   "static.gpc.status.applied": "Applicato",
   "static.gpc.status.overridden": "Non applicato",
-  "static.gpc.title": "Controllo Globale della Privacy rilevato"
+  "static.gpc.title": "Rilevato il controllo della privacy globale",
+  "static.other.cookies": "Cookie",
+  "static.other.back": "Indietro",
+  "static.other.vendors": "Fornitori",
+  "static.other.retention": "Conservazione",
+  "static.other.description": "Descrizione"
 }

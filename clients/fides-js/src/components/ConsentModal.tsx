@@ -3,6 +3,7 @@ import { HTMLAttributes } from "preact/compat";
 
 import { A11yDialogAttributes } from "../lib/a11y-dialog";
 import { useEvent } from "../lib/providers/event-context";
+import { useFidesGlobal } from "../lib/providers/fides-global-context";
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
 
@@ -12,15 +13,23 @@ const ConsentModal = ({
   dismissable,
   onVendorPageClick,
   renderModalFooter,
+  headerContent,
+  isVendorAssetDisclosureView,
 }: {
   attributes: A11yDialogAttributes;
   children: ComponentChildren;
   dismissable: boolean | undefined;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
+  headerContent: {
+    title: string;
+    description: string;
+  };
+  isVendorAssetDisclosureView?: boolean;
 }) => {
   const { container, dialog, title, closeButton } = attributes;
   const { setTrigger } = useEvent();
+  const { fidesGlobal } = useFidesGlobal();
   return (
     <div
       data-testid="consent-modal"
@@ -44,13 +53,15 @@ const ConsentModal = ({
               });
               closeButton.onClick();
             }}
-            hidden={window.Fides.options.preventDismissal || !dismissable}
+            hidden={fidesGlobal?.options.preventDismissal || !dismissable}
           />
         </div>
         <ConsentContent
           titleProps={title}
           renderModalFooter={renderModalFooter}
           onVendorPageClick={onVendorPageClick}
+          headerContent={headerContent}
+          isVendorAssetDisclosureView={isVendorAssetDisclosureView}
         >
           {children}
         </ConsentContent>
