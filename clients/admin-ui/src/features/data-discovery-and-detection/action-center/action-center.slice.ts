@@ -6,6 +6,7 @@ import {
 import {
   ConsentStatus,
   DiffStatus,
+  MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -14,6 +15,7 @@ import {
   StagedResourceAPIResponse,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
+import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import {
   PaginationQueryParams,
   SearchQueryParams,
@@ -319,6 +321,89 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       providesTags: ["Discovery Monitor Results"],
     }),
+    getInProgressMonitorTasks: build.query<
+      {
+        items: MonitorTaskInProgressResponse[];
+        total: number;
+        page: number;
+        pages: number;
+        size: number;
+      },
+      SearchQueryParams &
+        PaginationQueryParams & {
+          task_types?: string[];
+          statuses?: ExecutionLogStatus[];
+          return_dismissed?: boolean;
+        }
+    >({
+      query: ({
+        page = 1,
+        size = 20,
+        search,
+        task_types,
+        statuses,
+        return_dismissed = false,
+      }) => {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          size: size.toString(),
+          return_dismissed: return_dismissed.toString(),
+        });
+
+        if (search) {
+          params.append("search", search);
+        }
+
+        if (task_types?.length) {
+          task_types.forEach((type) => params.append("action_type", type));
+        }
+
+        if (statuses?.length) {
+          statuses.forEach((status) => params.append("status", status));
+        }
+
+        return {
+          url: `/plus/discovery-monitor/tasks?${params.toString()}`,
+        };
+      },
+      providesTags: ["Monitor Tasks"],
+    }),
+    retryMonitorTask: build.mutation<
+      {
+        id: string;
+        monitor_config_id: string;
+        action_type: string;
+        status: string;
+        celery_id: string;
+      },
+      { taskId: string }
+    >({
+      query: ({ taskId }) => ({
+        url: `/plus/discovery-monitor/tasks/${taskId}/retry`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Monitor Tasks"],
+    }),
+    dismissMonitorTask: build.mutation<
+      MonitorTaskInProgressResponse,
+      { taskId: string }
+    >({
+      query: ({ taskId }) => ({
+        url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Monitor Tasks"],
+    }),
+    undismissMonitorTask: build.mutation<
+      MonitorTaskInProgressResponse,
+      { taskId: string }
+    >({
+      query: ({ taskId }) => ({
+        url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Monitor Tasks"],
+    }),
   }),
 });
 
@@ -336,4 +421,8 @@ export const {
   useUpdateAssetsMutation,
   useGetConsentBreakdownQuery,
   useGetWebsiteMonitorResourceFiltersQuery,
+  useGetInProgressMonitorTasksQuery,
+  useRetryMonitorTaskMutation,
+  useDismissMonitorTaskMutation,
+  useUndismissMonitorTaskMutation,
 } = actionCenterApi;
