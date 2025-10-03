@@ -29,7 +29,7 @@ export const FormikControlledPOC = () => (
         <Col span={12}>
           <Title level={2}>{`<Formik> + Controlled`}</Title>
           <div className="mb-4">
-            <Tag color="green">funcitonal</Tag>
+            <Tag color="green">functional</Tag>
             <Tag color="red">high effort</Tag>
           </div>
           <Form>
