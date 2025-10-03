@@ -1,5 +1,5 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable no-console */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import {
   AntCard as Card,
   AntCheckbox as Checkbox,

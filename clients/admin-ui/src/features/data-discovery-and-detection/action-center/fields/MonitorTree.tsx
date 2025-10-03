@@ -241,7 +241,11 @@ const MonitorTree = ({
       {selectedNodeKeys.length > 0 && (
         <Flex justify="space-between" align="center">
           <span>{selectedNodeKeys.length} selected</span>
-          <Button icon={<SparkleIcon />} size="small" />
+          <Button
+            aria-label="Run discovery"
+            icon={<SparkleIcon />}
+            size="small"
+          />
         </Flex>
       )}
     </Flex>

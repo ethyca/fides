@@ -101,6 +101,7 @@ const ConfigurationList = ({
           <Button
             type="text"
             size="small"
+            aria-label="Delete"
             icon={<TrashCanOutlineIcon fontSize={16} />}
             onClick={(e) => {
               e.stopPropagation();
@@ -167,6 +168,7 @@ const DropdownContent = ({
         <Button
           type="text"
           size="small"
+          aria-label="Close"
           icon={<CloseIcon />}
           onClick={() => setDropdownOpen(false)}
           data-testid="close-config-dropdown"

@@ -141,6 +141,7 @@ const ConsentReportingPage = () => {
                     trigger={["click"]}
                   >
                     <Button
+                      aria-label="Menu"
                       icon={<Icons.OverflowMenuVertical />}
                       data-testid="consent-reporting-dropdown-btn"
                     />

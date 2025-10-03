@@ -26,7 +26,13 @@ const BackButton = ({
         className="mr-2"
         size="small"
       />
-      <Text as={NextLink} href={backPath} fontSize="sm" fontWeight="500">
+      <Text
+        as={NextLink}
+        href={backPath}
+        tabIndex={-1}
+        fontSize="sm"
+        fontWeight="500"
+      >
         Back
       </Text>
     </Flex>

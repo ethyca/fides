@@ -155,6 +155,7 @@ const AddConditionForm = ({
       >
         <Select
           placeholder="Select operator"
+          aria-label="Select operator"
           options={operatorOptions}
           data-testid="operator-select"
         />
