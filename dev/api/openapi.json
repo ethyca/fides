@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.71.1b1.post0.dev9"
+    "version": "2.71.1b1.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19310,7 +19310,8 @@
           "error",
           "paused",
           "retrying",
-          "skipped"
+          "skipped",
+          "polling"
         ],
         "title": "ExecutionLogStatus",
         "description": "Enum for task execution log statuses, reflecting where they are in their workflow"
@@ -25568,6 +25569,18 @@
             "title": "Skip Missing Param Values",
             "default": false
           },
+          "correlation_id_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id Path",
+            "description": "The path to the correlation ID in the response. For use with async polling."
+          },
           "output": {
             "anyOf": [
               {
@@ -25583,7 +25596,7 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ReadSaaSRequest",
-        "description": "An extension of the base SaaSRequest that allows the inclusion of an output template\nthat is used to format each collection result."
+        "description": "An extension of the base SaaSRequest that allows the inclusion of an output template\nthat is used to format each collection result, and correlation_id_path for async polling."
       },
       "RedshiftDocsSchema": {
         "properties": {
@@ -26467,6 +26480,18 @@
             ],
             "title": "Skip Missing Param Values",
             "default": false
+          },
+          "correlation_id_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id Path",
+            "description": "The path to the correlation ID in the response. For use with async polling."
           }
         },
         "additionalProperties": false,

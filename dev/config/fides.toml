@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "d3bb62b49e6fef6f7e82f5002a4a9438" # string
+analytics_id = "ac4567d3b48dbb0cb5ae567f8c3fb961" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -209,8 +209,12 @@ interrupted_task_requeue_interval = 300 # integer
 # are interrupted before being marked as error
 privacy_request_requeue_retry_count = 3 # integer
 
-# Seconds between polling for async tasks to requeue
-async_tasks_status_polling_interval_seconds = 3600 # integer
+# Hours between status checks for async tasks
+async_polling_interval_hours = 24 # integer
+
+# Maximum time in days to wait for an async polling request to complete
+# before timing out
+async_polling_request_timeout_days = 30 # integer
 
 # Whether erasure requests require an additional finalization step
 # after all collections have been executed.
