@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { NOTIFICATIONS_DIGESTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { DigestType, MessagingMethod, ScopeRegistryEnum } from "~/types/api";
 
@@ -77,7 +78,7 @@ const DigestConfigForm = ({
       "Digest configuration deleted successfully",
       undefined,
       () => {
-        router.push("/settings/digests");
+        router.push(NOTIFICATIONS_DIGESTS_ROUTE);
       },
     );
   };
@@ -114,7 +115,7 @@ const DigestConfigForm = ({
       messageApi.success("Digest configuration created successfully");
     }
 
-    router.push("/settings/digests");
+    router.push(NOTIFICATIONS_DIGESTS_ROUTE);
   };
 
   const defaultValues = initialValues || {
@@ -256,7 +257,7 @@ const DigestConfigForm = ({
                 {isEditMode ? "Update" : "Create"}
               </Button>
               <Button
-                onClick={() => router.push("/settings/digests")}
+                onClick={() => router.push(NOTIFICATIONS_DIGESTS_ROUTE)}
                 data-testid="cancel-btn"
               >
                 Cancel

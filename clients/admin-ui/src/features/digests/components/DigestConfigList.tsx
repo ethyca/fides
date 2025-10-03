@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/router";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { NOTIFICATIONS_ADD_DIGEST_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -45,7 +46,7 @@ const DigestConfigList = () => {
   const canCreate = useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_CREATE]);
 
   const handleAddNew = () => {
-    router.push("/settings/digests/new");
+    router.push(NOTIFICATIONS_ADD_DIGEST_ROUTE);
   };
 
   return (

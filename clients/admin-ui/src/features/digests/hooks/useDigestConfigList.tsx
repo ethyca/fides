@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
+import { NOTIFICATIONS_EDIT_DIGEST_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import type { DigestConfigResponse } from "~/types/api";
 import { DigestType, ScopeRegistryEnum } from "~/types/api";
@@ -60,7 +61,7 @@ export const useDigestConfigList = () => {
 
   // Handlers
   const handleEdit = (config: DigestConfigResponse) => {
-    router.push(`/settings/digests/${config.id}`);
+    router.push(NOTIFICATIONS_EDIT_DIGEST_ROUTE.replace("[id]", config.id));
   };
 
   const handleDeleteClick = (config: DigestConfigResponse) => {

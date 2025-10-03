@@ -69,12 +69,26 @@ export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
-export const DIGEST_CONFIG_ROUTE = "/settings/digests";
-export const ADD_DIGEST_CONFIG_ROUTE = "/settings/digests/new";
-export const EDIT_DIGEST_CONFIG_ROUTE = "/settings/digests/[id]";
+
+// Notifications group (messaging templates and digests)
+export const NOTIFICATIONS_ROUTE = "/notifications";
+export const NOTIFICATIONS_TEMPLATES_ROUTE = "/notifications/templates";
+export const NOTIFICATIONS_ADD_TEMPLATE_ROUTE =
+  "/notifications/templates/add-template";
+export const NOTIFICATIONS_EDIT_TEMPLATE_ROUTE =
+  "/notifications/templates/[id]";
+export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
+export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
+export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
+
+// Legacy routes (kept for backwards compatibility if needed)
 export const MESSAGING_ROUTE = "/messaging";
 export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
 export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
+export const DIGEST_CONFIG_ROUTE = "/settings/digests";
+export const ADD_DIGEST_CONFIG_ROUTE = "/settings/digests/new";
+export const EDIT_DIGEST_CONFIG_ROUTE = "/settings/digests/[id]";
+
 export const MESSAGING_PROVIDERS_ROUTE = `/settings/messaging-providers`;
 export const MESSAGING_PROVIDERS_EDIT_ROUTE = `/settings/messaging-providers/[key]`;
 

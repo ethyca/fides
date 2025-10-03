@@ -177,22 +177,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PROPERTY_READ],
       },
       {
-        title: "Messaging",
-        path: routes.MESSAGING_ROUTE,
+        title: "Notifications",
+        path: routes.NOTIFICATIONS_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
+        scopes: [
+          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
+          ScopeRegistryEnum.DIGEST_CONFIG_READ,
+        ],
       },
-
       {
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
-      },
-      {
-        title: "Digests",
-        path: routes.DIGEST_CONFIG_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DIGEST_CONFIG_READ],
       },
       {
         title: "Users",
