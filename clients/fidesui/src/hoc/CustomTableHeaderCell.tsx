@@ -16,6 +16,7 @@ export const CustomTableHeaderCell = (
           </div>
           <Dropdown trigger={["click"]} menu={menu} placement="bottomRight">
             <Button
+              aria-label="Menu"
               icon={<OverflowMenuVertical title="Menu" />}
               size="small"
               type="text"

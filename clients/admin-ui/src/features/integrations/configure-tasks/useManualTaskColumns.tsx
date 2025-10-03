@@ -85,6 +85,7 @@ export const useManualTaskColumns = ({
               icon={<Icons.Edit />}
               onClick={() => onEdit(record)}
               data-testid="edit-btn"
+              aria-label="Edit"
             />
             <Button
               size="small"
@@ -92,6 +93,7 @@ export const useManualTaskColumns = ({
               icon={<Icons.TrashCan />}
               onClick={() => onDelete(record)}
               data-testid="delete-btn"
+              aria-label="Delete"
             />
           </Flex>
         ),

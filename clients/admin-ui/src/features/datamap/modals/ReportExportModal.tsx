@@ -39,6 +39,7 @@ const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
         </Text>
         <FormControl>
           <FormLabel htmlFor="format">Choose Format</FormLabel>
+          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
           <Select
             id="format"
             value={downloadType}

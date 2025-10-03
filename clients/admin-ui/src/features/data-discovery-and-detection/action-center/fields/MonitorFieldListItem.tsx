@@ -102,12 +102,27 @@ const MonitorFieldListItem: ListProps<
           </Flex>
         ),
         classifications && classifications.length > 0 && (
-          <Button icon={<Icons.Checkmark />} size="small" key="approve" />
+          <Button
+            aria-label="Approve"
+            icon={<Icons.Checkmark />}
+            size="small"
+            key="approve"
+          />
         ),
         classifications && classifications.length > 0 && (
-          <Button icon={<Icons.Close />} size="small" key="deny" />
+          <Button
+            aria-label="Deny"
+            icon={<Icons.Close />}
+            size="small"
+            key="deny"
+          />
         ),
-        <Button icon={<SparkleIcon />} size="small" key="reclassify" />,
+        <Button
+          aria-label="Reclassify"
+          icon={<SparkleIcon />}
+          size="small"
+          key="reclassify"
+        />,
       ]}
     >
       <List.Item.Meta
@@ -138,7 +153,12 @@ const MonitorFieldListItem: ListProps<
         }
         description={
           <>
-            <Button type="text" icon={<Icons.Add />} size="small" />
+            <Button
+              aria-label="Add"
+              type="text"
+              icon={<Icons.Add />}
+              size="small"
+            />
             {classifications?.map((c) => (
               <Tag
                 bordered

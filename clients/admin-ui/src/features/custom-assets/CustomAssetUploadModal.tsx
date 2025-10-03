@@ -92,14 +92,13 @@ const CustomAssetUploadModal = ({
         <ModalBody>
           <Text fontSize="sm" mb={4}>
             To customize the appearance of your consent experiences, you may
-            upload a CSS stylesheet. To download a template as a helpful
-            starting point, click{" "}
+            upload a CSS stylesheet.{" "}
             <DocsLink href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css">
-              here
-            </DocsLink>
-            .{" "}
+              Download a template
+            </DocsLink>{" "}
+            as a helpful starting point.
             <DocsLink href="https://fid.es/customize-styles">
-              Learn more
+              Learn more about customizing styles
             </DocsLink>
             .
           </Text>
