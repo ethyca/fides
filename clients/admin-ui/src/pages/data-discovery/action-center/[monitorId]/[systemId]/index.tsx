@@ -37,7 +37,7 @@ const MonitorResultAssets: NextPage = () => {
             title:
               systemId === UNCATEGORIZED_SEGMENT
                 ? "Uncategorized assets"
-                : system?.name,
+                : (system?.name ?? systemId),
           },
         ]}
       />
