@@ -52,7 +52,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
 
-
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
 ### Added
