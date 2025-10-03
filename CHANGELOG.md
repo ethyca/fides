@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue where updating an Experience in Admin UI could potentially result in a browser error [#6676](https://github.com/ethyca/fides/pull/6676)
 - Fixed a bug that prevented users from removing categories of consent from web monitor resources [#6679](https://github.com/ethyca/fides/pull/6679)
 - Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
+- Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
@@ -53,6 +54,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added model for digest configuration. [#6616](https://github.com/ethyca/fides/pull/6616) https://github.com/ethyca/fides/labels/db-migration
 - Added Deadline, Completed On, Last Updated to Privacy Request CSV [#6621](https://github.com/ethyca/fides/pull/6621)
 - Add OAuth2 support for connection configurations [#6614](https://github.com/ethyca/fides/pull/6614)
+- Added new classifier alpha screen [6639](https://github.com/ethyca/fides/pull/6639)
 
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
