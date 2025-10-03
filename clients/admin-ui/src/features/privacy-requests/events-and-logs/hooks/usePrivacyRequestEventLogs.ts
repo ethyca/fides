@@ -1,5 +1,6 @@
 import {
   hasAwaitingProcessing,
+  hasPolling,
   hasSkippedEntry,
   hasUnresolvedError,
 } from "~/features/privacy-requests/events-and-logs/helpers";
@@ -24,6 +25,7 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
         const hasUnresolvedErrorStatus = hasUnresolvedError(logs);
         const hasSkippedEntryStatus = hasSkippedEntry(logs);
         const hasAwaitingProcessingStatus = hasAwaitingProcessing(logs);
+        const hasPollingStatus = hasPolling(logs);
 
         return {
           author: "Fides",
@@ -33,11 +35,13 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
           showViewLog:
             hasUnresolvedErrorStatus ||
             hasSkippedEntryStatus ||
-            hasAwaitingProcessingStatus,
+            hasAwaitingProcessingStatus ||
+            hasPollingStatus,
           onClick: () => {}, // This will be overridden in the component
           isError: hasUnresolvedErrorStatus,
           isSkipped: hasSkippedEntryStatus,
           isAwaitingInput: hasAwaitingProcessingStatus,
+          isPolling: hasPollingStatus,
           id: `request-${key}`,
         };
       });

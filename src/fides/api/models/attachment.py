@@ -52,6 +52,7 @@ class AttachmentReferenceType(str, EnumType):
     privacy_request = "privacy_request"
     comment = "comment"
     manual_task_submission = "manual_task_submission"
+    request_task = "request_task"
 
 
 class AttachmentReference(Base):

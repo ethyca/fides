@@ -1,0 +1,55 @@
+
+saas_config:
+  fides_key: async_callback_example
+  name: Async Callback Example
+  type: async_callback_example
+  description: An example SaaS config with async callback
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: api_token
+      label: API token
+      sensitive: True
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <api_token>
+
+  test_request:
+    method: GET
+    path: /test
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /api/access-package
+          param_values:
+            - name: email
+              identity: email
+          async_config:
+            strategy: callback
+          headers:
+            - name: reply-to
+              value: <reply_to>
+            - name: reply-to-token
+              value: <reply_to_token>
+        delete:
+          method: DELETE
+          path: /api/anonymize-user/<email>
+          param_values:
+            - name: email
+              identity: email
+          async_config:
+            strategy: callback
+          headers:
+            - name: reply-to
+              value: <reply_to>
+            - name: reply-to-token
+              value: <reply_to_token>

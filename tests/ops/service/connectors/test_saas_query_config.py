@@ -529,7 +529,7 @@ class TestSaaSQueryConfig:
         ]
 
         query_config = SaaSQueryConfig(member, endpoints, {})
-        saas_request = query_config.get_masking_request(db)
+        saas_request = query_config.get_masking_request()
 
         # Assert we pulled the update method off of the member collection
         assert saas_request.method == "PUT"
@@ -537,11 +537,11 @@ class TestSaaSQueryConfig:
 
         # No update methods defined on other collections
         query_config = SaaSQueryConfig(conversations, endpoints, {})
-        saas_request = query_config.get_masking_request(db)
+        saas_request = query_config.get_masking_request()
         assert saas_request is None
 
         query_config = SaaSQueryConfig(messages, endpoints, {})
-        saas_request = query_config.get_masking_request(db)
+        saas_request = query_config.get_masking_request()
         assert saas_request is None
 
         # Define delete request on conversations endpoint
@@ -553,7 +553,7 @@ class TestSaaSQueryConfig:
         query_config = SaaSQueryConfig(
             conversations, endpoints, {}
         )  # Re-initialize for conversations
-        saas_request: SaaSRequest = query_config.get_masking_request(db)
+        saas_request: SaaSRequest = query_config.get_masking_request()
         assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
         assert saas_request.method == "DELETE"
 
@@ -564,7 +564,7 @@ class TestSaaSQueryConfig:
         )
 
         # Assert GDPR Delete takes priority over Delete
-        saas_request: SaaSRequest = query_config.get_masking_request(db)
+        saas_request: SaaSRequest = query_config.get_masking_request()
         assert saas_request.path == "/api/0/gdpr_delete"
         assert saas_request.method == "PUT"
 

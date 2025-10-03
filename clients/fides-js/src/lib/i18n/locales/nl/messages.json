@@ -3,5 +3,10 @@
   "static.gpc.description": "Uw Global Privacy Control-voorkeur wordt gerespecteerd. U bent automatisch afgemeld voor gegevensgebruiksscenario's die zich houden aan Global Privacy Control.",
   "static.gpc.status.applied": "Toegepast",
   "static.gpc.status.overridden": "Genegeerd",
-  "static.gpc.title": "Global Privacy Control gedetecteerd"
+  "static.gpc.title": "Globale privacyinstelling gedetecteerd",
+  "static.other.cookies": "Cookies",
+  "static.other.back": "Terug",
+  "static.other.vendors": "Leveranciers",
+  "static.other.retention": "Bewaartermijn",
+  "static.other.description": "Beschrijving"
 }

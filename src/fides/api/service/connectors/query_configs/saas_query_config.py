@@ -10,7 +10,6 @@ from uuid import uuid4
 import pydash
 from fideslang.models import FidesDatasetReference
 from loguru import logger
-from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.execution import ExecutionNode
@@ -140,7 +139,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
         return request
 
-    def get_masking_request(self, db: Session) -> Optional[SaaSRequest]:
+    def get_masking_request(self) -> Optional[SaaSRequest]:
         """
         Returns a tuple of the preferred action and SaaSRequest to use for masking.
         An update request is preferred, but we can use a gdpr delete endpoint or
@@ -353,7 +352,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             ]
 
         param_values[UUID] = str(uuid4())
-        param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
+        # Use full ISO-8601 timestamp including time component (UTC, seconds precision)
+        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         param_values[FIELD_LIST] = ",".join(
             [
                 field.name
@@ -384,8 +384,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         The fields in the row are masked according to the policy and added to the request body
         if specified by the body field of the masking request.
         """
-        session = Session.object_session(request)
-        current_request: SaaSRequest = self.get_masking_request(session)  # type: ignore
+        current_request: SaaSRequest = self.get_masking_request()  # type: ignore
         param_values: Dict[str, Any] = self.generate_update_param_values(
             row, policy, request, current_request
         )

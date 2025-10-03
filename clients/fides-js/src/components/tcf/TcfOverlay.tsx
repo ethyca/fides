@@ -666,6 +666,7 @@ export const TcfOverlay = () => {
         setActiveTabIndex(2);
       }}
       isUiBlocking={!isDismissable}
+      isVendorAssetDisclosureView={false}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({

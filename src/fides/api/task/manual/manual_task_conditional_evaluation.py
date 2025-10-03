@@ -181,7 +181,7 @@ def evaluate_conditional_dependencies(
     """
     # Get the root condition for this manual task
     root_condition = ManualTaskConditionalDependency.get_root_condition(
-        db, manual_task.id
+        db, manual_task_id=manual_task.id
     )
 
     if not root_condition:

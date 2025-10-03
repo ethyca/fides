@@ -74,7 +74,7 @@ export const processExternalConsentValue = (
  * Parses a comma-separated string of notice keys into an array of strings.
  * Handles undefined input, trims whitespace, and filters out empty strings.
  */
-export const parseFidesDisabledNotices = (
+export const parseCommaSeparatedString = (
   value: string | undefined,
 ): string[] => {
   if (!value) {

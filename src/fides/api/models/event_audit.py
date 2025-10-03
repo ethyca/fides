@@ -31,6 +31,14 @@ class EventAuditType(str, EnumType):
     taxonomy_element_updated = "taxonomy.element.updated"
     taxonomy_element_deleted = "taxonomy.element.deleted"
 
+    # Digest
+    digest_execution_started = "digest.execution.started"
+    digest_execution_completed = "digest.execution.completed"
+    digest_execution_interrupted = "digest.execution.interrupted"
+    digest_execution_resumed = "digest.execution.resumed"
+    digest_communications_sent = "digest.communications.sent"
+    digest_checkpoint_created = "digest.checkpoint.created"
+
 
 class EventAuditStatus(str, EnumType):
     """Status enum for event audit logging."""

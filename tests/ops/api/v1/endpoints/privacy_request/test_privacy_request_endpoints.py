@@ -8007,6 +8007,7 @@ class TestRequeuePrivacyRequest:
         )
 
 
+@pytest.mark.async_dsr
 class TestRequestTaskAsyncCallback:
     @pytest.fixture(scope="function")
     def url(self) -> str:

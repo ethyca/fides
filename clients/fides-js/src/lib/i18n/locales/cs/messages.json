@@ -3,5 +3,10 @@
   "static.gpc.description": "Byly dodrženy vaše globální preference ochrany osobních údajů. Automaticky jste byli vyřazeni z používání údajů v případech, na které se vztahuje globální ochrana osobních údajů.",
   "static.gpc.status.applied": "Aplikováno",
   "static.gpc.status.overridden": "Přepsáno",
-  "static.gpc.title": "Bylo zjištěna globální kontrola ochrany osobních údajů"
+  "static.gpc.title": "Byla zjištěna globální kontrola soukromí",
+  "static.other.cookies": "Soubory cookie",
+  "static.other.back": "Zpět",
+  "static.other.vendors": "Dodavatelé",
+  "static.other.retention": "Uložení",
+  "static.other.description": "Popis"
 }

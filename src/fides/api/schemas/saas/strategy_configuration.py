@@ -178,15 +178,3 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
     """
 
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
-
-
-class PollingAsyncDSRConfiguration(StrategyConfiguration):
-    """
-    Configuration for polling async DSR requests.
-    """
-
-    status_request: SaaSRequest
-    status_path: str
-    status_completed_value: Optional[str] = None
-    result_request: SaaSRequest
-    result_path: str

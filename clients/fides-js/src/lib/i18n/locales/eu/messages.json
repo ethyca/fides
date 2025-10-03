@@ -3,5 +3,10 @@
   "static.gpc.description": "Pribatutasun-kontrol globalaren lehentasuna bete da. Pribatutasun-kontrol globalari atxikitzen zaizkion datuen erabileren kasuetatik automatikoki baztertua izan zara.",
   "static.gpc.status.applied": "Ezarrita",
   "static.gpc.status.overridden": "Baliogabetuta",
-  "static.gpc.title": "Pribatutasun-kontrol globala antzeman da"
+  "static.gpc.title": "Pribatutasun-kontrol globala atzeman da",
+  "static.other.cookies": "Cookieak",
+  "static.other.back": "Atzera",
+  "static.other.vendors": "Hornitzaileak",
+  "static.other.retention": "Atxikipena",
+  "static.other.description": "Deskripzioa"
 }

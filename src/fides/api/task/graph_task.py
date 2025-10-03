@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
+    AwaitingAsyncProcessing,
     AwaitingAsyncTask,
     CollectionDisabled,
     NotSupportedForCollection,
@@ -96,6 +97,7 @@ def retry(
     If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
+    # pylint: disable=too-many-return-statements
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def result(*args: Any, **kwargs: Any) -> Any:
@@ -115,6 +117,17 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
+                except AwaitingAsyncProcessing as ex:
+                    logger.warning(
+                        "Request Task {} {} {} async processing in progress",
+                        self.request_task.id if self.request_task.id else None,
+                        method_name,
+                        self.execution_node.address,
+                    )
+                    # Log the async processing status and exit without retrying.
+                    self.log_async_processing(action_type, ex)
+                    # Request Task put in "polling" status and exited, external system is processing
+                    return None
                 except AwaitingAsyncTask as ex:
                     logger.warning(
                         "Request Task {} {} {} awaiting async continuation",
@@ -416,9 +429,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
             if self.request_task.id:
-                # Merge the request task to ensure we keep the changes made
-                # to self.request_task that haven't yet been committed to the database
+                # Merge the request_task into the current session to make it persistent,
+                # then refresh its `async_type` to load the latest state from the
+                # database. This is crucial for async tasks where `async_type` might be
+                # updated by another process, and avoids overwriting local data like
+                # `access_data`.
                 request_task = db.merge(self.request_task)
+                db.refresh(request_task, attribute_names=["async_type"])
                 request_task.update_status(db, status)
                 self.request_task = request_task
 
@@ -452,6 +469,21 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.update_status(
             message, [], action_type, ExecutionLogStatus.awaiting_processing
         )
+
+    def log_async_processing(
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException],
+        extra_message: Optional[str] = None,
+    ) -> None:
+        """On async processing activities - external system is actively processing, Fides is polling"""
+        logger.info("Polling for async results on node {}", self.key)
+
+        message = str(ex)
+        if extra_message:
+            message = f"{message}. {extra_message}"
+
+        self.update_status(message, [], action_type, ExecutionLogStatus.polling)
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""

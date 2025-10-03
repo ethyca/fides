@@ -1938,6 +1938,7 @@ class TestConsentEmailStep:
         )
 
 
+@pytest.mark.async_dsr
 class TestAsyncCallbacks:
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(

@@ -3,7 +3,7 @@ import {
   FidesOverrideValidatorMap,
 } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
-import { parseFidesDisabledNotices } from "./shared-consent-utils";
+import { parseCommaSeparatedString } from "./shared-consent-utils";
 
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
@@ -97,7 +97,14 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideType: "array",
       overrideKey: "fides_disabled_notices",
       validationRegex: /(.*)/,
-      transform: parseFidesDisabledNotices,
+      transform: parseCommaSeparatedString,
+    },
+    {
+      overrideName: "fidesDisabledSystems",
+      overrideType: "array",
+      overrideKey: "fides_disabled_systems",
+      validationRegex: /(.*)/,
+      transform: parseCommaSeparatedString,
     },
     {
       overrideName: "fidesConsentNonApplicableFlagMode",

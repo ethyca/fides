@@ -36,6 +36,7 @@ class TestDigestConfigCreation:
         assert config.config_metadata == {}
         assert config.created_at is not None
         assert config.updated_at is not None
+        config.delete(db)
 
     def test_create_privacy_request_digest(self, db: Session):
         """Test creating a privacy request digest configuration."""
@@ -63,6 +64,7 @@ class TestDigestConfigCreation:
         assert config.config_metadata["region"] == "EU"
         assert config.config_metadata["export_format"] == "csv"
         assert config.config_metadata["include_attachments"] is True
+        config.delete(db)
 
     def test_create_minimal_digest_config(self, db: Session):
         """Test creating a digest config with only required fields."""
@@ -82,6 +84,7 @@ class TestDigestConfigCreation:
         assert config.cron_expression == "0 9 * * 1"
         assert config.timezone == "US/Eastern"  # Default
         assert config.config_metadata == {}
+        config.delete(db)
 
     def test_digest_config_defaults(self, db: Session):
         """Test that default values are properly set."""
@@ -98,6 +101,7 @@ class TestDigestConfigCreation:
         assert config.timezone == "US/Eastern"
         assert config.cron_expression == "0 9 * * 1"
         assert config.config_metadata == {}
+        config.delete(db)
 
     def test_name_is_required(self, db: Session):
         """Test that name field is required."""
@@ -176,7 +180,8 @@ class TestDigestConfigQueries:
         for config in configs:
             config.delete(db)
 
-    def test_get_by_digest_type(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_by_digest_type(self, db: Session):
         """Test filtering digest configs by type."""
         manual_task_configs = (
             db.query(DigestConfig)
@@ -190,7 +195,8 @@ class TestDigestConfigQueries:
             for config in manual_task_configs
         )
 
-    def test_get_enabled_configs(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_enabled_configs(self, db: Session):
         """Test filtering digest configs by enabled status."""
         enabled_configs = (
             db.query(DigestConfig).filter(DigestConfig.enabled == True).all()
@@ -199,7 +205,8 @@ class TestDigestConfigQueries:
         assert len(enabled_configs) == 2
         assert all(config.enabled is True for config in enabled_configs)
 
-    def test_get_by_messaging_service_type(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_by_messaging_service_type(self, db: Session):
         """Test filtering digest configs by messaging service type."""
         email_configs = (
             db.query(DigestConfig)
@@ -209,7 +216,8 @@ class TestDigestConfigQueries:
 
         assert len(email_configs) == 3  # All configs use email by default
 
-    def test_get_configs_with_cron_expression(self, db: Session, sample_configs):
+    @pytest.mark.usefixtures("sample_configs")
+    def test_get_configs_with_cron_expression(self, db: Session):
         """Test filtering digest configs that have cron expressions."""
         scheduled_configs = (
             db.query(DigestConfig)
@@ -328,33 +336,35 @@ class TestDigestConfigConditionMethods:
             },
         )
 
-    def test_get_receiver_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that receiver conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_receiver_conditions(db)
+    def test_get_receiver_condition_returns_none_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that receiver conditions method returns None when no conditions exist."""
+        result = digest_config.get_receiver_condition(db)
+        assert result is None
 
-    def test_get_content_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that content conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_content_conditions(db)
+    def test_get_content_condition_returns_none_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that content conditions method returns None when no conditions exist."""
+        result = digest_config.get_content_condition(db)
+        assert result is None
 
-    def test_get_priority_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that priority conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_priority_conditions(db)
+    def test_get_priority_condition_returns_none_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that priority conditions method returns None when no conditions exist."""
+        result = digest_config.get_priority_condition(db)
+        assert result is None
 
-    def test_get_all_conditions_not_implemented(self, db: Session, digest_config):
-        """Test that all conditions method raises NotImplementedError."""
-        with pytest.raises(
-            NotImplementedError, match="Conditions are not implemented for digests"
-        ):
-            digest_config.get_all_conditions(db)
+    def test_get_all_conditions_returns_none_values_when_empty(
+        self, db: Session, digest_config
+    ):
+        """Test that all conditions method returns dict with None values when no conditions exist."""
+        result = digest_config.get_all_conditions(db)
+        assert isinstance(result, dict)
+        assert len(result) == 3  # All three condition types
+        assert all(value is None for value in result.values())
 
 
 class TestDigestConfigValidation:

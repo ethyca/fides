@@ -26,6 +26,7 @@ $horizontal-padding: 20px;
   &--error,
   &--comment,
   &--awaiting-input,
+  &--polling,
   &:hover {
     border-color: var(--fidesui-neutral-100);
   }
@@ -44,6 +45,12 @@ $horizontal-padding: 20px;
   &--awaiting-input:hover,
   &--awaiting-input:focus {
     border-left: 8px solid var(--fidesui-minos);
+  }
+
+  &--polling,
+  &--polling:hover,
+  &--polling:focus {
+    border-left: 8px solid var(--fidesui-warning);
   }
 }
 
@@ -73,6 +80,10 @@ $horizontal-padding: 20px;
 
   &--awaiting-input {
     color: var(--fidesui-minos);
+  }
+
+  &--polling {
+    color: var(--fidesui-warning);
   }
 
   width: auto;

@@ -590,7 +590,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Get root condition
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Verify the result
@@ -630,7 +630,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Get root condition
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Verify the result
@@ -649,7 +649,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         """Test getting root condition when none exists"""
         # Get root condition for a task with no dependencies
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Should return None
@@ -699,7 +699,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Get root condition
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Verify the result

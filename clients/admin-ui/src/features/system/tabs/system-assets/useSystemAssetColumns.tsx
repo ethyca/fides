@@ -9,6 +9,7 @@ import {
   IndeterminateCheckboxCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
+import { AssetType } from "~/features/system/tabs/system-assets/AddEditAssetModal";
 import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCell";
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
@@ -120,6 +121,15 @@ const useSystemAssetColumns = ({
     header: "Domain",
   });
 
+  const duration = columnHelper.accessor((row) => row.duration, {
+    id: "duration",
+    cell: (props) =>
+      props.row.original.asset_type === AssetType.COOKIE ? (
+        <DefaultCell value={props.getValue()} />
+      ) : null,
+    header: "Duration",
+  });
+
   const page = columnHelper.accessor((row) => row.page, {
     id: "page",
     cell: (props) => (
@@ -155,6 +165,7 @@ const useSystemAssetColumns = ({
     dataUses,
     locations,
     domain,
+    duration,
     page,
   ];
 

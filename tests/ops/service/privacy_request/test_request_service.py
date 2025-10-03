@@ -12,12 +12,12 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.connectors.fides.fides_client import poll_server_for_completion
 from fides.api.service.privacy_request.request_service import (
     _handle_privacy_request_requeue,
     build_required_privacy_request_kwargs,
     get_cached_task_id,
     poll_for_exited_privacy_request_tasks,
-    poll_server_for_completion,
     remove_saved_dsr_data,
     requeue_interrupted_tasks,
 )

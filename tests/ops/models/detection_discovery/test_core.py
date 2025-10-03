@@ -397,6 +397,18 @@ class TestStagedResourceModelWebMonitorResults:
         updated_resource = StagedResource.get_urn(db, saved_resource.urn)
         assert updated_resource.system_id == system_hidden.id
 
+    def test_empty_user_assigned_data_uses(
+        self, db: Session, create_web_monitor_staged_resource
+    ):
+        """
+        Tests that web monitor staged resources are created with a null user_assigned_data_uses field
+        and that they can be updated to have an empty array value for that field.
+        """
+        assert create_web_monitor_staged_resource.user_assigned_data_uses is None
+        create_web_monitor_staged_resource.user_assigned_data_uses = []
+        create_web_monitor_staged_resource.save(db)
+        assert create_web_monitor_staged_resource.user_assigned_data_uses == []
+
 
 SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
 
