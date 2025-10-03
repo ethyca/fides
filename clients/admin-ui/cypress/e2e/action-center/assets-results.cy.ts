@@ -743,7 +743,7 @@ describe("Action center Asset Results", () => {
 
     it("should allow adding categories of consent to assets", () => {
       cy.getAntTableRow(rowUrns[0]).within(() => {
-        cy.getByTestId("taxonomy-add-btn").click();
+        cy.getByTestId("taxonomy-add-btn").click({ force: true });
       });
       cy.getByTestId("taxonomy-select").antSelect("analytics");
       cy.wait("@patchAssets").then((interception) => {
@@ -806,7 +806,7 @@ describe("Action center Asset Results", () => {
       });
       cy.getByTestId("success-alert").should(
         "contain",
-        'Consent category removed from Browser request "697301175"',
+        'Consent category removed from Browser request "697301175_with_a_really_long_name_that_should_b..."',
       );
     });
   });

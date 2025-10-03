@@ -1,4 +1,9 @@
-import { AntFlex, AntTabs as Tabs, Spinner } from "fidesui";
+import {
+  AntCol as Col,
+  AntRow as Row,
+  AntTabs as Tabs,
+  Spinner,
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -104,15 +109,13 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       />
-      <AntFlex gap={24}>
-        <div className="grow">
-          <div className="mb-6">
-            <IntegrationBox
-              integration={connection}
-              integrationTypeInfo={integrationTypeInfo}
-              showDeleteButton
-            />
-          </div>
+      <Row wrap={false} gutter={24}>
+        <Col flex="1 1 auto">
+          <IntegrationBox
+            integration={connection}
+            integrationTypeInfo={integrationTypeInfo}
+            showDeleteButton
+          />
           {isLoading ? (
             <Spinner />
           ) : (
@@ -120,8 +123,8 @@ const IntegrationDetailView: NextPage = () => {
               <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
             )
           )}
-        </div>
-        <div className="w-[350px] shrink-0">
+        </Col>
+        <Col flex="0 0 350px">
           {isLoading ? (
             <Spinner />
           ) : (
@@ -134,8 +137,8 @@ const IntegrationDetailView: NextPage = () => {
               />
             )
           )}
-        </div>
-      </AntFlex>
+        </Col>
+      </Row>
     </Layout>
   );
 };

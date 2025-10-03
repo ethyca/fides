@@ -127,7 +127,7 @@
         "marketing.advertising.first_party.targeted"
       ],
       "system_key": "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
-      "name": "697301175",
+      "name": "697301175_with_a_really_long_name_that_should_be_truncated",
       "description": null,
       "monitor_config_id": "my_web_monitor_1",
       "updated_at": "2025-01-16T17:27:31.499796Z",

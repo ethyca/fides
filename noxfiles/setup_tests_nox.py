@@ -157,7 +157,7 @@ def pytest_ops(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
-            pytest_path=OPS_TEST_DIR,
+            pytest_path=f"{OPS_TEST_DIR} tests/integration/",
         )
     elif mark == "external_datastores":
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
