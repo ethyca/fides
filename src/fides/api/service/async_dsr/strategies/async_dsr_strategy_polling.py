@@ -240,11 +240,31 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 f"Waiting for next scheduled check of {request_task.dataset_name} access results."
             )
 
-        # Aggregate all sub-request results
+        # Aggregate all sub-request results, merging attachments
         aggregated_results: List[Row] = []
+        merged_attachments = []
+
         for sub_request in request_task.sub_requests:
             if sub_request.access_data:
-                aggregated_results.extend(sub_request.access_data)
+                for row in sub_request.access_data:
+                    # Check if this row has retrieved_attachments
+                    if "retrieved_attachments" in row:
+                        # Collect attachments for merging
+                        merged_attachments.extend(row["retrieved_attachments"])
+                        # Remove retrieved_attachments from the row to avoid duplication
+                        row_without_attachments = {
+                            k: v for k, v in row.items() if k != "retrieved_attachments"
+                        }
+                        # Only add the row if it's not empty or if it's the first row
+                        if row_without_attachments or not aggregated_results:
+                            aggregated_results.append(row_without_attachments)
+                    else:
+                        # Regular row without attachments
+                        aggregated_results.append(row)
+
+        # If we have merged attachments, add them to the first aggregated result
+        if merged_attachments and aggregated_results:
+            aggregated_results[0]["retrieved_attachments"] = merged_attachments
 
         return aggregated_results
 
@@ -289,7 +309,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         logger.info(f"Prepared requests: {len(prepared_requests)}")
 
         for next_request, param_value_map in prepared_requests:
-            logger.info(f"Executing initial request: {next_request}")
             response = client.send(next_request)
 
             if not response.ok:

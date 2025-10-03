@@ -1,3 +1,4 @@
+import json
 import time
 from dataclasses import dataclass, field
 from io import BytesIO
@@ -205,17 +206,23 @@ class MockAuthenticatedClient(Mock):
                 if mock_response_data.is_binary:
                     # Binary response
                     mock_response.content = mock_response_data.binary_content
-                    mock_response.text = str(mock_response_data.binary_content)
+                    # For binary data, text should be the decoded content (if it's text-based)
+                    try:
+                        mock_response.text = mock_response_data.binary_content.decode(
+                            "utf-8"
+                        )
+                    except UnicodeDecodeError:
+                        # If it's truly binary (not text), don't set text property
+                        mock_response.text = ""
                     mock_response.json.side_effect = ValueError(
                         "No JSON object could be decoded"
                     )
                 else:
                     # JSON response
+                    json_text = json.dumps(mock_response_data.json_data)
                     mock_response.json.return_value = mock_response_data.json_data
-                    mock_response.text = str(mock_response_data.json_data)
-                    mock_response.content = str(mock_response_data.json_data).encode(
-                        "utf-8"
-                    )
+                    mock_response.text = json_text
+                    mock_response.content = json_text.encode("utf-8")
 
                 return mock_response
 

@@ -47,22 +47,21 @@ class TestPollingResponseProcessor:
     def test_process_result_response_csv_rows(self):
         response = Mock(autospec=Response)
         response.headers = {"content-type": "text/csv"}
-        response.text = (
+        csv_text = (
             "id,name,email\n1,John Doe,john@example.com\n2,Jane Smith,jane@example.com"
         )
+        response.content = csv_text.encode("utf-8")
         assert PollingResponseProcessor.process_result_response(
             "/api/result/", response, "data.results"
         ) == PollingResult(
-            data=[
-                {"id": 1, "name": "John Doe", "email": "john@example.com"},
-                {"id": 2, "name": "Jane Smith", "email": "jane@example.com"},
-            ],
-            result_type=PollingResultType.rows,
+            data=csv_text.encode("utf-8"),
+            result_type=PollingResultType.attachment,
             metadata={
-                "inferred_type": "csv",
+                "inferred_type": "attachment",
                 "content_type": "text/csv",
-                "row_count": 2,
-                "parsed_to_rows": True,
+                "filename": "polling_result",
+                "size": len(csv_text.encode("utf-8")),
+                "preserved_as_attachment": True,
             },
         )
 

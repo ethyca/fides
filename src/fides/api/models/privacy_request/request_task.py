@@ -349,6 +349,7 @@ class RequestTaskSubRequest(Base):
             ondelete="CASCADE",
         ),
         nullable=False,
+        index=True,
     )
 
     request_task = relationship(

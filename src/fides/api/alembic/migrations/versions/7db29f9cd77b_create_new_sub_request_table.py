@@ -1,7 +1,7 @@
 """Create new Sub Request Table
 
 Revision ID: 7db29f9cd77b
-Revises: 918aefc950c9
+Revises: b97e92b038d2
 Create Date: 2025-09-16 14:00:16.282996
 
 """
@@ -18,7 +18,7 @@ from fides.config import CONFIG
 
 # revision identifiers, used by Alembic.
 revision = "7db29f9cd77b"
-down_revision = "918aefc950c9"
+down_revision = "b97e92b038d2"
 branch_labels = None
 depends_on = None
 
@@ -76,9 +76,19 @@ def upgrade():
         ["id"],
         unique=False,
     )
+    op.create_index(
+        op.f("ix_request_task_sub_request_request_task_id"),
+        "request_task_sub_request",
+        ["request_task_id"],
+        unique=False,
+    )
 
 
 def downgrade():
+    op.drop_index(
+        op.f("ix_request_task_sub_request_request_task_id"),
+        table_name="request_task_sub_request",
+    )
     op.drop_index(
         op.f("ix_request_task_sub_request_id"), table_name="request_task_sub_request"
     )

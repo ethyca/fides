@@ -17,20 +17,19 @@ depends_on = None
 
 
 def upgrade():
-    # Add 'polling' to executionlogstatus enum
-    op.execute("alter type executionlogstatus add value 'polling'")
+    # Check if value already exists
+    connection = op.get_bind()
+    result = connection.execute(
+        sa.text(
+            "SELECT 1 FROM pg_enum WHERE enumlabel = 'polling' "
+            "AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'executionlogstatus')"
+        )
+    )
+
+    if not result.fetchone():
+        op.execute("ALTER TYPE executionlogstatus ADD VALUE 'polling'")
 
 
 def downgrade():
-    # Remove 'polling' from executionlogstatus enum (requires recreating the enum)
-    op.execute("alter type executionlogstatus rename to executionlogstatus_old")
-    op.execute(
-        "create type executionlogstatus as enum('in_processing', 'pending', 'complete', 'error', 'paused', 'retrying', 'skipped')"
-    )
-    op.execute(
-        (
-            "alter table executionlog alter column status type executionlogstatus using "
-            "status::text::executionlogstatus"
-        )
-    )
-    op.execute("drop type executionlogstatus_old")
+    # The 'polling' value will remain in the enum but won't be used by older app versions
+    pass

@@ -5,14 +5,12 @@ This module handles data type inference, attachment classification,
 and response parsing with no business logic dependencies.
 """
 
-import io
 import mimetypes
 import os
 from email.message import Message
 from typing import Any, List, Optional
 from urllib.parse import urlparse
 
-import pandas as pd
 import pydash
 from loguru import logger
 from requests import Response
@@ -44,6 +42,7 @@ ATTACHMENT_EXTENSIONS = {
     ".xlsx",
     ".xls",
     ".xml",
+    ".csv",
     ".jpg",
     ".jpeg",
     ".png",
@@ -63,6 +62,8 @@ ATTACHMENT_CONTENT_TYPES = {
     "text/xml",
     "image/",
     "video/",
+    "text/csv",
+    "application/csv",
 }
 
 # Initialize mimetypes module for content type inference
@@ -256,12 +257,5 @@ class PollingResponseProcessor:
 
             except ValueError as e:
                 raise PrivacyRequestError(f"Invalid JSON response: {e}")
-
-        if data_type == SupportedDataType.csv:
-            try:
-                df = pd.read_csv(io.StringIO(response.text))
-                return df.to_dict(orient="records")
-            except Exception as e:
-                raise PrivacyRequestError(f"Failed to parse CSV: {e}")
 
         raise PrivacyRequestError(f"Cannot parse {data_type} to rows")
