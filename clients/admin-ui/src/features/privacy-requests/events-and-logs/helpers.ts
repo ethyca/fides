@@ -40,3 +40,7 @@ export const hasSkippedEntry = (logs: ExecutionLog[]): boolean => {
 export const hasAwaitingProcessing = (logs: ExecutionLog[]): boolean => {
   return hasStatus(logs, ExecutionLogStatus.AWAITING_PROCESSING);
 };
+
+export const hasPolling = (logs: ExecutionLog[]): boolean => {
+  return hasStatus(logs, ExecutionLogStatus.POLLING);
+};

@@ -128,6 +128,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       isError: false,
       isSkipped: false,
       isAwaitingInput: false,
+      isPolling: false,
       id: "initial-request",
     };
 

@@ -2597,6 +2597,25 @@ dataset:
       data_categories: [system]
     - name: async_type
       data_categories: [system]
+  - name: request_task_sub_request
+    description: 'Model for storing request data for middle steps during the execution of a request task'
+    fields:
+    - name: id
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: request_task_id
+      data_categories: [system]
+    - name: param_values
+      data_categories: [system]
+    - name: status
+      data_categories: [system]
+    - name: access_data
+      data_categories: [user]
+    - name: rows_masked
+      data_categories: [system]
   - name: monitorconfig
     fields:
     - name: classify_params
