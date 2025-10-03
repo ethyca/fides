@@ -17,6 +17,14 @@ class ExecutionLogStatus(enum.Enum):
     awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
     retrying = "retrying"
     skipped = "skipped"
+    polling = "polling"
+
+
+# Statuses that can be resumed
+RESUMABLE_EXECUTION_LOG_STATUSES = [
+    ExecutionLogStatus.pending,
+    ExecutionLogStatus.polling,
+]
 
 
 class WorkerTask:

@@ -30,6 +30,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     onClick,
     isError,
     isAwaitingInput,
+    isPolling,
     description,
     attachments,
     showViewLog,
@@ -53,6 +54,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             className={classNames(styles.title, {
               [styles["title--error"]]: isError,
               [styles["title--awaiting-input"]]: isAwaitingInput,
+              [styles["title--polling"]]: isPolling,
             })}
             ellipsis={{ tooltip: true }}
             data-testid="activity-timeline-title"
@@ -109,6 +111,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     className: classNames(styles.itemButton, {
       [styles["itemButton--error"]]: isError,
       [styles["itemButton--awaiting-input"]]: isAwaitingInput,
+      [styles["itemButton--polling"]]: isPolling,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
         type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
