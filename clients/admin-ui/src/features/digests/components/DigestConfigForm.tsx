@@ -143,6 +143,44 @@ const DigestConfigForm = ({
         onFinish={onSubmit}
         className="max-w-2xl"
       >
+        <div className="flex gap-4">
+          <Form.Item
+            label="Digest Type"
+            name="digest_type"
+            tooltip="Type of content this digest will contain"
+            className="flex-1"
+          >
+            <Select
+              disabled
+              options={[
+                {
+                  label: "Manual Tasks",
+                  value: DigestType.MANUAL_TASKS,
+                },
+              ]}
+              data-testid="select-digest-type"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Messaging Method"
+            name="messaging_service_type"
+            tooltip="How the digest will be delivered"
+            className="flex-1"
+          >
+            <Select
+              disabled
+              options={[
+                {
+                  label: MESSAGING_METHOD_LABELS[MessagingMethod.EMAIL],
+                  value: MessagingMethod.EMAIL,
+                },
+              ]}
+              data-testid="select-messaging-method"
+            />
+          </Form.Item>
+        </div>
+
         <Form.Item
           label="Name"
           name="name"
@@ -164,40 +202,6 @@ const DigestConfigForm = ({
             rows={3}
             data-testid="input-description"
             placeholder="Brief description of what this digest is for"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Digest Type"
-          name="digest_type"
-          tooltip="Type of content this digest will contain"
-        >
-          <Select
-            disabled
-            options={[
-              {
-                label: "Manual Tasks",
-                value: DigestType.MANUAL_TASKS,
-              },
-            ]}
-            data-testid="select-digest-type"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Messaging Method"
-          name="messaging_service_type"
-          tooltip="How the digest will be delivered"
-        >
-          <Select
-            disabled
-            options={[
-              {
-                label: MESSAGING_METHOD_LABELS[MessagingMethod.EMAIL],
-                value: MessagingMethod.EMAIL,
-              },
-            ]}
-            data-testid="select-messaging-method"
           />
         </Form.Item>
 
