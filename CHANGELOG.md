@@ -27,6 +27,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
 
+### Developer Experience
+- Improved accessibility configuration for ESLint jsx-a11y plugin with Ant Design component support [#6699](https://github.com/ethyca/fides/pull/6699)
+
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
 - Fixed an issue where using pagination on the consent issues modal affects the results of the page [#6665](https://github.com/ethyca/fides/pull/6665)
@@ -38,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
 - Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
 - Fixed custom fields on the system data use form being nonfunctional [#6657](https://github.com/ethyca/fides/pull/6657)
+- Fixed several accessibility issues discovered in Admin UI using the new linting rules [#6699](https://github.com/ethyca/fides/pull/6699)
 
 ## [2.71.1](https://github.com/ethyca/fides/compare/2.71.0...2.71.1)
 
