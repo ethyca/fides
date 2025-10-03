@@ -41,6 +41,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.messaging_crud_service import (
+    _basic_messaging_template_by_type,
     get_basic_messaging_template_by_type_or_default,
     get_enabled_messaging_template_by_type_and_property,
 )
@@ -507,11 +508,6 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "upcoming_task_count": body_params.upcoming_task_count,
             "company_logo_url": body_params.company_logo_url,
         }
-
-        # Always use the HTML template, but allow customization of content sections
-        from fides.api.service.messaging.messaging_crud_service import (
-            _basic_messaging_template_by_type,
-        )
 
         custom_template = None
         if db is not None:

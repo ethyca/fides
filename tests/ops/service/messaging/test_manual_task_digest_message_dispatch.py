@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.schemas.messaging.messaging import (
     ManualTaskDigestBodyParams,
     MessagingActionType,
@@ -244,9 +245,6 @@ class TestManualTaskDigestMessageDispatch:
         messaging_config,
     ) -> None:
         """Test manual task digest email dispatch using custom template from UI."""
-        from fides.api.models.messaging_template import MessagingTemplate
-
-        # Create a custom template using hybrid format
         custom_template = MessagingTemplate.create(
             db=db,
             data={
@@ -309,9 +307,6 @@ class TestManualTaskDigestMessageDispatch:
         messaging_config,
     ) -> None:
         """Test manual task digest uses default template when no custom template exists in DB."""
-        # Ensure no custom template exists in database
-        from fides.api.models.messaging_template import MessagingTemplate
-
         existing_templates = (
             MessagingTemplate.query(db)
             .filter(
