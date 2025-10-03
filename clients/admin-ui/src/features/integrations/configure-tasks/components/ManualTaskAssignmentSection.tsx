@@ -40,6 +40,7 @@ const ManualTaskAssignmentSection = ({
         <Select
           className="flex-1"
           placeholder="Select users to assign manual tasks to"
+          aria-label="Select users to assign manual tasks to"
           mode="multiple"
           maxTagCount="responsive"
           value={selectedUsers}

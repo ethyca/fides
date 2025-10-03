@@ -457,6 +457,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
               ]}
               style={{ marginBottom: 24 }}
             >
+              {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
               <Select
                 placeholder="Select authentication method"
                 options={[

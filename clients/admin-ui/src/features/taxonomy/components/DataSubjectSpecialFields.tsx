@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import {
   AntCheckbox as Checkbox,
   AntForm as Form,
