@@ -75,6 +75,7 @@ export {
   Steps as AntSteps,
   Switch as AntSwitch,
   Tabs as AntTabs,
+  TimePicker as AntTimePicker,
   TreeSelect as AntTreeSelect,
   Upload as AntUpload,
 } from "antd/lib";

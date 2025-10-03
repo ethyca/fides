@@ -27,6 +27,7 @@ import {
   useUpdateDigestConfigMutation,
 } from "../digest-config.slice";
 import type { DigestConfigFormValues } from "../types";
+import DigestSchedulePicker from "./DigestSchedulePicker";
 import TestEmailModal from "./TestEmailModal";
 
 const { Text } = Typography;
@@ -125,7 +126,7 @@ const DigestConfigForm = ({
     enabled: true,
     messaging_service_type: MessagingMethod.EMAIL,
     cron_expression: DEFAULT_CRON_EXPRESSION,
-    timezone: DEFAULT_TIMEZONE,
+    timezone: DEFAULT_TIMEZONE, // Always UTC
     config_metadata: null,
   };
 
@@ -206,37 +207,12 @@ const DigestConfigForm = ({
         </Form.Item>
 
         <Form.Item
-          label="Cron Expression"
+          label="Schedule"
           name="cron_expression"
-          rules={[
-            { required: true, message: "Please enter a cron expression" },
-          ]}
-          tooltip="Cron expression for scheduling (e.g., '0 9 * * 1' for Monday at 9 AM)"
-          extra={
-            <Text type="secondary" className="text-xs">
-              Note: A cron builder UI will be added in a future update
-            </Text>
-          }
+          rules={[{ required: true, message: "Please configure a schedule" }]}
+          tooltip="Configure when the digest should be sent"
         >
-          <Input
-            data-testid="input-cron"
-            placeholder="0 9 * * 1"
-            className="font-mono"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Timezone"
-          name="timezone"
-          rules={[{ required: true, message: "Please enter a timezone" }]}
-          tooltip="Timezone for the cron schedule (e.g., 'UTC', 'America/New_York')"
-          extra={
-            <Text type="secondary" className="text-xs">
-              Note: A timezone picker will be added in a future update
-            </Text>
-          }
-        >
-          <Input data-testid="input-timezone" placeholder="UTC" />
+          <DigestSchedulePicker />
         </Form.Item>
 
         <Form.Item
