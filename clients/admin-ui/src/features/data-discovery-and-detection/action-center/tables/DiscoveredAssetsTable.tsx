@@ -13,11 +13,7 @@ import {
 import { useState } from "react";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
-import {
-  ConsentStatus,
-  DiffStatus,
-  StagedResourceAPIResponse,
-} from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import AddDataUsesModal from "../AddDataUsesModal";
