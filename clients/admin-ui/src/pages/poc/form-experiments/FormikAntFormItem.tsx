@@ -30,7 +30,7 @@ export const FormikAntFormItemPOC = () => (
         <Col span={12}>
           <Title level={2}>{`<Formik> + Controlled + Ant's <Form.Item>`}</Title>
           <div className="mb-4">
-            <Tag color="green">funcitonal</Tag>
+            <Tag color="green">functional</Tag>
             <Tag color="orange">mid effort</Tag>
           </div>
           <Form>
