@@ -29,9 +29,9 @@ def downgrade():
     op.execute(
         "UPDATE digest_task_execution SET status = 'paused' WHERE status = 'polling'"
     )
-    op.execute("UPDATE monitor_task SET status = 'paused' WHERE status = 'polling'")
+    op.execute("UPDATE monitortask SET status = 'paused' WHERE status = 'polling'")
     op.execute(
-        "UPDATE monitor_task_execution_log SET status = 'paused' WHERE status = 'polling'"
+        "UPDATE monitortaskexecutionlog SET status = 'paused' WHERE status = 'polling'"
     )
 
     # Recreate the enum without the 'polling' value
@@ -56,11 +56,11 @@ def downgrade():
         "status::text::executionlogstatus"
     )
     op.execute(
-        "ALTER TABLE monitor_task ALTER COLUMN status TYPE executionlogstatus USING "
+        "ALTER TABLE monitortask ALTER COLUMN status TYPE executionlogstatus USING "
         "status::text::executionlogstatus"
     )
     op.execute(
-        "ALTER TABLE monitor_task_execution_log ALTER COLUMN status TYPE executionlogstatus USING "
+        "ALTER TABLE monitortaskexecutionlog ALTER COLUMN status TYPE executionlogstatus USING "
         "status::text::executionlogstatus"
     )
 
