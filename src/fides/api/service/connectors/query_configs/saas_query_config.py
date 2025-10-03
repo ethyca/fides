@@ -46,6 +46,7 @@ from fides.api.util.saas_util import (
     ISO_8601_DATETIME,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    PRIVACY_REQUEST_OBJECT,
     REPLY_TO,
     REPLY_TO_TOKEN,
     UUID,
@@ -211,6 +212,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy],
         read_request: SaaSRequest,
+        privacy_request: Optional[PrivacyRequest] = None,
     ) -> List[Tuple[SaaSRequestParams, Dict[str, Any]]]:
         """
         Takes the identity and reference values from input_data and combines them
@@ -223,6 +225,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.current_request = read_request
 
         request_params = []
+
+        if privacy_request:
+            input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
+
         param_value_maps = self.generate_param_value_maps(input_data, read_request)
 
         for param_value_map in param_value_maps:
@@ -341,6 +347,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+
+        privacy_request_object = input_data.get(PRIVACY_REQUEST_OBJECT)
+        if (
+            isinstance(privacy_request_object, list)
+            and len(privacy_request_object) > 0
+            and isinstance(privacy_request_object[0], dict)
+        ):
+            param_values[PRIVACY_REQUEST_OBJECT] = privacy_request_object[0]
 
         custom_privacy_request_fields = input_data.get(CUSTOM_PRIVACY_REQUEST_FIELDS)
         if (
@@ -461,6 +475,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+
+        param_values[PRIVACY_REQUEST_OBJECT] = privacy_request.to_safe_dict()
 
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         param_values[UUID] = str(uuid4())

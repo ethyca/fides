@@ -276,6 +276,16 @@ export interface FidesOptions {
   fides_disabled_notices: string;
 
   /**
+   * A comma-separated list of systems whose related notice assets (e.g., cookies) should be excluded
+   * from responses. This is used to filter out assets by system name when rendering disclosures.
+   *
+   * For example: "google_analytics,facebook_ads"
+   *
+   * Defaults to `undefined`.
+   */
+  fides_disabled_systems?: string;
+
+  /**
    * Controls when the deprecated FidesInitialized event should be dispatched.
    *
    * - "multiple" = fires alongside both FidesReady and FidesConsentLoaded events

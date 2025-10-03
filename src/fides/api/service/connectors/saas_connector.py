@@ -67,6 +67,7 @@ from fides.api.util.logger_context_utils import (
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
+    PRIVACY_REQUEST_OBJECT,
     assign_placeholders,
     map_param_values,
 )
@@ -276,6 +277,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if custom_privacy_request_fields:
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
+        input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
+
         rows: List[Row] = []
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
@@ -300,7 +303,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # if a path is provided, it means we want to generate HTTP requests from the config
             if read_request.path:
                 prepared_requests: List[Tuple[SaaSRequestParams, Dict[str, Any]]] = (
-                    query_config.generate_requests(input_data, policy, read_request)
+                    query_config.generate_requests(
+                        input_data,
+                        policy,
+                        read_request,
+                        privacy_request=privacy_request,
+                    )
                 )
 
                 # Iterates through initial list of prepared requests and through subsequent

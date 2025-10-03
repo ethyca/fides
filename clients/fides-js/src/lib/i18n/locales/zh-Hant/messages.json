@@ -3,5 +3,10 @@
   "static.gpc.description": "您的全域隱私控制偏好已被接受。根據您的選擇·，已自動將您退出符合全域隱私控制的資料使用案例。",
   "static.gpc.status.applied": "已應用",
   "static.gpc.status.overridden": "已覆寫",
-  "static.gpc.title": "檢測到全域隱私控制"
+  "static.gpc.title": "檢測到全局隱私控制",
+  "static.other.cookies": "Cookie",
+  "static.other.back": "返回",
+  "static.other.vendors": "供應商",
+  "static.other.retention": "保留期",
+  "static.other.description": "描述"
 }

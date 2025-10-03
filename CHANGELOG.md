@@ -23,13 +23,25 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added digest conditional dependency sql model. [#6627](https://github.com/ethyca/fides/pull/6627) https://github.com/ethyca/fides/labels/db-migration
+- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
+- Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
+- Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674)
+- Allow selecting from all data uses for discovered assets in Action Center [#6668](https://github.com/ethyca/fides/pull/6668)
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
+- Fixed an issue where using pagination on the consent issues modal affects the results of the page [#6665](https://github.com/ethyca/fides/pull/6665)
+- Fixed Action Center modal not closing after successfully adding a Compass System [#6669](https://github.com/ethyca/fides/pull/6669)
+- Prevent stale data issues by clearing row selections when underlying data changes in Action Center tables [#6673](https://github.com/ethyca/fides/pull/6673)
 - Returning a user-friendly message when attempting to delete datasets linked to an integration [#6663](https://github.com/ethyca/fides/pull/6663)
+- Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
+- Fixed an issue where updating an Experience in Admin UI could potentially result in a browser error [#6676](https://github.com/ethyca/fides/pull/6676)
+- Fixed a bug that prevented users from removing categories of consent from web monitor resources [#6679](https://github.com/ethyca/fides/pull/6679)
+- Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
+- Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 

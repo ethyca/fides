@@ -81,7 +81,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           : undefined;
       const needsLightText = color && DARK_BACKGROUNDS.includes(color);
       const retainDefaultBorder =
-        color && RETAIN_DEFAULT_BORDER.includes(color);
+        !!color && RETAIN_DEFAULT_BORDER.includes(color);
       let customStyle = {};
       if (brandColor) {
         customStyle = {
@@ -102,7 +102,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           ...style,
         },
         className: `${styles.tag} ${className ?? ""}`.trim(),
-        bordered: retainDefaultBorder ? true : undefined,
+        bordered: retainDefaultBorder,
         ...props,
         closeIcon:
           (props.closable ?? props.onClose) ? (

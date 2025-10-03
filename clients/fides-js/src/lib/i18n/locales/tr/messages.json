@@ -3,5 +3,10 @@
   "static.gpc.description": "Global gizlilik kontrolü tercihiniz yerine getirildi. Global gizlilik kontrolüne uygun veri kullanım durumlarından otomatik olarak çıkarıldınız.",
   "static.gpc.status.applied": "Uygulandı",
   "static.gpc.status.overridden": "Geçersiz kılındı",
-  "static.gpc.title": "Global Gizlilik Kontrolü tespit edildi"
+  "static.gpc.title": "Genel Gizlilik Kontrolü algılandı",
+  "static.other.cookies": "Çerezler",
+  "static.other.back": "Geri",
+  "static.other.vendors": "Satıcılar",
+  "static.other.retention": "Tutma",
+  "static.other.description": "Açıklama"
 }
