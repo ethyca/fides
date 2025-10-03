@@ -29,7 +29,6 @@ export interface TableStateWithHelpers<TSortKey extends string = string>
 
 /**
  * Base configuration for table state management
- * URL synchronization is now always enabled for all features
  * TSortKey should be constrained to specific column key enums for type safety
  *
  * @example
@@ -50,6 +49,13 @@ export interface TableStateWithHelpers<TSortKey extends string = string>
  *   search: { defaultSearchQuery: "" },
  *   onStateChange: (state) => handleStateChange(state)
  * };
+ *
+ * // Disable URL state for all table features
+ * const configWithoutUrl: TableStateConfig<TableColumns> = {
+ *   disableUrlState: true,
+ *   pagination: { defaultPageSize: 50 },
+ *   sorting: { defaultSortKey: TableColumns.NAME }
+ * };
  * ```
  */
 export interface TableStateConfig<TSortKey extends string = string> {
@@ -61,6 +67,14 @@ export interface TableStateConfig<TSortKey extends string = string> {
   search?: SearchConfig;
   /** Callback fired when any table state changes */
   onStateChange?: (state: TableState<TSortKey>) => void;
+  /**
+   * Whether to disable URL query parameter synchronization for all table features.
+   * When true, uses React state for in-memory state management.
+   * When false (default), uses NuQS for URL state management.
+   * This applies to pagination, sorting, search, and filters.
+   * @default false
+   */
+  disableUrlState?: boolean;
 }
 
 /**

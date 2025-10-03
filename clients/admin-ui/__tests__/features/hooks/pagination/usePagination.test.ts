@@ -215,4 +215,144 @@ describe("usePagination", () => {
     expect(result.current.pageIndex).toBe(5);
     expect(result.current.pageSize).toBe(100);
   });
+
+  describe("with disableUrlState: true", () => {
+    it("initializes with default values without using URL state", () => {
+      const { result } = renderHook(() =>
+        usePagination({
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.pageIndex).toBe(1);
+      expect(result.current.pageSize).toBe(25);
+      expect(result.current.pageSizeOptions).toEqual([25, 50, 100]);
+      expect(result.current.showSizeChanger).toBe(true);
+    });
+
+    it("does not read from URL when disableUrlState is true", () => {
+      // Seed URL state with pagination values
+      nuqsTestHelpers.reset({
+        page: 3,
+        size: 100,
+      });
+
+      const { result } = renderHook(() =>
+        usePagination({
+          defaultPageSize: 25,
+          disableUrlState: true,
+        }),
+      );
+
+      // Should use default values instead of URL values
+      expect(result.current.pageIndex).toBe(1);
+      expect(result.current.pageSize).toBe(25);
+    });
+
+    it("does not call setQueryState when updating pagination", () => {
+      const { result } = renderHook(() =>
+        usePagination({
+          disableUrlState: true,
+        }),
+      );
+
+      const initialCallCount = nuqsTestHelpers.getSetCalls().length;
+
+      // Change page
+      act(() => result.current.updatePageIndex(5));
+
+      // Should not have called setQueryState
+      expect(nuqsTestHelpers.getSetCalls().length).toBe(initialCallCount);
+
+      // But internal state should be updated
+      expect(result.current.pageIndex).toBe(5);
+    });
+
+    it("updates page size correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        usePagination({
+          disableUrlState: true,
+        }),
+      );
+
+      // Change page first
+      act(() => result.current.updatePageIndex(5));
+      expect(result.current.pageIndex).toBe(5);
+
+      // Change page size (should reset to page 1)
+      act(() => result.current.updatePageSize(50));
+      expect(result.current.pageIndex).toBe(1);
+      expect(result.current.pageSize).toBe(50);
+    });
+
+    it("resets pagination correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        usePagination({
+          defaultPageSize: 50,
+          disableUrlState: true,
+        }),
+      );
+
+      // Change to different values
+      act(() => result.current.updatePageIndex(5));
+      expect(result.current.pageIndex).toBe(5);
+
+      act(() => result.current.updatePageSize(100));
+      // Page index should reset to 1 when page size changes
+      expect(result.current.pageIndex).toBe(1);
+      expect(result.current.pageSize).toBe(100);
+
+      // Change page again
+      act(() => result.current.updatePageIndex(3));
+      expect(result.current.pageIndex).toBe(3);
+
+      // Reset pagination
+      act(() => result.current.resetPagination());
+
+      expect(result.current.pageIndex).toBe(1);
+      expect(result.current.pageSize).toBe(50);
+    });
+
+    it("handles nextPage and previousPage correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        usePagination({
+          disableUrlState: true,
+        }),
+      );
+
+      // Start at page 1
+      expect(result.current.pageIndex).toBe(1);
+
+      // Go to next page
+      act(() => result.current.nextPage());
+      expect(result.current.pageIndex).toBe(2);
+
+      // Go to next page again
+      act(() => result.current.nextPage());
+      expect(result.current.pageIndex).toBe(3);
+
+      // Go to previous page
+      act(() => result.current.previousPage());
+      expect(result.current.pageIndex).toBe(2);
+    });
+
+    it("maintains page size when using nextPage/previousPage without URL state", () => {
+      const { result } = renderHook(() =>
+        usePagination({
+          defaultPageSize: 50,
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.pageSize).toBe(50);
+
+      act(() => result.current.nextPage());
+      expect(result.current.pageIndex).toBe(2);
+      expect(result.current.pageSize).toBe(50);
+
+      act(() => result.current.previousPage());
+      expect(result.current.pageIndex).toBe(1);
+      expect(result.current.pageSize).toBe(50);
+    });
+  });
 });
