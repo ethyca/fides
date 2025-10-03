@@ -122,6 +122,8 @@ export type { ConsentRequestCreateExtended } from "./models/ConsentRequestCreate
 export type { ConsentRequestMap } from "./models/ConsentRequestMap";
 export type { ConsentRequestResponse } from "./models/ConsentRequestResponse";
 export { ConsentStatus } from "./models/ConsentStatus";
+export type { ConsentStatusDetail } from "./models/ConsentStatusDetail";
+export type { ConsentStatusReason } from "./models/ConsentStatusReason";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
 export type { Constraint } from "./models/Constraint";
 export { ConstraintType } from "./models/ConstraintType";

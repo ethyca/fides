@@ -59,6 +59,10 @@ export type TestWebsiteMonitorParams = {
    */
   consent_denied_percentage?: number;
   /**
+   * Percentage of assets that should be generated with cmp_error consent (0.0 to 1.0)
+   */
+  consent_cmp_error_percentage?: number;
+  /**
    * Sample cookie names to use
    */
   cookie_names?: Array<string>;
@@ -74,4 +78,8 @@ export type TestWebsiteMonitorParams = {
    * List of test vendor IDs to assign to matched assets
    */
   test_vendor_ids?: Array<string>;
+  /**
+   * Experiences data for consent notice mapping. Uses default experiences data if not provided.
+   */
+  experiences_data?: Record<string, any>;
 };

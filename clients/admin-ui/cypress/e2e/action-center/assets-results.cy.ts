@@ -532,14 +532,14 @@ describe("Action center Asset Results", () => {
         });
         cy.get(".ant-tooltip-inner").should(
           "contain",
-          "One or more assets were detected without consent",
+          "One or more assets were detected with compliance issues",
         );
 
         cy.getByTestId("monitor-result-my_web_monitor_1").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
         });
 
-        // Monitor without consent issues should not show warning icon
+        // Monitor without compliance issues should not show warning icon
         cy.getByTestId("monitor-result-My_New_BQ_Monitor").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("not.exist");
         });
@@ -594,7 +594,7 @@ describe("Action center Asset Results", () => {
         });
       });
 
-      it("should show warning icon in compliance column header when there are assets without consent", () => {
+      it("should show warning icon in compliance column header when there are assets with compliance issues", () => {
         cy.findByRole("columnheader", { name: /Compliance/ }).within(() => {
           cy.getByTestId("discovery-status-icon-alert")
             .should("exist")
@@ -603,7 +603,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
         cy.findByRole("tooltip", {
-          name: "One or more assets were detected without consent",
+          name: "One or more assets were detected with compliance issues",
         }).should("be.visible");
       });
 
@@ -623,7 +623,7 @@ describe("Action center Asset Results", () => {
         // Check modal content
         cy.getByTestId("consent-breakdown-modal-content").within(() => {
           cy.contains(
-            "View all instances where this asset was detected without consent",
+            "View all instances where this asset was detected with consent",
           ).should("exist");
           cy.contains("Asset name:").should("exist");
           cy.contains("System:").should("exist");
@@ -691,7 +691,7 @@ describe("Action center Asset Results", () => {
         });
         cy.get(".ant-tooltip-inner").should(
           "contain",
-          "One or more assets were detected without consent",
+          "One or more assets were detected with compliance issues",
         );
       });
     });

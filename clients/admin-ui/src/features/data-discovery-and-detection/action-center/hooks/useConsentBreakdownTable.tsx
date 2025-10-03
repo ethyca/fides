@@ -1,5 +1,7 @@
 import {
   AntColumnsType as ColumnsType,
+  AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
   formatIsoLocation,
   isoStringToEntry,
@@ -17,18 +19,21 @@ import {
 } from "~/types/api";
 
 import { useGetConsentBreakdownQuery } from "../action-center.slice";
-import { ConsentBreakdownColumnKeys } from "../constants";
+import {
+  ConsentBreakdownColumnKeys,
+  DiscoveryErrorStatuses,
+  DiscoveryStatusDescriptions,
+  DiscoveryStatusDisplayNames,
+} from "../constants";
 
 const { Link } = Typography;
 
 interface UseConsentBreakdownTableConfig {
   stagedResource: StagedResourceAPIResponse;
-  status: ConsentStatus;
 }
 
 export const useConsentBreakdownTable = ({
   stagedResource,
-  status,
 }: UseConsentBreakdownTableConfig) => {
   const tableState = useTableState<ConsentBreakdownColumnKeys>({
     pagination: {
@@ -43,7 +48,7 @@ export const useConsentBreakdownTable = ({
 
   const { data, isFetching, isError } = useGetConsentBreakdownQuery({
     stagedResourceUrn: stagedResource.urn,
-    status,
+    statuses: DiscoveryErrorStatuses,
     page: pageIndex,
     size: pageSize,
   });
@@ -84,23 +89,50 @@ export const useConsentBreakdownTable = ({
         key: ConsentBreakdownColumnKeys.LOCATION,
         render: (location: string) => {
           const isoEntry = isoStringToEntry(location);
-
-          return isoEntry
+          const locationText = isoEntry
             ? formatIsoLocation({ isoEntry, showFlag: true })
             : (PRIVACY_NOTICE_REGION_RECORD?.[
                 location as PrivacyNoticeRegion
               ] ?? location);
+
+          return (
+            <Typography.Text ellipsis={{ tooltip: location }}>
+              {locationText}
+            </Typography.Text>
+          );
         },
+        width: 180,
       },
       {
         title: "Page",
         dataIndex: ConsentBreakdownColumnKeys.PAGE,
         key: ConsentBreakdownColumnKeys.PAGE,
         render: (page: string) => (
-          <Link href={page} target="_blank" rel="noopener noreferrer">
+          <Link ellipsis href={page} target="_blank" rel="noopener noreferrer">
             {page}
           </Link>
         ),
+        minWidth: 100,
+      },
+      {
+        title: "Compliance",
+        dataIndex: ConsentBreakdownColumnKeys.STATUS,
+        key: ConsentBreakdownColumnKeys.STATUS,
+        width: 160,
+        render: (status: ConsentStatus) => {
+          const tagTooltip = DiscoveryStatusDescriptions[status];
+
+          return (
+            <Tooltip title={tagTooltip}>
+              <Tag
+                color="error"
+                data-testid={`status-badge_${status.replace(/_/g, "-")}`}
+              >
+                {DiscoveryStatusDisplayNames[status]}
+              </Tag>
+            </Tooltip>
+          );
+        },
       },
     ],
     [],
