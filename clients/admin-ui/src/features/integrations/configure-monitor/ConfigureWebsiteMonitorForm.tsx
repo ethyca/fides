@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { getIn, useFormik } from "formik";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { FormikDateTimeInput } from "~/features/common/form/FormikDateTimeInput";
@@ -62,6 +63,7 @@ const ConfigureWebsiteMonitorForm = ({
   onClose: () => void;
   onSubmit: (values: MonitorConfig) => Promise<void>;
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -98,6 +100,7 @@ const ConfigureWebsiteMonitorForm = ({
   };
 
   const handleSubmit = async (values: WebsiteMonitorConfig) => {
+    setIsSubmitting(true);
     const executionInfo =
       values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
@@ -211,7 +214,6 @@ const ConfigureWebsiteMonitorForm = ({
           options={isoCodesToOptions(
             regionOptions.map((option) => option.value),
           )}
-          required
           tooltip={REGIONS_TOOLTIP_COPY}
           mode="multiple"
           error={getIn(errors, "datasource_params.locations")}
@@ -271,7 +273,13 @@ const ConfigureWebsiteMonitorForm = ({
           >
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" data-testid="save-btn" block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            data-testid="save-btn"
+            block
+            loading={isSubmitting}
+          >
             Save
           </Button>
         </Flex>

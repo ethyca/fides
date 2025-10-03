@@ -10,6 +10,7 @@ import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -26,11 +27,24 @@ import useTopLevelActionCenterTabs, {
   TopLevelActionCenterTabHash,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
+import { ConnectionType } from "~/types/api";
+
+const buildMonitorLink = (
+  isAlphaFlat: boolean,
+  monitorType: ConnectionType,
+  monitorKey: string,
+) =>
+  isAlphaFlat &&
+  monitorType !== ConnectionType.TEST_WEBSITE &&
+  isAlphaFlat &&
+  monitorType !== ConnectionType.WEBSITE
+    ? `${ACTION_CENTER_ROUTE}/${monitorKey}/data-explorer`
+    : `${ACTION_CENTER_ROUTE}/${monitorKey}`;
 
 const ActionCenterPage = () => {
   const toast = useToast();
   const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
+  const { flags } = useFeatures();
   const {
     PAGE_SIZES,
     pageSize,
@@ -83,13 +97,20 @@ const ActionCenterPage = () => {
     }
   }, [data, setTotalPages]);
 
-  const results = data?.items || [];
+  /*
+   * Filtering paginated results can lead to odd behaviors
+   * Either key should be constructed on the FE to display result, or BE should provide this functionality via the api
+   */
+  const results =
+    data?.items?.flatMap((monitor) =>
+      !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
+    ) || [];
   const loadingResults = isFetching
-    ? (Array.from({ length: pageSize }, (_, index) => ({
+    ? Array.from({ length: pageSize }, (_, index) => ({
         key: index.toString(),
         updates: [],
         last_monitored: null,
-      })) as any[])
+      }))
     : [];
 
   // TODO: [HJ-337] Add button functionality
@@ -99,7 +120,7 @@ const ActionCenterPage = () => {
   // };
 
   const getWebsiteMonitorActions = useCallback(
-    (monitorKey: string) => [
+    (monitorKey: string, link?: string) => [
       // <Button
       //   key="add"
       //   type="link"
@@ -111,12 +132,7 @@ const ActionCenterPage = () => {
       // >
       //   Add
       // </Button>,
-      <NextLink
-        key="review"
-        href={`${ACTION_CENTER_ROUTE}/${monitorKey}`}
-        passHref
-        legacyBehavior
-      >
+      <NextLink key="review" href={link ?? ""} passHref legacyBehavior>
         <Button
           type="link"
           className="p-0"
@@ -177,14 +193,22 @@ const ActionCenterPage = () => {
             locale={{
               emptyText: <EmptyMonitorsResult />,
             }}
-            renderItem={(summary: MonitorAggregatedResults) => {
+            renderItem={(summary) => {
+              const link = summary.key
+                ? buildMonitorLink(
+                    flags.alphaFullActionCenter,
+                    summary.connection_type,
+                    summary.key,
+                  )
+                : "";
               return (
                 !!summary?.key && (
                   <MonitorResult
                     showSkeleton={isFetching}
                     key={summary.key}
                     monitorSummary={summary}
-                    actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
+                    href={link}
+                    actions={getWebsiteMonitorActions(summary.key, link)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
                   />
                 )
               );
