@@ -17,19 +17,52 @@ depends_on = None
 
 
 def upgrade():
-    # Check if value already exists
-    connection = op.get_bind()
-    result = connection.execute(
-        sa.text(
-            "SELECT 1 FROM pg_enum WHERE enumlabel = 'polling' "
-            "AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'executionlogstatus')"
-        )
-    )
-
-    if not result.fetchone():
-        op.execute("ALTER TYPE executionlogstatus ADD VALUE 'polling'")
+    op.execute("ALTER TYPE executionlogstatus ADD VALUE 'polling'")
 
 
 def downgrade():
-    # The 'polling' value will remain in the enum but won't be used by older app versions
-    pass
+    # Remove any records that have the 'polling' enum value before dropping it
+    # Fallback to 'paused' (awaiting_processing) for backward compatibility
+
+    op.execute("UPDATE requesttask SET status = 'paused' WHERE status = 'polling'")
+    op.execute("UPDATE executionlog SET status = 'paused' WHERE status = 'polling'")
+    op.execute(
+        "UPDATE digest_task_execution SET status = 'paused' WHERE status = 'polling'"
+    )
+    op.execute("UPDATE monitor_task SET status = 'paused' WHERE status = 'polling'")
+    op.execute(
+        "UPDATE monitor_task_execution_log SET status = 'paused' WHERE status = 'polling'"
+    )
+
+    # Recreate the enum without the 'polling' value
+    op.execute("ALTER TYPE executionlogstatus RENAME TO executionlogstatus_old")
+    op.execute(
+        "CREATE TYPE executionlogstatus AS ENUM ("
+        "'in_processing', 'pending', 'complete', 'error', 'paused', 'retrying', 'skipped'"
+        ")"
+    )
+
+    # Update all tables that use the enum type
+    op.execute(
+        "ALTER TABLE requesttask ALTER COLUMN status TYPE executionlogstatus USING "
+        "status::text::executionlogstatus"
+    )
+    op.execute(
+        "ALTER TABLE executionlog ALTER COLUMN status TYPE executionlogstatus USING "
+        "status::text::executionlogstatus"
+    )
+    op.execute(
+        "ALTER TABLE digest_task_execution ALTER COLUMN status TYPE executionlogstatus USING "
+        "status::text::executionlogstatus"
+    )
+    op.execute(
+        "ALTER TABLE monitor_task ALTER COLUMN status TYPE executionlogstatus USING "
+        "status::text::executionlogstatus"
+    )
+    op.execute(
+        "ALTER TABLE monitor_task_execution_log ALTER COLUMN status TYPE executionlogstatus USING "
+        "status::text::executionlogstatus"
+    )
+
+    # Drop the old enum type
+    op.execute("DROP TYPE executionlogstatus_old")
