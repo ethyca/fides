@@ -34,6 +34,9 @@ def create_scenario_instance(scenario_class: Type[QATestScenario]) -> QATestScen
 SCENARIOS = discover_scenarios()
 
 
+@pytest.mark.xfail(
+    reason="These tests require too many external services to run. Skipping for now."
+)
 @pytest.mark.external
 @pytest.mark.parametrize("scenario_name,scenario_class", list(SCENARIOS.items()))
 def test_scenario_setup_and_teardown(scenario_name, scenario_class):

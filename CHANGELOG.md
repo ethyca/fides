@@ -19,16 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.71.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.71.1...main)
 
 ### Added
-- Added digest conditional dependency sql model. [#6627](https://github.com/ethyca/fides/pull/6627) https://github.com/ethyca/fides/labels/db-migration
-- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
+- Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
-- Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674)
-- Allow selecting from all data uses for discovered assets in Action Center [#6668](https://github.com/ethyca/fides/pull/6668)
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
@@ -36,9 +33,25 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed Action Center modal not closing after successfully adding a Compass System [#6669](https://github.com/ethyca/fides/pull/6669)
 - Prevent stale data issues by clearing row selections when underlying data changes in Action Center tables [#6673](https://github.com/ethyca/fides/pull/6673)
 - Returning a user-friendly message when attempting to delete datasets linked to an integration [#6663](https://github.com/ethyca/fides/pull/6663)
-- Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
 - Fixed an issue where updating an Experience in Admin UI could potentially result in a browser error [#6676](https://github.com/ethyca/fides/pull/6676)
 - Fixed a bug that prevented users from removing categories of consent from web monitor resources [#6679](https://github.com/ethyca/fides/pull/6679)
+- Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
+- Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
+- Fixed custom fields on the system data use form being nonfunctional [#6657](https://github.com/ethyca/fides/pull/6657)
+
+## [2.71.1](https://github.com/ethyca/fides/compare/2.71.0...2.71.1)
+
+### Added
+- Added digest conditional dependency SQL model [#6627](https://github.com/ethyca/fides/pull/6627) https://github.com/ethyca/fides/labels/db-migration
+- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
+- Added async polling for SaaS integrations [#6566](https://github.com/ethyca/fides/pull/6566) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674) https://github.com/ethyca/fides/labels/db-migration
+- Allow selecting from all data uses for discovered assets in Action Center [#6668](https://github.com/ethyca/fides/pull/6668)
+
+### Fixed
+- Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
@@ -50,6 +63,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added model for digest configuration. [#6616](https://github.com/ethyca/fides/pull/6616) https://github.com/ethyca/fides/labels/db-migration
 - Added Deadline, Completed On, Last Updated to Privacy Request CSV [#6621](https://github.com/ethyca/fides/pull/6621)
 - Add OAuth2 support for connection configurations [#6614](https://github.com/ethyca/fides/pull/6614)
+- Added new classifier alpha screen [6639](https://github.com/ethyca/fides/pull/6639)
 
 ### Changed
 - Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)

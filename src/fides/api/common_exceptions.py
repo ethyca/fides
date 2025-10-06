@@ -179,6 +179,10 @@ class AwaitingAsyncTask(BaseException):
     """Request Task is Awaiting Processing - Awaiting Async Task"""
 
 
+class AwaitingAsyncProcessing(BaseException):
+    """Request Task is actively being processed by external system - Fides is polling"""
+
+
 class UpstreamTasksNotReady(BaseException):
     """Privacy Request Task awaiting upstream tasks"""
 
