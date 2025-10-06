@@ -4,6 +4,8 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.client import ClientDetail
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
@@ -18,6 +20,26 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 )
 from fides.api.util.data_category import DataCategory
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
+
+
+@pytest.fixture(scope="function")
+def external_user(db: Session) -> Generator[FidesUser, None, None]:
+    """Create a user with external_respondent role for testing."""
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "external_user",
+            "email_address": "external@example.com",
+        },
+    )
+    FidesUserPermissions.create(
+        db=db,
+        data={"user_id": user.id, "roles": ["external_respondent"]},
+    )
+    yield user
+    if user.permissions:
+        user.permissions.delete(db)
+    user.delete(db)
 
 
 @pytest.fixture(scope="function")

@@ -830,7 +830,7 @@ class TestGetUsers:
             assert other_user.id in user_ids
 
     def test_get_users_include_external_default_true(
-        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+        self, api_client: TestClient, generate_auth_header, url, db, external_user
     ):
         """Test that include_external defaults to True and includes external respondents"""
         # Create additional users
@@ -863,12 +863,12 @@ class TestGetUsers:
 
         # Should include external respondent and regular users
         user_ids = [user["id"] for user in response_body["items"]]
-        assert external_respondent.id in user_ids
+        assert external_user.id in user_ids
         for user in regular_users:
             assert user.id in user_ids
 
     def test_get_users_include_external_false(
-        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+        self, api_client: TestClient, generate_auth_header, url, db, external_user
     ):
         """Test that include_external=False excludes external respondents"""
         # Create additional users
@@ -901,12 +901,12 @@ class TestGetUsers:
 
         # Should exclude external respondent but include regular users
         user_ids = [user["id"] for user in response_body["items"]]
-        assert external_respondent.id not in user_ids
+        assert external_user.id not in user_ids
         for user in regular_users:
             assert user.id in user_ids
 
     def test_get_users_include_external_true_explicit(
-        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+        self, api_client: TestClient, generate_auth_header, url, db, external_user
     ):
         """Test that include_external=True explicitly includes external respondents"""
         # Create additional users
@@ -939,12 +939,12 @@ class TestGetUsers:
 
         # Should include external respondent and regular users
         user_ids = [user["id"] for user in response_body["items"]]
-        assert external_respondent.id in user_ids
+        assert external_user.id in user_ids
         for user in regular_users:
             assert user.id in user_ids
 
     def test_get_users_include_external_with_username_filter(
-        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+        self, api_client: TestClient, generate_auth_header, url, db, external_user
     ):
         """Test that include_external works with username filtering"""
         # Create additional users with specific usernames
@@ -979,17 +979,17 @@ class TestGetUsers:
 
         # Should only include regular users matching the filter, not external respondent
         user_ids = [user["id"] for user in response_body["items"]]
-        assert external_respondent.id not in user_ids
+        assert external_user.id not in user_ids
         for user in regular_users:
             assert user.id in user_ids
 
     def test_get_users_include_external_with_user_read_own_scope(
-        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+        self, api_client: TestClient, generate_auth_header, url, db, external_user
     ):
         """Test that include_external parameter works with USER_READ_OWN scope"""
         # Create auth header for external respondent (has USER_READ_OWN scope)
         auth_header = generate_auth_header_for_user(
-            external_respondent, scopes=[USER_READ_OWN]
+            external_user, scopes=[USER_READ_OWN]
         )
 
         # Test with include_external=False - should still see own data
@@ -999,7 +999,7 @@ class TestGetUsers:
 
         # Should still see their own data even with include_external=False
         assert len(response_body["items"]) == 1
-        assert response_body["items"][0]["id"] == external_respondent.id
+        assert response_body["items"][0]["id"] == external_user.id
 
         # Test with include_external=True - should still see own data
         resp = api_client.get(f"{url}?include_external=true", headers=auth_header)
@@ -1008,7 +1008,7 @@ class TestGetUsers:
 
         # Should still see their own data
         assert len(response_body["items"]) == 1
-        assert response_body["items"][0]["id"] == external_respondent.id
+        assert response_body["items"][0]["id"] == external_user.id
 
 
 class TestGetUser:
