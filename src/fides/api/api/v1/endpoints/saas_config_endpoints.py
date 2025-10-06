@@ -28,6 +28,7 @@ from fides.api.common_exceptions import (
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -52,6 +53,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
+from fides.api.util.event_audit_util import generate_connection_audit_event_details
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -175,12 +177,29 @@ def patch_saas_config(
     Given a SaaS config element, update the corresponding ConnectionConfig object
     or report failure
     """
+
     logger.info(
         "Updating SaaS config '{}' on connection config '{}'",
         saas_config.fides_key,
         connection_config.key,
     )
     connection_config.update_saas_config(db, saas_config=saas_config)
+
+    # Create audit event for SaaS config update
+    event_audit_service = EventAuditService(db)
+    event_details, description = generate_connection_audit_event_details(
+        EventAuditType.connection_updated,
+        connection_config=connection_config,
+    )
+    event_audit_service.create_event_audit(
+        event_type=EventAuditType.connection_updated,
+        status=EventAuditStatus.succeeded,
+        resource_type="connection_config",
+        resource_identifier=connection_config.key,
+        description=description,
+        event_details=event_details,
+    )
+
     return connection_config.saas_config  # type: ignore
 
 

@@ -217,6 +217,12 @@ def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '{}'.", connection_key)
+
+    # Initialize services for audit logging
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
+
+    # Handle SaaS-specific cleanup
     if connection_config.saas_config:
         saas_dataset_fides_key = connection_config.saas_config.get("fides_key")
 
@@ -234,7 +240,8 @@ def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
             )
             saas_dataset.delete(db)  # type: ignore[union-attr]
 
-    connection_config.delete(db)
+    # Use connection service to delete with audit logging
+    connection_service.delete_connection_config(connection_key)
 
     # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
     # so we queue any privacy requests that are no longer blocked by webhooks

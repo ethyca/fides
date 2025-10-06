@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from fideslang.models import System
 from fideslang.validation import FidesKey
@@ -46,14 +46,20 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
+from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    create_connection_config_from_template_no_save,
-    upsert_dataset_config_from_template,
 )
-from fides.api.util.event_audit_util import generate_connection_secrets_event_details
+from fides.api.util.event_audit_util import (
+    generate_connection_audit_event_details,
+    generate_connection_secrets_event_details,
+)
 from fides.api.util.logger import Pii
+from fides.api.util.saas_util import (
+    replace_config_placeholders,
+    replace_dataset_placeholders,
+)
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
 from fides.service.event_audit_service import EventAuditService
 
@@ -76,6 +82,27 @@ class ConnectionService:
                 f"No connection config found with key {connection_key}"
             )
         return connection_config
+
+    def _create_connection_audit_event(
+        self,
+        event_type: EventAuditType,
+        connection_config: ConnectionConfig,
+        description: Optional[str] = None,
+    ) -> None:
+        """Create an audit event for connection operations."""
+        event_details, generated_description = generate_connection_audit_event_details(
+            event_type,
+            connection_config=connection_config,
+            description=description,
+        )
+        self.event_audit_service.create_event_audit(
+            event_type=event_type,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier=connection_config.key,
+            description=description or generated_description,
+            event_details=event_details,
+        )
 
     def _create_secrets_audit_event(
         self,
@@ -211,6 +238,25 @@ class ConnectionService:
 
         return TestStatusMessage(msg=msg, test_status=None)
 
+    def delete_connection_config(self, connection_key: FidesKey) -> None:
+        """Delete a connection configuration and create audit event."""
+        connection_config = self.get_connection_config(connection_key)
+
+        # Create audit event before deletion
+        self._create_connection_audit_event(
+            EventAuditType.connection_deleted,
+            connection_config,
+        )
+
+        self._create_secrets_audit_event(
+            EventAuditType.connection_secrets_deleted,
+            connection_config,
+            connection_config.secrets,  # type: ignore[arg-type]
+        )
+
+        # Perform the actual deletion
+        connection_config.delete(self.db)
+
     def instantiate_connection(
         self,
         saas_connector_type: str,
@@ -240,8 +286,8 @@ class ConnectionService:
             )
 
         connection_config: ConnectionConfig = (
-            create_connection_config_from_template_no_save(
-                self.db, connector_template, template_values
+            self.create_connection_config_from_template_no_save(
+                connector_template, template_values
             )
         )
 
@@ -255,8 +301,8 @@ class ConnectionService:
         )  # Not persisted to db until secrets are validated
 
         try:
-            dataset_config: DatasetConfig = upsert_dataset_config_from_template(
-                self.db, connection_config, connector_template, template_values
+            dataset_config: DatasetConfig = self.upsert_dataset_config_from_template(
+                connection_config, connector_template, template_values
             )
         except Exception:
             connection_config.delete(self.db)
@@ -268,6 +314,12 @@ class ConnectionService:
             "SaaS Connector and Dataset {} successfully created from '{}' template.",
             template_values.instance_key,
             saas_connector_type,
+        )
+
+        # Create audit events for connection and secrets creation
+        self._create_connection_audit_event(
+            EventAuditType.connection_created,
+            connection_config,
         )
         self._create_secrets_audit_event(
             EventAuditType.connection_secrets_created,
@@ -335,15 +387,13 @@ class ConnectionService:
         )
 
         if system:
-            connection_config = create_connection_config_from_template_no_save(
-                self.db,
+            connection_config = self.create_connection_config_from_template_no_save(
                 connector_template,
                 template_values,
                 system_id=system.id,  # type: ignore[attr-defined]
             )
         else:
-            connection_config = create_connection_config_from_template_no_save(
-                self.db,
+            connection_config = self.create_connection_config_from_template_no_save(
                 connector_template,
                 template_values,
             )
@@ -353,7 +403,11 @@ class ConnectionService:
         ).model_dump(mode="json")
         connection_config.save(db=self.db)
 
-        # Create audit event for secrets creation
+        # Create audit events for connection and secrets creation
+        self._create_connection_audit_event(
+            EventAuditType.connection_created,
+            connection_config,
+        )
         self._create_secrets_audit_event(
             EventAuditType.connection_secrets_created,
             connection_config,
@@ -390,15 +444,38 @@ class ConnectionService:
             self.db, data=config_dict, check_name=False
         )
 
+        # if it is a SaaS connection, check if the saas_config changed
+        saas_config_changed = True  # Default to True for new connections
+        if (
+            existing_connection_config
+            and connection_config.saas_config
+            and existing_connection_config.saas_config
+        ):
+            old_saas_config = existing_connection_config.saas_config
+            new_saas_config = connection_config.saas_config
+            saas_config_changed = old_saas_config != new_saas_config
+
+        # Only create audit event for connection operation if saas_config changed
+        if saas_config_changed:
+            connection_event_type = (
+                EventAuditType.connection_updated
+                if existing_connection_config
+                else EventAuditType.connection_created
+            )
+            self._create_connection_audit_event(
+                connection_event_type,
+                connection_config,
+            )
+
         # Handle secrets validation and audit events
         if config.secrets:
-            event_type = (
+            secrets_event_type = (
                 EventAuditType.connection_secrets_updated
                 if existing_connection_config
                 else EventAuditType.connection_secrets_created
             )
             self._create_secrets_audit_event(
-                event_type,
+                secrets_event_type,
                 connection_config,
                 connection_config.secrets,  # type: ignore[arg-type]
             )
@@ -419,3 +496,91 @@ class ConnectionService:
             )
 
         return ConnectionConfigurationResponse.model_validate(connection_config)
+
+    def update_saas_instance(
+        self,
+        connection_config: ConnectionConfig,
+        template: ConnectorTemplate,
+        saas_config_instance: SaaSConfig,
+    ) -> None:
+        """
+        Replace in the DB the existing SaaS instance configuration data
+        (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
+        with new instance configuration data based on the given ConnectorTemplate
+        """
+
+        template_vals = SaasConnectionTemplateValues(
+            name=connection_config.name,
+            key=connection_config.key,
+            description=connection_config.description,
+            secrets=connection_config.secrets,
+            instance_key=saas_config_instance.fides_key,
+        )
+
+        config_from_template: Dict = replace_config_placeholders(
+            template.config, "<instance_fides_key>", template_vals.instance_key
+        )
+
+        connection_config.update_saas_config(
+            self.db, SaaSConfig(**config_from_template)
+        )
+
+        # Create audit event for SaaS instance update
+        self._create_connection_audit_event(
+            EventAuditType.connection_updated,
+            connection_config,
+        )
+
+        self.upsert_dataset_config_from_template(
+            connection_config, template, template_vals
+        )
+
+    def create_connection_config_from_template_no_save(
+        self,
+        template: ConnectorTemplate,
+        template_values: SaasConnectionTemplateValues,
+        system_id: Optional[str] = None,
+    ) -> ConnectionConfig:
+        """Creates a SaaS connection config from a template without saving it."""
+        # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
+        # the user has chosen
+        config_from_template: Dict = replace_config_placeholders(
+            template.config, "<instance_fides_key>", template_values.instance_key
+        )
+
+        data = template_values.generate_config_data_from_template(
+            config_from_template=config_from_template
+        )
+
+        if system_id:
+            data["system_id"] = system_id
+
+        # Create SaaS ConnectionConfig
+        connection_config = ConnectionConfig.create_without_saving(self.db, data=data)
+
+        return connection_config
+
+    def upsert_dataset_config_from_template(
+        self,
+        connection_config: ConnectionConfig,
+        template: ConnectorTemplate,
+        template_values: SaasConnectionTemplateValues,
+    ) -> DatasetConfig:
+        """
+        Creates a `DatasetConfig` from a template
+        and associates it with a ConnectionConfig.
+        If the `DatasetConfig` already exists in the db,
+        then the existing record is updated.
+        """
+        # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
+        # the user has chosen
+        dataset_from_template: Dict = replace_dataset_placeholders(
+            template.dataset, "<instance_fides_key>", template_values.instance_key
+        )
+        data = {
+            "connection_config_id": connection_config.id,
+            "fides_key": template_values.instance_key,
+            "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
+        }
+        dataset_config = DatasetConfig.create_or_update(self.db, data=data)
+        return dataset_config

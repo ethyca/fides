@@ -8,8 +8,8 @@ from fideslang.models import DatasetCollection
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    update_saas_configs,
 )
+from fides.api.util.saas_config_updater import update_saas_configs
 from fides.api.util.saas_util import (
     encode_file_contents,
     load_config_from_string,
