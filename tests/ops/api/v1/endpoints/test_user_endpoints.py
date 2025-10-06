@@ -829,6 +829,187 @@ class TestGetUsers:
         for other_user in other_users:
             assert other_user.id in user_ids
 
+    def test_get_users_include_external_default_true(
+        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+    ):
+        """Test that include_external defaults to True and includes external respondents"""
+        # Create additional users
+        password = str_to_b64_str("Password123!")
+        regular_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"regular_user{i}",
+                    "password": password,
+                    "email_address": f"regular{i}.user@example.com",
+                },
+            )
+            for i in range(2)
+        ]
+
+        # Create permissions for regular users
+        for user in regular_users:
+            FidesUserPermissions.create(
+                db=db,
+                data={"user_id": user.id, "roles": ["viewer"]},
+            )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+
+        # Test default behavior (include_external=True)
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should include external respondent and regular users
+        user_ids = [user["id"] for user in response_body["items"]]
+        assert external_respondent.id in user_ids
+        for user in regular_users:
+            assert user.id in user_ids
+
+    def test_get_users_include_external_false(
+        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+    ):
+        """Test that include_external=False excludes external respondents"""
+        # Create additional users
+        password = str_to_b64_str("Password123!")
+        regular_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"regular_user{i}",
+                    "password": password,
+                    "email_address": f"regular{i}.user@example.com",
+                },
+            )
+            for i in range(2)
+        ]
+
+        # Create permissions for regular users
+        for user in regular_users:
+            FidesUserPermissions.create(
+                db=db,
+                data={"user_id": user.id, "roles": ["viewer"]},
+            )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+
+        # Test with include_external=False
+        resp = api_client.get(f"{url}?include_external=false", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should exclude external respondent but include regular users
+        user_ids = [user["id"] for user in response_body["items"]]
+        assert external_respondent.id not in user_ids
+        for user in regular_users:
+            assert user.id in user_ids
+
+    def test_get_users_include_external_true_explicit(
+        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+    ):
+        """Test that include_external=True explicitly includes external respondents"""
+        # Create additional users
+        password = str_to_b64_str("Password123!")
+        regular_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"regular_user{i}",
+                    "password": password,
+                    "email_address": f"regular{i}.user@example.com",
+                },
+            )
+            for i in range(2)
+        ]
+
+        # Create permissions for regular users
+        for user in regular_users:
+            FidesUserPermissions.create(
+                db=db,
+                data={"user_id": user.id, "roles": ["viewer"]},
+            )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+
+        # Test with include_external=True explicitly
+        resp = api_client.get(f"{url}?include_external=true", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should include external respondent and regular users
+        user_ids = [user["id"] for user in response_body["items"]]
+        assert external_respondent.id in user_ids
+        for user in regular_users:
+            assert user.id in user_ids
+
+    def test_get_users_include_external_with_username_filter(
+        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+    ):
+        """Test that include_external works with username filtering"""
+        # Create additional users with specific usernames
+        password = str_to_b64_str("Password123!")
+        regular_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"test_user{i}",
+                    "password": password,
+                    "email_address": f"test{i}.user@example.com",
+                },
+            )
+            for i in range(2)
+        ]
+
+        # Create permissions for regular users
+        for user in regular_users:
+            FidesUserPermissions.create(
+                db=db,
+                data={"user_id": user.id, "roles": ["viewer"]},
+            )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+
+        # Test filtering with include_external=False
+        resp = api_client.get(
+            f"{url}?username=test&include_external=false", headers=auth_header
+        )
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should only include regular users matching the filter, not external respondent
+        user_ids = [user["id"] for user in response_body["items"]]
+        assert external_respondent.id not in user_ids
+        for user in regular_users:
+            assert user.id in user_ids
+
+    def test_get_users_include_external_with_user_read_own_scope(
+        self, api_client: TestClient, generate_auth_header, url, db, external_respondent
+    ):
+        """Test that include_external parameter works with USER_READ_OWN scope"""
+        # Create auth header for external respondent (has USER_READ_OWN scope)
+        auth_header = generate_auth_header_for_user(
+            external_respondent, scopes=[USER_READ_OWN]
+        )
+
+        # Test with include_external=False - should still see own data
+        resp = api_client.get(f"{url}?include_external=false", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should still see their own data even with include_external=False
+        assert len(response_body["items"]) == 1
+        assert response_body["items"][0]["id"] == external_respondent.id
+
+        # Test with include_external=True - should still see own data
+        resp = api_client.get(f"{url}?include_external=true", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should still see their own data
+        assert len(response_body["items"]) == 1
+        assert response_body["items"][0]["id"] == external_respondent.id
+
 
 class TestGetUser:
     @pytest.fixture(scope="function")
