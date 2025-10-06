@@ -231,7 +231,6 @@ def delete_connection(
 def put_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
     connection_service: ConnectionService = Depends(get_connection_service),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
