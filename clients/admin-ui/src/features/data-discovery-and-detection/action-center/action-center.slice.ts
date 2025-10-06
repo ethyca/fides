@@ -250,13 +250,12 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     ignoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
-        const queryParams = new URLSearchParams();
-        params.urnList?.forEach((urn) =>
-          queryParams.append("staged_resource_urns", urn),
-        );
         return {
           method: "POST",
-          url: `/plus/discovery-monitor/mute?${queryParams}`,
+          url: `/plus/discovery-monitor/mute`,
+          body: {
+            staged_resource_urns: params.urnList,
+          },
         };
       },
       invalidatesTags: ["Discovery Monitor Results"],
