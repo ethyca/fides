@@ -82,16 +82,9 @@ def generate_connection_audit_event_details(
     connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
     connector_type = None
     if connection_type == "saas" and connection_config.saas_config:
-        try:
-            saas_config = connection_config.get_saas_config()
-            if saas_config:
-                connector_type = saas_config.type
-        except Exception:
-            if (
-                isinstance(connection_config.saas_config, dict)  # type: ignore[attr-defined]
-                and "type" in connection_config.saas_config
-            ):
-                connector_type = connection_config.saas_config["type"]
+        saas_config = connection_config.get_saas_config()
+        if saas_config:
+            connector_type = saas_config.type
 
     if connector_type:
         description = f"Connection {operation_type}: {connector_type} connector '{connection_config.key}'"
