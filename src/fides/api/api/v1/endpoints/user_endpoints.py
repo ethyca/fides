@@ -613,7 +613,6 @@ def get_users(
     authorization: str = Security(oauth2_scheme),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
-    logger.debug("Getting users with include_external: {}", include_external)
     query = FidesUser.query(db)
 
     # Check if user has USER_READ_OWN scope and filter accordingly
