@@ -12,6 +12,7 @@ from fides.api.task.filter_results import (
     filter_data_categories,
     remove_empty_containers,
     select_and_save_field,
+    should_skip_data_category_filtering,
     unpack_fides_connector_results,
 )
 
@@ -1573,3 +1574,283 @@ class TestFilterResults:
             )
             == {}
         )
+
+    def test_should_skip_data_category_filtering_manual_task_address(self):
+        """Test that manual task addresses are correctly identified for filtering skip"""
+        # Test manual task address (should skip filtering)
+        assert (
+            should_skip_data_category_filtering(
+                "connection_key:manual_data", [{"some": "data"}]
+            )
+            == True
+        )
+
+        # Test non-manual task address (should not skip filtering)
+        assert (
+            should_skip_data_category_filtering(
+                "connection_key:other_collection", [{"some": "data"}]
+            )
+            == False
+        )
+
+        # Test empty results
+        assert (
+            should_skip_data_category_filtering("connection_key:manual_data", [])
+            == True
+        )  # Manual task addresses skip regardless of results
+
+    def test_should_skip_data_category_filtering_attachment_data(self):
+        """Test that attachment data is correctly identified for filtering skip"""
+        # Test with valid attachment data (should skip filtering)
+        attachment_data = [
+            {
+                "attachments": [
+                    {
+                        "file_name": "test.pdf",
+                        "download_url": "https://example.com/test.pdf",
+                        "file_size": 1024,
+                    }
+                ]
+            }
+        ]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", attachment_data
+            )
+            == True
+        )
+
+        # Test with multiple attachments
+        multiple_attachments = [
+            {
+                "attachments": [
+                    {
+                        "file_name": "test1.pdf",
+                        "download_url": "https://example.com/test1.pdf",
+                        "file_size": 1024,
+                    },
+                    {
+                        "file_name": "test2.txt",
+                        "download_url": "https://example.com/test2.txt",
+                        "file_size": 512,
+                    },
+                ]
+            }
+        ]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", multiple_attachments
+            )
+            == True
+        )
+
+        # Test with mixed data (attachments + other data)
+        mixed_data = [
+            {"user_id": 123, "name": "Test User"},
+            {
+                "attachments": [
+                    {
+                        "file_name": "report.pdf",
+                        "download_url": "https://example.com/report.pdf",
+                        "file_size": 2048,
+                    }
+                ]
+            },
+        ]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", mixed_data
+            )
+            == True
+        )
+
+    def test_should_skip_data_category_filtering_invalid_attachment_data(self):
+        """Test that invalid attachment data does not skip filtering"""
+        # Test with empty attachments array (should not skip)
+        empty_attachments = [{"attachments": []}]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", empty_attachments
+            )
+            == False
+        )
+
+        # Test with malformed attachment data (missing required fields)
+        malformed_attachments = [
+            {
+                "attachments": [
+                    {
+                        "file_name": "test.pdf",
+                        # Missing download_url
+                        "file_size": 1024,
+                    }
+                ]
+            }
+        ]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", malformed_attachments
+            )
+            == False
+        )
+
+        # Test with non-dict attachment data
+        invalid_attachments = [{"attachments": ["not_a_dict"]}]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", invalid_attachments
+            )
+            == False
+        )
+
+        # Test with non-list attachments field
+        non_list_attachments = [{"attachments": "not_a_list"}]
+        assert (
+            should_skip_data_category_filtering(
+                "polling_connection:results", non_list_attachments
+            )
+            == False
+        )
+
+    def test_should_skip_data_category_filtering_no_attachment_data(self):
+        """Test that regular data without attachments does not skip filtering"""
+        regular_data = [
+            {"user_id": 123, "name": "Test User", "email": "test@example.com"}
+        ]
+        assert (
+            should_skip_data_category_filtering(
+                "regular_connection:users", regular_data
+            )
+            == False
+        )
+
+        # Test empty results
+        assert (
+            should_skip_data_category_filtering("regular_connection:users", []) == False
+        )
+
+    def test_filter_data_categories_with_attachment_data_preserved(self):
+        """Test that attachment data is preserved during filtering (not filtered out)"""
+        access_request_results = {
+            "polling_connection:results": [
+                {
+                    "user_id": 123,
+                    "name": "Test User",
+                    "attachments": [
+                        {
+                            "file_name": "user_report.pdf",
+                            "download_url": "https://example.com/user_report.pdf",
+                            "file_size": 2048,
+                        }
+                    ],
+                }
+            ],
+            "regular_connection:users": [
+                {"user_id": 456, "name": "Another User", "email": "user@example.com"}
+            ],
+        }
+
+        # Create a simple dataset for the regular collection
+        dataset = {
+            "fides_key": "regular_connection",
+            "name": "regular_connection",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "user_id", "data_categories": ["user.unique_id"]},
+                        {"name": "name", "data_categories": ["user.name"]},
+                        {"name": "email", "data_categories": ["user.contact.email"]},
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "regular_connection"
+                )
+            ]
+        )
+
+        # Filter for only "user.name" category
+        filtered_results = filter_data_categories(
+            copy.deepcopy(access_request_results), {"user.name"}, dataset_graph
+        )
+
+        # The attachment data should be preserved completely (not filtered)
+        # The regular data should be filtered to only include user.name fields
+        expected_results = {
+            "polling_connection:results": [
+                {
+                    "user_id": 123,
+                    "name": "Test User",
+                    "attachments": [
+                        {
+                            "file_name": "user_report.pdf",
+                            "download_url": "https://example.com/user_report.pdf",
+                            "file_size": 2048,
+                        }
+                    ],
+                }
+            ],
+            "regular_connection:users": [
+                {"name": "Another User"}  # Only user.name field preserved
+            ],
+        }
+
+        assert filtered_results == expected_results
+
+    def test_filter_data_categories_manual_task_backward_compatibility(self):
+        """Test that manual task data filtering still works as before"""
+        access_request_results = {
+            "manual_connection:manual_data": [
+                {"field1": "value1", "field2": "value2", "some_other_field": "value3"}
+            ],
+            "regular_connection:users": [
+                {"user_id": 456, "name": "Test User", "email": "user@example.com"}
+            ],
+        }
+
+        # Create a dataset for the regular collection
+        dataset = {
+            "fides_key": "regular_connection",
+            "name": "regular_connection",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "user_id", "data_categories": ["user.unique_id"]},
+                        {"name": "name", "data_categories": ["user.name"]},
+                        {"name": "email", "data_categories": ["user.contact.email"]},
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "regular_connection"
+                )
+            ]
+        )
+
+        # Filter for only "user.name" category
+        filtered_results = filter_data_categories(
+            copy.deepcopy(access_request_results), {"user.name"}, dataset_graph
+        )
+
+        # Manual task data should be preserved completely (not filtered)
+        # Regular data should be filtered to only include user.name fields
+        expected_results = {
+            "manual_connection:manual_data": [
+                {"field1": "value1", "field2": "value2", "some_other_field": "value3"}
+            ],
+            "regular_connection:users": [
+                {"name": "Test User"}  # Only user.name field preserved
+            ],
+        }
+
+        assert filtered_results == expected_results

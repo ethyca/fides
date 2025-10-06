@@ -3,13 +3,20 @@ from datetime import datetime, timedelta
 
 import pytest
 
+from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.traversal import Traversal
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.privacy_request.request_task import AsyncTaskType, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import ActionType, PrivacyRequestStatus
-from fides.api.schemas.saas.strategy_configuration import PollingAsyncDSRConfiguration
+from fides.api.task.create_request_tasks import (
+    collect_tasks_fn,
+    persist_initial_erasure_request_tasks,
+    persist_new_access_request_tasks,
+)
 
 
+## Privacy Request Fixtures
 @pytest.fixture
 def pending_privacy_request(db, policy):
     """Create a privacy request in the pending state"""
@@ -67,14 +74,15 @@ def in_processing_privacy_request(db, policy):
     privacy_request.delete(db)
 
 
+## Request Task Fixtures
 @pytest.fixture
 def polling_request_task(db, in_processing_privacy_request):
-    """Create a request task that is awaiting processing and is a polling task"""
+    """Create a request task that is in polling status and is a polling task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.awaiting_processing,
+            "status": ExecutionLogStatus.polling,
             "privacy_request_id": in_processing_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
@@ -132,34 +140,37 @@ def callback_request_task(db, in_processing_privacy_request):
 
 @pytest.fixture
 def non_async_request_task(db, pending_privacy_request):
-    """Create a request task that is awaiting processing but is not a polling task"""
+    """Create a request task that is in polling status but is not a polling task"""
     request_task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.awaiting_processing,
+            "status": ExecutionLogStatus.polling,
             "privacy_request_id": pending_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
             "collection_name": "customer",
             "upstream_tasks": [],
             "downstream_tasks": [],
+            # Note: no async_type set, so it won't be AsyncTaskType.polling
         },
     )
     yield request_task
     request_task.delete(db)
 
 
-def polling_async_dsr_configuration() -> PollingAsyncDSRConfiguration:
-    return {
-        "status_request": {
-            "method": "GET",
-            "path": "/status/<status_id>",
-        },
-        "status_path": "status",
-        "result_request": {
-            "method": "GET",
-            "path": "/result/<result_id>",
-        },
-        "result_path": "data",
-    }
+# Access graph fixtures
+@pytest.fixture
+def async_graph(saas_async_polling_example_dataset_config, db, privacy_request):
+    # Build proper async graph with persisted request tasks to test the connector
+    async_graph = saas_async_polling_example_dataset_config.get_graph()
+    graph = DatasetGraph(async_graph)
+    traversal = Traversal(graph, {"email": "customer-1@example.com"})
+    traversal_nodes = {}
+    end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
+    persist_new_access_request_tasks(
+        db, privacy_request, traversal, traversal_nodes, end_nodes, graph
+    )
+    persist_initial_erasure_request_tasks(
+        db, privacy_request, traversal_nodes, end_nodes, graph
+    )

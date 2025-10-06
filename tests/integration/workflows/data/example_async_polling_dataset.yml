@@ -1,0 +1,11 @@
+dataset:
+  - fides_key: async_polling_example
+    name: Async Polling Example Dataset
+    collections:
+      - name: user
+        fields:
+         - name: id
+           data_categories: [user.unique_id]
+           fides_meta:
+            primary_key: True
+            data_type: string

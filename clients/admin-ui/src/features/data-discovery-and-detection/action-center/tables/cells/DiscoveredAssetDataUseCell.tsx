@@ -1,4 +1,5 @@
 import { AntSpace as Space, AntTag as Tag } from "fidesui";
+import { truncate } from "lodash";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -32,6 +33,8 @@ const DiscoveredAssetDataUseCell = ({
 
   const currentDataUses = asset.preferred_data_uses || [];
 
+  const truncatedAssetName = truncate(asset.name || "", { length: 50 });
+
   const handleAddDataUse = async (newDataUse: string) => {
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
@@ -42,7 +45,7 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category added to ${asset.resource_type} "${asset.name}" .`,
+        `Consent category added to ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
       onChange?.([...currentDataUses, newDataUse]);
@@ -60,7 +63,7 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category removed from ${asset.resource_type} "${asset.name}".`,
+        `Consent category removed from ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
       onChange?.(currentDataUses.filter((use) => use !== useToDelete));
