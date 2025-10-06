@@ -626,17 +626,17 @@ def get_users(
         # User has USER_READ scope, can see all users
         if username:
             query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
+
+        # Filter out external respondents if include_external is False
+        if not include_external:
+            query = query.join(FidesUserPermissions).filter(
+                ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
+            )
     else:
         # User has USER_READ_OWN scope, only show their own data
         query = query.filter(FidesUser.id == client.user_id)
         if username:
             query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
-
-    # Filter out external respondents if include_external is False
-    if not include_external:
-        query = query.join(FidesUserPermissions).filter(
-            ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
-        )
 
     logger.debug("Returning a paginated list of users.")
 
