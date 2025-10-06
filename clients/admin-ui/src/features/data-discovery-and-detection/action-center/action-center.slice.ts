@@ -270,7 +270,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
     }),
     restoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
