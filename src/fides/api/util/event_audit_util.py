@@ -31,20 +31,10 @@ def _create_connection_event_details(
         connection_config.connection_type.value == "saas"  # type: ignore[attr-defined]
         and connection_config.saas_config
     ):
-        try:
-            saas_config = connection_config.get_saas_config()
-            if saas_config:
-                event_details["saas_connector_type"] = saas_config.type
-                event_details["configuration_changes"] = saas_config
-        except Exception:
-            # If SaaS config is invalid, try to get type directly from raw config
-            if (
-                isinstance(connection_config.saas_config, dict)  # type: ignore[attr-defined]
-                and "type" in connection_config.saas_config
-            ):
-                event_details["saas_connector_type"] = connection_config.saas_config[
-                    "type"
-                ]
+        saas_config = connection_config.get_saas_config()
+        if saas_config:
+            event_details["saas_connector_type"] = saas_config.type
+            event_details["configuration_changes"] = saas_config
 
     return event_details
 

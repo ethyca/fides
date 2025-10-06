@@ -45,35 +45,6 @@ class TestCreateConnectionEventDetails:
             == saas_example_connection_config.get_saas_config()
         )
 
-    def test_create_connection_event_details_saas_with_invalid_config(self, db):
-        """Test creating event details for a SaaS connection with invalid config."""
-        # Create a SaaS connection with invalid saas_config that will cause get_saas_config() to fail
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "name": "test_saas_invalid",
-                "key": "test_saas_invalid",
-                "connection_type": ConnectionType.saas,
-                "access": AccessLevel.write,
-                "saas_config": {
-                    "type": "mailchimp",
-                    "invalid": "config",
-                },  # Invalid config
-            },
-        )
-
-        result = _create_connection_event_details(
-            connection_config=connection_config,
-            operation_type="created",
-        )
-
-        assert result["operation_type"] == "created"
-        assert result["connection_type"] == "saas"
-        assert result["saas_connector_type"] == "mailchimp"
-        assert "configuration_changes" not in result
-
-        connection_config.delete(db)
-
     def test_create_connection_event_details_saas_no_type_in_config(self, db):
         """Test creating event details for a SaaS connection with no type in config."""
         connection_config = ConnectionConfig.create(
@@ -169,34 +140,6 @@ class TestGenerateConnectionAuditEventDetails:
         )
         expected_description = f"Connection created: custom connector '{saas_example_connection_config.key}'"
         assert description == expected_description
-
-    def test_generate_connection_audit_event_details_saas_with_invalid_config(self, db):
-        """Test generating audit event details for SaaS connection with invalid config."""
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "name": "test_saas_invalid",
-                "key": "test_saas_invalid",
-                "connection_type": ConnectionType.saas,
-                "access": AccessLevel.write,
-                "saas_config": {"type": "stripe", "invalid": "config"},
-            },
-        )
-
-        event_details, description = generate_connection_audit_event_details(
-            event_type=EventAuditType.connection_created,
-            connection_config=connection_config,
-        )
-
-        assert event_details["operation_type"] == "created"
-        assert event_details["connection_type"] == "saas"
-        assert event_details["saas_connector_type"] == "stripe"
-        expected_description = (
-            f"Connection created: stripe connector '{connection_config.key}'"
-        )
-        assert description == expected_description
-
-        connection_config.delete(db)
 
     def test_generate_connection_audit_event_details_with_custom_description(
         self, connection_config
