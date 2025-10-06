@@ -413,33 +413,35 @@ export const PrivacyDeclarationForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty, values }) => (
-        <Form data-testid="declaration-form">
-          <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
-          <Stack spacing={4}>
-            <PrivacyDeclarationFormComponents
-              values={values}
-              lockedForGVL={lockedForGVL}
-              privacyDeclarationId={privacyDeclarationId}
-              {...dataProps}
-            />
-            <Flex w="100%">
-              <Button onClick={onCancel} data-testid="cancel-btn">
-                Cancel
-              </Button>
-              <Spacer />
-              <Button
-                type="primary"
-                htmlType="submit"
-                disabled={!dirty}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Flex>
-          </Stack>
-        </Form>
-      )}
+      {({ dirty, values }) => {
+        return (
+          <Form data-testid="declaration-form">
+            <FormGuard id="PrivacyDeclaration" name="New Privacy Declaration" />
+            <Stack spacing={4}>
+              <PrivacyDeclarationFormComponents
+                values={values}
+                lockedForGVL={lockedForGVL}
+                privacyDeclarationId={privacyDeclarationId}
+                {...dataProps}
+              />
+              <Flex w="100%">
+                <Button onClick={onCancel} data-testid="cancel-btn">
+                  Cancel
+                </Button>
+                <Spacer />
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  disabled={!dirty}
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+              </Flex>
+            </Stack>
+          </Form>
+        );
+      }}
     </Formik>
   );
 };
