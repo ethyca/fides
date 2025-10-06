@@ -22,6 +22,7 @@ type TagExpandableCellValues = {
 export interface TagExpandableCellProps extends Omit<FlexProps, "children"> {
   values: TagExpandableCellValues | undefined;
   columnState?: ColumnState;
+  onStateChange?: (isExpanded: boolean) => void;
   onTagClose?: (key: string) => void;
   tagProps?: TagProps;
 }
@@ -38,6 +39,7 @@ export const TagExpandableCell = ({
   columnState,
   tagProps,
   onTagClose,
+  onStateChange,
   ...props
 }: TagExpandableCellProps) => {
   const { isExpanded, isWrapped, version } = columnState || {};
@@ -67,17 +69,26 @@ export const TagExpandableCell = ({
     } else {
       setDisplayValues(values);
     }
-  }, [isCollapsed, values]);
+  }, [isCollapsed, values, onStateChange]);
+
+  useEffect(() => {
+    if (values?.length && values.length <= displayThreshold && !isCollapsed) {
+      setIsCollapsed(true);
+      onStateChange?.(false);
+    }
+  }, [values, onStateChange, isCollapsed]);
 
   const handleCollapse = useCallback(() => {
     // if we don't also set displayValues here, there's a UI glitch where the tags stop wrapping before they become collapsed which in turn can cause the table to scroll.
     setDisplayValues(values?.slice(0, displayThreshold));
     setIsCollapsed(true);
-  }, [values]);
+    onStateChange?.(false);
+  }, [values, onStateChange]);
 
   const handleExpand = useCallback(() => {
     setIsCollapsed(false);
-  }, []);
+    onStateChange?.(true);
+  }, [onStateChange]);
 
   const handleToggle = useCallback(() => {
     if (isCollapsed) {
