@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 from loguru import logger
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, Session, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -183,6 +184,14 @@ class RequestTask(WorkerTask, Base):
         uselist=False,
     )
 
+    # Stores the sub-requests data for async polling tasks
+    sub_requests: "RelationshipProperty[List[RequestTaskSubRequest]]" = relationship(
+        "RequestTaskSubRequest",
+        back_populates="request_task",
+        cascade="all, delete-orphan",
+        order_by="RequestTaskSubRequest.created_at",
+    )
+
     @property
     def request_task_address(self) -> CollectionAddress:
         """Convert the collection_address into Collection Address format"""
@@ -318,3 +327,91 @@ class RequestTask(WorkerTask, Base):
             )
 
         return task_in_flight
+
+
+class RequestTaskSubRequest(Base):
+    """
+    Model for storing individual sub-request data during the execution of a request task.
+    Supports 1:N relationship - each RequestTask can have multiple sub-requests.
+    Currently used for storing request data for polling tasks.
+    """
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "request_task_sub_request"
+
+    request_task_id = Column(
+        String(255),
+        ForeignKey(
+            "requesttask.id",
+            name="request_task_sub_request_request_task_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    request_task = relationship(
+        "RequestTask",
+        back_populates="sub_requests",
+    )
+
+    # Individual sub-request data (e.g., request_id, status, result data)
+    # Additional fields for enhanced sub-request tracking
+    param_values = Column(  # An encrypted JSON String - saved as a dict
+        StringEncryptedType(
+            type_in=JSONTypeOverride,
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=False,
+    )
+    status = Column(String, nullable=False)
+
+    # Raw data retrieved from an access request is stored here.  This contains all of the
+    # intermediate data we retrieved, needed for downstream tasks, but hasn't been filtered
+    # by data category for the end user.
+    _access_data = Column(  # An encrypted JSON String - saved as a list of Rows
+        "access_data",
+        StringEncryptedType(
+            type_in=JSONTypeOverride,
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
+    # Use descriptors for automatic external storage handling
+    access_data = EncryptedLargeDataDescriptor(
+        field_name="access_data", empty_default=[]
+    )
+
+    # Written after an erasure is completed
+    rows_masked = Column(Integer)
+
+    def get_correlation_id(self) -> Optional[str]:
+        """Helper method to extract correlation_id from param_values."""
+        if self.param_values and "request_id" in self.param_values:
+            return self.param_values["request_id"]
+        return None
+
+    def update_status(self, db: Session, status: str) -> None:
+        """Helper method to update the status of this sub-request."""
+        self.status = status
+        self.save(db)
+
+    def cleanup_external_storage(self) -> None:
+        """Clean up all external storage files for this sub-request"""
+        # Access the descriptor from the class to call cleanup
+        RequestTaskSubRequest.access_data.cleanup(self)
+
+    def get_access_data(self) -> List[Row]:
+        """Helper to retrieve access data or default to empty list"""
+        return self.access_data or []
+
+    def delete(self, db: Session) -> None:
+        """Override delete to cleanup external storage first"""
+        self.cleanup_external_storage()
+        super().delete(db)
