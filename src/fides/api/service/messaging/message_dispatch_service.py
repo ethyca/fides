@@ -238,7 +238,6 @@ def dispatch_message(
             action_type=action_type,
             body_params=message_body_params,
             messaging_template=messaging_template,
-            db=db,
         )
     elif messaging_method == MessagingMethod.SMS:
         message = _build_sms(
@@ -361,7 +360,6 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
     action_type: MessagingActionType,
     body_params: Any,
     messaging_template: Optional[MessagingTemplate] = None,
-    db: Optional[Session] = None,
 ) -> EmailForActionType:
     """
     Builds an email for a specified messaging action type, using the provided parameters.
@@ -509,21 +507,17 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "company_logo_url": body_params.company_logo_url,
         }
 
-        custom_template = None
-        if db is not None:
-            custom_template = _basic_messaging_template_by_type(db, action_type.value)
-
         # Start with default subject
         subject = f"Weekly DSR Summary from {body_params.organization_name}"
 
-        # If custom template exists, extract customizable content
-        if custom_template:
+        # If messaging template exists, extract customizable content
+        if messaging_template:
             # Use custom subject if provided
-            if "subject" in custom_template.content:
-                subject = _render(custom_template.content["subject"], variables)
+            if "subject" in messaging_template.content:
+                subject = _render(messaging_template.content["subject"], variables)
 
             # Use custom body content to replace the intro text in HTML template
-            custom_body = custom_template.content.get("body", "")
+            custom_body = messaging_template.content.get("body", "")
             if custom_body.strip():
                 # Replace the default intro text with the custom body content
                 rendered_custom_body = _render(custom_body, variables)
