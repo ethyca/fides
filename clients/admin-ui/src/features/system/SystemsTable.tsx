@@ -65,6 +65,7 @@ const SystemsTable = () => {
             okType="danger"
             cancelText="Cancel"
             centered
+            data-testid="delete-confirmation-modal"
           >
             <Typography.Paragraph>
               Are you sure you want to delete{" "}
