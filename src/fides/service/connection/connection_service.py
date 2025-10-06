@@ -164,31 +164,25 @@ class ConnectionService:
         """Connect, verify with a trivial query or API request, and report the status."""
 
         connector = get_connector(connection_config)
-
+        failure_reason = None
         try:
             status: Optional[ConnectionTestStatus] = connector.test_connection()
-
+            logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
         except (ConnectionException, ClientUnsuccessfulException) as exc:
             logger.warning(
                 "Connection test failed on {}: {}",
                 connection_config.key,
                 Pii(str(exc)),
             )
-            connection_config.update_test_status(
-                test_status=ConnectionTestStatus.failed, db=self.db
-            )
-            return TestStatusMessage(
-                msg=msg,
-                test_status=ConnectionTestStatus.failed,
-                failure_reason=str(exc),
-            )
+            failure_reason = str(exc)
+            status = ConnectionTestStatus.failed
 
-        logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
         connection_config.update_test_status(test_status=status, db=self.db)  # type: ignore
 
         return TestStatusMessage(
             msg=msg,
             test_status=status,
+            failure_reason=failure_reason,
         )
 
     def update_secrets(
@@ -205,9 +199,9 @@ class ConnectionService:
         if merge_with_existing and connection_config.secrets:
             # Merge existing secrets with new ones
             merged_secrets = {**connection_config.secrets, **unvalidated_secrets}  # type: ignore[dict-item]
-        else:
-            # For PUT operations or when no existing secrets, use new secrets directly
-            merged_secrets = unvalidated_secrets  # type: ignore[assignment]
+
+         # For PUT operations or when no existing secrets, use new secrets directly
+        merged_secrets = unvalidated_secrets  # type: ignore[assignment]
 
         connection_config.secrets = self.validate_secrets(
             merged_secrets, connection_config  # type: ignore[arg-type]
