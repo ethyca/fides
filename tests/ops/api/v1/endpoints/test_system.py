@@ -36,6 +36,8 @@ from fides.common.api.scope_registry import (
     SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -605,10 +607,15 @@ class TestDeleteSystemConnectionConfig:
             "domain": "test_hubspot_domain",
             "private_app_token": "test_hubspot_api_key",
         }
+        # Create ConnectionService instance
+        event_audit_service = EventAuditService(db)
+        connection_service = ConnectionService(db, event_audit_service)
+
         connection_config, dataset_config = instantiate_connector(
             db,
+            connection_service,
             "hubspot",
-            "secondary_hubspot_instance",
+            "hubspot_connection_config",
             "Hubspot ConnectionConfig description",
             secrets,
             system,
@@ -920,7 +927,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fides.service.connection.connection_service.upsert_dataset_config_from_template"
+        "fides.service.connection.connection_service.ConnectionService.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url

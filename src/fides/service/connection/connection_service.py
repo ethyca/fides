@@ -248,11 +248,12 @@ class ConnectionService:
             connection_config,
         )
 
-        self._create_secrets_audit_event(
-            EventAuditType.connection_secrets_deleted,
-            connection_config,
-            connection_config.secrets,  # type: ignore[arg-type]
-        )
+        if connection_config.secrets:
+            self._create_secrets_audit_event(
+                EventAuditType.connection_secrets_deleted,
+                connection_config,
+                connection_config.secrets,  # type: ignore[arg-type]
+            )
 
         # Perform the actual deletion
         connection_config.delete(self.db)
