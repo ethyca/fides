@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
 - Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
 - Fixed custom fields on the system data use form being nonfunctional [#6657](https://github.com/ethyca/fides/pull/6657)
+- Fixed expanded categories of consent table cells auto-collapsing in Action Center when adding new values [#6690](https://github.com/ethyca/fides/pull/6690)
 
 ## [2.71.1](https://github.com/ethyca/fides/compare/2.71.0...2.71.1)
 
