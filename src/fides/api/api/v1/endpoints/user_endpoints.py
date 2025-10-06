@@ -36,7 +36,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
 from fides.api.oauth.utils import (
     create_temporary_user_for_login_flow,
     extract_payload,
