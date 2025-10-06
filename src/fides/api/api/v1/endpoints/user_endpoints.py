@@ -13,7 +13,6 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
-from sqlalchemy import func
 from sqlalchemy.orm import Query, Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
