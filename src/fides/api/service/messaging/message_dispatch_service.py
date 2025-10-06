@@ -41,7 +41,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.messaging_crud_service import (
-    _basic_messaging_template_by_type,
     get_basic_messaging_template_by_type_or_default,
     get_enabled_messaging_template_by_type_and_property,
 )
