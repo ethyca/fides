@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -8,9 +8,7 @@ from fides.api.util.masking_util import mask_sensitive_fields
 
 
 def _create_connection_event_details(
-    connection_config: ConnectionConfig,
-    operation_type: str,
-    secrets_modified: Optional[List[str]] = None,
+    connection_config: ConnectionConfig, operation_type: str
 ) -> Dict[str, Any]:
     """
     Create standardized event details for connection audit events.
@@ -47,10 +45,6 @@ def _create_connection_event_details(
                 event_details["saas_connector_type"] = connection_config.saas_config[
                     "type"
                 ]
-
-    # Add list of secret field names that were modified (not the values)
-    if secrets_modified:
-        event_details["secrets_modified"] = secrets_modified
 
     return event_details
 
