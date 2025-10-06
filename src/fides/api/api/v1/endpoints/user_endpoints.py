@@ -36,7 +36,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
+from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
     create_temporary_user_for_login_flow,
     extract_payload,
@@ -635,7 +635,7 @@ def get_users(
     # Filter out external respondents if include_external is False
     if not include_external:
         query = query.join(FidesUserPermissions).filter(
-            ~FidesUserPermissions.roles.any(EXTERNAL_RESPONDENT)
+            FidesUserPermissions.is_external_respondent() == False
         )
 
     logger.debug("Returning a paginated list of users.")
