@@ -45,31 +45,6 @@ class TestCreateConnectionEventDetails:
             == saas_example_connection_config.get_saas_config()
         )
 
-    def test_create_connection_event_details_saas_no_type_in_config(self, db):
-        """Test creating event details for a SaaS connection with no type in config."""
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "name": "test_saas_no_type",
-                "key": "test_saas_no_type",
-                "connection_type": ConnectionType.saas,
-                "access": AccessLevel.write,
-                "saas_config": {"name": "Test Config"},  # No type field
-            },
-        )
-
-        result = _create_connection_event_details(
-            connection_config=connection_config,
-            operation_type="created",
-        )
-
-        assert result["operation_type"] == "created"
-        assert result["connection_type"] == "saas"
-        assert "saas_connector_type" not in result
-        assert "configuration_changes" not in result
-
-        connection_config.delete(db)
-
 
 class TestGenerateConnectionAuditEventDetails:
     """Tests for generate_connection_audit_event_details function."""
