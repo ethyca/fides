@@ -636,7 +636,7 @@ def get_users(
     # Filter out external respondents if include_external is False
     if not include_external:
         query = query.join(FidesUserPermissions).filter(
-            FidesUserPermissions.is_external_respondent() == False
+            ~FidesUserPermissions.roles.any(EXTERNAL_RESPONDENT)
         )
 
     logger.debug("Returning a paginated list of users.")
