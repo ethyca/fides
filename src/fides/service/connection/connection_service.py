@@ -88,12 +88,14 @@ class ConnectionService:
         event_type: EventAuditType,
         connection_config: ConnectionConfig,
         description: Optional[str] = None,
+        changed_fields: Optional[set] = None,
     ) -> None:
         """Create an audit event for connection operations."""
         event_details, generated_description = generate_connection_audit_event_details(
             event_type,
             connection_config=connection_config,
             description=description,
+            changed_fields=changed_fields,
         )
         self.event_audit_service.create_event_audit(
             event_type=event_type,
@@ -427,7 +429,12 @@ class ConnectionService:
         config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
 
+        # Store original config dict for change detection
+        original_config_dict = None
         if existing_connection_config:
+            # Store the original values before merging
+            original_config_dict = existing_connection_config.__dict__.copy()
+
             # Merge existing config with new values
             config_dict = {
                 key: value
@@ -445,19 +452,37 @@ class ConnectionService:
             self.db, data=config_dict, check_name=False
         )
 
-        # if it is a SaaS connection, check if the saas_config changed
-        saas_config_changed = True  # Default to True for new connections
-        if (
-            existing_connection_config
-            and connection_config.saas_config
-            and existing_connection_config.saas_config
-        ):
-            old_saas_config = existing_connection_config.saas_config
-            new_saas_config = connection_config.saas_config
-            saas_config_changed = old_saas_config != new_saas_config
+        # Track which connection configuration fields changed (only for updates)
+        changed_fields = None
+        connection_config_changed = False
 
-        # Only create audit event for connection operation if saas_config changed
-        if saas_config_changed:
+        if original_config_dict:
+            # Define fields to exclude from comparison
+            excluded_fields = {
+                "id",
+                "created_at",
+                "updated_at",
+                "secrets",
+                "last_test_timestamp",
+                "last_test_succeeded",
+                "last_run_timestamp",
+                "_sa_instance_state",  # SQLAlchemy internal field
+            }
+            # Compare original config dict with final config dict
+            changed_fields = set()
+            for field_name in config_dict.keys():
+                if field_name not in excluded_fields:
+                    old_value = original_config_dict.get(field_name)
+                    new_value = config_dict.get(field_name)
+                    if old_value != new_value:
+                        changed_fields.add(field_name)
+            connection_config_changed = bool(changed_fields)
+        else:
+            # For new connections, always create audit event (changed_fields=None means include all)
+            connection_config_changed = True
+
+        # Create audit event for connection operation
+        if connection_config_changed:
             connection_event_type = (
                 EventAuditType.connection_updated
                 if existing_connection_config
@@ -466,6 +491,7 @@ class ConnectionService:
             self._create_connection_audit_event(
                 connection_event_type,
                 connection_config,
+                changed_fields=changed_fields,
             )
 
         # Handle secrets validation and audit events
@@ -530,6 +556,7 @@ class ConnectionService:
         self._create_connection_audit_event(
             EventAuditType.connection_updated,
             connection_config,
+            changed_fields={"saas_config"},
         )
 
         self.upsert_dataset_config_from_template(

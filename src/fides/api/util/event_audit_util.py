@@ -8,7 +8,9 @@ from fides.api.util.masking_util import mask_sensitive_fields
 
 
 def _create_connection_event_details(
-    connection_config: ConnectionConfig, operation_type: str
+    connection_config: ConnectionConfig,
+    operation_type: str,
+    changed_fields: Optional[set] = None,
 ) -> Dict[str, Any]:
     """
     Create standardized event details for connection audit events.
@@ -16,25 +18,54 @@ def _create_connection_event_details(
     Args:
         connection_config: The connection configuration
         operation_type: Type of operation (create, update, delete)
-        secrets_modified: List of secret field names that were modified (not values)
+        changed_fields: Set of field names that changed (None means include all fields)
 
     Returns:
         Standardized event details dictionary
     """
     event_details = {
         "operation_type": operation_type,
-        "connection_type": connection_config.connection_type.value,  # type: ignore[attr-defined]
     }
 
-    # Add SaaS connector type if applicable
-    if (
-        connection_config.connection_type.value == "saas"  # type: ignore[attr-defined]
-        and connection_config.saas_config
-    ):
-        saas_config = connection_config.get_saas_config()
-        if saas_config:
-            event_details["saas_connector_type"] = saas_config.type
-            event_details["configuration_changes"] = saas_config
+    # Define fields to exclude from audit details
+    excluded_fields = {
+        "id",
+        "created_at",
+        "updated_at",
+        "secrets",
+    }
+
+    # Dynamically add connection config fields (only changed fields if specified)
+    for column in connection_config.__table__.columns:
+        field_name = column.name
+        if field_name not in excluded_fields:
+            # If changed_fields is specified, only include fields that changed
+            if changed_fields is not None and field_name not in changed_fields:
+                continue
+
+            value = getattr(connection_config, field_name)
+
+            # Handle special formatting for certain field types
+            if field_name == "connection_type" and value:
+                event_details[field_name] = value.value  # type: ignore[attr-defined]
+            elif field_name == "access" and value:
+                event_details["access_level"] = value.value  # type: ignore[attr-defined]
+            elif field_name == "enabled_actions" and value:
+                event_details[field_name] = [action.value for action in value]  # type: ignore[assignment,attr-defined]
+            elif (
+                field_name
+                in ["disabled_at", "last_test_timestamp", "last_run_timestamp"]
+                and value
+            ):
+                event_details[field_name] = value.isoformat()
+            else:
+                # Use field name as-is for new fields, with special handling for key -> connection_key
+                audit_field_name = (
+                    "connection_key" if field_name == "key" else field_name
+                )
+                if field_name == "name":
+                    audit_field_name = "connection_name"
+                event_details[audit_field_name] = value
 
     return event_details
 
@@ -43,6 +74,7 @@ def generate_connection_audit_event_details(
     event_type: EventAuditType,
     connection_config: ConnectionConfig,
     description: Optional[str] = None,
+    changed_fields: Optional[set] = None,
 ) -> Tuple[Dict[str, Any], str]:
     """
     Create an audit event for connection operations.
@@ -66,6 +98,7 @@ def generate_connection_audit_event_details(
     event_details = _create_connection_event_details(
         connection_config,
         operation_type,
+        changed_fields,
     )
 
     # Generate description if not provided
