@@ -36,7 +36,8 @@ export interface UserUpdateParams extends UserUpdate {
 export interface UsersListParams {
   page: number;
   size: number;
-  username: string;
+  username?: string;
+  include_external?: boolean;
 }
 
 export interface UserPasswordResetParams extends UserPasswordReset {
