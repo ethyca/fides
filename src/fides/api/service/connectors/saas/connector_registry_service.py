@@ -1,9 +1,11 @@
 # pylint: disable=protected-access
 import os
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Dict, Iterable, List, Optional, Type
 from zipfile import ZipFile
 
+import pydash
 from fideslang.models import Dataset
 from loguru import logger
 from packaging.version import Version
@@ -345,6 +347,142 @@ def create_connection_config_from_template_no_save(
     return connection_config
 
 
+def _preserve_property(
+    merged_item: Dict, existing_item: Dict, property_path: str
+) -> None:
+    """
+    Preserve a property (simple or nested) from existing_item to merged_item.
+
+    Args:
+        merged_item: The item being merged into
+        existing_item: The existing item to preserve from
+        property_path: Property path, can be simple ("data_categories") or nested ("fidesops_meta.data_type")
+    """
+    existing_value = pydash.get(existing_item, property_path)
+    if existing_value is not None:
+        pydash.set_(merged_item, property_path, existing_value)
+
+
+def merge_dataset_dicts(
+    existing_dataset: Dict,
+    template_dataset: Dict,
+    preserved_properties: Optional[List[str]] = None,
+) -> Dict:
+    """
+    Merges an existing dataset with a template dataset, preserving specific properties
+    from the existing dataset while adopting the structure and other properties from the template.
+
+    Args:
+        existing_dataset: The current dataset configuration
+        template_dataset: The new template dataset configuration
+        preserved_properties: List of properties to preserve from existing dataset.
+                             Supports dot notation for nested properties (e.g., "fides_meta.data_type").
+                             Defaults to ['data_categories'].
+
+    Returns:
+        A merged dataset with template structure and preserved properties from existing dataset
+    """
+    if preserved_properties is None:
+        preserved_properties = ["data_categories"]
+
+    # Start with the template as the base
+    merged_dataset = deepcopy(template_dataset)
+
+    # Create lookup maps for existing items
+    existing_collections = {
+        collection["name"]: collection
+        for collection in existing_dataset.get("collections", [])
+    }
+
+    # Preserve properties at dataset level
+    for property_path in preserved_properties:
+        _preserve_property(merged_dataset, existing_dataset, property_path)
+
+    # Process collections
+    for merged_collection in merged_dataset.get("collections", []):
+        collection_name = merged_collection["name"]
+        existing_collection = existing_collections.get(collection_name)
+
+        if existing_collection:
+            # Preserve properties at collection level
+            for property_path in preserved_properties:
+                _preserve_property(
+                    merged_collection, existing_collection, property_path
+                )
+
+            # Create lookup map for existing fields
+            existing_fields = {
+                field["name"]: field for field in existing_collection.get("fields", [])
+            }
+
+            # Process fields
+            for merged_field in merged_collection.get("fields", []):
+                field_name = merged_field["name"]
+                existing_field = existing_fields.get(field_name)
+
+                if existing_field:
+                    # Preserve properties at field level
+                    for property_path in preserved_properties:
+                        _preserve_property(merged_field, existing_field, property_path)
+
+                    # Recursively process nested fields if they exist
+                    _merge_nested_fields(
+                        merged_field, existing_field, preserved_properties
+                    )
+
+    return merged_dataset
+
+
+def _merge_nested_fields(
+    merged_field: Dict, existing_field: Dict, preserved_properties: List[str]
+) -> None:
+    """
+    Recursively merge nested fields while preserving specified properties.
+
+    Args:
+        merged_field: The field being merged into
+        existing_field: The existing field to preserve from
+        preserved_properties: List of properties to preserve (supports dot notation)
+    """
+    # Handle nested fields - we need to preserve existing nested fields even if template doesn't have them
+    if existing_field.get("fields"):
+        # If existing has nested fields, we should preserve them
+        if not merged_field.get("fields"):
+            # Template doesn't have nested fields but existing does - preserve existing structure
+            merged_field["fields"] = []
+            for existing_nested_field in existing_field["fields"]:
+                # Create a copy of the existing nested field
+                preserved_nested_field = existing_nested_field.copy()
+                merged_field["fields"].append(preserved_nested_field)
+
+                # Recursively handle any deeper nesting in the preserved field
+                _merge_nested_fields(
+                    preserved_nested_field, existing_nested_field, preserved_properties
+                )
+        else:
+            # Both have nested fields - merge them as before
+            existing_nested_fields = {
+                field["name"]: field for field in existing_field["fields"]
+            }
+
+            for nested_merged_field in merged_field["fields"]:
+                nested_field_name = nested_merged_field["name"]
+                existing_nested_field = existing_nested_fields.get(nested_field_name)
+
+                if existing_nested_field:
+                    # Preserve properties at nested field level
+                    for property_path in preserved_properties:
+                        _preserve_property(
+                            nested_merged_field, existing_nested_field, property_path
+                        )
+
+                    # Continue recursively for deeper nesting
+                    _merge_nested_fields(
+                        nested_merged_field, existing_nested_field, preserved_properties
+                    )
+    # If only merged_field has "fields", we keep the template structure (no change needed)
+
+
 def upsert_dataset_config_from_template(
     db: Session,
     connection_config: ConnectionConfig,
@@ -362,10 +500,36 @@ def upsert_dataset_config_from_template(
     dataset_from_template: Dict = replace_dataset_placeholders(
         template.dataset, "<instance_fides_key>", template_values.instance_key
     )
+
+    # Check if there's an existing dataset to merge with
+    existing_dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == template_values.instance_key)
+        ),
+    ).first()
+
+    final_dataset = dataset_from_template
+    if existing_dataset_config and existing_dataset_config.ctl_dataset:
+        # Get the existing dataset structure
+        # Convert SQLAlchemy model to dict for merging
+        ctl_dataset = existing_dataset_config.ctl_dataset
+        existing_dataset = {
+            "fides_key": ctl_dataset.fides_key,
+            "name": ctl_dataset.name,
+            "description": ctl_dataset.description,
+            "data_categories": ctl_dataset.data_categories,
+            "collections": ctl_dataset.collections,
+            "fides_meta": ctl_dataset.fides_meta,
+        }
+        # Merge datasets, preserving data_categories from existing dataset
+        final_dataset = merge_dataset_dicts(existing_dataset, dataset_from_template)
+
     data = {
         "connection_config_id": connection_config.id,
         "fides_key": template_values.instance_key,
-        "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
+        "dataset": final_dataset,  # Use merged dataset that preserves data_categories
     }
     dataset_config = DatasetConfig.create_or_update(db, data=data)
     return dataset_config
