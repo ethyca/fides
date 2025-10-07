@@ -408,7 +408,9 @@ class ConnectionService:
                 # For new SaaS configs, create from template
                 return self._create_saas_connection_from_template(config, system)
 
-        # Handle non-SaaS connections or SaaS without secrets
+        # Handle standard connection creation/update flow:
+        # - Non-SaaS connections (postgres, mysql, etc.)
+        # - Existing SaaS connections (after secret validation above)
         return self._create_or_update_standard_connection(
             config, existing_connection_config, system
         )
