@@ -227,8 +227,9 @@ class TestGenerateConnectionAuditEventDetails:
             connection_config=connection_config,
         )
 
+        # For deleted operations, only operation_type is included (no configuration_changes)
         assert event_details["operation_type"] == "deleted"
-        assert event_details["configuration_changes"]["connection_type"] == "postgres"
+        assert "configuration_changes" not in event_details
         assert (
             description
             == f"Connection deleted: postgres connection '{connection_config.key}'"

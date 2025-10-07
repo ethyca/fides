@@ -130,11 +130,16 @@ def generate_connection_audit_event_details(
     ]  # e.g., "created", "updated", "deleted"
 
     # Create standardized event details
-    event_details = _create_connection_event_details(
-        connection_config,
-        operation_type,
-        changed_fields,
-    )
+    if operation_type == "deleted":
+        event_details = {
+            "operation_type": operation_type,
+        }
+    else:
+        event_details = _create_connection_event_details(
+            connection_config,
+            operation_type,
+            changed_fields,
+        )
 
     # Generate description if not provided
     connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]

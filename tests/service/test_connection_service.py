@@ -532,3 +532,48 @@ class TestConnectionService:
 
         # Clean up
         https_connection.delete(db)
+
+    def test_connection_deletion_audit_event(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+    ):
+        """Test that connection deletion creates a simplified audit event."""
+
+        # Create a connection config
+        connection_config = ConnectionConfig.create(
+            db,
+            data={
+                "key": "test_deletion_audit",
+                "name": "Test Deletion Audit",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.write,
+                "secrets": {"host": "localhost", "port": 5432},
+            },
+        )
+
+
+        connection_service.create_connection_audit_event(
+            EventAuditType.connection_deleted,
+            connection_config,
+        )
+
+        # Verify audit event was created with simplified structure
+        events = EventAuditService(db).get_events_for_resource(
+            "connection_config", connection_config.key
+        )
+        assert len(events) == 1
+        assert events[0].event_type == EventAuditType.connection_deleted.value
+        assert events[0].resource_identifier == connection_config.key
+        assert (
+            events[0].description
+            == f"Connection deleted: postgres connection '{connection_config.key}'"
+        )
+
+        # Verify simplified event details for deletion - only operation_type, no configuration_changes
+        event_details = events[0].event_details
+        assert event_details["operation_type"] == "deleted"
+        assert "configuration_changes" not in event_details
+
+        # Clean up
+        connection_config.delete(db)
