@@ -250,7 +250,7 @@ class TestGenerateConnectionAuditEventDetails:
             event_details["configuration_changes"]["saas_config"]
             == saas_example_connection_config.saas_config
         )
-        expected_description = f"Connection created: custom connector '{saas_example_connection_config.key}'"
+        expected_description = f"Connection created: custom connection '{saas_example_connection_config.key}'"
         assert description == expected_description
 
     def test_generate_connection_audit_event_details_with_custom_description(
@@ -342,7 +342,7 @@ class TestGenerateConnectionAuditEventDetails:
 
         assert len(event_details) == 2
 
-        expected_description = f"Connection updated: custom connector '{saas_example_connection_config.key}'"
+        expected_description = f"Connection updated: custom connection '{saas_example_connection_config.key}'"
         assert description == expected_description
 
 
@@ -397,7 +397,7 @@ class TestGenerateConnectionSecretsEventDetails:
         assert event_details["secrets"]["api_key"] == "**********"
         assert event_details["secrets"]["domain"] == "**********"
 
-        expected_description = f"Connection secrets updated: custom connector '{saas_example_connection_config.key}' - api_key, domain"
+        expected_description = f"Connection secrets updated: custom connection '{saas_example_connection_config.key}' - api_key, domain"
         assert description == expected_description
 
     def test_generate_connection_secrets_event_details_empty_secrets(

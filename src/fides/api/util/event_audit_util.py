@@ -138,10 +138,7 @@ def generate_connection_audit_event_details(
     connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
     connector_type = _get_saas_connector_type(connection_config)
 
-    if connector_type:
-        description = f"Connection {operation_type}: {connector_type} connector '{connection_config.key}'"
-    else:
-        description = f"Connection {operation_type}: {connection_type} connection '{connection_config.key}'"
+    description = f"Connection {operation_type}: {connector_type if connector_type else connection_type} connection '{connection_config.key}'"
 
     return event_details, description
 
@@ -204,7 +201,7 @@ def generate_connection_secrets_event_details(
     secret_names = ", ".join(secrets_modified) if secrets_modified else "secrets"
 
     if connector_type:
-        description = f"Connection secrets {operation_type}: {connector_type} connector '{connection_config.key}' - {secret_names}"
+        description = f"Connection secrets {operation_type}: {connector_type} connection '{connection_config.key}' - {secret_names}"
     else:
         description = f"Connection secrets {operation_type}: {connection_type} connection '{connection_config.key}' - {secret_names}"
 
