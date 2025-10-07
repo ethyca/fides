@@ -127,7 +127,7 @@ class ConnectionService:
             )
         return connection_config
 
-    def _create_connection_audit_event(
+    def create_connection_audit_event(
         self,
         event_type: EventAuditType,
         connection_config: ConnectionConfig,
@@ -158,7 +158,7 @@ class ConnectionService:
                 f"{type(e).__name__}: {str(e)}"
             )
 
-    def _create_secrets_audit_event(
+    def create_secrets_audit_event(
         self,
         event_type: EventAuditType,
         connection_config: ConnectionConfig,
@@ -286,7 +286,7 @@ class ConnectionService:
         connection_config.save(db=self.db)
 
         # Create audit event for secrets update
-        self._create_secrets_audit_event(
+        self.create_secrets_audit_event(
             EventAuditType.connection_secrets_updated,
             connection_config,
             unvalidated_secrets,  # type: ignore[arg-type]
@@ -303,7 +303,7 @@ class ConnectionService:
         """Delete a connection configuration and create audit event."""
         connection_config = self.get_connection_config(connection_key)
 
-        self._create_connection_audit_event(
+        self.create_connection_audit_event(
             EventAuditType.connection_deleted,
             connection_config,
         )
@@ -370,11 +370,11 @@ class ConnectionService:
         )
 
         # Create audit events for connection and secrets creation
-        self._create_connection_audit_event(
+        self.create_connection_audit_event(
             EventAuditType.connection_created,
             connection_config,
         )
-        self._create_secrets_audit_event(
+        self.create_secrets_audit_event(
             EventAuditType.connection_secrets_created,
             connection_config,
             template_values.secrets,  # type: ignore[arg-type]
@@ -459,11 +459,11 @@ class ConnectionService:
         connection_config.save(db=self.db)
 
         # Create audit events for connection and secrets creation
-        self._create_connection_audit_event(
+        self.create_connection_audit_event(
             EventAuditType.connection_created,
             connection_config,
         )
-        self._create_secrets_audit_event(
+        self.create_secrets_audit_event(
             EventAuditType.connection_secrets_created,
             connection_config,
             template_values.secrets,  # type: ignore[arg-type]
@@ -525,7 +525,7 @@ class ConnectionService:
                 if existing_connection_config
                 else EventAuditType.connection_created
             )
-            self._create_connection_audit_event(
+            self.create_connection_audit_event(
                 connection_event_type,
                 connection_config,
                 changed_fields=changed_fields,
@@ -538,7 +538,7 @@ class ConnectionService:
                 if existing_connection_config
                 else EventAuditType.connection_secrets_created
             )
-            self._create_secrets_audit_event(
+            self.create_secrets_audit_event(
                 secrets_event_type,
                 connection_config,
                 connection_config.secrets,  # type: ignore[arg-type]
@@ -590,7 +590,7 @@ class ConnectionService:
         )
 
         # Create audit event for SaaS instance update
-        self._create_connection_audit_event(
+        self.create_connection_audit_event(
             EventAuditType.connection_updated,
             connection_config,
             changed_fields={"saas_config"},

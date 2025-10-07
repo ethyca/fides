@@ -6,10 +6,18 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectionNotFoundException
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connection_oauth_credentials import OAuthConfig, OAuthGrantType
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.event_audit import EventAuditType
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
+)
+from fides.api.schemas.connection_configuration.connection_oauth_config import (
+    OAuthConfigSchema,
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
@@ -374,3 +382,153 @@ class TestConnectionService:
         assert "connection_type" not in config_changes
         assert "access" not in config_changes
         assert "saas_config" not in config_changes
+
+    def test_oauth_config_audit_event_creation(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+    ):
+        """Test that updating OAuth config creates an audit event for secrets."""
+
+        # Create an HTTPS connection config
+        https_connection = ConnectionConfig.create(
+            db,
+            data={
+                "key": "test_https_oauth",
+                "name": "Test HTTPS OAuth",
+                "connection_type": ConnectionType.https,
+                "access": AccessLevel.write,
+                "secrets": {"url": "https://api.example.com/webhook"},
+            },
+        )
+
+        # Create OAuth config data
+        oauth_config_data = OAuthConfigSchema(
+            grant_type="client_credentials",
+            token_url="https://api.example.com/oauth/token",
+            client_id="test_client_id",
+            client_secret="test_client_secret_123",
+            scope="webhook:write privacy:read",
+        )
+
+        # Simulate the OAuth config update (like the endpoint does)
+        https_connection.oauth_config = OAuthConfig(
+            **oauth_config_data.model_dump(mode="json")
+        )
+        https_connection.save(db=db)
+
+        # Create the audit event (like the endpoint does)
+        connection_service.create_secrets_audit_event(
+            EventAuditType.connection_secrets_updated,
+            https_connection,
+            oauth_config_data.model_dump(exclude_unset=True),
+        )
+
+        # Verify audit event was created
+        events = EventAuditService(db).get_events_for_resource(
+            "connection_config", https_connection.key
+        )
+        assert len(events) == 1
+        assert events[0].event_type == EventAuditType.connection_secrets_updated.value
+        assert events[0].resource_identifier == https_connection.key
+        assert (
+            events[0].description
+            == f"Connection secrets updated: https connection '{https_connection.key}' - grant_type, token_url, scope, client_id, client_secret"
+        )
+
+        # Verify OAuth secrets are in the audit event
+        secrets_details = events[0].event_details["secrets"]
+        assert "client_secret" in secrets_details
+        assert "client_id" in secrets_details
+        assert "token_url" in secrets_details
+        assert "grant_type" in secrets_details
+        assert "scope" in secrets_details
+
+        # Verify proper masking based on OAuth schema - only client_secret is sensitive
+        assert secrets_details["client_secret"] == "**********"  # Masked (sensitive)
+        assert (
+            secrets_details["client_id"] == "test_client_id"
+        )  # Not masked (not sensitive)
+        assert (
+            secrets_details["token_url"] == "https://api.example.com/oauth/token"
+        )  # Not masked
+        assert secrets_details["grant_type"] == "client_credentials"  # Not masked
+        assert secrets_details["scope"] == "webhook:write privacy:read"  # Not masked
+
+        # Clean up
+        https_connection.delete(db)
+
+    def test_https_connection_secrets_vs_oauth_secrets_masking(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+    ):
+        """Test that HTTPS connection secrets and OAuth secrets are masked differently."""
+
+        # Create an HTTPS connection config with OAuth
+        https_connection = ConnectionConfig.create(
+            db,
+            data={
+                "key": "test_https_mixed_secrets",
+                "name": "Test HTTPS Mixed Secrets",
+                "connection_type": ConnectionType.https,
+                "access": AccessLevel.write,
+                "secrets": {
+                    "url": "https://api.example.com/webhook",
+                    "authorization": "Bearer secret_token",
+                },
+            },
+        )
+
+        # Add OAuth config
+        oauth_config_data = OAuthConfigSchema(
+            grant_type="client_credentials",
+            token_url="https://api.example.com/oauth/token",
+            client_id="test_client_id",
+            client_secret="test_client_secret_123",
+        )
+        https_connection.oauth_config = OAuthConfig(
+            **oauth_config_data.model_dump(mode="json")
+        )
+        https_connection.save(db=db)
+
+        # Test 1: Update OAuth secrets - should use OAuth schema
+        connection_service.create_secrets_audit_event(
+            EventAuditType.connection_secrets_updated,
+            https_connection,
+            {"client_secret": "new_client_secret", "client_id": "new_client_id"},
+        )
+
+        # Test 2: Update connection secrets - should use HTTPS schema (not OAuth schema)
+        connection_service.create_secrets_audit_event(
+            EventAuditType.connection_secrets_updated,
+            https_connection,
+            {
+                "url": "https://new-api.example.com/webhook",
+                "authorization": "Bearer new_token",
+            },
+        )
+
+        # Verify both audit events were created
+        events = EventAuditService(db).get_events_for_resource(
+            "connection_config", https_connection.key
+        )
+        assert len(events) == 2
+
+        # Find OAuth secrets event and connection secrets event
+        oauth_event = next(e for e in events if "client_secret" in str(e.event_details))
+        connection_event = next(e for e in events if "url" in str(e.event_details))
+
+        # Verify OAuth secrets masking (only client_secret should be masked)
+        oauth_secrets = oauth_event.event_details["secrets"]
+        assert oauth_secrets["client_secret"] == "**********"  # Masked
+        assert oauth_secrets["client_id"] == "new_client_id"  # Not masked
+
+        # Verify connection secrets masking (should use HTTPS schema, not OAuth schema)
+        connection_secrets = connection_event.event_details["secrets"]
+        # Since there's no HTTPS connection schema, all secrets are masked for security
+        assert connection_secrets["url"] == "**********"
+        assert connection_secrets["authorization"] == "**********"
+
+        # Clean up
+        https_connection.delete(db)

@@ -5,6 +5,9 @@ from typing import Any, Dict, Optional, Tuple
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.event_audit import EventAuditType
+from fides.api.schemas.connection_configuration.connection_oauth_config import (
+    OAuthConfigSchema,
+)
 from fides.api.util.connection_type import get_connection_type_secret_schema
 from fides.api.util.masking_util import mask_sensitive_fields
 
@@ -176,9 +179,25 @@ def generate_connection_secrets_event_details(
 
     # Get the secret schema for this connection type
     try:
-        secret_schema = get_connection_type_secret_schema(
-            connection_type=connection_type
-        )
+        secret_schema = None
+
+        # For HTTPS connections with OAuth config, check if we should use OAuth schema
+        if connection_type == "https" and connection_config.oauth_config:
+            # Get OAuth fields dynamically from the schema
+            oauth_schema = OAuthConfigSchema.model_json_schema()
+            oauth_fields = set(oauth_schema.get("properties", {}).keys())
+            secrets_keys = set(secrets_modified.keys())
+
+            # If we're updating OAuth fields, use OAuth schema
+            if secrets_keys.intersection(oauth_fields):
+                secret_schema = oauth_schema
+
+        # If we haven't set a schema yet, use the connection type's secret schema
+        if secret_schema is None:
+            secret_schema = get_connection_type_secret_schema(
+                connection_type=connection_type
+            )
+
         # Use existing masking function
         masked_secrets = mask_sensitive_fields(secrets_modified, secret_schema)
     except NoSuchConnectionTypeSecretSchemaError:

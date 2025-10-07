@@ -24,6 +24,7 @@ from starlette.status import (
 from fides.api.api import deps
 from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.event_audit import EventAuditType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -63,6 +64,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -322,6 +324,16 @@ def put_connection_oauth_config(
     )
     connection_config.save(db=db)
 
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
+
+    # Create secrets audit event for OAuth credential changes
+    connection_service.create_secrets_audit_event(
+        EventAuditType.connection_secrets_updated,
+        connection_config,
+        oauth_config.model_dump(exclude_unset=True),  # The OAuth secrets being updated
+    )
+
     msg = (
         f"OAuth2 configuration updated for ConnectionConfig with key: {connection_key}."
     )
@@ -422,6 +434,19 @@ def patch_connection_oauth_config(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid OAuth2 configuration.",
         ) from exc
+
+    # Create audit event for OAuth config update (OAuth credentials are secrets)
+    event_audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, event_audit_service)
+
+    # Create secrets audit event for OAuth credential changes
+    connection_service.create_secrets_audit_event(
+        EventAuditType.connection_secrets_updated,
+        connection_config,
+        validated_config.model_dump(
+            exclude_unset=True
+        ),  # The OAuth secrets being updated
+    )
 
     msg = (
         f"OAuth2 configuration updated for ConnectionConfig with key: {connection_key}."
