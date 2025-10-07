@@ -79,7 +79,7 @@ const digestConfigApi = baseApi.injectEndpoints({
 
     // Create digest config
     createDigestConfig: build.mutation<
-      Record<string, string>,
+      DigestConfigResponse,
       CreateDigestConfigParams
     >({
       query: ({ digest_config_type, data }) => ({
@@ -93,7 +93,7 @@ const digestConfigApi = baseApi.injectEndpoints({
 
     // Update digest config
     updateDigestConfig: build.mutation<
-      Record<string, unknown>,
+      { message: string },
       UpdateDigestConfigParams
     >({
       query: ({ config_id, digest_config_type, data }) => ({

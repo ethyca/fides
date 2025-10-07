@@ -49,8 +49,7 @@ const DigestConfigForm = ({
     useCreateDigestConfigMutation();
   const [updateDigestConfig, { isLoading: isUpdating }] =
     useUpdateDigestConfigMutation();
-  const [deleteDigestConfig, { isLoading: isDeleting }] =
-    useDeleteDigestConfigMutation();
+  const [deleteDigestConfig] = useDeleteDigestConfigMutation();
 
   const showDeleteButton =
     useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_DELETE]) &&
@@ -116,7 +115,15 @@ const DigestConfigForm = ({
         return;
       }
 
-      messageApi.success("Digest configuration updated successfully");
+      messageApi.success({
+        content: "Digest configuration updated successfully",
+        duration: 3,
+      });
+
+      // Wait a bit for the message to show before navigating
+      setTimeout(() => {
+        router.push(NOTIFICATIONS_DIGESTS_ROUTE);
+      }, 500);
     } else {
       // Create new
       const result = await createDigestConfig({
@@ -129,10 +136,16 @@ const DigestConfigForm = ({
         return;
       }
 
-      messageApi.success("Digest configuration created successfully");
-    }
+      messageApi.success({
+        content: "Digest configuration created successfully",
+        duration: 3,
+      });
 
-    router.push(NOTIFICATIONS_DIGESTS_ROUTE);
+      // Wait a bit for the message to show before navigating
+      setTimeout(() => {
+        router.push(NOTIFICATIONS_DIGESTS_ROUTE);
+      }, 500);
+    }
   };
 
   const defaultValues = initialValues || {
@@ -188,7 +201,10 @@ const DigestConfigForm = ({
           />
         </Form.Item>
 
-        {/* Hidden field to preserve messaging_service_type */}
+        {/* Hidden fields to preserve data */}
+        <Form.Item name="id" hidden>
+          <Input />
+        </Form.Item>
         <Form.Item name="messaging_service_type" hidden>
           <Input />
         </Form.Item>

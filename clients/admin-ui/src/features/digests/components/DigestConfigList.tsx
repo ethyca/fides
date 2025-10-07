@@ -49,17 +49,20 @@ const DigestConfigList = () => {
     router.push(NOTIFICATIONS_ADD_DIGEST_ROUTE);
   };
 
-  const handleToggleEnabled = async (
-    configId: string,
-    currentEnabled: boolean,
-    configName: string,
-  ) => {
+  const handleToggleEnabled = async (config: any) => {
     const result = await updateDigestConfig({
-      config_id: configId,
+      config_id: config.id,
       digest_config_type: DigestType.MANUAL_TASKS,
       data: {
-        enabled: !currentEnabled,
-      } as any, // Partial update, backend accepts partial data
+        name: config.name,
+        description: config.description,
+        digest_type: config.digest_type,
+        enabled: !config.enabled,
+        messaging_service_type: config.messaging_service_type,
+        cron_expression: config.cron_expression,
+        timezone: config.timezone,
+        config_metadata: config.config_metadata,
+      },
     });
 
     if (isErrorResult(result)) {
@@ -68,7 +71,7 @@ const DigestConfigList = () => {
     }
 
     messageApi.success(
-      `Digest "${configName}" ${!currentEnabled ? "enabled" : "disabled"} successfully`,
+      `Digest "${config.name}" ${!config.enabled ? "enabled" : "disabled"} successfully`,
     );
   };
 
@@ -155,9 +158,7 @@ const DigestConfigList = () => {
               {canUpdate && (
                 <Switch
                   checked={config.enabled}
-                  onChange={() =>
-                    handleToggleEnabled(config.id, config.enabled, config.name)
-                  }
+                  onChange={() => handleToggleEnabled(config)}
                   size="small"
                   data-testid="toggle-enabled-switch"
                 />
