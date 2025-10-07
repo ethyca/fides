@@ -6,7 +6,6 @@ import {
   AntSelect as Select,
   AntSpace as Space,
   AntSwitch as Switch,
-  AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -16,11 +15,7 @@ import { NOTIFICATIONS_DIGESTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { DigestType, MessagingMethod, ScopeRegistryEnum } from "~/types/api";
 
-import {
-  DEFAULT_CRON_EXPRESSION,
-  DEFAULT_TIMEZONE,
-  MESSAGING_METHOD_LABELS,
-} from "../constants";
+import { DEFAULT_CRON_EXPRESSION, DEFAULT_TIMEZONE } from "../constants";
 import {
   useCreateDigestConfigMutation,
   useDeleteDigestConfigMutation,
@@ -29,9 +24,6 @@ import {
 import type { DigestConfigFormValues } from "../types";
 import DigestSchedulePicker from "./DigestSchedulePicker";
 import TestEmailModal from "./TestEmailModal";
-
-const { Text } = Typography;
-const { TextArea } = Input;
 
 interface DigestConfigFormProps {
   initialValues?: DigestConfigFormValues;
@@ -87,12 +79,20 @@ const DigestConfigForm = ({
   const onSubmit = async (values: DigestConfigFormValues) => {
     const { id, ...requestData } = values;
 
+    // Ensure messaging_service_type is always set
+    // For new digests, default to EMAIL. For edits, keep existing value
+    const dataWithMessaging = {
+      ...requestData,
+      messaging_service_type:
+        requestData.messaging_service_type || MessagingMethod.EMAIL,
+    };
+
     if (isEditMode && id) {
       // Update existing
       const result = await updateDigestConfig({
         config_id: id,
         digest_config_type: DigestType.MANUAL_TASKS,
-        data: requestData,
+        data: dataWithMessaging,
       });
 
       if (isErrorResult(result)) {
@@ -105,7 +105,7 @@ const DigestConfigForm = ({
       // Create new
       const result = await createDigestConfig({
         digest_config_type: DigestType.MANUAL_TASKS,
-        data: requestData,
+        data: dataWithMessaging,
       });
 
       if (isErrorResult(result)) {
@@ -121,10 +121,9 @@ const DigestConfigForm = ({
 
   const defaultValues = initialValues || {
     name: "",
-    description: "",
     digest_type: DigestType.MANUAL_TASKS,
     enabled: true,
-    messaging_service_type: MessagingMethod.EMAIL,
+    messaging_service_type: MessagingMethod.EMAIL, // Hardcoded to EMAIL
     cron_expression: DEFAULT_CRON_EXPRESSION,
     timezone: DEFAULT_TIMEZONE, // Always UTC
     config_metadata: null,
@@ -144,43 +143,22 @@ const DigestConfigForm = ({
         onFinish={onSubmit}
         className="max-w-2xl"
       >
-        <div className="flex gap-4">
-          <Form.Item
-            label="Digest Type"
-            name="digest_type"
-            tooltip="Type of content this digest will contain"
-            className="flex-1"
-          >
-            <Select
-              disabled
-              options={[
-                {
-                  label: "Manual Tasks",
-                  value: DigestType.MANUAL_TASKS,
-                },
-              ]}
-              data-testid="select-digest-type"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Messaging Method"
-            name="messaging_service_type"
-            tooltip="How the digest will be delivered"
-            className="flex-1"
-          >
-            <Select
-              disabled
-              options={[
-                {
-                  label: MESSAGING_METHOD_LABELS[MessagingMethod.EMAIL],
-                  value: MessagingMethod.EMAIL,
-                },
-              ]}
-              data-testid="select-messaging-method"
-            />
-          </Form.Item>
-        </div>
+        <Form.Item
+          label="Digest Type"
+          name="digest_type"
+          tooltip="Type of content this digest will contain"
+        >
+          <Select
+            disabled
+            options={[
+              {
+                label: "Manual Tasks",
+                value: DigestType.MANUAL_TASKS,
+              },
+            ]}
+            data-testid="select-digest-type"
+          />
+        </Form.Item>
 
         <Form.Item
           label="Name"
@@ -194,20 +172,12 @@ const DigestConfigForm = ({
           />
         </Form.Item>
 
-        <Form.Item
-          label="Description"
-          name="description"
-          tooltip="Optional description to help identify this digest"
-        >
-          <TextArea
-            rows={3}
-            data-testid="input-description"
-            placeholder="Brief description of what this digest is for"
-          />
+        {/* Hidden field to preserve messaging_service_type */}
+        <Form.Item name="messaging_service_type" hidden>
+          <Input />
         </Form.Item>
 
         <Form.Item
-          label="Schedule"
           name="cron_expression"
           rules={[{ required: true, message: "Please configure a schedule" }]}
           tooltip="Configure when the digest should be sent"

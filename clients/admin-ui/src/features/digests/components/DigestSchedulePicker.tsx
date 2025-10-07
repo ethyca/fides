@@ -1,16 +1,13 @@
-import dayjs, { Dayjs } from "dayjs";
 import {
   AntAlert as Alert,
   AntInputNumber as InputNumber,
   AntSelect as Select,
   AntSpace as Space,
-  AntTimePicker as TimePicker,
   AntTypography as Typography,
 } from "fidesui";
 import { useEffect, useState } from "react";
 
 import {
-  DAY_OF_WEEK_LABELS,
   DayOfWeek,
   Frequency,
   generateCronExpression,
@@ -21,6 +18,10 @@ import {
 } from "../helpers/cronHelpers";
 
 const { Text } = Typography;
+
+// Hardcoded values
+const FIXED_TIME = "09:00"; // 9:00 AM UTC
+const FIXED_DAY_OF_WEEK = DayOfWeek.MONDAY;
 
 interface DigestSchedulePickerProps {
   value?: string; // Cron expression
@@ -34,20 +35,11 @@ const FREQUENCY_OPTIONS = [
   { label: "Monthly", value: Frequency.MONTHLY },
 ];
 
-const DAY_OF_WEEK_OPTIONS = Object.entries(DAY_OF_WEEK_LABELS).map(
-  ([value, label]) => ({
-    label,
-    value: parseInt(value, 10),
-  }),
-);
-
 const DigestSchedulePicker = ({
   value,
   onChange,
 }: DigestSchedulePickerProps) => {
   const [frequency, setFrequency] = useState<Frequency>(Frequency.WEEKLY);
-  const [time, setTime] = useState<Dayjs>(dayjs().hour(9).minute(0));
-  const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(DayOfWeek.MONDAY);
   const [dayOfMonth, setDayOfMonth] = useState<number>(1);
   const [showCustomCronWarning, setShowCustomCronWarning] = useState(false);
 
@@ -58,11 +50,6 @@ const DigestSchedulePicker = ({
       if (parsed) {
         setShowCustomCronWarning(false);
         setFrequency(parsed.frequency);
-        const [hour, minute] = parsed.time.split(":").map(Number);
-        setTime(dayjs().hour(hour).minute(minute));
-        if (parsed.dayOfWeek !== undefined) {
-          setDayOfWeek(parsed.dayOfWeek);
-        }
         if (parsed.dayOfMonth !== undefined) {
           setDayOfMonth(parsed.dayOfMonth);
         }
@@ -77,8 +64,8 @@ const DigestSchedulePicker = ({
   useEffect(() => {
     const config: ScheduleConfig = {
       frequency,
-      time: time.format("HH:mm"),
-      ...(frequency === Frequency.WEEKLY && { dayOfWeek }),
+      time: FIXED_TIME,
+      ...(frequency === Frequency.WEEKLY && { dayOfWeek: FIXED_DAY_OF_WEEK }),
       ...(frequency === Frequency.MONTHLY && { dayOfMonth }),
     };
 
@@ -89,7 +76,7 @@ const DigestSchedulePicker = ({
       // Invalid configuration, don't update
       console.error("Error generating cron expression:", error);
     }
-  }, [frequency, time, dayOfWeek, dayOfMonth, onChange]);
+  }, [frequency, dayOfMonth, onChange]);
 
   const handleDayOfMonthChange = (val: number | null) => {
     if (val !== null && isValidDayOfMonth(val)) {
@@ -99,8 +86,8 @@ const DigestSchedulePicker = ({
 
   const scheduleConfig: ScheduleConfig = {
     frequency,
-    time: time.format("HH:mm"),
-    ...(frequency === Frequency.WEEKLY && { dayOfWeek }),
+    time: FIXED_TIME,
+    ...(frequency === Frequency.WEEKLY && { dayOfWeek: FIXED_DAY_OF_WEEK }),
     ...(frequency === Frequency.MONTHLY && { dayOfMonth }),
   };
 
@@ -116,49 +103,18 @@ const DigestSchedulePicker = ({
         />
       )}
 
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <Text strong className="mb-1 block">
-            Frequency
-          </Text>
-          <Select
-            value={frequency}
-            onChange={setFrequency}
-            options={FREQUENCY_OPTIONS}
-            data-testid="select-frequency"
-            className="w-full"
-          />
-        </div>
-
-        <div className="flex-1">
-          <Text strong className="mb-1 block">
-            Time (UTC)
-          </Text>
-          <TimePicker
-            value={time}
-            onChange={(val) => val && setTime(val)}
-            format="HH:mm"
-            showNow={false}
-            data-testid="time-picker"
-            className="w-full"
-          />
-        </div>
+      <div>
+        <Text strong className="mb-1 block">
+          Frequency
+        </Text>
+        <Select
+          value={frequency}
+          onChange={setFrequency}
+          options={FREQUENCY_OPTIONS}
+          data-testid="select-frequency"
+          className="w-full"
+        />
       </div>
-
-      {frequency === Frequency.WEEKLY && (
-        <div>
-          <Text strong className="mb-1 block">
-            Day of Week
-          </Text>
-          <Select
-            value={dayOfWeek}
-            onChange={setDayOfWeek}
-            options={DAY_OF_WEEK_OPTIONS}
-            data-testid="select-day-of-week"
-            className="w-full"
-          />
-        </div>
-      )}
 
       {frequency === Frequency.MONTHLY && (
         <div>

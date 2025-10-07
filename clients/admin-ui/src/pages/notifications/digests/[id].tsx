@@ -51,7 +51,6 @@ const EditDigestPage: NextPage = () => {
                 ? {
                     id: digestConfig.id,
                     name: digestConfig.name,
-                    description: digestConfig.description || "",
                     digest_type: digestConfig.digest_type,
                     enabled: digestConfig.enabled,
                     messaging_service_type: digestConfig.messaging_service_type,

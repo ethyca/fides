@@ -28,8 +28,8 @@ const NewDigestPage: NextPage = () => {
             ]}
           />
           <Text className="mb-6 block text-sm">
-            Configure a new digest to receive periodic email summaries of manual
-            tasks or privacy requests.
+            Configure a new digest to receive email summaries of manual tasks on
+            a regular schedule.
           </Text>
           <DigestConfigForm />
         </Box>
