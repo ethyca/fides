@@ -33,6 +33,8 @@ export type {
   TableProps as AntTableProps,
   TabsProps as AntTabsProps,
   TooltipProps as AntTooltipProps,
+  TreeDataNode as AntTreeDataNode,
+  TreeProps as AntTreeProps,
   UploadFile as AntUploadFile,
   GetProps,
   InputRef,
@@ -67,15 +69,19 @@ export {
   notification as AntNotification,
   Pagination as AntPagination,
   Popover as AntPopover,
+  Progress as AntProgress,
   Radio as AntRadio,
+  Result as AntResult,
   Row as AntRow,
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Spin as AntSpin,
+  Splitter as AntSplitter,
   Steps as AntSteps,
   Switch as AntSwitch,
   Tabs as AntTabs,
   TimePicker as AntTimePicker,
+  Tree as AntTree,
   TreeSelect as AntTreeSelect,
   Upload as AntUpload,
 } from "antd/lib";
@@ -121,6 +127,14 @@ export const AntLink = CustomTypography.Link;
 /* eslint-disable import/export */
 export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
+export {
+  CarryOutOutlined as AntCarryOutlined,
+  CheckOutlined as AntCheckOutlined,
+  CloseOutlined as AntCloseOutlined,
+  DownOutlined as AntDownOutlined,
+  PlusOutlined as AntPlusOutlined,
+  SyncOutlined as AntSyncOutlined,
+} from "@ant-design/icons";
 /* eslint-enable import/export */
 
 /**
@@ -137,6 +151,7 @@ export { extendTheme, theme } from "./FidesUITheme";
  * Ant Design Theme System
  */
 export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
+export { theme as antTheme } from "antd";
 
 /**
  * Custom Components

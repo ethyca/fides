@@ -186,6 +186,7 @@ markers = [
     "mssql: only runs the integration tests for sqlserver/mssql",
     "mysql: only runs the integration tests for mysql",
     "serial: marks tests that must run sequentially to avoid resource conflicts",
+    "async_dsr: marks tests related to async DSR functionality",
     "integration",
     "integration_external",
     "integration_mysql",

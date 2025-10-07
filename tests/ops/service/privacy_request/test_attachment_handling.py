@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from fides.api.models.attachment import Attachment, AttachmentType
-from fides.api.schemas.storage.storage import StorageDetails
+from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.privacy_request.attachment_handling import (
     AttachmentData,
     get_attachments_content,
@@ -62,6 +62,7 @@ class TestGetAttachmentsContent:
         attachment.file_name = "test.txt"
         attachment.content_type = "text/plain"
         attachment.config = Mock()
+        attachment.config.type = StorageType.s3
         attachment.config.details = {StorageDetails.BUCKET.value: "test-bucket"}
         attachment.id = "test-id"
         attachment.storage_key = "test-storage"
