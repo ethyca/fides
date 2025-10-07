@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import { truncateUrl } from "~/features/common/utils";
 import {
   ConsentBreakdown,
   ConsentStatus,
@@ -107,11 +108,21 @@ export const useConsentBreakdownTable = ({
         title: "Page",
         dataIndex: ConsentBreakdownColumnKeys.PAGE,
         key: ConsentBreakdownColumnKeys.PAGE,
-        render: (page: string) => (
-          <Link ellipsis href={page} target="_blank" rel="noopener noreferrer">
-            {page}
-          </Link>
-        ),
+        render: (page: string) => {
+          const truncatedPage = truncateUrl(page, 50);
+          return (
+            <Tooltip title={page}>
+              <Link
+                ellipsis
+                href={page}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {truncatedPage}
+              </Link>
+            </Tooltip>
+          );
+        },
         minWidth: 100,
       },
       {

@@ -207,3 +207,72 @@ export const buildArrayQueryParams = (
 
   return urlParams;
 };
+
+/**
+ * Truncates a URL by removing protocol and www., and shortening paths when needed.
+ *
+ * Behavior:
+ * - Always removes protocol (http://, https://, etc.) and www. subdomain
+ * - If the cleaned URL is within limit: returns as-is
+ * - If the cleaned URL exceeds limit and has a path: returns domain/.../last-segment
+ * - If the domain alone exceeds limit: returns just the domain
+ *
+ * Note: This function does NOT guarantee the result won't exceed the limit, especially
+ * when the last path segment or domain itself is long. Always use Typography ellipsis
+ * or similar UI truncation in the rendering layer.
+ *
+ * @param url - The URL to truncate
+ * @param limit - Target maximum character count (not strictly enforced)
+ * @returns Truncated URL with complete path segments only
+ *
+ * @example
+ * truncateUrl('https://www.example.com/path/to/page', 30);
+ * // returns 'example.com/.../page'
+ *
+ * @example
+ * truncateUrl('https://example.com/very-long-segment-name-that-exceeds-limit', 20);
+ * // returns 'example.com/.../very-long-segment-name-that-exceeds-limit' (exceeds limit)
+ */
+export const truncateUrl = (url: string, limit: number): string => {
+  // Remove protocol (http://, https://, etc.)
+  let cleaned = url.replace(/^[a-z]+:\/\//i, "");
+
+  // Remove www. if it's at the start
+  cleaned = cleaned.replace(/^www\./i, "");
+
+  // If already within limit, return as is
+  if (cleaned.length <= limit) {
+    return cleaned;
+  }
+
+  // Split into domain and path
+  const firstSlashIndex = cleaned.indexOf("/");
+
+  // If no path, just return the domain (might be truncated elsewhere if needed)
+  if (firstSlashIndex === -1) {
+    return cleaned;
+  }
+
+  const domain = cleaned.substring(0, firstSlashIndex);
+  const path = cleaned.substring(firstSlashIndex);
+
+  // If domain itself exceeds limit, return just the domain
+  if (domain.length >= limit) {
+    return domain;
+  }
+
+  // Get the last path segment
+  const pathSegments = path.split("/").filter((segment) => segment.length > 0);
+
+  if (pathSegments.length === 0) {
+    return domain;
+  }
+
+  const lastSegment = pathSegments[pathSegments.length - 1];
+  const ellipsis = "/...";
+
+  // domain + ellipsis + last segment
+  const result = `${domain}${ellipsis}/${lastSegment}`;
+
+  return result;
+};
