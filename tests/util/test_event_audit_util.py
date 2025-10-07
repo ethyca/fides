@@ -472,27 +472,3 @@ class TestGenerateConnectionSecretsEventDetails:
 
         expected_description = f"Connection secrets created: postgres connection '{connection_config.key}' - password"
         assert description == expected_description
-
-    def test_generate_connection_secrets_event_details_deleted_operation(
-        self, connection_config
-    ):
-        """Test generating secrets event details for secrets deletion."""
-        secrets_modified = {"password": "old_password", "host": "old_host"}
-
-        event_details, description = generate_connection_secrets_event_details(
-            event_type=EventAuditType.connection_secrets_deleted,
-            connection_config=connection_config,
-            secrets_modified=secrets_modified,
-        )
-
-        assert "secrets" in event_details
-        assert event_details["secrets"]["password"] == "**********"
-        assert (
-            event_details["secrets"]["host"] == "old_host"
-        )  # host is not sensitive in postgres schema
-
-        expected_description = (
-            f"Connection secrets deleted: postgres connection '{connection_config.key}' - "
-            "password, host"
-        )
-        assert description == expected_description

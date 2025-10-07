@@ -39,7 +39,6 @@ class EventAuditType(str, EnumType):
     # Connection secrets operations
     connection_secrets_created = "connection.secrets.created"
     connection_secrets_updated = "connection.secrets.updated"
-    connection_secrets_deleted = "connection.secrets.deleted"
 
     # Digest
     digest_execution_started = "digest.execution.started"

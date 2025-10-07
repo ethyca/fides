@@ -302,20 +302,11 @@ class ConnectionService:
         """Delete a connection configuration and create audit event."""
         connection_config = self.get_connection_config(connection_key)
 
-        # Create audit event before deletion
         self._create_connection_audit_event(
             EventAuditType.connection_deleted,
             connection_config,
         )
 
-        if connection_config.secrets:
-            self._create_secrets_audit_event(
-                EventAuditType.connection_secrets_deleted,
-                connection_config,
-                connection_config.secrets,  # type: ignore[arg-type]
-            )
-
-        # Perform the actual deletion
         connection_config.delete(self.db)
 
     def instantiate_connection(
