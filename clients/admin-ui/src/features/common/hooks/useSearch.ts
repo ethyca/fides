@@ -1,5 +1,5 @@
 import { parseAsString, useQueryStates } from "nuqs";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { SearchConfig, SearchQueryParams, SearchState } from "../search";
 
@@ -11,11 +11,11 @@ const createSearchParsers = () => ({
 });
 
 /**
- * Custom hook for managing search state with URL synchronization
+ * Custom hook for managing search state with optional URL synchronization
  *
- * This hook manages search state (search query) and
- * synchronizes it with URL query parameters using NuQS. The URL query parameters
- * are the single source of truth for search state.
+ * This hook manages search state (search query) and can optionally
+ * synchronize it with URL query parameters using NuQS. When URL sync is disabled,
+ * it uses React state for in-memory state management.
  *
  * Can be used standalone for any searchable component (not just tables) or
  * consumed by table state management hooks.
@@ -25,12 +25,17 @@ const createSearchParsers = () => ({
  *
  * @example
  * ```tsx
- * // Basic usage with default settings
+ * // Basic usage with default settings (URL state enabled by default)
  * const search = useSearch();
  *
  * // With custom default value
  * const search = useSearch({
  *   defaultSearchQuery: 'initial query'
+ * });
+ *
+ * // Without URL state synchronization
+ * const search = useSearch({
+ *   disableUrlState: true,
  * });
  *
  * // With state change callback
@@ -47,42 +52,70 @@ const createSearchParsers = () => ({
  * ```
  */
 export const useSearch = (config: SearchConfig = {}) => {
-  const { defaultSearchQuery, onSearchChange } = config;
+  const {
+    defaultSearchQuery,
+    onSearchChange,
+    disableUrlState = false,
+  } = config;
+
+  // React state for in-memory state management (when disableUrlState is true)
+  const [localState, setLocalState] = useState<SearchState>({
+    searchQuery: defaultSearchQuery || undefined,
+  });
 
   // Create parsers for search state
   // Note: Parsers must be stable across renders for NuQS to work properly
-  const parsers = useMemo(() => createSearchParsers(), []);
+  const parsers = useMemo(() => {
+    if (disableUrlState) {
+      return null;
+    }
+    return createSearchParsers();
+  }, [disableUrlState]);
 
-  // Use NuQS for URL state management
-  const [queryState, setQueryState] = useQueryStates(parsers, {
+  // Use NuQS for URL state management (only when disableUrlState is false)
+  const [queryState, setQueryState] = useQueryStates(parsers ?? {}, {
     history: "push",
   });
 
-  // Create current state from query state (URL is the single source of truth)
-  const currentState: SearchState = useMemo(
-    () => ({
-      searchQuery: queryState.search || defaultSearchQuery || undefined, // Convert empty string to undefined, fallback to default
-    }),
-    [queryState, defaultSearchQuery],
-  );
+  // Create current state from either query state or local state
+  const currentState: SearchState = useMemo(() => {
+    if (disableUrlState) {
+      return localState;
+    }
+    return {
+      searchQuery:
+        (queryState as { search?: string }).search ||
+        defaultSearchQuery ||
+        undefined, // Convert empty string to undefined, fallback to default
+    };
+  }, [disableUrlState, localState, queryState, defaultSearchQuery]);
 
-  // Update functions that update query state (URL is the single source of truth)
+  // Update functions that update either query state or local state
   const updateSearch = useCallback(
     (searchQuery?: string) => {
-      const updates: SearchQueryParams = {
-        search: searchQuery || null, // Use null to remove from URL when empty
-      };
-      setQueryState(updates);
+      if (disableUrlState) {
+        setLocalState({ searchQuery: searchQuery || undefined });
+      } else {
+        const updates: SearchQueryParams = {
+          search: searchQuery || null, // Use null to remove from URL when empty
+        };
+        setQueryState(updates);
+      }
     },
-    [setQueryState],
+    [disableUrlState, setQueryState],
   );
 
   const resetSearch = useCallback(() => {
-    // Reset search URL state
-    setQueryState({
-      search: null,
-    });
-  }, [setQueryState]);
+    if (disableUrlState) {
+      // Reset local state
+      setLocalState({ searchQuery: defaultSearchQuery || undefined });
+    } else {
+      // Reset search URL state
+      setQueryState({
+        search: null,
+      });
+    }
+  }, [disableUrlState, defaultSearchQuery, setQueryState]);
 
   // Call onSearchChange when state changes
   useEffect(() => {

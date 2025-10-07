@@ -28,6 +28,7 @@ from fides.api.schemas.messaging.messaging import (
     ErrorNotificationBodyParams,
     ExternalUserWelcomeBodyParams,
     FidesopsMessage,
+    ManualTaskDigestBodyParams,
     MessagingActionType,
     MessagingMethod,
     MessagingServiceDetails,
@@ -177,6 +178,7 @@ def dispatch_message(
             UserInviteBodyParams,
             ErrorNotificationBodyParams,
             ExternalUserWelcomeBodyParams,
+            ManualTaskDigestBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -352,7 +354,7 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
     return template_str
 
 
-def _build_email(  # pylint: disable=too-many-return-statements, too-many-branches
+def _build_email(  # pylint: disable=too-many-return-statements, too-many-branches, too-many-statements
     config_proxy: ConfigProxy,
     action_type: MessagingActionType,
     body_params: Any,
@@ -490,6 +492,40 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
 
         return EmailForActionType(
             subject="Welcome to our Privacy Center",
+            body=base_template.render(variables),
+            template_variables=variables,
+        )
+
+    if action_type == MessagingActionType.MANUAL_TASK_DIGEST:
+        variables = {
+            "vendor_contact_name": body_params.vendor_contact_name,
+            "organization_name": body_params.organization_name,
+            "portal_url": body_params.portal_url,
+            "imminent_task_count": body_params.imminent_task_count,
+            "upcoming_task_count": body_params.upcoming_task_count,
+            "company_logo_url": body_params.company_logo_url,
+        }
+
+        # Start with default subject
+        subject = f"Weekly DSR Summary from {body_params.organization_name}"
+
+        # If messaging template exists, extract customizable content
+        if messaging_template:
+            # Use custom subject if provided
+            if "subject" in messaging_template.content:
+                subject = _render(messaging_template.content["subject"], variables)
+
+            # Use custom body content to replace the intro text in HTML template
+            custom_body = messaging_template.content.get("body", "")
+            if custom_body.strip():
+                # Replace the default intro text with the custom body content
+                rendered_custom_body = _render(custom_body, variables)
+                variables["intro_text"] = rendered_custom_body
+
+        # Always use the HTML template
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject=subject,
             body=base_template.render(variables),
             template_variables=variables,
         )
