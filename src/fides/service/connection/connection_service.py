@@ -135,20 +135,28 @@ class ConnectionService:
         changed_fields: Optional[set] = None,
     ) -> None:
         """Create an audit event for connection operations."""
-        event_details, generated_description = generate_connection_audit_event_details(
-            event_type,
-            connection_config=connection_config,
-            description=description,
-            changed_fields=changed_fields,
-        )
-        self.event_audit_service.create_event_audit(
-            event_type=event_type,
-            status=EventAuditStatus.succeeded,
-            resource_type="connection_config",
-            resource_identifier=connection_config.key,
-            description=description or generated_description,
-            event_details=event_details,
-        )
+        try:
+            event_details, generated_description = (
+                generate_connection_audit_event_details(
+                    event_type,
+                    connection_config=connection_config,
+                    description=description,
+                    changed_fields=changed_fields,
+                )
+            )
+            self.event_audit_service.create_event_audit(
+                event_type=event_type,
+                status=EventAuditStatus.succeeded,
+                resource_type="connection_config",
+                resource_identifier=connection_config.key,
+                description=description or generated_description,
+                event_details=event_details,
+            )
+        except Exception as e:
+            logger.error(
+                f"Error creating connection audit event for connection '{connection_config.key}': "
+                f"{type(e).__name__}: {str(e)}"
+            )
 
     def _create_secrets_audit_event(
         self,
@@ -157,19 +165,25 @@ class ConnectionService:
         secrets_modified: connection_secrets_schemas,
     ) -> None:
         """Create an audit event for connection secrets operations."""
-        event_details, description = generate_connection_secrets_event_details(
-            event_type,
-            connection_config=connection_config,
-            secrets_modified=secrets_modified,  # type: ignore[arg-type]
-        )
-        self.event_audit_service.create_event_audit(
-            event_type=event_type,
-            status=EventAuditStatus.succeeded,
-            resource_type="connection_config",
-            resource_identifier=connection_config.key,
-            description=description,
-            event_details=event_details,
-        )
+        try:
+            event_details, description = generate_connection_secrets_event_details(
+                event_type,
+                connection_config=connection_config,
+                secrets_modified=secrets_modified,  # type: ignore[arg-type]
+            )
+            self.event_audit_service.create_event_audit(
+                event_type=event_type,
+                status=EventAuditStatus.succeeded,
+                resource_type="connection_config",
+                resource_identifier=connection_config.key,
+                description=description,
+                event_details=event_details,
+            )
+        except Exception as e:
+            logger.error(
+                f"Error creating connection secrets audit event for connection '{connection_config.key}': "
+                f"{type(e).__name__}: {str(e)}"
+            )
 
     def validate_secrets(
         self,
