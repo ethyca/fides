@@ -116,6 +116,7 @@ export const useConsentBreakdownTable = ({
               href={page}
               target="_blank"
               rel="noopener noreferrer"
+              primaryColor
             >
               {truncatedPage}
             </Link>

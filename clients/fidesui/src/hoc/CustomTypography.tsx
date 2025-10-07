@@ -65,11 +65,14 @@ const CustomParagraph = ({
 
 const CustomLink = React.forwardRef<
   HTMLAnchorElement,
-  React.ComponentProps<typeof Typography.Link> & CustomTypographyTextProps
->(({ size, ...props }, ref) => (
+  React.ComponentProps<typeof Typography.Link> &
+    CustomTypographyTextProps & { primaryColor?: boolean }
+>(({ size, primaryColor, ...props }, ref) => (
   <Typography.Link
     ref={ref}
-    className={getTextSizeClassName(size)}
+    className={classNames(getTextSizeClassName(size), {
+      [styles.primaryColorLink]: primaryColor,
+    })}
     {...props}
   />
 ));

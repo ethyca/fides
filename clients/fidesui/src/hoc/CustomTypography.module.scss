@@ -43,3 +43,13 @@
 .h5 {
   font-size: var(--ant-font-size-heading-5) !important;
 }
+
+// Primary color link
+.primaryColorLink {
+  color: var(--fides-color-primary) !important;
+
+  &:hover {
+    color: var(--fidesui-neutral-800) !important;
+    text-decoration: underline;
+  }
+}
