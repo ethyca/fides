@@ -54,6 +54,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.event_audit_util import (
     generate_connection_audit_event_details,
     generate_connection_secrets_event_details,
+    normalize_value,
 )
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import (
@@ -470,11 +471,18 @@ class ConnectionService:
             }
             # Compare original config dict with final config dict
             changed_fields = set()
-            for field_name in config_dict.keys():
+            # Check all fields that exist in either the original or new config
+            all_field_names = set(original_config_dict.keys()) | set(config_dict.keys())
+            for field_name in all_field_names:
                 if field_name not in excluded_fields:
                     old_value = original_config_dict.get(field_name)
                     new_value = config_dict.get(field_name)
-                    if old_value != new_value:
+
+                    normalized_old = normalize_value(old_value)
+                    normalized_new = normalize_value(new_value)
+
+                    if normalized_old != normalized_new:
+                        logger.info(f"Field '{field_name}' changed: {normalized_old} -> {normalized_new}")
                         changed_fields.add(field_name)
             connection_config_changed = bool(changed_fields)
         else:

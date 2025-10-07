@@ -1,3 +1,5 @@
+from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
@@ -5,6 +7,19 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.event_audit import EventAuditType
 from fides.api.util.connection_type import get_connection_type_secret_schema
 from fides.api.util.masking_util import mask_sensitive_fields
+
+
+def normalize_value(value: Any) -> Any:
+
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, Enum):
+        return value.value
+    if (
+        isinstance(value, list) and value and hasattr(value[0], "value")
+    ):  # List of enums
+        return [item.value for item in value]
+    return value
 
 
 def _get_saas_connector_type(connection_config: ConnectionConfig) -> Optional[str]:
@@ -49,7 +64,7 @@ def _create_connection_event_details(
     Returns:
         Standardized event details dictionary
     """
-    event_details = {
+    event_details: dict[str, Any] = {
         "operation_type": operation_type,
     }
 
@@ -62,6 +77,7 @@ def _create_connection_event_details(
     }
 
     # Dynamically add connection config fields (only changed fields if specified)
+    configuration_changes: dict[str, Any] = {}
     for column in connection_config.__table__.columns:
         field_name = column.name
         if field_name not in excluded_fields:
@@ -71,28 +87,9 @@ def _create_connection_event_details(
 
             value = getattr(connection_config, field_name)
 
-            # Handle special formatting for certain field types
-            if field_name == "connection_type" and value:
-                event_details[field_name] = value.value  # type: ignore[attr-defined]
-            elif field_name == "access" and value:
-                event_details["access_level"] = value.value  # type: ignore[attr-defined]
-            elif field_name == "enabled_actions" and value:
-                event_details[field_name] = [action.value for action in value]  # type: ignore[assignment,attr-defined]
-            elif (
-                field_name
-                in ["disabled_at", "last_test_timestamp", "last_run_timestamp"]
-                and value
-            ):
-                event_details[field_name] = value.isoformat()
-            else:
-                # Use field name as-is for new fields, with special handling for key -> connection_key
-                audit_field_name = (
-                    "connection_key" if field_name == "key" else field_name
-                )
-                if field_name == "name":
-                    audit_field_name = "connection_name"
-                event_details[audit_field_name] = value
+            configuration_changes[field_name] = normalize_value(value)
 
+    event_details["configuration_changes"] = configuration_changes
     return event_details
 
 
