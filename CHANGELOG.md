@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
 - Updated calls to `/mute` endpoint so they use request body instead of query params [#6702](https://github.com/ethyca/fides/pull/6702)
 - Changed default sort order for discovered assets from compliance status to asset name [#6704](https://github.com/ethyca/fides/pull/6704)
+- Break system table actions out of overflow menu [#6696](https://github.com/ethyca/fides/pull/6696)
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
