@@ -108,7 +108,7 @@ export const useConsentBreakdownTable = ({
         dataIndex: ConsentBreakdownColumnKeys.PAGE,
         key: ConsentBreakdownColumnKeys.PAGE,
         render: (page: string) => (
-          <Link ellipsis href={page} target="_blank" rel="noopener noreferrer">
+          <Link href={page} target="_blank" rel="noopener noreferrer">
             {page}
           </Link>
         ),
