@@ -8,6 +8,9 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import ConnectionNotFoundException
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.event_audit import EventAuditType
+from fides.api.schemas.connection_configuration.connection_config import (
+    CreateConnectionConfigurationWithSecrets,
+)
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 
@@ -198,9 +201,6 @@ class TestConnectionService:
         db: Session,
     ):
         """Test that creating a new connection config creates an audit event with all fields."""
-        from fides.api.schemas.connection_configuration.connection_config import (
-            CreateConnectionConfigurationWithSecrets,
-        )
 
         # Create a new connection config
         config = CreateConnectionConfigurationWithSecrets(
@@ -253,9 +253,6 @@ class TestConnectionService:
         connection_config: ConnectionConfig,
     ):
         """Test that updating a connection config creates an audit event with only changed fields."""
-        from fides.api.schemas.connection_configuration.connection_config import (
-            CreateConnectionConfigurationWithSecrets,
-        )
 
         # Update only name and description
         config = CreateConnectionConfigurationWithSecrets(
@@ -305,9 +302,6 @@ class TestConnectionService:
         connection_config: ConnectionConfig,
     ):
         """Test that updating a connection config with no changes creates no audit event."""
-        from fides.api.schemas.connection_configuration.connection_config import (
-            CreateConnectionConfigurationWithSecrets,
-        )
 
         # Update with same values (no actual changes)
         config = CreateConnectionConfigurationWithSecrets(
@@ -338,9 +332,6 @@ class TestConnectionService:
         saas_example_connection_config: ConnectionConfig,
     ):
         """Test that updating a SaaS connection config creates an audit event with only changed fields."""
-        from fides.api.schemas.connection_configuration.connection_config import (
-            CreateConnectionConfigurationWithSecrets,
-        )
 
         # Get the SaaS connector type from the saas_config
         saas_config = saas_example_connection_config.get_saas_config()

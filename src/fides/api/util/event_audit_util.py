@@ -115,9 +115,8 @@ def generate_connection_audit_event_details(
     Args:
         event_type: Type of audit event
         connection_config: The connection configuration
-        status: Event status (default: succeeded)
-        user_id: User ID (optional, will use request context if not provided)
         description: Human-readable description
+        changed_fields: Set of field names that changed (None means include all fields)
 
     Returns:
         Created EventAudit instance
@@ -155,8 +154,7 @@ def generate_connection_secrets_event_details(
         event_type: Type of audit event (should be a connection.secrets.* event)
         connection_config: The connection configuration
         secrets_modified: Dict of secret field names and values that were modified
-        status: Event status (default: succeeded)
-        user_id: User ID (optional, will use request context if not provided)
+        changed_fields: Set of field names that changed (None means include all fields)
         description: Human-readable description
 
     Returns:
