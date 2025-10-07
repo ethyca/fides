@@ -7,11 +7,9 @@ import {
   AntSpace as Space,
   AntTag as Tag,
   AntTypography as Typography,
-  WarningIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
 
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { NOTIFICATIONS_ADD_DIGEST_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -34,13 +32,7 @@ const DigestConfigList = () => {
     setPageSize,
     setSearchQuery,
     handleEdit,
-    handleDeleteClick,
-    deleteModalOpen,
-    configToDelete,
-    confirmDelete,
-    cancelDelete,
     canUpdate,
-    canDelete,
   } = useDigestConfigList();
 
   const canCreate = useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_CREATE]);
@@ -90,30 +82,21 @@ const DigestConfigList = () => {
         renderItem={(config) => (
           <List.Item
             key={config.id}
-            actions={[
-              canUpdate && (
-                <Button
-                  key="edit"
-                  type="link"
-                  onClick={() => handleEdit(config)}
-                  data-testid="edit-list-btn"
-                  className="px-1"
-                >
-                  Edit
-                </Button>
-              ),
-              canDelete && (
-                <Button
-                  key="delete"
-                  type="link"
-                  onClick={() => handleDeleteClick(config)}
-                  data-testid="delete-list-btn"
-                  className="px-1"
-                >
-                  Delete
-                </Button>
-              ),
-            ].filter(Boolean)}
+            actions={
+              canUpdate
+                ? [
+                    <Button
+                      key="edit"
+                      type="link"
+                      onClick={() => handleEdit(config)}
+                      data-testid="edit-list-btn"
+                      className="px-1"
+                    >
+                      Edit
+                    </Button>,
+                  ]
+                : []
+            }
           >
             <List.Item.Meta
               title={
@@ -155,23 +138,6 @@ const DigestConfigList = () => {
           />
         </Flex>
       )}
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={cancelDelete}
-        onConfirm={confirmDelete}
-        title="Delete digest configuration"
-        message={
-          <span className="text-gray-500">
-            Are you sure you want to delete the digest &quot;
-            {configToDelete?.name}&quot;? This action cannot be undone.
-          </span>
-        }
-        continueButtonText="Delete"
-        isCentered
-        icon={<WarningIcon />}
-      />
     </div>
   );
 };

@@ -6,11 +6,13 @@ import {
   AntSelect as Select,
   AntSpace as Space,
   AntSwitch as Switch,
+  WarningIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { NOTIFICATIONS_DIGESTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { DigestType, MessagingMethod, ScopeRegistryEnum } from "~/types/api";
@@ -38,6 +40,7 @@ const DigestConfigForm = ({
   const router = useRouter();
   const [messageApi, messageContext] = message.useMessage();
   const [testEmailModalOpen, setTestEmailModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [timezone, setTimezone] = useState<string>(
     initialValues?.timezone || DEFAULT_TIMEZONE,
   );
@@ -55,7 +58,11 @@ const DigestConfigForm = ({
 
   const isEditMode = !!initialValues?.id;
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
     if (!initialValues?.id) {
       return;
     }
@@ -67,6 +74,7 @@ const DigestConfigForm = ({
 
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
+      setDeleteModalOpen(false);
       return;
     }
 
@@ -77,6 +85,10 @@ const DigestConfigForm = ({
         router.push(NOTIFICATIONS_DIGESTS_ROUTE);
       },
     );
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
   };
 
   const onSubmit = async (values: DigestConfigFormValues) => {
@@ -230,8 +242,7 @@ const DigestConfigForm = ({
               {showDeleteButton && (
                 <Button
                   danger
-                  onClick={handleDelete}
-                  loading={isDeleting}
+                  onClick={handleDeleteClick}
                   data-testid="delete-btn"
                 >
                   Delete
@@ -250,6 +261,23 @@ const DigestConfigForm = ({
           digestType={DigestType.MANUAL_TASKS}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete digest configuration"
+        message={
+          <span className="text-gray-500">
+            Are you sure you want to delete the digest &quot;
+            {initialValues?.name}&quot;? This action cannot be undone.
+          </span>
+        }
+        continueButtonText="Delete"
+        isCentered
+        icon={<WarningIcon />}
+      />
     </>
   );
 };
