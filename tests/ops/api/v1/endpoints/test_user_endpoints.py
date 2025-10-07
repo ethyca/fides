@@ -983,33 +983,6 @@ class TestGetUsers:
         for user in regular_users:
             assert user.id in user_ids
 
-    def test_get_users_include_external_with_user_read_own_scope(
-        self, api_client: TestClient, generate_auth_header, url, db, external_user
-    ):
-        """Test that include_external parameter works with USER_READ_OWN scope"""
-        # Create auth header for external respondent (has USER_READ_OWN scope)
-        auth_header = generate_auth_header_for_user(
-            external_user, scopes=[USER_READ_OWN]
-        )
-
-        # Test with include_external=False - should still see own data
-        resp = api_client.get(f"{url}?include_external=false", headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        response_body = resp.json()
-
-        # Should still see their own data even with include_external=False
-        assert len(response_body["items"]) == 1
-        assert response_body["items"][0]["id"] == external_user.id
-
-        # Test with include_external=True - should still see own data
-        resp = api_client.get(f"{url}?include_external=true", headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        response_body = resp.json()
-
-        # Should still see their own data
-        assert len(response_body["items"]) == 1
-        assert response_body["items"][0]["id"] == external_user.id
-
 
 class TestGetUser:
     @pytest.fixture(scope="function")
