@@ -280,6 +280,7 @@ class ConnectionService:
             connection_config.authorized
             and connection_config.connection_type == ConnectionType.saas  # type: ignore[attr-defined]
         ):
+            # when secrets are updated for an oauth connection the access token is removed since it needs reauthorization
             del connection_config.secrets["access_token"]
 
         connection_config.save(db=self.db)
