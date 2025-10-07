@@ -7,6 +7,32 @@ from fides.api.util.connection_type import get_connection_type_secret_schema
 from fides.api.util.masking_util import mask_sensitive_fields
 
 
+def _get_saas_connector_type(connection_config: ConnectionConfig) -> Optional[str]:
+    """
+    Helper function to extract SaaS connector type from connection config.
+
+    Args:
+        connection_config: The connection configuration
+
+    Returns:
+        SaaS connector type if available, None otherwise
+    """
+    connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
+    if connection_type == "saas" and connection_config.saas_config:
+        try:
+            saas_config = connection_config.get_saas_config()
+            if saas_config:
+                return saas_config.type
+        except Exception:
+            # If SaaS config is invalid, try to get type directly from raw config
+            if (
+                isinstance(connection_config.saas_config, dict)
+                and "type" in connection_config.saas_config
+            ):
+                return connection_config.saas_config["type"]
+    return None
+
+
 def _create_connection_event_details(
     connection_config: ConnectionConfig,
     operation_type: str,
@@ -103,11 +129,7 @@ def generate_connection_audit_event_details(
 
     # Generate description if not provided
     connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
-    connector_type = None
-    if connection_type == "saas" and connection_config.saas_config:
-        saas_config = connection_config.get_saas_config()
-        if saas_config:
-            connector_type = saas_config.type
+    connector_type = _get_saas_connector_type(connection_config)
 
     if connector_type:
         description = f"Connection {operation_type}: {connector_type} connector '{connection_config.key}'"
@@ -167,35 +189,12 @@ def generate_connection_secrets_event_details(
     }
 
     # Add SaaS connector type if applicable
-    if connection_type == "saas" and connection_config.saas_config:
-        try:
-            saas_config = connection_config.get_saas_config()
-            if saas_config:
-                event_details["saas_connector_type"] = saas_config.type
-        except Exception:
-            # If SaaS config is invalid, try to get type directly from raw config
-            if (
-                isinstance(connection_config.saas_config, dict)
-                and "type" in connection_config.saas_config
-            ):
-                event_details["saas_connector_type"] = connection_config.saas_config[
-                    "type"
-                ]
+    connector_type = _get_saas_connector_type(connection_config)
+    if connector_type:
+        event_details["saas_connector_type"] = connector_type
 
     # Generate description
     secret_names = ", ".join(secrets_modified) if secrets_modified else "secrets"
-    connector_type = None
-    if connection_type == "saas" and connection_config.saas_config:
-        try:
-            saas_config = connection_config.get_saas_config()
-            if saas_config:
-                connector_type = saas_config.type
-        except Exception:
-            if (
-                isinstance(connection_config.saas_config, dict)
-                and "type" in connection_config.saas_config
-            ):
-                connector_type = connection_config.saas_config["type"]
 
     if connector_type:
         description = f"Connection secrets {operation_type}: {connector_type} connector '{connection_config.key}' - {secret_names}"
