@@ -263,6 +263,7 @@ export const truncateUrl = (url: string, limit: number): string => {
     const lastSegment = segments[segments.length - 1];
     return `${hostname}/.../${lastSegment}`;
   } catch (error) {
+    // As fallback, return the original URL and log the error
     // eslint-disable-next-line no-console
     console.error("Failed to parse URL in truncateUrl:", url, error);
     return url;
