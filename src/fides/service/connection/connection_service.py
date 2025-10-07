@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Set, Tuple
 
 from fideslang.models import System
 from fideslang.validation import FidesKey
@@ -67,6 +67,49 @@ from fides.service.event_audit_service import EventAuditService
 
 class ConnectorTemplateNotFound(Exception):
     """Raised when a connector template is not found"""
+
+
+def _detect_connection_config_changes(
+    original_config_dict: Dict[str, Any], new_config_dict: Dict[str, Any]
+) -> Set[str]:
+    """
+    Detect which fields have changed between two connection configuration dictionaries.
+
+    Args:
+        original_config_dict: The original configuration dictionary
+        new_config_dict: The new configuration dictionary
+
+    Returns:
+        Set of field names that have changed
+    """
+    # Define fields to exclude from comparison
+    excluded_fields = {
+        "id",
+        "created_at",
+        "updated_at",
+        "secrets",
+        "last_test_timestamp",
+        "last_test_succeeded",
+        "last_run_timestamp",
+    }
+
+    changed_fields = set()
+    # Check all fields that exist in either the original or new config
+    all_field_names = set(original_config_dict.keys()) | set(new_config_dict.keys())
+
+    for field_name in all_field_names:
+        if field_name not in excluded_fields:
+            old_value = original_config_dict.get(field_name)
+            new_value = new_config_dict.get(field_name)
+
+            # Normalize values for comparison (handle enum objects vs strings, None vs empty strings)
+            normalized_old = normalize_value(old_value)
+            normalized_new = normalize_value(new_value)
+
+            if normalized_old != normalized_new:
+                changed_fields.add(field_name)
+
+    return changed_fields
 
 
 class ConnectionService:
@@ -458,30 +501,10 @@ class ConnectionService:
         connection_config_changed = False
 
         if original_config_dict:
-            # Define fields to exclude from comparison
-            excluded_fields = {
-                "id",
-                "created_at",
-                "updated_at",
-                "secrets",
-                "last_test_timestamp",
-                "last_test_succeeded",
-                "last_run_timestamp"
-            }
-            # Compare original config dict with final config dict
-            changed_fields = set()
-            # Check all fields that exist in either the original or new config
-            all_field_names = set(original_config_dict.keys()) | set(config_dict.keys())
-            for field_name in all_field_names:
-                if field_name not in excluded_fields:
-                    old_value = original_config_dict.get(field_name)
-                    new_value = config_dict.get(field_name)
-
-                    normalized_old = normalize_value(old_value)
-                    normalized_new = normalize_value(new_value)
-
-                    if normalized_old != normalized_new:
-                        changed_fields.add(field_name)
+            # Detect which fields have changed
+            changed_fields = _detect_connection_config_changes(
+                original_config_dict, config_dict
+            )
             connection_config_changed = bool(changed_fields)
         else:
             # For new connections, always create audit event (changed_fields=None means include all)
