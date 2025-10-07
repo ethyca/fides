@@ -270,10 +270,11 @@ const DigestConfigForm = ({
       </Form>
 
       {/* Test Email Modal */}
-      {isEditMode && (
+      {isEditMode && initialValues?.id && (
         <TestEmailModal
           isOpen={testEmailModalOpen}
           onClose={() => setTestEmailModalOpen(false)}
+          digestConfigId={initialValues.id}
           digestType={DigestType.MANUAL_TASKS}
         />
       )}

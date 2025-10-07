@@ -15,12 +15,14 @@ import { useTestDigestConfigMutation } from "../digest-config.slice";
 interface TestEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
+  digestConfigId: string;
   digestType: DigestType;
 }
 
 const TestEmailModal = ({
   isOpen,
   onClose,
+  digestConfigId,
   digestType,
 }: TestEmailModalProps) => {
   const [form] = Form.useForm<{ email: string }>();
@@ -29,6 +31,7 @@ const TestEmailModal = ({
 
   const handleSubmit = async (values: { email: string }) => {
     const result = await testDigestConfig({
+      digest_config_id: digestConfigId,
       digest_config_type: digestType,
       test_email: values.email,
     });

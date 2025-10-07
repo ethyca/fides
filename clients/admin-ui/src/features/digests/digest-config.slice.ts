@@ -41,6 +41,7 @@ interface DeleteDigestConfigParams {
 }
 
 interface TestDigestConfigParams {
+  digest_config_id: string;
   digest_config_type: DigestType;
   test_email: string;
 }
@@ -120,10 +121,10 @@ const digestConfigApi = baseApi.injectEndpoints({
       Record<string, unknown>,
       TestDigestConfigParams
     >({
-      query: ({ digest_config_type, test_email }) => ({
+      query: ({ digest_config_id, digest_config_type, test_email }) => ({
         url: "plus/digest-config/test",
         method: "POST",
-        params: { digest_config_type, test_email },
+        params: { digest_config_id, digest_config_type, test_email },
       }),
     }),
   }),
