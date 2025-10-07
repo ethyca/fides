@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed custom fields on the system data use form being nonfunctional [#6657](https://github.com/ethyca/fides/pull/6657)
 - Fixed expanded categories of consent table cells auto-collapsing in Action Center when adding new values [#6690](https://github.com/ethyca/fides/pull/6690)
 - Fixed an issue where adding a category of consent moved the item off-page in Action Center [#6704](https://github.com/ethyca/fides/pull/6704)
+- Fixed API routes to work correctly with or without trailing slashes when using `add_api_route()` [#6709](https://github.com/ethyca/fides/pull/6709)
 
 ## [2.71.1](https://github.com/ethyca/fides/compare/2.71.0...2.71.1)
 
