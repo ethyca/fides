@@ -323,4 +323,166 @@ describe("useSearch", () => {
     expect(typeof result.current.searchProps.onChange).toBe("function");
     expect(typeof result.current.searchProps.onClear).toBe("function");
   });
+
+  describe("with disableUrlState: true", () => {
+    it("initializes with default values without using URL state", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.searchQuery).toBeUndefined();
+      expect(typeof result.current.updateSearch).toBe("function");
+      expect(typeof result.current.resetSearch).toBe("function");
+    });
+
+    it("initializes with custom default value", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          defaultSearchQuery: "default query",
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.searchQuery).toBe("default query");
+    });
+
+    it("does not read from URL when disableUrlState is true", () => {
+      // Seed URL state with search value
+      nuqsTestHelpers.reset({
+        search: "url search query",
+      });
+
+      const { result } = renderHook(() =>
+        useSearch({
+          defaultSearchQuery: "default query",
+          disableUrlState: true,
+        }),
+      );
+
+      // Should use default value instead of URL value
+      expect(result.current.searchQuery).toBe("default query");
+    });
+
+    it("does not call setQueryState when updating search", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          disableUrlState: true,
+        }),
+      );
+
+      const initialCallCount = nuqsTestHelpers.getSetCalls().length;
+
+      // Update search
+      act(() => result.current.updateSearch("new search query"));
+
+      // Should not have called setQueryState
+      expect(nuqsTestHelpers.getSetCalls().length).toBe(initialCallCount);
+
+      // But internal state should be updated
+      expect(result.current.searchQuery).toBe("new search query");
+    });
+
+    it("updates search correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          disableUrlState: true,
+        }),
+      );
+
+      // Update search
+      act(() => result.current.updateSearch("test search"));
+      expect(result.current.searchQuery).toBe("test search");
+
+      // Update to different value
+      act(() => result.current.updateSearch("another search"));
+      expect(result.current.searchQuery).toBe("another search");
+
+      // Clear search
+      act(() => result.current.updateSearch(""));
+      expect(result.current.searchQuery).toBeUndefined();
+    });
+
+    it("resets search correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          defaultSearchQuery: "default query",
+          disableUrlState: true,
+        }),
+      );
+
+      // Update search
+      act(() => result.current.updateSearch("test search"));
+      expect(result.current.searchQuery).toBe("test search");
+
+      // Reset search
+      act(() => result.current.resetSearch());
+      expect(result.current.searchQuery).toBe("default query");
+    });
+
+    it("resets to undefined when no default value", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          disableUrlState: true,
+        }),
+      );
+
+      // Update search
+      act(() => result.current.updateSearch("test search"));
+      expect(result.current.searchQuery).toBe("test search");
+
+      // Reset search
+      act(() => result.current.resetSearch());
+      expect(result.current.searchQuery).toBeUndefined();
+    });
+
+    it("provides correct search props without URL state", () => {
+      const { result } = renderHook(() =>
+        useSearch({
+          defaultSearchQuery: "initial value",
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.searchProps.value).toBe("initial value");
+
+      // Test onChange
+      act(() => {
+        result.current.searchProps.onChange("new value");
+      });
+      expect(result.current.searchQuery).toBe("new value");
+
+      // Test onClear
+      act(() => {
+        result.current.searchProps.onClear();
+      });
+      expect(result.current.searchQuery).toBeUndefined();
+    });
+
+    it("calls onSearchChange callback with local state", () => {
+      const onSearchChange = jest.fn();
+
+      const { result } = renderHook(() =>
+        useSearch({
+          defaultSearchQuery: "initial query",
+          onSearchChange,
+          disableUrlState: true,
+        }),
+      );
+
+      // Should be called on initial render
+      expect(onSearchChange).toHaveBeenCalledWith({
+        searchQuery: "initial query",
+      });
+
+      // Update search
+      act(() => result.current.updateSearch("new query"));
+
+      // Should be called with updated state
+      expect(onSearchChange).toHaveBeenCalledWith({
+        searchQuery: "new query",
+      });
+    });
+  });
 });

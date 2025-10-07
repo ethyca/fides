@@ -4,6 +4,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base
@@ -92,8 +93,12 @@ class DigestTaskExecution(
         self.processed_user_ids = processed_user_ids
         self.last_checkpoint_at = func.now()
 
+        # Mark JSONB fields as modified so SQLAlchemy knows they changed
+        flag_modified(self, "processed_user_ids")
+
         if execution_state:
             self.execution_state = execution_state
+            flag_modified(self, "execution_state")
 
         self.save(db)
 
@@ -123,8 +128,13 @@ class DigestTaskExecution(
 
     def get_remaining_work(self) -> Dict[str, Any]:
         """Get information about remaining work for resumption."""
+        # Ensure processed_user_ids is always a list
+        raw_processed_user_ids = self.processed_user_ids or []
+        processed_user_ids = (
+            raw_processed_user_ids if isinstance(raw_processed_user_ids, list) else []
+        )
         return {
-            "processed_user_ids": self.processed_user_ids or [],
+            "processed_user_ids": processed_user_ids,
             "execution_state": self.execution_state or {},
             "processed_count": self.processed_recipients or 0,
             "successful_count": self.successful_communications,

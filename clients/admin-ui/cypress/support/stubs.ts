@@ -647,6 +647,32 @@ export const stubWebsiteMonitor = () => {
       fixture: "detection-discovery/activity-center/system-aggregate-results",
     },
   ).as("getSystemAggregateResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/system-aggregate-results?*resolved_system_id=*&page=1&size=1&search=&diff_status=addition",
+    {
+      items: [
+        {
+          id: "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+          name: "Google Tag Manager",
+          system_key: "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+          vendor_id: "fds.1046",
+          total_updates: 10,
+          locations: [],
+          data_uses: [],
+          domains: [],
+          consent_status: {
+            status: "alert",
+            message: "One or more assets were detected without consent",
+          },
+        },
+      ],
+      page: 1,
+      size: 1,
+      total: 1,
+      pages: 1,
+    },
+  ).as("getSystemDetails");
   cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
     fixture: "detection-discovery/activity-center/system-asset-results",
   }).as("getSystemAssetResults");

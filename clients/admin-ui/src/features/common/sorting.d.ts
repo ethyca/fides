@@ -52,6 +52,7 @@ export interface SortingConfig<TSortKey extends string = string> {
   validColumns?: readonly TSortKey[];
   /** Callback fired when sorting state changes */
   onSortingChange?: (state: SortingState<TSortKey>) => void;
+  disableUrlState?: boolean;
 }
 
 /**
