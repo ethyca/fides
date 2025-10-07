@@ -16,9 +16,9 @@ import { NOTIFICATIONS_ADD_DIGEST_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
+import { DIGEST_TYPE_LABELS, MESSAGING_METHOD_LABELS } from "../constants";
 import { useDigestConfigList } from "../hooks/useDigestConfigList";
 
-const { Text } = Typography;
 const { Search } = Input;
 
 const DigestConfigList = () => {
@@ -87,61 +87,54 @@ const DigestConfigList = () => {
             </div>
           ),
         }}
-        renderItem={(config) => {
-          const scheduleText = `${config.cron_expression} (${config.timezone})`;
-          const lastSent = config.last_sent_at
-            ? new Date(config.last_sent_at).toLocaleDateString()
-            : "Never";
-
-          return (
-            <List.Item
-              key={config.id}
-              actions={[
-                canUpdate && (
-                  <Button
-                    key="edit"
-                    type="link"
-                    onClick={() => handleEdit(config)}
-                    data-testid="edit-list-btn"
-                    className="px-1"
-                  >
-                    Edit
-                  </Button>
-                ),
-                canDelete && (
-                  <Button
-                    key="delete"
-                    type="link"
-                    onClick={() => handleDeleteClick(config)}
-                    data-testid="delete-list-btn"
-                    className="px-1"
-                  >
-                    Delete
-                  </Button>
-                ),
-              ].filter(Boolean)}
-            >
-              <List.Item.Meta
-                title={
-                  <Space>
-                    <span>{config.name}</span>
-                    {!config.enabled && <Tag color="default">Inactive</Tag>}
+        renderItem={(config) => (
+          <List.Item
+            key={config.id}
+            actions={[
+              canUpdate && (
+                <Button
+                  key="edit"
+                  type="link"
+                  onClick={() => handleEdit(config)}
+                  data-testid="edit-list-btn"
+                  className="px-1"
+                >
+                  Edit
+                </Button>
+              ),
+              canDelete && (
+                <Button
+                  key="delete"
+                  type="link"
+                  onClick={() => handleDeleteClick(config)}
+                  data-testid="delete-list-btn"
+                  className="px-1"
+                >
+                  Delete
+                </Button>
+              ),
+            ].filter(Boolean)}
+          >
+            <List.Item.Meta
+              title={
+                <Space>
+                  <span>{config.name}</span>
+                  {!config.enabled && <Tag color="default">Inactive</Tag>}
+                </Space>
+              }
+              description={
+                <Space direction="vertical" size={4}>
+                  <Space size={4}>
+                    <Tag>{DIGEST_TYPE_LABELS[config.digest_type]}</Tag>
+                    <Tag>
+                      {MESSAGING_METHOD_LABELS[config.messaging_service_type]}
+                    </Tag>
                   </Space>
-                }
-                description={
-                  <Space direction="vertical" size={4}>
-                    {config.description && (
-                      <Text type="secondary">{config.description}</Text>
-                    )}
-                    <Text type="secondary" className="text-xs">
-                      Schedule: {scheduleText} • Last sent: {lastSent}
-                    </Text>
-                  </Space>
-                }
-              />
-            </List.Item>
-          );
-        }}
+                </Space>
+              }
+            />
+          </List.Item>
+        )}
       />
 
       {/* Pagination */}
