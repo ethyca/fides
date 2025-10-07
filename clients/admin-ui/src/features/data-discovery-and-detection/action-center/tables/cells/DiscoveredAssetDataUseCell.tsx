@@ -1,5 +1,6 @@
 import { AntSpace as Space, AntTag as Tag } from "fidesui";
-import { useState } from "react";
+import { truncate } from "lodash";
+import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -16,24 +17,26 @@ const DiscoveredAssetDataUseCell = ({
   asset,
   readonly,
   columnState,
+  onChange,
 }: {
   asset: StagedResourceAPIResponse;
   readonly?: boolean;
   columnState?: ColumnState;
+  onChange?: (dataUses: string[]) => void;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(
+    columnState?.isExpanded || false,
+  );
 
   const [updateAssetsDataUseMutation] = useUpdateAssetsDataUseMutation();
   const { successAlert, errorAlert } = useAlert();
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  // eslint-disable-next-line no-nested-ternary
-  const currentDataUses = asset.user_assigned_data_uses?.length
-    ? asset.user_assigned_data_uses
-    : asset.data_uses?.length
-      ? asset.data_uses
-      : [];
+  const currentDataUses = [...(asset.preferred_data_uses || [])].sort();
+
+  const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 
   const handleAddDataUse = async (newDataUse: string) => {
     const result = await updateAssetsDataUseMutation({
@@ -45,9 +48,10 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category added to ${asset.resource_type} "${asset.name}" .`,
+        `Consent category added to ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
+      onChange?.([...currentDataUses, newDataUse]);
     }
     setIsAdding(false);
   };
@@ -62,24 +66,26 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category removed from ${asset.resource_type} "${asset.name}".`,
+        `Consent category removed from ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
+      onChange?.(currentDataUses.filter((use) => use !== useToDelete));
     }
   };
 
-  const dataUses = asset.user_assigned_data_uses?.length
-    ? asset.user_assigned_data_uses
-    : asset.data_uses;
+  useEffect(() => {
+    setIsExpanded(columnState?.isExpanded || false);
+  }, [columnState?.isExpanded]);
 
   if (readonly) {
     return (
       <TagExpandableCell
-        values={dataUses?.map((d) => ({
+        values={currentDataUses?.map((d) => ({
           label: getDataUseDisplayName(d),
           key: d,
         }))}
         columnState={columnState}
+        onStateChange={setIsExpanded}
       />
     );
   }
@@ -95,13 +101,14 @@ const DiscoveredAssetDataUseCell = ({
             aria-label="Add data use"
           />
           <TagExpandableCell
-            values={dataUses?.map((d) => ({
+            values={currentDataUses?.map((d) => ({
               label: getDataUseDisplayName(d),
               key: d,
             }))}
-            columnState={columnState}
+            columnState={{ ...columnState, isExpanded }}
             tagProps={{ closable: true, closeButtonLabel: "Remove data use" }}
             onTagClose={handleDeleteDataUse}
+            onStateChange={setIsExpanded}
           />
         </Space>
       )}
@@ -111,6 +118,7 @@ const DiscoveredAssetDataUseCell = ({
           style={{ backgroundColor: "var(--fides-color-white)" }}
         >
           <ConsentCategorySelect
+            selectedTaxonomies={currentDataUses}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
             onKeyDown={(key) => {

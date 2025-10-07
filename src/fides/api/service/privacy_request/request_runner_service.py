@@ -2,9 +2,8 @@
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
-import requests
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
@@ -22,7 +21,6 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -53,7 +51,7 @@ from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.storage.storage import StorageType
-from fides.api.service.connectors import FidesConnector, get_connector
+from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
 )
@@ -85,11 +83,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
-from fides.common.api.v1.urn_registry import (
-    PRIVACY_CENTER_DSR_PACKAGE,
-    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
-    V1_URL_PREFIX,
-)
+from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
@@ -307,8 +301,11 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 ) -> list[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: list[str] = []
-    # Remove manual webhook attachments from the list of attachments
-    # This is done because the manual webhook attachments are already included in the manual_data
+    # Remove manual webhook attachments and request task attachments from the list of attachments
+    # This is done because:
+    # - manual webhook attachments are already included in the manual_data
+    # - manual task submission attachments are already included in the manual_data
+    # - request task attachments (from async polling) are already embedded in the dataset results
     loaded_attachments = [
         attachment
         for attachment in privacy_request.attachments
@@ -317,6 +314,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
             in [
                 AttachmentReferenceType.access_manual_webhook,
                 AttachmentReferenceType.manual_task_submission,
+                AttachmentReferenceType.request_task,
             ]
             for ref in attachment.references
         )
@@ -920,78 +918,6 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
         )
         privacy_request.error_processing(db=db)
     db.close()
-
-
-def _retrieve_child_results(  # pylint: disable=R0911
-    fides_connector: Tuple[str, ConnectionConfig],
-    rule_key: str,
-    access_result: dict[str, list[Row]],
-) -> Optional[list[dict[str, Optional[list[Row]]]]]:
-    """Get child access request results to add to upload."""
-    try:
-        connector = FidesConnector(fides_connector[1])
-    except Exception as e:
-        logger.error(
-            "Error create client for child server {}: {}", fides_connector[0], e
-        )
-        return None
-
-    results = []
-
-    for key, rows in access_result.items():
-        address = CollectionAddress.from_string(key)
-        privacy_request_id = None
-        if address.dataset == fides_connector[0]:
-            if not rows:
-                logger.info("No rows found for result entry {}", key)
-                continue
-            privacy_request_id = rows[0]["id"]
-
-        if not privacy_request_id:
-            logger.error(
-                "No privacy request found for connector key {}", fides_connector[0]
-            )
-            continue
-
-        try:
-            client = connector.create_client()
-        except requests.exceptions.HTTPError as e:
-            logger.error(
-                "Error logger into to child server for privacy request {}: {}",
-                privacy_request_id,
-                e,
-            )
-            continue
-
-        try:
-            request = client.authenticated_request(
-                method="get",
-                path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
-                headers={"Authorization": f"Bearer {client.token}"},
-            )
-            response = client.session.send(request)
-        except requests.exceptions.HTTPError as e:
-            logger.error(
-                "Error retrieving data from child server for privacy request {}: {}",
-                privacy_request_id,
-                e,
-            )
-            continue
-
-        if response.status_code != 200:
-            logger.error(
-                "Error retrieving data from child server for privacy request {}: {}",
-                privacy_request_id,
-                response.json(),
-            )
-            continue
-
-        results.append(response.json())
-
-    if not results:
-        return None
-
-    return results
 
 
 def get_consent_email_connection_configs(db: Session) -> Query:

@@ -10,7 +10,6 @@ from uuid import uuid4
 import pydash
 from fideslang.models import FidesDatasetReference
 from loguru import logger
-from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.execution import ExecutionNode
@@ -47,6 +46,7 @@ from fides.api.util.saas_util import (
     ISO_8601_DATETIME,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    PRIVACY_REQUEST_OBJECT,
     REPLY_TO,
     REPLY_TO_TOKEN,
     UUID,
@@ -140,7 +140,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
         return request
 
-    def get_masking_request(self, db: Session) -> Optional[SaaSRequest]:
+    def get_masking_request(self) -> Optional[SaaSRequest]:
         """
         Returns a tuple of the preferred action and SaaSRequest to use for masking.
         An update request is preferred, but we can use a gdpr delete endpoint or
@@ -212,6 +212,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy],
         read_request: SaaSRequest,
+        privacy_request: Optional[PrivacyRequest] = None,
     ) -> List[Tuple[SaaSRequestParams, Dict[str, Any]]]:
         """
         Takes the identity and reference values from input_data and combines them
@@ -224,6 +225,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.current_request = read_request
 
         request_params = []
+
+        if privacy_request:
+            input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
+
         param_value_maps = self.generate_param_value_maps(input_data, read_request)
 
         for param_value_map in param_value_maps:
@@ -343,6 +348,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
+        privacy_request_object = input_data.get(PRIVACY_REQUEST_OBJECT)
+        if (
+            isinstance(privacy_request_object, list)
+            and len(privacy_request_object) > 0
+            and isinstance(privacy_request_object[0], dict)
+        ):
+            param_values[PRIVACY_REQUEST_OBJECT] = privacy_request_object[0]
+
         custom_privacy_request_fields = input_data.get(CUSTOM_PRIVACY_REQUEST_FIELDS)
         if (
             isinstance(custom_privacy_request_fields, list)
@@ -353,7 +366,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             ]
 
         param_values[UUID] = str(uuid4())
-        param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
+        # Use full ISO-8601 timestamp including time component (UTC, seconds precision)
+        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         param_values[FIELD_LIST] = ",".join(
             [
                 field.name
@@ -384,8 +398,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         The fields in the row are masked according to the policy and added to the request body
         if specified by the body field of the masking request.
         """
-        session = Session.object_session(request)
-        current_request: SaaSRequest = self.get_masking_request(session)  # type: ignore
+        current_request: SaaSRequest = self.get_masking_request()  # type: ignore
         param_values: Dict[str, Any] = self.generate_update_param_values(
             row, policy, request, current_request
         )
@@ -462,6 +475,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+
+        param_values[PRIVACY_REQUEST_OBJECT] = privacy_request.to_safe_dict()
 
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         param_values[UUID] = str(uuid4())
