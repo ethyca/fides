@@ -152,12 +152,14 @@ const SystemHistoryTable = ({ system }: Props) => {
             onClick={handlePrevPage}
             disabled={currentPage === 1}
             icon={<PrevArrow />}
+            aria-label="Previous page"
           />
           <Button
             size="small"
             onClick={handleNextPage}
             disabled={currentPage === totalPages || totalPages === 0}
             icon={<NextArrow />}
+            aria-label="Next page"
           />
         </Flex>
       )}

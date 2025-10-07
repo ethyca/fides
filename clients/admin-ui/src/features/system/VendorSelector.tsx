@@ -213,6 +213,7 @@ const VendorSelector = ({
             optionFilterProp="label"
             value={selected}
             placeholder="Enter system name..."
+            aria-label="Select a system"
             disabled={nameFieldLockedForGVL}
             onChange={handleChange}
             onSearch={setSearchParam}

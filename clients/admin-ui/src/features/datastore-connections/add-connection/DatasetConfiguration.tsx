@@ -181,6 +181,7 @@ const DatasetConfiguration = () => {
                     onChange={(value) => setSelectedDatasetKey(value)}
                     value={selectedDatasetKey}
                     data-testid="dataset-selector"
+                    aria-label="Select a dataset"
                   />
                   <Button
                     onClick={handleLinkDataset}
