@@ -209,7 +209,9 @@ class TestApiRouter:
         router = APIRouter(prefix="/api")
 
         # Define an endpoint that accepts query parameters
-        async def filter_endpoint(filter_id: str | None = None) -> dict[str, str | None]:
+        async def filter_endpoint(
+            filter_id: str | None = None,
+        ) -> dict[str, str | None]:
             return {"filter_id": filter_id}
 
         # Register it using add_api_route with dependencies (like filters.py does)

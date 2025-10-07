@@ -43,9 +43,6 @@ class APIRouter(FastAPIRouter):
 
         This handles direct calls to add_api_route() (not using decorators).
         """
-        # Get include_in_schema from kwargs, default to True
-        include_in_schema = kwargs.get("include_in_schema", True)
-
         # Normalize path to not have trailing slash
         if path.endswith("/"):
             path = path[:-1]
