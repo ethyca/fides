@@ -26,7 +26,7 @@ enum MonitorConfigColumnKeys {
   NAME = "name",
   PROJECTS = "projects",
   SOURCE_URL = "source_url",
-  FREQUENCY = "frequency",
+  FREQUENCY = "execution_frequency",
   MONITOR_STATUS = "monitor_status",
   REGIONS = "regions",
   STATUS = "status",
@@ -119,8 +119,7 @@ export const useMonitorConfigTable = ({
       title: "Scan frequency",
       dataIndex: MonitorConfigColumnKeys.FREQUENCY,
       key: MonitorConfigColumnKeys.FREQUENCY,
-      render: (_: unknown, record: MonitorConfig) =>
-        record.execution_frequency ?? "Not scheduled",
+      render: (frequency: string | undefined) => frequency ?? "Not scheduled",
     };
 
     const lastScanColumn = {
