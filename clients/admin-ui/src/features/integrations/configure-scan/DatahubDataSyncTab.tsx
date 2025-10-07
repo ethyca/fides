@@ -10,7 +10,7 @@ import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 const DATAHUB_COPY_1 = `If you're using DataHub for metadata management, select sync datasets to push data categories from Fides to your DataHub datasets.`;
 
-const DATAHUB_COPY_2 = `Fides assigns data categories to datasets based on your privacy taxonomy. With this integration, those categories can be added as glossary terms to matching datasets in DataHub-keeping your labeling consistent across systems. To learn more about our DataHub integration, view our docs `;
+const DATAHUB_COPY_2 = `Fides assigns data categories to datasets based on your privacy taxonomy. With this integration, those categories can be added as glossary terms to matching datasets in DataHub-keeping your labeling consistent across systems. To learn more about our DataHub integration, `;
 
 const DatahubDataSyncTab = ({
   integration,
@@ -76,7 +76,7 @@ const DatahubDataSyncTab = ({
             color="blue.500"
             textDecoration="underline"
           >
-            here
+            view our docs
           </Link>
           .
         </Text>

@@ -57,9 +57,9 @@ const ScannerError = ({
             the required permissions
           </DocsLink>{" "}
           to these credentials as part of your IAM policy. If you need more help
-          in configuring IAM policies, you can read about them{" "}
+          in configuring IAM policies, you can read about them in the{" "}
           <DocsLink href="https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html">
-            here
+            AWS documentation
           </DocsLink>
           .
         </Text>

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import {
   AntButton as Button,
   AntFlex as Flex,
