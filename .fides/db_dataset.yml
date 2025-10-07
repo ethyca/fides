@@ -1475,6 +1475,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_subdomain_cookie_deletion
       data_categories: [ system.operations ]
+    - name: cookie_deletion_based_on_host_domain
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name
@@ -1525,6 +1527,8 @@ dataset:
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
+    - name: cookie_deletion_based_on_host_domain
       data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
@@ -2437,6 +2441,8 @@ dataset:
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
+    - name: cookie_deletion_based_on_host_domain
       data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
