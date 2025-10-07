@@ -119,7 +119,8 @@ export const useMonitorConfigTable = ({
       title: "Scan frequency",
       dataIndex: MonitorConfigColumnKeys.FREQUENCY,
       key: MonitorConfigColumnKeys.FREQUENCY,
-      render: (frequency: string | undefined) => frequency ?? "Not scheduled",
+      render: (_: unknown, record: MonitorConfig) =>
+        record.execution_frequency ?? "Not scheduled",
     };
 
     const lastScanColumn = {
