@@ -616,7 +616,13 @@ describe("Action center Asset Results", () => {
             .click();
         });
 
-        cy.wait("@getConsentBreakdown");
+        cy.wait("@getConsentBreakdown").then((interception) => {
+          // Verify the request includes all compliance issue status types
+          const url = interception.request.url;
+          expect(url).to.include("status=without_consent");
+          expect(url).to.include("status=pre_consent");
+          expect(url).to.include("status=cmp_error");
+        });
 
         // Check modal is open
         cy.getByTestId("consent-breakdown-modal").should("exist");
