@@ -620,7 +620,7 @@ describe("Action center Asset Results", () => {
 
         // Check modal is open
         cy.getByTestId("consent-breakdown-modal").should("exist");
-        cy.contains("Consent discovery").should("exist");
+        cy.contains("Compliance issues").should("exist");
 
         // Check modal content
         cy.getByTestId("consent-breakdown-modal-content").within(() => {

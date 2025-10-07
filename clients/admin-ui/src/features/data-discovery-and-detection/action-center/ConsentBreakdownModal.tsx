@@ -32,7 +32,7 @@ export const ConsentBreakdownModal = ({
 
   return (
     <Modal
-      title="Consent discovery"
+      title="Compliance issues"
       width={768}
       open={isOpen}
       onCancel={onCancel}
