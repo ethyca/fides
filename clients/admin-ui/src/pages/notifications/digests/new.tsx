@@ -12,7 +12,7 @@ const { Text } = Typography;
 
 const NewDigestPage: NextPage = () => {
   return (
-    <Layout title="Create Digest">
+    <Layout title="Create digest">
       <Restrict
         scopes={[
           ScopeRegistryEnum.DIGEST_CONFIG_CREATE,
@@ -21,7 +21,7 @@ const NewDigestPage: NextPage = () => {
       >
         <Box data-testid="new-digest-config">
           <PageHeader
-            heading="Create Digest Configuration"
+            heading="Create digest"
             breadcrumbItems={[
               { title: "Digests", href: NOTIFICATIONS_DIGESTS_ROUTE },
               { title: "New" },

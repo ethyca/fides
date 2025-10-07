@@ -21,7 +21,7 @@ const EditDigestPage: NextPage = () => {
 
   if (isLoading) {
     return (
-      <Layout title="Edit Digest">
+      <Layout title="Edit digest">
         <Box className="flex justify-center py-12">
           <Spinner />
         </Box>
@@ -30,7 +30,7 @@ const EditDigestPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Edit Digest">
+    <Layout title="Edit digest">
       <Restrict
         scopes={[
           ScopeRegistryEnum.DIGEST_CONFIG_CREATE,
