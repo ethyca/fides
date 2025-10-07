@@ -46,7 +46,7 @@ const ResourceStatus: Record<
   classification_queued: { label: "Classifying", color: "blue" },
   classification_update: { label: "Classifying", color: "nectar" },
   classification_addition: { label: "In Review", color: "blue" },
-  addition: { label: "In Review", color: "blue" },
+  addition: { label: "Attention Required", color: "blue" },
   muted: { label: "Unmonitored", color: "nectar" },
   removal: { label: "Attention Required", color: "red" },
   removing: { label: "In Review", color: "nectar" },

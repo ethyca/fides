@@ -127,14 +127,23 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_SystemStagedResourcesAggregateRecord_,
       {
         key: string;
+        resolved_system_id?: string;
         diff_status?: DiffStatus[];
       } & SearchQueryParams &
         PaginationQueryParams
     >({
-      query: ({ key, page = 1, size = 20, search, diff_status }) => ({
+      query: ({
+        key,
+        resolved_system_id,
+        page = 1,
+        size = 20,
+        search,
+        diff_status,
+      }) => ({
         url: `/plus/discovery-monitor/system-aggregate-results`,
         params: {
           monitor_config_id: key,
+          resolved_system_id,
           page,
           size,
           search,
@@ -161,7 +170,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         size = 20,
         search,
         diff_status = [DiffStatus.ADDITION],
-        sort_by = [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"],
+        sort_by = [DiscoveredAssetsColumnKeys.NAME],
         sort_asc = true,
         resource_type,
         data_uses,

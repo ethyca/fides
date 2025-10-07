@@ -81,6 +81,7 @@ describe("Action center Asset Results", () => {
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
+      cy.wait("@getSystemDetails");
       cy.getByTestId("page-breadcrumb").should("contain", systemName); // little hack to make sure the systemName is available before proceeding
     });
     it("should render asset results view", () => {
@@ -389,6 +390,7 @@ describe("Action center Asset Results", () => {
       beforeEach(() => {
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
         cy.wait("@getSystemAssetResults");
+        cy.wait("@getSystemDetails");
         cy.getByTestId("page-breadcrumb").should("contain", systemName);
       });
 

@@ -10,14 +10,20 @@ import {
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { CONSENT_CATEGORIES } from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 
-const ConsentCategorySelect = ({ ...props }: TaxonomySelectProps) => {
+const ConsentCategorySelect = ({
+  selectedTaxonomies,
+  ...props
+}: TaxonomySelectProps) => {
   const { getDataUseDisplayNameProps, getDataUses } = useTaxonomies();
   const dataUses = getDataUses();
-  const consentCategories = dataUses.filter(
+  const filteredDataUses = [...dataUses]
+    .filter((use) => !selectedTaxonomies?.includes(use.fides_key))
+    .sort();
+  const consentCategories = filteredDataUses.filter(
     (use) => use.active && CONSENT_CATEGORIES.includes(use.fides_key),
   );
 
-  const options: TaxonomySelectOption[] = dataUses.map((dataUse) => {
+  const options: TaxonomySelectOption[] = filteredDataUses.map((dataUse) => {
     const { name, primaryName } = getDataUseDisplayNameProps(dataUse.fides_key);
     return {
       value: dataUse.fides_key,

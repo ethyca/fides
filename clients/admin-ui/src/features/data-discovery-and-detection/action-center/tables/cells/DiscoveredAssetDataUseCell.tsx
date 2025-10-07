@@ -34,7 +34,7 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  const currentDataUses = asset.preferred_data_uses || [];
+  const currentDataUses = [...(asset.preferred_data_uses || [])].sort();
 
   const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 
@@ -118,6 +118,7 @@ const DiscoveredAssetDataUseCell = ({
           style={{ backgroundColor: "var(--fides-color-white)" }}
         >
           <ConsentCategorySelect
+            selectedTaxonomies={currentDataUses}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
             onKeyDown={(key) => {
