@@ -6,6 +6,7 @@ import {
 import {
   ConsentStatus,
   DiffStatus,
+  MonitorConfig,
   MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
@@ -15,7 +16,11 @@ import {
   StagedResourceAPIResponse,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
+import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
+import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginationQueryParams,
   SearchQueryParams,
@@ -49,18 +54,96 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Discovery Monitor Results"],
     }),
+    getMonitorConfig: build.query<
+      MonitorConfig,
+      {
+        monitor_config_id: string;
+      }
+    >({
+      query: ({ monitor_config_id }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_id}`,
+      }),
+    }),
+    getDatastoreFilters: build.query<
+      DatastoreMonitorResourcesDynamicFilters,
+      {
+        monitor_config_id: string;
+      }
+    >({
+      query: ({ monitor_config_id }) => ({
+        url: `/plus/filters/datastore_monitor_resources/?monitor_config_id=${monitor_config_id}`,
+      }),
+    }),
+
+    getMonitorTree: build.query<
+      Page_DatastoreStagedResourceTreeAPIResponse_,
+      Partial<PaginationQueryParams> & {
+        monitor_config_id: string;
+        staged_resource_urn?: string;
+      }
+    >({
+      query: ({
+        page = 1,
+        size = 20,
+        monitor_config_id,
+        staged_resource_urn,
+      }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_id}/tree${staged_resource_urn ? `?staged_resource_urn=${staged_resource_urn}` : ""}`,
+        params: { page, size },
+      }),
+    }),
+    getMonitorFields: build.query<
+      Page_DatastoreStagedResourceAPIResponse_,
+      Partial<PaginationQueryParams> & {
+        staged_resource_urn?: Array<string>;
+        monitor_config_id: string;
+        search?: string;
+        diff_status?: Array<DiffStatus>;
+        confidence_score?: Array<ConfidenceScoreRange>;
+      }
+    >({
+      query: ({
+        page = 1,
+        size = 20,
+        monitor_config_id,
+        search,
+        diff_status,
+        confidence_score,
+        ...arrayQueryParams
+      }) => {
+        const queryParams = buildArrayQueryParams({
+          ...arrayQueryParams,
+          ...(search ? { search: [search] } : {}),
+          ...(diff_status ? { diff_status } : {}),
+          ...(confidence_score ? { confidence_score } : {}),
+        });
+        return {
+          url: `/plus/discovery-monitor/${monitor_config_id}/fields?${queryParams?.toString()}`,
+          params: { page, size },
+        };
+      },
+    }),
     getDiscoveredSystemAggregate: build.query<
       Page_SystemStagedResourcesAggregateRecord_,
       {
         key: string;
+        resolved_system_id?: string;
         diff_status?: DiffStatus[];
       } & SearchQueryParams &
         PaginationQueryParams
     >({
-      query: ({ key, page = 1, size = 20, search, diff_status }) => ({
+      query: ({
+        key,
+        resolved_system_id,
+        page = 1,
+        size = 20,
+        search,
+        diff_status,
+      }) => ({
         url: `/plus/discovery-monitor/system-aggregate-results`,
         params: {
           monitor_config_id: key,
+          resolved_system_id,
           page,
           size,
           search,
@@ -87,7 +170,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         size = 20,
         search,
         diff_status = [DiffStatus.ADDITION],
-        sort_by = [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"],
+        sort_by = [DiscoveredAssetsColumnKeys.NAME],
         sort_asc = true,
         resource_type,
         data_uses,
@@ -425,4 +508,9 @@ export const {
   useRetryMonitorTaskMutation,
   useDismissMonitorTaskMutation,
   useUndismissMonitorTaskMutation,
+  useGetMonitorTreeQuery,
+  useLazyGetMonitorTreeQuery,
+  useGetMonitorFieldsQuery,
+  useGetMonitorConfigQuery,
+  useGetDatastoreFiltersQuery,
 } = actionCenterApi;

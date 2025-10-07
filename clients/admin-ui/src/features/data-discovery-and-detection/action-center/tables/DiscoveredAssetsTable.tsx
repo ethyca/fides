@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
+  ConsentAlertInfo,
   ConsentStatus,
   DiffStatus,
   StagedResourceAPIResponse,
@@ -29,13 +30,13 @@ import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
 interface DiscoveredAssetsTableProps {
   monitorId: string;
   systemId: string;
-  onSystemName?: (name: string) => void;
+  consentStatus?: ConsentAlertInfo | null;
 }
 
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
-  onSystemName,
+  consentStatus,
 }: DiscoveredAssetsTableProps) => {
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
@@ -98,7 +99,7 @@ export const DiscoveredAssetsTable = ({
   } = useDiscoveredAssetsTable({
     monitorId,
     systemId,
-    onSystemName,
+    consentStatus,
     onShowComplianceIssueDetails: handleShowBreakdown,
   });
 
