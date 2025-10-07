@@ -38,6 +38,9 @@ const DigestConfigForm = ({
   const router = useRouter();
   const [messageApi, messageContext] = message.useMessage();
   const [testEmailModalOpen, setTestEmailModalOpen] = useState(false);
+  const [timezone, setTimezone] = useState<string>(
+    initialValues?.timezone || DEFAULT_TIMEZONE,
+  );
 
   const [createDigestConfig, { isLoading: isCreating }] =
     useCreateDigestConfigMutation();
@@ -85,6 +88,7 @@ const DigestConfigForm = ({
       ...requestData,
       messaging_service_type:
         requestData.messaging_service_type || MessagingMethod.EMAIL,
+      timezone, // Use browser timezone from state
     };
 
     if (isEditMode && id) {
@@ -182,7 +186,7 @@ const DigestConfigForm = ({
           rules={[{ required: true, message: "Please configure a schedule" }]}
           tooltip="Configure when the digest should be sent"
         >
-          <DigestSchedulePicker />
+          <DigestSchedulePicker onTimezoneChange={setTimezone} />
         </Form.Item>
 
         <Form.Item

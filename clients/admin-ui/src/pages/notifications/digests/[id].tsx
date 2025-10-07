@@ -55,7 +55,7 @@ const EditDigestPage: NextPage = () => {
                     enabled: digestConfig.enabled,
                     messaging_service_type: digestConfig.messaging_service_type,
                     cron_expression: digestConfig.cron_expression,
-                    timezone: "UTC", // Always UTC
+                    timezone: digestConfig.timezone,
                   }
                 : undefined
             }

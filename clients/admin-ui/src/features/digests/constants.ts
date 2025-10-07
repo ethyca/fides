@@ -10,8 +10,8 @@ export const MESSAGING_METHOD_LABELS: Record<MessagingMethod, string> = {
   [MessagingMethod.SMS]: "SMS",
 };
 
-export const DEFAULT_CRON_EXPRESSION = "0 9 * * 1"; // Weekly on Monday at 9 AM UTC
-export const DEFAULT_TIMEZONE = "UTC"; // All digests run in UTC timezone
+export const DEFAULT_CRON_EXPRESSION = "0 9 * * 1"; // Weekly on Monday at 9 AM
+export const DEFAULT_TIMEZONE = "UTC"; // Fallback timezone if browser timezone cannot be detected
 
 // For Phase 1, we only support manual tasks
 export const SUPPORTED_DIGEST_TYPES = [DigestType.MANUAL_TASKS];

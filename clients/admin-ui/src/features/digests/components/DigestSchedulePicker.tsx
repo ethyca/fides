@@ -1,3 +1,7 @@
+import { format } from "date-fns-tz";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import {
   AntAlert as Alert,
   AntInputNumber as InputNumber,
@@ -5,7 +9,7 @@ import {
   AntSpace as Space,
   AntTypography as Typography,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   DayOfWeek,
@@ -17,15 +21,20 @@ import {
   type ScheduleConfig,
 } from "../helpers/cronHelpers";
 
+// Extend dayjs with timezone support
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 const { Text } = Typography;
 
 // Hardcoded values
-const FIXED_TIME = "09:00"; // 9:00 AM UTC
+const FIXED_TIME = "09:00"; // 9:00 AM
 const FIXED_DAY_OF_WEEK = DayOfWeek.MONDAY;
 
 interface DigestSchedulePickerProps {
   value?: string; // Cron expression
   onChange?: (value: string) => void;
+  onTimezoneChange?: (timezone: string) => void;
 }
 
 const FREQUENCY_OPTIONS = [
@@ -38,10 +47,25 @@ const FREQUENCY_OPTIONS = [
 const DigestSchedulePicker = ({
   value,
   onChange,
+  onTimezoneChange,
 }: DigestSchedulePickerProps) => {
   const [frequency, setFrequency] = useState<Frequency>(Frequency.WEEKLY);
   const [dayOfMonth, setDayOfMonth] = useState<number>(1);
   const [showCustomCronWarning, setShowCustomCronWarning] = useState(false);
+
+  // Get browser timezone
+  const browserTimezone = dayjs.tz.guess();
+
+  // Get timezone abbreviation (e.g., "EDT", "PST", "GMT")
+  const timezoneAbbreviation = useMemo(
+    () => format(new Date(), "z", { timeZone: browserTimezone }),
+    [browserTimezone],
+  );
+
+  // Notify parent of timezone on mount and when it changes
+  useEffect(() => {
+    onTimezoneChange?.(browserTimezone);
+  }, [browserTimezone, onTimezoneChange]);
 
   // Parse incoming cron expression when value changes
   useEffect(() => {
@@ -139,7 +163,8 @@ const DigestSchedulePicker = ({
 
       <div className="rounded-md bg-gray-50 p-3">
         <Text type="secondary" className="text-xs">
-          Schedule: {getScheduleDescription(scheduleConfig)}
+          Schedule: {getScheduleDescription(scheduleConfig)}{" "}
+          {timezoneAbbreviation}
         </Text>
       </div>
     </Space>
