@@ -5,7 +5,6 @@ import {
   AntMessage as message,
   AntSelect as Select,
   AntSpace as Space,
-  AntSwitch as Switch,
   WarningIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -93,12 +92,14 @@ const DigestConfigForm = ({
   const onSubmit = async (values: DigestConfigFormValues) => {
     const { id, ...requestData } = values;
 
-    // Ensure messaging_service_type is always set
-    // For new digests, default to EMAIL. For edits, keep existing value
+    // Ensure messaging_service_type and enabled are always set
+    // For new digests, default to EMAIL and enabled=true
+    // For edits, keep existing values
     const dataWithMessaging = {
       ...requestData,
       messaging_service_type:
         requestData.messaging_service_type || MessagingMethod.EMAIL,
+      enabled: initialValues?.enabled ?? true, // Preserve original enabled value
       timezone, // Use browser timezone from state
     };
 
@@ -151,7 +152,6 @@ const DigestConfigForm = ({
   const defaultValues = initialValues || {
     name: "",
     digest_type: DigestType.MANUAL_TASKS,
-    enabled: true,
     messaging_service_type: MessagingMethod.EMAIL, // Hardcoded to EMAIL
     cron_expression: DEFAULT_CRON_EXPRESSION,
     timezone: DEFAULT_TIMEZONE, // Always UTC
@@ -217,42 +217,16 @@ const DigestConfigForm = ({
           <DigestSchedulePicker onTimezoneChange={setTimezone} />
         </Form.Item>
 
-        <Form.Item
-          label="Enabled"
-          name="enabled"
-          valuePropName="checked"
-          tooltip="Enable or disable this digest"
-        >
-          <Switch data-testid="switch-enabled" />
-        </Form.Item>
-
         {/* Form Actions */}
         <Form.Item>
           <Space className="w-full justify-between">
-            <Space>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={isCreating || isUpdating}
-                data-testid="submit-btn"
-              >
-                {isEditMode ? "Update" : "Create"}
-              </Button>
-              <Button
-                onClick={() => router.push(NOTIFICATIONS_DIGESTS_ROUTE)}
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
-            </Space>
-
             <Space>
               {isEditMode && (
                 <Button
                   onClick={() => setTestEmailModalOpen(true)}
                   data-testid="test-email-btn"
                 >
-                  Send Test Email
+                  Send test
                 </Button>
               )}
               {showDeleteButton && (
@@ -264,6 +238,23 @@ const DigestConfigForm = ({
                   Delete
                 </Button>
               )}
+            </Space>
+
+            <Space>
+              <Button
+                onClick={() => router.push(NOTIFICATIONS_DIGESTS_ROUTE)}
+                data-testid="cancel-btn"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isCreating || isUpdating}
+                data-testid="submit-btn"
+              >
+                {isEditMode ? "Update" : "Create"}
+              </Button>
             </Space>
           </Space>
         </Form.Item>
