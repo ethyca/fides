@@ -81,6 +81,11 @@ export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
 export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
 export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
 
+// Messaging providers (now part of notifications)
+export const MESSAGING_PROVIDERS_ROUTE = "/notifications/providers";
+export const MESSAGING_PROVIDERS_EDIT_ROUTE = "/notifications/providers/[key]";
+export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
+
 // Legacy routes (kept for backwards compatibility if needed)
 export const MESSAGING_ROUTE = "/messaging";
 export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
@@ -88,9 +93,6 @@ export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
 export const DIGEST_CONFIG_ROUTE = "/settings/digests";
 export const ADD_DIGEST_CONFIG_ROUTE = "/settings/digests/new";
 export const EDIT_DIGEST_CONFIG_ROUTE = "/settings/digests/[id]";
-
-export const MESSAGING_PROVIDERS_ROUTE = `/settings/messaging-providers`;
-export const MESSAGING_PROVIDERS_EDIT_ROUTE = `/settings/messaging-providers/[key]`;
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
