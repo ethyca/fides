@@ -55,7 +55,6 @@ import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActio
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
-import hasConsentComplianceIssue from "../utils/hasConsentComplianceIssue";
 import isConsentCategory from "../utils/isConsentCategory";
 import useActionCenterTabs, {
   ActionCenterTabHash,
