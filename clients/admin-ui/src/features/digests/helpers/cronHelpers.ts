@@ -190,3 +190,28 @@ export const getScheduleDescription = (config: ScheduleConfig): string => {
       return "";
   }
 };
+
+/**
+ * Gets the frequency label from a cron expression
+ * Returns "Custom" if the cron expression doesn't match our supported patterns
+ */
+export const getFrequencyLabel = (cronExpression: string): string => {
+  const parsed = parseCronExpression(cronExpression);
+
+  if (!parsed) {
+    return "Custom";
+  }
+
+  switch (parsed.frequency) {
+    case Frequency.DAILY:
+      return "Daily";
+    case Frequency.WEEKLY:
+      return "Weekly";
+    case Frequency.WEEKDAYS:
+      return "Weekdays";
+    case Frequency.MONTHLY:
+      return "Monthly";
+    default:
+      return "Custom";
+  }
+};

@@ -15,6 +15,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { DIGEST_TYPE_LABELS, MESSAGING_METHOD_LABELS } from "../constants";
+import { getFrequencyLabel } from "../helpers/cronHelpers";
 import { useDigestConfigList } from "../hooks/useDigestConfigList";
 
 const { Search } = Input;
@@ -116,6 +117,9 @@ const DigestConfigList = () => {
                 </Space>
               }
             />
+            <Typography.Text>
+              {getFrequencyLabel(config.cron_expression)}
+            </Typography.Text>
           </List.Item>
         )}
       />
