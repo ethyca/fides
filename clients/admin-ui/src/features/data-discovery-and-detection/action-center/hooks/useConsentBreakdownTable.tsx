@@ -111,16 +111,14 @@ export const useConsentBreakdownTable = ({
         render: (page: string) => {
           const truncatedPage = truncateUrl(page, 50);
           return (
-            <Tooltip title={page}>
-              <Link
-                ellipsis
-                href={page}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {truncatedPage}
-              </Link>
-            </Tooltip>
+            <Link
+              ellipsis
+              href={page}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {truncatedPage}
+            </Link>
           );
         },
         minWidth: 100,
