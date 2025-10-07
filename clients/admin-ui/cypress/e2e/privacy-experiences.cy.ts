@@ -205,6 +205,7 @@ describe("Privacy experiences", () => {
             allow_language_selection: false,
             auto_detect_language: true,
             auto_subdomain_cookie_deletion: true,
+            cookie_deletion_based_on_host_domain: true,
             allow_vendor_asset_disclosure: false,
             component: "banner_and_modal",
             disabled: true,

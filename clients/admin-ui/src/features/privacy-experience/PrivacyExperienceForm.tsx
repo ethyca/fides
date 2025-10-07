@@ -642,6 +642,13 @@ export const PrivacyExperienceForm = ({
         variant="stacked"
         tooltip="If enabled, automatically deletes cookies set on subdomains in addition to main domain where appropriate. Recommended to enable for full consent compliance."
       />
+      <CustomSwitch
+        name="cookie_deletion_based_on_host_domain"
+        id="cookie_deletion_based_on_host_domain"
+        label="Delete the cookie based on the host's domain"
+        variant="stacked"
+        tooltip="If enabled, attempts to delete cookies set on the current host domain, regardless of the cookie's configured domain. Recommended to enable for ease of consent compliance."
+      />
     </PrivacyExperienceConfigColumnLayout>
   );
 };
