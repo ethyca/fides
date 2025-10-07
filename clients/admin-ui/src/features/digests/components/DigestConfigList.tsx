@@ -3,18 +3,22 @@ import {
   AntFlex as Flex,
   AntInput as Input,
   AntList as List,
+  AntMessage as message,
   AntPagination as Pagination,
   AntSpace as Space,
+  AntSwitch as Switch,
   AntTag as Tag,
   AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { NOTIFICATIONS_ADD_DIGEST_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
-import { ScopeRegistryEnum } from "~/types/api";
+import { DigestType, ScopeRegistryEnum } from "~/types/api";
 
 import { DIGEST_TYPE_LABELS, MESSAGING_METHOD_LABELS } from "../constants";
+import { useUpdateDigestConfigMutation } from "../digest-config.slice";
 import { getFrequencyLabel } from "../helpers/cronHelpers";
 import { useDigestConfigList } from "../hooks/useDigestConfigList";
 
@@ -22,6 +26,7 @@ const { Search } = Input;
 
 const DigestConfigList = () => {
   const router = useRouter();
+  const [messageApi, messageContext] = message.useMessage();
   const {
     data,
     total,
@@ -36,14 +41,40 @@ const DigestConfigList = () => {
     canUpdate,
   } = useDigestConfigList();
 
+  const [updateDigestConfig] = useUpdateDigestConfigMutation();
+
   const canCreate = useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_CREATE]);
 
   const handleAddNew = () => {
     router.push(NOTIFICATIONS_ADD_DIGEST_ROUTE);
   };
 
+  const handleToggleEnabled = async (
+    configId: string,
+    currentEnabled: boolean,
+    configName: string,
+  ) => {
+    const result = await updateDigestConfig({
+      config_id: configId,
+      digest_config_type: DigestType.MANUAL_TASKS,
+      data: {
+        enabled: !currentEnabled,
+      } as any, // Partial update, backend accepts partial data
+    });
+
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+
+    messageApi.success(
+      `Digest "${configName}" ${!currentEnabled ? "enabled" : "disabled"} successfully`,
+    );
+  };
+
   return (
     <div>
+      {messageContext}
       {/* Header with search and add button */}
       <Flex justify="space-between" align="center" className="mb-4">
         <Search
@@ -117,9 +148,21 @@ const DigestConfigList = () => {
                 </Space>
               }
             />
-            <Typography.Text>
-              {getFrequencyLabel(config.cron_expression)}
-            </Typography.Text>
+            <Flex align="center" gap={24}>
+              <Typography.Text>
+                {getFrequencyLabel(config.cron_expression)}
+              </Typography.Text>
+              {canUpdate && (
+                <Switch
+                  checked={config.enabled}
+                  onChange={() =>
+                    handleToggleEnabled(config.id, config.enabled, config.name)
+                  }
+                  size="small"
+                  data-testid="toggle-enabled-switch"
+                />
+              )}
+            </Flex>
           </List.Item>
         )}
       />
