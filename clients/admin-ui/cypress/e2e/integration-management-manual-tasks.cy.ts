@@ -2,7 +2,6 @@ import {
   stubIntegrationManagement,
   stubManualTaskConfig,
   stubPlus,
-  stubSystemCrud,
 } from "cypress/support/stubs";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -289,7 +288,9 @@ describe("Integration Management - Manual Task Configuration", () => {
       cy.wait("@getUsers"); // Refresh users list
 
       // Verify modal closes and user is available in dropdown
-      cy.getByTestId("create-external-user-modal").should("not.be.visible");
+      cy.getByTestId("create-external-user-modal").within(() => {
+        cy.get(".ant-modal-wrap").should("not.be.visible");
+      });
     });
 
     it("should handle external user creation errors", () => {
