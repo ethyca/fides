@@ -634,6 +634,7 @@ describe("Action center Asset Results", () => {
           // Check table headers
           cy.findByRole("columnheader", { name: /Location/ }).should("exist");
           cy.findByRole("columnheader", { name: /Page/ }).should("exist");
+          cy.findByRole("columnheader", { name: /Compliance/ }).should("exist");
 
           // Check table data
           cy.getByTestId("consent-breakdown-modal-table")
@@ -645,6 +646,9 @@ describe("Action center Asset Results", () => {
                 .within(() => {
                   cy.contains("United States").should("exist");
                   cy.get("a[href='https://example.com/page1']").should("exist");
+                  cy.getByTestId("status-badge_without-consent").should(
+                    "exist",
+                  );
                 });
             });
         });
