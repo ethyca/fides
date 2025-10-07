@@ -482,7 +482,6 @@ class ConnectionService:
                     normalized_new = normalize_value(new_value)
 
                     if normalized_old != normalized_new:
-                        logger.info(f"Field '{field_name}' changed: {normalized_old} -> {normalized_new}")
                         changed_fields.add(field_name)
             connection_config_changed = bool(changed_fields)
         else:

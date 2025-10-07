@@ -23,25 +23,38 @@ class TestCreateConnectionEventDetails:
             operation_type="created",
         )
 
+        assert "configuration_changes" in result
         assert result["operation_type"] == "created"
-        assert result["connection_type"] == "postgres"
-        assert result["connection_key"] == connection_config.key
-        assert result["connection_name"] == connection_config.name
-        assert result["description"] == connection_config.description
-        assert result["access_level"] == connection_config.access.value
-        assert result["disabled"] == connection_config.disabled
-        assert result["disabled_at"] is None  # Should be None for new connection
+        assert result["configuration_changes"]["key"] == connection_config.key
+        assert result["configuration_changes"]["name"] == connection_config.name
         assert (
-            result["last_test_timestamp"] is None
+            result["configuration_changes"]["description"]
+            == connection_config.description
+        )
+        assert (
+            result["configuration_changes"]["access"] == connection_config.access.value
+        )
+        assert result["configuration_changes"]["disabled"] == connection_config.disabled
+        assert (
+            result["configuration_changes"]["disabled_at"] is None
         )  # Should be None for new connection
         assert (
-            result["last_test_succeeded"] is None
+            result["configuration_changes"]["last_test_timestamp"] is None
         )  # Should be None for new connection
-        assert result["last_run_timestamp"] is None  # Should be None for new connection
-        assert result["system_id"] == connection_config.system_id
-        assert result["enabled_actions"] is None  # Should be None if not set
-        assert "saas_connector_type" not in result
-        assert "saas_configuration" not in result
+        assert (
+            result["configuration_changes"]["last_test_succeeded"] is None
+        )  # Should be None for new connection
+        assert (
+            result["configuration_changes"]["last_run_timestamp"] is None
+        )  # Should be None for new connection
+        assert (
+            result["configuration_changes"]["system_id"] == connection_config.system_id
+        )
+        assert (
+            result["configuration_changes"]["enabled_actions"] is None
+        )  # Should be None if not set
+        assert "saas_connector_type" not in result["configuration_changes"]
+        assert "saas_configuration" not in result["configuration_changes"]
 
     def test_create_connection_event_details_saas_with_valid_config(
         self, saas_example_connection_config
@@ -53,15 +66,35 @@ class TestCreateConnectionEventDetails:
         )
 
         assert result["operation_type"] == "created"
-        assert result["connection_type"] == "saas"
-        assert result["connection_key"] == saas_example_connection_config.key
-        assert result["connection_name"] == saas_example_connection_config.name
-        assert result["description"] == saas_example_connection_config.description
-        assert result["access_level"] == saas_example_connection_config.access.value
-        assert result["disabled"] == saas_example_connection_config.disabled
-        assert result["system_id"] == saas_example_connection_config.system_id
-        assert "saas_config" in result
-        assert result["saas_config"] == saas_example_connection_config.saas_config
+        assert result["configuration_changes"]["connection_type"] == "saas"
+        assert (
+            result["configuration_changes"]["key"] == saas_example_connection_config.key
+        )
+        assert (
+            result["configuration_changes"]["name"]
+            == saas_example_connection_config.name
+        )
+        assert (
+            result["configuration_changes"]["description"]
+            == saas_example_connection_config.description
+        )
+        assert (
+            result["configuration_changes"]["access"]
+            == saas_example_connection_config.access.value
+        )
+        assert (
+            result["configuration_changes"]["disabled"]
+            == saas_example_connection_config.disabled
+        )
+        assert (
+            result["configuration_changes"]["system_id"]
+            == saas_example_connection_config.system_id
+        )
+        assert "saas_config" in result["configuration_changes"]
+        assert (
+            result["configuration_changes"]["saas_config"]
+            == saas_example_connection_config.saas_config
+        )
 
     def test_create_connection_event_details_with_changed_fields(
         self, connection_config
@@ -75,15 +108,18 @@ class TestCreateConnectionEventDetails:
 
         # Should only include operation_type and the changed fields
         assert result["operation_type"] == "updated"
-        assert result["connection_name"] == connection_config.name
-        assert result["description"] == connection_config.description
+        assert result["configuration_changes"]["name"] == connection_config.name
+        assert (
+            result["configuration_changes"]["description"]
+            == connection_config.description
+        )
 
         # Should NOT include other fields
-        assert "connection_type" not in result
-        assert "access_level" not in result
-        assert "disabled" not in result
-        assert "system_id" not in result
-        assert "saas_config" not in result
+        assert "connection_type" not in result["configuration_changes"]
+        assert "access_level" not in result["configuration_changes"]
+        assert "disabled" not in result["configuration_changes"]
+        assert "system_id" not in result["configuration_changes"]
+        assert "saas_config" not in result["configuration_changes"]
 
     def test_create_connection_event_details_with_empty_changed_fields(
         self, connection_config
@@ -97,7 +133,7 @@ class TestCreateConnectionEventDetails:
 
         # Should only include operation_type
         assert result["operation_type"] == "updated"
-        assert len(result) == 1  # Only operation_type should be present
+        assert len(result["configuration_changes"]) == 0
 
     def test_create_connection_event_details_saas_with_changed_fields(
         self, saas_example_connection_config
@@ -111,14 +147,17 @@ class TestCreateConnectionEventDetails:
 
         # Should only include operation_type and saas_config
         assert result["operation_type"] == "updated"
-        assert "saas_config" in result
-        assert result["saas_config"] == saas_example_connection_config.saas_config
+        assert "saas_config" in result["configuration_changes"]
+        assert (
+            result["configuration_changes"]["saas_config"]
+            == saas_example_connection_config.saas_config
+        )
 
         # Should NOT include other fields
-        assert "connection_name" not in result
-        assert "description" not in result
-        assert "connection_type" not in result
-        assert "access_level" not in result
+        assert "name" not in result["configuration_changes"]
+        assert "description" not in result["configuration_changes"]
+        assert "connection_type" not in result["configuration_changes"]
+        assert "access_level" not in result["configuration_changes"]
 
     def test_create_connection_event_details_with_special_field_formatting(
         self, connection_config
@@ -136,11 +175,11 @@ class TestCreateConnectionEventDetails:
 
         # Should include formatted versions of the changed fields
         assert result["operation_type"] == "updated"
-        assert result["connection_type"] == "postgres"
-        assert result["access_level"] == "write"
+        assert result["configuration_changes"]["connection_type"] == "postgres"
+        assert result["configuration_changes"]["access"] == "write"
 
         # Should NOT include other fields
-        assert "connection_name" not in result
+        assert "name" not in result
         assert "description" not in result
 
 
@@ -157,7 +196,7 @@ class TestGenerateConnectionAuditEventDetails:
         )
 
         assert event_details["operation_type"] == "created"
-        assert event_details["connection_type"] == "postgres"
+        assert event_details["configuration_changes"]["connection_type"] == "postgres"
         assert (
             description
             == f"Connection created: postgres connection '{connection_config.key}'"
@@ -173,7 +212,7 @@ class TestGenerateConnectionAuditEventDetails:
         )
 
         assert event_details["operation_type"] == "updated"
-        assert event_details["connection_type"] == "postgres"
+        assert event_details["configuration_changes"]["connection_type"] == "postgres"
         assert (
             description
             == f"Connection updated: postgres connection '{connection_config.key}'"
@@ -189,7 +228,7 @@ class TestGenerateConnectionAuditEventDetails:
         )
 
         assert event_details["operation_type"] == "deleted"
-        assert event_details["connection_type"] == "postgres"
+        assert event_details["configuration_changes"]["connection_type"] == "postgres"
         assert (
             description
             == f"Connection deleted: postgres connection '{connection_config.key}'"
@@ -205,10 +244,11 @@ class TestGenerateConnectionAuditEventDetails:
         )
 
         assert event_details["operation_type"] == "created"
-        assert event_details["connection_type"] == "saas"
-        assert "saas_config" in event_details
+        assert event_details["configuration_changes"]["connection_type"] == "saas"
+        assert "saas_config" in event_details["configuration_changes"]
         assert (
-            event_details["saas_config"] == saas_example_connection_config.saas_config
+            event_details["configuration_changes"]["saas_config"]
+            == saas_example_connection_config.saas_config
         )
         expected_description = f"Connection created: custom connector '{saas_example_connection_config.key}'"
         assert description == expected_description
@@ -226,7 +266,7 @@ class TestGenerateConnectionAuditEventDetails:
         )
 
         assert event_details["operation_type"] == "created"
-        assert event_details["connection_type"] == "postgres"
+        assert event_details["configuration_changes"]["connection_type"] == "postgres"
         # The function should still generate its own description, ignoring the custom one
         assert (
             description
@@ -245,10 +285,15 @@ class TestGenerateConnectionAuditEventDetails:
 
         # Should only include operation_type and the changed fields
         assert event_details["operation_type"] == "updated"
-        assert event_details["connection_name"] == connection_config.name
-        assert event_details["description"] == connection_config.description
+        assert event_details["configuration_changes"]["name"] == connection_config.name
+        assert (
+            event_details["configuration_changes"]["description"]
+            == connection_config.description
+        )
 
-        assert len(event_details) == 3
+        assert len(event_details) == 2
+        assert "configuration_changes" in event_details
+        assert len(event_details["configuration_changes"]) == 2
 
         expected_description = (
             f"Connection updated: postgres connection '{connection_config.key}'"
@@ -267,7 +312,9 @@ class TestGenerateConnectionAuditEventDetails:
 
         # Should only include operation_type
         assert event_details["operation_type"] == "updated"
-        assert len(event_details) == 1
+        assert len(event_details) == 2
+        assert "configuration_changes" in event_details
+        assert len(event_details["configuration_changes"]) == 0
 
         expected_description = (
             f"Connection updated: postgres connection '{connection_config.key}'"
@@ -285,10 +332,12 @@ class TestGenerateConnectionAuditEventDetails:
         )
 
         # Should only include operation_type and saas_config
+        assert "configuration_changes" in event_details
         assert event_details["operation_type"] == "updated"
-        assert "saas_config" in event_details
+        assert "saas_config" in event_details["configuration_changes"]
         assert (
-            event_details["saas_config"] == saas_example_connection_config.saas_config
+            event_details["configuration_changes"]["saas_config"]
+            == saas_example_connection_config.saas_config
         )
 
         assert len(event_details) == 2
@@ -348,7 +397,7 @@ class TestGenerateConnectionSecretsEventDetails:
         assert event_details["secrets"]["api_key"] == "**********"
         assert event_details["secrets"]["domain"] == "**********"
 
-        expected_description = f"Connection secrets updated: custom connection '{saas_example_connection_config.key}' - api_key, domain"
+        expected_description = f"Connection secrets updated: custom connector '{saas_example_connection_config.key}' - api_key, domain"
         assert description == expected_description
 
     def test_generate_connection_secrets_event_details_empty_secrets(
