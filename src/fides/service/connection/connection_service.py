@@ -466,8 +466,7 @@ class ConnectionService:
                 "secrets",
                 "last_test_timestamp",
                 "last_test_succeeded",
-                "last_run_timestamp",
-                "_sa_instance_state",  # SQLAlchemy internal field
+                "last_run_timestamp"
             }
             # Compare original config dict with final config dict
             changed_fields = set()

@@ -10,7 +10,17 @@ from fides.api.util.masking_util import mask_sensitive_fields
 
 
 def normalize_value(value: Any) -> Any:
+    """
+    Normalize values for consistent comparison and serialization.
 
+    - Converts datetime objects to ISO strings
+    - Converts enums to their string values
+    - Converts lists of enums to lists of string values
+    - Treats None and empty strings as equivalent (both become None)
+    """
+    # Treat None and empty strings as equivalent
+    if value == "" or value is None:
+        return None
     if isinstance(value, datetime):
         return value.isoformat()
     if isinstance(value, Enum):
