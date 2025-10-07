@@ -23,9 +23,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
+- Added Manual Task Digest email templates and dispatch [#6691](https://github.com/ethyca/fides/pull/6691)
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
+- Changed default sort order for discovered assets from compliance status to asset name [#6704](https://github.com/ethyca/fides/pull/6704)
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
@@ -39,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
 - Fixed custom fields on the system data use form being nonfunctional [#6657](https://github.com/ethyca/fides/pull/6657)
 - Fixed expanded categories of consent table cells auto-collapsing in Action Center when adding new values [#6690](https://github.com/ethyca/fides/pull/6690)
+- Fixed an issue where adding a category of consent moved the item off-page in Action Center [#6704](https://github.com/ethyca/fides/pull/6704)
 
 ## [2.71.1](https://github.com/ethyca/fides/compare/2.71.0...2.71.1)
 
@@ -53,6 +56,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
+
+### Developer Experience
+- Added `disableUrlState` option to pagination, sorting, table state, and search hooks to support in-memory state management without URL synchronization [#6685](https://github.com/ethyca/fides/pull/6685)
 
 ## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
 
