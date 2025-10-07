@@ -36,6 +36,21 @@ def external_user(db: Session) -> Generator[FidesUser, None, None]:
         db=db,
         data={"user_id": user.id, "roles": ["external_respondent"]},
     )
+
+    # Create a client for the user (required for auth header generation)
+    from fides.api.models.client import ClientDetail
+    from fides.config import CONFIG
+
+    client, _ = ClientDetail.create_client_and_secret(
+        db,
+        CONFIG.security.oauth_client_id_length_bytes,
+        CONFIG.security.oauth_client_secret_length_bytes,
+        user_id=user.id,
+    )
+
+    # Refresh the user to get the client relationship
+    db.refresh(user)
+
     yield user
     if user.permissions:
         user.permissions.delete(db)
