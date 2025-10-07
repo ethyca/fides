@@ -631,7 +631,7 @@ describe("Action center Asset Results", () => {
         // Check modal content
         cy.getByTestId("consent-breakdown-modal-content").within(() => {
           cy.contains(
-            "View all instances where this asset was detected with consent",
+            "View all instances where this asset was detected with consent compliance issues",
           ).should("exist");
           cy.contains("Asset name:").should("exist");
           cy.contains("System:").should("exist");
