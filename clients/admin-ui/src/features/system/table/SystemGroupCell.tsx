@@ -125,8 +125,13 @@ const SystemGroupCell = ({
             onChange={(value) => {
               setPendingSelection(value);
             }}
+            aria-label="Select groups"
           />
-          <Button icon={<Icons.Checkmark />} onClick={handleUpdate} />
+          <Button
+            aria-label="Update groups"
+            icon={<Icons.Checkmark />}
+            onClick={handleUpdate}
+          />
         </>
       )}
     </Flex>

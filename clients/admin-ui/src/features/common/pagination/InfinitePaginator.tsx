@@ -42,6 +42,7 @@ export const InfinitePaginator = ({
         }))}
         // eslint-disable-next-line react/no-unstable-nested-components
         labelRender={({ value }) => <span>{value} / page</span>}
+        aria-label="Select page size"
       />
     </Flex>
   );

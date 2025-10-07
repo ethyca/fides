@@ -186,6 +186,7 @@ const SelectIntegrationType = ({
           options={categoryOptions}
           className="w-48"
           placeholder="Select category"
+          aria-label="Select a category"
           data-testid="category-filter-select"
         />
       </div>

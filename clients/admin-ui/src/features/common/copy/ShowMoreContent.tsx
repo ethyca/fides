@@ -1,4 +1,4 @@
-import { Collapse, Text, useDisclosure } from "fidesui";
+import { AntButton as Button, Collapse, useDisclosure } from "fidesui";
 import { ReactNode } from "react";
 
 const ShowMoreContent = ({ children }: { children: ReactNode }) => {
@@ -6,14 +6,9 @@ const ShowMoreContent = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <Collapse in={isOpen}>{children}</Collapse>
-      <Text
-        fontSize="sm"
-        cursor="pointer"
-        textDecoration="underline"
-        onClick={onToggle}
-      >
+      <Button type="link" size="small" onClick={onToggle}>
         {isOpen ? "Show less" : "Show more"}
-      </Text>
+      </Button>
     </>
   );
 };
