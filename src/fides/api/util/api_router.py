@@ -33,3 +33,27 @@ class APIRouter(FastAPIRouter):
             return add_path(func)
 
         return decorator
+
+    def add_api_route(
+        self, path: str, endpoint: Callable[..., Any], **kwargs: Any
+    ) -> None:
+        """
+        Add an API route with automatic trailing slash handling.
+        Registers both /path and /path/ versions.
+
+        This handles direct calls to add_api_route() (not using decorators).
+        """
+        # Get include_in_schema from kwargs, default to True
+        include_in_schema = kwargs.get("include_in_schema", True)
+
+        # Normalize path to not have trailing slash
+        if path.endswith("/"):
+            path = path[:-1]
+
+        # Add the main route (without trailing slash)
+        super().add_api_route(path=path, endpoint=endpoint, **kwargs)
+
+        # Add the alternate route (with trailing slash, hidden from schema)
+        kwargs_alternate = kwargs.copy()
+        kwargs_alternate["include_in_schema"] = False
+        super().add_api_route(path=f"{path}/", endpoint=endpoint, **kwargs_alternate)
