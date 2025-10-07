@@ -27,8 +27,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
-- Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674)
-- Allow selecting from all data uses for discovered assets in Action Center [#6668](https://github.com/ethyca/fides/pull/6668)
 - Update UI to support for different consent compliance issues [#6680](https://github.com/ethyca/fides/pull/6680)
 - Changed default sort order for discovered assets from compliance status to asset name [#6704](https://github.com/ethyca/fides/pull/6704)
 
