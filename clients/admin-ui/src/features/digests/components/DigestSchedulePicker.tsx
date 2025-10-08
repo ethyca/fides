@@ -35,6 +35,7 @@ interface DigestSchedulePickerProps {
   value?: string; // Cron expression
   onChange?: (value: string) => void;
   onTimezoneChange?: (timezone: string) => void;
+  timezone?: string; // Stored timezone (for edit mode)
 }
 
 const FREQUENCY_OPTIONS = [
@@ -48,6 +49,7 @@ const DigestSchedulePicker = ({
   value,
   onChange,
   onTimezoneChange,
+  timezone: timezoneProp,
 }: DigestSchedulePickerProps) => {
   const [frequency, setFrequency] = useState<Frequency>(Frequency.WEEKLY);
   const [dayOfMonth, setDayOfMonth] = useState<number>(1);
@@ -56,16 +58,22 @@ const DigestSchedulePicker = ({
   // Get browser timezone
   const browserTimezone = dayjs.tz.guess();
 
+  // Use stored timezone if provided (edit mode), otherwise use browser timezone (create mode)
+  const effectiveTimezone = timezoneProp || browserTimezone;
+
   // Get timezone abbreviation (e.g., "EDT", "PST", "GMT")
   const timezoneAbbreviation = useMemo(
-    () => format(new Date(), "z", { timeZone: browserTimezone }),
-    [browserTimezone],
+    () => format(new Date(), "z", { timeZone: effectiveTimezone }),
+    [effectiveTimezone],
   );
 
   // Notify parent of timezone on mount and when it changes
+  // Only update when creating new (no timezone prop) or when browser timezone changes
   useEffect(() => {
-    onTimezoneChange?.(browserTimezone);
-  }, [browserTimezone, onTimezoneChange]);
+    if (!timezoneProp) {
+      onTimezoneChange?.(browserTimezone);
+    }
+  }, [browserTimezone, onTimezoneChange, timezoneProp]);
 
   // Parse incoming cron expression when value changes
   useEffect(() => {

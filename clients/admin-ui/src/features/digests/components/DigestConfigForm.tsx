@@ -215,7 +215,10 @@ const DigestConfigForm = ({
           rules={[{ required: true, message: "Please configure a schedule" }]}
           tooltip="Configure when the digest should be sent"
         >
-          <DigestSchedulePicker onTimezoneChange={setTimezone} />
+          <DigestSchedulePicker
+            onTimezoneChange={setTimezone}
+            timezone={initialValues?.timezone}
+          />
         </Form.Item>
 
         {/* Form Actions */}
