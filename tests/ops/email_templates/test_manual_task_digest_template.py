@@ -13,12 +13,14 @@ def test_manual_task_digest_template_retrieval() -> None:
 
 
 @pytest.mark.parametrize(
-    "vendor_contact_name,organization_name,portal_url,upcoming_count,company_logo_url",
+    "vendor_contact_name,organization_name,portal_url,imminent_count,upcoming_count,total_count,company_logo_url",
     [
         (
             "Jane Doe",
             "Acme Corp",
             "https://privacy.example.com/external-tasks?access_token=abc123",
+            3,
+            7,
             10,
             None,
         ),
@@ -26,6 +28,8 @@ def test_manual_task_digest_template_retrieval() -> None:
             "John Smith",
             "Test Organization",
             "https://portal.test.com/external-tasks",
+            2,
+            3,
             5,
             "https://example.com/logo.png",
         ),
@@ -33,6 +37,8 @@ def test_manual_task_digest_template_retrieval() -> None:
             "Test User",
             "My Company",
             "http://localhost:3001/external-tasks",
+            0,
+            0,
             0,
             None,
         ),
@@ -42,7 +48,9 @@ def test_manual_task_digest_template_rendering(
     vendor_contact_name: str,
     organization_name: str,
     portal_url: str,
+    imminent_count: int,
     upcoming_count: int,
+    total_count: int,
     company_logo_url: str,
 ) -> None:
     """Test that the manual task digest template renders correctly with various inputs."""
@@ -52,7 +60,9 @@ def test_manual_task_digest_template_rendering(
         "vendor_contact_name": vendor_contact_name,
         "organization_name": organization_name,
         "portal_url": portal_url,
+        "imminent_task_count": imminent_count,
         "upcoming_task_count": upcoming_count,
+        "total_task_count": total_count,
         "company_logo_url": company_logo_url,
     }
 
@@ -62,15 +72,15 @@ def test_manual_task_digest_template_rendering(
     assert f"Hi {vendor_contact_name}," in rendered_html
     assert organization_name in rendered_html
     assert portal_url in rendered_html
-    assert f"You have {upcoming_count} request" in rendered_html
+    assert f"You have {total_count} request" in rendered_html
+    assert f"{imminent_count} within the next 7 days" in rendered_html
+    assert f"{upcoming_count} due in the next period" in rendered_html
 
     # Check for proper pluralization
-    if upcoming_count == 1:
-        assert "You have 1 request that require" in rendered_html
+    if total_count == 1:
+        assert "You have 1 request coming due" in rendered_html
     else:
-        assert (
-            "You have {} requests that require".format(upcoming_count) in rendered_html
-        )
+        assert "You have {} requests coming due".format(total_count) in rendered_html
 
     # Check logo handling
     if company_logo_url:
@@ -98,7 +108,9 @@ def test_manual_task_digest_template_edge_cases() -> None:
         "vendor_contact_name": "María José García-López",
         "organization_name": "Acme Corp & Associates, LLC",
         "portal_url": "https://privacy.example.com/external-tasks?token=abc123&user=test",
+        "imminent_task_count": 0,
         "upcoming_task_count": 0,
+        "total_task_count": 0,
         "company_logo_url": None,
     }
 
@@ -120,7 +132,9 @@ def test_manual_task_digest_template_responsive_design() -> None:
         "vendor_contact_name": "Test User",
         "organization_name": "Test Org",
         "portal_url": "https://example.com",
+        "imminent_task_count": 0,
         "upcoming_task_count": 1,
+        "total_task_count": 1,
         "company_logo_url": None,
     }
 

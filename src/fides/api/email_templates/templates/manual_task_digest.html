@@ -279,12 +279,12 @@
                     {{ intro_text | default("This is your weekly summary of open data subject requests tasks from " + organization_name + " that require your attention. Please review the tasks listed below in our <a href='" + portal_url + "' style='color: #000000; text-decoration: underline; font-weight: 600;'>Privacy Center</a> to ensure timely completion.") | safe }}
                 </div>
 
-                <!-- Upcoming Tasks Section -->
+                <!-- Tasks Due Soon Section -->
                 <div class="section">
-                    <div class="section-title">Upcoming Tasks</div>
+                    <div class="section-title">Tasks Due Soon</div>
 
                     <div class="task-count">
-                        <p class="task-count-text">You have {{ upcoming_task_count }} request{{ 's' if upcoming_task_count != 1 else '' }} that require your attention.</p>
+                        <p class="task-count-text">You have {{ total_task_count }} request{{ 's' if total_task_count != 1 else '' }} coming due, including {{ imminent_task_count }} within the next 7 days and {{ upcoming_task_count }} due in the next period.</p>
                     </div>
 
                     <div style="text-align: center;">
