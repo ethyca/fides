@@ -125,6 +125,12 @@ const SystemGroupCell = ({
             onChange={(value) => {
               setPendingSelection(value);
             }}
+            onOpenChange={(open) => {
+              if (!open) {
+                handleUpdate();
+              }
+            }}
+            onBlur={() => setIsAdding(false)}
             aria-label="Select groups"
           />
           <Button

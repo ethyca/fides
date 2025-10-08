@@ -50,8 +50,13 @@
 
   &:hover {
     color: var(--fidesui-neutral-800) !important;
-    text-decoration: underline;
+    text-decoration: underline !important;
   }
+}
+
+.primaryColorLink strong {
+  color: inherit !important;
+  text-decoration: inherit !important;
 }
 
 // If true, the text will inherit the color and text decoration from the parent
