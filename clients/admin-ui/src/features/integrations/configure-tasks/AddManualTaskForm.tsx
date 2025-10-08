@@ -233,6 +233,7 @@ const AddManualTaskForm = ({
       >
         <Select
           placeholder="Select request type"
+          aria-label="Select request type"
           options={requestTypeOptions}
           data-testid="select-request-type"
         />
@@ -250,6 +251,7 @@ const AddManualTaskForm = ({
       >
         <Select
           placeholder="Select field type"
+          aria-label="Select field type"
           options={fieldTypeOptions}
           disabled={isFieldTypeDisabled}
           data-testid="select-field-type"

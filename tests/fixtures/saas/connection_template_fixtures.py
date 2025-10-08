@@ -12,10 +12,10 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
-    create_connection_config_from_template_no_save,
-    upsert_dataset_config_from_template,
 )
 from fides.api.util.connection_util import validate_secrets
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 
 
 @pytest.fixture(scope="function")
@@ -28,8 +28,11 @@ def secondary_hubspot_instance(db):
         "domain": "test_hubspot_domain",
         "private_app_token": "test_hubspot_api_key",
     }
+    audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, audit_service)
     connection_config, dataset_config = instantiate_connector(
         db,
+        connection_service,
         "hubspot",
         "secondary_hubspot_instance",
         "Hubspot ConnectionConfig description",
@@ -78,8 +81,11 @@ def instantiate_mailchimp(db, fides_key) -> tuple[ConnectionConfig, DatasetConfi
         "username": "test_mailchimp_username",
         "api_key": "test_mailchimp_api_key",
     }
+    audit_service = EventAuditService(db)
+    connection_service = ConnectionService(db, audit_service)
     return instantiate_connector(
         db,
+        connection_service,
         "mailchimp",
         fides_key,
         "Mailchimp ConnectionConfig description",
@@ -89,6 +95,7 @@ def instantiate_mailchimp(db, fides_key) -> tuple[ConnectionConfig, DatasetConfi
 
 def instantiate_connector(
     db,
+    connection_service: ConnectionService,
     connector_type,
     fides_key,
     description,
@@ -120,8 +127,8 @@ def instantiate_connector(
     assert dataset_config is None
 
     connection_config: ConnectionConfig = (
-        create_connection_config_from_template_no_save(
-            db, connector_template, template_vals
+        connection_service.create_connection_config_from_template_no_save(
+            connector_template, template_vals
         )
     )
 
@@ -130,8 +137,10 @@ def instantiate_connector(
     ).model_dump(mode="json")
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
-    dataset_config: DatasetConfig = upsert_dataset_config_from_template(
-        db, connection_config, connector_template, template_vals
+    dataset_config: DatasetConfig = (
+        connection_service.upsert_dataset_config_from_template(
+            connection_config, connector_template, template_vals
+        )
     )
 
     connection_config = ConnectionConfig.filter(

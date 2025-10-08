@@ -8,6 +8,7 @@ import {
   AntText as Text,
   AntTitle as Title,
   Icons,
+  useToast,
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -15,15 +16,19 @@ import { Key, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
+import { getErrorMessage } from "~/features/common/helpers";
 import { useSearch } from "~/features/common/hooks";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
+  useClassifyStagedResourcesMutation,
   useGetMonitorConfigQuery,
   useGetMonitorFieldsQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import MonitorFieldListItem from "./MonitorFieldListItem";
@@ -84,7 +89,25 @@ const ActionCenterFields: NextPage = () => {
       : undefined,
     confidence_score: confidenceScore || undefined,
   });
+  const toast = useToast();
+  const [classifyStagedResourcesMutation] =
+    useClassifyStagedResourcesMutation();
 
+  const handleClassifyStagedResources = async () => {
+    const result = await classifyStagedResourcesMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: selectedNodeKeys.flatMap((key) =>
+        typeof key !== "bigint" ? [key.toString()] : [],
+      ),
+    });
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
+    }
+
+    toast(successToastParams(`Classifying initiated`));
+  };
   /**
    * @todo: this should be handled on a form/state action level
    */
@@ -115,6 +138,7 @@ const ActionCenterFields: NextPage = () => {
           <MonitorTree
             selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
+            onClickClassifyButton={handleClassifyStagedResources}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}

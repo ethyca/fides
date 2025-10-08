@@ -16,6 +16,8 @@ import {
   StagedResourceAPIResponse,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
+import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
+import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
@@ -122,6 +124,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           params: { page, size },
         };
       },
+      providesTags: ["Monitor Field Results"],
     }),
     getDiscoveredSystemAggregate: build.query<
       Page_SystemStagedResourcesAggregateRecord_,
@@ -259,13 +262,12 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     ignoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
-        const queryParams = new URLSearchParams();
-        params.urnList?.forEach((urn) =>
-          queryParams.append("staged_resource_urns", urn),
-        );
         return {
           method: "POST",
-          url: `/plus/discovery-monitor/mute?${queryParams}`,
+          url: `/plus/discovery-monitor/mute`,
+          body: {
+            staged_resource_urns: params.urnList,
+          },
         };
       },
       invalidatesTags: ["Discovery Monitor Results"],
@@ -496,6 +498,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Tasks"],
     }),
+    classifyStagedResources: build.mutation<
+      ClassifyResourcesResponse,
+      BaseStagedResourcesRequest & { monitor_config_key: string }
+    >({
+      query: ({ monitor_config_key, ...body }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/classify`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Monitor Field Results"],
+    }),
   }),
 });
 
@@ -522,4 +535,5 @@ export const {
   useGetMonitorFieldsQuery,
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
+  useClassifyStagedResourcesMutation,
 } = actionCenterApi;

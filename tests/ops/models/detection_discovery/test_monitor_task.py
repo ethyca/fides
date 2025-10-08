@@ -78,9 +78,10 @@ class TestMonitorTask:
     def test_allowed_action_types(self) -> None:
         """Test that allowed_action_types returns the correct list of action types."""
         allowed_types = MonitorTask.allowed_action_types()
-        assert len(allowed_types) == 4
+        assert len(allowed_types) == 5
         assert MonitorTaskType.DETECTION.value in allowed_types
         assert MonitorTaskType.CLASSIFICATION.value in allowed_types
+        assert MonitorTaskType.LLM_CLASSIFICATION.value in allowed_types
         assert MonitorTaskType.PROMOTION.value in allowed_types
         assert MonitorTaskType.REMOVAL_PROMOTION.value in allowed_types
 
