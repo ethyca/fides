@@ -25,7 +25,7 @@ class MonitorTaskType(Enum):
 
     DETECTION = "detection"
     CLASSIFICATION = "classification"
-    CLASSIFICATION_V2 = "classification_v2"
+    LLM_CLASSIFICATION = "llm_classification"
     PROMOTION = "promotion"
     REMOVAL_PROMOTION = "removal_promotion"
 
