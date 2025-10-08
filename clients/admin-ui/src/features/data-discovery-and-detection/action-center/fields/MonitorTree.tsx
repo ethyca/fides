@@ -117,9 +117,11 @@ const updateTreeData = (
 const MonitorTree = ({
   selectedNodeKeys,
   setSelectedNodeKeys,
+  onClickClassifyButton,
 }: {
   selectedNodeKeys: Key[];
   setSelectedNodeKeys: (keys: Key[]) => void;
+  onClickClassifyButton: () => void;
 }) => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
@@ -242,9 +244,10 @@ const MonitorTree = ({
         <Flex justify="space-between" align="center">
           <span>{selectedNodeKeys.length} selected</span>
           <Button
-            aria-label="Run discovery"
+            aria-label="Classify Selected Nodes"
             icon={<SparkleIcon />}
             size="small"
+            onClick={onClickClassifyButton}
           />
         </Flex>
       )}
