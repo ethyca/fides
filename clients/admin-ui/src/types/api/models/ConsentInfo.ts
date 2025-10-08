@@ -18,4 +18,8 @@ export type ConsentInfo = {
    * Pages where the asset was found with consent, indexed by location
    */
   granted?: Record<string, Array<string>>;
+  /**
+   * Pages where the asset was loaded and a CMP error was detected, indexed by location
+   */
+  cmp_error?: Record<string, Array<string>>;
 };
