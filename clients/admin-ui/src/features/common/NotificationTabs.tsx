@@ -57,13 +57,14 @@ const NotificationTabs = () => {
   }
 
   return (
-    <Menu
-      mode="horizontal"
-      selectedKeys={[selectedKey]}
-      onClick={({ key }) => handleMenuClick(key)}
-      style={{ marginBottom: 24 }}
-      items={menuItems}
-    />
+    <div className="mb-6">
+      <Menu
+        mode="horizontal"
+        selectedKeys={[selectedKey]}
+        onClick={({ key }) => handleMenuClick(key)}
+        items={menuItems}
+      />
+    </div>
   );
 };
 
