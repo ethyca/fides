@@ -37,23 +37,23 @@ const NotificationTabs = () => {
     {
       key: "templates",
       label: "Templates",
-      requiredPlus: true,
+      requiresPlus: true,
     },
     {
       key: "digests",
       label: "Digests",
-      requiredPlus: true,
+      requiresPlus: true,
     },
     {
       key: "providers",
       label: "Providers",
-      requiredPlus: false,
+      requiresPlus: false,
     },
   ];
 
   // Remove unavailable tabs if not running plus
   if (!plus) {
-    menuItems = menuItems.filter((item) => item.requiredPlus);
+    menuItems = menuItems.filter((item) => item.requiresPlus);
   }
 
   return (
