@@ -179,7 +179,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Notifications",
         path: routes.NOTIFICATIONS_ROUTE,
-        requiresPlus: true,
         scopes: [
           ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
           ScopeRegistryEnum.DIGEST_CONFIG_READ,

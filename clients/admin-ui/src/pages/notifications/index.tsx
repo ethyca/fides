@@ -3,18 +3,29 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { NOTIFICATIONS_TEMPLATES_ROUTE } from "~/features/common/nav/routes";
+import {
+  MESSAGING_PROVIDERS_ROUTE,
+  NOTIFICATIONS_TEMPLATES_ROUTE,
+} from "~/features/common/nav/routes";
 
 /**
- * Redirect page that automatically redirects to the Templates tab
+ * Redirect page that automatically redirects to the first available tab.
+ * If Plus is enabled, redirects to Templates tab.
+ * Otherwise, redirects to Digests tab.
  */
 const NotificationsRedirect: NextPage = () => {
   const router = useRouter();
+  const { plus } = useFeatures();
 
   useEffect(() => {
-    router.replace(NOTIFICATIONS_TEMPLATES_ROUTE);
-  }, [router]);
+    // Redirect to Templates if Plus, otherwise to Digests
+    const targetRoute = plus
+      ? NOTIFICATIONS_TEMPLATES_ROUTE
+      : MESSAGING_PROVIDERS_ROUTE;
+    router.replace(targetRoute);
+  }, [router, plus]);
 
   return (
     <Layout title="Notifications">
