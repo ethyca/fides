@@ -98,6 +98,7 @@ const DigestSchedulePicker = ({
       onChange?.(cron);
     } catch (error) {
       // Invalid configuration, don't update
+      // eslint-disable-next-line no-console
       console.error("Error generating cron expression:", error);
     }
   }, [frequency, dayOfMonth, onChange]);

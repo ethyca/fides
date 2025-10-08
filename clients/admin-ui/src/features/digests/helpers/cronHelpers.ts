@@ -167,24 +167,30 @@ export const getScheduleDescription = (config: ScheduleConfig): string => {
     case Frequency.DAILY:
       return `Every day at ${timeStr}`;
 
-    case Frequency.WEEKLY:
-      if (config.dayOfWeek === undefined) return "";
+    case Frequency.WEEKLY: {
+      if (config.dayOfWeek === undefined) {
+        return "";
+      }
       return `Every ${DAY_OF_WEEK_LABELS[config.dayOfWeek]} at ${timeStr}`;
+    }
 
     case Frequency.WEEKDAYS:
       return `Every weekday at ${timeStr}`;
 
-    case Frequency.MONTHLY:
-      if (config.dayOfMonth === undefined) return "";
-      const suffix =
-        config.dayOfMonth === 1
-          ? "st"
-          : config.dayOfMonth === 2
-            ? "nd"
-            : config.dayOfMonth === 3
-              ? "rd"
-              : "th";
+    case Frequency.MONTHLY: {
+      if (config.dayOfMonth === undefined) {
+        return "";
+      }
+      let suffix = "th";
+      if (config.dayOfMonth === 1) {
+        suffix = "st";
+      } else if (config.dayOfMonth === 2) {
+        suffix = "nd";
+      } else if (config.dayOfMonth === 3) {
+        suffix = "rd";
+      }
       return `On the ${config.dayOfMonth}${suffix} of every month at ${timeStr}`;
+    }
 
     default:
       return "";
