@@ -38,8 +38,7 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="Jane Doe",
                 organization_name="Acme Corp",
                 portal_url="https://privacy.example.com/external-tasks?access_token=abc123",
-                imminent_task_count=3,
-                upcoming_task_count=7,
+                upcoming_task_count=10,
                 company_logo_url=None,
             ),
         )
@@ -68,8 +67,7 @@ class TestManualTaskDigestMessageDispatch:
         template_vars = email_for_action_type.template_variables
         assert template_vars["vendor_contact_name"] == "Jane Doe"
         assert template_vars["organization_name"] == "Acme Corp"
-        assert template_vars["imminent_task_count"] == 3
-        assert template_vars["upcoming_task_count"] == 7
+        assert template_vars["upcoming_task_count"] == 10
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -90,7 +88,6 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="John Smith",
                 organization_name="Test Organization",
                 portal_url="https://portal.test.com/external-tasks",
-                imminent_task_count=0,
                 upcoming_task_count=5,
                 company_logo_url="https://example.com/logo.png",
             ),
@@ -135,7 +132,6 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="Test User",
                 organization_name="My Company",
                 portal_url="http://localhost:3001/external-tasks",
-                imminent_task_count=0,
                 upcoming_task_count=0,
                 company_logo_url=None,
             ),
@@ -156,7 +152,6 @@ class TestManualTaskDigestMessageDispatch:
 
         # Check template variables
         template_vars = email_for_action_type.template_variables
-        assert template_vars["imminent_task_count"] == 0
         assert template_vars["upcoming_task_count"] == 0
 
     def test_manual_task_digest_body_params_validation(self) -> None:
@@ -166,16 +161,14 @@ class TestManualTaskDigestMessageDispatch:
             vendor_contact_name="Jane Doe",
             organization_name="Acme Corp",
             portal_url="https://example.com/portal",
-            imminent_task_count=5,
-            upcoming_task_count=10,
+            upcoming_task_count=15,
             company_logo_url="https://example.com/logo.png",
         )
 
         assert valid_params.vendor_contact_name == "Jane Doe"
         assert valid_params.organization_name == "Acme Corp"
         assert valid_params.portal_url == "https://example.com/portal"
-        assert valid_params.imminent_task_count == 5
-        assert valid_params.upcoming_task_count == 10
+        assert valid_params.upcoming_task_count == 15
         assert valid_params.company_logo_url == "https://example.com/logo.png"
 
         # Test with optional logo URL as None
@@ -183,7 +176,6 @@ class TestManualTaskDigestMessageDispatch:
             vendor_contact_name="John Smith",
             organization_name="Test Org",
             portal_url="https://test.com",
-            imminent_task_count=0,
             upcoming_task_count=3,
             company_logo_url=None,
         )
@@ -209,8 +201,7 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="María José García-López",
                 organization_name="Acme Corp & Associates, LLC",
                 portal_url="https://privacy.example.com/external-tasks?token=abc123&user=test",
-                imminent_task_count=1,
-                upcoming_task_count=1,
+                upcoming_task_count=2,
                 company_logo_url=None,
             ),
         )
@@ -266,8 +257,7 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="John Smith",
                 organization_name="Custom Corp",
                 portal_url="https://privacy.example.com/tasks",
-                imminent_task_count=2,
-                upcoming_task_count=5,
+                upcoming_task_count=7,
                 company_logo_url=None,
             ),
         )
@@ -326,8 +316,7 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="Jane Doe",
                 organization_name="Fallback Corp",
                 portal_url="https://privacy.example.com/tasks",
-                imminent_task_count=1,
-                upcoming_task_count=3,
+                upcoming_task_count=4,
                 company_logo_url=None,
             ),
         )
@@ -380,8 +369,7 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="Jane Doe",
                 organization_name="Fallback Corp",
                 portal_url="https://privacy.example.com/tasks",
-                imminent_task_count=1,
-                upcoming_task_count=3,
+                upcoming_task_count=4,
                 company_logo_url=None,
             ),
         )

@@ -279,29 +279,16 @@
                     {{ intro_text | default("This is your weekly summary of open data subject requests tasks from " + organization_name + " that require your attention. Please review the tasks listed below in our <a href='" + portal_url + "' style='color: #000000; text-decoration: underline; font-weight: 600;'>Privacy Center</a> to ensure timely completion.") | safe }}
                 </div>
 
-                <!-- Due in Next 7 Days Section -->
-                <div class="section">
-                    <div class="section-title">Due in the Next 7 Days</div>
-
-                    <div class="task-count">
-                        <p class="task-count-text">You have {{ imminent_task_count }} request{{ 's' if imminent_task_count != 1 else '' }} due in the next week.</p>
-                    </div>
-
-                    <div style="text-align: center;">
-                        <a href="{{ portal_url }}" class="cta-button">View All Tasks Due Soon</a>
-                    </div>
-                </div>
-
                 <!-- Upcoming Tasks Section -->
                 <div class="section">
-                    <div class="section-title">Upcoming Tasks (Due in >7 Days)</div>
+                    <div class="section-title">Upcoming Tasks</div>
 
                     <div class="task-count">
-                        <p class="task-count-text">You have {{ upcoming_task_count }} request{{ 's' if upcoming_task_count != 1 else '' }} due in the next period.</p>
+                        <p class="task-count-text">You have {{ upcoming_task_count }} request{{ 's' if upcoming_task_count != 1 else '' }} that require your attention.</p>
                     </div>
 
                     <div style="text-align: center;">
-                        <a href="{{ portal_url }}" class="cta-button">View All Upcoming Tasks</a>
+                        <a href="{{ portal_url }}" class="cta-button">View All Tasks</a>
                     </div>
                 </div>
 

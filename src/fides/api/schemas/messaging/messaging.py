@@ -227,7 +227,6 @@ class ManualTaskDigestBodyParams(BaseModel):
     vendor_contact_name: str
     organization_name: str
     portal_url: str
-    imminent_task_count: int
     upcoming_task_count: int
     company_logo_url: Optional[str] = None
 
