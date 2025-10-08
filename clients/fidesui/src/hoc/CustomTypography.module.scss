@@ -53,3 +53,9 @@
     text-decoration: underline;
   }
 }
+
+// If true, the text will inherit the color and text decoration from the parent
+.unStyled {
+  color: inherit !important;
+  text-decoration: inherit !important;
+}

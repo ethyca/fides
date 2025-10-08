@@ -112,13 +112,14 @@ export const useConsentBreakdownTable = ({
           const truncatedPage = truncateUrl(page, 50);
           return (
             <Link
-              ellipsis
               href={page}
               target="_blank"
               rel="noopener noreferrer"
               primaryColor
             >
-              {truncatedPage}
+              <Typography.Text ellipsis={{ tooltip: page }} unStyled>
+                {truncatedPage}
+              </Typography.Text>
             </Link>
           );
         },
