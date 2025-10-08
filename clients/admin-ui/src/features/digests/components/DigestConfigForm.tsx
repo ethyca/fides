@@ -50,23 +50,18 @@ const DigestConfigForm = ({
     useUpdateDigestConfigMutation();
   const [deleteDigestConfig] = useDeleteDigestConfigMutation();
 
-  const showDeleteButton =
-    useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_DELETE]) &&
-    !!initialValues?.id;
-
   const isEditMode = !!initialValues?.id;
+
+  const showDeleteButton =
+    useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_DELETE]) && isEditMode;
 
   const handleDeleteClick = () => {
     setDeleteModalOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (!initialValues?.id) {
-      return;
-    }
-
     const result = await deleteDigestConfig({
-      config_id: initialValues.id,
+      config_id: initialValues?.id as string,
       digest_config_type: DigestType.MANUAL_TASKS,
     });
 
