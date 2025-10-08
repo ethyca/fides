@@ -74,8 +74,8 @@ const DataUseToggle = ({
           </span>
         </span>
         <span className="fides-notice-toggle-controls">
-          {gpcBadge}
-          {badge ? <span className="fides-notice-badge">{badge}</span> : null}
+          {/* {gpcBadge}
+          {badge ? <span className="fides-notice-badge">{badge}</span> : null} */}
           {includeToggle ? (
             <Toggle
               label={title}
@@ -89,6 +89,10 @@ const DataUseToggle = ({
             />
           ) : null}
         </span>
+        <div className="fides-badge-container">
+          {gpcBadge}
+          {badge ? <span className="fides-notice-badge">{badge}</span> : null}
+        </div>
       </div>
       {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>

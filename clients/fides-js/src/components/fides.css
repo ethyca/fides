@@ -1171,6 +1171,34 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   }
 }
 
+/* TODO: TCF is broken */
+
+.fides-badge-container:not(section .fides-badge-container) {
+  position: absolute;
+  right: calc(50px + var(--fides-overlay-padding) + var(--16px));
+}
+
+@media (max-width: 480px) {
+  .fides-badge-container:not(section .fides-badge-container) {
+    position: static;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .fides-notice-toggle-title:not(section .fides-notice-toggle-title) {
+    flex-wrap: wrap;
+  }
+
+  #fides-banner-heading:not(section #fides-banner-heading) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+}
+
 /* Responsive overlay */
 @media (max-width: 768px) {
   div.fides-modal-content,
