@@ -75,6 +75,7 @@ const CustomUploadItem = ({ file }: CustomUploadItemProps) => {
       )}
       <Button
         type="text"
+        aria-label="Download attachment"
         icon={<Icons.Download />}
         onClick={handleDownload}
         loading={isLoadingUrl}
