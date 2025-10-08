@@ -534,14 +534,14 @@ describe("Action center Asset Results", () => {
         });
         cy.get(".ant-tooltip-inner").should(
           "contain",
-          "One or more assets were detected without consent",
+          "One or more assets were detected with compliance issues",
         );
 
         cy.getByTestId("monitor-result-my_web_monitor_1").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
         });
 
-        // Monitor without consent issues should not show warning icon
+        // Monitor without compliance issues should not show warning icon
         cy.getByTestId("monitor-result-My_New_BQ_Monitor").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("not.exist");
         });
@@ -596,7 +596,7 @@ describe("Action center Asset Results", () => {
         });
       });
 
-      it("should show warning icon in compliance column header when there are assets without consent", () => {
+      it("should show warning icon in compliance column header when there are assets with compliance issues", () => {
         cy.findByRole("columnheader", { name: /Compliance/ }).within(() => {
           cy.getByTestId("discovery-status-icon-alert")
             .should("exist")
@@ -605,7 +605,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
         cy.findByRole("tooltip", {
-          name: "One or more assets were detected without consent",
+          name: "One or more assets were detected with compliance issues",
         }).should("be.visible");
       });
 
@@ -616,16 +616,22 @@ describe("Action center Asset Results", () => {
             .click();
         });
 
-        cy.wait("@getConsentBreakdown");
+        cy.wait("@getConsentBreakdown").then((interception) => {
+          // Verify the request includes all compliance issue status types
+          const url = interception.request.url;
+          expect(url).to.include("status=without_consent");
+          expect(url).to.include("status=pre_consent");
+          expect(url).to.include("status=cmp_error");
+        });
 
         // Check modal is open
         cy.getByTestId("consent-breakdown-modal").should("exist");
-        cy.contains("Consent discovery").should("exist");
+        cy.contains("Compliance issues").should("exist");
 
         // Check modal content
         cy.getByTestId("consent-breakdown-modal-content").within(() => {
           cy.contains(
-            "View all instances where this asset was detected without consent",
+            "View all instances where this asset was detected with consent compliance issues",
           ).should("exist");
           cy.contains("Asset name:").should("exist");
           cy.contains("System:").should("exist");
@@ -634,6 +640,7 @@ describe("Action center Asset Results", () => {
           // Check table headers
           cy.findByRole("columnheader", { name: /Location/ }).should("exist");
           cy.findByRole("columnheader", { name: /Page/ }).should("exist");
+          cy.findByRole("columnheader", { name: /Compliance/ }).should("exist");
 
           // Check table data
           cy.getByTestId("consent-breakdown-modal-table")
@@ -645,6 +652,9 @@ describe("Action center Asset Results", () => {
                 .within(() => {
                   cy.contains("United States").should("exist");
                   cy.get("a[href='https://example.com/page1']").should("exist");
+                  cy.getByTestId("status-badge_without-consent").should(
+                    "exist",
+                  );
                 });
             });
         });
@@ -693,7 +703,7 @@ describe("Action center Asset Results", () => {
         });
         cy.get(".ant-tooltip-inner").should(
           "contain",
-          "One or more assets were detected without consent",
+          "One or more assets were detected with compliance issues",
         );
       });
     });

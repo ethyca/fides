@@ -16,6 +16,8 @@ import {
   StagedResourceAPIResponse,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
+import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
+import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
@@ -122,6 +124,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           params: { page, size },
         };
       },
+      providesTags: ["Monitor Field Results"],
     }),
     getDiscoveredSystemAggregate: build.query<
       Page_SystemStagedResourcesAggregateRecord_,
@@ -267,7 +270,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
     }),
     restoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
@@ -335,19 +338,28 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_ConsentBreakdown_,
       {
         stagedResourceUrn: string;
-        status: ConsentStatus;
+        statuses: ConsentStatus[];
       } & PaginationQueryParams
     >({
-      query: ({ stagedResourceUrn, status, page = 1, size = 20 }) => ({
-        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
-          stagedResourceUrn,
-        )}/consent`,
-        params: {
-          status,
-          page,
-          size,
-        },
-      }),
+      query: ({ stagedResourceUrn, statuses, page = 1, size = 20 }) => {
+        const params = new URLSearchParams();
+
+        // Add pagination params
+        params.append("page", String(page));
+        params.append("size", String(size));
+
+        // Add status array params
+        statuses.forEach((status) => {
+          params.append("status", status);
+        });
+
+        return {
+          url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+            stagedResourceUrn,
+          )}/consent`,
+          params,
+        };
+      },
     }),
     getWebsiteMonitorResourceFilters: build.query<
       WebsiteMonitorResourcesFilters,
@@ -486,6 +498,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Tasks"],
     }),
+    classifyStagedResources: build.mutation<
+      ClassifyResourcesResponse,
+      BaseStagedResourcesRequest & { monitor_config_key: string }
+    >({
+      query: ({ monitor_config_key, ...body }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/classify`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Monitor Field Results"],
+    }),
   }),
 });
 
@@ -512,4 +535,5 @@ export const {
   useGetMonitorFieldsQuery,
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
+  useClassifyStagedResourcesMutation,
 } = actionCenterApi;

@@ -83,6 +83,8 @@ export const baseApi = createApi({
     "OpenID Provider",
     "Taxonomy",
     "Digest Configs",
+    "Monitor",
+    "Monitor Field Results",
   ],
   endpoints: () => ({}),
 });
