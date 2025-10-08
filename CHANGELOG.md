@@ -24,10 +24,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
 - Added Manual Task Digest email templates and dispatch [#6691](https://github.com/ethyca/fides/pull/6691)
+- Added UI to manage email digests [#6710](https://github.com/ethyca/fides/pull/6710)
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
 - Changed default sort order for discovered assets from compliance status to asset name [#6704](https://github.com/ethyca/fides/pull/6704)
+- Moved 'Messaging' and 'Messaging Providers' pages to a single Settings > Notifications page [#6710](https://github.com/ethyca/fides/pull/6710)
+
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
