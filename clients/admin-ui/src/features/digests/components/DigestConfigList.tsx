@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { NOTIFICATIONS_ADD_DIGEST_ROUTE } from "~/features/common/nav/routes";
-import { useHasPermission } from "~/features/common/Restrict";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { DigestType, ScopeRegistryEnum } from "~/types/api";
 
 import { DIGEST_TYPE_LABELS, MESSAGING_METHOD_LABELS } from "../constants";
@@ -110,7 +110,9 @@ const DigestConfigList = () => {
             <div className="px-4 py-8 text-center">
               <Typography.Paragraph type="secondary">
                 No digest configurations yet. <br />
-                Click &quot;Create digest&quot; to get started.
+                <Restrict scopes={[ScopeRegistryEnum.DIGEST_CONFIG_CREATE]}>
+                  Click &quot;Create digest&quot; to get started.
+                </Restrict>
               </Typography.Paragraph>
             </div>
           ),
