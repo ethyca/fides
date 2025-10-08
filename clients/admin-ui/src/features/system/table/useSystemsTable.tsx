@@ -250,7 +250,7 @@ const useSystemsTable = () => {
               isWrapped: true,
               isExpanded: isGroupsExpanded,
             }}
-            className="w-96"
+            className="w-[432px]"
           />
         ),
         title: "Groups",

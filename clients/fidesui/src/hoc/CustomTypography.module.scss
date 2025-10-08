@@ -48,9 +48,14 @@
 .primaryColorLink {
   color: var(--fides-color-primary) !important;
 
+  strong {
+    color: inherit !important;
+    text-decoration: inherit !important;
+  }
+
   &:hover {
     color: var(--fidesui-neutral-800) !important;
-    text-decoration: underline;
+    text-decoration: underline !important;
   }
 }
 
