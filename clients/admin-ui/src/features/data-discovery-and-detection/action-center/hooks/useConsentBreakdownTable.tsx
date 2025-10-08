@@ -115,7 +115,7 @@ export const useConsentBreakdownTable = ({
               href={page}
               target="_blank"
               rel="noopener noreferrer"
-              primaryColor
+              variant="primary"
             >
               <Typography.Text ellipsis={{ tooltip: page }} unStyled>
                 {truncatedPage}

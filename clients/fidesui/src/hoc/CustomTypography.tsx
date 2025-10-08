@@ -75,15 +75,17 @@ const CustomParagraph = ({
   />
 );
 
+type LinkVariant = "primary" | "default";
+
 const CustomLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<typeof Typography.Link> &
-    CustomTypographyTextProps & { primaryColor?: boolean }
->(({ size, primaryColor, unStyled, ...props }, ref) => (
+    CustomTypographyTextProps & { variant?: LinkVariant }
+>(({ size, variant, unStyled, ...props }, ref) => (
   <Typography.Link
     ref={ref}
     className={classNames(getTextSizeClassName(size), {
-      [styles.primaryColorLink]: primaryColor,
+      [styles.primaryColorLink]: variant === "primary",
       [styles.unStyled]: unStyled,
     })}
     {...props}
