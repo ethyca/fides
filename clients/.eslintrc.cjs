@@ -2,7 +2,49 @@ module.exports = {
   extends: ["airbnb", "airbnb-typescript", "plugin:prettier/recommended"],
   plugins: ["simple-import-sort"],
   root: true,
+  settings: {
+    "jsx-a11y": {
+      components: {
+        AutoComplete: "input",
+        Button: "button",
+        Checkbox: "checkbox",
+        DatePicker: "input",
+        DocsLink: "a",
+        EthycaLogo: "svg",
+        FloatButton: "button",
+        Form: "form",
+        Icon: "svg",
+        Image: "img",
+        Input: "input",
+        "Input.Search": "input",
+        InputNumber: "input",
+        Link: "a",
+        NextLink: "a",
+        Radio: "radio",
+        RouterLink: "a",
+        Select: "select",
+        Slider: "input",
+        Switch: "checkbox",
+        TimePicker: "input",
+        TreeSelect: "select",
+        Typography: "span",
+        "Typography.Text": "span",
+        Text: "span",
+        "Text.Paragraph": "p",
+        Paragraph: "p",
+        "Typography.Title": "header",
+        Title: "header",
+      },
+    },
+  },
   rules: {
+    "jsx-a11y/label-has-associated-control": [
+      "error",
+      { assert: "either", depth: 25 }, // overrides airbnb to be "either" instead of "both" which is too strict for this project. TODO: maybe remove this rule as part of Ant Forms migration
+    ],
+    "jsx-a11y/no-autofocus": "off",
+    "jsx-a11y/anchor-ambiguous-text": "error", // more strict than airbnb
+    "jsx-a11y/no-aria-hidden-on-focusable": "error", // more strict than airbnb
     curly: ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     "react/function-component-definition": [

@@ -119,6 +119,11 @@ declare global {
         collectionName: string,
         fieldName: string,
       ) => void;
+
+      /**
+       * Get the modal component from an Ant Design Modal component
+       */
+      getAntModal: () => Chainable;
     }
   }
 }
@@ -332,5 +337,7 @@ Cypress.Commands.add(
       .click();
   },
 );
+
+Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
 
 export {};

@@ -73,6 +73,7 @@ const AddMessagingTemplateModal = ({
                 setSelectedTemplateType(value);
               }}
               className="w-full"
+              aria-label="Select a template"
             />
           </Box>
         </ModalBody>

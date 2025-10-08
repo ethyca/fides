@@ -1,10 +1,9 @@
 import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
-  AntDropdown as Dropdown,
+  AntFlex as Flex,
   AntMessage as message,
   AntTypography as Typography,
-  Flex,
   Icons,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -61,7 +60,7 @@ const useSystemsTable = () => {
   const { data: allUsers } = useGetAllUsersQuery({
     page: 1,
     size: 100,
-    username: "",
+    include_external: false,
   });
 
   // mutations
@@ -327,42 +326,30 @@ const useSystemsTable = () => {
         title: "Actions",
         key: SystemColumnKeys.ACTIONS,
         render: (_: undefined, record: BasicSystemResponseExtended) => (
-          <Flex justify="end">
-            <Dropdown
-              trigger={["click"]}
-              menu={{
-                items: [
-                  {
-                    key: "edit",
-                    label: "Edit",
-                    icon: <Icons.Edit />,
-                    onClick: () =>
-                      router.push(`/systems/configure/${record.fides_key}`),
-                  },
-                  ...(showDeleteOption
-                    ? [
-                        {
-                          key: "delete",
-                          label: "Delete",
-                          icon: <Icons.TrashCan />,
-                          onClick: () => {
-                            setSelectedSystemForDelete(record);
-                            setDeleteModalIsOpen(true);
-                          },
-                        },
-                      ]
-                    : []),
-                ],
-              }}
+          <Flex gap="small">
+            <Button
+              size="small"
+              onClick={() =>
+                router.push(`/systems/configure/${record.fides_key}`)
+              }
+              icon={<Icons.Edit />}
+              data-testid="edit-btn"
             >
+              Edit
+            </Button>
+            {showDeleteOption && (
               <Button
                 size="small"
-                icon={<Icons.OverflowMenuVertical />}
-                aria-label="More actions"
-                type="text"
-                data-testid="system-actions-menu"
-              />
-            </Dropdown>
+                onClick={() => {
+                  setSelectedSystemForDelete(record);
+                  setDeleteModalIsOpen(true);
+                }}
+                icon={<Icons.TrashCan />}
+                data-testid="delete-btn"
+              >
+                Delete
+              </Button>
+            )}
           </Flex>
         ),
         fixed: "right",

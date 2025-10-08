@@ -99,7 +99,10 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                 value={id}
                 data-testid="request-detail-value-id"
               />
-              <Button icon={<ClipboardButton copyText={id} />} />
+              <Button
+                aria-label="Copy request ID"
+                icon={<ClipboardButton copyText={id} />}
+              />
             </Space.Compact>
           </Flex>
         </Form.Item>

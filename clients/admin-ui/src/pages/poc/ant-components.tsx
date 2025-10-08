@@ -79,30 +79,35 @@ const AntPOC: NextPage = () => {
                     { value: "Yiminghe", label: "yiminghe" },
                     { value: "disabled", label: "Disabled", disabled: true },
                   ]}
+                  aria-label="Select"
                 />
                 <Select
                   defaultValue="lucy"
                   className="w-32"
                   disabled
                   options={[{ value: "lucy", label: "Lucy" }]}
+                  aria-label="Select"
                 />
                 <Select
                   defaultValue="lucy"
                   className="w-32"
                   loading
                   options={[{ value: "lucy", label: "Lucy" }]}
+                  aria-label="Select"
                 />
                 <Select
                   defaultValue="lucy"
                   className="w-32"
                   allowClear
                   options={[{ value: "lucy", label: "Lucy" }]}
+                  aria-label="Select"
                 />
                 <Select
                   mode="multiple"
                   allowClear
                   className="w-full"
                   placeholder="Please select"
+                  aria-label="Select"
                   defaultValue={["a10", "c12"]}
                   options={options}
                 />
@@ -111,6 +116,7 @@ const AntPOC: NextPage = () => {
                   disabled
                   className="w-full"
                   placeholder="Please select"
+                  aria-label="Select"
                   defaultValue={["a10", "c12"]}
                   options={options}
                 />
@@ -178,26 +184,45 @@ const AntPOC: NextPage = () => {
             <Card title="Input" variant="borderless" className="h-full">
               <Space direction="vertical" size="middle">
                 <Space.Compact>
-                  <Input defaultValue="26888888" />
+                  <Input defaultValue="26888888" aria-label="Input" />
                 </Space.Compact>
                 <Space.Compact>
-                  <Input className="w-1/5" defaultValue="0571" />
-                  <Input className="w-4/5" defaultValue="26888888" />
+                  <Input
+                    className="w-1/5"
+                    defaultValue="0571"
+                    aria-label="Input"
+                  />
+                  <Input
+                    className="w-4/5"
+                    defaultValue="26888888"
+                    aria-label="Input"
+                  />
                 </Space.Compact>
                 <Space.Compact>
                   <Input.Search
                     addonBefore="https://"
                     placeholder="input search text"
                     allowClear
+                    aria-label="Input"
                   />
                 </Space.Compact>
                 <Space.Compact className="w-full">
-                  <Input defaultValue="Combine input and button" />
+                  <Input
+                    defaultValue="Combine input and button"
+                    aria-label="Input"
+                  />
                   <Button type="primary">Submit</Button>
                 </Space.Compact>
                 <Space.Compact>
-                  <Select defaultValue="Zhejiang" options={options} />
-                  <Input defaultValue="Xihu District, Hangzhou" />
+                  <Select
+                    defaultValue="Zhejiang"
+                    options={options}
+                    aria-label="Select"
+                  />
+                  <Input
+                    defaultValue="Xihu District, Hangzhou"
+                    aria-label="Input"
+                  />
                 </Space.Compact>
               </Space>
             </Card>
