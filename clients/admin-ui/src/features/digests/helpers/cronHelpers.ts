@@ -3,6 +3,8 @@
  * and cron expressions
  */
 
+import dayjs from "dayjs";
+
 export enum Frequency {
   DAILY = "daily",
   WEEKLY = "weekly",
@@ -161,7 +163,8 @@ export const isValidDayOfMonth = (day: number): boolean => {
  * Gets a user-friendly description of a schedule configuration
  */
 export const getScheduleDescription = (config: ScheduleConfig): string => {
-  const timeStr = config.time;
+  // Parse 24-hour time and format to 12-hour with AM/PM
+  const timeStr = dayjs(`2000-01-01 ${config.time}`).format("h:mm A");
 
   switch (config.frequency) {
     case Frequency.DAILY:

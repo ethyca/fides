@@ -61,11 +61,19 @@ const DigestSchedulePicker = ({
   // Use stored timezone if provided (edit mode), otherwise use browser timezone (create mode)
   const effectiveTimezone = timezoneProp || browserTimezone;
 
-  // Get timezone abbreviation (e.g., "EDT", "PST", "GMT")
-  const timezoneAbbreviation = useMemo(
-    () => format(new Date(), "z", { timeZone: effectiveTimezone }),
-    [effectiveTimezone],
-  );
+  // Get timezone display info: city name and GMT offset
+  const timezoneInfo = useMemo(() => {
+    const now = new Date();
+    // Get GMT offset in format like "GMT-3" or "GMT+5:30"
+    const gmtOffset = format(now, "O", { timeZone: effectiveTimezone });
+
+    // Get a display name for the timezone (last part of timezone string)
+    // e.g., "America/Argentina/Buenos_Aires" → "Buenos Aires"
+    const timezoneParts = effectiveTimezone.split("/");
+    const cityName = timezoneParts[timezoneParts.length - 1].replace(/_/g, " ");
+
+    return { cityName, gmtOffset };
+  }, [effectiveTimezone]);
 
   // Notify parent of timezone on mount and when it changes
   // Only update when creating new (no timezone prop) or when browser timezone changes
@@ -175,7 +183,7 @@ const DigestSchedulePicker = ({
       <div className="rounded-md bg-gray-50 p-3">
         <Text type="secondary" className="text-xs">
           Schedule: {getScheduleDescription(scheduleConfig)}{" "}
-          {timezoneAbbreviation}
+          {timezoneInfo.cityName} ({timezoneInfo.gmtOffset})
         </Text>
       </div>
     </Space>
