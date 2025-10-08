@@ -24,7 +24,7 @@ const NotificationsRedirect: NextPage = () => {
     const targetRoute = plus
       ? NOTIFICATIONS_TEMPLATES_ROUTE
       : MESSAGING_PROVIDERS_ROUTE;
-    router.replace(targetRoute);
+    router.push(targetRoute);
   }, [router, plus]);
 
   return (

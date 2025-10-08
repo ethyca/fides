@@ -80,14 +80,15 @@ const DigestConfigList = () => {
       {messageContext}
       {/* Header with search and add button */}
       <Flex justify="space-between" align="center" className="mb-4">
-        <Search
-          placeholder="Search digests..."
-          allowClear
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: 300 }}
-          data-testid="search-input"
-        />
+        <div className="w-1/3">
+          <Search
+            placeholder="Search digests..."
+            allowClear
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            data-testid="search-input"
+          />
+        </div>
         {canCreate && (
           <Button
             type="primary"
