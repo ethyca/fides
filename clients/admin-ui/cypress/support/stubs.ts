@@ -63,12 +63,6 @@ export const stubTaxonomyEntities = () => {
   }).as("getCustomFields");
 };
 
-export const stubLanguages = () => {
-  cy.intercept("GET", "/api/v1/plus/languages*", {
-    fixture: "languages.json",
-  }).as("getLanguages");
-};
-
 export const stubSystemCrud = () => {
   cy.intercept("POST", "/api/v1/system", {
     fixture: "systems/system.json",
@@ -485,7 +479,7 @@ export const stubSystemVendors = () => {
 };
 
 export const stubTranslationConfig = (enabled: boolean) => {
-  cy.intercept("GET", "/api/v1/languages", {
+  cy.intercept("GET", "/api/v1/plus/languages*", {
     fixture: "languages.json",
   }).as("getLanguages");
   cy.intercept("GET", "/api/v1/config*", {
