@@ -155,7 +155,7 @@ class ConnectionService:
         except Exception as e:
             logger.error(
                 f"Error creating connection audit event for connection '{connection_config.key}': "
-                f"{type(e).__name__}: {str(e)}"
+                f"{type(e).__name__}"
             )
 
     def create_secrets_audit_event(
@@ -182,7 +182,7 @@ class ConnectionService:
         except Exception as e:
             logger.error(
                 f"Error creating connection secrets audit event for connection '{connection_config.key}': "
-                f"{type(e).__name__}: {str(e)}"
+                f"{type(e).__name__}"
             )
 
     def validate_secrets(

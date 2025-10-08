@@ -552,7 +552,6 @@ class TestConnectionService:
             },
         )
 
-
         connection_service.create_connection_audit_event(
             EventAuditType.connection_deleted,
             connection_config,
