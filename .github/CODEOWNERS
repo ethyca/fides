@@ -7,9 +7,9 @@
 /tests/fixtures/saas/** @ethyca/connectors
 /tests/ops/integration_tests/saas/** @ethyca/connectors
 
-# Set the frontend team as owners of relevant connectors files.
+# Set the frontend team as owners of relevant files.
 /clients/** @ethyca/frontend
 
-# Set the backend team as owners of relevant connectors files.
+# Set the backend team as owners of relevant files.
 /data/** @ethyca/backend
 /src/** @ethyca/backend
