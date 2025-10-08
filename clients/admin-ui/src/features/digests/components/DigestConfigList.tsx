@@ -134,12 +134,7 @@ const DigestConfigList = () => {
             }
           >
             <List.Item.Meta
-              title={
-                <Space>
-                  <span>{config.name}</span>
-                  {!config.enabled && <Tag color="default">Inactive</Tag>}
-                </Space>
-              }
+              title={config.name}
               description={
                 <Space direction="vertical" size={4}>
                   <Space size={4}>
