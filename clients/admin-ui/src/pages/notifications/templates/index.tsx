@@ -251,7 +251,7 @@ const EmptyTableNotice = () => (
         It looks like it&apos;s your first time here!
       </Text>
       <Text fontSize="sm">
-        Add new email templates with the {`"Add message +"`} button.
+        Add new email templates with the &quot;Add message +&quot; button.
         <br />
       </Text>
     </VStack>
