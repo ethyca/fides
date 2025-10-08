@@ -186,6 +186,7 @@ const DigestConfigForm = ({
               },
             ]}
             data-testid="select-digest-type"
+            aria-label="Digest Type"
           />
         </Form.Item>
 

@@ -138,6 +138,8 @@ const DigestSchedulePicker = ({
           options={FREQUENCY_OPTIONS}
           data-testid="select-frequency"
           className="w-full"
+          id="select-frequency"
+          aria-label="Frequency"
         />
       </div>
 
