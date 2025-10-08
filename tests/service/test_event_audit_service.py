@@ -1,36 +1,6 @@
-from typing import Any, Dict
-
 import pytest
 
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
-from fides.api.request_context import reset_request_context, set_user_id
-from fides.service.event_audit_service import EventAuditService
-
-
-@pytest.fixture
-def event_audit_service(db):
-    """Fixture to provide EventAuditService instance with database session."""
-    return EventAuditService(db)
-
-
-@pytest.fixture
-def sample_event_details() -> Dict[str, Any]:
-    """Sample event details for testing."""
-    return {
-        "action": "create",
-        "resource_name": "test_resource",
-        "properties": {"name": "example_name", "description": "example_description"},
-        "metadata": {"ip_address": "192.168.1.1", "user_agent": "test-agent"},
-    }
-
-
-@pytest.fixture
-def request_context_user_id():
-    """Fixture that sets a user_id in the request context and cleans up after test."""
-    test_user_id = "context_user_123"
-    set_user_id(test_user_id)
-    yield test_user_id
-    reset_request_context()  # Clean up after test
 
 
 class TestCreateEventAudit:
@@ -514,6 +484,15 @@ class TestEventAuditTypeEnum:
                 EventAuditType.taxonomy_element_updated,
                 EventAuditType.taxonomy_element_deleted,
             ],
+            "connection.": [
+                EventAuditType.connection_created,
+                EventAuditType.connection_updated,
+                EventAuditType.connection_deleted,
+            ],
+            "connection.secrets.": [
+                EventAuditType.connection_secrets_created,
+                EventAuditType.connection_secrets_updated,
+            ],
         }
 
         for prefix, expected_types in expected_patterns.items():
@@ -532,6 +511,109 @@ class TestEventAuditTypeEnum:
         """Test that all EventAuditType values are unique."""
         values = [event_type.value for event_type in EventAuditType]
         assert len(values) == len(set(values)), "EventAuditType values should be unique"
+
+
+class TestConnectionEventAuditTypes:
+    """Tests specifically for connection-related event audit types."""
+
+    def test_create_connection_audit_events(self, db, event_audit_service):
+        """Test creating audit events for connection operations."""
+        # Test connection created event
+        connection_created_event = event_audit_service.create_event_audit(
+            event_type=EventAuditType.connection_created,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier="postgres_db_1",
+            description="Connection created: postgres connection 'postgres_db_1'",
+            event_details={"operation_type": "created", "connection_type": "postgres"},
+        )
+
+        assert (
+            connection_created_event.event_type
+            == EventAuditType.connection_created.value
+        )
+        assert connection_created_event.resource_type == "connection_config"
+        assert connection_created_event.resource_identifier == "postgres_db_1"
+        assert "postgres connection" in connection_created_event.description
+        assert connection_created_event.event_details["operation_type"] == "created"
+
+        # Test connection updated event
+        connection_updated_event = event_audit_service.create_event_audit(
+            event_type=EventAuditType.connection_updated,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier="mysql_db_1",
+            description="Connection updated: mysql connection 'mysql_db_1'",
+            event_details={"operation_type": "updated", "connection_type": "mysql"},
+        )
+
+        assert (
+            connection_updated_event.event_type
+            == EventAuditType.connection_updated.value
+        )
+        assert connection_updated_event.resource_identifier == "mysql_db_1"
+
+        # Test connection deleted event
+        connection_deleted_event = event_audit_service.create_event_audit(
+            event_type=EventAuditType.connection_deleted,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier="redis_cache_1",
+            description="Connection deleted: redis connection 'redis_cache_1'",
+            event_details={"operation_type": "deleted", "connection_type": "redis"},
+        )
+
+        assert (
+            connection_deleted_event.event_type
+            == EventAuditType.connection_deleted.value
+        )
+        assert connection_deleted_event.resource_identifier == "redis_cache_1"
+
+    def test_create_connection_secrets_audit_events(self, db, event_audit_service):
+        """Test creating audit events for connection secrets operations."""
+        # Test connection secrets created event
+        secrets_created_event = event_audit_service.create_event_audit(
+            event_type=EventAuditType.connection_secrets_created,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier="mailchimp_connector",
+            description="Connection secrets created: mailchimp connector 'mailchimp_connector' - api_key, server",
+            event_details={
+                "secrets": {"api_key": "**********", "server": "us1"},
+                "saas_connector_type": "mailchimp",
+            },
+        )
+
+        assert (
+            secrets_created_event.event_type
+            == EventAuditType.connection_secrets_created.value
+        )
+        assert secrets_created_event.resource_identifier == "mailchimp_connector"
+        assert "mailchimp connector" in secrets_created_event.description
+        assert secrets_created_event.event_details["secrets"]["api_key"] == "**********"
+        assert secrets_created_event.event_details["saas_connector_type"] == "mailchimp"
+
+        # Test connection secrets updated event
+        secrets_updated_event = event_audit_service.create_event_audit(
+            event_type=EventAuditType.connection_secrets_updated,
+            status=EventAuditStatus.succeeded,
+            resource_type="connection_config",
+            resource_identifier="postgres_db_2",
+            description="Connection secrets updated: postgres connection 'postgres_db_2' - password",
+            event_details={
+                "secrets": {"password": "**********", "username": "postgres_user"}
+            },
+        )
+
+        assert (
+            secrets_updated_event.event_type
+            == EventAuditType.connection_secrets_updated.value
+        )
+        assert secrets_updated_event.resource_identifier == "postgres_db_2"
+        assert "postgres connection" in secrets_updated_event.description
+        assert (
+            secrets_updated_event.event_details["secrets"]["password"] == "**********"
+        )
 
 
 class TestEventAuditServiceEdgeCases:

@@ -406,3 +406,7 @@ class MonitorConfigNotFoundException(BaseException):
 
 class MissingNamespaceSchemaException(BaseException):
     """Attempting to use namespace fides_meta without specifying the schema to validate it."""
+
+
+class ConnectionNotFoundException(BaseException):
+    """ConnectionConfig could not be found"""
