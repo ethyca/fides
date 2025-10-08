@@ -33,31 +33,27 @@ const NotificationTabs = () => {
     }
   };
 
-  // Build menu items conditionally based on Plus status
-  const menuItems = [];
-
-  // Templates tab - only show if Plus is enabled
-  if (plus) {
-    menuItems.push({
+  let menuItems = [
+    {
       key: "templates",
       label: "Templates",
-    });
-  }
-
-  // Providers tab - only show if Plus is enabled
-  if (plus) {
-    menuItems.push({
+      requiredPlus: true,
+    },
+    {
       key: "digests",
       label: "Digests",
-    });
-  }
-
-  // Providers tab - only show if Plus is enabled
-  if (plus) {
-    menuItems.push({
+      requiredPlus: true,
+    },
+    {
       key: "providers",
       label: "Providers",
-    });
+      requiredPlus: false,
+    },
+  ];
+
+  // Remove unavailable tabs if not running plus
+  if (!plus) {
+    menuItems = menuItems.filter((item) => item.requiredPlus);
   }
 
   return (
