@@ -182,6 +182,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [
           ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
           ScopeRegistryEnum.DIGEST_CONFIG_READ,
+          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
       },
       {
