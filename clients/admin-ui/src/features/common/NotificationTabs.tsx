@@ -1,12 +1,16 @@
 import { AntMenu as Menu } from "fidesui";
 import { useRouter } from "next/router";
 
+import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import {
   MESSAGING_PROVIDERS_ROUTE,
   NOTIFICATIONS_DIGESTS_ROUTE,
   NOTIFICATIONS_TEMPLATES_ROUTE,
 } from "~/features/common/nav/routes";
+import { ScopeRegistryEnum } from "~/types/api";
+
+import { selectThisUsersScopes } from "../user-management";
 
 const NotificationTabs = () => {
   const router = useRouter();
@@ -38,16 +42,19 @@ const NotificationTabs = () => {
       key: "templates",
       label: "Templates",
       requiresPlus: true,
+      scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
     },
     {
       key: "digests",
       label: "Digests",
       requiresPlus: true,
+      scopes: [ScopeRegistryEnum.DIGEST_CONFIG_READ],
     },
     {
       key: "providers",
       label: "Providers",
       requiresPlus: false,
+      scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
     },
   ];
 
@@ -55,6 +62,12 @@ const NotificationTabs = () => {
   if (!plus) {
     menuItems = menuItems.filter((item) => item.requiresPlus);
   }
+
+  // Filter scopes
+  const userScopes = useAppSelector(selectThisUsersScopes);
+  menuItems = menuItems.filter((item) =>
+    item.scopes.some((scope) => userScopes.includes(scope)),
+  );
 
   return (
     <div className="mb-6">
