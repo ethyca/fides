@@ -60,8 +60,15 @@ class TestManualTaskDigestMessageDispatch:
         assert email_for_action_type.subject == "Weekly DSR Summary from Acme Corp"
         assert "Hi Jane Doe," in email_for_action_type.body
         assert "Acme Corp" in email_for_action_type.body
-        assert "You have 3 request" in email_for_action_type.body  # imminent tasks
-        assert "You have 7 request" in email_for_action_type.body  # upcoming tasks
+        assert (
+            "You have 10 requests coming due" in email_for_action_type.body
+        )  # total tasks
+        assert (
+            "3 within the next 7 days" in email_for_action_type.body
+        )  # imminent tasks
+        assert (
+            "7 due in the next period" in email_for_action_type.body
+        )  # upcoming tasks
         # Validate that URLs with the expected hostname are present in the email
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
 
@@ -106,9 +113,14 @@ class TestManualTaskDigestMessageDispatch:
         assert "Test Organization" in email_for_action_type.body
         assert "John Smith" in email_for_action_type.body
         assert (
-            "0 request" in email_for_action_type.body
-        )  # HTML template uses different text
-        assert "5 request" in email_for_action_type.body
+            "You have 5 requests coming due" in email_for_action_type.body
+        )  # total tasks
+        assert (
+            "2 within the next 7 days" in email_for_action_type.body
+        )  # imminent tasks
+        assert (
+            "3 due in the next period" in email_for_action_type.body
+        )  # upcoming tasks
 
         # Should contain HTML tags (since it's the HTML template)
         assert "<div" in email_for_action_type.body
@@ -354,8 +366,13 @@ class TestManualTaskDigestMessageDispatch:
         assert (
             "This is your weekly summary" in email_for_action_type.body
         )  # Default intro text from template
-        assert "1 request" in email_for_action_type.body  # HTML template format
-        assert "3 request" in email_for_action_type.body
+        assert "4 requests coming due" in email_for_action_type.body  # Total count
+        assert (
+            "1 within the next 7 days" in email_for_action_type.body
+        )  # Imminent count
+        assert (
+            "3 due in the next period" in email_for_action_type.body
+        )  # Upcoming count
 
         # Should contain HTML tags (since it's the HTML template)
         assert "<div" in email_for_action_type.body

@@ -121,7 +121,7 @@ def test_manual_task_digest_template_edge_cases() -> None:
     assert "Acme Corp &amp; Associates, LLC" in rendered_html  # HTML escaped
     # Validate that URLs with the expected hostname are present in the rendered HTML
     assert_url_hostname_present(rendered_html, "privacy.example.com")
-    assert "You have 0 requests due" in rendered_html
+    assert "You have 0 requests coming due" in rendered_html
 
 
 def test_manual_task_digest_template_responsive_design() -> None:
