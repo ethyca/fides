@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.72.0..main)
 
+### Fixed
+- Fixed an edge case issue where the GPC badge would incorrectly show "Overridden" [#6724](https://github.com/ethyca/fides/pull/6724)
+
 ## [2.72.0](https://github.com/ethyca/fides/compare/2.71.1...2.72.0)
 
 ### Added
