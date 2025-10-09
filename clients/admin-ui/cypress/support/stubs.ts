@@ -63,12 +63,6 @@ export const stubTaxonomyEntities = () => {
   }).as("getCustomFields");
 };
 
-export const stubLanguages = () => {
-  cy.intercept("GET", "/api/v1/plus/languages*", {
-    fixture: "languages.json",
-  }).as("getLanguages");
-};
-
 export const stubSystemCrud = () => {
   cy.intercept("POST", "/api/v1/system", {
     fixture: "systems/system.json",
@@ -485,7 +479,7 @@ export const stubSystemVendors = () => {
 };
 
 export const stubTranslationConfig = (enabled: boolean) => {
-  cy.intercept("GET", "/api/v1/languages", {
+  cy.intercept("GET", "/api/v1/plus/languages*", {
     fixture: "languages.json",
   }).as("getLanguages");
   cy.intercept("GET", "/api/v1/config*", {
@@ -496,6 +490,9 @@ export const stubTranslationConfig = (enabled: boolean) => {
       },
     },
   }).as("getTranslationConfig");
+  cy.intercept("GET", "/api/v1/privacy-experience/gvl/translations*", {
+    fixture: "privacy-experiences/gvl_translations.json",
+  }).as("getGvlTranslations");
 };
 
 export const stubStagedResourceActions = () => {
@@ -619,6 +616,14 @@ export const stubExperienceConfig = () => {
   cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
     fixture: "tcf/configurations.json",
   }).as("getTcfConfigs");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/system/consent-management/report?page=1&size=1",
+    { items: [{ id: "test" }], total: 1, page: 1, size: 1 },
+  ).as("getVendorReportEmpty");
+  cy.intercept("GET", "/api/v1/system*", {
+    fixture: "systems/systems.json",
+  }).as("getSystems");
   stubPlus(true);
 };
 

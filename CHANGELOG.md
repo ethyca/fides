@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Improved accessibility configuration for ESLint jsx-a11y plugin with Ant Design component support [#6699](https://github.com/ethyca/fides/pull/6699)
+- Upgraded Cypress version to latest and made additional changes to help speed up Admin UI test runs [#6705](https://github.com/ethyca/fides/pull/6705)
 
 ### Fixed
 - Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)

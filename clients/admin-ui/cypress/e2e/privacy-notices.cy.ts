@@ -1,5 +1,4 @@
 import {
-  stubLanguages,
   stubPlus,
   stubPrivacyNoticesCrud,
   stubTaxonomyEntities,
@@ -17,7 +16,6 @@ describe("Privacy notices", () => {
     stubPrivacyNoticesCrud();
     stubTranslationConfig(true);
     stubPlus(true);
-    stubLanguages();
   });
 
   describe("permissions", () => {
@@ -334,7 +332,6 @@ describe("Privacy notices", () => {
     beforeEach(() => {
       stubPrivacyNoticesCrud();
       stubTaxonomyEntities();
-      stubLanguages();
     });
 
     it("can create a new privacy notice", () => {
@@ -419,7 +416,6 @@ describe("Privacy notices", () => {
 
   describe("translation interface", () => {
     it("shows the translation interface when translations are enabled", () => {
-      stubLanguages();
       stubTranslationConfig(true);
       stubTaxonomyEntities();
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
