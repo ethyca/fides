@@ -8,6 +8,7 @@ from unittest.mock import ANY, Mock, call
 import pydash
 import pytest
 import sqlalchemy.exc
+from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -2656,14 +2657,7 @@ class TestSaveAccessResults:
     @pytest.mark.parametrize(
         "error_type, error_inputs",
         [
-            (
-                sqlalchemy.exc.DataError,
-                ("Database connection error", None, Exception("Original error")),
-            ),
-            (
-                sqlalchemy.exc.OperationalError,
-                ("Database connection error", None, Exception("Original error")),
-            ),
+            (InternalError_, ("Database connection error",)),
             (
                 sqlalchemy.exc.StatementError,
                 (
@@ -2723,18 +2717,3 @@ class TestSaveAccessResults:
                 "error:" in log_text,
             ]
         ), f"Expected error message in logs, got: {loguru_caplog.text}"
-
-        # Verify success execution log was created
-        execution_logs = ExecutionLog.filter(
-            db=db,
-            conditions=(ExecutionLog.privacy_request_id == privacy_request.id),
-        ).all()
-
-        backup_logs = [
-            log for log in execution_logs if log.dataset_name == "Access results backup"
-        ]
-        assert len(backup_logs) == 1
-        assert backup_logs[0].status == ExecutionLogStatus.complete
-        assert (
-            "S3 upload succeeded but database backup failed" in backup_logs[0].message
-        )

@@ -6,6 +6,7 @@ from typing import Any, Optional
 
 import sqlalchemy.exc
 from loguru import logger
+from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
 
@@ -287,18 +288,8 @@ def save_access_results(
     # Try to save the backup results, but don't fail the DSR if this fails
     try:
         privacy_request.save_filtered_access_results(session, rule_filtered_results)
-        privacy_request.add_success_execution_log(
-            session,
-            connection_key=None,
-            dataset_name="Access results backup",
-            collection_name=None,
-            message="S3 upload succeeded and database backup succeeded. DSR completed successfully.",
-            action_type=ActionType.access,
-        )
     except (
-        # SQLAlchemy errors
-        sqlalchemy.exc.DataError,  # data validation errors
-        sqlalchemy.exc.OperationalError,  # database operational errors
+        InternalError_,  # invalid memory alloc request size 1073741824
         sqlalchemy.exc.StatementError,  # SQL statement errors
         # Python memory errors
         MemoryError,  # system out of memory
@@ -309,27 +300,11 @@ def save_access_results(
             "DSR will continue processing. Error: {}",
             str(exc),
         )
-        privacy_request.add_success_execution_log(
-            session,
-            connection_key=None,
-            dataset_name="Access results backup",
-            collection_name=None,
-            message="S3 upload succeeded but database backup failed. DSR completed successfully.",
-            action_type=ActionType.access,
-        )
     except Exception as exc:
         logger.error(
             "Failed to save backup of DSR results to database after successful S3 upload. "
             "DSR will continue processing. Unexpected Error: {}",
             str(exc),
-        )
-        privacy_request.add_success_execution_log(
-            session,
-            connection_key=None,
-            dataset_name="Access results backup",
-            collection_name=None,
-            message="S3 upload succeeded but database backup failed. DSR completed successfully.",
-            action_type=ActionType.access,
         )
 
 
