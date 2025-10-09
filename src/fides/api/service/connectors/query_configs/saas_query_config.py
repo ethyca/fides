@@ -290,7 +290,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self,
         request: SaaSRequest,
         input_data: Dict[str, List[Any]],
-        param_values: Dict[str, Any]
+        param_values: Dict[str, Any],
     ) -> None:
         """
         Process param_values for query generation on access requests.
@@ -299,12 +299,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if param_value.references or param_value.identity:
                 input_list = input_data.get(param_value.name)
                 if input_list:
-                    param_values[param_value.name] = self._safe_extract_value(input_list)
+                    param_values[param_value.name] = self._safe_extract_value(
+                        input_list
+                    )
             elif param_value.connector_param:
                 connector_value = pydash.get(input_data, param_value.connector_param)
-                param_values[param_value.name] = self._safe_extract_value(connector_value)
-
-
+                param_values[param_value.name] = self._safe_extract_value(
+                    connector_value
+                )
 
     def _process_param_values_for_update(
         self,
@@ -312,7 +314,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         collection_values: Dict[str, Row],
         identity_data: Dict[str, Any],
         input_data: Optional[Dict[str, List[Any]]] = None,
-        param_values: Dict[str, Any] = {}
+        param_values: Dict[str, Any] = {},
     ) -> None:
         """
         Process param_values for update generation (erasure requests).
@@ -338,11 +340,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     collection_values, reference.field
                 )
-                if not param_values[param_value.name]:
-                    #If the reference is not found in the collection, check the input data from upstream tasks
+                if not param_values[param_value.name] and input_data:
+                    # If the reference is not found in the collection, check the input data from upstream tasks
                     input_list = input_data.get(param_value.name)
                     if input_list:
-                        param_values[param_value.name] = self._safe_extract_value(input_list)
+                        param_values[param_value.name] = self._safe_extract_value(
+                            input_list
+                        )
 
             elif param_value.identity:
                 param_values[param_value.name] = pydash.get(
@@ -379,8 +383,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 self.request_task
             )
             param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
-
-
 
     @staticmethod
     def _generate_product_list(*args: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -433,7 +435,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
         param_values: Dict[str, Any] = {}
         # Process param values using utility method
-        self._process_param_values_for_query(self.current_request, input_data, param_values)
+        self._process_param_values_for_query(
+            self.current_request, input_data, param_values
+        )
 
         privacy_request_object = input_data.get(PRIVACY_REQUEST_OBJECT)
         if (
@@ -448,12 +452,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             isinstance(custom_privacy_request_fields, list)
             and len(custom_privacy_request_fields) > 0
         ):
-            param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields[0]
+            param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields[
+                0
+            ]
 
         # Add standard parameters
         # For generate_query, we don't have a PrivacyRequest object, so we use self.privacy_request
         self._add_standard_parameters(param_values)
-
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -465,7 +470,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return saas_request_params
 
     def generate_update_stmt(
-        self, row: Row, policy: Policy, request: PrivacyRequest, input_data: Optional[Dict[str, List[Any]]] = None
+        self,
+        row: Row,
+        policy: Policy,
+        request: PrivacyRequest,
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> SaaSRequestParams:
         """
         This returns the method, path, header, query, and body params needed to make an API call.
@@ -546,9 +555,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values[PRIVACY_REQUEST_OBJECT] = privacy_request.to_safe_dict()
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         # Add standard parameters
-        self._add_standard_parameters(
-            param_values
-        )
+        self._add_standard_parameters(param_values)
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
             if field.read_only:
