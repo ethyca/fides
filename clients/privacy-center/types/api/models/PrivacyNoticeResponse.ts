@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 import type { ConsentMechanism } from "./ConsentMechanism";
-import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { GPPFieldMapping } from "./GPPFieldMapping";
+import type { MinimalAsset } from "./MinimalAsset";
 import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
 import type { UserConsentPreference } from "./UserConsentPreference";
@@ -31,8 +31,8 @@ export type PrivacyNoticeResponse = {
   origin?: string | null;
   created_at: string;
   updated_at: string;
-  cookies?: Array<Cookies>;
-  calculated_systems_applicable?: boolean;
+  cookies?: Array<MinimalAsset>;
+  systems_applicable?: boolean;
   translations?: Array<NoticeTranslationResponse>;
   children?: Array<PrivacyNoticeResponse>;
   gpp_field_mapping?: Array<GPPFieldMapping> | null;

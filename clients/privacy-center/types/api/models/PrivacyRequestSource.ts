@@ -9,10 +9,14 @@
  * - Request Manager: Request submitted from the Admin UI's Request manager page
  * - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
  * - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
+ * - Dataset Test: Standalone dataset test
+ * - Janus SDK: Request created from the Mobile SDK
  */
 export enum PrivacyRequestSource {
   PRIVACY_CENTER = "Privacy Center",
   REQUEST_MANAGER = "Request Manager",
   CONSENT_WEBHOOK = "Consent Webhook",
   FIDES_JS = "Fides.js",
+  DATASET_TEST = "Dataset Test",
+  JANUS_SDK = "Janus SDK",
 }

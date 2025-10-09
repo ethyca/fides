@@ -6,6 +6,7 @@ import type { ExperienceTranslation } from "./ExperienceTranslation";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * The schema to update an ExperienceConfig via the API.
@@ -26,8 +27,15 @@ export type ExperienceConfigUpdate = {
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
+  allow_vendor_asset_disclosure?: boolean | null;
+  asset_disclosure_include_types?: Array<string> | null;
   regions: Array<PrivacyNoticeRegion>;
+  tcf_configuration_id?: string | null;
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
   properties: Array<MinimalProperty>;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
 };

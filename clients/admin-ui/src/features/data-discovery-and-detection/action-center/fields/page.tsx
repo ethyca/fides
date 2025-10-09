@@ -62,6 +62,7 @@ const ResourceStatus: Record<
   removing: { label: "In Review", color: "nectar" },
   promoting: { label: "In Review", color: "nectar" },
   monitored: { label: "Approved", color: "nectar" },
+  approved: { label: "Approved", color: "nectar" },
 } as const;
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>

@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { FidesDatasetReference } from "./FidesDatasetReference";
+import type { FieldMaskingStrategyOverride } from "./FieldMaskingStrategyOverride";
 
 /**
  * Supplementary metadata used by the Fides application for additional features.
@@ -41,7 +42,11 @@ export type FidesMeta = {
    */
   custom_request_field?: string | null;
   /**
-   * Optionally specify that this entity's name should be redacted in DSR reports. When set to "name", the entity will be redacted using the indexed format (e.g., "dataset_1", "collection_1", "field_1").
+   * Optionally specify a masking strategy override for this field.
+   */
+  masking_strategy_override?: FieldMaskingStrategyOverride | null;
+  /**
+   * Specify 'name' to indicate the field name should be redacted.
    */
   redact?: "name" | null;
 };

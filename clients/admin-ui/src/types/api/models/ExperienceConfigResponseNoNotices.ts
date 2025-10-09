@@ -23,6 +23,8 @@ export type ExperienceConfigResponseNoNotices = {
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
+  allow_vendor_asset_disclosure?: boolean | null;
+  asset_disclosure_include_types?: Array<string> | null;
   regions: Array<PrivacyNoticeRegion>;
   tcf_configuration_id?: string | null;
   id: string;

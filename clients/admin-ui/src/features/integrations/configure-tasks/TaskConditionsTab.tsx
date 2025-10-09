@@ -16,7 +16,7 @@ import {
   useGetManualTaskConfigQuery,
   useUpdateDependencyConditionsMutation,
 } from "~/features/datastore-connections/connection-manual-tasks.slice";
-import { ConditionLeaf } from "~/types/api";
+import { ConditionGroup, ConditionLeaf } from "~/types/api";
 
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";
@@ -68,11 +68,15 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
   useEffect(() => {
     if (
       manualTaskConfig?.dependency_conditions &&
-      manualTaskConfig.dependency_conditions.length > 0
+      (manualTaskConfig?.dependency_conditions as Array<ConditionGroup>)
+        ?.length > 0
     ) {
-      const firstGroup = manualTaskConfig.dependency_conditions[0];
+      const firstGroup: ConditionGroup =
+        manualTaskConfig.dependency_conditions[0];
       // Filter to only ConditionLeaf items (not nested groups)
-      const leafConditions = firstGroup.conditions.filter(
+      const leafConditions = (
+        firstGroup.conditions as Array<ConditionLeaf | ConditionGroup>
+      )?.filter(
         (condition): condition is ConditionLeaf =>
           "field_address" in condition && "operator" in condition,
       );

@@ -2,7 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { Consent, ConsentPreferences, PrivacyCenterConfig } from "~/types/api";
+import {
+  Consent,
+  ConsentPreferences,
+  fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
+} from "~/types/api";
 import { Config } from "~/types/config";
 
 interface ConfigState {

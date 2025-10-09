@@ -70,7 +70,6 @@ export const taxonomyKeyToScopeRegistryEnum = (taxonomyKey: string) => {
         UPDATE: ScopeRegistryEnum.TAXONOMY_UPDATE,
         CREATE: ScopeRegistryEnum.TAXONOMY_CREATE,
         DELETE: ScopeRegistryEnum.TAXONOMY_DELETE,
-        READ: ScopeRegistryEnum.TAXONOMY_READ,
       } as const;
   }
 };

@@ -5,9 +5,9 @@
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
 import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
 import type { PolicyResponse } from "./PolicyResponse";
-import type { PrivacyRequestUser } from "./PrivacyRequestUser";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
+import type { PrivacyRequestUser } from "./PrivacyRequestUser";
 
 /**
  * The schema for the more detailed PrivacyRequest response containing both
@@ -19,8 +19,8 @@ export type PrivacyRequestVerboseResponse = {
   started_processing_at?: string | null;
   reviewed_at?: string | null;
   reviewed_by?: string | null;
-  reviewer?: PrivacyRequestUser | null;
   submitted_by?: string | null;
+  reviewer?: PrivacyRequestUser | null;
   submitter?: PrivacyRequestUser | null;
   finished_processing_at?: string | null;
   identity_verified_at?: string | null;
@@ -36,6 +36,7 @@ export type PrivacyRequestVerboseResponse = {
   custom_privacy_request_fields_approved_by?: string | null;
   custom_privacy_request_fields_approved_at?: string | null;
   source?: PrivacyRequestSource | null;
+  location?: string | null;
   deleted_at?: string | null;
   deleted_by?: string | null;
   finalized_at?: string | null;

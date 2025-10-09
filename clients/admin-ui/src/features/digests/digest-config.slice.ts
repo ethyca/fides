@@ -2,10 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
-  DigestConfigListResponse,
   DigestConfigRequest,
   DigestConfigResponse,
   DigestType,
+  Page_DigestConfigResponse_,
 } from "~/types/api";
 
 export interface State {}
@@ -50,7 +50,7 @@ const digestConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // List digest configs
     listDigestConfigs: build.query<
-      DigestConfigListResponse,
+      Page_DigestConfigResponse_,
       ListDigestConfigsParams
     >({
       query: ({ digest_config_type, enabled, page = 1, size = 50 }) => ({
