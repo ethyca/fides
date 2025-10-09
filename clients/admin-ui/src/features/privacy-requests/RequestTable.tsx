@@ -52,6 +52,7 @@ import RequestStatusBadge from "../common/RequestStatusBadge";
 import { formatDate, sentenceCase } from "../common/utils";
 import { SubjectRequestActionTypeMap } from "./constants";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+import { RequestTableActions } from "./RequestTableActions";
 
 const Label = ({ children }: React.PropsWithChildren) => {
   return <Text type="secondary">{children}</Text>;
@@ -125,6 +126,8 @@ const DaysLeft = ({
       </div>
     );
   }
+
+  return null;
 };
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
@@ -254,7 +257,25 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
               dataSource={requests}
               renderItem={(item) => {
                 return (
-                  <List.Item actions={[<Button key="test">test</Button>]}>
+                  <List.Item
+                    styles={{
+                      actions: {
+                        minWidth: "150px",
+                        display: "flex",
+                        justifyContent: "right",
+                      },
+                    }}
+                    actions={[
+                      <Button
+                        key="test"
+                        icon={<Icons.View />}
+                        aria-label="View Request"
+                        onClick={() => handleViewDetails(item.id)}
+                        size="small"
+                      />,
+                      <RequestTableActions subjectRequest={item} />,
+                    ]}
+                  >
                     <List.Item.Meta
                       title={
                         <div
