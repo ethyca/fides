@@ -274,6 +274,11 @@ def upload_access_results(
     return download_urls
 
 
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
 def save_access_results(
     session: Session,
     privacy_request: PrivacyRequest,
@@ -290,6 +295,7 @@ def save_access_results(
     # Try to save the backup results, but don't fail the DSR if this fails
     try:
         privacy_request.save_filtered_access_results(session, rule_filtered_results)
+        logger.info("Successfully saved backup filtered access results to database")
     except (
         InternalError_,  # invalid memory alloc request size 1073741824
         sqlalchemy.exc.StatementError,  # SQL statement errors
