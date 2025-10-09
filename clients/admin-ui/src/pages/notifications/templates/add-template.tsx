@@ -1,5 +1,5 @@
 import { getErrorMessage } from "common/helpers";
-import { MESSAGING_ROUTE } from "common/nav/routes";
+import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
 import { Box, Spinner, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -18,7 +18,7 @@ import PropertySpecificMessagingTemplateForm, {
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
 
-const AddMessagingTemplatePage: NextPage = () => {
+const AddNotificationTemplatePage: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
   const { templateType } = router.query;
@@ -49,7 +49,7 @@ const AddMessagingTemplatePage: NextPage = () => {
     }
 
     toast(successToastParams(`Messaging template created successfully`));
-    router.push(MESSAGING_ROUTE);
+    router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
   };
 
   if (!messagingTemplate) {
@@ -63,9 +63,9 @@ const AddMessagingTemplatePage: NextPage = () => {
   return (
     <Layout title="Configure Message">
       <PageHeader
-        heading="Messaging"
+        heading="Templates"
         breadcrumbItems={[
-          { title: "Messaging", href: MESSAGING_ROUTE },
+          { title: "Templates", href: NOTIFICATIONS_TEMPLATES_ROUTE },
           {
             title: `${CustomizableMessagingTemplatesLabelEnum[messagingTemplate.type]}`,
           },
@@ -84,4 +84,4 @@ const AddMessagingTemplatePage: NextPage = () => {
   );
 };
 
-export default AddMessagingTemplatePage;
+export default AddNotificationTemplatePage;

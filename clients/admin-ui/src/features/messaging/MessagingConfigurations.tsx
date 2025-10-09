@@ -4,14 +4,13 @@ import {
   AntSpace as Space,
   AntTable as Table,
   Flex,
-  Heading,
   Icons,
   Text,
   VStack,
 } from "fidesui";
+import { useRouter } from "next/router";
 
-import Layout from "~/features/common/Layout";
-import { MESSAGING_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
+import { MESSAGING_PROVIDERS_NEW_ROUTE } from "~/features/common/nav/routes";
 
 import { TableSkeletonLoader } from "../common/table/v2";
 import { useMessagingConfigurationsTable } from "./hooks/useMessagingConfigurationsTable";
@@ -57,11 +56,10 @@ export const MessagingConfigurations = () => {
     deleteModal,
   } = useMessagingConfigurationsTable();
 
+  const router = useRouter();
+
   return (
-    <Layout title="Messaging providers">
-      <Heading mb={5} fontSize="2xl" fontWeight="semibold">
-        Manage messaging providers
-      </Heading>
+    <>
       <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "70%" }}>
         Fides requires a messaging provider for sending processing notices to
         privacy request subjects, and allows for Subject Identity Verification
@@ -84,7 +82,9 @@ export const MessagingConfigurations = () => {
             }}
           >
             <Button
-              href={`${MESSAGING_PROVIDERS_ROUTE}/new`}
+              onClick={() => {
+                router.push(MESSAGING_PROVIDERS_NEW_ROUTE);
+              }}
               role="link"
               type="primary"
               icon={<Icons.Add />}
@@ -109,6 +109,6 @@ export const MessagingConfigurations = () => {
       </Flex>
 
       {deleteModal}
-    </Layout>
+    </>
   );
 };
