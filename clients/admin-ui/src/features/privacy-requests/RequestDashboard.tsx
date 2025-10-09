@@ -12,6 +12,7 @@ import {
   AntList as List,
   AntPagination as Pagination,
   AntRow as Row,
+  AntSkeleton as Skeleton,
   AntSpin as Spin,
   AntTag as Tag,
   AntText as Text,
@@ -43,7 +44,6 @@ import {
   setSortKey,
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity, Rule } from "~/features/privacy-requests/types";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
@@ -54,10 +54,8 @@ import { formatDate, sentenceCase } from "../common/utils";
 import { SubjectRequestActionTypeMap } from "./constants";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { RequestTableActions } from "./RequestTableActions";
-
-const Label = ({ children }: React.PropsWithChildren) => {
-  return <Text type="secondary">{children}</Text>;
-};
+import { LabeledTag, LabeledText } from "./dashboard/labels";
+import { DaysLeft } from "./dashboard/daysLeft";
 
 const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
   Array.from(
@@ -68,69 +66,6 @@ const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
     ),
   );
 
-type LabeledProps = React.PropsWithChildren<{ label: React.ReactNode }>;
-
-const LabeledTag = ({ label, children }: LabeledProps) => {
-  return (
-    <Flex gap={8}>
-      <Label>{label}:</Label>
-      <Tag>{children}</Tag>
-    </Flex>
-  );
-};
-
-const LabeledText = ({ label, children }: LabeledProps) => {
-  return (
-    <Flex gap={4}>
-      <Label>{label}:</Label>
-      <Text>{children}</Text>
-    </Flex>
-  );
-};
-
-const DAY_IRRELEVANT_STATUSES = [
-  PrivacyRequestStatus.COMPLETE,
-  PrivacyRequestStatus.CANCELED,
-  PrivacyRequestStatus.DENIED,
-  PrivacyRequestStatus.IDENTITY_UNVERIFIED,
-];
-
-const DaysLeft = ({
-  status,
-  daysLeft,
-  timeframe = 45,
-}: {
-  status: PrivacyRequestStatus;
-  daysLeft: number | undefined;
-  timeframe: number | undefined;
-}) => {
-  const showBadge =
-    !DAY_IRRELEVANT_STATUSES.includes(status) && daysLeft !== undefined;
-
-  if (showBadge) {
-    const percentage = (100 * daysLeft) / timeframe;
-    let color = "error";
-    if (percentage < 25) {
-      color = "error";
-    } else if (percentage >= 75) {
-      color = "success";
-    } else {
-      color = "warning";
-    }
-    return (
-      <div>
-        <Tag color={color} bordered={false}>
-          <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
-            <>{daysLeft} days left</>
-          </Tooltip>
-        </Tag>
-      </div>
-    );
-  }
-
-  return null;
-};
-
 export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
     "search",
@@ -138,7 +73,6 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
   );
   const filters = useSelector(selectPrivacyRequestFilters);
   const toast = useToast();
-  const router = useRouter();
   const dispatch = useDispatch();
 
   const pagination = useAntPagination();
@@ -188,11 +122,6 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
     }
   };
 
-  const handleViewDetails = (id: string) => {
-    const url = `/privacy-requests/${id}`;
-    router.push(url);
-  };
-
   const handleSort = (columnSort: ColumnSort) => {
     if (!columnSort) {
       dispatch(clearSortKeys());
@@ -203,15 +132,6 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
     dispatch(setSortDirection(desc ? "desc" : "asc"));
     resetPagination();
   };
-
-  const tableInstance = useReactTable<PrivacyRequestEntity>({
-    getCoreRowModel: getCoreRowModel(),
-    data: requests,
-    columns: useMemo(() => getRequestTableColumns(), []),
-    getRowId: (row) => `${row.status}-${row.id}`,
-    manualPagination: true,
-    columnResizeMode: "onChange",
-  });
 
   return (
     <Box {...props}>
@@ -242,18 +162,20 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
       </TableActionBar>
       {isLoading ? (
         <Box p={2} borderWidth={1}>
-          <TableSkeletonLoader rowHeight={26} numRows={10} />
+          <List
+            dataSource={Array(25).fill({})} // Is there a better way to do this?
+            renderItem={() => (
+              <List.Item>
+                <Skeleton></Skeleton>
+              </List.Item>
+            )}
+          ></List>
         </Box>
       ) : (
         <Flex vertical gap="middle">
-          {/* <FidesTableV2<PrivacyRequestEntity>
-            tableInstance={tableInstance}
-            onRowClick={(row) => handleViewDetails(row.id)}
-            onSort={handleSort}
-            loading={isFetching}
-          /> */}
-          <Spin spinning={isLoading || isFetching}>
+          <Spin spinning={isFetching}>
             <List<PrivacyRequestEntity>
+              style={{ borderTopRightRadius: 0, borderTopLeftRadius: 0 }}
               bordered
               dataSource={requests}
               renderItem={(item) => {
@@ -268,36 +190,41 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                     }}
                     actions={[
                       <Link
-                        key="asd"
+                        key="view"
                         legacyBehavior
                         href={`/privacy-requests/${encodeURIComponent(item.id)}`}
                       >
-                        <Button
-                          key="test"
-                          icon={<Icons.View />}
-                          aria-label="View Request"
-                          // onClick={() => handleViewDetails(item.id)}
-                          size="small"
-                          href={`/privacy-requests/${encodeURIComponent(item.id)}`}
-                        />
+                        <Tooltip title="View privacy request">
+                          <Button
+                            key="test"
+                            icon={<Icons.View />}
+                            aria-label="View Request"
+                            size="small"
+                            href={`/privacy-requests/${encodeURIComponent(item.id)}`}
+                          />
+                        </Tooltip>
                       </Link>,
                       <RequestTableActions subjectRequest={item} />,
                     ]}
                   >
                     <List.Item.Meta
                       title={
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "16px",
-                          }}
-                        >
+                        <Flex gap={16} wrap>
                           <Text
                             copyable={{
                               text: item.id,
-                              icon: <Icons.Copy style={{ marginTop: "4px" }} />,
+                              icon: (
+                                <Tooltip title="Copy request ID">
+                                  <Icons.Copy style={{ marginTop: "4px" }} />
+                                </Tooltip>
+                              ),
+                              tooltips: null,
                             }}
-                            style={{ display: "flex", gap: "8px" }}
+                            style={{
+                              display: "flex",
+                              gap: "8px",
+                              minWidth: "100px",
+                            }}
                           >
                             {item.policy.name}
                           </Text>
@@ -307,11 +234,11 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                               style={{ fontWeight: "normal" }}
                             />
                           </div>
-                        </div>
+                        </Flex>
                       }
                       description={
-                        <Flex vertical gap={8} style={{ paddingTop: 4 }}>
-                          <Flex gap={8}>
+                        <Flex vertical gap={16} style={{ paddingTop: 4 }} wrap>
+                          <Flex gap={8} wrap>
                             {(item.identity.email?.value ?? "").length > 0 ? (
                               <LabeledText label="Email">
                                 {item.identity.email.value}
@@ -342,7 +269,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                         </Flex>
                       }
                     />
-                    <Flex gap={8}>
+                    <Flex gap={16} wrap>
                       <DaysLeft
                         daysLeft={item.days_left}
                         status={item.status}
