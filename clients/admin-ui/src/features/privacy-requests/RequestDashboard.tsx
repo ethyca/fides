@@ -196,7 +196,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                       >
                         <Tooltip title="View privacy request">
                           <Button
-                            key="test"
+                            key="view"
                             icon={<Icons.View />}
                             aria-label="View Request"
                             size="small"
