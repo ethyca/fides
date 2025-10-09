@@ -99,7 +99,7 @@ jobs:
 
       - name: Build NextJS
         working-directory: clients/admin-ui
-        run: NODE_ENV=test npx next build
+        run: npm run build:test
 
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
