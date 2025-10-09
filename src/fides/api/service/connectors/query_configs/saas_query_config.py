@@ -83,12 +83,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """
         Returns the appropriate request configs based on the current collection and identity
         """
-        collection_name = self.node.address.collection
-
         try:
-            requests = self.endpoints[collection_name].requests
+            requests = self.endpoints[self.collection_name].requests
         except KeyError:
-            logger.error("The '{}' endpoint is not defined", collection_name)
+            logger.error("The '{}' endpoint is not defined", self.collection_name)
             return []
 
         if not requests.read:
@@ -282,6 +280,108 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             name: value for name, value in self.secrets.items() if name in param_names
         }
 
+    def _safe_extract_value(self, value_list: Optional[List[Any]]) -> Optional[Any]:
+        """
+        Safely extract the first value from a list
+        """
+        return value_list[0] if value_list else None
+
+    def _process_param_values_for_query(
+        self,
+        request: SaaSRequest,
+        input_data: Dict[str, List[Any]],
+        param_values: Dict[str, Any]
+    ) -> None:
+        """
+        Process param_values for query generation on access requests.
+        """
+        for param_value in request.param_values or []:
+            if param_value.references or param_value.identity:
+                input_list = input_data.get(param_value.name)
+                if input_list:
+                    param_values[param_value.name] = self._safe_extract_value(input_list)
+            elif param_value.connector_param:
+                connector_value = pydash.get(input_data, param_value.connector_param)
+                param_values[param_value.name] = self._safe_extract_value(connector_value)
+
+
+
+    def _process_param_values_for_update(
+        self,
+        request: SaaSRequest,
+        collection_values: Dict[str, Row],
+        identity_data: Dict[str, Any],
+        input_data: Optional[Dict[str, List[Any]]] = None,
+        param_values: Dict[str, Any] = {}
+    ) -> None:
+        """
+        Process param_values for update generation (erasure requests).
+
+        Args:
+            request: The SaaS request configuration
+            collection_values: Collection data for reference resolution
+            identity_data: Identity data for parameter resolution
+            input_data: Optional upstream data from other collections
+
+        Returns:
+            Dictionary of processed parameter values
+        """
+        for param_value in request.param_values or []:
+            if param_value.references:
+                # we resolve the param reference here for consistency,
+                # i.e. as if it may be a pointer to an `external_reference`.
+                # Cross-collection references are now supported by looking up data
+                # from upstream collections passed via input_data.
+                reference: FidesDatasetReference = SaaSConfig.resolve_param_reference(
+                    param_value.references[0], self.secrets
+                )
+                param_values[param_value.name] = pydash.get(
+                    collection_values, reference.field
+                )
+                if not param_values[param_value.name]:
+                    #If the reference is not found in the collection, check the input data from upstream tasks
+                    input_list = input_data.get(param_value.name)
+                    if input_list:
+                        param_values[param_value.name] = self._safe_extract_value(input_list)
+
+            elif param_value.identity:
+                param_values[param_value.name] = pydash.get(
+                    identity_data, param_value.identity
+                )
+            elif param_value.connector_param:
+                param_values[param_value.name] = pydash.get(
+                    self.secrets, param_value.connector_param
+                )
+
+    def _add_standard_parameters(
+        self,
+        param_values: Dict[str, Any],
+    ) -> None:
+        """
+        Add standard parameters that are common across query and update operations.
+        """
+
+        # common parameters for read and update
+        if self.privacy_request:
+            param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+        param_values[UUID] = str(uuid4())
+        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        param_values[FIELD_LIST] = ",".join(
+            [
+                field.name
+                for field in self.top_level_field_map().values()
+                if field.data_type() != "None"
+            ]
+        )
+
+        if self.request_task and self.request_task.id:
+            param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
+                self.request_task
+            )
+            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
+
+
+
     @staticmethod
     def _generate_product_list(*args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -331,22 +431,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 f"The 'read' action is not defined for the '{self.collection_name}' "
                 f"endpoint in {self.node.connection_key}"
             )
-
-        # create the source of param values to populate the various placeholders
-        # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for param_value in self.current_request.param_values or []:
-            if param_value.references or param_value.identity:
-                input_list = input_data.get(param_value.name)
-                if input_list:
-                    param_values[param_value.name] = input_list[0]
-            elif param_value.connector_param:
-                param_values[param_value.name] = pydash.get(
-                    input_data, param_value.connector_param
-                )[0]
-
-        if self.privacy_request:
-            param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+        # Process param values using utility method
+        self._process_param_values_for_query(self.current_request, input_data, param_values)
 
         privacy_request_object = input_data.get(PRIVACY_REQUEST_OBJECT)
         if (
@@ -361,25 +448,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             isinstance(custom_privacy_request_fields, list)
             and len(custom_privacy_request_fields) > 0
         ):
-            param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields[
-                0
-            ]
+            param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields[0]
 
-        param_values[UUID] = str(uuid4())
-        # Use full ISO-8601 timestamp including time component (UTC, seconds precision)
-        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-        param_values[FIELD_LIST] = ",".join(
-            [
-                field.name
-                for field in self.top_level_field_map().values()
-                if field.data_type() != "None"
-            ]
-        )
-        if self.request_task and self.request_task.id:
-            param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
-                self.request_task
-            )
-            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
+        # Add standard parameters
+        # For generate_query, we don't have a PrivacyRequest object, so we use self.privacy_request
+        self._add_standard_parameters(param_values)
+
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -455,8 +529,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             input_data: Optional upstream data from other collections for cross-collection references
         """
 
-        collection_name: str = self.node.address.collection
-        collection_values: Dict[str, Row] = {collection_name: row}
+        collection_values: Dict[str, Row] = {self.collection_name: row}
         identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
         custom_privacy_request_fields: Dict[str, Any] = (
             privacy_request.get_cached_custom_privacy_request_fields()
@@ -465,63 +538,17 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for param_value in saas_request.param_values or []:
-            if param_value.references:
-                # we resolve the param reference here for consistency,
-                # i.e. as if it may be a pointer to an `external_reference`.
-                # Cross-collection references are now supported by looking up data
-                # from upstream collections passed via input_data.
-                reference: FidesDatasetReference = SaaSConfig.resolve_param_reference(
-                    param_value.references[0], self.secrets
-                )
-                param_values[param_value.name] = pydash.get(
-                    collection_values, reference.field
-                )
-            elif param_value.identity:
-                param_values[param_value.name] = pydash.get(
-                    identity_data, param_value.identity
-                )
-            elif param_value.connector_param:
-                param_values[param_value.name] = pydash.get(
-                    self.secrets, param_value.connector_param
-                )
-        if input_data:
-            # Convert input_data format to collection_values format
-            for field_name, value_container in input_data.items():
-                # we extract the value from the list container that items() returns
-                # and add it o the param values dict
-                # we only replace a field in param values if its not None
-                value = value_container[0] if value_container else None
-                if value is None:
-                    continue
-                if field_name not in param_values:
-                    param_values[field_name] = value
-                if field_name in param_values:
-                    if param_values[field_name] is None:
-                        param_values[field_name] = value
-                    else:
-                        continue
-
-        if self.privacy_request:
-            param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
+        # Process param values using utility method
+        self._process_param_values_for_update(
+            saas_request, collection_values, identity_data, input_data, param_values
+        )
 
         param_values[PRIVACY_REQUEST_OBJECT] = privacy_request.to_safe_dict()
-
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
-        param_values[UUID] = str(uuid4())
-        param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-        param_values[FIELD_LIST] = ",".join(
-            [
-                field.name
-                for field in self.top_level_field_map().values()
-                if field.data_type() != "None"
-            ]
+        # Add standard parameters
+        self._add_standard_parameters(
+            param_values
         )
-        if self.request_task and self.request_task.id:
-            param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
-                self.request_task
-            )
-            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
             if field.read_only:
