@@ -391,16 +391,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return saas_request_params
 
     def generate_update_stmt(
-        self, row: Row, policy: Policy, request: PrivacyRequest
+        self, row: Row, policy: Policy, request: PrivacyRequest, input_data: Optional[Dict[str, List[Any]]] = None
     ) -> SaaSRequestParams:
         """
         This returns the method, path, header, query, and body params needed to make an API call.
         The fields in the row are masked according to the policy and added to the request body
         if specified by the body field of the masking request.
+
+        Args:
+            row: The current row data from this collection
+            policy: The privacy policy being applied
+            request: The privacy request being processed
+            input_data: Optional upstream data from other collections for cross-collection references
         """
         current_request: SaaSRequest = self.get_masking_request()  # type: ignore
         param_values: Dict[str, Any] = self.generate_update_param_values(
-            row, policy, request, current_request
+            row, policy, request, current_request, input_data
         )
 
         return self.generate_update_request_params(param_values, current_request)
@@ -429,6 +435,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         saas_request: SaaSRequest,
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> Dict[str, Any]:
         """
         A utility that generates the update request param values
@@ -439,6 +446,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         the fields in the provided row that have been masked according
         to provided policy. The `all_object_fields` key maps to a JSON structure
         that holds all values, including those that have not been masked.
+
+        Args:
+            row: The current row data from this collection
+            policy: The privacy policy being applied
+            privacy_request: The privacy request being processed
+            saas_request: The SaaS request configuration
+            input_data: Optional upstream data from other collections for cross-collection references
         """
 
         collection_name: str = self.node.address.collection
@@ -448,6 +462,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             privacy_request.get_cached_custom_privacy_request_fields()
         )
 
+        logger.info("Collection value from input data: {}", collection_values)
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
@@ -455,9 +470,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if param_value.references:
                 # we resolve the param reference here for consistency,
                 # i.e. as if it may be a pointer to an `external_reference`.
-                # however, `references` in update requests can, currently, only reference
-                # the same collection the same collection, and so it is highly unlikely
-                # that this would be an external reference at this point.
+                # Cross-collection references are now supported by looking up data
+                # from upstream collections passed via input_data.
                 reference: FidesDatasetReference = SaaSConfig.resolve_param_reference(
                     param_value.references[0], self.secrets
                 )
@@ -472,6 +486,26 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param
                 )
+        logger.info("Param values: {}", param_values)
+
+        logger.info("Input data: {}", input_data)
+        if input_data:
+            # Convert input_data format to collection_values format
+            for field_name, value_container in input_data.items():
+                logger.info("Field name: {} with value container: {}", field_name, value_container)
+                value = value_container[0] if value_container else None
+                if value is None:
+                    continue
+                if field_name not in param_values:
+                    logger.info("Adding field name: {} with value: {}", field_name, value)
+                    param_values[field_name] = value
+                if field_name in param_values:
+                    if param_values[field_name] is None:
+                        logger.info("Overwriting field name: {} with value: {}", field_name, value)
+                        param_values[field_name] = value
+                    else:
+                        logger.info("Field name: {} already has a value: {}", field_name, param_values[field_name])
+                        continue
 
         if self.privacy_request:
             param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
