@@ -9,7 +9,6 @@ import {
 import { useCallback } from "react";
 
 import { capitalize } from "~/features/common/utils";
-import { MonitorTaskInProgressResponse } from "~/types/api";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
@@ -113,7 +112,7 @@ export const InProgressMonitorTasksList = () => {
 
       <List
         {...listProps}
-        renderItem={(task: MonitorTaskInProgressResponse) => (
+        renderItem={(task) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
           </List.Item>

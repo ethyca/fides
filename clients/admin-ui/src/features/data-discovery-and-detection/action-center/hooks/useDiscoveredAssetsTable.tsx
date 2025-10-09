@@ -521,7 +521,11 @@ export const useDiscoveredAssetsTable = ({
       const assets = selectedRows.map((asset) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const user_assigned_data_uses = uniq([
-          ...(asset.preferred_data_uses || []),
+          /* TODO: fix backend types to include preferred_data_uses so that extra logic can be removed */
+          ...("preferred_data_uses" in asset &&
+          Array.isArray(asset.preferred_data_uses)
+            ? (asset.preferred_data_uses ?? [])
+            : []),
           ...newDataUses,
         ]);
         return {

@@ -16,7 +16,7 @@ import { capitalize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
-import { ConnectionType, MonitorTaskInProgressResponse } from "~/types/api";
+import { ConnectionType, MonitorTaskResponse } from "~/types/api";
 
 import {
   useDismissMonitorTaskMutation,
@@ -37,7 +37,7 @@ const formatStatusForDisplay = (status: string): string => {
 };
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
-  task: MonitorTaskInProgressResponse;
+  task: MonitorTaskResponse;
 }
 
 export const InProgressMonitorTaskItem = ({
@@ -49,7 +49,7 @@ export const InProgressMonitorTaskItem = ({
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
     useDismissMonitorTaskMutation();
-  const isDismissed = Boolean(task.dismissed_in_activity_view);
+  const isDismissed = Boolean(task.dismissed);
   const canRetry = task.status === "error" && task.action_type !== "detection";
 
   // Build a minimal monitor key -> icon data map for ConnectionTypeLogo
@@ -124,7 +124,7 @@ export const InProgressMonitorTaskItem = ({
     return "Analytics monitor";
   })();
 
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status?: string | null) => {
     switch (status) {
       case "pending":
         return "orange";
@@ -145,7 +145,7 @@ export const InProgressMonitorTaskItem = ({
     }
   };
 
-  const formatText = (text?: string) => {
+  const formatText = (text?: string | null) => {
     if (!text) {
       return "Unknown";
     }
@@ -224,7 +224,7 @@ export const InProgressMonitorTaskItem = ({
                   </Button>
                 )}
                 <Popover
-                  content={<div className="max-w-[360px]">{task.message}</div>}
+                  content={<div className="max-w-[360px]">{task.status}</div>}
                   title={null}
                   trigger="click"
                 >

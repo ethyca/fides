@@ -11,7 +11,8 @@ import { capitalize } from "lodash";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 
-import { RESOURCE_STATUS, useMonitorFieldsFilters } from "./useFilters";
+import { RESOURCE_STATUS } from "./MonitorFields.const";
+import { useMonitorFieldsFilters } from "./useFilters";
 
 export const MonitorFieldFilters = ({
   resourceStatus,

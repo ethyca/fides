@@ -4,9 +4,9 @@
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
 import type { PolicyResponse } from "./PolicyResponse";
-import type { PrivacyRequestUser } from "./PrivacyRequestUser";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
+import type { PrivacyRequestUser } from "./PrivacyRequestUser";
 
 /**
  * Schema to check the status of a PrivacyRequest
@@ -34,6 +34,7 @@ export type PrivacyRequestResponse = {
   custom_privacy_request_fields_approved_by?: string | null;
   custom_privacy_request_fields_approved_at?: string | null;
   source?: PrivacyRequestSource | null;
+  location?: string | null;
   deleted_at?: string | null;
   deleted_by?: string | null;
   finalized_at?: string | null;

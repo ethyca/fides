@@ -19,30 +19,7 @@ import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import ClassificationSelect from "./ClassificationSelect";
-import { RESOURCE_STATUS } from "./useFilters";
-
-type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue" | "green";
-
-const ResourceStatus: Record<
-  DiffStatus,
-  {
-    label: ResourceStatusLabel;
-    color?: ResourceStatusLabelColor;
-  }
-> = {
-  classifying: { label: "Classifying", color: "blue" },
-  classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "In Review", color: "nectar" },
-  classification_addition: { label: "In Review", color: "blue" },
-  addition: { label: "Attention Required", color: "blue" },
-  muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Removed", color: "red" },
-  removing: { label: "In Review", color: "nectar" },
-  promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Confirmed", color: "nectar" },
-  approved: { label: "Approved", color: "green" },
-} as const;
+import { DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -210,10 +187,12 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
               {diff_status && (
                 <Tag
                   bordered={false}
-                  color={ResourceStatus[diff_status].color}
+                  color={
+                    DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
+                  }
                   className="font-normal text-[var(--ant-font-size-sm)]"
                 >
-                  {ResourceStatus[diff_status].label}
+                  {DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
                 </Tag>
               )}
               <Text

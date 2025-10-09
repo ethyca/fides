@@ -13,4 +13,5 @@ export enum ExecutionLogStatus {
   PAUSED = "paused",
   RETRYING = "retrying",
   SKIPPED = "skipped",
+  POLLING = "polling",
 }

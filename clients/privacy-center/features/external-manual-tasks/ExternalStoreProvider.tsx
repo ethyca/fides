@@ -15,7 +15,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { PrivacyCenterClientSettings } from "~/app/server-environment";
 import { loadConfig } from "~/features/common/config.slice";
 import { loadSettings } from "~/features/common/settings.slice";
-import { PrivacyCenterConfig } from "~/types/api";
+import { fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig } from "~/types/api";
 import { Config } from "~/types/config";
 
 import externalStore, { externalPersistor } from "./store";

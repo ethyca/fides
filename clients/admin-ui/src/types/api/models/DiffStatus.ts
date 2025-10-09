@@ -8,10 +8,10 @@ export enum DiffStatus {
   CLASSIFICATION_ADDITION = "classification_addition",
   CLASSIFICATION_QUEUED = "classification_queued",
   CLASSIFICATION_UPDATE = "classification_update",
+  APPROVED = "approved",
   MONITORED = "monitored",
   MUTED = "muted",
   PROMOTING = "promoting",
   REMOVAL = "removal",
   REMOVING = "removing",
-  APPROVED = "approved",
 }

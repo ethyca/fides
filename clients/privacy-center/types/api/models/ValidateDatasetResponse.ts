@@ -12,5 +12,5 @@ import type { DatasetTraversalDetails } from "./DatasetTraversalDetails";
  */
 export type ValidateDatasetResponse = {
   dataset: Dataset;
-  traversal_details: DatasetTraversalDetails;
+  traversal_details: DatasetTraversalDetails | null;
 };

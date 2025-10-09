@@ -8,4 +8,5 @@
 export type Classification = {
   label: string;
   score: number;
+  rationale?: string | null;
 };

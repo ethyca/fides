@@ -34,7 +34,13 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  const currentDataUses = [...(asset.preferred_data_uses || [])].sort();
+  /* TODO: fix backend types to include preferred_data_uses so that extra logic can be removed */
+  const currentDataUses = [
+    ...("preferred_data_uses" in asset &&
+    Array.isArray(asset.preferred_data_uses)
+      ? (asset.preferred_data_uses ?? [])
+      : []),
+  ].sort();
 
   const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 

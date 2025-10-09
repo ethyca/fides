@@ -5,7 +5,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
-  PrivacyCenterConfig,
+  fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
