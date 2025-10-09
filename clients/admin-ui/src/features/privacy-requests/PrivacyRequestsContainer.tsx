@@ -20,6 +20,7 @@ import {
   PRIVACY_REQUEST_TABS,
   usePrivacyRequestTabs,
 } from "./hooks/usePrivacyRequestTabs";
+import { RequestDashboard } from "./RequestDashboard";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
@@ -30,6 +31,7 @@ const PrivacyRequestsContainer = () => {
   const { processing } = useDSRErrorAlert();
   const { plus: hasPlus } = useFeatures();
   const { activeTab, handleTabChange, availableTabs } = usePrivacyRequestTabs();
+  const privacyRequestV2 = useFeatures()?.flags?.privacyRequestV2;
 
   useEffect(() => {
     processing();
@@ -42,7 +44,7 @@ const PrivacyRequestsContainer = () => {
       items.push({
         key: PRIVACY_REQUEST_TABS.REQUEST,
         label: "Request",
-        children: <RequestTable />,
+        children: privacyRequestV2 ? <RequestDashboard /> : <RequestTable />,
       });
     }
 
@@ -55,7 +57,7 @@ const PrivacyRequestsContainer = () => {
     }
 
     return items;
-  }, [availableTabs.manualTask, availableTabs.request]);
+  }, [availableTabs.manualTask, availableTabs.request, privacyRequestV2]);
 
   return (
     <>

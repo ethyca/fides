@@ -3,34 +3,25 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { formatDistance } from "date-fns";
-import dayjs from "dayjs";
 import {
   AntButton as Button,
-  AntCol as Col,
   AntFlex as Flex,
-  AntList as List,
   AntPagination as Pagination,
-  AntRow as Row,
-  AntSpin as Spin,
-  AntTag as Tag,
-  AntText as Text,
-  AntTooltip as Tooltip,
   Box,
   BoxProps,
   HStack,
-  Icons,
   Portal,
   useDisclosure,
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { DownloadLightIcon } from "~/features/common/Icon";
 import {
+  FidesTableV2,
   GlobalFilterV2,
   TableActionBar,
   TableSkeletonLoader,
@@ -44,91 +35,10 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
-import { PrivacyRequestEntity, Rule } from "~/features/privacy-requests/types";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
-import RequestStatusBadge from "../common/RequestStatusBadge";
-import { formatDate, sentenceCase } from "../common/utils";
-import { SubjectRequestActionTypeMap } from "./constants";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
-import { RequestTableActions } from "./RequestTableActions";
-
-const Label = ({ children }: React.PropsWithChildren) => {
-  return <Text type="secondary">{children}</Text>;
-};
-
-const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
-  Array.from(
-    new Set(
-      rules
-        .filter((rule) => Object.values(ActionType).includes(rule.action_type))
-        .map((rule) => rule.action_type),
-    ),
-  );
-
-type LabeledProps = React.PropsWithChildren<{ label: React.ReactNode }>;
-
-const LabeledTag = ({ label, children }: LabeledProps) => {
-  return (
-    <Flex gap={8}>
-      <Label>{label}:</Label>
-      <Tag>{children}</Tag>
-    </Flex>
-  );
-};
-
-const LabeledText = ({ label, children }: LabeledProps) => {
-  return (
-    <Flex gap={4}>
-      <Label>{label}:</Label>
-      <Text>{children}</Text>
-    </Flex>
-  );
-};
-
-const DAY_IRRELEVANT_STATUSES = [
-  PrivacyRequestStatus.COMPLETE,
-  PrivacyRequestStatus.CANCELED,
-  PrivacyRequestStatus.DENIED,
-  PrivacyRequestStatus.IDENTITY_UNVERIFIED,
-];
-
-const DaysLeft = ({
-  status,
-  daysLeft,
-  timeframe = 45,
-}: {
-  status: PrivacyRequestStatus;
-  daysLeft: number | undefined;
-  timeframe: number | undefined;
-}) => {
-  const showBadge =
-    !DAY_IRRELEVANT_STATUSES.includes(status) && daysLeft !== undefined;
-
-  if (showBadge) {
-    const percentage = (100 * daysLeft) / timeframe;
-    let color = "error";
-    if (percentage < 25) {
-      color = "error";
-    } else if (percentage >= 75) {
-      color = "success";
-    } else {
-      color = "warning";
-    }
-    return (
-      <div>
-        <Tag color={color} bordered={false}>
-          <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
-            <>{daysLeft} days left</>
-          </Tooltip>
-        </Tag>
-      </div>
-    );
-  }
-
-  return null;
-};
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
@@ -245,120 +155,12 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
         </Box>
       ) : (
         <Flex vertical gap="middle">
-          {/* <FidesTableV2<PrivacyRequestEntity>
+          <FidesTableV2<PrivacyRequestEntity>
             tableInstance={tableInstance}
             onRowClick={(row) => handleViewDetails(row.id)}
             onSort={handleSort}
             loading={isFetching}
-          /> */}
-          <Spin spinning={isLoading || isFetching}>
-            <List<PrivacyRequestEntity>
-              bordered
-              dataSource={requests}
-              renderItem={(item) => {
-                return (
-                  <List.Item
-                    styles={{
-                      actions: {
-                        minWidth: "150px",
-                        display: "flex",
-                        justifyContent: "right",
-                      },
-                    }}
-                    actions={[
-                      <Button
-                        key="test"
-                        icon={<Icons.View />}
-                        aria-label="View Request"
-                        onClick={() => handleViewDetails(item.id)}
-                        size="small"
-                      />,
-                      <RequestTableActions subjectRequest={item} />,
-                    ]}
-                  >
-                    <List.Item.Meta
-                      title={
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "16px",
-                          }}
-                        >
-                          <Text
-                            copyable={{
-                              text: item.id,
-                              icon: <Icons.Copy style={{ marginTop: "4px" }} />,
-                            }}
-                            style={{ display: "flex", gap: "8px" }}
-                          >
-                            {item.policy.name}
-                          </Text>
-                          <div>
-                            <RequestStatusBadge
-                              status={item.status}
-                              style={{ fontWeight: "normal" }}
-                            />
-                          </div>
-                        </div>
-                      }
-                      description={
-                        <Flex vertical gap={8} style={{ paddingTop: 4 }}>
-                          <Flex gap={8}>
-                            {(item.identity.email?.value ?? "").length > 0 ? (
-                              <LabeledText label="Email">
-                                {item.identity.email.value}
-                              </LabeledText>
-                            ) : null}
-
-                            {getActionTypesFromRules(item.policy.rules)
-                              .map((actionType) =>
-                                SubjectRequestActionTypeMap.get(actionType),
-                              )
-                              .map((actionType) => (
-                                <Tag key={actionType}>{actionType}</Tag>
-                              ))}
-                          </Flex>
-
-                          <Flex wrap gap={16}>
-                            {Object.entries(item.identity)
-                              .filter(
-                                ([key, identity]) =>
-                                  identity.value && key !== "email",
-                              )
-                              .map(([key, identity]) => (
-                                <LabeledTag key={key} label={identity.label}>
-                                  {identity.value}
-                                </LabeledTag>
-                              ))}
-                          </Flex>
-                        </Flex>
-                      }
-                    />
-                    <Flex gap={8}>
-                      <DaysLeft
-                        daysLeft={item.days_left}
-                        status={item.status}
-                        timeframe={item.policy.execution_timeframe}
-                      />
-                      <LabeledText label="Received">
-                        <Text type="secondary">
-                          {sentenceCase(
-                            formatDistance(
-                              new Date(item.created_at),
-                              new Date(),
-                              {
-                                addSuffix: true,
-                              },
-                            ),
-                          )}
-                        </Text>
-                      </LabeledText>
-                    </Flex>
-                  </List.Item>
-                );
-              }}
-            />
-          </Spin>
+          />
           <Pagination
             {...pagination.paginationProps}
             showTotal={(total, range) =>
