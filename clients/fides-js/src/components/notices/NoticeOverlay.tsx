@@ -155,7 +155,7 @@ const NoticeOverlay = () => {
     Array<string>
   >(initialEnabledNoticeKeys());
 
-  window.addEventListener("FidesUpdating", (event) => {
+  window.addEventListener("FidesUpdated", (event) => {
     // If GPC is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPC gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
     const { consent } = event.detail;
     Object.entries(consent).forEach(([key, value]) => {
