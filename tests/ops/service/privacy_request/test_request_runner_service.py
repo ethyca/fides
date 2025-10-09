@@ -2631,9 +2631,6 @@ class TestSaveAccessResults:
 
     def test_save_access_results_success(self, db, privacy_request):
         """Test successful save of access results"""
-        from fides.api.service.privacy_request.request_runner_service import (
-            save_access_results,
-        )
 
         download_urls = ["https://example.com/file1", "https://example.com/file2"]
         rule_filtered_results = {
