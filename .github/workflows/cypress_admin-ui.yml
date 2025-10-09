@@ -97,12 +97,16 @@ jobs:
         working-directory: clients/fides-js
         run: npm run build:test
 
+      - name: Build NextJS
+        working-directory: clients/admin-ui
+        run: NODE_ENV=test npx next build
+
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: clients/admin-ui
           install: false
-          start: npm run cy:start
+          start: npm run start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
           spec: ${{ matrix.spec_group }}
