@@ -1,4 +1,5 @@
 import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
+import React from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
@@ -68,13 +69,15 @@ export const statusPropMap: {
 
 interface RequestBadgeProps {
   status: keyof typeof statusPropMap;
+  style?: React.ComponentProps<typeof Tag>["style"];
 }
 
-const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
+const RequestStatusBadge = ({ status, style }: RequestBadgeProps) => (
   <Tag
     color={statusPropMap[status].color}
     className="justify-center"
     data-testid="request-status-badge"
+    style={style}
   >
     {statusPropMap[status].label}
   </Tag>
