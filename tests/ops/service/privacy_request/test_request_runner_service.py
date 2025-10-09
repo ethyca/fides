@@ -2675,6 +2675,7 @@ class TestSaveAccessResults:
             ),
             (MemoryError, ("Database connection error",)),
             (OverflowError, ("Database connection error",)),
+            (TypeError, ("Database connection error",)),  # for unexpected exceptions
         ],
     )
     @mock.patch.object(PrivacyRequest, "save_filtered_access_results")
