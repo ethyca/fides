@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
+import sqlalchemy.exc
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
@@ -278,11 +279,41 @@ def save_access_results(
 ) -> None:
     """Save the results we uploaded to the user for later retrieval"""
     # Save the results we uploaded to the user for later retrieval
-    privacy_request.save_filtered_access_results(session, rule_filtered_results)
     # Saving access request URL's on the privacy request in case DSR 3.0
     # exits processing before the email is sent
-    privacy_request.access_result_urls = {"access_result_urls": download_urls}
-    privacy_request.save(session)
+    # Try to save the backup results, but don't fail the DSR if this fails
+    try:
+        privacy_request.access_result_urls = {"access_result_urls": download_urls}
+        privacy_request.save(session)
+        privacy_request.save_filtered_access_results(session, rule_filtered_results)
+    except (
+        # SQLAlchemy errors
+        sqlalchemy.exc.DataError,  # data validation errors
+        sqlalchemy.exc.OperationalError,  # database operational errors
+        sqlalchemy.exc.StatementError,  # SQL statement errors
+        # Python memory errors
+        MemoryError,  # system out of memory
+        OverflowError,  # numeric overflow during serialization
+    ) as exc:
+        logger.warning(
+            "Failed to save backup of DSR results to database after successful S3 upload. "
+            "DSR will continue processing. Error: {}",
+            str(exc),
+        )
+    except Exception as exc:
+        logger.error(
+            "Failed to save backup of DSR results to database after successful S3 upload. "
+            "DSR will continue processing. Unexpected Error: {}",
+            str(exc),
+        )
+    privacy_request.add_success_execution_log(
+        session,
+        connection_key=None,
+        dataset_name="Access results backup",
+        collection_name=None,
+        message="S3 upload succeeded but database backup failed. DSR completed successfully.",
+        action_type=ActionType.access,
+    )
 
 
 @log_context(
