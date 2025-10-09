@@ -6,6 +6,8 @@ from typing import Any, Optional
 
 import sqlalchemy.exc
 from loguru import logger
+
+# pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session

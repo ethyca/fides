@@ -8,6 +8,8 @@ from unittest.mock import ANY, Mock, call
 import pydash
 import pytest
 import sqlalchemy.exc
+
+# pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
