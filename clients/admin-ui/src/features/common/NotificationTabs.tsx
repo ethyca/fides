@@ -72,7 +72,6 @@ const NotificationTabs = () => {
   const items = menuItems.map((item) => ({
     label: item.label,
     key: item.key,
-    path: item.path,
   }));
 
   return (
