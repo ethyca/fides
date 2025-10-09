@@ -6,17 +6,13 @@ import {
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  AntText as Text,
-  AntTooltip as Tooltip,
   Box,
   BoxProps,
   HStack,
-  Icons,
   Portal,
   useDisclosure,
   useToast,
 } from "fidesui";
-import Link from "next/link";
 import { parseAsString, useQueryState } from "nuqs";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -42,51 +38,8 @@ import { DaysLeft } from "./dashboard/DaysLeft";
 import { ReceivedOn } from "./dashboard/RevievedOn";
 import { EmailIdentity, NonEmailIdentities } from "./dashboard/identities";
 import { PolicyActionTypes } from "./dashboard/PolicyActionTypes";
-
-const RequestTitle = ({
-  id,
-  policyName,
-}: {
-  id: string;
-  policyName: string;
-}) => (
-  <Text
-    copyable={{
-      text: id,
-      icon: (
-        <Tooltip title="Copy request ID">
-          <Icons.Copy style={{ marginTop: "4px" }} />
-        </Tooltip>
-      ),
-      tooltips: null,
-    }}
-    style={{
-      display: "flex",
-      gap: "8px",
-      minWidth: "100px",
-    }}
-  >
-    {policyName}
-  </Text>
-);
-
-const ViewButton = ({ id }: { id: string }) => (
-  <Link
-    key="view"
-    legacyBehavior
-    href={`/privacy-requests/${encodeURIComponent(id)}`}
-  >
-    <Tooltip title="View privacy request">
-      <Button
-        key="view"
-        icon={<Icons.View />}
-        aria-label="View Request"
-        size="small"
-        href={`/privacy-requests/${encodeURIComponent(id)}`}
-      />
-    </Tooltip>
-  </Link>
-);
+import { RequestTitle } from "./dashboard/RequestTitle";
+import { ViewButton } from "./dashboard/listButtons";
 
 export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
