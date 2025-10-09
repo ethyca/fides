@@ -184,12 +184,16 @@ export const getScheduleDescription = (config: ScheduleConfig): string => {
       if (config.dayOfMonth === undefined) {
         return "";
       }
+      // Determine the correct ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
+      const day = config.dayOfMonth;
+      const mod10 = day % 10;
+      const mod100 = day % 100;
       let suffix = "th";
-      if (config.dayOfMonth === 1) {
+      if (mod10 === 1 && mod100 !== 11) {
         suffix = "st";
-      } else if (config.dayOfMonth === 2) {
+      } else if (mod10 === 2 && mod100 !== 12) {
         suffix = "nd";
-      } else if (config.dayOfMonth === 3) {
+      } else if (mod10 === 3 && mod100 !== 13) {
         suffix = "rd";
       }
       return `On the ${config.dayOfMonth}${suffix} of every month at ${timeStr}`;
