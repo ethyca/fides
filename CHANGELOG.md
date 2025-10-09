@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Moved 'Messaging' and 'Messaging Providers' pages to a single Settings > Notifications page [#6710](https://github.com/ethyca/fides/pull/6710)
 - Break system table actions out of overflow menu [#6696](https://github.com/ethyca/fides/pull/6696)
 - Tweaks to system table UX [#6712](https://github.com/ethyca/fides/pull/6712)
+- Added error handling to the privacy_request.save_filtered_access_results in the DSR process [#6718](https://github.com/ethyca/fides/pull/6718)
 
 ### Developer Experience
 - Improved accessibility configuration for ESLint jsx-a11y plugin with Ant Design component support [#6699](https://github.com/ethyca/fides/pull/6699)
