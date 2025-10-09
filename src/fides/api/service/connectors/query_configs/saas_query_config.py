@@ -462,7 +462,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             privacy_request.get_cached_custom_privacy_request_fields()
         )
 
-        logger.info("Collection value from input data: {}", collection_values)
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
@@ -486,25 +485,21 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param
                 )
-        logger.info("Param values: {}", param_values)
-
-        logger.info("Input data: {}", input_data)
         if input_data:
             # Convert input_data format to collection_values format
             for field_name, value_container in input_data.items():
-                logger.info("Field name: {} with value container: {}", field_name, value_container)
+                # we extract the value from the list container that items() returns
+                # and add it o the param values dict
+                # we only replace a field in param values if its not None
                 value = value_container[0] if value_container else None
                 if value is None:
                     continue
                 if field_name not in param_values:
-                    logger.info("Adding field name: {} with value: {}", field_name, value)
                     param_values[field_name] = value
                 if field_name in param_values:
                     if param_values[field_name] is None:
-                        logger.info("Overwriting field name: {} with value: {}", field_name, value)
                         param_values[field_name] = value
                     else:
-                        logger.info("Field name: {} already has a value: {}", field_name, param_values[field_name])
                         continue
 
         if self.privacy_request:
