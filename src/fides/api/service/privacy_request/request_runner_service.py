@@ -281,10 +281,11 @@ def save_access_results(
     # Save the results we uploaded to the user for later retrieval
     # Saving access request URL's on the privacy request in case DSR 3.0
     # exits processing before the email is sent
+    privacy_request.access_result_urls = {"access_result_urls": download_urls}
+    privacy_request.save(session)
+
     # Try to save the backup results, but don't fail the DSR if this fails
     try:
-        privacy_request.access_result_urls = {"access_result_urls": download_urls}
-        privacy_request.save(session)
         privacy_request.save_filtered_access_results(session, rule_filtered_results)
     except (
         # SQLAlchemy errors
