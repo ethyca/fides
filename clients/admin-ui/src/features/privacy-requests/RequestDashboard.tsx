@@ -158,9 +158,10 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                   <List.Item
                     styles={{
                       actions: {
-                        minWidth: "150px",
+                        minWidth: "125px",
                         display: "flex",
                         justifyContent: "right",
+                        marginLeft: 12,
                       },
                     }}
                     actions={[
