@@ -287,6 +287,14 @@ def save_access_results(
     # Try to save the backup results, but don't fail the DSR if this fails
     try:
         privacy_request.save_filtered_access_results(session, rule_filtered_results)
+        privacy_request.add_success_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Access results backup",
+            collection_name=None,
+            message="S3 upload succeeded and database backup succeeded. DSR completed successfully.",
+            action_type=ActionType.access,
+        )
     except (
         # SQLAlchemy errors
         sqlalchemy.exc.DataError,  # data validation errors
@@ -301,20 +309,28 @@ def save_access_results(
             "DSR will continue processing. Error: {}",
             str(exc),
         )
+        privacy_request.add_success_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Access results backup",
+            collection_name=None,
+            message="S3 upload succeeded but database backup failed. DSR completed successfully.",
+            action_type=ActionType.access,
+        )
     except Exception as exc:
         logger.error(
             "Failed to save backup of DSR results to database after successful S3 upload. "
             "DSR will continue processing. Unexpected Error: {}",
             str(exc),
         )
-    privacy_request.add_success_execution_log(
-        session,
-        connection_key=None,
-        dataset_name="Access results backup",
-        collection_name=None,
-        message="S3 upload succeeded but database backup failed. DSR completed successfully.",
-        action_type=ActionType.access,
-    )
+        privacy_request.add_success_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Access results backup",
+            collection_name=None,
+            message="S3 upload succeeded but database backup failed. DSR completed successfully.",
+            action_type=ActionType.access,
+        )
 
 
 @log_context(
