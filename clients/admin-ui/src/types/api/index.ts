@@ -178,6 +178,11 @@ export type { DeletedResourcesResponse } from "./models/DeletedResourcesResponse
 export type { DenyPrivacyRequests } from "./models/DenyPrivacyRequests";
 export type { DictionaryStatus } from "./models/DictionaryStatus";
 export { DiffStatus } from "./models/DiffStatus";
+export { DigestConditionType } from "./models/DigestConditionType";
+export type { DigestConfigListResponse } from "./models/DigestConfigListResponse";
+export type { DigestConfigRequest } from "./models/DigestConfigRequest";
+export type { DigestConfigResponse } from "./models/DigestConfigResponse";
+export { DigestType } from "./models/DigestType";
 export { DrpAction } from "./models/DrpAction";
 export type { DrpDataRightsResponse } from "./models/DrpDataRightsResponse";
 export type { DrpMeta } from "./models/DrpMeta";
