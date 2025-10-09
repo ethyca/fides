@@ -125,6 +125,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
             data-testid="export-btn"
             icon={<DownloadLightIcon ml="1.5px" />}
             onClick={handleExport}
+            style={{ minWidth: 25 }}
           />
         </HStack>
         <Portal>
@@ -153,62 +154,60 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
               style={{ borderTopRightRadius: 0, borderTopLeftRadius: 0 }}
               bordered
               dataSource={requests}
-              renderItem={(item) => {
-                return (
-                  <List.Item
-                    styles={{
-                      actions: {
-                        minWidth: "125px",
-                        display: "flex",
-                        justifyContent: "right",
-                        marginLeft: 12,
-                      },
-                    }}
-                    actions={[
-                      <ViewButton key="view" id={item.id} />,
-                      <RequestTableActions subjectRequest={item} />,
-                    ]}
-                  >
-                    <List.Item.Meta
-                      title={
-                        <Flex gap={16} wrap>
-                          <RequestTitle
-                            id={item.id}
-                            policyName={item.policy.name}
+              renderItem={(item) => (
+                <List.Item
+                  styles={{
+                    actions: {
+                      minWidth: "125px",
+                      display: "flex",
+                      justifyContent: "right",
+                      marginLeft: 12,
+                    },
+                  }}
+                  actions={[
+                    <ViewButton key="view" id={item.id} />,
+                    <RequestTableActions subjectRequest={item} />,
+                  ]}
+                >
+                  <List.Item.Meta
+                    title={
+                      <Flex gap={16} wrap>
+                        <RequestTitle
+                          id={item.id}
+                          policyName={item.policy.name}
+                        />
+                        {/* why does this div give better alignment */}
+                        <div>
+                          <RequestStatusBadge
+                            status={item.status}
+                            style={{ fontWeight: "normal" }}
                           />
-                          {/* why does this div give better alignment */}
-                          <div>
-                            <RequestStatusBadge
-                              status={item.status}
-                              style={{ fontWeight: "normal" }}
-                            />
-                          </div>
+                        </div>
+                      </Flex>
+                    }
+                    description={
+                      <Flex vertical gap={16} style={{ paddingTop: 4 }} wrap>
+                        <Flex gap={8} wrap>
+                          <EmailIdentity value={item.identity.email?.value} />
+                          <PolicyActionTypes rules={item.policy.rules} />
                         </Flex>
-                      }
-                      description={
-                        <Flex vertical gap={16} style={{ paddingTop: 4 }} wrap>
-                          <Flex gap={8} wrap>
-                            <EmailIdentity value={item.identity.email?.value} />
-                            <PolicyActionTypes rules={item.policy.rules} />
-                          </Flex>
 
-                          <Flex wrap gap={16}>
-                            <NonEmailIdentities identities={item.identity} />
-                          </Flex>
+                        <Flex wrap gap={16}>
+                          <NonEmailIdentities identities={item.identity} />
                         </Flex>
-                      }
+                      </Flex>
+                    }
+                  />
+                  <Flex gap={16} wrap>
+                    <DaysLeft
+                      daysLeft={item.days_left}
+                      status={item.status}
+                      timeframe={item.policy.execution_timeframe}
                     />
-                    <Flex gap={16} wrap>
-                      <DaysLeft
-                        daysLeft={item.days_left}
-                        status={item.status}
-                        timeframe={item.policy.execution_timeframe}
-                      />
-                      <ReceivedOn createdAt={item.created_at} />
-                    </Flex>
-                  </List.Item>
-                );
-              }}
+                    <ReceivedOn createdAt={item.created_at} />
+                  </Flex>
+                </List.Item>
+              )}
             />
           </Spin>
           <Pagination
