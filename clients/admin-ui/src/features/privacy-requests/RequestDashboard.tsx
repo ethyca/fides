@@ -1,20 +1,11 @@
-import {
-  ColumnSort,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { formatDistance } from "date-fns";
-import dayjs from "dayjs";
+import { ColumnSort } from "@tanstack/react-table";
 import {
   AntButton as Button,
-  AntCol as Col,
   AntFlex as Flex,
   AntList as List,
   AntPagination as Pagination,
-  AntRow as Row,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  AntTag as Tag,
   AntText as Text,
   AntTooltip as Tooltip,
   Box,
@@ -26,17 +17,12 @@ import {
   useToast,
 } from "fidesui";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { Key, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { DownloadLightIcon } from "~/features/common/Icon";
-import {
-  GlobalFilterV2,
-  TableActionBar,
-  TableSkeletonLoader,
-} from "~/features/common/table/v2";
+import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
   clearSortKeys,
   selectPrivacyRequestFilters,
@@ -45,28 +31,17 @@ import {
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
-import { PrivacyRequestEntity, Rule } from "~/features/privacy-requests/types";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
 import RequestStatusBadge from "../common/RequestStatusBadge";
-import { formatDate, sentenceCase } from "../common/utils";
-import { SubjectRequestActionTypeMap } from "./constants";
+
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { RequestTableActions } from "./RequestTableActions";
-import { LabeledTag, LabeledText } from "./dashboard/labels";
-import { DaysLeft } from "./dashboard/daysLeft";
-import { string } from "yup";
-import { title } from "process";
-
-const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
-  Array.from(
-    new Set(
-      rules
-        .filter((rule) => Object.values(ActionType).includes(rule.action_type))
-        .map((rule) => rule.action_type),
-    ),
-  );
+import { DaysLeft } from "./dashboard/DaysLeft";
+import { ReceivedOn } from "./dashboard/RevievedOn";
+import { EmailIdentity, NonEmailIdentities } from "./dashboard/identities";
+import { PolicyActionTypes } from "./dashboard/PolicyActionTypes";
 
 const RequestTitle = ({
   id,
@@ -95,32 +70,6 @@ const RequestTitle = ({
   </Text>
 );
 
-const EmailIdentity = ({ value }: { value?: string }) => {
-  return (value ?? "").length > 0 ? (
-    <LabeledText label="Email">{value}</LabeledText>
-  ) : null;
-};
-
-const PolicyActionTypes = ({ rules }: { rules: Rule[] }) => {
-  return getActionTypesFromRules(rules)
-    .map((actionType) => SubjectRequestActionTypeMap.get(actionType))
-    .map((actionType) => <Tag key={actionType}>{actionType}</Tag>);
-};
-
-const NonEmailIdentities = ({
-  identities,
-}: {
-  identities: PrivacyRequestEntity["identity"];
-}) => {
-  return Object.entries(identities)
-    .filter(([key, identity]) => identity.value && key !== "email")
-    .map(([key, identity]) => (
-      <LabeledTag key={key} label={identity.label}>
-        {identity.value}
-      </LabeledTag>
-    ));
-};
-
 const ViewButton = ({ id }: { id: string }) => (
   <Link
     key="view"
@@ -137,18 +86,6 @@ const ViewButton = ({ id }: { id: string }) => (
       />
     </Tooltip>
   </Link>
-);
-
-const ReceivedOn = ({ createdAt }: { createdAt: string }) => (
-  <LabeledText label="Received">
-    <Text type="secondary">
-      {sentenceCase(
-        formatDistance(new Date(createdAt), new Date(), {
-          addSuffix: true,
-        }),
-      )}
-    </Text>
-  </LabeledText>
 );
 
 export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
