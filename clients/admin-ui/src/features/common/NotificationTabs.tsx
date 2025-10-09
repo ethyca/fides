@@ -69,13 +69,19 @@ const NotificationTabs = () => {
     }
   };
 
+  const items = menuItems.map((item) => ({
+    label: item.label,
+    key: item.key,
+    path: item.path,
+  }));
+
   return (
     <div className="mb-6">
       <Menu
         mode="horizontal"
         selectedKeys={[selectedKey]}
         onClick={({ key }) => handleMenuClick(key)}
-        items={menuItems}
+        items={items}
       />
     </div>
   );

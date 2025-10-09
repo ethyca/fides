@@ -9,7 +9,7 @@ import {
   AntSpace as Space,
   AntTypography as Typography,
 } from "fidesui";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   DayOfWeek,
@@ -54,6 +54,7 @@ const DigestSchedulePicker = ({
   const [frequency, setFrequency] = useState<Frequency>(Frequency.WEEKLY);
   const [dayOfMonth, setDayOfMonth] = useState<number>(1);
   const [showCustomCronWarning, setShowCustomCronWarning] = useState(false);
+  const hasInitialized = useRef(false);
 
   // Get browser timezone
   const browserTimezone = dayjs.tz.guess();
@@ -83,9 +84,9 @@ const DigestSchedulePicker = ({
     }
   }, [browserTimezone, onTimezoneChange, timezoneProp]);
 
-  // Parse incoming cron expression when value changes
+  // Parse incoming cron expression ONLY on initial mount
   useEffect(() => {
-    if (value) {
+    if (value && !hasInitialized.current) {
       const parsed = parseCronExpression(value);
       if (parsed) {
         setShowCustomCronWarning(false);
@@ -97,6 +98,7 @@ const DigestSchedulePicker = ({
         // Cron expression doesn't match our patterns
         setShowCustomCronWarning(true);
       }
+      hasInitialized.current = true;
     }
   }, [value]);
 
