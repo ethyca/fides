@@ -70,24 +70,6 @@ jobs:
           print(json.dumps([",".join(group) for group in groups]))
           ')" >> $GITHUB_OUTPUT
 
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v5
-        with:
-          node-version: 20.x
-          cache: "npm"
-
-      - name: Install dependencies
-        working-directory: clients
-        run: npm ci
-
-      - name: Build FidesJS
-        working-directory: clients/fides-js
-        run: npm run build:test
-
-      - name: Build NextJS
-        working-directory: clients/admin-ui
-        run: NODE_ENV=test npx next build
-
   Admin-UI-Cypress:
     needs: prepare-matrix
     strategy:
@@ -102,12 +84,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20.x
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build FidesJS
+        working-directory: clients/fides-js
+        run: npm run build:test
+
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: clients/admin-ui
           install: false
-          start: npm run start
+          start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
           spec: ${{ matrix.spec_group }}
