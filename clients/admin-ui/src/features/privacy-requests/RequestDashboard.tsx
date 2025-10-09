@@ -28,7 +28,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo } from "react";
+import React, { Key, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { DownloadLightIcon } from "~/features/common/Icon";
@@ -56,6 +56,8 @@ import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestRe
 import { RequestTableActions } from "./RequestTableActions";
 import { LabeledTag, LabeledText } from "./dashboard/labels";
 import { DaysLeft } from "./dashboard/daysLeft";
+import { string } from "yup";
+import { title } from "process";
 
 const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
   Array.from(
@@ -65,6 +67,89 @@ const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
         .map((rule) => rule.action_type),
     ),
   );
+
+const RequestTitle = ({
+  id,
+  policyName,
+}: {
+  id: string;
+  policyName: string;
+}) => (
+  <Text
+    copyable={{
+      text: id,
+      icon: (
+        <Tooltip title="Copy request ID">
+          <Icons.Copy style={{ marginTop: "4px" }} />
+        </Tooltip>
+      ),
+      tooltips: null,
+    }}
+    style={{
+      display: "flex",
+      gap: "8px",
+      minWidth: "100px",
+    }}
+  >
+    {policyName}
+  </Text>
+);
+
+const EmailIdentity = ({ value }: { value?: string }) => {
+  return (value ?? "").length > 0 ? (
+    <LabeledText label="Email">{value}</LabeledText>
+  ) : null;
+};
+
+const PolicyActionTypes = ({ rules }: { rules: Rule[] }) => {
+  return getActionTypesFromRules(rules)
+    .map((actionType) => SubjectRequestActionTypeMap.get(actionType))
+    .map((actionType) => <Tag key={actionType}>{actionType}</Tag>);
+};
+
+const NonEmailIdentities = ({
+  identities,
+}: {
+  identities: PrivacyRequestEntity["identity"];
+}) => {
+  return Object.entries(identities)
+    .filter(([key, identity]) => identity.value && key !== "email")
+    .map(([key, identity]) => (
+      <LabeledTag key={key} label={identity.label}>
+        {identity.value}
+      </LabeledTag>
+    ));
+};
+
+const ViewButton = ({ id }: { id: string }) => (
+  <Link
+    key="view"
+    legacyBehavior
+    href={`/privacy-requests/${encodeURIComponent(id)}`}
+  >
+    <Tooltip title="View privacy request">
+      <Button
+        key="view"
+        icon={<Icons.View />}
+        aria-label="View Request"
+        size="small"
+        href={`/privacy-requests/${encodeURIComponent(id)}`}
+      />
+    </Tooltip>
+  </Link>
+);
+
+const ReceivedOn = ({ createdAt }: { createdAt: string }) => (
+  <LabeledText label="Received">
+    <Text type="secondary">
+      {sentenceCase(
+        formatDistance(new Date(createdAt), new Date(), {
+          addSuffix: true,
+        }),
+      )}
+    </Text>
+  </LabeledText>
+);
 
 export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
@@ -189,45 +274,18 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                       },
                     }}
                     actions={[
-                      <Link
-                        key="view"
-                        legacyBehavior
-                        href={`/privacy-requests/${encodeURIComponent(item.id)}`}
-                      >
-                        <Tooltip title="View privacy request">
-                          <Button
-                            key="view"
-                            icon={<Icons.View />}
-                            aria-label="View Request"
-                            size="small"
-                            href={`/privacy-requests/${encodeURIComponent(item.id)}`}
-                          />
-                        </Tooltip>
-                      </Link>,
+                      <ViewButton key="view" id={item.id} />,
                       <RequestTableActions subjectRequest={item} />,
                     ]}
                   >
                     <List.Item.Meta
                       title={
                         <Flex gap={16} wrap>
-                          <Text
-                            copyable={{
-                              text: item.id,
-                              icon: (
-                                <Tooltip title="Copy request ID">
-                                  <Icons.Copy style={{ marginTop: "4px" }} />
-                                </Tooltip>
-                              ),
-                              tooltips: null,
-                            }}
-                            style={{
-                              display: "flex",
-                              gap: "8px",
-                              minWidth: "100px",
-                            }}
-                          >
-                            {item.policy.name}
-                          </Text>
+                          <RequestTitle
+                            id={item.id}
+                            policyName={item.policy.name}
+                          />
+                          {/* why does this div give better alignment */}
                           <div>
                             <RequestStatusBadge
                               status={item.status}
@@ -239,32 +297,12 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                       description={
                         <Flex vertical gap={16} style={{ paddingTop: 4 }} wrap>
                           <Flex gap={8} wrap>
-                            {(item.identity.email?.value ?? "").length > 0 ? (
-                              <LabeledText label="Email">
-                                {item.identity.email.value}
-                              </LabeledText>
-                            ) : null}
-
-                            {getActionTypesFromRules(item.policy.rules)
-                              .map((actionType) =>
-                                SubjectRequestActionTypeMap.get(actionType),
-                              )
-                              .map((actionType) => (
-                                <Tag key={actionType}>{actionType}</Tag>
-                              ))}
+                            <EmailIdentity value={item.identity.email?.value} />
+                            <PolicyActionTypes rules={item.policy.rules} />
                           </Flex>
 
                           <Flex wrap gap={16}>
-                            {Object.entries(item.identity)
-                              .filter(
-                                ([key, identity]) =>
-                                  identity.value && key !== "email",
-                              )
-                              .map(([key, identity]) => (
-                                <LabeledTag key={key} label={identity.label}>
-                                  {identity.value}
-                                </LabeledTag>
-                              ))}
+                            <NonEmailIdentities identities={item.identity} />
                           </Flex>
                         </Flex>
                       }
@@ -275,19 +313,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                         status={item.status}
                         timeframe={item.policy.execution_timeframe}
                       />
-                      <LabeledText label="Received">
-                        <Text type="secondary">
-                          {sentenceCase(
-                            formatDistance(
-                              new Date(item.created_at),
-                              new Date(),
-                              {
-                                addSuffix: true,
-                              },
-                            ),
-                          )}
-                        </Text>
-                      </LabeledText>
+                      <ReceivedOn createdAt={item.created_at} />
                     </Flex>
                   </List.Item>
                 );
