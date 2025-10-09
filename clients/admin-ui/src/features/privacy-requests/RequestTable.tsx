@@ -3,15 +3,19 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { formatDistance } from "date-fns";
+import dayjs from "dayjs";
 import {
   AntButton as Button,
+  AntCol as Col,
   AntFlex as Flex,
   AntList as List,
   AntPagination as Pagination,
+  AntRow as Row,
   AntSpin as Spin,
   AntTag as Tag,
   AntText as Text,
-  AntTypography as Typography,
+  AntTooltip as Tooltip,
   Box,
   BoxProps,
   HStack,
@@ -27,7 +31,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { DownloadLightIcon } from "~/features/common/Icon";
 import {
-  FidesTableV2,
   GlobalFilterV2,
   TableActionBar,
   TableSkeletonLoader,
@@ -42,10 +45,11 @@ import {
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity, Rule } from "~/features/privacy-requests/types";
-import { ActionType } from "~/types/api";
+import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
 import RequestStatusBadge from "../common/RequestStatusBadge";
+import { formatDate, sentenceCase } from "../common/utils";
 import { SubjectRequestActionTypeMap } from "./constants";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 
@@ -80,6 +84,47 @@ const LabeledText = ({ label, children }: LabeledProps) => {
       <Text>{children}</Text>
     </Flex>
   );
+};
+
+const DAY_IRRELEVANT_STATUSES = [
+  PrivacyRequestStatus.COMPLETE,
+  PrivacyRequestStatus.CANCELED,
+  PrivacyRequestStatus.DENIED,
+  PrivacyRequestStatus.IDENTITY_UNVERIFIED,
+];
+
+const DaysLeft = ({
+  status,
+  daysLeft,
+  timeframe = 45,
+}: {
+  status: PrivacyRequestStatus;
+  daysLeft: number | undefined;
+  timeframe: number | undefined;
+}) => {
+  const showBadge =
+    !DAY_IRRELEVANT_STATUSES.includes(status) && daysLeft !== undefined;
+
+  if (showBadge) {
+    const percentage = (100 * daysLeft) / timeframe;
+    let color = "error";
+    if (percentage < 25) {
+      color = "error";
+    } else if (percentage >= 75) {
+      color = "success";
+    } else {
+      color = "warning";
+    }
+    return (
+      <div>
+        <Tag color={color} bordered={false}>
+          <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
+            <>{daysLeft} days left</>
+          </Tooltip>
+        </Tag>
+      </div>
+    );
+  }
 };
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
@@ -268,6 +313,26 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
                         </Flex>
                       }
                     />
+                    <Flex gap={8}>
+                      <DaysLeft
+                        daysLeft={item.days_left}
+                        status={item.status}
+                        timeframe={item.policy.execution_timeframe}
+                      />
+                      <LabeledText label="Received">
+                        <Text type="secondary">
+                          {sentenceCase(
+                            formatDistance(
+                              new Date(item.created_at),
+                              new Date(),
+                              {
+                                addSuffix: true,
+                              },
+                            ),
+                          )}
+                        </Text>
+                      </LabeledText>
+                    </Flex>
                   </List.Item>
                 );
               }}
