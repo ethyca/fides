@@ -207,3 +207,65 @@ export const buildArrayQueryParams = (
 
   return urlParams;
 };
+
+/**
+ * Truncates a URL by removing protocol and www., and shortening paths when needed.
+ *
+ * Behavior:
+ * - Always removes protocol (http://, https://, etc.) and www. subdomain
+ * - If the cleaned URL is within limit: returns as-is
+ * - If the cleaned URL exceeds limit and has a path: returns domain/.../last-segment
+ * - If the domain alone exceeds limit: returns just the domain
+ *
+ * Note: This function does NOT guarantee the result won't exceed the limit, especially
+ * when the last path segment or domain itself is long. Always use Typography ellipsis
+ * or similar UI truncation in the rendering layer.
+ *
+ * @param url - The URL to truncate
+ * @param limit - Target maximum character count (not strictly enforced)
+ * @returns Truncated URL with complete path segments only
+ *
+ * @example
+ * truncateUrl('https://www.example.com/path/to/page', 30);
+ * // returns 'example.com/.../page'
+ *
+ * @example
+ * truncateUrl('https://example.com/very-long-segment-name-that-exceeds-limit', 20);
+ * // returns 'example.com/.../very-long-segment-name-that-exceeds-limit' (exceeds limit)
+ */
+export const truncateUrl = (url: string, limit: number): string => {
+  try {
+    const urlObj = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const { hostname: rawHostname, pathname, search, hash } = urlObj;
+
+    // Build cleaned string: remove www. from hostname
+    const hostname = rawHostname.replace(/^www\./i, "");
+
+    // Full cleaned URL (include search and hash if present)
+    const cleaned = hostname + pathname + search + hash;
+
+    // If within limit, return as-is
+    if (cleaned.length <= limit) {
+      return cleaned;
+    }
+
+    // If no meaningful path (just "/"), return hostname
+    if (!pathname || pathname === "/") {
+      return hostname;
+    }
+
+    // Get last path segment
+    const segments = pathname.split("/").filter((s) => s.length > 0);
+    if (segments.length === 0) {
+      return hostname;
+    }
+
+    const lastSegment = segments[segments.length - 1];
+    return `${hostname}/.../${lastSegment}`;
+  } catch (error) {
+    // As fallback, return the original URL and log the error
+    // eslint-disable-next-line no-console
+    console.error("Failed to parse URL in truncateUrl:", url, error);
+    return url;
+  }
+};

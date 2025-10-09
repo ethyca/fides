@@ -11,7 +11,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
-import { MESSAGING_ROUTE } from "~/features/common/nav/routes";
+import { NOTIFICATIONS_TEMPLATES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
@@ -26,7 +26,7 @@ import PropertySpecificMessagingTemplateForm, {
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
 
-const EditPropertyPage: NextPage = () => {
+const EditNotificationTemplatePage: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
   const templateId = router.query.id;
@@ -79,7 +79,7 @@ const EditPropertyPage: NextPage = () => {
 
     toast(successToastParams(`Messaging template deleted successfully`));
 
-    router.push(MESSAGING_ROUTE);
+    router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
   };
 
   if (!messagingTemplate) {
@@ -93,9 +93,9 @@ const EditPropertyPage: NextPage = () => {
   return (
     <Layout title="Configure Message">
       <PageHeader
-        heading="Messaging"
+        heading="Templates"
         breadcrumbItems={[
-          { title: "Messaging", href: MESSAGING_ROUTE },
+          { title: "Templates", href: NOTIFICATIONS_TEMPLATES_ROUTE },
           {
             title: `${
               CustomizableMessagingTemplatesLabelEnum[
@@ -128,4 +128,4 @@ const EditPropertyPage: NextPage = () => {
   );
 };
 
-export default EditPropertyPage;
+export default EditNotificationTemplatePage;

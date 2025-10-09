@@ -668,7 +668,7 @@ export const stubWebsiteMonitor = () => {
           domains: [],
           consent_status: {
             status: "alert",
-            message: "One or more assets were detected without consent",
+            message: "One or more assets were detected with compliance issues",
           },
         },
       ],

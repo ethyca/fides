@@ -66,7 +66,6 @@ interface UseDiscoveredAssetsTableConfig {
   consentStatus?: ConsentAlertInfo | null;
   onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
   ) => void;
 }
 
@@ -407,7 +406,6 @@ export const useDiscoveredAssetsTable = ({
             asset={record}
             onTabChange={onTabChange}
             showComplianceIssueDetails={onShowComplianceIssueDetails}
-            showWarningForConsentIssues={assetConsentStatusLabels}
           />
         ),
       });

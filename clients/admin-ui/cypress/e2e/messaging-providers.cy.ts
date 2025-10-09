@@ -8,9 +8,8 @@ describe("Messaging Providers", () => {
   });
 
   it("Can configure Mailgun email", () => {
-    // Navigate to the Messaging providers page via the navbar
-    cy.contains("Settings").click();
-    cy.contains("Messaging providers").click();
+    // Navigate directly to Messaging providers page (not in main navigation)
+    cy.visit("/notifications/providers");
 
     // Click the add provider CTA
     cy.getByTestId("add-messaging-provider-btn").click();
@@ -31,9 +30,8 @@ describe("Messaging Providers", () => {
   });
 
   it("Can configure Twilio email", () => {
-    // Navigate to page
-    cy.contains("Settings").click();
-    cy.contains("Messaging providers").click();
+    // Navigate directly to Messaging providers page (not in main navigation)
+    cy.visit("/notifications/providers");
     cy.getByTestId("add-messaging-provider-btn").click();
 
     // Select Twilio Email
@@ -51,9 +49,8 @@ describe("Messaging Providers", () => {
   });
 
   it("Can configure Twilio SMS", () => {
-    // Navigate to page
-    cy.contains("Settings").click();
-    cy.contains("Messaging providers").click();
+    // Navigate directly to Messaging providers page (not in main navigation)
+    cy.visit("/notifications/providers");
     cy.getByTestId("add-messaging-provider-btn").click();
 
     // Select Twilio SMS

@@ -19,19 +19,26 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.71.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.72.0..main)
+
+## [2.72.0](https://github.com/ethyca/fides/compare/2.71.1...2.72.0)
 
 ### Added
 - Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
 - Added Manual Task Digest email templates and dispatch [#6691](https://github.com/ethyca/fides/pull/6691)
+- Added UI to manage email digests [#6710](https://github.com/ethyca/fides/pull/6710)
 - Event Auditing for Connections And Connection Secrets [#6681](https://github.com/ethyca/fides/pull/6681)
 - Support for detection phase in new classifier screen [#6711](https://github.com/ethyca/fides/pull/6711)
+- Field Level Actions for New Classifier Screen [#6707](https://github.com/ethyca/fides/pull/6707)
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
+- Update UI to support for different consent compliance issues [#6680](https://github.com/ethyca/fides/pull/6680)
 - Updated calls to `/mute` endpoint so they use request body instead of query params [#6702](https://github.com/ethyca/fides/pull/6702)
 - Changed default sort order for discovered assets from compliance status to asset name [#6704](https://github.com/ethyca/fides/pull/6704)
+- Moved 'Messaging' and 'Messaging Providers' pages to a single Settings > Notifications page [#6710](https://github.com/ethyca/fides/pull/6710)
 - Break system table actions out of overflow menu [#6696](https://github.com/ethyca/fides/pull/6696)
+- Tweaks to system table UX [#6712](https://github.com/ethyca/fides/pull/6712)
 
 ### Developer Experience
 - Improved accessibility configuration for ESLint jsx-a11y plugin with Ant Design component support [#6699](https://github.com/ethyca/fides/pull/6699)

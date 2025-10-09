@@ -27,9 +27,10 @@ import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import {
-  MESSAGING_ADD_TEMPLATE_ROUTE,
-  MESSAGING_EDIT_ROUTE,
+  NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
+  NOTIFICATIONS_EDIT_TEMPLATE_ROUTE,
 } from "~/features/common/nav/routes";
+import NotificationTabs from "~/features/common/NotificationTabs";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -61,7 +62,7 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const MessagingPage: NextPage = () => {
+const NotificationTemplatesPage: NextPage = () => {
   const router = useRouter();
   const { toggleIsTemplateEnabled } = useMessagingTemplateToggle();
 
@@ -173,8 +174,10 @@ const MessagingPage: NextPage = () => {
   });
 
   return (
-    <FixedLayout title="Messaging">
-      <PageHeader heading="Messaging" />
+    <FixedLayout title="Notifications">
+      <PageHeader heading="Notifications" />
+
+      <NotificationTabs />
 
       <FeatureNotEnabledInfoBox />
       <MissingMessagesInfoBox />
@@ -198,7 +201,7 @@ const MessagingPage: NextPage = () => {
           tableInstance={tableInstance}
           onRowClick={(template) => {
             router.push({
-              pathname: MESSAGING_EDIT_ROUTE,
+              pathname: NOTIFICATIONS_EDIT_TEMPLATE_ROUTE,
               query: { id: template.id },
             });
           }}
@@ -222,7 +225,7 @@ const MessagingPage: NextPage = () => {
         onClose={() => setIsAddTemplateModalOpen(false)}
         onAccept={(messageTemplateType) => {
           router.push({
-            pathname: MESSAGING_ADD_TEMPLATE_ROUTE,
+            pathname: NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
             query: { templateType: messageTemplateType },
           });
         }}
@@ -245,10 +248,10 @@ const EmptyTableNotice = () => (
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
-        It looks like it’s your first time here!
+        It looks like it&apos;s your first time here!
       </Text>
       <Text fontSize="sm">
-        Add new email templates with the {`"Add message +"`} button.
+        Add new email templates with the &quot;Add message +&quot; button.
         <br />
       </Text>
     </VStack>
@@ -336,9 +339,9 @@ const FeatureNotEnabledInfoBox = () => {
         text={
           <Text as="span">
             In basic messaging mode, you can edit the content of your messages
-            from this screen. Please note that in basic messaging, the “Enable”
-            toggle does not apply. Fides also supports property specific
-            messaging mode. Read our{" "}
+            from this screen. Please note that in basic messaging, the
+            &quot;Enable&quot; toggle does not apply. Fides also supports
+            property specific messaging mode. Read our{" "}
             <Link
               href="https://fid.es/property-specific-messaging"
               target="_blank"
@@ -359,4 +362,4 @@ const FeatureNotEnabledInfoBox = () => {
   );
 };
 
-export default MessagingPage;
+export default NotificationTemplatesPage;

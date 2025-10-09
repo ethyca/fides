@@ -11,8 +11,16 @@ export const LinkCell = ({
 }: ComponentProps<typeof LinkText>) => {
   return href ? (
     <NextLink href={href} passHref legacyBehavior>
-      <LinkText strong ellipsis onClick={(e) => e.stopPropagation()} {...props}>
-        {children}
+      <LinkText
+        strong
+        ellipsis
+        onClick={(e) => e.stopPropagation()}
+        variant="primary"
+        {...props}
+      >
+        <Text unStyled ellipsis={{ tooltip: children }}>
+          {children}
+        </Text>
       </LinkText>
     </NextLink>
   ) : (

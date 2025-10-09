@@ -503,6 +503,7 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "portal_url": body_params.portal_url,
             "imminent_task_count": body_params.imminent_task_count,
             "upcoming_task_count": body_params.upcoming_task_count,
+            "total_task_count": body_params.total_task_count,
             "company_logo_url": body_params.company_logo_url,
         }
 

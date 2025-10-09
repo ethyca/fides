@@ -82,6 +82,8 @@ export const baseApi = createApi({
     "TCF Purpose Override",
     "OpenID Provider",
     "Taxonomy",
+    "Digest Configs",
+    "Monitor",
     "Monitor Field Results",
   ],
   endpoints: () => ({}),
