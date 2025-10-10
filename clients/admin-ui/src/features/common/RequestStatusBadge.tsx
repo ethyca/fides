@@ -69,15 +69,13 @@ export const statusPropMap: {
 
 interface RequestBadgeProps {
   status: keyof typeof statusPropMap;
-  style?: React.ComponentProps<typeof Tag>["style"];
 }
 
-const RequestStatusBadge = ({ status, style }: RequestBadgeProps) => (
+const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
   <Tag
     color={statusPropMap[status].color}
     className="justify-center"
     data-testid="request-status-badge"
-    style={style}
   >
     {statusPropMap[status].label}
   </Tag>

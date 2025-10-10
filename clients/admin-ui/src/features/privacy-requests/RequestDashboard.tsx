@@ -173,13 +173,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                           id={item.id}
                           policyName={item.policy.name}
                         />
-                        {/* why does this div give better alignment */}
-                        <div>
-                          <RequestStatusBadge
-                            status={item.status}
-                            style={{ fontWeight: "normal" }}
-                          />
-                        </div>
+                        <RequestStatusBadge status={item.status} />
                       </Flex>
                     }
                     description={
