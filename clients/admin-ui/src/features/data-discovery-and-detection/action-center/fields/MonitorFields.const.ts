@@ -13,10 +13,17 @@ export const RESOURCE_STATUS = [
   "Classifying",
   "Approved",
   "Unmonitored",
+  "Confirmed",
+  "Removed",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-export type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue";
+export type ResourceStatusLabelColor =
+  | "nectar"
+  | "red"
+  | "orange"
+  | "blue"
+  | "green";
 
 export const DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   DiffStatus,
@@ -27,13 +34,13 @@ export const DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
 > = {
   classifying: { label: "Classifying", color: "blue" },
   classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "Classifying", color: "nectar" },
+  classification_update: { label: "In Review", color: "nectar" },
   classification_addition: { label: "In Review", color: "blue" },
   addition: { label: "Attention Required", color: "blue" },
   muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Attention Required", color: "red" },
+  removal: { label: "Removed", color: "red" },
   removing: { label: "In Review", color: "nectar" },
   promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Approved", color: "nectar" },
-  approved: { label: "Approved", color: "nectar" },
+  monitored: { label: "Confirmed", color: "nectar" },
+  approved: { label: "Approved", color: "green" },
 } as const;
