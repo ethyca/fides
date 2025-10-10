@@ -4,7 +4,8 @@
 
 import type { ExperienceConfigResponseNoNotices } from "./ExperienceConfigResponseNoNotices";
 import type { ExperienceMeta } from "./ExperienceMeta";
-import type { GPPApplicationConfigResponse } from "./GPPApplicationConfigResponse";
+import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from "./fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse";
+import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
@@ -30,7 +31,7 @@ export type PrivacyExperienceResponse = {
   created_at: string;
   updated_at: string;
   region: PrivacyNoticeRegion;
-  gpp_settings?: GPPApplicationConfigResponse | null;
+  gpp_settings?: PrivacyExperienceGPPSettings | null;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -42,10 +43,16 @@ export type PrivacyExperienceResponse = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  tcf_publisher_restrictions?: Array<fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse>;
+  tcf_publisher_country_code?: string | null;
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
   privacy_notices?: Array<PrivacyNoticeResponse> | null;
+  /**
+   * The notice keys of the Privacy Notices that are enabled, but not applicable to the experience
+   */
+  non_applicable_privacy_notices?: Array<string> | null;
   /**
    * The Experience Config and its translations
    */
@@ -54,4 +61,8 @@ export type PrivacyExperienceResponse = {
   gvl_translations?: null;
   available_locales?: Array<string> | null;
   meta?: ExperienceMeta | null;
+  /**
+   * The number of vendors in the TCF experience. Only populated for TCF experiences.
+   */
+  vendor_count?: number | null;
 };

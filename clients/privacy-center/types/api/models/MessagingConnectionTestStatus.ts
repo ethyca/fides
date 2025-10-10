@@ -8,5 +8,4 @@
 export enum MessagingConnectionTestStatus {
   SUCCEEDED = "succeeded",
   FAILED = "failed",
-  SKIPPED = "skipped",
 }

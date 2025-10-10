@@ -3,7 +3,9 @@
 /* eslint-disable */
 
 import type { ActionType } from "./ActionType";
+import type { ConnectionCategory } from "./ConnectionCategory";
 import type { ConnectionType } from "./ConnectionType";
+import type { IntegrationFeature } from "./IntegrationFeature";
 import type { SystemType } from "./SystemType";
 
 /**
@@ -17,4 +19,7 @@ export type ConnectionSystemTypeMap = {
   authorization_required?: boolean | null;
   user_guide?: string | null;
   supported_actions: Array<ActionType>;
+  category?: ConnectionCategory | null;
+  tags?: Array<string> | null;
+  enabled_features?: Array<IntegrationFeature> | null;
 };

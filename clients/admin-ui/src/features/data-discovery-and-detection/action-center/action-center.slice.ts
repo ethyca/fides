@@ -7,7 +7,7 @@ import {
   ConsentStatus,
   DiffStatus,
   MonitorConfig,
-  MonitorTaskInProgressResponse,
+  MonitorTaskResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -417,7 +417,7 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     getInProgressMonitorTasks: build.query<
       {
-        items: MonitorTaskInProgressResponse[];
+        items: MonitorTaskResponse[];
         total: number;
         page: number;
         pages: number;
@@ -478,18 +478,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Tasks"],
     }),
-    dismissMonitorTask: build.mutation<
-      MonitorTaskInProgressResponse,
-      { taskId: string }
-    >({
-      query: ({ taskId }) => ({
-        url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Monitor Tasks"],
-    }),
+    dismissMonitorTask: build.mutation<MonitorTaskResponse, { taskId: string }>(
+      {
+        query: ({ taskId }) => ({
+          url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+          method: "POST",
+        }),
+        invalidatesTags: ["Monitor Tasks"],
+      },
+    ),
     undismissMonitorTask: build.mutation<
-      MonitorTaskInProgressResponse,
+      MonitorTaskResponse,
       { taskId: string }
     >({
       query: ({ taskId }) => ({
