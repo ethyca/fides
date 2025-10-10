@@ -1,13 +1,16 @@
 import {
   AntButton as Button,
   AntSelectProps as SelectProps,
+  AntSwitch as Switch,
   ArrowForwardIcon,
   Box,
   Collapse,
   Divider,
   Flex,
   formatIsoLocation,
+  FormLabel,
   Heading,
+  HStack,
   isoStringToEntry,
   Text,
 } from "fidesui";
@@ -635,19 +638,35 @@ export const PrivacyExperienceForm = ({
           ]}
         />
       </Collapse>
-      <CustomSwitch
-        name="auto_subdomain_cookie_deletion"
-        id="auto_subdomain_cookie_deletion"
-        label="Automatically delete subdomain cookies"
-        variant="stacked"
-        tooltip="If enabled, automatically deletes cookies set on subdomains in addition to main domain where appropriate. Recommended to enable for full consent compliance."
-      />
+      <Divider />
+      <Heading fontSize="md" fontWeight="semibold">
+        Cookie Deletion
+      </Heading>
+      <FormLabel htmlFor="regions" fontSize="xs" my={0} mr={1}>
+        Delete rejected cookies on:
+      </FormLabel>
       <CustomSwitch
         name="cookie_deletion_based_on_host_domain"
         id="cookie_deletion_based_on_host_domain"
-        label="Delete the cookie based on the host's domain"
+        label="Host's domain"
         variant="stacked"
-        tooltip="If enabled, attempts to delete cookies set on the current host domain, regardless of the cookie's configured domain. Recommended to enable for ease of consent compliance."
+        tooltip="If enabled, deletes user-rejected cookies on the current host domain regardless of the cookie's configured domain. Recommended to enable for ease of consent compliance."
+      />
+      <CustomSwitch
+        name="auto_subdomain_cookie_deletion"
+        id="auto_subdomain_cookie_deletion"
+        label="Host's subdomain"
+        variant="stacked"
+        tooltip="If enabled, deletes user-rejected cookies on subdomains in addition to main domain. Recommended to enable for full consent compliance."
+      />
+      <CustomSwitch
+        name="configured_domain_cookie_deletion"
+        id="configured_domain_cookie_deletion"
+        label="Configured domain"
+        variant="stacked"
+        tooltip="Deletes cookies using the cookie's configured domain. This is enabled by default and not configurable in the admin UI."
+        isDisabled
+        checkedOverride
       />
     </PrivacyExperienceConfigColumnLayout>
   );
