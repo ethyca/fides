@@ -1383,6 +1383,110 @@ class TestSaaSConnectionTestSecretsAPI:
         assert mailchimp_connection_config.last_test_timestamp is not None
         assert mailchimp_connection_config.last_test_succeeded is True
 
+    def test_connection_configuration_test_with_request_override_failure(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        saas_example_connection_config,
+    ):
+        """
+        Test that SaaS connections with request overrides return proper failed status
+        instead of 500 errors when the override raises an exception.
+
+        This test verifies the fix for request override exception handling.
+        """
+        from fides.api.common_exceptions import ClientUnsuccessfulException
+        from fides.api.service.saas_request.saas_request_override_factory import (
+            SaaSRequestType,
+            register,
+        )
+
+        # Register a test override that raises ClientUnsuccessfulException
+        @register("test_failing_override", [SaaSRequestType.TEST])
+        def test_failing_override(client, secrets):
+            raise ClientUnsuccessfulException(403)
+
+        # Update the connection config to use our test override
+        saas_example_connection_config.saas_config["test_request"] = {
+            "request_override": "test_failing_override"
+        }
+        saas_example_connection_config.save(db)
+
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/test"
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        # Make the request
+        resp = api_client.get(url, headers=auth_header)
+
+        # Should return 200 with failed status, not 500
+        assert resp.status_code == 200
+
+        body = resp.json()
+        assert body["test_status"] == "failed"
+        assert "Client call failed with status code '403'" in body["failure_reason"]
+        assert (
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {saas_example_connection_config.key}."
+        )
+
+        # Database should be updated with failure
+        db.refresh(saas_example_connection_config)
+        assert saas_example_connection_config.last_test_timestamp is not None
+        assert saas_example_connection_config.last_test_succeeded is False
+
+    def test_connection_configuration_test_with_request_override_success(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        saas_example_connection_config,
+    ):
+        """
+        Test that SaaS connections with request overrides return proper success status
+        when the override executes successfully.
+
+        This test verifies successful request override execution.
+        """
+        from fides.api.service.saas_request.saas_request_override_factory import (
+            SaaSRequestType,
+            register,
+        )
+
+        # Register a test override that succeeds
+        @register("test_success_override", [SaaSRequestType.TEST])
+        def test_success_override(client, secrets):
+            # Successful override returns None
+            return None
+
+        # Update the connection config to use our test override
+        saas_example_connection_config.saas_config["test_request"] = {
+            "request_override": "test_success_override"
+        }
+        saas_example_connection_config.save(db)
+
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/test"
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        # Make the request
+        resp = api_client.get(url, headers=auth_header)
+
+        # Should return 200 with success status
+        assert resp.status_code == 200
+
+        body = resp.json()
+        assert body["test_status"] == "succeeded"
+        assert body["failure_reason"] is None
+        assert (
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {saas_example_connection_config.key}."
+        )
+
+        # Database should be updated with success
+        db.refresh(saas_example_connection_config)
+        assert saas_example_connection_config.last_test_timestamp is not None
+        assert saas_example_connection_config.last_test_succeeded is True
+
 
 @pytest.mark.integration_saas
 class TestSaasConnectorIntegration:
