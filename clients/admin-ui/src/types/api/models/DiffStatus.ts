@@ -13,4 +13,5 @@ export enum DiffStatus {
   PROMOTING = "promoting",
   REMOVAL = "removal",
   REMOVING = "removing",
+  APPROVED = "approved",
 }
