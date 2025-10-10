@@ -7,6 +7,7 @@ import {
 import { useRouter } from "next/router";
 import React from "react";
 
+import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
@@ -26,7 +27,10 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
             variant="primary"
             onClick={(e) => {
               e.preventDefault();
-              router.push(`/privacy-requests/${privacyRequest.id}`);
+              router.push({
+                pathname: PRIVACY_REQUEST_DETAIL_ROUTE,
+                query: { id: privacyRequest.id },
+              });
             }}
             copyable={{
               text: privacyRequest.id,
