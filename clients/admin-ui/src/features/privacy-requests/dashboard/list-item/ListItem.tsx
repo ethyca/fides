@@ -1,4 +1,4 @@
-import { AntFlex as Flex, AntList as List } from "fidesui";
+import { AntFlex as Flex, AntList as List, AntTag as Tag } from "fidesui";
 import React from "react";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
@@ -27,6 +27,7 @@ export const ListItem = ({ item }: ListItemProps) => (
           <Flex gap={8} wrap>
             <EmailIdentity value={item.identity.email?.value} />
             <PolicyActionTypes rules={item.policy.rules} />
+            <Tag>{item.source}</Tag>
           </Flex>
 
           <Flex wrap gap={16}>
