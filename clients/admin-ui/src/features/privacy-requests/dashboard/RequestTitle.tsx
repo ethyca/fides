@@ -8,22 +8,21 @@ export const RequestTitle = ({
   id: string;
   policyName: string;
 }) => (
-  <Text
-    copyable={{
-      text: id,
-      icon: (
-        <Tooltip title="Copy request ID">
-          <Icons.Copy style={{ marginTop: "4px" }} />
-        </Tooltip>
-      ),
-      tooltips: null,
-    }}
-    style={{
-      display: "flex",
-      gap: "8px",
-      minWidth: "100px",
-    }}
-  >
-    {policyName}
-  </Text>
+  <div className="flex min-w-[100px] gap-2">
+    <Text
+      copyable={{
+        text: id,
+        icon: (
+          <Tooltip title="Copy request ID">
+            <div className="mt-1">
+              <Icons.Copy />
+            </div>
+          </Tooltip>
+        ),
+        tooltips: null,
+      }}
+    >
+      {policyName}
+    </Text>
+  </div>
 );
