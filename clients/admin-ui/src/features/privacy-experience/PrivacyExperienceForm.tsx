@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   AntSelectProps as SelectProps,
-  AntSwitch as Switch,
   ArrowForwardIcon,
   Box,
   Collapse,
@@ -10,7 +9,6 @@ import {
   formatIsoLocation,
   FormLabel,
   Heading,
-  HStack,
   isoStringToEntry,
   Text,
 } from "fidesui";
