@@ -71,12 +71,9 @@ const NoticeOverlay = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
-      // ensure we have most up-to-date cookie vals. If we don't have any consent, use the savedConsent which will be the default values that haven't been passed through the privacy_notices yet so it's perfect to use here.
+      // ensure we have most up-to-date cookie vals, including GPC and other automated consent applied during initialization
       return experience.privacy_notices.map((notice) => {
-        const val = resolveConsentValue(
-          notice,
-          consent || savedConsent || parsedCookie?.consent,
-        );
+        const val = resolveConsentValue(notice, consent || cookie?.consent);
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
     }
