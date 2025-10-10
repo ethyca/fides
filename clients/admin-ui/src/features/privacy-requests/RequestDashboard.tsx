@@ -31,15 +31,14 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
 import RequestStatusBadge from "../common/RequestStatusBadge";
-
-import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
-import { RequestTableActions } from "./RequestTableActions";
 import { DaysLeft } from "./dashboard/DaysLeft";
-import { ReceivedOn } from "./dashboard/RevievedOn";
 import { EmailIdentity, NonEmailIdentities } from "./dashboard/identities";
+import { ViewButton } from "./dashboard/listButtons";
 import { PolicyActionTypes } from "./dashboard/PolicyActionTypes";
 import { RequestTitle } from "./dashboard/RequestTitle";
-import { ViewButton } from "./dashboard/listButtons";
+import { ReceivedOn } from "./dashboard/RevievedOn";
+import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+import { RequestTableActions } from "./RequestTableActions";
 
 export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
@@ -142,10 +141,10 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
               <List.Item>
-                <Skeleton></Skeleton>
+                <Skeleton />
               </List.Item>
             )}
-          ></List>
+          />
         </Box>
       ) : (
         <Flex vertical gap="middle">
@@ -166,7 +165,10 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                   }}
                   actions={[
                     <ViewButton key="view" id={item.id} />,
-                    <RequestTableActions subjectRequest={item} />,
+                    <RequestTableActions
+                      key="other-actions"
+                      subjectRequest={item}
+                    />,
                   ]}
                 >
                   <List.Item.Meta
