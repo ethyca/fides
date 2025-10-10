@@ -100,10 +100,11 @@ export const InProgressMonitorTaskItem = ({
     "paused",
     "retrying",
   ].includes((task.status || "").toLowerCase());
+  const fieldCount = task.field_count || taskCount;
   const taskTitle = (() => {
-    if (task.action_type === "classification") {
+    if (task.action_type === "classification" || task.action_type === "llm_classification") {
       const verb = task.status === "complete" ? "Classified" : "Classifying";
-      return `${verb} ${taskCount} ${taskCount === 1 ? "field" : "fields"}`;
+      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
     }
     if (task.action_type === "detection") {
       return task.status === "complete"
