@@ -71,7 +71,10 @@ const DigestSchedulePicker = ({
     // Get a display name for the timezone (last part of timezone string)
     // e.g., "America/Argentina/Buenos_Aires" → "Buenos Aires"
     const timezoneParts = effectiveTimezone.split("/");
-    const cityName = timezoneParts[timezoneParts.length - 1].replace(/_/g, " ");
+    const cityName = timezoneParts[timezoneParts.length - 1]?.replace(
+      /_/g,
+      " ",
+    );
 
     return { cityName, gmtOffset };
   }, [effectiveTimezone]);

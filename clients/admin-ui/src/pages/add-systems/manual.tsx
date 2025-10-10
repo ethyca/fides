@@ -13,7 +13,9 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
-import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
+import useSystemFormTabs, {
+  SYSTEM_TAB_KEYS,
+} from "~/features/system/hooks/useSystemFormTabs";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
 const DESCRIBE_SYSTEM_COPY =
@@ -51,7 +53,7 @@ const NewManualSystem: NextPage = () => {
     const value = Array.isArray(connectorType)
       ? connectorType[0]
       : connectorType;
-    return JSON.parse(value);
+    return value ? JSON.parse(value) : undefined;
   }, [connectorType]);
 
   const lockedForGVL = useAppSelector(selectLockedForGVL);
@@ -75,7 +77,16 @@ const NewManualSystem: NextPage = () => {
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
         </Text>
-        <Tabs items={tabData} activeKey={activeKey} onChange={onTabChange} />
+        <Tabs
+          items={tabData}
+          activeKey={activeKey}
+          onChange={(tabKey) => {
+            const systemKey = SYSTEM_TAB_KEYS.find((st) => st === tabKey);
+            if (systemKey) {
+              onTabChange(systemKey);
+            }
+          }}
+        />
       </Box>
     </Layout>
   );

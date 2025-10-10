@@ -111,7 +111,7 @@ export const IntegrationSetupSteps = ({
     }
 
     // Otherwise, return the status of the current incomplete step
-    return steps[incompleteStepIndex].state;
+    return steps[incompleteStepIndex]?.state;
   };
 
   // Add carbon icon to completed steps

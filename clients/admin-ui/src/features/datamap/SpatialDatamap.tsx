@@ -16,22 +16,29 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   const datamapBySystem = useMemo(
     () =>
       rows.reduce(
-        (draft, obj) => {
-          const key = obj.original["system.fides_key"];
-          if (!draft[key]) {
-            draft[key] = {
-              name: obj.original["system.name"],
-              description: obj.original["system.description"],
-              ingress: obj.original["system.ingress"]
-                ? obj.original["system.ingress"].split(", ")
-                : [],
-              egress: obj.original["system.egress"]
-                ? obj.original["system.egress"].split(", ")
-                : [],
-              id: obj.original["system.fides_key"],
+        (agg, { original }) => {
+          const key = original["system.fides_key"];
+
+          if (
+            key &&
+            !agg[key] &&
+            !!original["system.description"] &&
+            !!original["system.name"] &&
+            !!original["system.fides_key"]
+          ) {
+            return {
+              ...agg,
+              [key]: {
+                name: original["system.name"],
+                description: original["system.description"],
+                ingress: original["system.ingress"]?.split(", ") ?? [],
+                egress: original["system.egress"]?.split(", ") ?? [],
+                id: original["system.fides_key"],
+              },
             };
           }
-          return draft;
+
+          return agg;
         },
         {} as Record<string, SystemNode>,
       ),

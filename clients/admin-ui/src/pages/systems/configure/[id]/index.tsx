@@ -21,19 +21,18 @@ import {
   setLockedForGVL,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
-import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
+import useSystemFormTabs, {
+  SYSTEM_TAB_KEYS,
+} from "~/features/system/hooks/useSystemFormTabs";
 
 const ConfigureSystem: NextPage = () => {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
 
-  let systemId = "";
-  if (router.query.id) {
-    systemId = Array.isArray(router.query.id)
-      ? router.query.id[0]
-      : router.query.id;
-  }
+  const systemId =
+    (Array.isArray(router.query.id) ? router.query.id[0] : router.query.id) ??
+    "";
 
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId);
 
@@ -89,7 +88,13 @@ const ConfigureSystem: NextPage = () => {
       />
       <Tabs
         activeKey={activeKey}
-        onChange={onTabChange}
+        onChange={(tabKey) => {
+          const systemKey = SYSTEM_TAB_KEYS.find((st) => st === tabKey);
+
+          if (systemKey) {
+            onTabChange(systemKey);
+          }
+        }}
         items={tabData}
         className="w-full"
         tabBarExtraContent={

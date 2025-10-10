@@ -545,12 +545,15 @@ describe("checkForVendorRestrictionConflicts", () => {
     expect(result2).toBe(true); // Still true because of conflict with second restriction
 
     // Should not detect conflict when editing the only conflicting restriction
-    const result3 = checkForVendorRestrictionConflicts(
-      baseFormValues,
-      [existingRestrictions[0]], // Only the first restriction
-      purposeId,
-      "1", // ID of the first restriction
-    );
+    const existingRestriction = existingRestrictions[0];
+    const result3 =
+      existingRestriction &&
+      checkForVendorRestrictionConflicts(
+        baseFormValues,
+        [existingRestriction], // Only the first restriction
+        purposeId,
+        "1", // ID of the first restriction
+      );
     expect(result3).toBe(false);
   });
 

@@ -38,7 +38,7 @@ export const FormFieldFromSchema = ({
   const isBoolean = fieldSchema.type === "boolean";
 
   const getPlaceholder = () => {
-    if (fieldSchema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
+    if (fieldSchema.allOf?.[0]?.$ref === FIDES_DATASET_REFERENCE) {
       return "Enter dataset.collection.field";
     }
     return undefined;

@@ -225,9 +225,10 @@ function extractMessagesFromGVLTranslations(
  * Load the statically-compiled messages from source into the message catalog.
  */
 export function loadMessagesFromFiles(i18n: I18n): Locale[] {
-  Object.keys(STATIC_MESSAGES).forEach((locale) => {
-    i18n.load(locale, STATIC_MESSAGES[locale]);
+  Object.entries(STATIC_MESSAGES).forEach(([locale, message]) => {
+    i18n.load(locale, message);
   });
+
   return Object.keys(STATIC_MESSAGES);
 }
 
@@ -272,7 +273,11 @@ export function loadMessagesFromExperience(
 
   // Load all the extracted messages into the i18n module
   availableLocales.forEach((locale) => {
-    i18n.load(locale, allMessages[locale]);
+    const message = allMessages[locale];
+
+    if (message) {
+      i18n.load(locale, message);
+    }
   });
 }
 
@@ -291,7 +296,11 @@ export function loadGVLMessagesFromExperience(
   gvlTranslations[locale] = experience.gvl;
   const extracted: Record<Locale, Messages> =
     extractMessagesFromGVLTranslations(gvlTranslations, [locale]);
-  i18n.load(locale, extracted[locale]);
+  const extractedLocale = extracted[locale];
+
+  if (extractedLocale) {
+    i18n.load(locale, extractedLocale);
+  }
 }
 
 /**
@@ -306,7 +315,11 @@ export function loadMessagesFromGVLTranslations(
   const extracted: Record<Locale, Messages> =
     extractMessagesFromGVLTranslations(gvlTranslations, locales);
   locales.forEach((locale) => {
-    i18n.load(locale, extracted[locale]);
+    const extractedLocale = extracted[locale];
+
+    if (extractedLocale) {
+      i18n.load(locale, extractedLocale);
+    }
   });
 }
 
@@ -362,9 +375,9 @@ export function matchAvailableLocales(
     }
 
     // 3) Fallback to the {language} of the requested locale
-    const languageMatch = availableLocales.find((elem) =>
-      areLocalesEqual(elem, language),
-    );
+    const languageMatch = language
+      ? availableLocales.find((elem) => areLocalesEqual(elem, language))
+      : undefined;
     if (languageMatch) {
       return languageMatch;
     }
@@ -514,8 +527,13 @@ export function initializeI18n(
   const indexOfDefault = availableLanguages.findIndex((lang) =>
     areLocalesEqual(lang.locale, i18n.getDefaultLocale()),
   );
+
   if (indexOfDefault > 0) {
-    availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);
+    const languageSplice = availableLanguages.splice(indexOfDefault, 1)[0];
+
+    if (languageSplice) {
+      availableLanguages.unshift(languageSplice);
+    }
   }
   i18n.setAvailableLanguages(availableLanguages);
   fidesDebugger(
@@ -657,18 +675,10 @@ export function setupI18n(): I18n {
       }
 
       // Lookup the string in our messages catalog by locale & id
-      if (
-        currentLocale &&
-        currentLocale in allMessages &&
-        id &&
-        id in allMessages[currentLocale] &&
-        allMessages[currentLocale][id]
-      ) {
-        return allMessages[currentLocale][id];
-      }
+      const currentLocaleMessage = allMessages?.[currentLocale]?.[id];
 
       // No match found, return the id as a fallback
-      return id;
+      return currentLocaleMessage || id;
     },
   };
 }

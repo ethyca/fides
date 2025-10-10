@@ -12,7 +12,7 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import { DEFAULT_PAGE_SIZES } from "../constants";
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZES } from "../constants";
 
 export const PAGE_SIZES = DEFAULT_PAGE_SIZES;
 
@@ -44,7 +44,7 @@ export const useClientSidePagination = <T,>(
 
 export const useServerSidePagination = () => {
   const defaultPageIndex = 1;
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [pageIndex, setPageIndex] = useState<number>(defaultPageIndex);
   const [totalPages, setTotalPages] = useState<number | null | undefined>(1);
   const onPreviousPageClick = useCallback(() => {
@@ -98,7 +98,7 @@ export const useServerSidePagination = () => {
 };
 
 type PaginationBarProps = {
-  pageSizes: number[];
+  pageSizes: readonly number[];
   totalRows: number;
   onPreviousPageClick: () => void;
   isPreviousPageDisabled: boolean;

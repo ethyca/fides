@@ -106,8 +106,11 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           (item) => item.fides_key === currentDataset.fides_key,
         )
       ) {
-        const initialDataset = datasetConfigs.items[0];
-        dispatch(setCurrentDataset(initialDataset));
+        const [initialDataset] = datasetConfigs.items;
+
+        if (initialDataset) {
+          dispatch(setCurrentDataset(initialDataset));
+        }
       }
     }
   }, [datasetConfigs, currentDataset, dispatch]);
