@@ -23,15 +23,8 @@ import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTabl
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
-import RequestStatusBadge from "../common/RequestStatusBadge";
-import { DaysLeft } from "./dashboard/DaysLeft";
-import { EmailIdentity, NonEmailIdentities } from "./dashboard/identities";
-import { ViewButton } from "./dashboard/listButtons";
-import { PolicyActionTypes } from "./dashboard/PolicyActionTypes";
-import { RequestTitle } from "./dashboard/RequestTitle";
-import { ReceivedOn } from "./dashboard/RevievedOn";
+import { PrivacyRequestListItem } from "./dashboard/PrivacyRequestListItem";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
-import { RequestTableActions } from "./RequestTableActions";
 
 export const RequestDashboard = () => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
@@ -132,61 +125,7 @@ export const RequestDashboard = () => {
             <List<PrivacyRequestEntity>
               bordered
               dataSource={requests}
-              renderItem={(item) => (
-                <List.Item
-                  styles={{
-                    actions: {
-                      minWidth: "125px",
-                      display: "flex",
-                      justifyContent: "right",
-                      marginLeft: 12,
-                    },
-                  }}
-                  actions={[
-                    <ViewButton key="view" id={item.id} />,
-                    <RequestTableActions
-                      key="other-actions"
-                      subjectRequest={item}
-                    />,
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={
-                      <Flex gap={16} wrap align="center">
-                        <RequestTitle
-                          id={item.id}
-                          policyName={item.policy.name}
-                        />
-                        <RequestStatusBadge status={item.status} />
-                      </Flex>
-                    }
-                    description={
-                      <div className="pt-1">
-                        <Flex vertical gap={16} wrap>
-                          <Flex gap={8} wrap>
-                            <EmailIdentity value={item.identity.email?.value} />
-                            <PolicyActionTypes rules={item.policy.rules} />
-                          </Flex>
-
-                          <Flex wrap gap={16}>
-                            <NonEmailIdentities identities={item.identity} />
-                          </Flex>
-                        </Flex>
-                      </div>
-                    }
-                  />
-                  <div className="pr-2">
-                    <Flex gap={16} wrap>
-                      <ReceivedOn createdAt={item.created_at} />
-                      <DaysLeft
-                        daysLeft={item.days_left}
-                        status={item.status}
-                        timeframe={item.policy.execution_timeframe}
-                      />
-                    </Flex>
-                  </div>
-                </List.Item>
-              )}
+              renderItem={(item) => <PrivacyRequestListItem item={item} />}
             />
           </Spin>
           <Pagination
