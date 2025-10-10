@@ -22,30 +22,26 @@ export const ListItem = ({ item }: ListItemProps) => (
   <List.Item>
     <div className="grow">
       <Header privacyRequest={item} />
-      <div className="pt-1">
-        <Flex vertical gap={16} wrap>
-          <Flex gap={8} wrap>
-            <EmailIdentity value={item.identity.email?.value} />
-            <PolicyActionTypes rules={item.policy.rules} />
-            <Tag>{item.source}</Tag>
-          </Flex>
-
-          <Flex wrap gap={16}>
-            <NonEmailIdentities identities={item.identity} />
-          </Flex>
+      <Flex vertical gap={16} wrap className="pt-1">
+        <Flex gap={8} wrap>
+          <EmailIdentity value={item.identity.email?.value} />
+          <PolicyActionTypes rules={item.policy.rules} />
+          <Tag>{item.source}</Tag>
         </Flex>
-      </div>
-    </div>
-    <div className="pr-2">
-      <Flex gap={16} wrap>
-        <ReceivedOn createdAt={item.created_at} />
-        <DaysLeft
-          daysLeft={item.days_left}
-          status={item.status}
-          timeframe={item.policy.execution_timeframe}
-        />
+
+        <Flex wrap gap={16}>
+          <NonEmailIdentities identities={item.identity} />
+        </Flex>
       </Flex>
     </div>
+    <Flex gap={16} wrap className="pr-2">
+      <ReceivedOn createdAt={item.created_at} />
+      <DaysLeft
+        daysLeft={item.days_left}
+        status={item.status}
+        timeframe={item.policy.execution_timeframe}
+      />
+    </Flex>
     <div className="flex min-w-[125px] items-center justify-end gap-2">
       <ViewButton key="view" id={item.id} />
       <RequestTableActions key="other-actions" subjectRequest={item} />
