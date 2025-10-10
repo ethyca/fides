@@ -22,7 +22,7 @@ import ClassificationSelect from "./ClassificationSelect";
 import { RESOURCE_STATUS } from "./useFilters";
 
 type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue";
+type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue" | "green";
 
 const ResourceStatus: Record<
   DiffStatus,
@@ -33,14 +33,15 @@ const ResourceStatus: Record<
 > = {
   classifying: { label: "Classifying", color: "blue" },
   classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "Classifying", color: "nectar" },
+  classification_update: { label: "In Review", color: "nectar" },
   classification_addition: { label: "In Review", color: "blue" },
   addition: { label: "Attention Required", color: "blue" },
   muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Attention Required", color: "red" },
+  removal: { label: "Removed", color: "red" },
   removing: { label: "In Review", color: "nectar" },
   promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Approved", color: "nectar" },
+  monitored: { label: "Confirmed", color: "nectar" },
+  approved: { label: "Approved", color: "green" },
 } as const;
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
