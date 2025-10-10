@@ -152,7 +152,7 @@ export const RequestDashboard = () => {
                 >
                   <List.Item.Meta
                     title={
-                      <Flex gap={16} wrap>
+                      <Flex gap={16} wrap align="center">
                         <RequestTitle
                           id={item.id}
                           policyName={item.policy.name}
