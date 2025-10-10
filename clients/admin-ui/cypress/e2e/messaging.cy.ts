@@ -31,14 +31,14 @@ describe("Messaging", () => {
   });
 
   it("should display the messaging page results", () => {
-    cy.visit("/messaging");
+    cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");
 
     cy.get("table").find("tbody").find("tr").should("have.length", 10);
   });
 
   it("should display a notice when a property doesn't have any messaging templates", () => {
-    cy.visit("/messaging");
+    cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");
 
     cy.getByTestId("notice-properties-without-messaging-templates").should(
@@ -47,7 +47,7 @@ describe("Messaging", () => {
   });
 
   it("should allow toggle of the email template status", () => {
-    cy.visit("/messaging");
+    cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");
 
     cy.getByTestId("row-0-col-is_enabled").within(() => {
@@ -67,7 +67,7 @@ describe("Messaging", () => {
   it("should display message type selector after clicking on the add button", () => {
     const customizableMessagesCount = 7;
 
-    cy.visit("/messaging");
+    cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");
 
     cy.getByTestId("add-message-btn").click();
@@ -79,7 +79,7 @@ describe("Messaging", () => {
   });
 
   it("should redirect to the add new page after selecting a message type", () => {
-    cy.visit("/messaging");
+    cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");
 
     cy.getByTestId("add-message-btn").click();
@@ -92,13 +92,13 @@ describe("Messaging", () => {
 
     cy.url().should(
       "contain",
-      "/messaging/add-template?templateType=privacy_request_complete_access",
+      "/notifications/templates/add-template?templateType=privacy_request_complete_access",
     );
   });
 
   it("load default when adding new message", () => {
     cy.visit(
-      "/messaging/add-template?templateType=privacy_request_complete_access",
+      "/notifications/templates/add-template?templateType=privacy_request_complete_access",
     );
 
     cy.wait("@getTemplateDefaultTexts");
@@ -121,7 +121,7 @@ describe("Messaging", () => {
 
   it("should save template after selecting a property and clicking save", () => {
     cy.visit(
-      "/messaging/add-template?templateType=privacy_request_complete_access",
+      "/notifications/templates/add-template?templateType=privacy_request_complete_access",
     );
 
     cy.wait("@getTemplateDefaultTexts");

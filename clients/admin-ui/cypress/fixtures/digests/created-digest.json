@@ -1,0 +1,13 @@
+{
+  "id": "dig_new123-4567-890a-bcde-f1234567890a",
+  "name": "New Test Digest",
+  "description": "Test digest configuration",
+  "digest_type": "manual_tasks",
+  "enabled": true,
+  "messaging_service_type": "EMAIL",
+  "cron_expression": "0 10 * * 2",
+  "timezone": "UTC",
+  "config_metadata": null,
+  "created_at": "2025-01-20T10:00:00Z",
+  "updated_at": "2025-01-20T10:00:00Z"
+}

@@ -188,10 +188,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PROPERTY_READ],
       },
       {
-        title: "Messaging",
-        path: routes.MESSAGING_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
+        title: "Notifications",
+        path: routes.NOTIFICATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
+          ScopeRegistryEnum.DIGEST_CONFIG_READ,
+          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
+        ],
       },
       {
         title: "Privacy requests",
@@ -300,11 +303,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
           ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
         ],
-      },
-      {
-        title: "Messaging providers",
-        path: routes.MESSAGING_PROVIDERS_ROUTE,
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
         title: "About Fides",

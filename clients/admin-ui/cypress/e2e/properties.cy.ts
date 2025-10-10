@@ -1,9 +1,9 @@
 import {
   stubExperienceConfig,
   stubFidesCloud,
-  stubLanguages,
   stubPlus,
   stubProperties,
+  stubTranslationConfig,
 } from "cypress/support/stubs";
 
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
@@ -16,7 +16,7 @@ describe("Properties page", () => {
     stubProperties();
     stubExperienceConfig();
     stubFidesCloud();
-    stubLanguages();
+    stubTranslationConfig(true);
     cy.visit(PROPERTIES_ROUTE);
   });
 

@@ -73,7 +73,7 @@
     "@typescript-eslint/parser": "^7.17.0",
     "babel-jest": "^29.7.0",
     "cross-env": "^7.0.3",
-    "cypress": "^13.15.2",
+    "cypress": "^15.4.0",
     "cypress-parallel": "^0.15.0",
     "cypress-real-events": "^1.13.0",
     "cypress-wait-until": "^3.0.2",
