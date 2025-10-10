@@ -1127,6 +1127,42 @@ class TestSaaSQueryConfig:
         field_names = field_list_str.split(",")
         assert set(field_names) == {"id", "customer_name", "customer_email"}
 
+    def test_outside_collection_reference_on_delete(
+        self,
+        privacy_request,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that an endpoint can successfully reference a field from an external collection via input_data.
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+        delete_request = endpoints["outside_reference_on_delete_example"].requests.delete
+
+        outside_ref_node = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "outside_reference_on_delete_example")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(outside_ref_node, endpoints, {}, delete_request)
+
+        row = {"id": "outside_ref_123"}
+
+        # Simulate input_data that would come from the customer collection
+        # only referenced data (customer_id) should pass as param values
+        input_data = {
+            "customer_id": ["customer_456"],  # This comes from customer.id
+            "additional_field": ["some_value"]
+        }
+
+        param_values = config.generate_update_param_values(
+            row, erasure_policy_string_rewrite, privacy_request, delete_request, input_data
+        )
+
+        # Verify that customer_id from input_data is correctly included in param_values
+        assert param_values.get("customer_id") == "customer_456"
+        assert not param_values.get("additional_field")
 
 class TestGenerateProductList:
     def test_vector_values(self):
