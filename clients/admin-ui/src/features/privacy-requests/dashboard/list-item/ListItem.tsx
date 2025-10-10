@@ -42,9 +42,9 @@ export const ListItem = ({ item }: ListItemProps) => (
         timeframe={item.policy.execution_timeframe}
       />
     </Flex>
-    <div className="flex min-w-[125px] items-center justify-end gap-2">
+    <Flex className="min-w-[125px]" align="center" justify="end" gap={8}>
       <ViewButton key="view" id={item.id} />
       <RequestTableActions key="other-actions" subjectRequest={item} />
-    </div>
+    </Flex>
   </List.Item>
 );
