@@ -74,6 +74,7 @@ def get_db_session(
     autocommit: bool = False,
     autoflush: bool = False,
     engine: Engine | None = None,
+    expire_on_commit: bool | None = False,
 ) -> sessionmaker:
     """Return a database SessionLocal."""
     if not config.database.sqlalchemy_database_uri:
@@ -82,6 +83,7 @@ def get_db_session(
     return sessionmaker(
         autocommit=autocommit,
         autoflush=autoflush,
+        expire_on_commit=expire_on_commit,
         bind=engine or get_db_engine(config=config),
         class_=ExtendedSession,
     )
