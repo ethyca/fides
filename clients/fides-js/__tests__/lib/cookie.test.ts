@@ -479,8 +479,8 @@ describe("cookies", () => {
       }) => {
         removeCookiesFromBrowser(
           cookies,
+          cookieDeletionBasedOnHostDomain ?? false,
           removeSubdomainCookies,
-          cookieDeletionBasedOnHostDomain,
         );
         const expectedLength = removeSubdomainCookies
           ? cookies.length * 2
