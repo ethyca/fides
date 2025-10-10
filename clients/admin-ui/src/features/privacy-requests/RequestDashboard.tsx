@@ -105,7 +105,6 @@ export const RequestDashboard = () => {
             data-testid="export-btn"
             icon={<DownloadLightIcon ml="1.5px" />}
             onClick={handleExport}
-            style={{ minWidth: 25 }}
           />
         </div>
         <Portal>
@@ -131,7 +130,6 @@ export const RequestDashboard = () => {
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
             <List<PrivacyRequestEntity>
-              style={{ borderTopRightRadius: 0, borderTopLeftRadius: 0 }}
               bordered
               dataSource={requests}
               renderItem={(item) => (
@@ -163,26 +161,30 @@ export const RequestDashboard = () => {
                       </Flex>
                     }
                     description={
-                      <Flex vertical gap={16} style={{ paddingTop: 4 }} wrap>
-                        <Flex gap={8} wrap>
-                          <EmailIdentity value={item.identity.email?.value} />
-                          <PolicyActionTypes rules={item.policy.rules} />
-                        </Flex>
+                      <div className="pt-1">
+                        <Flex vertical gap={16} wrap>
+                          <Flex gap={8} wrap>
+                            <EmailIdentity value={item.identity.email?.value} />
+                            <PolicyActionTypes rules={item.policy.rules} />
+                          </Flex>
 
-                        <Flex wrap gap={16}>
-                          <NonEmailIdentities identities={item.identity} />
+                          <Flex wrap gap={16}>
+                            <NonEmailIdentities identities={item.identity} />
+                          </Flex>
                         </Flex>
-                      </Flex>
+                      </div>
                     }
                   />
-                  <Flex gap={16} wrap style={{ paddingRight: 8 }}>
-                    <ReceivedOn createdAt={item.created_at} />
-                    <DaysLeft
-                      daysLeft={item.days_left}
-                      status={item.status}
-                      timeframe={item.policy.execution_timeframe}
-                    />
-                  </Flex>
+                  <div className="pr-2">
+                    <Flex gap={16} wrap>
+                      <ReceivedOn createdAt={item.created_at} />
+                      <DaysLeft
+                        daysLeft={item.days_left}
+                        status={item.status}
+                        timeframe={item.policy.execution_timeframe}
+                      />
+                    </Flex>
+                  </div>
                 </List.Item>
               )}
             />
