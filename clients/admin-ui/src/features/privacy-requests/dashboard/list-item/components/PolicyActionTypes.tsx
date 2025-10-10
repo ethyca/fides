@@ -4,7 +4,7 @@ import React from "react";
 import { Rule } from "~/features/privacy-requests/types";
 import { ActionType } from "~/types/api";
 
-import { SubjectRequestActionTypeMap } from "../constants";
+import { SubjectRequestActionTypeMap } from "../../../constants";
 
 const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
   Array.from(

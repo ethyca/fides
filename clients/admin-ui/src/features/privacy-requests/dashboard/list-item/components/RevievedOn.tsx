@@ -2,7 +2,7 @@ import { formatDistance } from "date-fns";
 import { AntText as Text } from "fidesui";
 import React from "react";
 
-import { sentenceCase } from "../../common/utils";
+import { sentenceCase } from "../../../../common/utils";
 import { LabeledText } from "./labels";
 
 export const ReceivedOn = ({ createdAt }: { createdAt: string }) => (

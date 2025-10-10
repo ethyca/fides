@@ -12,12 +12,12 @@ import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import { ManualTasks } from "~/features/manual-tasks/ManualTasks";
 import ActionButtons from "~/features/privacy-requests/buttons/ActionButtons";
+import { PrivacyRequestsDashboard } from "~/features/privacy-requests/dashboard/PrivacyRequestsDashboard";
 import { useDSRErrorAlert } from "~/features/privacy-requests/hooks/useDSRErrorAlert";
 import {
   PRIVACY_REQUEST_TABS,
   usePrivacyRequestTabs,
 } from "~/features/privacy-requests/hooks/usePrivacyRequestTabs";
-import { RequestDashboard } from "~/features/privacy-requests/RequestDashboard";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -37,7 +37,7 @@ const PrivacyRequests: NextPage = () => {
       items.push({
         key: PRIVACY_REQUEST_TABS.REQUEST,
         label: "Request",
-        children: <RequestDashboard />,
+        children: <PrivacyRequestsDashboard />,
       });
     }
 

@@ -22,11 +22,11 @@ import {
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
-import { useAntPagination } from "../common/pagination/useAntPagination";
-import { PrivacyRequestListItem } from "./dashboard/PrivacyRequestListItem";
-import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+import { useAntPagination } from "../../common/pagination/useAntPagination";
+import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
+import { ListItem } from "./list-item/ListItem";
 
-export const RequestDashboard = () => {
+export const PrivacyRequestsDashboard = () => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
     "search",
     parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
@@ -125,7 +125,7 @@ export const RequestDashboard = () => {
             <List<PrivacyRequestEntity>
               bordered
               dataSource={requests}
-              renderItem={(item) => <PrivacyRequestListItem item={item} />}
+              renderItem={(item) => <ListItem item={item} />}
             />
           </Spin>
           <Pagination

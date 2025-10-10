@@ -3,7 +3,7 @@ import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
-import { formatDate } from "../../common/utils";
+import { formatDate } from "../../../../common/utils";
 
 const DAY_IRRELEVANT_STATUSES = [
   PrivacyRequestStatus.COMPLETE,
