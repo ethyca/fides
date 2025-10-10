@@ -1,5 +1,4 @@
 import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
-import React from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
