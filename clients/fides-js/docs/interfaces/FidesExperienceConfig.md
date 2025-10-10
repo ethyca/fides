@@ -33,6 +33,14 @@ This property corresponds with the "Automatically delete subdomain cookies" opti
 
 ***
 
+### cookie\_deletion\_based\_on\_host\_domain?
+
+> `optional` **cookie\_deletion\_based\_on\_host\_domain**: `boolean`
+
+This property corresponds with the "Automatically delete domain cookies" option.
+
+***
+
 ### component
 
 > **component**: `string`

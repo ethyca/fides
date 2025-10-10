@@ -567,6 +567,7 @@ export interface ExperienceConfigMinimal
     | "auto_detect_language"
     | "dismissable"
     | "auto_subdomain_cookie_deletion"
+    | "cookie_deletion_based_on_host_domain"
     | "layer1_button_options"
     | "reject_all_mechanism"
   > {
