@@ -1,17 +1,16 @@
 import { AntFlex as Flex, AntList as List } from "fidesui";
 import React from "react";
 
-import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { RequestTableActions } from "../../RequestTableActions";
 import {
   DaysLeft,
   EmailIdentity,
+  Header,
   NonEmailIdentities,
   PolicyActionTypes,
   ReceivedOn,
-  RequestTitle,
   ViewButton,
 } from "./components";
 
@@ -22,10 +21,7 @@ interface ListItemProps {
 export const ListItem = ({ item }: ListItemProps) => (
   <List.Item>
     <div className="grow">
-      <Flex gap={16} wrap align="center">
-        <RequestTitle id={item.id} policyName={item.policy.name} />
-        <RequestStatusBadge status={item.status} />
-      </Flex>
+      <Header privacyRequest={item} />
       <div className="pt-1">
         <Flex vertical gap={16} wrap>
           <Flex gap={8} wrap>
