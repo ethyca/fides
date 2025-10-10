@@ -322,7 +322,7 @@ class TestGetSaaSConfig:
             response_body["fides_key"]
             == saas_example_connection_config.get_saas_config().fides_key
         )
-        assert len(response_body["endpoints"]) == 19
+        assert len(response_body["endpoints"]) == 20
         assert response_body["type"] == "custom"
         assert response_body["endpoints"][11]["skip_processing"] is False
         assert response_body["endpoints"][12]["skip_processing"] is False
