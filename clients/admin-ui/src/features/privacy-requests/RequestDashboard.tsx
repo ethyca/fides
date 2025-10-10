@@ -5,9 +5,6 @@ import {
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  Box,
-  BoxProps,
-  HStack,
   Portal,
   useDisclosure,
   useToast,
@@ -36,7 +33,7 @@ import { ReceivedOn } from "./dashboard/RevievedOn";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { RequestTableActions } from "./RequestTableActions";
 
-export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
+export const RequestDashboard = () => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
     "search",
     parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
@@ -91,26 +88,15 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
     }
   };
 
-  // const handleSort = (columnSort: ColumnSort) => {
-  //   if (!columnSort) {
-  //     dispatch(clearSortKeys());
-  //     return;
-  //   }
-  //   const { id, desc } = columnSort;
-  //   dispatch(setSortKey(id));
-  //   dispatch(setSortDirection(desc ? "desc" : "asc"));
-  //   resetPagination();
-  // };
-
   return (
-    <Box {...props}>
+    <div>
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={fuzzySearchTerm}
           setGlobalFilter={handleSearch}
           placeholder="Search by request ID or identity value"
         />
-        <HStack alignItems="center" spacing={2}>
+        <div className="flex items-center gap-2">
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
           </Button>
@@ -121,7 +107,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
             onClick={handleExport}
             style={{ minWidth: 25 }}
           />
-        </HStack>
+        </div>
         <Portal>
           <RequestTableFilterModal
             isOpen={isOpen}
@@ -131,7 +117,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
         </Portal>
       </TableActionBar>
       {isLoading ? (
-        <Box p={2} borderWidth={1}>
+        <div className="border p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
@@ -140,7 +126,7 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
               </List.Item>
             )}
           />
-        </Box>
+        </div>
       ) : (
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
@@ -211,6 +197,6 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
           />
         </Flex>
       )}
-    </Box>
+    </div>
   );
 };
