@@ -2,12 +2,12 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
+  AntMessage as message,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
   Portal,
   useDisclosure,
-  useToast,
 } from "fidesui";
 import { parseAsString, useQueryState } from "nuqs";
 import React, { useCallback, useMemo } from "react";
@@ -32,7 +32,7 @@ export const PrivacyRequestsDashboard = () => {
     parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
   );
   const filters = useSelector(selectPrivacyRequestFilters);
-  const toast = useToast();
+  const [messageApi, messageContext] = message.useMessage();
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
@@ -62,22 +62,18 @@ export const PrivacyRequestsDashboard = () => {
   );
 
   const handleExport = async () => {
-    let message;
+    let messageStr;
     try {
       await downloadReport(filters);
     } catch (error) {
       if (error instanceof Error) {
-        message = error.message;
+        messageStr = error.message;
       } else {
-        message = "Unknown error occurred";
+        messageStr = "Unknown error occurred";
       }
     }
-    if (message) {
-      toast({
-        description: `${message}`,
-        duration: 5000,
-        status: "error",
-      });
+    if (messageStr) {
+      messageApi.error(messageStr, 5000);
     }
   };
 
@@ -138,6 +134,7 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
+      {messageContext}
     </div>
   );
 };
