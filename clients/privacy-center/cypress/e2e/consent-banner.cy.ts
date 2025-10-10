@@ -1223,16 +1223,16 @@ describe("Consent overlay", () => {
         it("shows indicators that GPC has been applied", () => {
           // In the banner
           cy.get("div#fides-banner").should("be.visible");
-          cy.get("div#fides-banner").within(() => {
-            cy.get("span").contains("Global Privacy Control");
-          });
+          cy.getByTestId("fides-banner-gpc-applied").should("be.visible");
           // And in the modal
           cy.get("button").contains("Manage preferences").click();
-          cy.get("div.fides-gpc-banner").contains(
+          cy.get("p.fides-gpc-header").contains(
             "Global Privacy Control detected",
           );
-          cy.get("span").contains("Advertising with gpc enabled");
-          cy.get("span").contains("Global Privacy Control Applied");
+          cy.getByTestId("gpc-advertising").contains("Applied");
+          // And when the notice is manually overridden
+          cy.getByTestId("toggle-Advertising with gpc enabled").click();
+          cy.getByTestId("gpc-advertising").contains("Overridden");
         });
 
         it("sends GPC consent override from a Headless experience", () => {
@@ -1432,18 +1432,8 @@ describe("Consent overlay", () => {
             cy.get("input").should("be.disabled");
             cy.get("input").should("be.checked");
           });
-          cy.get(".fides-notice-toggle")
-            .contains("Marketing")
-            .parents(".fides-notice-toggle-title")
-            .within(() => {
-              cy.get(".fides-gpc-label").contains("Applied");
-            });
-          cy.get(".fides-notice-toggle")
-            .contains("Functional")
-            .parents(".fides-notice-toggle-title")
-            .within(() => {
-              cy.get(".fides-gpc-label").contains("Applied");
-            });
+          cy.getByTestId("gpc-marketing").contains("Applied");
+          cy.getByTestId("gpc-functional").contains("Applied");
           cy.wait(["@patchPrivacyPreference", "@patchPrivacyPreference"]).then(
             (interceptions) => {
               const [
@@ -1628,14 +1618,7 @@ describe("Consent overlay", () => {
         it("applies Notice Consent string preferences and overrides GPC", () => {
           // Verify the GPC badge shows as overridden
           cy.get("#fides-modal-link").click();
-          cy.get(".fides-notice-toggle")
-            .contains("Advertising with gpc enabled")
-            .parents(".fides-notice-toggle-title")
-            .within(() => {
-              cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-                "Overridden",
-              );
-            });
+          cy.getByTestId("gpc-advertising").contains("Overridden");
         });
       });
     });

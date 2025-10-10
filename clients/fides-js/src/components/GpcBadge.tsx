@@ -1,7 +1,12 @@
 import { GpcStatus } from "../lib/consent-types";
 import { useI18n } from "../lib/i18n/i18n-context";
 
-export const GpcBadge = ({ status }: { status: GpcStatus }) => {
+export const GpcBadge = ({
+  status,
+  ...props
+}: {
+  status: GpcStatus;
+} & React.HTMLAttributes<HTMLSpanElement>) => {
   const { i18n } = useI18n();
   const gpcLabel = i18n.t("static.gpc");
   const statusValue = status.valueOf();
@@ -15,7 +20,7 @@ export const GpcBadge = ({ status }: { status: GpcStatus }) => {
   }
 
   return (
-    <span className="fides-gpc-label">
+    <span className="fides-gpc-label" {...props}>
       {gpcLabel}{" "}
       <span className={`fides-gpc-badge fides-gpc-badge-${statusValue}`}>
         {statusLabel}

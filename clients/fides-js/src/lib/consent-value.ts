@@ -4,6 +4,7 @@ import {
   ConsentValue,
   NoticeConsent,
   PrivacyNoticeWithPreference,
+  UserConsentPreference,
 } from "./consent-types";
 import {
   noticeHasConsentInCookie,
@@ -36,9 +37,13 @@ export const resolveConsentValue = (
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return true;
   }
-  // Note about GPC - consent has already applied to the cookie at this point, so we can trust preference there
   if (consent && noticeHasConsentInCookie(notice, consent)) {
-    return !!consent[notice.notice_key];
+    if (typeof consent[notice.notice_key] === "string") {
+      return transformUserPreferenceToBoolean(
+        consent[notice.notice_key] as UserConsentPreference,
+      );
+    }
+    return consent[notice.notice_key] as boolean;
   }
 
   return transformUserPreferenceToBoolean(notice.default_preference);
