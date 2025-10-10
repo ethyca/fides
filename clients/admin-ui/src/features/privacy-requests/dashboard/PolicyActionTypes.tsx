@@ -16,7 +16,13 @@ const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
   );
 
 export const PolicyActionTypes = ({ rules }: { rules: Rule[] }) => {
-  return getActionTypesFromRules(rules)
-    .map((actionType) => SubjectRequestActionTypeMap.get(actionType))
-    .map((actionType) => <Tag key={actionType}>{actionType}</Tag>);
+  return (
+    <>
+      {getActionTypesFromRules(rules)
+        .map((actionType) => SubjectRequestActionTypeMap.get(actionType))
+        .map((actionType) => (
+          <Tag key={actionType}>{actionType}</Tag>
+        ))}
+    </>
+  );
 };

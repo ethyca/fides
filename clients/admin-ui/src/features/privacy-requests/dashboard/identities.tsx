@@ -15,11 +15,15 @@ export const NonEmailIdentities = ({
 }: {
   identities: PrivacyRequestEntity["identity"];
 }) => {
-  return Object.entries(identities)
-    .filter(([key, identity]) => identity.value && key !== "email")
-    .map(([key, identity]) => (
-      <LabeledTag key={key} label={identity.label}>
-        {identity.value}
-      </LabeledTag>
-    ));
+  return (
+    <>
+      {Object.entries(identities)
+        .filter(([key, identity]) => identity.value && key !== "email")
+        .map(([key, identity]) => (
+          <LabeledTag key={key} label={identity.label}>
+            {identity.value}
+          </LabeledTag>
+        ))}
+    </>
+  );
 };

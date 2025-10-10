@@ -1,4 +1,3 @@
-import { ColumnSort } from "@tanstack/react-table";
 import {
   AntButton as Button,
   AntFlex as Flex,
@@ -15,15 +14,12 @@ import {
 } from "fidesui";
 import { parseAsString, useQueryState } from "nuqs";
 import React, { useCallback, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
-  clearSortKeys,
   selectPrivacyRequestFilters,
-  setSortDirection,
-  setSortKey,
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
@@ -47,7 +43,6 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
   );
   const filters = useSelector(selectPrivacyRequestFilters);
   const toast = useToast();
-  const dispatch = useDispatch();
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
@@ -96,16 +91,16 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
     }
   };
 
-  const handleSort = (columnSort: ColumnSort) => {
-    if (!columnSort) {
-      dispatch(clearSortKeys());
-      return;
-    }
-    const { id, desc } = columnSort;
-    dispatch(setSortKey(id));
-    dispatch(setSortDirection(desc ? "desc" : "asc"));
-    resetPagination();
-  };
+  // const handleSort = (columnSort: ColumnSort) => {
+  //   if (!columnSort) {
+  //     dispatch(clearSortKeys());
+  //     return;
+  //   }
+  //   const { id, desc } = columnSort;
+  //   dispatch(setSortKey(id));
+  //   dispatch(setSortDirection(desc ? "desc" : "asc"));
+  //   resetPagination();
+  // };
 
   return (
     <Box {...props}>
@@ -200,13 +195,13 @@ export const RequestDashboard = ({ ...props }: BoxProps): JSX.Element => {
                       </Flex>
                     }
                   />
-                  <Flex gap={16} wrap>
+                  <Flex gap={16} wrap style={{ paddingRight: 8 }}>
+                    <ReceivedOn createdAt={item.created_at} />
                     <DaysLeft
                       daysLeft={item.days_left}
                       status={item.status}
                       timeframe={item.policy.execution_timeframe}
                     />
-                    <ReceivedOn createdAt={item.created_at} />
                   </Flex>
                 </List.Item>
               )}

@@ -3,30 +3,25 @@ import {
   AntTabs as Tabs,
   AntTabsProps as TabsProps,
 } from "fidesui";
-import dynamic from "next/dynamic";
-import * as React from "react";
+import type { NextPage } from "next";
 import { useEffect, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
+import FixedLayout from "~/features/common/FixedLayout";
+import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import { ManualTasks } from "~/features/manual-tasks/ManualTasks";
-import { RequestTable } from "~/features/privacy-requests/RequestTable";
-import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
-import { ScopeRegistryEnum } from "~/types/api";
-
-import PageHeader from "../common/PageHeader";
-import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
+import ActionButtons from "~/features/privacy-requests/buttons/ActionButtons";
+import { useDSRErrorAlert } from "~/features/privacy-requests/hooks/useDSRErrorAlert";
 import {
   PRIVACY_REQUEST_TABS,
   usePrivacyRequestTabs,
-} from "./hooks/usePrivacyRequestTabs";
+} from "~/features/privacy-requests/hooks/usePrivacyRequestTabs";
+import { RequestDashboard } from "~/features/privacy-requests/RequestDashboard";
+import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
+import { ScopeRegistryEnum } from "~/types/api";
 
-const ActionButtons = dynamic(
-  () => import("~/features/privacy-requests/buttons/ActionButtons"),
-  { loading: () => <div>Loading...</div> },
-);
-
-const PrivacyRequestsContainer = () => {
+const PrivacyRequests: NextPage = () => {
   const { processing } = useDSRErrorAlert();
   const { plus: hasPlus } = useFeatures();
   const { activeTab, handleTabChange, availableTabs } = usePrivacyRequestTabs();
@@ -42,7 +37,7 @@ const PrivacyRequestsContainer = () => {
       items.push({
         key: PRIVACY_REQUEST_TABS.REQUEST,
         label: "Request",
-        children: <RequestTable />,
+        children: <RequestDashboard />,
       });
     }
 
@@ -58,7 +53,7 @@ const PrivacyRequestsContainer = () => {
   }, [availableTabs.manualTask, availableTabs.request]);
 
   return (
-    <>
+    <FixedLayout title="Privacy Requests">
       <PageHeader
         heading="Privacy Requests"
         breadcrumbItems={[{ title: "All requests" }]}
@@ -76,8 +71,7 @@ const PrivacyRequestsContainer = () => {
       />
 
       <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
-    </>
+    </FixedLayout>
   );
 };
-
-export default PrivacyRequestsContainer;
+export default PrivacyRequests;
