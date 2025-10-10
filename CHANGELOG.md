@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Event Auditing for Connections And Connection Secrets [#6681](https://github.com/ethyca/fides/pull/6681)
 - Support for detection phase in new classifier screen [#6711](https://github.com/ethyca/fides/pull/6711)
 - Field Level Actions for New Classifier Screen [#6707](https://github.com/ethyca/fides/pull/6707)
+- Added new beta privacy request managemer screen [#6725](https://github.com/ethyca/fides/pull/6725)
 
 ### Changed
 - Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
