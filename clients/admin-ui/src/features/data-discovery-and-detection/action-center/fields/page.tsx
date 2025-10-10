@@ -8,6 +8,7 @@ import {
   AntText as Text,
   AntTitle as Title,
   Icons,
+  useToast,
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -15,18 +16,27 @@ import { Key, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
-import { useSearch } from "~/features/common/hooks";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert, useSearch } from "~/features/common/hooks";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
+  useClassifyStagedResourcesMutation,
   useGetMonitorConfigQuery,
   useGetMonitorFieldsQuery,
+  useIgnoreMonitorResultAssetsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  usePromoteResourcesMutation,
+  useUpdateResourceCategoryMutation,
+} from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { DiffStatus } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
-import MonitorFieldListItem from "./MonitorFieldListItem";
+import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import MonitorTree from "./MonitorTree";
 import { RESOURCE_STATUS, useMonitorFieldsFilters } from "./useFilters";
 
@@ -73,6 +83,7 @@ const ActionCenterFields: NextPage = () => {
     monitor_config_id: monitorId,
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
     monitor_config_id: monitorId,
     size: pageSize,
@@ -84,7 +95,62 @@ const ActionCenterFields: NextPage = () => {
       : undefined,
     confidence_score: confidenceScore || undefined,
   });
+  const toast = useToast();
+  const [classifyStagedResourcesMutation] =
+    useClassifyStagedResourcesMutation();
+  const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
+  const [ignoreMonitorResultAssetsMutation] =
+    useIgnoreMonitorResultAssetsMutation();
+  const { errorAlert } = useAlert();
+  const [promoteResources] = usePromoteResourcesMutation();
 
+  const handleSetDataUses = async (dataUses: string[], urn: string) => {
+    const mutationResult = await updateResourceCategoryMutation({
+      monitor_config_id: monitorId,
+      staged_resource_urn: urn,
+      user_assigned_data_categories: dataUses,
+    });
+
+    if (isErrorResult(mutationResult)) {
+      errorAlert(getErrorMessage(mutationResult.error));
+    }
+  };
+
+  const handleIgnore = async (urn: string) => {
+    const mutationResult = await ignoreMonitorResultAssetsMutation({
+      urnList: [urn],
+    });
+
+    if (isErrorResult(mutationResult)) {
+      errorAlert(getErrorMessage(mutationResult.error));
+    }
+  };
+
+  const handlePromote = async (urns: string[]) => {
+    const mutationResult = await promoteResources({
+      staged_resource_urns: urns,
+    });
+
+    if (isErrorResult(mutationResult)) {
+      errorAlert(getErrorMessage(mutationResult.error));
+    }
+  };
+
+  const handleClassifyStagedResources = async () => {
+    const result = await classifyStagedResourcesMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: selectedNodeKeys.flatMap((key) =>
+        typeof key !== "bigint" ? [key.toString()] : [],
+      ),
+    });
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
+    }
+
+    toast(successToastParams(`Classifying initiated`));
+  };
   /**
    * @todo: this should be handled on a form/state action level
    */
@@ -115,6 +181,7 @@ const ActionCenterFields: NextPage = () => {
           <MonitorTree
             selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
+            onClickClassifyButton={handleClassifyStagedResources}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
@@ -158,7 +225,18 @@ const ActionCenterFields: NextPage = () => {
                     Filter
                   </Button>
                 </Dropdown>
-                <Dropdown menu={{ items: [] }}>
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: "promote",
+                        onClick: () => handlePromote(selectedFields),
+                        label: "Promote",
+                      },
+                    ],
+                  }}
+                  disabled={selectedFields.length <= 0}
+                >
                   <Button
                     type="primary"
                     icon={<Icons.ChevronDown />}
@@ -172,7 +250,20 @@ const ActionCenterFields: NextPage = () => {
             <List
               dataSource={fieldsDataResponse?.items}
               className="overflow-scroll"
-              renderItem={MonitorFieldListItem}
+              renderItem={(props) =>
+                renderMonitorFieldListItem({
+                  ...props,
+                  selected: selectedFields.includes(props.urn),
+                  onSelect: (key, selected) =>
+                    selected
+                      ? setSelectedFields([...selectedFields, key])
+                      : setSelectedFields(
+                          selectedFields.filter((val) => val !== key),
+                        ),
+                  onSetDataUses: handleSetDataUses,
+                  onIgnore: handleIgnore,
+                })
+              }
             />
             <Pagination
               {...paginationProps}

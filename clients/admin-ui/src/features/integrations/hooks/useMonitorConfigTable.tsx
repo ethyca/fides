@@ -26,7 +26,7 @@ enum MonitorConfigColumnKeys {
   NAME = "name",
   PROJECTS = "projects",
   SOURCE_URL = "source_url",
-  FREQUENCY = "frequency",
+  FREQUENCY = "execution_frequency",
   MONITOR_STATUS = "monitor_status",
   REGIONS = "regions",
   STATUS = "status",

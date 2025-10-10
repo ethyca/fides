@@ -41,6 +41,8 @@ from fides.common.api.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -1453,10 +1455,15 @@ class TestDeleteConnection:
             "domain": "test_hubspot_domain",
             "private_app_token": "test_hubspot_api_key",
         }
+        # Create ConnectionService instance
+        event_audit_service = EventAuditService(db)
+        connection_service = ConnectionService(db, event_audit_service)
+
         connection_config, dataset_config = instantiate_connector(
             db,
+            connection_service,
             "hubspot",
-            "secondary_hubspot_instance",
+            "hubspot_connection_config",
             "hubspot ConnectionConfig description",
             secrets,
         )

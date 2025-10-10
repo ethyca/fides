@@ -209,13 +209,15 @@ const Overlay: FunctionComponent<Props> = ({
   }, [disableBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (!!experience && !options.fidesEmbed) {
+    if (!!experience && !options.fidesEmbed && window.Fides) {
       window.Fides.showModal = () => {
         handleOpenModal(FidesEventOrigin.EXTERNAL);
       };
     }
     return () => {
-      window.Fides.showModal = defaultShowModal;
+      if (window.Fides) {
+        window.Fides.showModal = defaultShowModal;
+      }
     };
   }, [experience, handleOpenModal, options.fidesEmbed]);
 
@@ -248,7 +250,7 @@ const Overlay: FunctionComponent<Props> = ({
       if (modalLinkRef.current) {
         modalLinkRef.current.removeEventListener(
           "click",
-          window.Fides.showModal,
+          window.Fides?.showModal,
         );
       }
     };

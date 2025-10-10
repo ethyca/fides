@@ -15,7 +15,6 @@ import { useState } from "react";
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
   ConsentAlertInfo,
-  ConsentStatus,
   DiffStatus,
   StagedResourceAPIResponse,
 } from "~/types/api";
@@ -43,16 +42,11 @@ export const DiscoveredAssetsTable = ({
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
-  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
-    stagedResource: StagedResourceAPIResponse;
-    status: ConsentStatus;
-  } | null>(null);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] =
+    useState<StagedResourceAPIResponse | null>(null);
 
-  const handleShowBreakdown = (
-    stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
-  ) => {
-    setConsentBreakdownModalData({ stagedResource, status });
+  const handleShowBreakdown = (stagedResource: StagedResourceAPIResponse) => {
+    setConsentBreakdownModalData(stagedResource);
   };
 
   const handleCloseBreakdown = () => {
@@ -262,8 +256,7 @@ export const DiscoveredAssetsTable = ({
       {consentBreakdownModalData && (
         <ConsentBreakdownModal
           isOpen={!!consentBreakdownModalData}
-          stagedResource={consentBreakdownModalData.stagedResource}
-          status={consentBreakdownModalData.status}
+          stagedResource={consentBreakdownModalData}
           onCancel={handleCloseBreakdown}
         />
       )}

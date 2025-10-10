@@ -148,6 +148,7 @@ export const UnconnectedMainSideNav = ({
             target="_blank"
             className="border-none bg-transparent  hover:!bg-gray-700"
             icon={<Icons.Help />}
+            aria-label="Help"
           />
           <div className="inline-block">
             <AccountDropdownMenu onLogout={handleLogout} />
