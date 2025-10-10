@@ -19,20 +19,7 @@ interface PrivacyRequestListItemProps {
 export const PrivacyRequestListItem = ({
   item,
 }: PrivacyRequestListItemProps) => (
-  <List.Item
-    styles={{
-      actions: {
-        minWidth: "125px",
-        display: "flex",
-        justifyContent: "right",
-        marginLeft: 12,
-      },
-    }}
-    actions={[
-      <ViewButton key="view" id={item.id} />,
-      <RequestTableActions key="other-actions" subjectRequest={item} />,
-    ]}
-  >
+  <List.Item>
     <List.Item.Meta
       title={
         <Flex gap={16} wrap align="center">
@@ -64,6 +51,10 @@ export const PrivacyRequestListItem = ({
           timeframe={item.policy.execution_timeframe}
         />
       </Flex>
+    </div>
+    <div className="flex min-w-[125px] items-center justify-end gap-2">
+      <ViewButton key="view" id={item.id} />
+      <RequestTableActions key="other-actions" subjectRequest={item} />
     </div>
   </List.Item>
 );
