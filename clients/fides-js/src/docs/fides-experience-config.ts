@@ -22,12 +22,12 @@ export interface FidesExperienceConfig {
   auto_detect_language?: boolean;
 
   /**
-   * This property corresponds with the "Automatically delete subdomain cookies" option.
+   * This property corresponds with the "Delete from host’s subdomain" Cookie Deletion option.
    */
   auto_subdomain_cookie_deletion?: boolean;
 
   /**
-   * This property corresponds with the "Automatically delete domain cookies" option.
+   * This property corresponds with the "Delete from host’s domain" Cookie Deletion option.
    */
   cookie_deletion_based_on_host_domain?: boolean;
 

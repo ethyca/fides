@@ -29,7 +29,7 @@ This property corresponds with the "Auto detect language" configuration toggle i
 
 > `optional` **auto\_subdomain\_cookie\_deletion**: `boolean`
 
-This property corresponds with the "Automatically delete subdomain cookies" option.
+This property corresponds with the "Delete from host’s subdomain" Cookie Deletion option.
 
 ***
 
@@ -37,7 +37,7 @@ This property corresponds with the "Automatically delete subdomain cookies" opti
 
 > `optional` **cookie\_deletion\_based\_on\_host\_domain**: `boolean`
 
-This property corresponds with the "Automatically delete domain cookies" option.
+This property corresponds with the "Delete from host’s domain" Cookie Deletion option.
 
 ***
 
