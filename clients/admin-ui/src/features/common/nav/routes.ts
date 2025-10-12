@@ -38,6 +38,7 @@ export const DATA_CATALOG_ROUTE = "/data-catalog";
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
+export const PRIVACY_REQUESTS_ROUTE_NEW = "/new-privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
 export const PRIVACY_REQUEST_DETAIL_ROUTE = "/privacy-requests/[id]";
 
