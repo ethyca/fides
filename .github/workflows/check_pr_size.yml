@@ -41,22 +41,28 @@ jobs:
             let failMessage = '';
 
             if (totalLinesChanged > linesLimit) {
-              failMessage += `Lines changed: ${totalLinesChanged} (limit: ${linesLimit})\n`;
+              const lineWord = totalLinesChanged === 1 ? 'Line' : 'Lines';
+              failMessage += `${lineWord} changed: ${totalLinesChanged} (limit: ${linesLimit})\n`;
             }
 
             if (changedFiles > filesLimit) {
-              failMessage += `Files changed: ${changedFiles} (limit: ${filesLimit})\n`;
+              const fileWord = changedFiles === 1 ? 'File' : 'Files';
+              failMessage += `${fileWord} changed: ${changedFiles} (limit: ${filesLimit})\n`;
             }
 
             if (failMessage) {
               const excludedCount = files.length - nonExcludedFiles.length;
               if (excludedCount > 0) {
-                failMessage += `(${excludedCount} file(s) excluded: renamed files and empty __init__.py)\n`;
+                const excludedFileWord = excludedCount === 1 ? 'file' : 'files';
+                failMessage += `(${excludedCount} ${excludedFileWord} excluded: renamed files and empty __init__.py)\n`;
               }
               failMessage += '\nPlease consider splitting this PR into smaller, more focused changes.';
 
               core.setFailed(failMessage);
             } else {
               const excludedCount = files.length - nonExcludedFiles.length;
-              console.log(`PR size check passed (${totalLinesChanged} lines, ${changedFiles} files${excludedCount > 0 ? `, ${excludedCount} files excluded` : ''})`);
+              const lineWord = totalLinesChanged === 1 ? 'line' : 'lines';
+              const fileWord = changedFiles === 1 ? 'file' : 'files';
+              const excludedFileWord = excludedCount === 1 ? 'file' : 'files';
+              console.log(`PR size check passed (${totalLinesChanged} ${lineWord}, ${changedFiles} ${fileWord}${excludedCount > 0 ? `, ${excludedCount} ${excludedFileWord} excluded` : ''})`);
             }
