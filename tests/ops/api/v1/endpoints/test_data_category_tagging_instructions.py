@@ -37,7 +37,6 @@ class TestDataCategoryTaggingInstructionsSchema:
         }
         category = DataCategory.create(db=db, data=payload)
         yield category
-        category.delete(db)
 
     def test_create_data_category_with_tagging_instructions(
         self,
@@ -66,15 +65,6 @@ class TestDataCategoryTaggingInstructionsSchema:
             == "* DO TAG: names\n* DO NOT TAG: ids"
         )
 
-        # Cleanup
-        category = (
-            db.query(DataCategory)
-            .filter_by(fides_key="test.create.with.instructions")
-            .first()
-        )
-        if category:
-            category.delete(db)
-
     def test_create_data_category_without_tagging_instructions(
         self,
         db: Session,
@@ -97,15 +87,6 @@ class TestDataCategoryTaggingInstructionsSchema:
 
         response_body = json.loads(response.text)
         assert response_body.get("tagging_instructions") is None
-
-        # Cleanup
-        category = (
-            db.query(DataCategory)
-            .filter_by(fides_key="test.create.no.instructions")
-            .first()
-        )
-        if category:
-            category.delete(db)
 
     def test_update_data_category_with_tagging_instructions(
         self,
@@ -141,9 +122,6 @@ class TestDataCategoryTaggingInstructionsSchema:
         response_body = json.loads(response.text)
         assert response_body["tagging_instructions"] == "* DO TAG: updated instructions"
         assert response_body["name"] == "Updated Category"
-
-        # Cleanup
-        category.delete(db)
 
     def test_get_data_category_includes_tagging_instructions(
         self,
@@ -191,7 +169,6 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         }
         category = DataCategory.create(db=db, data=payload)
         yield category
-        category.delete(db)
 
     @pytest.fixture(scope="function")
     def patch_url(self, data_category_for_patch):
@@ -305,9 +282,6 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         assert response_body["tagging_instructions"] == new_instructions
         assert "old instructions" not in response_body["tagging_instructions"]
 
-        # Cleanup
-        category.delete(db)
-
 
 class TestDeleteTaggingInstructionsEndpoint:
     """Test the DELETE endpoint for removing tagging_instructions."""
@@ -325,7 +299,6 @@ class TestDeleteTaggingInstructionsEndpoint:
         }
         category = DataCategory.create(db=db, data=payload)
         yield category
-        category.delete(db)
 
     @pytest.fixture(scope="function")
     def delete_url(self, data_category_with_instructions):
@@ -417,6 +390,3 @@ class TestDeleteTaggingInstructionsEndpoint:
 
         response_body = json.loads(response.text)
         assert response_body["tagging_instructions"] is None
-
-        # Cleanup
-        category.delete(db)
