@@ -7,6 +7,10 @@ from unittest.mock import ANY, Mock, call
 
 import pydash
 import pytest
+import sqlalchemy.exc
+
+# pylint: disable=no-name-in-module
+from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -49,6 +53,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     initiate_privacy_request_completion_email,
     needs_batch_email_send,
     run_webhooks_and_report_status,
+    save_access_results,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
@@ -2622,3 +2627,95 @@ class TestDSRPackageURLGeneration:
         # The token should be present and at least 3 characters (to account for masking like "***")
         token_part = download_url.split("?token=")[1]
         assert len(token_part) >= 3, "Token should be present and at least 3 characters"
+
+
+class TestSaveAccessResults:
+    """Test the save_access_results function error handling"""
+
+    def test_save_access_results_success(self, db, privacy_request):
+        """Test successful save of access results"""
+
+        download_urls = ["https://example.com/file1", "https://example.com/file2"]
+        rule_filtered_results = {
+            "test_rule": {
+                "test_dataset:test_collection": [
+                    {"name": "John", "email": "john@example.com"}
+                ]
+            }
+        }
+
+        # Should not raise any exceptions
+        save_access_results(db, privacy_request, download_urls, rule_filtered_results)
+
+        # Verify URLs were saved
+        db.refresh(privacy_request)
+        assert privacy_request.access_result_urls == {
+            "access_result_urls": download_urls
+        }
+
+        # Verify backup results were saved
+        assert privacy_request.get_filtered_final_upload() == rule_filtered_results
+
+    @pytest.mark.parametrize(
+        "error_type, error_inputs",
+        [
+            (InternalError_, ("Database connection error",)),
+            (
+                sqlalchemy.exc.StatementError,
+                (
+                    "Database connection error",
+                    "SELECT * FROM table",
+                    None,
+                    Exception("Original error"),
+                ),
+            ),
+            (MemoryError, ("Database connection error",)),
+            (OverflowError, ("Database connection error",)),
+            (TypeError, ("Database connection error",)),  # for unexpected exceptions
+        ],
+    )
+    @mock.patch.object(PrivacyRequest, "save_filtered_access_results")
+    def test_save_access_results_handles_backup_error_gracefully(
+        self,
+        mock_save_filtered,
+        db,
+        privacy_request,
+        loguru_caplog,
+        error_type,
+        error_inputs,
+    ):
+        """Test that backup errors don't fail the DSR when S3 upload succeeded"""
+        download_urls = ["https://example.com/file1", "https://example.com/file2"]
+        rule_filtered_results = {
+            "test_rule": {
+                "test_dataset:test_collection": [
+                    {"name": "John", "email": "john@example.com"}
+                ]
+            }
+        }
+
+        mock_save_filtered.side_effect = error_type(*error_inputs)
+
+        # Should not raise any exceptions despite backup failure (for handled exceptions)
+        save_access_results(db, privacy_request, download_urls, rule_filtered_results)
+
+        # Verify URLs were still saved (S3 upload succeeded)
+        db.refresh(privacy_request)
+        assert privacy_request.access_result_urls == {
+            "access_result_urls": download_urls
+        }
+
+        # Verify backup was attempted
+        mock_save_filtered.assert_called_once_with(db, rule_filtered_results)
+
+        # Verify warning was logged
+        assert "Failed to save backup of DSR results to database" in loguru_caplog.text
+        # Check for error message (may be formatted differently for different exception types)
+        log_text = loguru_caplog.text.lower()
+        assert any(
+            [
+                "database connection error" in log_text,
+                "original error" in log_text,
+                "error:" in log_text,
+            ]
+        ), f"Expected error message in logs, got: {loguru_caplog.text}"

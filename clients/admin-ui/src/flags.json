@@ -59,5 +59,11 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "privacyRequestV2": {
+    "description": "Enable new privacy request dashboard",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }

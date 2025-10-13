@@ -239,6 +239,7 @@ export const CustomReportTemplates = ({
             <Button
               type="text"
               size="small"
+              aria-label="Cancel"
               icon={<Icons.Close />}
               className="absolute right-3 top-3"
               onClick={handleCancel}
@@ -322,6 +323,7 @@ export const CustomReportTemplates = ({
                             icon={<Icons.TrashCan />}
                             onClick={() => setReportToDelete(customReport)}
                             data-testid="delete-report-button"
+                            aria-label="Delete"
                           />
                         )}
                       </Flex>

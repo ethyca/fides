@@ -40,6 +40,7 @@ class TestManualTaskDigestMessageDispatch:
                 portal_url="https://privacy.example.com/external-tasks?access_token=abc123",
                 imminent_task_count=3,
                 upcoming_task_count=7,
+                total_task_count=10,
                 company_logo_url=None,
             ),
         )
@@ -59,8 +60,15 @@ class TestManualTaskDigestMessageDispatch:
         assert email_for_action_type.subject == "Weekly DSR Summary from Acme Corp"
         assert "Hi Jane Doe," in email_for_action_type.body
         assert "Acme Corp" in email_for_action_type.body
-        assert "You have 3 request" in email_for_action_type.body  # imminent tasks
-        assert "You have 7 request" in email_for_action_type.body  # upcoming tasks
+        assert (
+            "You have 10 requests coming due" in email_for_action_type.body
+        )  # total tasks
+        assert (
+            "3 within the next 7 days" in email_for_action_type.body
+        )  # imminent tasks
+        assert (
+            "7 due in the next period" in email_for_action_type.body
+        )  # upcoming tasks
         # Validate that URLs with the expected hostname are present in the email
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
 
@@ -70,6 +78,7 @@ class TestManualTaskDigestMessageDispatch:
         assert template_vars["organization_name"] == "Acme Corp"
         assert template_vars["imminent_task_count"] == 3
         assert template_vars["upcoming_task_count"] == 7
+        assert template_vars["total_task_count"] == 10
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -90,8 +99,9 @@ class TestManualTaskDigestMessageDispatch:
                 vendor_contact_name="John Smith",
                 organization_name="Test Organization",
                 portal_url="https://portal.test.com/external-tasks",
-                imminent_task_count=0,
-                upcoming_task_count=5,
+                imminent_task_count=2,
+                upcoming_task_count=3,
+                total_task_count=5,
                 company_logo_url="https://example.com/logo.png",
             ),
         )
@@ -103,9 +113,14 @@ class TestManualTaskDigestMessageDispatch:
         assert "Test Organization" in email_for_action_type.body
         assert "John Smith" in email_for_action_type.body
         assert (
-            "0 request" in email_for_action_type.body
-        )  # HTML template uses different text
-        assert "5 request" in email_for_action_type.body
+            "You have 5 requests coming due" in email_for_action_type.body
+        )  # total tasks
+        assert (
+            "2 within the next 7 days" in email_for_action_type.body
+        )  # imminent tasks
+        assert (
+            "3 due in the next period" in email_for_action_type.body
+        )  # upcoming tasks
 
         # Should contain HTML tags (since it's the HTML template)
         assert "<div" in email_for_action_type.body
@@ -137,6 +152,7 @@ class TestManualTaskDigestMessageDispatch:
                 portal_url="http://localhost:3001/external-tasks",
                 imminent_task_count=0,
                 upcoming_task_count=0,
+                total_task_count=0,
                 company_logo_url=None,
             ),
         )
@@ -158,6 +174,7 @@ class TestManualTaskDigestMessageDispatch:
         template_vars = email_for_action_type.template_variables
         assert template_vars["imminent_task_count"] == 0
         assert template_vars["upcoming_task_count"] == 0
+        assert template_vars["total_task_count"] == 0
 
     def test_manual_task_digest_body_params_validation(self) -> None:
         """Test that ManualTaskDigestBodyParams validates correctly."""
@@ -168,6 +185,7 @@ class TestManualTaskDigestMessageDispatch:
             portal_url="https://example.com/portal",
             imminent_task_count=5,
             upcoming_task_count=10,
+            total_task_count=15,
             company_logo_url="https://example.com/logo.png",
         )
 
@@ -176,6 +194,7 @@ class TestManualTaskDigestMessageDispatch:
         assert valid_params.portal_url == "https://example.com/portal"
         assert valid_params.imminent_task_count == 5
         assert valid_params.upcoming_task_count == 10
+        assert valid_params.total_task_count == 15
         assert valid_params.company_logo_url == "https://example.com/logo.png"
 
         # Test with optional logo URL as None
@@ -183,8 +202,9 @@ class TestManualTaskDigestMessageDispatch:
             vendor_contact_name="John Smith",
             organization_name="Test Org",
             portal_url="https://test.com",
-            imminent_task_count=0,
-            upcoming_task_count=3,
+            imminent_task_count=1,
+            upcoming_task_count=2,
+            total_task_count=3,
             company_logo_url=None,
         )
 
@@ -211,6 +231,7 @@ class TestManualTaskDigestMessageDispatch:
                 portal_url="https://privacy.example.com/external-tasks?token=abc123&user=test",
                 imminent_task_count=1,
                 upcoming_task_count=1,
+                total_task_count=2,
                 company_logo_url=None,
             ),
         )
@@ -268,6 +289,7 @@ class TestManualTaskDigestMessageDispatch:
                 portal_url="https://privacy.example.com/tasks",
                 imminent_task_count=2,
                 upcoming_task_count=5,
+                total_task_count=7,
                 company_logo_url=None,
             ),
         )
@@ -328,6 +350,7 @@ class TestManualTaskDigestMessageDispatch:
                 portal_url="https://privacy.example.com/tasks",
                 imminent_task_count=1,
                 upcoming_task_count=3,
+                total_task_count=4,
                 company_logo_url=None,
             ),
         )
@@ -343,8 +366,13 @@ class TestManualTaskDigestMessageDispatch:
         assert (
             "This is your weekly summary" in email_for_action_type.body
         )  # Default intro text from template
-        assert "1 request" in email_for_action_type.body  # HTML template format
-        assert "3 request" in email_for_action_type.body
+        assert "4 requests coming due" in email_for_action_type.body  # Total count
+        assert (
+            "1 within the next 7 days" in email_for_action_type.body
+        )  # Imminent count
+        assert (
+            "3 due in the next period" in email_for_action_type.body
+        )  # Upcoming count
 
         # Should contain HTML tags (since it's the HTML template)
         assert "<div" in email_for_action_type.body
@@ -382,6 +410,7 @@ class TestManualTaskDigestMessageDispatch:
                 portal_url="https://privacy.example.com/tasks",
                 imminent_task_count=1,
                 upcoming_task_count=3,
+                total_task_count=4,
                 company_logo_url=None,
             ),
         )

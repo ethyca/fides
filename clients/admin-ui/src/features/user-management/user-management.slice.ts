@@ -74,23 +74,15 @@ export const { setPage, setUsernameSearch, setActiveUserId } =
 
 export const { reducer } = userManagementSlice;
 
-// Helpers
-export const mapFiltersToSearchParams = ({
-  page,
-  size,
-  username,
-}: Partial<UsersListParams>) => ({
-  ...(page ? { page: `${page}` } : {}),
-  ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
-  ...(username ? { username } : {}),
-});
-
 const userApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
-      query: (filters) => ({
+      query: (params) => ({
         url: `user`,
-        params: mapFiltersToSearchParams(filters),
+        params: {
+          ...params,
+          username: params.username ?? undefined,
+        },
       }),
       providesTags: () => ["User"],
     }),

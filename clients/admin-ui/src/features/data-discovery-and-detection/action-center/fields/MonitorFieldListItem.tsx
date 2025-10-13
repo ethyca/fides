@@ -5,21 +5,24 @@ import {
   AntList as List,
   AntListProps as ListProps,
   AntProgress as Progress,
+  AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
   Icons,
   SparkleIcon,
 } from "fidesui";
 
+import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
+import ClassificationSelect from "./ClassificationSelect";
 import { RESOURCE_STATUS } from "./useFilters";
 
 type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue";
+type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue" | "green";
 
 const ResourceStatus: Record<
   DiffStatus,
@@ -30,25 +33,92 @@ const ResourceStatus: Record<
 > = {
   classifying: { label: "Classifying", color: "blue" },
   classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "Classifying", color: "nectar" },
+  classification_update: { label: "In Review", color: "nectar" },
   classification_addition: { label: "In Review", color: "blue" },
-  addition: { label: "In Review", color: "blue" },
+  addition: { label: "Attention Required", color: "blue" },
   muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Attention Required", color: "red" },
+  removal: { label: "Removed", color: "red" },
   removing: { label: "In Review", color: "nectar" },
   promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Approved", color: "nectar" },
+  monitored: { label: "Confirmed", color: "nectar" },
+  approved: { label: "Approved", color: "green" },
 } as const;
 
-const MonitorFieldListItem: ListProps<
+type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
+
+type TagRender = (
+  props: TagRenderParams & {
+    isFromClassifier?: boolean;
+  },
+) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
+
+const tagRender: TagRender = (props) => {
+  const { label, closable, onClose, isFromClassifier } = props;
+
+  const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  return (
+    <Tag
+      color="white"
+      bordered
+      onMouseDown={onPreventMouseDown}
+      closable={closable}
+      onClose={onClose}
+      /** Style required because of tailwind limitations and our ui package presets */
+      style={{
+        marginInlineEnd: "calc((var(--ant-padding-xs) * 0.5))",
+      }}
+      icon={isFromClassifier && <SparkleIcon />}
+    >
+      <Text size="sm">{label}</Text>
+    </Tag>
+  );
+};
+
+type ListRenderItem = ListProps<
   Page_DatastoreStagedResourceAPIResponse_["items"][number]
->["renderItem"] = ({
+>["renderItem"];
+
+type MonitorFieldListItemRenderParams = Parameters<
+  NonNullable<ListRenderItem>
+>[0] & {
+  selected?: boolean;
+  onSelect?: (key: string, selected?: boolean) => void;
+  onSetDataUses: (dataUses: string[], urn: string) => void;
+  onIgnore: (urn: string) => void;
+};
+
+type RenderMonitorFieldListItem = (
+  props: MonitorFieldListItemRenderParams,
+) => ReturnType<NonNullable<ListRenderItem>>;
+
+const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   urn,
   classifications,
   name,
   diff_status,
+  selected,
+  onSelect,
+  onSetDataUses,
   user_assigned_data_categories,
+  onIgnore,
 }) => {
+  const onChange: TaxonomySelectProps["onChange"] = (values: string[]) => {
+    onSetDataUses(
+      values.flatMap((value) =>
+        !classifications?.find(
+          (classification) => classification.label !== value,
+        )
+          ? [value]
+          : [],
+      ),
+      urn,
+    );
+  };
+
   return (
     <List.Item
       key={urn}
@@ -102,16 +172,37 @@ const MonitorFieldListItem: ListProps<
           </Flex>
         ),
         classifications && classifications.length > 0 && (
-          <Button icon={<Icons.Checkmark />} size="small" key="approve" />
+          <Button
+            aria-label="Approve"
+            icon={<Icons.Checkmark />}
+            size="small"
+            key="approve"
+          />
         ),
-        classifications && classifications.length > 0 && (
-          <Button icon={<Icons.Close />} size="small" key="deny" />
+        diff_status !== DiffStatus.MUTED && (
+          <Button
+            icon={<Icons.ViewOff />}
+            size="small"
+            aria-label="Ignore"
+            key="ignore"
+            onClick={() => onIgnore(urn)}
+          />
         ),
-        <Button icon={<SparkleIcon />} size="small" key="reclassify" />,
+        <Button
+          aria-label="Reclassify"
+          icon={<SparkleIcon />}
+          size="small"
+          key="reclassify"
+        />,
       ]}
     >
       <List.Item.Meta
-        avatar={<Checkbox />}
+        avatar={
+          <Checkbox
+            checked={selected}
+            onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
+          />
+        }
         title={
           <Flex justify="space-between">
             <Flex gap="small" align="center" className="w-full">
@@ -137,35 +228,25 @@ const MonitorFieldListItem: ListProps<
           </Flex>
         }
         description={
-          <>
-            <Button type="text" icon={<Icons.Add />} size="small" />
-            {classifications?.map((c) => (
-              <Tag
-                bordered
-                color="white"
-                closable
-                icon={<SparkleIcon />}
-                className="text-[var(--ant-color-text)]"
-                key={c.label}
-              >
-                {c.label}
-              </Tag>
-            ))}
-            {user_assigned_data_categories?.map((c) => (
-              <Tag
-                bordered
-                color="white"
-                closable
-                className="text-[var(--ant-color-text)]"
-                key={c}
-              >
-                {c}
-              </Tag>
-            ))}
-          </>
+          <ClassificationSelect
+            mode="tags"
+            value={[
+              ...(classifications?.map(({ label }) => label) ?? []),
+              ...(user_assigned_data_categories?.map((value) => value) ?? []),
+            ]}
+            tagRender={(props) =>
+              tagRender({
+                ...props,
+                isFromClassifier: !!classifications?.find(
+                  (item) => item.label === props.value,
+                ),
+              })
+            }
+            onChange={onChange}
+          />
         }
       />
     </List.Item>
   );
 };
-export default MonitorFieldListItem;
+export default renderMonitorFieldListItem;

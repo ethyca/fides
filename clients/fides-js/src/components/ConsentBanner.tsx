@@ -120,7 +120,12 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 >
                   {bannerTitle}
                 </div>
-                {showGpcBadge && <GpcBadge status={GpcStatus.APPLIED} />}
+                {showGpcBadge && (
+                  <GpcBadge
+                    status={GpcStatus.APPLIED}
+                    data-testid="fides-banner-gpc-applied"
+                  />
+                )}
               </div>
               <div
                 id={`${container.id}-description`}

@@ -80,6 +80,7 @@ export {
   Steps as AntSteps,
   Switch as AntSwitch,
   Tabs as AntTabs,
+  TimePicker as AntTimePicker,
   Tree as AntTree,
   TreeSelect as AntTreeSelect,
   Upload as AntUpload,
