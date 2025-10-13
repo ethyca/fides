@@ -1,4 +1,5 @@
 """Tests for data category tagging_instructions field and endpoints."""
+
 import json
 
 import pytest
@@ -60,12 +61,17 @@ class TestDataCategoryTaggingInstructionsSchema:
         assert response.status_code == 201
 
         response_body = json.loads(response.text)
-        assert response_body["tagging_instructions"] == "* DO TAG: names\n* DO NOT TAG: ids"
+        assert (
+            response_body["tagging_instructions"]
+            == "* DO TAG: names\n* DO NOT TAG: ids"
+        )
 
         # Cleanup
-        category = db.query(DataCategory).filter_by(
-            fides_key="test.create.with.instructions"
-        ).first()
+        category = (
+            db.query(DataCategory)
+            .filter_by(fides_key="test.create.with.instructions")
+            .first()
+        )
         if category:
             category.delete(db)
 
@@ -93,9 +99,11 @@ class TestDataCategoryTaggingInstructionsSchema:
         assert response_body.get("tagging_instructions") is None
 
         # Cleanup
-        category = db.query(DataCategory).filter_by(
-            fides_key="test.create.no.instructions"
-        ).first()
+        category = (
+            db.query(DataCategory)
+            .filter_by(fides_key="test.create.no.instructions")
+            .first()
+        )
         if category:
             category.delete(db)
 
@@ -281,7 +289,9 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         )
 
         auth_header = generate_auth_header([DATA_CATEGORY_UPDATE])
-        url = f"{V1_URL_PREFIX}/{DATA_CATEGORY}/{category.fides_key}/tagging_instructions"
+        url = (
+            f"{V1_URL_PREFIX}/{DATA_CATEGORY}/{category.fides_key}/tagging_instructions"
+        )
         new_instructions = "* DO TAG: new instructions"
 
         response = api_client.patch(
@@ -398,7 +408,9 @@ class TestDeleteTaggingInstructionsEndpoint:
         )
 
         auth_header = generate_auth_header([DATA_CATEGORY_UPDATE])
-        url = f"{V1_URL_PREFIX}/{DATA_CATEGORY}/{category.fides_key}/tagging_instructions"
+        url = (
+            f"{V1_URL_PREFIX}/{DATA_CATEGORY}/{category.fides_key}/tagging_instructions"
+        )
 
         response = api_client.delete(url, headers=auth_header)
         assert response.status_code == 200
