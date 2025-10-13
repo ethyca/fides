@@ -1,5 +1,11 @@
 import { useAlert } from "common/hooks";
-import { Box, HStack, Text, TrashCanSolidIcon, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  HStack,
+  TrashCanSolidIcon,
+  VStack,
+} from "fidesui";
 import { FieldArray, Form, Formik, FormikProps } from "formik";
 import React from "react";
 import * as Yup from "yup";
@@ -155,12 +161,8 @@ const DSRCustomizationForm = ({
                           ))
                         : null}
                     </Box>
-                    <Text
-                      color="complimentary.500"
-                      fontWeight="medium"
-                      fontSize="sm"
-                      mb="24px !important"
-                      mt="24px !important"
+                    <Button
+                      className="my-6"
                       onClick={() => {
                         fieldArrayProps.push({
                           pii_field: "",
@@ -168,10 +170,9 @@ const DSRCustomizationForm = ({
                           data_categories: [],
                         });
                       }}
-                      _hover={{ cursor: "pointer" }}
                     >
                       Add new PII field
-                    </Text>
+                    </Button>
                     <ManualButtonGroup
                       isSubmitting={isSubmitting}
                       onCancelClick={onCancel}

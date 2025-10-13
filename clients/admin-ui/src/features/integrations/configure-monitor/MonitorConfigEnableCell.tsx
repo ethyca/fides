@@ -1,6 +1,4 @@
-import { CellContext } from "@tanstack/react-table";
-
-import { EnableCell } from "~/features/common/table/v2/cells";
+import { EnableCell } from "~/features/common/table/cells/EnableCell";
 import { usePutDiscoveryMonitorMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { MonitorConfig } from "~/types/api";
 
@@ -9,23 +7,22 @@ const MODAL_TEXT =
   "You are about to disable this monitor. If you continue, it will no longer scan automatically.";
 
 export const MonitorConfigEnableCell = ({
-  row,
-  getValue,
-}: CellContext<MonitorConfig, boolean | undefined>) => {
+  record,
+}: {
+  record: MonitorConfig;
+}) => {
   const [putMonitor] = usePutDiscoveryMonitorMutation();
-
-  const onToggle = async (toggleValue: boolean) =>
+  const handleToggle = async (toggleValue: boolean) =>
     putMonitor({
-      ...row.original,
+      ...record,
       enabled: toggleValue,
     });
-
-  const enabled = getValue()!;
+  const { enabled } = record;
 
   return (
     <EnableCell
-      enabled={enabled}
-      onToggle={onToggle}
+      enabled={!!enabled}
+      onToggle={handleToggle}
       title={MODAL_TITLE}
       message={MODAL_TEXT}
     />

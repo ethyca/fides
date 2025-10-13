@@ -15,6 +15,7 @@ export interface PaginationConfig {
   showSizeChanger?: boolean;
   pageQueryKey?: string;
   sizeQueryKey?: string;
+  disableUrlState?: boolean;
 }
 
 /**

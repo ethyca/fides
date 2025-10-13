@@ -56,6 +56,7 @@ const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
         type="primary"
         className="border-none bg-transparent hover:!bg-gray-700 focus:!bg-gray-700"
         icon={<Icons.User />}
+        aria-label="User menu"
         data-testid="header-menu-button"
       />
     </Dropdown>

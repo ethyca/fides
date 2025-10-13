@@ -8,6 +8,7 @@ export enum SupportedLanguage {
   BS = "bs",
   CA = "ca",
   CS = "cs",
+  CY = "cy",
   DA = "da",
   DE = "de",
   EL = "el",

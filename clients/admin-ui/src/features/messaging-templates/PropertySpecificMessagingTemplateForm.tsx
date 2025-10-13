@@ -1,4 +1,4 @@
-import { MESSAGING_ROUTE } from "common/nav/routes";
+import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
 import { AntButton as Button, Box, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
@@ -73,7 +73,7 @@ const PropertySpecificMessagingTemplateForm = ({
   const router = useRouter();
 
   const handleCancel = () => {
-    router.push(MESSAGING_ROUTE);
+    router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
   };
 
   const initialValues: MessagingTemplateResponse = {

@@ -14,7 +14,6 @@ import {
 import NextLink from "next/link";
 import { useMemo } from "react";
 
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import {
   formatDate,
   getDomain,
@@ -30,11 +29,13 @@ const { Text } = Typography;
 interface MonitorResultProps extends ListItemProps {
   monitorSummary: MonitorAggregatedResults;
   showSkeleton?: boolean;
+  href: string;
 }
 
 export const MonitorResult = ({
   monitorSummary,
   showSkeleton,
+  href,
   ...props
 }: MonitorResultProps) => {
   const {
@@ -92,10 +93,7 @@ export const MonitorResult = ({
               }
               title={
                 <Flex align="center" gap={4}>
-                  <NextLink
-                    href={`${ACTION_CENTER_ROUTE}/${key}`}
-                    className="whitespace-nowrap"
-                  >
+                  <NextLink href={href} className="whitespace-nowrap">
                     {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
                   </NextLink>
                   <DiscoveryStatusIcon consentStatus={consentStatus} />

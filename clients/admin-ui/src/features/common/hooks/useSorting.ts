@@ -4,7 +4,7 @@ import {
   parseAsStringLiteral,
   useQueryStates,
 } from "nuqs";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type {
   SortingConfig,
@@ -26,11 +26,11 @@ const createSortingParsers = <TSortKey extends string = string>(
 });
 
 /**
- * Custom hook for managing sorting state with URL synchronization
+ * Custom hook for managing sorting state with optional URL synchronization
  *
- * This hook manages sorting state (sort field and sort order) and
- * synchronizes it with URL query parameters using NuQS. The URL query parameters
- * are the single source of truth for sorting state.
+ * This hook manages sorting state (sort field and sort order) and can optionally
+ * synchronize it with URL query parameters using NuQS. When URL sync is disabled,
+ * it uses React state for in-memory state management.
  *
  * Can be used standalone for any sortable component (not just tables) or
  * consumed by table state management hooks.
@@ -40,13 +40,18 @@ const createSortingParsers = <TSortKey extends string = string>(
  *
  * @example
  * ```tsx
- * // Basic usage with default settings
+ * // Basic usage with default settings (URL state enabled by default)
  * const sorting = useSorting();
  *
  * // With custom default values
  * const sorting = useSorting({
  *   defaultSortKey: 'name',
  *   defaultSortOrder: 'ascend'
+ * });
+ *
+ * // Without URL state synchronization
+ * const sorting = useSorting({
+ *   disableUrlState: true,
  * });
  *
  * // With state change callback
@@ -87,48 +92,86 @@ const createSortingParsers = <TSortKey extends string = string>(
 export const useSorting = <TSortKey extends string = string>(
   config: SortingConfig<TSortKey> = {},
 ) => {
-  const { defaultSortKey, defaultSortOrder, onSortingChange, validColumns } =
-    config;
+  const {
+    defaultSortKey,
+    defaultSortOrder,
+    onSortingChange,
+    validColumns,
+    disableUrlState = false,
+  } = config;
+
+  // React state for in-memory state management (when disableUrlState is true)
+  const [localState, setLocalState] = useState<SortingState<TSortKey>>({
+    sortKey: defaultSortKey,
+    sortOrder: defaultSortOrder,
+  });
 
   // Create parsers for sorting state
   // Note: Parsers must be stable across renders for NuQS to work properly
-  const parsers = useMemo(
-    () => createSortingParsers(validColumns),
-    [validColumns],
-  );
+  const parsers = useMemo(() => {
+    if (disableUrlState) {
+      return null;
+    }
+    return createSortingParsers(validColumns);
+  }, [disableUrlState, validColumns]);
 
-  // Use NuQS for URL state management
-  const [queryState, setQueryState] = useQueryStates(parsers, {
+  // Use NuQS for URL state management (only when disableUrlState is false)
+  const [queryState, setQueryState] = useQueryStates(parsers ?? {}, {
     history: "push",
   });
 
-  // Create current state from query state (URL is the single source of truth)
+  // Create current state from either query state or local state
   const currentState: SortingState<TSortKey> = useMemo(() => {
+    if (disableUrlState) {
+      return localState;
+    }
     return {
-      sortKey: (queryState.sortKey as TSortKey) || defaultSortKey, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
-      sortOrder: (queryState.sortOrder as SortOrder | null) ?? defaultSortOrder, // Use `??` because parseAsStringLiteral returns null when not set
+      sortKey:
+        ((queryState as { sortKey?: string }).sortKey as TSortKey) ||
+        defaultSortKey, // Use `||` not `??` because NuQS defaults to empty string, not null/undefined
+      sortOrder:
+        ((queryState as { sortOrder?: SortOrder })
+          .sortOrder as SortOrder | null) ?? defaultSortOrder, // Use `??` because parseAsStringLiteral returns null when not set
     };
-  }, [queryState, defaultSortKey, defaultSortOrder]);
+  }, [
+    disableUrlState,
+    localState,
+    queryState,
+    defaultSortKey,
+    defaultSortOrder,
+  ]);
 
-  // Update functions that update query state (URL is the single source of truth)
+  // Update functions that update either query state or local state
   const updateSorting = useCallback(
     (sortKey?: TSortKey, sortOrder?: SortOrder) => {
-      const updates: SortingQueryParams = {
-        sortKey: sortKey ? String(sortKey) : null,
-        sortOrder: sortOrder ?? null,
-      };
-      setQueryState(updates);
+      if (disableUrlState) {
+        setLocalState({ sortKey, sortOrder });
+      } else {
+        const updates: SortingQueryParams = {
+          sortKey: sortKey ? String(sortKey) : null,
+          sortOrder: sortOrder ?? null,
+        };
+        setQueryState(updates);
+      }
     },
-    [setQueryState],
+    [disableUrlState, setQueryState],
   );
 
   const resetSorting = useCallback(() => {
-    // Reset sorting URL state
-    setQueryState({
-      sortKey: null,
-      sortOrder: null,
-    });
-  }, [setQueryState]);
+    if (disableUrlState) {
+      // Reset local state
+      setLocalState({
+        sortKey: defaultSortKey,
+        sortOrder: defaultSortOrder,
+      });
+    } else {
+      // Reset sorting URL state
+      setQueryState({
+        sortKey: null,
+        sortOrder: null,
+      });
+    }
+  }, [disableUrlState, defaultSortKey, defaultSortOrder, setQueryState]);
 
   // Call onSortingChange when state changes
   useEffect(() => {

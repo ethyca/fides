@@ -429,7 +429,9 @@ interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   message: string;
   isDisabled?: boolean;
 }
-
+/**
+ * @deprecated Use Ant version of EnableCell from ./cells instead
+ */
 export const EnableCell = ({
   enabled,
   onToggle,

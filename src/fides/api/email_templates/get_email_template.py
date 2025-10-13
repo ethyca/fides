@@ -9,6 +9,7 @@ from fides.api.email_templates.template_names import (
     CONSENT_REQUEST_VERIFICATION_TEMPLATE,
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     EXTERNAL_USER_WELCOME,
+    MANUAL_TASK_DIGEST,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
     PRIVACY_REQUEST_ERROR_NOTIFICATION_TEMPLATE,
@@ -59,6 +60,8 @@ def get_email_template(  # pylint: disable=too-many-return-statements, too-many-
         return template_env.get_template(USER_INVITE)
     if action_type == MessagingActionType.EXTERNAL_USER_WELCOME:
         return template_env.get_template(EXTERNAL_USER_WELCOME)
+    if action_type == MessagingActionType.MANUAL_TASK_DIGEST:
+        return template_env.get_template(MANUAL_TASK_DIGEST)
 
     logger.error("No corresponding template linked to the {}", action_type)
     raise EmailTemplateUnhandledActionType(

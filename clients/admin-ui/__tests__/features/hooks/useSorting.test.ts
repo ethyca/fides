@@ -418,4 +418,210 @@ describe("useSorting", () => {
     // Ant Design props should reflect the cleared state
     expect(result.current.sortingProps.sortedInfo).toBeUndefined();
   });
+
+  describe("with disableUrlState: true", () => {
+    it("initializes with default values without using URL state", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.sortKey).toBeUndefined();
+      expect(result.current.sortOrder).toBeUndefined();
+      expect(typeof result.current.updateSorting).toBe("function");
+      expect(typeof result.current.resetSorting).toBe("function");
+    });
+
+    it("initializes with custom default values", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          defaultSortKey: "name",
+          defaultSortOrder: "ascend",
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.sortKey).toBe("name");
+      expect(result.current.sortOrder).toBe("ascend");
+    });
+
+    it("does not read from URL when disableUrlState is true", () => {
+      // Seed URL state with sorting values
+      nuqsTestHelpers.reset({
+        sortKey: "createdAt",
+        sortOrder: "descend",
+      });
+
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          defaultSortKey: "name",
+          defaultSortOrder: "ascend",
+          disableUrlState: true,
+        }),
+      );
+
+      // Should use default values instead of URL values
+      expect(result.current.sortKey).toBe("name");
+      expect(result.current.sortOrder).toBe("ascend");
+    });
+
+    it("does not call setQueryState when updating sorting", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          disableUrlState: true,
+        }),
+      );
+
+      const initialCallCount = nuqsTestHelpers.getSetCalls().length;
+
+      // Update sorting
+      act(() => result.current.updateSorting("title", "descend"));
+
+      // Should not have called setQueryState
+      expect(nuqsTestHelpers.getSetCalls().length).toBe(initialCallCount);
+
+      // But internal state should be updated
+      expect(result.current.sortKey).toBe("title");
+      expect(result.current.sortOrder).toBe("descend");
+    });
+
+    it("updates sorting correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          disableUrlState: true,
+        }),
+      );
+
+      // Update sorting
+      act(() => result.current.updateSorting("name", "ascend"));
+      expect(result.current.sortKey).toBe("name");
+      expect(result.current.sortOrder).toBe("ascend");
+
+      // Update to different values
+      act(() => result.current.updateSorting("createdAt", "descend"));
+      expect(result.current.sortKey).toBe("createdAt");
+      expect(result.current.sortOrder).toBe("descend");
+
+      // Clear sorting
+      act(() => result.current.updateSorting());
+      expect(result.current.sortKey).toBeUndefined();
+      expect(result.current.sortOrder).toBeUndefined();
+    });
+
+    it("resets sorting correctly without URL state", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          defaultSortKey: "name",
+          defaultSortOrder: "ascend",
+          disableUrlState: true,
+        }),
+      );
+
+      // Update sorting
+      act(() => result.current.updateSorting("title", "descend"));
+      expect(result.current.sortKey).toBe("title");
+      expect(result.current.sortOrder).toBe("descend");
+
+      // Reset sorting
+      act(() => result.current.resetSorting());
+      expect(result.current.sortKey).toBe("name");
+      expect(result.current.sortOrder).toBe("ascend");
+    });
+
+    it("resets to undefined when no default values", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          disableUrlState: true,
+        }),
+      );
+
+      // Update sorting
+      act(() => result.current.updateSorting("status", "descend"));
+      expect(result.current.sortKey).toBe("status");
+      expect(result.current.sortOrder).toBe("descend");
+
+      // Reset sorting
+      act(() => result.current.resetSorting());
+      expect(result.current.sortKey).toBeUndefined();
+      expect(result.current.sortOrder).toBeUndefined();
+    });
+
+    it("provides correct Ant Design props without URL state", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          defaultSortKey: "title",
+          defaultSortOrder: "descend",
+          disableUrlState: true,
+        }),
+      );
+
+      expect(result.current.sortingProps).toEqual({
+        sortDirections: ["ascend", "descend"],
+        defaultSortOrder: "descend",
+        sortedInfo: {
+          field: "title",
+          order: "descend",
+        },
+      });
+
+      // Update sorting
+      act(() => result.current.updateSorting("name", "ascend"));
+
+      expect(result.current.sortingProps).toEqual({
+        sortDirections: ["ascend", "descend"],
+        defaultSortOrder: "ascend",
+        sortedInfo: {
+          field: "name",
+          order: "ascend",
+        },
+      });
+    });
+
+    it("calls onSortingChange callback with local state", () => {
+      const onSortingChange = jest.fn();
+
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          defaultSortKey: "createdAt",
+          defaultSortOrder: "descend",
+          onSortingChange,
+          disableUrlState: true,
+        }),
+      );
+
+      // Should be called on initial render
+      expect(onSortingChange).toHaveBeenCalledWith({
+        sortKey: "createdAt",
+        sortOrder: "descend",
+      });
+
+      // Update sorting
+      act(() => result.current.updateSorting("name", "ascend"));
+
+      // Should be called with updated state
+      expect(onSortingChange).toHaveBeenCalledWith({
+        sortKey: "name",
+        sortOrder: "ascend",
+      });
+    });
+
+    it("handles partial updates without URL state", () => {
+      const { result } = renderHook(() =>
+        useSorting<SortKey>({
+          disableUrlState: true,
+        }),
+      );
+
+      // Update only sort key
+      act(() => result.current.updateSorting("status"));
+      expect(result.current.sortKey).toBe("status");
+      expect(result.current.sortOrder).toBeUndefined();
+
+      // Update only sort order
+      act(() => result.current.updateSorting(undefined, "descend"));
+      expect(result.current.sortKey).toBeUndefined();
+      expect(result.current.sortOrder).toBe("descend");
+    });
+  });
 });

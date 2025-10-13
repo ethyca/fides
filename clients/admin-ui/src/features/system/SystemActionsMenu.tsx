@@ -45,7 +45,7 @@ const SystemActionsMenu = ({
   const { data: allUsers } = useGetAllUsersQuery({
     page: 1,
     size: 100,
-    username: "",
+    include_external: false,
   });
 
   const [bulkDeleteSystems] = useBulkDeleteSystemsMutation();

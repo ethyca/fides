@@ -57,7 +57,13 @@
   "alphaFullActionCenter": {
     "description": "Enable additional Action Center features",
     "development": true,
-    "test": true,
+    "test": false,
+    "production": false
+  },
+  "privacyRequestV2": {
+    "description": "Enable new privacy request dashboard",
+    "development": true,
+    "test": false,
     "production": false
   }
 }

@@ -128,38 +128,34 @@ describe("Consent overlay", () => {
         );
       });
       it("slides banner from the bottom automaticallly", () => {
-        cy.get("div#fides-banner-container.fides-banner-hidden")
-          .should(
-            "have.css",
-            "transition",
-            "transform 1s ease 0s, visibility 1s ease 0s",
-          )
-          .should("have.css", "transform", "matrix(1, 0, 0, 1, 0, 313.5)");
         cy.get("div#fides-banner").should("not.be.visible");
+        cy.get("div#fides-banner-container")
+          .should("have.css", "transition", "transform 1s, visibility 1s")
+          .should("not.have.css", "transform", "matrix(1, 0, 0, 1, 0, 0)");
+        cy.get("div#fides-banner").should("be.visible");
         cy.get("div#fides-banner-container").should(
           "have.css",
           "transform",
           "matrix(1, 0, 0, 1, 0, 0)",
         );
-        cy.get("div#fides-banner").should("be.visible");
       });
       it("slides banner to the bottom when dismissed", () => {
+        cy.get("div#fides-banner").should("be.visible");
         cy.get("div#fides-banner-container").should(
           "have.css",
           "transform",
           "matrix(1, 0, 0, 1, 0, 0)",
         );
-        cy.get("div#fides-banner").should("be.visible");
         cy.get("div#fides-banner-container").within(() => {
           cy.get("button.fides-close-button").click();
         });
         cy.get("div#fides-banner").should("exist");
-        cy.get("div#fides-banner").should("not.be.visible");
         cy.get("div#fides-banner-container").should(
-          "have.css",
+          "not.have.css",
           "transform",
-          "matrix(1, 0, 0, 1, 0, 313.5)",
+          "matrix(1, 0, 0, 1, 0, 0)",
         );
+        cy.get("div#fides-banner").should("not.be.visible");
       });
     });
     describe("when overlay is shown", () => {

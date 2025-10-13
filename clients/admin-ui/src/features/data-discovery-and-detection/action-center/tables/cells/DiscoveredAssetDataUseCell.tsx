@@ -1,6 +1,6 @@
 import { AntSpace as Space, AntTag as Tag } from "fidesui";
 import { truncate } from "lodash";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -25,13 +25,16 @@ const DiscoveredAssetDataUseCell = ({
   onChange?: (dataUses: string[]) => void;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(
+    columnState?.isExpanded || false,
+  );
 
   const [updateAssetsDataUseMutation] = useUpdateAssetsDataUseMutation();
   const { successAlert, errorAlert } = useAlert();
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  const currentDataUses = asset.preferred_data_uses || [];
+  const currentDataUses = [...(asset.preferred_data_uses || [])].sort();
 
   const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 
@@ -70,6 +73,10 @@ const DiscoveredAssetDataUseCell = ({
     }
   };
 
+  useEffect(() => {
+    setIsExpanded(columnState?.isExpanded || false);
+  }, [columnState?.isExpanded]);
+
   if (readonly) {
     return (
       <TagExpandableCell
@@ -78,6 +85,7 @@ const DiscoveredAssetDataUseCell = ({
           key: d,
         }))}
         columnState={columnState}
+        onStateChange={setIsExpanded}
       />
     );
   }
@@ -97,9 +105,10 @@ const DiscoveredAssetDataUseCell = ({
               label: getDataUseDisplayName(d),
               key: d,
             }))}
-            columnState={columnState}
+            columnState={{ ...columnState, isExpanded }}
             tagProps={{ closable: true, closeButtonLabel: "Remove data use" }}
             onTagClose={handleDeleteDataUse}
+            onStateChange={setIsExpanded}
           />
         </Space>
       )}
@@ -109,6 +118,7 @@ const DiscoveredAssetDataUseCell = ({
           style={{ backgroundColor: "var(--fides-color-white)" }}
         >
           <ConsentCategorySelect
+            selectedTaxonomies={currentDataUses}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
             onKeyDown={(key) => {

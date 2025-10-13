@@ -30,7 +30,7 @@ from fides.api.db.system import (
     upsert_system,
     validate_privacy_declarations,
 )
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER
@@ -57,14 +57,12 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
-from fides.api.service.deps import get_system_service
+from fides.api.service.deps import get_connection_service, get_system_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
-    connection_status,
     delete_connection_config,
-    get_connection_config_or_error,
     patch_connection_configs,
-    validate_secrets,
+    update_connection_secrets,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -81,6 +79,7 @@ from fides.common.api.v1.urn_registry import (
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
 )
+from fides.service.connection.connection_service import ConnectionService
 from fides.service.system.system_service import SystemService
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
@@ -160,6 +159,7 @@ def patch_connection_secrets(
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
+    connection_service: ConnectionService = Depends(get_connection_service),
 ) -> TestStatusMessage:
     """
     Patch secrets that will be used to connect to a specified connection_type.
@@ -169,45 +169,13 @@ def patch_connection_secrets(
     """
 
     system = get_system(db, fides_key)
-    connection_config: ConnectionConfig = get_connection_config_or_error(
-        db, system.connection_configs.key
+    return update_connection_secrets(
+        connection_service,
+        system.connection_configs.key,
+        unvalidated_secrets,
+        verify,
+        merge_with_existing=True,
     )
-    # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
-    if connection_config.secrets is not None:
-        for key, value in connection_config.secrets.items():
-            if key not in unvalidated_secrets:
-                # unvalidated_secrets is actually a dictionary here.  connection_secrets_schemas
-                # are just provided for documentation but the data was not parsed up front.
-                # That happens below in validate_secrets.
-                unvalidated_secrets[key] = value  # type: ignore
-    else:
-        connection_config.secrets = {}
-
-    validated_secrets = validate_secrets(
-        db, unvalidated_secrets, connection_config
-    ).model_dump(mode="json")
-
-    for key, value in validated_secrets.items():
-        connection_config.secrets[key] = value  # type: ignore
-
-    # Deauthorize an OAuth connection when the secrets are updated. This is necessary because
-    # the existing access tokens may not be valid anymore. This only applies to SaaS connection
-    # configurations that use the "oauth2_authorization_code" authentication strategy.
-    if (
-        connection_config.authorized
-        and connection_config.connection_type == ConnectionType.saas
-    ):
-        del connection_config.secrets["access_token"]
-
-    # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '{}'", connection_config.key)
-    connection_config.save(db=db)
-
-    msg = f"Secrets updated for ConnectionConfig with key: {connection_config.key}."
-    if verify:
-        return connection_status(connection_config, msg, db)
-
-    return TestStatusMessage(msg=msg, test_status=None)
 
 
 @SYSTEM_CONNECTIONS_ROUTER.delete(

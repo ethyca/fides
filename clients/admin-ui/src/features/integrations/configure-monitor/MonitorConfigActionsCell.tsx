@@ -1,8 +1,7 @@
 import {
   AntButton as Button,
   AntTooltip as Tooltip,
-  DeleteIcon,
-  EditIcon,
+  Icons,
   useDisclosure,
 } from "fidesui";
 
@@ -22,11 +21,13 @@ const MonitorConfigActionsCell = ({
   isWebsiteMonitor,
   onEditClick,
 }: {
-  monitorId: string;
+  monitorId?: string | null;
   isWebsiteMonitor?: boolean;
   onEditClick: () => void;
 }) => {
-  const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [deleteMonitor, { isLoading: isDeleting }] =
+    useDeleteDiscoveryMonitorMutation();
   const { toastResult: toastDeleteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred deleting this monitor",
     defaultSuccessMsg: "Monitor deleted successfully",
@@ -41,14 +42,16 @@ const MonitorConfigActionsCell = ({
       : "Monitor execution successfully started",
   });
 
+  if (!monitorId) {
+    return null;
+  }
+
   const handleDelete = async () => {
     const result = await deleteMonitor({
       monitor_config_id: monitorId,
     });
     toastDeleteResult(result);
   };
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleExecute = async () => {
     const result = await executeMonitor({
@@ -67,13 +70,14 @@ const MonitorConfigActionsCell = ({
         message="Are you sure you want to delete this discovery monitor?"
         continueButtonText="Delete"
         isCentered
+        isLoading={isDeleting}
       />
       <div className="flex gap-2">
         <Tooltip title="Edit">
           <Button
             onClick={onEditClick}
             size="small"
-            icon={<EditIcon />}
+            icon={<Icons.Edit />}
             data-testid="edit-monitor-btn"
             aria-label="Edit monitor"
           />
@@ -82,7 +86,7 @@ const MonitorConfigActionsCell = ({
           <Button
             onClick={onOpen}
             size="small"
-            icon={<DeleteIcon />}
+            icon={<Icons.TrashCan />}
             aria-label="Delete monitor"
             data-testid="delete-monitor-btn"
           />

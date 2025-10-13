@@ -8,6 +8,11 @@
   // the line-height is the same Ant uses but -2px to account for border making it 20px instead of 22px
   line-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm) - 2px);
   min-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm));
+
+  // tags should always be normal weight
+  // adding this prevents tags from inheriting font weight from parent
+  font-weight: normal;
+
   :global(svg:not([data-icon])) {
     // `data-icon` comes from Ant icons, we don't want to override those,
     // only the Carbon icons.

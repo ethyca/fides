@@ -38,6 +38,7 @@ export const DATA_CATALOG_ROUTE = "/data-catalog";
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
+export const PRIVACY_REQUESTS_ROUTE_NEW = "/new-privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
 export const PRIVACY_REQUEST_DETAIL_ROUTE = "/privacy-requests/[id]";
 
@@ -69,11 +70,22 @@ export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
-export const MESSAGING_ROUTE = "/messaging";
-export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
-export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
-export const MESSAGING_PROVIDERS_ROUTE = `/settings/messaging-providers`;
-export const MESSAGING_PROVIDERS_EDIT_ROUTE = `/settings/messaging-providers/[key]`;
+
+// Notifications group (messaging templates and digests)
+export const NOTIFICATIONS_ROUTE = "/notifications";
+export const NOTIFICATIONS_TEMPLATES_ROUTE = "/notifications/templates";
+export const NOTIFICATIONS_ADD_TEMPLATE_ROUTE =
+  "/notifications/templates/add-template";
+export const NOTIFICATIONS_EDIT_TEMPLATE_ROUTE =
+  "/notifications/templates/[id]";
+export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
+export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
+export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
+
+// Messaging providers (now part of notifications)
+export const MESSAGING_PROVIDERS_ROUTE = "/notifications/providers";
+export const MESSAGING_PROVIDERS_EDIT_ROUTE = "/notifications/providers/[key]";
+export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";

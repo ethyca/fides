@@ -1089,6 +1089,9 @@ class TestAsyncConnectors:
         ).first()
         request_task.status = ExecutionLogStatus.awaiting_processing
         request_task.callback_succeeded = True
+        # The async processing uses its own session, so we need to commit this so it's available to the async processing
+        db.commit()
+
         execution_node = ExecutionNode(request_task)
 
         # Empty list returned if no access data was passed into callback endpoint

@@ -55,4 +55,5 @@ export enum DiscoveredSystemAggregateColumnKeys {
 export enum ConsentBreakdownColumnKeys {
   LOCATION = "location",
   PAGE = "page",
+  STATUS = "status",
 }

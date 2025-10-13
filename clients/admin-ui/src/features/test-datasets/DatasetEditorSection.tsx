@@ -213,6 +213,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           <Text>Edit dataset: </Text>
           <Select
             id="format"
+            aria-label="Select a dataset"
             data-testid="export-format-select"
             value={currentDataset?.fides_key || ""}
             options={datasetOptions}

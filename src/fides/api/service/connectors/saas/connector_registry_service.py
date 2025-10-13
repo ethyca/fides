@@ -1,24 +1,18 @@
 # pylint: disable=protected-access
 import os
 from abc import ABC, abstractmethod
-from typing import Dict, Iterable, List, Optional, Type
+from typing import Dict, List, Optional, Type
 from zipfile import ZipFile
 
 from fideslang.models import Dataset
 from loguru import logger
-from packaging.version import Version
 from packaging.version import parse as parse_version
 from sqlalchemy.orm import Session
 
 from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.schemas.connection_configuration.saas_config_template_values import (
-    SaasConnectionTemplateValues,
-)
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
@@ -31,8 +25,6 @@ from fides.api.util.saas_util import (
     load_config_from_string,
     load_dataset_from_string,
     load_yaml_as_string,
-    replace_config_placeholders,
-    replace_dataset_placeholders,
     replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
@@ -317,132 +309,3 @@ class ConnectorRegistry:
         Returns an object containing the various SaaS connector artifacts
         """
         return cls._get_combined_templates().get(connector_type)
-
-
-def create_connection_config_from_template_no_save(
-    db: Session,
-    template: ConnectorTemplate,
-    template_values: SaasConnectionTemplateValues,
-    system_id: Optional[str] = None,
-) -> ConnectionConfig:
-    """Creates a SaaS connection config from a template without saving it."""
-    # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
-    # the user has chosen
-    config_from_template: Dict = replace_config_placeholders(
-        template.config, "<instance_fides_key>", template_values.instance_key
-    )
-
-    data = template_values.generate_config_data_from_template(
-        config_from_template=config_from_template
-    )
-
-    if system_id:
-        data["system_id"] = system_id
-
-    # Create SaaS ConnectionConfig
-    connection_config = ConnectionConfig.create_without_saving(db, data=data)
-
-    return connection_config
-
-
-def upsert_dataset_config_from_template(
-    db: Session,
-    connection_config: ConnectionConfig,
-    template: ConnectorTemplate,
-    template_values: SaasConnectionTemplateValues,
-) -> DatasetConfig:
-    """
-    Creates a `DatasetConfig` from a template
-    and associates it with a ConnectionConfig.
-    If the `DatasetConfig` already exists in the db,
-    then the existing record is updated.
-    """
-    # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
-    # the user has chosen
-    dataset_from_template: Dict = replace_dataset_placeholders(
-        template.dataset, "<instance_fides_key>", template_values.instance_key
-    )
-    data = {
-        "connection_config_id": connection_config.id,
-        "fides_key": template_values.instance_key,
-        "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
-    }
-    dataset_config = DatasetConfig.create_or_update(db, data=data)
-    return dataset_config
-
-
-def update_saas_configs(db: Session) -> None:
-    """
-    Updates SaaS config instances currently in the DB if to the
-    corresponding template in the registry are found.
-
-    Effectively an "update script" for SaaS config instances,
-    to be run on server bootstrap.
-    """
-    for connector_type in ConnectorRegistry.connector_types():
-        logger.debug(
-            "Determining if any updates are needed for connectors of type {} based on templates...",
-            connector_type,
-        )
-        template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
-            connector_type
-        )
-        saas_config = SaaSConfig(**load_config_from_string(template.config))
-        template_version: Version = parse_version(saas_config.version)
-
-        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
-            db=db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
-        ).all()
-        for connection_config in connection_configs:
-            saas_config_instance = SaaSConfig.model_validate(
-                connection_config.saas_config
-            )
-            if parse_version(saas_config_instance.version) < template_version:
-                logger.info(
-                    "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
-                    saas_config_instance.fides_key,
-                    connector_type,
-                    saas_config_instance.version,
-                    template_version,
-                )
-                try:
-                    update_saas_instance(
-                        db,
-                        connection_config,
-                        template,
-                        saas_config_instance,
-                    )
-                except Exception:
-                    logger.exception(
-                        "Encountered error attempting to update SaaS config instance {}",
-                        saas_config_instance.fides_key,
-                    )
-
-
-def update_saas_instance(
-    db: Session,
-    connection_config: ConnectionConfig,
-    template: ConnectorTemplate,
-    saas_config_instance: SaaSConfig,
-) -> None:
-    """
-    Replace in the DB the existing SaaS instance configuration data
-    (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
-    with new instance configuration data based on the given ConnectorTemplate
-    """
-    template_vals = SaasConnectionTemplateValues(
-        name=connection_config.name,
-        key=connection_config.key,
-        description=connection_config.description,
-        secrets=connection_config.secrets,
-        instance_key=saas_config_instance.fides_key,
-    )
-
-    config_from_template: Dict = replace_config_placeholders(
-        template.config, "<instance_fides_key>", template_vals.instance_key
-    )
-
-    connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
-
-    upsert_dataset_config_from_template(db, connection_config, template, template_vals)

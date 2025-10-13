@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "id": "dig_26937d32-fb6e-4b60-ad7e-85180e4c9d38",
+      "name": "Weekly Manual Tasks Digest",
+      "description": "Weekly summary of all manual tasks",
+      "digest_type": "manual_tasks",
+      "enabled": true,
+      "messaging_service_type": "email",
+      "cron_expression": "0 9 * * 1",
+      "timezone": "UTC",
+      "config_metadata": null,
+      "created_at": "2025-01-15T10:00:00Z",
+      "updated_at": "2025-01-15T10:00:00Z"
+    },
+    {
+      "id": "dig_44216d6d-4a17-464c-bead-857f628c1562",
+      "name": "Daily Task Summary",
+      "description": "Daily digest of pending manual tasks",
+      "digest_type": "manual_tasks",
+      "enabled": false,
+      "messaging_service_type": "email",
+      "cron_expression": "0 8 * * *",
+      "timezone": "UTC",
+      "config_metadata": null,
+      "created_at": "2025-01-10T08:00:00Z",
+      "updated_at": "2025-01-12T12:30:00Z"
+    },
+    {
+      "id": "dig_df19d7fc-f6ab-49d9-9a70-c7bb620bf5ce",
+      "name": "Monthly Review Digest",
+      "description": "Monthly overview of completed tasks",
+      "digest_type": "manual_tasks",
+      "enabled": true,
+      "messaging_service_type": "email",
+      "cron_expression": "0 9 1 * *",
+      "timezone": "UTC",
+      "config_metadata": null,
+      "created_at": "2025-01-05T09:00:00Z",
+      "updated_at": "2025-01-05T09:00:00Z"
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}

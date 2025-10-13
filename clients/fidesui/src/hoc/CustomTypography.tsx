@@ -10,6 +10,9 @@ type HeadingSize = 1 | 2 | 3 | 4 | 5;
 
 interface CustomTypographyTextProps {
   size?: TextSize;
+
+  // If true, the text will inherit the color and text decoration from the parent
+  unStyled?: boolean;
 }
 
 interface CustomTypographyTitleProps
@@ -45,31 +48,46 @@ const CustomTitle = ({ headingSize, ...props }: CustomTypographyTitleProps) => (
 
 const CustomText = ({
   size,
+  unStyled,
   ...props
 }: React.ComponentProps<typeof Typography.Text> &
   CustomTypographyTextProps) => (
-  <Typography.Text className={getTextSizeClassName(size)} {...props} />
+  <Typography.Text
+    className={classNames(getTextSizeClassName(size), {
+      [styles.unStyled]: unStyled,
+    })}
+    {...props}
+  />
 );
 
 const CustomParagraph = ({
   size,
+  unStyled,
   ...props
 }: React.ComponentProps<typeof Typography.Paragraph> &
   CustomTypographyTextProps) => (
   <Typography.Paragraph
     role="paragraph"
-    className={classNames(styles.paragraph, getTextSizeClassName(size))}
+    className={classNames(styles.paragraph, getTextSizeClassName(size), {
+      [styles.unStyled]: unStyled,
+    })}
     {...props}
   />
 );
 
+type LinkVariant = "primary" | "default";
+
 const CustomLink = React.forwardRef<
   HTMLAnchorElement,
-  React.ComponentProps<typeof Typography.Link> & CustomTypographyTextProps
->(({ size, ...props }, ref) => (
+  React.ComponentProps<typeof Typography.Link> &
+    CustomTypographyTextProps & { variant?: LinkVariant }
+>(({ size, variant, unStyled, ...props }, ref) => (
   <Typography.Link
     ref={ref}
-    className={getTextSizeClassName(size)}
+    className={classNames(getTextSizeClassName(size), {
+      [styles.primaryColorLink]: variant === "primary",
+      [styles.unStyled]: unStyled,
+    })}
     {...props}
   />
 ));

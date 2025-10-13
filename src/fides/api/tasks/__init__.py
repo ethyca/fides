@@ -86,7 +86,6 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # to prevent session overlap when requests are executing concurrently
         # when in task_always_eager mode (i.e. without proper workers)
         new_session = self._sessionmaker()
-        logger.debug(f"DatabaseTaskSession ID: {id(new_session)}. Self ID: {id(self)}")
         return new_session
 
 

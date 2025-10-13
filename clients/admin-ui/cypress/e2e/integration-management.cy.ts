@@ -594,7 +594,7 @@ describe("Integration management for data detection & discovery", () => {
       }).as("getEmptyDatabases");
       cy.getAntTab("Data discovery").click({ force: true });
       cy.wait("@getEmptyMonitors");
-      cy.getByTestId("no-results-notice").should("exist");
+      cy.get(".ant-empty-description").should("exist");
     });
 
     describe("data discovery tab", () => {
@@ -617,18 +617,18 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("shows a table of monitors", () => {
-        cy.getByTestId("row-test monitor 1").should("exist");
-        cy.getByTestId("row-test monitor 1-col-monitor_status").should(
-          "contain",
-          "Scanning",
-        );
-        cy.getByTestId("row-test monitor 2-col-monitor_status").within(() => {
+        cy.getAntTableRow("test_monitor_1")
+          .should("exist")
+          .within(() => {
+            cy.getAntCellWithinRow(3).should("contain", "Scanning");
+          });
+        cy.getAntTableRow("test_monitor_2").within(() => {
           cy.getByTestId("tag-success").should("exist");
         });
-        cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
+        cy.getAntTableRow("test_monitor_3").within(() => {
           cy.getByTestId("tag-error").should("exist");
           cy.getByTestId("tag-error").within(() => {
-            cy.get("button").click();
+            cy.get("button").click({ force: true });
           });
         });
         cy.getByTestId("error-log-drawer")
@@ -716,7 +716,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
           response: 200,
         }).as("putMonitor");
-        cy.getByTestId("row-test monitor 1").within(() => {
+        cy.getAntTableRow("test_monitor_1").within(() => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
@@ -739,24 +739,15 @@ describe("Integration management for data detection & discovery", () => {
         });
       });
 
-      it("can edit an existing monitor by clicking the table row", () => {
-        cy.getByTestId("row-test monitor 2").click();
-        cy.getByTestId("input-name").should("have.value", "test monitor 2");
-        cy.getByTestId("controlled-select-execution_frequency").should(
-          "contain",
-          "Weekly",
-        );
-      });
-
       it("can execute a monitor", () => {
-        cy.getByTestId("row-test monitor 1").within(() => {
+        cy.getAntTableRow("test_monitor_1").within(() => {
           cy.getByTestId("action-Scan").click();
         });
         cy.wait("@executeMonitor");
       });
 
       it("can delete a monitor", () => {
-        cy.getByTestId("row-test monitor 1").within(() => {
+        cy.getAntTableRow("test_monitor_1").within(() => {
           cy.getByTestId("delete-monitor-btn").click();
         });
         cy.getByTestId("confirmation-modal").within(() => {
@@ -769,8 +760,8 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
           response: 200,
         }).as("putMonitor");
-        cy.getByTestId("row-test monitor 1").within(() => {
-          cy.getByTestId("toggle-switch").click();
+        cy.getAntTableRow("test_monitor_1").within(() => {
+          cy.getByTestId("toggle-switch").click({ force: true });
         });
         cy.wait("@putMonitor");
       });
@@ -872,10 +863,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("monitor-description").contains(
           "Configure your website monitor",
         );
-        cy.getByTestId("row-test website monitor-col-name").should(
-          "contain",
-          "test website monitor",
-        );
+        cy.getAntTableRow("test_website_monitor").within(() => {
+          cy.getAntCellWithinRow(0).should("contain", "test website monitor");
+        });
       });
 
       it("should allow creating a website monitor", () => {
@@ -905,7 +895,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
           response: 200,
         }).as("putMonitor");
-        cy.getByTestId("row-test website monitor").click();
+        cy.getAntTableRow("test_website_monitor").within(() => {
+          cy.getByTestId("edit-monitor-btn").click();
+        });
         cy.getByTestId("input-name")
           .should("have.value", "test website monitor")
           .clear()

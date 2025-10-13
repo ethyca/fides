@@ -39,9 +39,6 @@ from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
-from fides.api.service.connectors.saas.connector_registry_service import (
-    update_saas_configs,
-)
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
@@ -55,6 +52,7 @@ from fides.api.util.rate_limit import (
     fides_limiter,
     is_rate_limit_enabled,
 )
+from fides.api.util.saas_config_updater import update_saas_configs
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 

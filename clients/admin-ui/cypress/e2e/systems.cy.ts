@@ -214,26 +214,12 @@ describe("System management page", () => {
       stubSystemCrud();
     });
 
-    it("Can delete a system", () => {
-      cy.visit(SYSTEM_ROUTE);
-      cy.getAntTableRow("fidesctl_system").within(() => {
-        cy.getByTestId("system-actions-menu").click();
-      });
-      cy.selectAntDropdownOption("Delete");
-      cy.findByRole("button", { name: "Delete" }).click();
-      cy.wait("@deleteSystem").then((interception) => {
-        const { url } = interception.request;
-        expect(url).to.contain("fidesctl_system");
-      });
-    });
-
     it("Can't delete a system as a viewer", () => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(SYSTEM_ROUTE);
       cy.getAntTableRow("fidesctl_system").within(() => {
-        cy.getByTestId("system-actions-menu").click({ force: true });
+        cy.contains("Delete").should("not.exist");
       });
-      cy.getAntDropdownOption("Delete").should("not.exist");
     });
 
     it("Can render an error on delete", () => {
@@ -249,10 +235,11 @@ describe("System management page", () => {
       }).as("deleteSystemError");
       cy.visit(SYSTEM_ROUTE);
       cy.getAntTableRow("fidesctl_system").within(() => {
-        cy.getByTestId("system-actions-menu").click({ force: true });
+        cy.contains("Delete").click();
       });
-      cy.selectAntDropdownOption("Delete");
-      cy.findByRole("button", { name: "Delete" }).click();
+      cy.getAntModal().within(() => {
+        cy.findByRole("button", { name: "Delete" }).click();
+      });
       cy.wait("@deleteSystemError");
     });
   });

@@ -2,15 +2,18 @@
   "items": [
     {
       "location": "us",
-      "page": "https://example.com/page1"
+      "page": "https://example.com/page1",
+      "status": "without_consent"
     },
     {
       "location": "ca",
-      "page": "https://example.com/page2"
+      "page": "https://example.com/page2",
+      "status": "pre_consent"
     },
     {
       "location": "us",
-      "page": "https://example.com/page3"
+      "page": "https://example.com/page3",
+      "status": "cmp_error"
     }
   ],
   "total": 3,

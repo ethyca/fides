@@ -6,6 +6,7 @@ import {
   getOptionsFromMap,
   getPII,
   getWebsiteIconUrl,
+  truncateUrl,
 } from "~/features/common/utils";
 
 // TODO: add tests for the other utils functions
@@ -98,5 +99,65 @@ describe(getWebsiteIconUrl.name, () => {
     expect(result).toEqual(
       "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/56/w/56?c=1idbRjELpikqQ1PLiqb",
     );
+  });
+});
+
+describe(truncateUrl.name, () => {
+  it("should return the URL as-is when within limit", () => {
+    const result = truncateUrl("https://example.com/short", 50);
+    expect(result).toEqual("example.com/short");
+  });
+
+  it("should remove protocol and www. subdomain", () => {
+    const result = truncateUrl("https://www.example.com/path/to/page", 20);
+    expect(result).toEqual("example.com/.../page");
+  });
+
+  it("should preserve non-www subdomains", () => {
+    const result = truncateUrl("https://api.example.com/path/to/page", 20);
+    expect(result).toEqual("api.example.com/.../page");
+  });
+
+  it("should truncate to domain/.../last-segment format when exceeding limit", () => {
+    const result = truncateUrl(
+      "https://example.com/very/long/path/to/page",
+      30,
+    );
+    expect(result).toEqual("example.com/.../page");
+  });
+
+  it("should handle URLs without protocol", () => {
+    const result = truncateUrl("example.com/path/to/page", 20);
+    expect(result).toEqual("example.com/.../page");
+  });
+
+  it("should handle URLs with query strings when within limit", () => {
+    const result = truncateUrl("https://example.com/search?q=test", 50);
+    expect(result).toEqual("example.com/search?q=test");
+  });
+
+  it("should not guarantee staying within limit with long segments", () => {
+    const result = truncateUrl(
+      "https://example.com/path/very-long-segment-name-that-exceeds-limit",
+      20,
+    );
+    expect(result).toEqual(
+      "example.com/.../very-long-segment-name-that-exceeds-limit",
+    );
+    expect(result.length).toBeGreaterThan(20);
+  });
+
+  it("should return the original string for invalid URLs", () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    const invalidUrl = "not a valid url at all!!!";
+    const result = truncateUrl(invalidUrl, 30);
+
+    expect(result).toEqual(invalidUrl);
+    expect(consoleErrorSpy).toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 });

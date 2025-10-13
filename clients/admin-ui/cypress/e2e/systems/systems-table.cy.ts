@@ -64,8 +64,10 @@ describe("systems table", () => {
 
     it("allows bulk deletion of systems", () => {
       cy.contains("button", "Actions").click();
-      cy.contains("Delete").click();
-      cy.contains("button", "Delete").click();
+      cy.selectAntDropdownOption("Delete");
+      cy.getAntModal().within(() => {
+        cy.findByRole("button", { name: "Delete" }).click();
+      });
       cy.wait("@bulkDeleteSystems").then((interception) => {
         expect(interception.request.body).to.have.length(2);
       });
@@ -75,18 +77,18 @@ describe("systems table", () => {
   describe("individual system actions", () => {
     it("allows editing individual system", () => {
       cy.getAntTableRow("fidesctl_system").within(() => {
-        cy.get("button[aria-label='More actions']").click();
+        cy.contains("Edit").click();
       });
-      cy.contains("Edit").click();
       cy.url().should("include", "/systems/configure/fidesctl_system");
     });
 
     it("allows deleting individual system", () => {
       cy.getAntTableRow("fidesctl_system").within(() => {
-        cy.get("button[aria-label='More actions']").click();
+        cy.contains("Delete").click();
       });
-      cy.contains("Delete").click();
-      cy.contains("button", "Delete").click();
+      cy.getAntModal().within(() => {
+        cy.findByRole("button", { name: "Delete" }).click();
+      });
       cy.wait("@deleteSystem");
     });
   });
