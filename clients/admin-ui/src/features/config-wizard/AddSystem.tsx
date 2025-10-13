@@ -62,7 +62,7 @@ const AddSystem = () => {
       <UpgradeModal
         isOpen={isOpen}
         onConfirm={() => {
-          window.open("https://fid.es/upgrade-compass");
+          window.open("https://ethyca.com/speak-with-us");
         }}
         onCancel={() => {
           router.push(ADD_SYSTEMS_MANUAL_ROUTE);
