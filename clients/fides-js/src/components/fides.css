@@ -1202,7 +1202,6 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 8px;
     order: 2;
   }
 
