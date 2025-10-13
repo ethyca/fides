@@ -13,6 +13,8 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUN
 
 from fides.api.common_exceptions import (
     AwaitingAsyncTask,
+    ClientUnsuccessfulException,
+    ConnectionException,
     FidesopsException,
     SkippingConsentPropagation,
 )
@@ -463,6 +465,98 @@ class TestSaasConnector:
             )
             == 0
         )
+
+
+@pytest.mark.unit_saas
+class TestSaaSConnectorTestRequestOverride:
+    """
+    Unit tests for SaaS connector test request override exception handling
+    """
+
+    def test_invoke_test_request_override_connection_exception_passthrough(self):
+        """Test that ConnectionException is passed through unchanged"""
+
+        def mock_override_function(client, secrets):
+            raise ConnectionException("Connection failed")
+
+        # Mock the override factory to return our test function
+        with mock.patch.object(
+            SaaSRequestOverrideFactory,
+            "get_override",
+            return_value=mock_override_function,
+        ):
+            mock_client = Mock(spec=AuthenticatedClient)
+
+            # Should re-raise ConnectionException as-is
+            with pytest.raises(ConnectionException, match="Connection failed"):
+                SaaSConnector._invoke_test_request_override(
+                    "test_override", mock_client, {}
+                )
+
+    def test_invoke_test_request_override_client_unsuccessful_exception_passthrough(
+        self,
+    ):
+        """Test that ClientUnsuccessfulException is passed through unchanged"""
+
+        def mock_override_function(client, secrets):
+            raise ClientUnsuccessfulException(403)
+
+        # Mock the override factory to return our test function
+        with mock.patch.object(
+            SaaSRequestOverrideFactory,
+            "get_override",
+            return_value=mock_override_function,
+        ):
+            mock_client = Mock(spec=AuthenticatedClient)
+
+            # Should re-raise ClientUnsuccessfulException as-is
+            with pytest.raises(
+                ClientUnsuccessfulException,
+                match="Client call failed with status code '403'",
+            ):
+                SaaSConnector._invoke_test_request_override(
+                    "test_override", mock_client, {}
+                )
+
+    def test_invoke_test_request_override_other_exception_converted(self):
+        """Test that other exceptions are converted to FidesopsException"""
+
+        def mock_override_function(client, secrets):
+            raise ValueError("Some unexpected error")
+
+        # Mock the override factory to return our test function
+        with mock.patch.object(
+            SaaSRequestOverrideFactory,
+            "get_override",
+            return_value=mock_override_function,
+        ):
+            mock_client = Mock(spec=AuthenticatedClient)
+
+            # Should convert ValueError to FidesopsException
+            with pytest.raises(FidesopsException, match="Some unexpected error"):
+                SaaSConnector._invoke_test_request_override(
+                    "test_override", mock_client, {}
+                )
+
+    def test_invoke_test_request_override_success(self):
+        """Test that successful override execution returns normally"""
+
+        def mock_override_function(client, secrets):
+            return None  # Successful test override returns None
+
+        # Mock the override factory to return our test function
+        with mock.patch.object(
+            SaaSRequestOverrideFactory,
+            "get_override",
+            return_value=mock_override_function,
+        ):
+            mock_client = Mock(spec=AuthenticatedClient)
+
+            # Should return None without raising any exception
+            result = SaaSConnector._invoke_test_request_override(
+                "test_override", mock_client, {}
+            )
+            assert result is None
 
 
 @pytest.mark.unit_saas
