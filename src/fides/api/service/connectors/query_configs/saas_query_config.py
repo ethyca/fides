@@ -314,7 +314,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         collection_values: Dict[str, Row],
         identity_data: Dict[str, Any],
         input_data: Optional[Dict[str, List[Any]]] = None,
-        param_values: Optional[Dict[str, Any]] = None,
+        param_values: Dict[str, Any] = {},
     ) -> None:
         """
         Process param_values for update generation (erasure requests).

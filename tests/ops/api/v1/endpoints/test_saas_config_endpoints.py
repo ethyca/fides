@@ -248,7 +248,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 18
+        assert len(saas_config["endpoints"]) == 19
 
 
 def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
