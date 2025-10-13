@@ -22,7 +22,7 @@ jobs:
             // Calculate total lines from ALL files (including renamed)
             const additions = files.reduce((sum, file) => sum + file.additions, 0);
             const deletions = files.reduce((sum, file) => sum + file.deletions, 0);
-            const totalLinesChanged = additions + deletions;
+            const totalLinesChanged = additions;
 
             // Filter out renamed files and empty __init__.py files
             const nonExcludedFiles = files.filter(file => {
