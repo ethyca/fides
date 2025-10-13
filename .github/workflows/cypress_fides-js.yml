@@ -1,11 +1,11 @@
-name: Privacy Center Cypress Tests
+name: FidesJS Banner/Modal Cypress Tests
 
 on:
   pull_request:
     paths:
-      - "clients/privacy-center/**"
-      - "!clients/privacy-center/pages/api/fides-js.ts"
-      - ".github/workflows/cypress_privacy-center.yml"
+      - "clients/privacy-center/pages/api/fides-js.ts"
+      - "clients/fides-js/**"
+      - ".github/workflows/cypress_fides-js.yml"
   push:
     branches:
       - "main"
@@ -49,10 +49,10 @@ jobs:
           start: npm run start:test
           wait-on: "http://localhost:3001"
           wait-on-timeout: 180
-          spec: cypress/e2e/privacy-center/**
+          spec: cypress/e2e/fides-js/**
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-videos-privacy-center
-          path: /home/runner/work/fides/fides/clients/privacy-center/cypress/videos/*.mp4
+          name: cypress-videos-fides-js
+          path: /home/runner/work/fides/fides/clients/fides-js/cypress/videos/*.mp4
