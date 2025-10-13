@@ -1151,6 +1151,7 @@ class TestSaaSQueryConfig:
 
         config = SaaSQueryConfig(outside_ref_node, endpoints, {}, delete_request)
 
+        # No incoming data from the same collection as the reference
         row = {"id": "outside_ref_123"}
 
         # Simulate input_data that would come from the customer collection

@@ -340,8 +340,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     collection_values, reference.field
                 )
-                if not param_values[param_value.name] and input_data:
-                    # If the reference is not found in the collection, check the input data from upstream tasks
+                if param_values[param_value.name] is None and input_data:
+                    logger.info(
+                        "Reference not found in collection, checking input data from upstream tasks"
+                    )
+                    # If the reference is not found in the collection (None), check the input data from upstream tasks
                     input_list = input_data.get(param_value.name)
                     if input_list:
                         param_values[param_value.name] = self._safe_extract_value(
@@ -581,7 +584,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         param_values[MASKED_OBJECT_FIELDS] = masked_object
         param_values[ALL_OBJECT_FIELDS] = complete_object
-
         return param_values
 
     def generate_update_request_params(
