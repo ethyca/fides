@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.71.1"
+    "version": "2.72.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13142,6 +13142,16 @@
             }
           },
           {
+            "name": "include_external",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include External"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "required": false,
@@ -20579,6 +20589,7 @@
           "privacy_request_review_approve",
           "user_invite",
           "external_user_welcome",
+          "manual_task_digest",
           "test_message"
         ],
         "title": "MessagingActionType",
