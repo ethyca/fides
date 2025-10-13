@@ -18,4 +18,5 @@ export type MonitorTaskInProgressResponse = {
   dismissed_in_activity_view?: boolean | null;
   connection_type?: string | null;
   connection_name?: string | null;
+  field_count?: number | null;
 };
