@@ -32,7 +32,11 @@ from fides.common.api.scope_registry import (
     STORAGE_READ,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestType,
+    register,
+)
+from fides.api.common_exceptions import ClientUnsuccessfulException
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
@@ -1396,11 +1400,6 @@ class TestSaaSConnectionTestSecretsAPI:
 
         This test verifies the fix for request override exception handling.
         """
-        from fides.api.common_exceptions import ClientUnsuccessfulException
-        from fides.api.service.saas_request.saas_request_override_factory import (
-            SaaSRequestType,
-            register,
-        )
 
         # Register a test override that raises ClientUnsuccessfulException
         @register("test_failing_override", [SaaSRequestType.TEST])
@@ -1448,10 +1447,6 @@ class TestSaaSConnectionTestSecretsAPI:
 
         This test verifies successful request override execution.
         """
-        from fides.api.service.saas_request.saas_request_override_factory import (
-            SaaSRequestType,
-            register,
-        )
 
         # Register a test override that succeeds
         @register("test_success_override", [SaaSRequestType.TEST])
