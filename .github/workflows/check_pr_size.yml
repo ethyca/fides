@@ -1,0 +1,40 @@
+name: Check PR Size
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-pr-size:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const changedFiles = pr.changed_files;
+            
+            const totalLinesChanged = additions + deletions;
+            const linesLimit = 500;
+            const filesLimit = 15;
+            
+            let failMessage = '';
+            
+            if (totalLinesChanged > linesLimit) {
+              failMessage += `Lines changed: ${totalLinesChanged} (limit: ${linesLimit})\n`;
+            }
+            
+            if (changedFiles > filesLimit) {
+              failMessage += `Files changed: ${changedFiles} (limit: ${filesLimit})\n`;
+            }
+            
+            if (failMessage) {
+              failMessage += '\n Please consider splitting this PR into smaller, more focused changes.';
+              
+              core.setFailed(failMessage);
+            } else {
+              console.log(`PR size check passed (${totalLinesChanged} lines, ${changedFiles} files)`);
+            }
