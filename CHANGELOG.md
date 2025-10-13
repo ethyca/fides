@@ -21,6 +21,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.72.0..main)
 
+### Added
+- Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
+
+### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 
 ## [2.72.0](https://github.com/ethyca/fides/compare/2.71.1...2.72.0)
