@@ -8,3 +8,4 @@
 export type TestPrivacyRequest = {
   privacy_request_id: string;
 };
+

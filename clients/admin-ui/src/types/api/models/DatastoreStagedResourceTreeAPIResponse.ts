@@ -7,9 +7,9 @@
  */
 export type DatastoreStagedResourceTreeAPIResponse = {
   urn: string;
-  name?: string | null;
-  resource_type?: string | null;
-  data_type?: string | null;
+  name?: (string | null);
+  resource_type?: (string | null);
+  data_type?: (string | null);
   /**
    * Whether the resource has children
    */
@@ -19,3 +19,4 @@ export type DatastoreStagedResourceTreeAPIResponse = {
    */
   monitor_config_id: string;
 };
+

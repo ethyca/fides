@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DataSubjectRightsEnum } from "./DataSubjectRightsEnum";
-import type { IncludeExcludeEnum } from "./IncludeExcludeEnum";
+import type { DataSubjectRightsEnum } from './DataSubjectRightsEnum';
+import type { IncludeExcludeEnum } from './IncludeExcludeEnum';
 
 /**
  * The DataSubjectRights resource model.
@@ -20,5 +20,6 @@ export type DataSubjectRights = {
   /**
    * A list of valid data subject rights to be used when applying data rights to a data subject via a strategy.
    */
-  values?: Array<DataSubjectRightsEnum> | null;
+  values?: (Array<DataSubjectRightsEnum> | null);
 };
+

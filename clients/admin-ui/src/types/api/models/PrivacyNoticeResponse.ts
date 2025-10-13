@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Asset } from "./Asset";
-import type { ConsentMechanism } from "./ConsentMechanism";
-import type { EnforcementLevel } from "./EnforcementLevel";
-import type { GPPFieldMapping } from "./GPPFieldMapping";
-import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
-import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { ConsentMechanism } from './ConsentMechanism';
+import type { EnforcementLevel } from './EnforcementLevel';
+import type { GPPFieldMapping } from './GPPFieldMapping';
+import type { MinimalAsset } from './MinimalAsset';
+import type { NoticeTranslationResponse } from './NoticeTranslationResponse';
+import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * An API representation of a PrivacyNotice used for response payloads
@@ -19,21 +19,22 @@ import type { UserConsentPreference } from "./UserConsentPreference";
 export type PrivacyNoticeResponse = {
   name: string;
   notice_key: string;
-  internal_description?: string | null;
+  internal_description?: (string | null);
   consent_mechanism: ConsentMechanism;
   data_uses: Array<string>;
   enforcement_level: EnforcementLevel;
   disabled: boolean;
   has_gpc_flag: boolean;
-  framework?: PrivacyNoticeFramework | null;
-  default_preference?: UserConsentPreference | null;
+  framework?: (PrivacyNoticeFramework | null);
+  default_preference?: (UserConsentPreference | null);
   id: string;
-  origin?: string | null;
+  origin?: (string | null);
   created_at: string;
   updated_at: string;
-  cookies?: Array<Asset>;
+  cookies?: Array<MinimalAsset>;
   systems_applicable?: boolean;
   translations?: Array<NoticeTranslationResponse>;
   children?: Array<PrivacyNoticeResponse>;
-  gpp_field_mapping?: Array<GPPFieldMapping> | null;
+  gpp_field_mapping?: (Array<GPPFieldMapping> | null);
 };
+

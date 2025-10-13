@@ -29,9 +29,10 @@ export type RedshiftDocsSchema = {
   /**
    * The default schema to be used for the database connection (defaults to public).
    */
-  db_schema?: string | null;
+  db_schema?: (string | null);
   /**
    * Indicates whether an SSH tunnel is required for the connection. Enable this option if your Redshift database is behind a firewall and requires SSH tunneling for remote connections.
    */
   ssh_required?: boolean;
 };
+

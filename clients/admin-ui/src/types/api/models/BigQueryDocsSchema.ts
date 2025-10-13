@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds } from "./fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds";
+import type { fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds } from './fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds';
 
 /**
  * BigQuery Secrets Schema for API Docs
@@ -15,5 +15,6 @@ export type BigQueryDocsSchema = {
   /**
    * Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.
    */
-  dataset?: string | null;
+  dataset?: (string | null);
 };
+

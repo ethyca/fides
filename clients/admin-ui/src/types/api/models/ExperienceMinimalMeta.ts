@@ -9,5 +9,6 @@ export type ExperienceMinimalMeta = {
   /**
    * A hashed value that can be compared to previously-fetched hash values to determine if the Experience has meaningfully changed
    */
-  version_hash?: string | null;
+  version_hash?: (string | null);
 };
+

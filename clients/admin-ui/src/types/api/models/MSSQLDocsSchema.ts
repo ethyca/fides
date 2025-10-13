@@ -25,5 +25,6 @@ export type MSSQLDocsSchema = {
   /**
    * The name of the specific database within the database server that you want to connect to.
    */
-  dbname?: string | null;
+  dbname?: (string | null);
 };
+

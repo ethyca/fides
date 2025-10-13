@@ -6,5 +6,6 @@ export type S3MonitorParams = {
   /**
    * The maximum number of objects that will be detected, per bucket
    */
-  max_objects?: number | null;
+  max_objects?: (number | null);
 };
+

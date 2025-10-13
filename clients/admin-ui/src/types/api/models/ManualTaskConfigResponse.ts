@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualTaskConfigurationType } from "./ManualTaskConfigurationType";
-import type { ManualTaskFieldBase } from "./ManualTaskFieldBase";
+import type { ManualTaskConfigurationType } from './ManualTaskConfigurationType';
+import type { ManualTaskFieldBase } from './ManualTaskFieldBase';
 
 /**
  * Schema for manual task configuration response.
@@ -42,3 +42,4 @@ export type ManualTaskConfigResponse = {
    */
   updated_at: string;
 };
+

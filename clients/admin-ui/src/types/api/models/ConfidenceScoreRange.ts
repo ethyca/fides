@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 export enum ConfidenceScoreRange {
-  LOW = "low",
-  HIGH = "high",
-  MANUAL = "manual",
+  LOW = 'low',
+  HIGH = 'high',
+  MANUAL = 'manual',
 }

@@ -23,3 +23,4 @@ export type GPPMobileData = {
    */
   IABGPP_GppSID: string;
 };
+

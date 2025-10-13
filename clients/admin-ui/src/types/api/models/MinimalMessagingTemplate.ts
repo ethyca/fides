@@ -14,3 +14,4 @@ export type MinimalMessagingTemplate = {
   id: string;
   type: string;
 };
+

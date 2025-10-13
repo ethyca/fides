@@ -7,3 +7,4 @@ export type BasicMessagingTemplateResponse = {
   content: any;
   label: string;
 };
+

@@ -10,3 +10,4 @@ export type ExtendedIdentityTypes = {
   phone_number: boolean;
   cookie_ids?: Array<string>;
 };
+

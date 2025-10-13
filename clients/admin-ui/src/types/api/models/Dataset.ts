@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DatasetCollection } from "./DatasetCollection";
-import type { DatasetMetadata } from "./DatasetMetadata";
+import type { DatasetCollection } from './DatasetCollection';
+import type { DatasetMetadata } from './DatasetMetadata';
 
 /**
  * The Dataset resource model.
@@ -17,15 +17,15 @@ export type Dataset = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string> | null;
+  tags?: (Array<string> | null);
   /**
    * Human-Readable name for this resource.
    */
-  name?: string | null;
+  name?: (string | null);
   /**
    * A detailed description of what this resource is.
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
@@ -33,7 +33,7 @@ export type Dataset = {
   /**
    * Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset.
    */
-  data_categories?: Array<string> | null;
+  data_categories?: (Array<string> | null);
   /**
    *
    * The DatasetMetadata resource model.
@@ -41,9 +41,10 @@ export type Dataset = {
    * Object used to hold application specific metadata for a dataset
    *
    */
-  fides_meta?: DatasetMetadata | null;
+  fides_meta?: (DatasetMetadata | null);
   /**
    * An array of objects that describe the Dataset's collections.
    */
   collections: Array<DatasetCollection>;
 };
+

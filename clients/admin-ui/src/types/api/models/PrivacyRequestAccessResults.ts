@@ -8,3 +8,4 @@
 export type PrivacyRequestAccessResults = {
   access_result_urls: Array<string>;
 };
+

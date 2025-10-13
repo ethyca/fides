@@ -2,21 +2,21 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DataSubjectRights } from "./DataSubjectRights";
+import type { DataSubjectRights } from './DataSubjectRights';
 
 export type DataSubject = {
   /**
    * The version of Fideslang in which this label was added.
    */
-  version_added?: string | null;
+  version_added?: (string | null);
   /**
    * The version of Fideslang in which this label was deprecated.
    */
-  version_deprecated?: string | null;
+  version_deprecated?: (string | null);
   /**
    * The new name, if applicable, for this label after deprecation.
    */
-  replaced_by?: string | null;
+  replaced_by?: (string | null);
   /**
    * Denotes whether the resource is part of the default taxonomy or not.
    */
@@ -29,15 +29,15 @@ export type DataSubject = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string> | null;
+  tags?: (Array<string> | null);
   /**
    * Human-Readable name for this resource.
    */
-  name?: string | null;
+  name?: (string | null);
   /**
    * A detailed description of what this resource is.
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    *
    * The DataSubjectRights resource model.
@@ -47,13 +47,14 @@ export type DataSubject = {
    * via the set strategy.
    *
    */
-  rights?: DataSubjectRights | null;
+  rights?: (DataSubjectRights | null);
   /**
    * A boolean value to annotate whether or not automated decisions/profiling exists for the data subject.
    */
-  automated_decisions_or_profiling?: boolean | null;
+  automated_decisions_or_profiling?: (boolean | null);
   /**
    * Indicates whether the resource is currently 'active'.
    */
   active?: boolean;
 };
+

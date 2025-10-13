@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AWSAuthMethod } from "./AWSAuthMethod";
+import type { AWSAuthMethod } from './AWSAuthMethod';
 
 /**
  * RDS MySQL Secrets Schema for API Docs
@@ -15,15 +15,15 @@ export type RDSMySQLDocsSchema = {
   /**
    * Part of the credentials that provide access to your AWS account.
    */
-  aws_access_key_id?: string | null;
+  aws_access_key_id?: (string | null);
   /**
    * Part of the credentials that provide access to your AWS account.
    */
-  aws_secret_access_key?: string | null;
+  aws_secret_access_key?: (string | null);
   /**
    * If provided, the ARN of the role that should be assumed to connect to AWS.
    */
-  aws_assume_role_arn?: string | null;
+  aws_assume_role_arn?: (string | null);
   /**
    * The user account used to authenticate and access the databases.
    */
@@ -33,3 +33,4 @@ export type RDSMySQLDocsSchema = {
    */
   region: string;
 };
+

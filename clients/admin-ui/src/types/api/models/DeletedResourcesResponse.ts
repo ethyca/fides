@@ -11,3 +11,4 @@ export type DeletedResourcesResponse = {
    */
   count: number;
 };
+

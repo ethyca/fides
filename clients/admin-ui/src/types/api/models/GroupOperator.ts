@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export enum GroupOperator {
-  AND = "and",
-  OR = "or",
+  AND = 'and',
+  OR = 'or',
 }

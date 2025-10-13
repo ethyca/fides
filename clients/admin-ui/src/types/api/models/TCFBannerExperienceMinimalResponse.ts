@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceMinimalMeta } from "./ExperienceMinimalMeta";
-import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from "./fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse";
-import type { MinimalTCFExperienceConfig } from "./MinimalTCFExperienceConfig";
-import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
+import type { ExperienceMinimalMeta } from './ExperienceMinimalMeta';
+import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from './fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse';
+import type { MinimalTCFExperienceConfig } from './MinimalTCFExperienceConfig';
+import type { PrivacyExperienceGPPSettings } from './PrivacyExperienceGPPSettings';
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
 
 /**
  * Minimal TCF Banner Privacy Experience response that has the details to show the most minimal
@@ -16,30 +16,30 @@ export type TCFBannerExperienceMinimalResponse = {
   /**
    * Available translations for this experience
    */
-  available_locales?: Array<string> | null;
+  available_locales?: (Array<string> | null);
   /**
    * A minimal version of the experience config with the default translation only
    */
-  experience_config?: MinimalTCFExperienceConfig | null;
+  experience_config?: (MinimalTCFExperienceConfig | null);
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
-  privacy_notices?: Array<PrivacyNoticeResponse> | null;
+  privacy_notices?: (Array<PrivacyNoticeResponse> | null);
   /**
    * The notice keys of the Privacy Notices that are enabled, but not applicable to the experience
    */
-  non_applicable_privacy_notices?: Array<string> | null;
-  gpp_settings?: PrivacyExperienceGPPSettings | null;
+  non_applicable_privacy_notices?: (Array<string> | null);
+  gpp_settings?: (PrivacyExperienceGPPSettings | null);
   /**
    * Privacy Experience ID
    */
   id: string;
   gvl?: null;
-  meta?: ExperienceMinimalMeta | null;
+  meta?: (ExperienceMinimalMeta | null);
   /**
    * Helps FE detect that this is a minimal TCF response
    */
-  minimal_tcf?: boolean | null;
+  minimal_tcf?: (boolean | null);
   /**
    * TCF Purpose names for banner display
    */
@@ -91,9 +91,10 @@ export type TCFBannerExperienceMinimalResponse = {
   /**
    * The country code of the country that determines the legislation of reference. Commonly, this corresponds to the country in which the publisher's business entity is established.
    */
-  tcf_publisher_country_code?: string | null;
+  tcf_publisher_country_code?: (string | null);
   /**
    * The total number of Vendors and Fides systems displayed in the TCF Experience
    */
-  vendor_count?: number | null;
+  vendor_count?: (number | null);
 };
+

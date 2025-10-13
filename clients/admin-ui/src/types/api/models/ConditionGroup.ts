@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConditionLeaf } from "./ConditionLeaf";
-import type { GroupOperator } from "./GroupOperator";
+import type { ConditionLeaf } from './ConditionLeaf';
+import type { GroupOperator } from './GroupOperator';
 
 export type ConditionGroup = {
   /**
@@ -13,5 +13,6 @@ export type ConditionGroup = {
   /**
    * List of conditions or nested groups
    */
-  conditions: Array<ConditionLeaf | ConditionGroup>;
+  conditions: Array<(ConditionLeaf | ConditionGroup)>;
 };
+

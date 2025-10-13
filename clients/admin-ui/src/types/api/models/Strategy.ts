@@ -7,5 +7,6 @@
  */
 export type Strategy = {
   strategy: string;
-  configuration: any;
+  configuration?: null;
 };
+

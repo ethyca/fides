@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { MessagingServiceDetailsAWS_SES } from "./MessagingServiceDetailsAWS_SES";
 import type { MessagingServiceDetailsMailchimpTransactional } from "./MessagingServiceDetailsMailchimpTransactional";
 import type { MessagingServiceDetailsMailgun } from "./MessagingServiceDetailsMailgun";
 import type { MessagingServiceDetailsTwilioEmail } from "./MessagingServiceDetailsTwilioEmail";
@@ -16,7 +17,10 @@ export type MessagingConfigResponse = {
     | MessagingServiceDetailsMailgun
     | MessagingServiceDetailsTwilioEmail
     | MessagingServiceDetailsMailchimpTransactional
+    | MessagingServiceDetailsAWS_SES
     | null;
   name: string;
   key: string;
+  last_test_timestamp?: string | null;
+  last_test_succeeded?: boolean | null;
 };

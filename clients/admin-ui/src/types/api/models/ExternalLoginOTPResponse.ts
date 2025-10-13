@@ -6,3 +6,4 @@ export type ExternalLoginOTPResponse = {
   message: string;
   email: string;
 };
+

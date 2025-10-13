@@ -2,9 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassifyField } from "./ClassifyField";
+import type { ClassifyField } from './ClassifyField';
 
 export type ClassifyCollection = {
   name: string;
   fields: Array<ClassifyField>;
 };
+

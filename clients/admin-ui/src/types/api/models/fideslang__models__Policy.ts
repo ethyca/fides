@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PolicyRule } from "./PolicyRule";
+import type { PolicyRule } from './PolicyRule';
 
 /**
  * The Policy resource model.
@@ -18,15 +18,15 @@ export type fideslang__models__Policy = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string> | null;
+  tags?: (Array<string> | null);
   /**
    * Human-Readable name for this resource.
    */
-  name?: string | null;
+  name?: (string | null);
   /**
    * A detailed description of what this resource is.
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    *
    * The PolicyRule resource model.
@@ -36,3 +36,4 @@ export type fideslang__models__Policy = {
    */
   rules: Array<PolicyRule>;
 };
+

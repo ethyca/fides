@@ -4,8 +4,9 @@
 
 export type Page_str_ = {
   items: Array<string>;
-  total: number | null;
-  page: number | null;
-  size: number | null;
-  pages?: number | null;
+  total: (number | null);
+  page: (number | null);
+  size: (number | null);
+  pages?: (number | null);
 };
+

@@ -6,3 +6,4 @@ export type ManualWebhookData = {
   checked: boolean;
   fields: any;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RateLimitPeriod } from "./RateLimitPeriod";
+import type { RateLimitPeriod } from './RateLimitPeriod';
 
 /**
  * A config object which allows configuring rate limits for connectors
@@ -10,5 +10,6 @@ import type { RateLimitPeriod } from "./RateLimitPeriod";
 export type RateLimit = {
   rate: number;
   period: RateLimitPeriod;
-  custom_key?: string | null;
+  custom_key?: (string | null);
 };
+

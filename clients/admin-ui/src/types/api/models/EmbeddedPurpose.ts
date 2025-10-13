@@ -8,5 +8,6 @@
 export type EmbeddedPurpose = {
   id: number;
   name: string;
-  retention_period?: string | null;
+  retention_period?: (string | null);
 };
+

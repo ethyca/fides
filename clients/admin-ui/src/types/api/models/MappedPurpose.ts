@@ -30,3 +30,4 @@ export type MappedPurpose = {
    */
   data_uses: Array<string>;
 };
+

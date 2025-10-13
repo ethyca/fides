@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Continent } from "./Continent";
+import type { Continent } from './Continent';
 
 /**
  * Base Location Regulation Schema
@@ -11,6 +11,7 @@ export type LocationRegulationBase = {
   id: string;
   selected?: boolean;
   name: string;
-  continent?: Continent | null;
+  continent?: (Continent | null);
   default_selected?: boolean;
 };
+

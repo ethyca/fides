@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualFieldListItem } from "./ManualFieldListItem";
-import type { ManualFieldSearchFilterOptions } from "./ManualFieldSearchFilterOptions";
+import type { ManualFieldListItem } from './ManualFieldListItem';
+import type { ManualFieldSearchFilterOptions } from './ManualFieldSearchFilterOptions';
 
 /**
  * Full paginated response returned by the endpoint.
@@ -16,3 +16,4 @@ export type ManualFieldSearchResponse = {
   pages: number;
   filter_options: ManualFieldSearchFilterOptions;
 };
+

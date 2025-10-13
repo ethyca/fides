@@ -11,3 +11,4 @@ export type LogEntry = {
   module_info: string;
   message: string;
 };
+

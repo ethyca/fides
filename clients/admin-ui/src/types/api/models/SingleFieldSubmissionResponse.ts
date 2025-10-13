@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AttachmentResponse } from "./AttachmentResponse";
-import type { CommentResponse } from "./CommentResponse";
+import type { AttachmentResponse } from './AttachmentResponse';
+import type { CommentResponse } from './CommentResponse';
 
 /**
  * Response schema for single field submission
@@ -20,15 +20,16 @@ export type SingleFieldSubmissionResponse = {
   instance_id: string;
   instance_status: string;
   is_complete: boolean;
-  completed_at?: string | null;
-  comment?: CommentResponse | null;
+  completed_at?: (string | null);
+  comment?: (CommentResponse | null);
   /**
    * List of attachments for this field submission
    */
   attachments?: Array<AttachmentResponse>;
   message: string;
-  user_id?: string | null;
-  user_first_name?: string | null;
-  user_last_name?: string | null;
-  user_email_address?: string | null;
+  user_id?: (string | null);
+  user_first_name?: (string | null);
+  user_last_name?: (string | null);
+  user_email_address?: (string | null);
 };
+

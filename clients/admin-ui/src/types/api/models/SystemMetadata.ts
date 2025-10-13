@@ -11,13 +11,14 @@ export type SystemMetadata = {
   /**
    * The external resource id for the system being modeled.
    */
-  resource_id?: string | null;
+  resource_id?: (string | null);
   /**
    * The host of the external resource for the system being modeled.
    */
-  endpoint_address?: string | null;
+  endpoint_address?: (string | null);
   /**
    * The port of the external resource for the system being modeled.
    */
-  endpoint_port?: string | null;
+  endpoint_port?: (string | null);
 };
+

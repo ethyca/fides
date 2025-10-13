@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionDatahubSyncDetail } from "./ConnectionDatahubSyncDetail";
+import type { ConnectionDatahubSyncDetail } from './ConnectionDatahubSyncDetail';
 
 /**
  * Response for syncing Datahub connections.
@@ -12,3 +12,4 @@ export type ConnectionDatahubSyncResponse = {
   failed: Array<string>;
   details: Array<ConnectionDatahubSyncDetail>;
 };
+

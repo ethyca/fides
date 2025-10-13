@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualFieldRequestType } from "./ManualFieldRequestType";
-import type { ManualTaskFieldType } from "./ManualTaskFieldType";
+import type { ManualFieldRequestType } from './ManualFieldRequestType';
+import type { ManualTaskFieldType } from './ManualTaskFieldType';
 
 /**
  * Simplified schema for manual field response.
@@ -34,3 +34,4 @@ export type ManualFieldResponse = {
    */
   request_type: ManualFieldRequestType;
 };
+

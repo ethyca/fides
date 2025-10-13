@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 export type CloudConfig = {
-  privacy_center_url?: string | null;
+  privacy_center_url?: (string | null);
   domain_verification_records?: Array<string>;
 };
+

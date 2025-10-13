@@ -2,13 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionTestStatus } from "./ConnectionTestStatus";
+import type { ConnectionTestStatus } from './ConnectionTestStatus';
 
 /**
  * A schema for checking status.
  */
 export type TestStatusMessage = {
   msg: string;
-  test_status?: ConnectionTestStatus | null;
-  failure_reason?: string | null;
+  test_status?: (ConnectionTestStatus | null);
+  failure_reason?: (string | null);
 };
+

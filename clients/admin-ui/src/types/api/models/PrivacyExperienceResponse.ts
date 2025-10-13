@@ -2,20 +2,20 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceConfigResponseNoNotices } from "./ExperienceConfigResponseNoNotices";
-import type { ExperienceMeta } from "./ExperienceMeta";
-import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from "./fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse";
-import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
-import type { TCFFeatureRecord } from "./TCFFeatureRecord";
-import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
-import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
-import type { TCFSpecialFeatureRecord } from "./TCFSpecialFeatureRecord";
-import type { TCFSpecialPurposeRecord } from "./TCFSpecialPurposeRecord";
-import type { TCFVendorConsentRecord } from "./TCFVendorConsentRecord";
-import type { TCFVendorLegitimateInterestsRecord } from "./TCFVendorLegitimateInterestsRecord";
-import type { TCFVendorRelationships } from "./TCFVendorRelationships";
+import type { ExperienceConfigResponseNoNotices } from './ExperienceConfigResponseNoNotices';
+import type { ExperienceMeta } from './ExperienceMeta';
+import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from './fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse';
+import type { PrivacyExperienceGPPSettings } from './PrivacyExperienceGPPSettings';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
+import type { TCFFeatureRecord } from './TCFFeatureRecord';
+import type { TCFPurposeConsentRecord } from './TCFPurposeConsentRecord';
+import type { TCFPurposeLegitimateInterestsRecord } from './TCFPurposeLegitimateInterestsRecord';
+import type { TCFSpecialFeatureRecord } from './TCFSpecialFeatureRecord';
+import type { TCFSpecialPurposeRecord } from './TCFSpecialPurposeRecord';
+import type { TCFVendorConsentRecord } from './TCFVendorConsentRecord';
+import type { TCFVendorLegitimateInterestsRecord } from './TCFVendorLegitimateInterestsRecord';
+import type { TCFVendorRelationships } from './TCFVendorRelationships';
 
 /**
  * An API representation of a PrivacyExperience used for response payloads
@@ -31,7 +31,7 @@ export type PrivacyExperienceResponse = {
   created_at: string;
   updated_at: string;
   region: PrivacyNoticeRegion;
-  gpp_settings?: PrivacyExperienceGPPSettings | null;
+  gpp_settings?: (PrivacyExperienceGPPSettings | null);
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -44,25 +44,26 @@ export type PrivacyExperienceResponse = {
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   tcf_publisher_restrictions?: Array<fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse>;
-  tcf_publisher_country_code?: string | null;
+  tcf_publisher_country_code?: (string | null);
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
-  privacy_notices?: Array<PrivacyNoticeResponse> | null;
+  privacy_notices?: (Array<PrivacyNoticeResponse> | null);
   /**
    * The notice keys of the Privacy Notices that are enabled, but not applicable to the experience
    */
-  non_applicable_privacy_notices?: Array<string> | null;
+  non_applicable_privacy_notices?: (Array<string> | null);
   /**
    * The Experience Config and its translations
    */
-  experience_config?: ExperienceConfigResponseNoNotices | null;
+  experience_config?: (ExperienceConfigResponseNoNotices | null);
   gvl?: null;
   gvl_translations?: null;
-  available_locales?: Array<string> | null;
-  meta?: ExperienceMeta | null;
+  available_locales?: (Array<string> | null);
+  meta?: (ExperienceMeta | null);
   /**
    * The number of vendors in the TCF experience. Only populated for TCF experiences.
    */
-  vendor_count?: number | null;
+  vendor_count?: (number | null);
 };
+

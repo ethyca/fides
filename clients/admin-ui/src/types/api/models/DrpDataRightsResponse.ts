@@ -2,14 +2,15 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DrpAction } from "./DrpAction";
+import type { DrpAction } from './DrpAction';
 
 /**
  * Drp data rights response
  */
 export type DrpDataRightsResponse = {
   version: string;
-  api_base?: string | null;
+  api_base?: (string | null);
   actions: Array<DrpAction>;
-  user_relationships?: Array<string> | null;
+  user_relationships?: (Array<string> | null);
 };
+

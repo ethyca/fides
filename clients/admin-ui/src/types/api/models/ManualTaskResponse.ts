@@ -2,10 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AssignedUserSummary } from "./AssignedUserSummary";
-import type { ConditionGroup } from "./ConditionGroup";
-import type { ManualTaskParentEntityType } from "./ManualTaskParentEntityType";
-import type { StatusType } from "./StatusType";
+import type { AssignedUserSummary } from './AssignedUserSummary';
+import type { ManualTaskParentEntityType } from './ManualTaskParentEntityType';
+import type { StatusType } from './StatusType';
 
 /**
  * Schema for manual task response.
@@ -38,9 +37,14 @@ export type ManualTaskResponse = {
   /**
    * Users assigned to the manual task
    */
-  assigned_users?: Array<AssignedUserSummary> | null;
+  assigned_users?: (Array<AssignedUserSummary> | null);
   /**
    * Dependency conditions
    */
-  dependency_conditions?: Array<ConditionGroup> | null;
+  dependency_conditions?: null;
+  /**
+   * Validation warnings for dependency conditions
+   */
+  validation_warnings?: null;
 };
+

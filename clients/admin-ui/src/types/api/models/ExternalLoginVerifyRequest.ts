@@ -6,3 +6,4 @@ export type ExternalLoginVerifyRequest = {
   email: string;
   otp_code: string;
 };
+

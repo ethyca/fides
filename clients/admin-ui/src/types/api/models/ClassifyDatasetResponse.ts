@@ -4,5 +4,6 @@
 
 export type ClassifyDatasetResponse = {
   classify_instances: Array<Record<string, string>>;
-  task_id?: string | null;
+  task_id?: (string | null);
 };
+

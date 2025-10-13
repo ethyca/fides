@@ -14,11 +14,11 @@
  * External Respondent - External user who can only respond to assigned manual steps
  */
 export enum RoleRegistryEnum {
-  OWNER = "owner",
-  VIEWER_AND_APPROVER = "viewer_and_approver",
-  VIEWER = "viewer",
-  APPROVER = "approver",
-  CONTRIBUTOR = "contributor",
-  RESPONDENT = "respondent",
-  EXTERNAL_RESPONDENT = "external_respondent",
+  OWNER = 'owner',
+  VIEWER_AND_APPROVER = 'viewer_and_approver',
+  VIEWER = 'viewer',
+  APPROVER = 'approver',
+  CONTRIBUTOR = 'contributor',
+  RESPONDENT = 'respondent',
+  EXTERNAL_RESPONDENT = 'external_respondent',
 }

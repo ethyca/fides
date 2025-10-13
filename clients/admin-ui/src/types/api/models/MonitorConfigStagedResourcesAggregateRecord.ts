@@ -2,9 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionType } from "./ConnectionType";
-import type { ConsentAlertInfo } from "./ConsentAlertInfo";
-import type { SaaSConfigBase } from "./SaaSConfigBase";
+import type { ConnectionType } from './ConnectionType';
+import type { ConsentAlertInfo } from './ConsentAlertInfo';
+import type { DatastoreMonitorUpdates } from './DatastoreMonitorUpdates';
+import type { SaaSConfigBase } from './SaaSConfigBase';
 
 /**
  * API response model for records of aggregated staged resources by monitor config.
@@ -16,11 +17,14 @@ import type { SaaSConfigBase } from "./SaaSConfigBase";
 export type MonitorConfigStagedResourcesAggregateRecord = {
   connection_type: ConnectionType;
   secrets?: null;
-  saas_config?: SaaSConfigBase | null;
+  saas_config?: (SaaSConfigBase | null);
   name: string;
-  key?: string | null;
-  last_monitored?: string | null;
-  updates?: any;
+  key?: (string | null);
+  last_monitored?: (string | null);
+  updates?: (DatastoreMonitorUpdates | Record<string, number>);
   total_updates?: number;
-  consent_status?: ConsentAlertInfo | null;
+  consent_status?: (ConsentAlertInfo | null);
+  connection_name?: (string | null);
+  has_failed_tasks?: (boolean | null);
 };
+

@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PreferenceWithNoticeInformation } from "./PreferenceWithNoticeInformation";
-import type { TCFFeatureSave } from "./TCFFeatureSave";
-import type { TCFPurposeSave } from "./TCFPurposeSave";
-import type { TCFSpecialFeatureSave } from "./TCFSpecialFeatureSave";
-import type { TCFSpecialPurposeSave } from "./TCFSpecialPurposeSave";
-import type { TCFVendorSave } from "./TCFVendorSave";
+import type { PreferenceWithNoticeInformation } from './PreferenceWithNoticeInformation';
+import type { TCFFeatureSave } from './TCFFeatureSave';
+import type { TCFPurposeSave } from './TCFPurposeSave';
+import type { TCFSpecialFeatureSave } from './TCFSpecialFeatureSave';
+import type { TCFSpecialPurposeSave } from './TCFSpecialPurposeSave';
+import type { TCFVendorSave } from './TCFVendorSave';
 
 /**
  * An extended version of PreferencesSaved that includes
@@ -25,3 +25,4 @@ export type PreferencesSavedExtended = {
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   preferences?: Array<PreferenceWithNoticeInformation>;
 };
+

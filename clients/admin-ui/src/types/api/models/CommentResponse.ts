@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AttachmentResponse } from "./AttachmentResponse";
-import type { CommentType } from "./CommentType";
+import type { AttachmentResponse } from './AttachmentResponse';
+import type { CommentType } from './CommentType';
 
 /**
  * Model for comment responses.
@@ -20,19 +20,19 @@ export type CommentResponse = {
   /**
    * The user ID
    */
-  user_id: string | null;
+  user_id: (string | null);
   /**
    * The username
    */
-  username: string | null;
+  username: (string | null);
   /**
    * The user first name
    */
-  user_first_name: string | null;
+  user_first_name: (string | null);
   /**
    * The user last name
    */
-  user_last_name: string | null;
+  user_last_name: (string | null);
   /**
    * The creation date
    */
@@ -50,3 +50,4 @@ export type CommentResponse = {
    */
   comment_type: CommentType;
 };
+

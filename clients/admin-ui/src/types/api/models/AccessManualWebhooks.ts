@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualWebhookField } from "./ManualWebhookField";
+import type { ManualWebhookField } from './ManualWebhookField';
 
 /**
  * Expected request body for creating Access Manual Webhooks
@@ -10,3 +10,4 @@ import type { ManualWebhookField } from "./ManualWebhookField";
 export type AccessManualWebhooks = {
   fields: Array<ManualWebhookField>;
 };
+

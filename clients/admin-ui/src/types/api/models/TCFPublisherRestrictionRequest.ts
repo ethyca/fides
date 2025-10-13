@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RangeEntry } from "./RangeEntry";
-import type { TCFRestrictionType } from "./TCFRestrictionType";
-import type { TCFVendorRestriction } from "./TCFVendorRestriction";
+import type { RangeEntry } from './RangeEntry';
+import type { TCFRestrictionType } from './TCFRestrictionType';
+import type { TCFVendorRestriction } from './TCFVendorRestriction';
 
 /**
  * Schema for TCF Publisher Restriction creation/update requests
@@ -27,3 +27,4 @@ export type TCFPublisherRestrictionRequest = {
    */
   range_entries?: Array<RangeEntry>;
 };
+

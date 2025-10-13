@@ -2,13 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from "./SupportedLanguage";
+import type { SupportedLanguage } from './SupportedLanguage';
 
 /**
  * Notice Translation Schema
  */
 export type NoticeTranslation = {
   language: SupportedLanguage;
-  title?: string | null;
-  description?: string | null;
+  title?: (string | null);
+  description?: (string | null);
 };
+

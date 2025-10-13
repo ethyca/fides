@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export enum ColumnSort {
-  DESC = "desc",
-  ASC = "asc",
+  DESC = 'desc',
+  ASC = 'asc',
 }

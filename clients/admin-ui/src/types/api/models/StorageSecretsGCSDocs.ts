@@ -18,3 +18,4 @@ export type StorageSecretsGCSDocs = {
   client_x509_cert_url: string;
   universe_domain: string;
 };
+

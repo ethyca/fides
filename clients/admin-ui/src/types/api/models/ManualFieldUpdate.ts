@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualFieldRequestType } from "./ManualFieldRequestType";
-import type { ManualTaskFieldType } from "./ManualTaskFieldType";
+import type { ManualFieldRequestType } from './ManualFieldRequestType';
+import type { ManualTaskFieldType } from './ManualTaskFieldType';
 
 /**
  * Simplified schema for updating a manual field.
@@ -26,3 +26,4 @@ export type ManualFieldUpdate = {
    */
   request_type: ManualFieldRequestType;
 };
+

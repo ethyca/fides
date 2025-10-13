@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RoleRegistryEnum } from "./RoleRegistryEnum";
+import type { RoleRegistryEnum } from './RoleRegistryEnum';
 
 /**
  * Data required to create a FidesUserPermissions record
@@ -13,3 +13,4 @@ import type { RoleRegistryEnum } from "./RoleRegistryEnum";
 export type UserPermissionsCreate = {
   roles: Array<RoleRegistryEnum>;
 };
+

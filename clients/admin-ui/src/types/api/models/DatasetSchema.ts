@@ -4,5 +4,6 @@
 
 export type DatasetSchema = {
   fides_key: string;
-  name?: string | null;
+  name?: (string | null);
 };
+

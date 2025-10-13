@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AWSAuthMethod } from "./AWSAuthMethod";
+import type { AWSAuthMethod } from './AWSAuthMethod';
 
 /**
  * The secrets required to connect to AWS SES, for documentation
@@ -15,13 +15,14 @@ export type MessagingServiceSecretsAWS_SESDocs = {
   /**
    * Part of the credentials that provide access to your AWS account.
    */
-  aws_access_key_id?: string | null;
+  aws_access_key_id?: (string | null);
   /**
    * Part of the credentials that provide access to your AWS account.
    */
-  aws_secret_access_key?: string | null;
+  aws_secret_access_key?: (string | null);
   /**
    * If provided, the ARN of the role that should be assumed to connect to AWS.
    */
-  aws_assume_role_arn?: string | null;
+  aws_assume_role_arn?: (string | null);
 };
+

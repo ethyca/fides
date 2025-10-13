@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { RejectAllMechanism } from "./RejectAllMechanism";
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * Schema for embedding an Experience Config in a Privacy Experience response.
@@ -23,12 +23,18 @@ export type ExperienceConfigResponseNoNotices = {
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
+  allow_vendor_asset_disclosure?: boolean | null;
+  asset_disclosure_include_types?: Array<string> | null;
   regions: Array<PrivacyNoticeRegion>;
+  tcf_configuration_id?: string | null;
   id: string;
   created_at: string;
   updated_at: string;
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
+  /**
+   * Determines the behavior of the reject all button
+   */
   reject_all_mechanism?: RejectAllMechanism | null;
 };

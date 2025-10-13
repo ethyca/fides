@@ -2,17 +2,18 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AllowedTypes } from "./AllowedTypes";
-import type { ResourceTypes } from "./ResourceTypes";
+import type { AllowedTypes } from './AllowedTypes';
+import type { ResourceTypes } from './ResourceTypes';
 
 export type CustomFieldDefinitionResponse = {
   name: string;
-  description?: string | null;
+  description?: (string | null);
   field_type: AllowedTypes;
-  allow_list_id?: string | null;
+  allow_list_id?: (string | null);
   resource_type: ResourceTypes;
-  field_definition?: string | null;
+  field_definition?: (string | null);
   active?: boolean;
   id: string;
   created_at: string;
 };
+

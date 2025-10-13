@@ -6,6 +6,6 @@
  * Type of task run.
  */
 export enum TaskRunType {
-  MANUAL = "manual",
-  SYSTEM = "system",
+  MANUAL = 'manual',
+  SYSTEM = 'system',
 }

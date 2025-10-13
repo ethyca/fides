@@ -17,11 +17,11 @@ export type PostgreSQLDocsSchema = {
   /**
    * The user account used to authenticate and access the database.
    */
-  username?: string | null;
+  username?: (string | null);
   /**
    * The password used to authenticate and access the database.
    */
-  password?: string | null;
+  password?: (string | null);
   /**
    * Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.
    */
@@ -29,10 +29,11 @@ export type PostgreSQLDocsSchema = {
   /**
    * The name of the specific database within the database server that you want to connect to.
    */
-  dbname?: string | null;
+  dbname?: (string | null);
   /**
    * The default schema to be used for the database connection (defaults to public).
    */
-  db_schema?: string | null;
-  ssl_mode?: string | null;
+  db_schema?: (string | null);
+  ssl_mode?: (string | null);
 };
+

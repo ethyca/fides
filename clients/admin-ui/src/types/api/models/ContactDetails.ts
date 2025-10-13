@@ -29,3 +29,4 @@ export type ContactDetails = {
    */
   phone?: string;
 };
+

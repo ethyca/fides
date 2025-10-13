@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CustomReportConfig } from "./CustomReportConfig";
-import type { ReportType } from "./ReportType";
+import type { CustomReportConfig } from './CustomReportConfig';
+import type { ReportType } from './ReportType';
 
 /**
  * Response containing the basic custom report information along with the actual custom report configuration.
@@ -14,3 +14,4 @@ export type CustomReportResponse = {
   name: string;
   config: CustomReportConfig;
 };
+

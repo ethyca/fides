@@ -15,3 +15,4 @@ export type OktaDocsSchema = {
    */
   api_token: string;
 };
+

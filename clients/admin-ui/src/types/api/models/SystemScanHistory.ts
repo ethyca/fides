@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { System } from "./System";
+import type { System } from './System';
 
 export type SystemScanHistory = {
   id: number;
@@ -11,3 +11,4 @@ export type SystemScanHistory = {
   created_at: string;
   updated_at: string;
 };
+

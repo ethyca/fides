@@ -17,9 +17,10 @@ export type ManualTaskFieldMetadata = {
   /**
    * Help text to display with the field
    */
-  help_text?: string | null;
+  help_text?: (string | null);
   /**
    * List of data uses associated with this field
    */
-  data_uses?: Array<string> | null;
+  data_uses?: (Array<string> | null);
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MySQLSSLMode } from "./MySQLSSLMode";
+import type { MySQLSSLMode } from './MySQLSSLMode';
 
 /**
  * MySQL Secrets Schema for API Docs
@@ -19,11 +19,11 @@ export type MySQLDocsSchema = {
   /**
    * The user account used to authenticate and access the database.
    */
-  username?: string | null;
+  username?: (string | null);
   /**
    * The password used to authenticate and access the database.
    */
-  password?: string | null;
+  password?: (string | null);
   /**
    * The name of the specific database within the database server that you want to connect to.
    */
@@ -35,5 +35,6 @@ export type MySQLDocsSchema = {
   /**
    * The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.
    */
-  ssl_mode?: MySQLSSLMode | null;
+  ssl_mode?: (MySQLSSLMode | null);
 };
+

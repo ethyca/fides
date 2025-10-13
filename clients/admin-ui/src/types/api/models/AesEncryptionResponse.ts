@@ -9,3 +9,4 @@ export type AesEncryptionResponse = {
   encrypted_value: string;
   nonce: string;
 };
+
