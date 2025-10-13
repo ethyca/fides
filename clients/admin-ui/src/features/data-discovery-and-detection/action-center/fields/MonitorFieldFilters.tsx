@@ -54,10 +54,7 @@ export const MonitorFieldFilters = ({
               </Row>
             </Checkbox.Group>
           </Form.Item>
-          <Form.Item
-            label="Confidence Score"
-            className="w-min whitespace-nowrap"
-          >
+          <Form.Item label="Confidence" className="w-min whitespace-nowrap">
             <Checkbox.Group
               value={confidenceScore || []}
               onChange={(scores) =>
@@ -78,7 +75,7 @@ export const MonitorFieldFilters = ({
           {datastoreFilterResponse?.data_category &&
             datastoreFilterResponse?.data_category?.length > 0 && (
               <Form.Item
-                label="Data Category"
+                label="Data category"
                 className="w-min whitespace-nowrap"
               >
                 <Checkbox.Group
