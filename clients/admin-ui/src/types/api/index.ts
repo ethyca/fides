@@ -122,6 +122,8 @@ export type { ConsentRequestCreateExtended } from "./models/ConsentRequestCreate
 export type { ConsentRequestMap } from "./models/ConsentRequestMap";
 export type { ConsentRequestResponse } from "./models/ConsentRequestResponse";
 export { ConsentStatus } from "./models/ConsentStatus";
+export type { ConsentStatusDetail } from "./models/ConsentStatusDetail";
+export type { ConsentStatusReason } from "./models/ConsentStatusReason";
 export type { ConsentWithExecutableStatus } from "./models/ConsentWithExecutableStatus";
 export type { Constraint } from "./models/Constraint";
 export { ConstraintType } from "./models/ConstraintType";
@@ -176,6 +178,11 @@ export type { DeletedResourcesResponse } from "./models/DeletedResourcesResponse
 export type { DenyPrivacyRequests } from "./models/DenyPrivacyRequests";
 export type { DictionaryStatus } from "./models/DictionaryStatus";
 export { DiffStatus } from "./models/DiffStatus";
+export { DigestConditionType } from "./models/DigestConditionType";
+export type { DigestConfigListResponse } from "./models/DigestConfigListResponse";
+export type { DigestConfigRequest } from "./models/DigestConfigRequest";
+export type { DigestConfigResponse } from "./models/DigestConfigResponse";
+export { DigestType } from "./models/DigestType";
 export { DrpAction } from "./models/DrpAction";
 export type { DrpDataRightsResponse } from "./models/DrpDataRightsResponse";
 export type { DrpMeta } from "./models/DrpMeta";
@@ -352,6 +359,7 @@ export { MonitorFrequency } from "./models/MonitorFrequency";
 export type { MonitorStatusResponse } from "./models/MonitorStatusResponse";
 export type { MonitorTaskDetailResponse } from "./models/MonitorTaskDetailResponse";
 export type { MonitorTaskResponse } from "./models/MonitorTaskResponse";
+export type { MonitorTaskInProgressResponse } from "./models/MonitorTaskInProgressResponse";
 export { MonitorTaskType } from "./models/MonitorTaskType";
 export type { MSSQLDocsSchema } from "./models/MSSQLDocsSchema";
 export type { MySQLDocsSchema } from "./models/MySQLDocsSchema";
@@ -465,7 +473,7 @@ export type { PrivacyRequestNotificationInfo } from "./models/PrivacyRequestNoti
 export type { PrivacyRequestOption } from "./models/PrivacyRequestOption";
 export type { PrivacyRequestResponse } from "./models/PrivacyRequestResponse";
 export type { PrivacyRequestResumeFormat } from "./models/PrivacyRequestResumeFormat";
-export type { PrivacyRequestReviewer } from "./models/PrivacyRequestReviewer";
+export type { PrivacyRequestUser } from "./models/PrivacyRequestUser";
 export { PrivacyRequestSource } from "./models/PrivacyRequestSource";
 export { PrivacyRequestStatus } from "./models/PrivacyRequestStatus";
 export type { PrivacyRequestTaskSchema } from "./models/PrivacyRequestTaskSchema";

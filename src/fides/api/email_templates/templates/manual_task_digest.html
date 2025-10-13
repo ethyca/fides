@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly DSR Summary</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        /* Main styles */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            min-width: 100%;
+            height: 100%;
+            background-color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .logo-section {
+            background-color: #ffffff;
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .logo-container {
+            margin-bottom: 0;
+        }
+
+        .header {
+            background-color: #000000;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .logo {
+            max-width: 200px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .logo-placeholder {
+            width: 200px;
+            height: 60px;
+            background-color: #333333;
+            border: 2px dashed #666666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #999999;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            color: #000000;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .intro-text {
+            margin-bottom: 32px;
+            color: #333333;
+            line-height: 1.7;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .task-count {
+            background-color: #f5f5f5;
+            border-left: 4px solid #000000;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .task-count-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000000;
+            margin: 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #000000;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            background-color: #333333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .footer {
+            background-color: #f5f5f5;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .footer-text {
+            color: #666666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .signature {
+            margin-top: 24px;
+            color: #333333;
+            font-weight: 500;
+        }
+
+        /* Responsive styles */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .header, .content, .footer {
+                padding: 24px 16px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 18px;
+            }
+
+            .cta-button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #000000;
+            }
+
+            .email-container {
+                background-color: #1a1a1a;
+            }
+
+            .greeting, .section-title {
+                color: #ffffff;
+            }
+
+            .intro-text, .footer-text, .signature {
+                color: #cccccc;
+            }
+
+            .task-count {
+                background-color: #333333;
+                border-left-color: #ffffff;
+            }
+
+            .task-count-text {
+                color: #ffffff;
+            }
+
+            .footer {
+                background-color: #333333;
+                border-top-color: #666666;
+            }
+
+            .logo-section {
+                background-color: #1a1a1a;
+                border-bottom-color: #666666;
+            }
+
+            .logo-placeholder {
+                background-color: #555555;
+                border-color: #888888;
+                color: #cccccc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px 0;">
+        <div class="email-container">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="logo-container">
+                    {% if company_logo_url %}
+                        <img src="{{ company_logo_url }}" alt="{{ organization_name }} Logo" class="logo">
+                    {% else %}
+                        <div class="logo-placeholder">{{ organization_name }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content">
+                <div class="greeting">Hi {{ vendor_contact_name }},</div>
+
+                <div class="intro-text">
+                    {{ intro_text | default("This is your weekly summary of open data subject requests tasks from " + organization_name + " that require your attention. Please review the tasks listed below in our <a href='" + portal_url + "' style='color: #000000; text-decoration: underline; font-weight: 600;'>Privacy Center</a> to ensure timely completion.") | safe }}
+                </div>
+
+                <!-- Tasks Due Soon Section -->
+                <div class="section">
+                    <div class="section-title">Tasks Due Soon</div>
+
+                    <div class="task-count">
+                        <p class="task-count-text">You have {{ total_task_count }} request{{ 's' if total_task_count != 1 else '' }} coming due, including {{ imminent_task_count }} within the next 7 days and {{ upcoming_task_count }} due in the next period.</p>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <a href="{{ portal_url }}" class="cta-button">View All Tasks</a>
+                    </div>
+                </div>
+
+                <!-- Closing -->
+                <div style="margin-top: 32px;">
+                    <p style="color: #333333; margin-bottom: 24px;">
+                        {{ closing_text | default("Thank you for your partnership in processing these requests efficiently. If you have any questions or issues, please reach out to your contacts at " + organization_name + ".") | safe }}
+                    </p>
+
+                    <div class="signature">
+                        {{ signature | default("Best regards,<br>The " + organization_name + " Privacy Team") | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p class="footer-text">
+                    This email was sent from your Privacy Center. Please do not reply to this email.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,7 +2,7 @@ import { Image, ImageProps } from "fidesui";
 import React from "react";
 
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionConfigurationResponse } from "~/types/api";
 import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 import { ConnectionType as ConnectionTypeModel } from "~/types/api/models/ConnectionType";
 
@@ -14,104 +14,190 @@ import {
   SAAS_TYPE_LOGO_MAP,
 } from "./constants";
 
-type ConnectionTypeLogoProps = {
-  data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
+type SaasConfigLite = {
+  type?: string | null;
+  name?: string | null;
+  fides_key?: string | null;
 };
+
+type SecretsLite = {
+  url?: string | null;
+};
+
+type ConnectionLike = {
+  connection_type: ConnectionTypeModel;
+  name?: string | null;
+  key?: string | null;
+  saas_config?: SaasConfigLite | null;
+  secrets?: SecretsLite | null;
+};
+
+type SystemTypeLike = Pick<
+  ConnectionSystemTypeMap,
+  "identifier" | "human_readable" | "encoded_icon"
+>;
+
+export enum ConnectionLogoKind {
+  CONNECTION = "connection",
+  SYSTEM = "system",
+  STATIC = "static",
+}
+
+export type ConnectionLogoSource =
+  | {
+      kind: ConnectionLogoKind.CONNECTION;
+      connectionType: ConnectionTypeModel;
+      name?: string | null;
+      key?: string | null;
+      saasType?: string | null;
+      websiteUrl?: string | null;
+    }
+  | {
+      kind: ConnectionLogoKind.SYSTEM;
+      identifier: string;
+      humanReadable: string;
+      encodedIcon?: string | null;
+    }
+  | {
+      kind: ConnectionLogoKind.STATIC;
+      key: string;
+    };
 
 const FALLBACK_WEBSITE_LOGO_PATH =
   CONNECTOR_LOGOS_PATH +
   CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.WEBSITE);
 
-const isDatastoreConnection = (
-  obj: any,
-): obj is ConnectionConfigurationResponse =>
-  (obj as ConnectionConfigurationResponse).connection_type !== undefined;
+const connectionLikeToLogo = (
+  connection: ConnectionLike,
+): ConnectionLogoSource => ({
+  kind: ConnectionLogoKind.CONNECTION,
+  connectionType: connection.connection_type,
+  name: connection.name ?? null,
+  key: connection.key ?? null,
+  saasType: connection.saas_config?.type ?? null,
+  websiteUrl: connection.secrets?.url ?? null,
+});
 
-const isConnectionSystemTypeMap = (obj: any): obj is ConnectionSystemTypeMap =>
-  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
+export const connectionLogoFromConfiguration = (
+  connection: Pick<
+    ConnectionConfigurationResponse,
+    "connection_type" | "name" | "key" | "saas_config" | "secrets"
+  >,
+): ConnectionLogoSource => connectionLikeToLogo(connection);
 
-const isWebsiteConnection = (
-  obj: any,
-): obj is ConnectionConfigurationResponse => {
-  return obj?.connection_type === ConnectionTypeModel.WEBSITE;
+export const connectionLogoFromMonitor = (
+  monitor: ConnectionLike,
+): ConnectionLogoSource => connectionLikeToLogo(monitor);
+
+export const connectionLogoFromSystemType = (
+  system: SystemTypeLike,
+): ConnectionLogoSource => ({
+  kind: ConnectionLogoKind.SYSTEM,
+  identifier: system.identifier,
+  humanReadable: system.human_readable,
+  encodedIcon: system.encoded_icon ?? null,
+});
+
+export const connectionLogoFromKey = (key: string): ConnectionLogoSource => ({
+  kind: ConnectionLogoKind.STATIC,
+  key,
+});
+
+const resolveSaasLogo = (saasType?: string | null) => {
+  if (!saasType) {
+    return undefined;
+  }
+  const typed = saasType as SaasConnectionTypes;
+  return SAAS_TYPE_LOGO_MAP.get(typed);
 };
 
-const isSaasConnection = (obj: any): obj is ConnectionConfigurationResponse => {
-  return obj?.connection_type === ConnectionTypeModel.SAAS;
+const buildStaticLogoPath = (key: string) => {
+  if (!key) {
+    return FALLBACK_CONNECTOR_LOGOS_PATH;
+  }
+  if (key.startsWith("data:")) {
+    return key;
+  }
+  if (key.startsWith("http")) {
+    return key;
+  }
+  const normalizedKey = key.endsWith(".svg") ? key : `${key}.svg`;
+  return CONNECTOR_LOGOS_PATH + normalizedKey;
+};
+
+const getImageSrc = (data: ConnectionLogoSource): string => {
+  if (data.kind === ConnectionLogoKind.SYSTEM) {
+    if (data.encodedIcon) {
+      return `data:image/svg+xml;base64,${data.encodedIcon}`;
+    }
+    const item = [...CONNECTION_TYPE_LOGO_MAP].find(
+      ([key]) => key.toLowerCase() === data.identifier.toLowerCase(),
+    );
+    return item
+      ? CONNECTOR_LOGOS_PATH + item[1]
+      : FALLBACK_CONNECTOR_LOGOS_PATH;
+  }
+
+  if (data.kind === ConnectionLogoKind.CONNECTION) {
+    if (data.connectionType === ConnectionTypeModel.WEBSITE) {
+      if (!data.websiteUrl) {
+        return FALLBACK_WEBSITE_LOGO_PATH;
+      }
+      const domain = getDomain(data.websiteUrl);
+      return getWebsiteIconUrl(domain, 100);
+    }
+
+    if (data.connectionType === ConnectionTypeModel.SAAS) {
+      const saasLogo = resolveSaasLogo(data.saasType);
+      if (saasLogo) {
+        return CONNECTOR_LOGOS_PATH + saasLogo;
+      }
+    }
+
+    const mappedLogo = CONNECTION_TYPE_LOGO_MAP.get(data.connectionType);
+    return mappedLogo
+      ? CONNECTOR_LOGOS_PATH + mappedLogo
+      : FALLBACK_CONNECTOR_LOGOS_PATH;
+  }
+
+  return buildStaticLogoPath(data.key);
+};
+
+const getAltValue = (data: ConnectionLogoSource): string => {
+  if (data.kind === ConnectionLogoKind.CONNECTION) {
+    return data.name ?? data.key ?? "connection";
+  }
+  if (data.kind === ConnectionLogoKind.SYSTEM) {
+    return data.humanReadable;
+  }
+  return data.key || "connection";
+};
+
+const getFallbackSrc = (data: ConnectionLogoSource): string => {
+  if (
+    data.kind === ConnectionLogoKind.CONNECTION &&
+    data.connectionType === ConnectionTypeModel.WEBSITE
+  ) {
+    return FALLBACK_WEBSITE_LOGO_PATH;
+  }
+  return FALLBACK_CONNECTOR_LOGOS_PATH;
+};
+
+type ConnectionTypeLogoProps = {
+  data: ConnectionLogoSource;
 };
 
 const ConnectionTypeLogo = ({
   data,
   ...props
 }: ConnectionTypeLogoProps & ImageProps) => {
-  const getImageSrc = (): string => {
-    if (isConnectionSystemTypeMap(data) && data.encoded_icon) {
-      return `data:image/svg+xml;base64,${data.encoded_icon}`;
-    }
-
-    if (isWebsiteConnection(data)) {
-      const url = (data as any).secrets?.url;
-      if (!url) {
-        return FALLBACK_WEBSITE_LOGO_PATH;
-      }
-      const domain = getDomain(url);
-      return getWebsiteIconUrl(domain, 100);
-    }
-
-    let item;
-    if (isDatastoreConnection(data)) {
-      if (isSaasConnection(data) && data.saas_config?.type) {
-        // For SAAS connections, look up the logo in SAAS_TYPE_LOGO_MAP
-        const saasType = data.saas_config.type as SaasConnectionTypes;
-        const saasLogo = SAAS_TYPE_LOGO_MAP.get(saasType);
-        if (saasLogo) {
-          return CONNECTOR_LOGOS_PATH + saasLogo;
-        }
-        // If no specific SAAS logo found, use the generic SAAS logo
-        return (
-          CONNECTOR_LOGOS_PATH +
-          CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.SAAS)
-        );
-      }
-
-      item = [...CONNECTION_TYPE_LOGO_MAP].find(
-        ([k]) => data.connection_type.toString() === k.toString(),
-      );
-    } else if (isConnectionSystemTypeMap(data)) {
-      const { identifier } = data;
-      item = [...CONNECTION_TYPE_LOGO_MAP].find(
-        ([k]) => k.toLowerCase() === identifier.toLowerCase(),
-      );
-    }
-    return item
-      ? CONNECTOR_LOGOS_PATH + item[1]
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
-  };
-
-  const getAltValue = (): string => {
-    if (isDatastoreConnection(data)) {
-      return data.name ?? data.key;
-    }
-    if (isConnectionSystemTypeMap(data)) {
-      return data.human_readable;
-    }
-    return data;
-  };
-
-  const getFallbackSrc = (): string => {
-    if (isWebsiteConnection(data)) {
-      return FALLBACK_WEBSITE_LOGO_PATH;
-    }
-    return FALLBACK_CONNECTOR_LOGOS_PATH;
-  };
-
   return (
     <Image
       boxSize="32px"
       objectFit="cover"
-      src={getImageSrc()}
-      fallbackSrc={getFallbackSrc()}
-      alt={getAltValue()}
+      src={getImageSrc(data)}
+      fallbackSrc={getFallbackSrc(data)}
+      alt={getAltValue(data)}
       {...props}
     />
   );

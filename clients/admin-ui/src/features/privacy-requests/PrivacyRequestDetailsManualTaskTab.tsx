@@ -65,9 +65,15 @@ const PrivacyRequestDetailsManualTaskTab = ({
     (task) => task.status === ManualFieldStatus.NEW,
   ).length;
 
+  // Check if there are any manual task connections
+  // or if there are any tasks results. Some users may not have access to the connections,
+  // so we use task results as backup.
   const hasManualTaskConnections = manualTaskConnections.length > 0;
+  const hasTasks = tasks.length > 0;
+  const isManualTaskConfigured = hasManualTaskConnections || hasTasks;
+
   const hasAnyManualFeatures =
-    hasManualTaskConnections || hasLegacyManualIntegrations;
+    isManualTaskConfigured || hasLegacyManualIntegrations;
 
   const handleViewTasksClick = () => {
     router.push({
@@ -92,7 +98,7 @@ const PrivacyRequestDetailsManualTaskTab = ({
   return (
     <Stack spacing={6}>
       {/* New Manual Tasks Section */}
-      {hasManualTaskConnections && (
+      {isManualTaskConfigured && (
         <Box>
           <Typography.Title level={4} style={{ marginBottom: 12 }}>
             Manual tasks

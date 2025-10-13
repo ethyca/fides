@@ -40,12 +40,14 @@ h6 {
   --ant-color-border: var(--fidesui-neutral-200);
   --ant-input-hover-border-color: var(--fidesui-neutral-200);
 }
+
 .ant-btn-compact-item.ant-btn-variant-outlined {
   --ant-button-default-border-color: var(--fidesui-neutral-200);
   --ant-button-default-hover-border-color: var(--fidesui-neutral-200);
   --ant-button-default-hover-bg: var(--fidesui-neutral-200);
   --ant-button-default-bg: var(--fidesui-neutral-50);
 }
+
 .ant-btn-icon {
   // fixes misalignment of Carbon icons in buttons
   line-height: 1;
@@ -70,6 +72,7 @@ h6 {
     &:focus-within:not(.ant-menu-item-selected) {
       background-color: var(--fidesui-neutral-800);
     }
+
     &:hover {
       --ant-menu-dark-item-hover-bg: var(--fidesui-neutral-800);
     }
@@ -96,8 +99,10 @@ h6 {
       width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
     }
   }
+
   &.ant-menu-horizontal .ant-menu-item:first-child {
     padding-left: 0;
+
     &::after {
       inset-inline-start: 0;
     }
@@ -144,6 +149,7 @@ h6 {
       outline: auto;
     }
   }
+
   // By default, Ant transitions from text color to primary color on
   // hover of list title links. Since our text color and primary color
   // are the same, it breaks the hover state. This fixes it.
@@ -156,4 +162,36 @@ h6 {
       color: var(--fidesui-neutral-600);
     }
   }
+}
+
+.ant-select-dropdown {
+  & .ant-select-item-group {
+    font-weight: 600;
+    font-size: var(--ant-select-option-font-size);
+    color: var(--ant-color-text);
+    border-radius: 0;
+
+    &:not(:first-child) {
+      border-top: 1px solid var(--ant-color-border);
+    }
+  }
+}
+
+/**
+ * Using rounded edges for Ant Progress Component with steps
+ */
+.ant-progress-steps-item {
+  border-radius: calc(var(--ant-progress-line-border-radius) / 40);
+}
+
+.ant-tree .ant-tree-node-content-wrapper {
+  white-space: nowrap;
+}
+
+.ant-list .ant-list-item .ant-list-item-action li {
+  padding-left: 0;
+}
+
+.ant-list-item-action-split {
+  display: none;
 }

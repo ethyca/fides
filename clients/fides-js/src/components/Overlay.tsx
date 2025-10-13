@@ -16,6 +16,7 @@ import {
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
 import { FidesEventOrigin } from "../lib/events";
 import { useElementById, useHasMounted } from "../lib/hooks";
+import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
@@ -47,6 +48,12 @@ interface Props {
   renderModalFooter?: (props: RenderModalFooterProps) => VNode | null;
   onVendorPageClick?: () => void;
   isUiBlocking: boolean;
+  headerContent?: {
+    title: string;
+    description: string;
+  };
+  isVendorAssetDisclosureView?: boolean;
+  onModalHide?: () => void;
 }
 
 const Overlay: FunctionComponent<Props> = ({
@@ -61,7 +68,10 @@ const Overlay: FunctionComponent<Props> = ({
   renderModalFooter,
   onVendorPageClick,
   isUiBlocking,
-}) => {
+  headerContent,
+  isVendorAssetDisclosureView,
+  onModalHide,
+}: Props) => {
   const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
@@ -71,6 +81,15 @@ const Overlay: FunctionComponent<Props> = ({
   const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
   const modalLinkRef = useRef<HTMLElement | null>(null);
   const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
+
+  const { i18n } = useI18n();
+  const defaultTitle = i18n.t("exp.title");
+  const defaultDescription = i18n.t("exp.description");
+
+  const effectiveHeaderContent = headerContent ?? {
+    title: defaultTitle,
+    description: defaultDescription,
+  };
 
   useEffect(() => {
     if (disableBanner === null) {
@@ -119,6 +138,9 @@ const Overlay: FunctionComponent<Props> = ({
       id: "fides-modal",
       onClose: () => {
         dispatchCloseEvent({ saved: false });
+        if (onModalHide) {
+          onModalHide();
+        }
       },
     });
 
@@ -159,8 +181,16 @@ const Overlay: FunctionComponent<Props> = ({
     if (modalDialogInstance && !options.fidesEmbed) {
       modalDialogInstance.hide();
       dispatchCloseEvent({ saved: true });
+      if (onModalHide) {
+        onModalHide();
+      }
     }
-  }, [modalDialogInstance, dispatchCloseEvent, options.fidesEmbed]);
+  }, [
+    modalDialogInstance,
+    dispatchCloseEvent,
+    options.fidesEmbed,
+    onModalHide,
+  ]);
 
   useEffect(() => {
     if (options.fidesEmbed && !bannerIsOpen) {
@@ -179,13 +209,15 @@ const Overlay: FunctionComponent<Props> = ({
   }, [disableBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (!!experience && !options.fidesEmbed) {
+    if (!!experience && !options.fidesEmbed && window.Fides) {
       window.Fides.showModal = () => {
         handleOpenModal(FidesEventOrigin.EXTERNAL);
       };
     }
     return () => {
-      window.Fides.showModal = defaultShowModal;
+      if (window.Fides) {
+        window.Fides.showModal = defaultShowModal;
+      }
     };
   }, [experience, handleOpenModal, options.fidesEmbed]);
 
@@ -218,7 +250,7 @@ const Overlay: FunctionComponent<Props> = ({
       if (modalLinkRef.current) {
         modalLinkRef.current.removeEventListener(
           "click",
-          window.Fides.showModal,
+          window.Fides?.showModal,
         );
       }
     };
@@ -253,6 +285,8 @@ const Overlay: FunctionComponent<Props> = ({
               })
             }
             onVendorPageClick={onVendorPageClick}
+            headerContent={effectiveHeaderContent}
+            isVendorAssetDisclosureView={isVendorAssetDisclosureView}
           >
             {renderModalContent()}
           </ConsentContent>
@@ -269,6 +303,8 @@ const Overlay: FunctionComponent<Props> = ({
           attributes={modalDialogAttributes}
           dismissable={experience.experience_config.dismissable}
           onVendorPageClick={onVendorPageClick}
+          headerContent={effectiveHeaderContent}
+          isVendorAssetDisclosureView={isVendorAssetDisclosureView}
           renderModalFooter={() =>
             renderModalFooter
               ? renderModalFooter({

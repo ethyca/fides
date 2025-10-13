@@ -7,7 +7,7 @@ import {
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
-import useSystemsTable from "~/features/system/useSystemsTable";
+import useSystemsTable from "~/features/system/table/useSystemsTable";
 
 const SystemsTable = () => {
   const {

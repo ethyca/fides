@@ -1,6 +1,6 @@
 from enum import Enum
 from inspect import Signature, signature
-from typing import Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 from loguru import logger
 
@@ -11,6 +11,9 @@ from fides.api.common_exceptions import (
 from fides.api.schemas.consentable_item import ConsentableItem, ConsentWebhookResult
 from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
 from fides.api.util.collection_util import Row
+
+if TYPE_CHECKING:
+    from fides.api.schemas.saas.async_polling_configuration import PollingResult
 
 
 # at some point this should likely be formalized more centrally...
@@ -30,6 +33,10 @@ class SaaSRequestType(Enum):
     UPDATE_CONSENT = "update_consent"
     PROCESS_CONSENT_WEBHOOK = "process_consent_webhook"
 
+    # Async polling request types
+    POLLING_STATUS = "polling_status"
+    POLLING_RESULT = "polling_result"
+
 
 RequestOverrideFunction = Callable[
     ...,
@@ -39,6 +46,8 @@ RequestOverrideFunction = Callable[
         List[Row],
         ConsentPropagationStatus,
         int,
+        bool,  # For polling status overrides
+        "PollingResult",  # For polling result overrides - string literal to avoid circular import
         None,
     ],
 ]
@@ -105,6 +114,10 @@ class SaaSRequestOverrideFactory:
                     validate_update_consent_function(override_function)
                 elif request_type == SaaSRequestType.PROCESS_CONSENT_WEBHOOK:
                     validate_process_consent_webhook_function(override_function)
+                elif request_type == SaaSRequestType.POLLING_STATUS:
+                    validate_polling_status_override_function(override_function)
+                elif request_type == SaaSRequestType.POLLING_RESULT:
+                    validate_polling_result_override_function(override_function)
                 else:
                     raise ValueError(
                         f"Invalid SaaSRequestType '{request_type}' provided for SaaS request override function"
@@ -261,6 +274,58 @@ def validate_process_consent_webhook_function(f: Callable) -> None:
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS process consent webhook function must declare at least 4 parameters"
+        )
+
+
+def validate_polling_status_override_function(f: Callable) -> None:
+    """
+    Perform some basic checks on the user-provided SaaS request override function
+    that will be used for polling status checks.
+
+    The validation is not overly strict to allow for some flexibility in
+    the functions that are used for overrides, but we check to ensure that
+    the function meets the framework's basic expectations.
+
+    Specifically, the validation checks that function's return type is `bool`
+    and that it declares at least 4 parameters.
+    """
+    sig: Signature = signature(f)
+    if sig.return_annotation is not bool:
+        raise InvalidSaaSRequestOverrideException(
+            "Polling status override function must return a bool"
+        )
+    if len(sig.parameters) < 4:
+        raise InvalidSaaSRequestOverrideException(
+            "Polling status override function must declare at least 4 parameters"
+        )
+
+
+def validate_polling_result_override_function(f: Callable) -> None:
+    """
+    Perform some basic checks on the user-provided SaaS request override function
+    that will be used for polling result retrieval.
+
+    The validation is not overly strict to allow for some flexibility in
+    the functions that are used for overrides, but we check to ensure that
+    the function meets the framework's basic expectations.
+
+    Specifically, the validation checks that function's return type is `PollingResult`
+    and that it declares at least 4 parameters.
+    """
+    sig: Signature = signature(f)
+
+    # Import PollingResult here to avoid circular imports at module level
+    from fides.api.schemas.saas.async_polling_configuration import PollingResult
+
+    # Check return type annotation - handle both direct class and string literals
+    return_annotation = sig.return_annotation
+    if return_annotation not in (PollingResult, "PollingResult"):
+        raise InvalidSaaSRequestOverrideException(
+            "Polling result override function must return a PollingResult"
+        )
+    if len(sig.parameters) < 4:
+        raise InvalidSaaSRequestOverrideException(
+            "Polling result override function must declare at least 4 parameters"
         )
 
 

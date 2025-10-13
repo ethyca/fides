@@ -26,6 +26,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_EXPERIENCE_READ,
     PRIVACY_NOTICE_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
     PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,
@@ -88,6 +89,7 @@ approver_scopes = [
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_CREATE,  # allows approvers to create new privacy requests
     USER_READ,  # allows approver to view user management table and update their own password
     PRIVACY_REQUEST_MANUAL_STEPS_REVIEW,  # allows approvers to see all manual steps
 ]

@@ -13,6 +13,9 @@ export interface PaginationConfig {
   defaultPageSize?: number;
   pageSizeOptions?: number[];
   showSizeChanger?: boolean;
+  pageQueryKey?: string;
+  sizeQueryKey?: string;
+  disableUrlState?: boolean;
 }
 
 /**

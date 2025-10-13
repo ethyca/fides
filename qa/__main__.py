@@ -15,13 +15,13 @@ Examples:
     python qa teardown integration_with_many_datasets
 """
 
-import sys
 import argparse
-import os
 import importlib.util
+import os
 import subprocess
-from typing import Dict, Type
+import sys
 from pathlib import Path
+from typing import Dict, Type
 
 
 def check_dependencies():
@@ -32,10 +32,18 @@ def check_dependencies():
         print("Installing QA testing dependencies...")
         qa_requirements = Path(__file__).parent / "requirements.txt"
         if qa_requirements.exists():
-            subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(qa_requirements)], check=True)
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-r", str(qa_requirements)],
+                check=True,
+            )
         else:
-            print("WARNING: Requirements file not found, attempting to install basic dependencies")
-            subprocess.run([sys.executable, "-m", "pip", "install", "requests", "loguru"], check=True)
+            print(
+                "WARNING: Requirements file not found, attempting to install basic dependencies"
+            )
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "requests", "loguru"],
+                check=True,
+            )
 
 
 # Add qa directory to path for imports
@@ -50,14 +58,14 @@ def discover_scenarios() -> Dict[str, Type[QATestScenario]]:
     """Automatically discover scenario classes from files in the scenarios directory."""
     scenarios = {}
     qa_dir = os.path.dirname(os.path.abspath(__file__))
-    scenarios_dir = os.path.join(qa_dir, 'scenarios')
+    scenarios_dir = os.path.join(qa_dir, "scenarios")
 
     # Look for Python files in the scenarios directory
     if not os.path.exists(scenarios_dir):
         return scenarios
 
     for filename in os.listdir(scenarios_dir):
-        if not filename.endswith('.py') or filename.startswith('_'):
+        if not filename.endswith(".py") or filename.startswith("_"):
             continue
 
         module_name = filename[:-3]  # Remove .py extension
@@ -73,9 +81,11 @@ def discover_scenarios() -> Dict[str, Type[QATestScenario]]:
                 # Look for classes that inherit from QATestScenario
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if (isinstance(attr, type) and
-                        issubclass(attr, QATestScenario) and
-                        attr != QATestScenario):
+                    if (
+                        isinstance(attr, type)
+                        and issubclass(attr, QATestScenario)
+                        and attr != QATestScenario
+                    ):
                         scenarios[module_name] = attr
                         break  # Take the first scenario class found in the file
 
@@ -95,8 +105,8 @@ def get_scenario_description(scenario_class: Type[QATestScenario]) -> str:
     except Exception:
         # Fallback to class docstring if instantiation fails
         if scenario_class.__doc__:
-            return scenario_class.__doc__.strip().split('\n')[0]
-        return 'No description available'
+            return scenario_class.__doc__.strip().split("\n")[0]
+        return "No description available"
 
 
 def list_scenarios():
@@ -208,10 +218,10 @@ def list_scenarios():
 
 def create_scenario_instance(scenario_class: Type[QATestScenario], **kwargs):
     """Create a scenario instance using the new interface."""
-    base_url = kwargs.get('base_url', 'http://localhost:8080')
+    base_url = kwargs.get("base_url", "http://localhost:8080")
 
     # Remove base_url from kwargs since it's handled separately
-    scenario_kwargs = {k: v for k, v in kwargs.items() if k != 'base_url'}
+    scenario_kwargs = {k: v for k, v in kwargs.items() if k != "base_url"}
 
     return scenario_class(base_url=base_url, **scenario_kwargs)
 
@@ -307,7 +317,6 @@ def main():
         if not teardown_success:
             print("Warning: Teardown had issues, but continuing with setup...")
 
-        print("Running setup...")
         success = scenario.setup()
     else:  # teardown
         success = scenario.teardown()
@@ -315,5 +324,5 @@ def main():
     sys.exit(0 if success else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

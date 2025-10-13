@@ -976,7 +976,7 @@ class TestGetConnectionSecretSchema:
                 "port": {
                     "default": 27017,
                     "title": "Port",
-                    "description": "The network port number on which the server is listening for incoming connections (default: 27017).",
+                    "description": "The network port number on which the server is listening for incoming connections (default: 27017). Port will be ignored if using SRV.",
                     "type": "integer",
                 },
                 "username": {
@@ -991,9 +991,20 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "defaultauthdb": {
-                    "title": "Default Auth DB",
+                    "title": "Default auth DB",
                     "description": "Used to specify the default authentication database.",
                     "type": "string",
+                },
+                "ssl_enabled": {
+                    "description": "Enable SSL/TLS encryption. With SRV: defaults to enabled (can override). Without SRV: defaults to disabled.",
+                    "title": "SSL enabled",
+                    "type": "boolean",
+                },
+                "use_srv": {
+                    "default": False,
+                    "description": "Enable SRV record lookup for service discovery (mongodb+srv://). Required for MongoDB Atlas. Enables SSL by default.",
+                    "title": "Use SRV",
+                    "type": "boolean",
                 },
             },
             "required": ["host", "username", "password", "defaultauthdb"],
@@ -1900,7 +1911,7 @@ class TestInstantiateConnectionFromTemplate:
         assert resp.json()["detail"][0]["type"] == "value_error"
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
+        "fides.service.connection.connection_service.ConnectionService.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url

@@ -194,6 +194,7 @@ const MessagingConfiguration = ({
               >
                 <Select
                   placeholder="Choose a messaging provider..."
+                  aria-label="Select a messaging provider"
                   value={selectedProviderType || undefined}
                   onChange={(value) => setSelectedProviderType(value)}
                   options={providerOptions}

@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import itertools
 import re
 from enum import Enum
+from functools import cached_property
 from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, false, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship, selectinload
 from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.util import hybridproperty
 
 from fides.api.db.base_class import Base, FidesBase
@@ -189,21 +192,149 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         raise Exception("Invalid notice consent mechanism.")
 
-    @property
-    def cookies(self) -> List[Asset]:
-        """Return relevant assets of type 'cookie' (via the data use)"""
-        db = Session.object_session(self)
-        or_queries = [
-            f"array_to_string(data_uses, ',') ILIKE '{data_use}%'"
-            for data_use in self.data_uses
+    @staticmethod
+    def _get_cookie_filter_for_data_uses(data_uses: List[str]) -> ColumnElement:
+        """
+        Returns the SQLAlchemy filter clause to find cookies for the given data uses.
+        This is a helper method to keep the query logic consistent and safe.
+        """
+        if not data_uses:
+            return false()
+
+        # Use array overlap operator (&&) for exact matches - GIN index friendly
+        exact_matches_condition = Asset.data_uses.op("&&")(data_uses)
+
+        # For hierarchical children, we still need to check individual elements with LIKE
+        # They have to match the data_use and the period separator, so we know it's a hierarchical descendant
+        hierarchical_conditions = [
+            text(
+                f"EXISTS(SELECT 1 FROM unnest(data_uses) AS data_use WHERE data_use LIKE :pattern_{i})"
+            ).bindparams(**{f"pattern_{i}": f"{data_use}.%"})
+            for i, data_use in enumerate(data_uses)
         ]
 
-        query = db.query(Asset).filter(
-            Asset.asset_type == "Cookie",
-            or_(*[text(query) for query in or_queries]),
+        return or_(exact_matches_condition, *hierarchical_conditions)
+
+    @classmethod
+    def _query_cookie_assets_for_data_uses(
+        cls,
+        db: Session,
+        data_uses: Set[str],
+        exclude_cookies_from_systems: Optional[Set[str]] = None,
+    ) -> List[Asset]:
+        """
+        Query cookie Assets for the given set of data uses using the shared filter logic.
+        Applies optional exclusion by `System.fides_key` and eagerly loads the `system` relationship.
+        """
+        if not data_uses:
+            return []
+
+        cookie_filter = cls._get_cookie_filter_for_data_uses(list(data_uses))
+        query = (
+            db.query(Asset)
+            .options(selectinload("system"))
+            .filter(
+                Asset.asset_type == "Cookie",
+                cookie_filter,
+            )
         )
+        if exclude_cookies_from_systems:
+            query = query.outerjoin(System).filter(
+                or_(
+                    Asset.system_id.is_(None),
+                    System.fides_key.not_in(exclude_cookies_from_systems),
+                )
+            )
 
         return query.all()
+
+    @staticmethod
+    def _group_cookies_by_data_use(cookies: List[Asset]) -> Dict[str, List[Asset]]:
+        """Build a mapping of data_use -> list of cookie Assets."""
+        cookies_by_data_use: Dict[str, List[Asset]] = {}
+        for cookie in cookies:
+            for data_use in cookie.data_uses or []:
+                cookies_by_data_use.setdefault(data_use, []).append(cookie)
+        return cookies_by_data_use
+
+    @staticmethod
+    def _select_cookies_for_notice_data_uses(
+        notice_data_uses: List[str],
+        cookies_by_data_use: Dict[str, List[Asset]],
+    ) -> List[Asset]:
+        """
+        Return cookies that match the notice data uses either exactly or as hierarchical descendants.
+        Deduplicate by object identity; ordering is not guaranteed.
+        """
+        unique_cookies_by_id: Dict[int, Asset] = {}
+
+        for notice_data_use in notice_data_uses or []:
+            # Exact matches
+            for cookie in cookies_by_data_use.get(notice_data_use, []):
+                unique_cookies_by_id[id(cookie)] = cookie
+
+            # Hierarchical descendants: e.g., "analytics" matches "analytics.reporting"
+            prefix = f"{notice_data_use}."
+            for du_key, cookie_list in cookies_by_data_use.items():
+                if du_key.startswith(prefix):
+                    for cookie in cookie_list:
+                        unique_cookies_by_id[id(cookie)] = cookie
+
+        return list(unique_cookies_by_id.values())
+
+    @cached_property
+    def cookies(self) -> List[Asset]:
+        """
+        Return relevant assets of type 'cookie' (via the data use)
+
+        Cookies are matched to the privacy notice if they have at least one data use
+        that is either an exact match or a hierarchical descendant of a one of the
+        data uses in the privacy notice.
+
+        This is a cached_property, so the database query is only executed
+        once per instance, and the result is cached for subsequent accesses.
+        """
+        db = Session.object_session(self)
+        cookie_filter = self._get_cookie_filter_for_data_uses(self.data_uses)
+
+        return (
+            db.query(Asset)
+            .filter(
+                Asset.asset_type == "Cookie",
+                cookie_filter,
+            )
+            .all()
+        )
+
+    @classmethod
+    def load_cookie_data_for_notices(
+        cls,
+        db: Session,
+        notices: List["PrivacyNotice"],
+        exclude_cookies_from_systems: Optional[Set[str]] = None,
+    ) -> None:
+        """
+        An efficient method to bulk-load cookie data for a list of PrivacyNotice objects.
+        This prevents the "N+1" query problem by pre-populating the `cookies`
+        cached_property for each notice.
+        """
+        if not notices:
+            return
+
+        all_data_uses = set(itertools.chain.from_iterable(n.data_uses for n in notices))
+        all_relevant_cookies = cls._query_cookie_assets_for_data_uses(
+            db, all_data_uses, exclude_cookies_from_systems
+        )
+        cookies_by_data_use = cls._group_cookies_by_data_use(all_relevant_cookies)
+
+        for notice in notices:
+            matching_cookies = cls._select_cookies_for_notice_data_uses(
+                notice.data_uses, cookies_by_data_use
+            )
+
+            # Pre-populate the cache of the 'cookies' cached_property.
+            # This directly sets the attribute that the decorator would otherwise compute.
+            setattr(notice, "cookies", matching_cookies)
 
     @property
     def calculated_systems_applicable(self) -> bool:
@@ -399,6 +530,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         # to prevent the dry update from being added to Session.new
         updated_attributes.pop("translations", [])
         updated_attributes.pop("children", [])
+        # The source PrivacyNotice may have cached/computed attributes (e.g., @cached_property)
+        # stored on the instance dict. These should not be included in historical payloads.
+        # For example, 'cookies' is cached on the PrivacyNotice instance when accessed.
+        updated_attributes.pop("cookies", None)
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
@@ -545,6 +680,10 @@ def create_historical_record_for_notice_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
     history_data.pop("parent_id", None)
+    # The source PrivacyNotice may have cached/computed attributes (e.g., @cached_property)
+    # stored on the instance dict. These should not be included in historical payloads.
+    # For example, 'cookies' is cached on the PrivacyNotice instance when accessed.
+    history_data.pop("cookies", None)
 
     updated_translation_data: dict = create_historical_data_from_record(
         notice_translation

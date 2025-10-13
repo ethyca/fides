@@ -1,12 +1,17 @@
 import {
   AntColumnsType as ColumnsType,
+  AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
+  formatIsoLocation,
+  isoStringToEntry,
 } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import { truncateUrl } from "~/features/common/utils";
 import {
   ConsentBreakdown,
   ConsentStatus,
@@ -15,31 +20,35 @@ import {
 } from "~/types/api";
 
 import { useGetConsentBreakdownQuery } from "../action-center.slice";
-import { ConsentBreakdownColumnKeys } from "../constants";
+import {
+  ConsentBreakdownColumnKeys,
+  DiscoveryErrorStatuses,
+  DiscoveryStatusDescriptions,
+  DiscoveryStatusDisplayNames,
+} from "../constants";
 
 const { Link } = Typography;
 
 interface UseConsentBreakdownTableConfig {
   stagedResource: StagedResourceAPIResponse;
-  status: ConsentStatus;
 }
 
 export const useConsentBreakdownTable = ({
   stagedResource,
-  status,
 }: UseConsentBreakdownTableConfig) => {
   const tableState = useTableState<ConsentBreakdownColumnKeys>({
     pagination: {
       defaultPageSize: 10,
       pageSizeOptions: [10, ...DEFAULT_PAGE_SIZES],
     },
+    disableUrlState: true,
   });
 
   const { pageIndex, pageSize } = tableState;
 
   const { data, isFetching, isError } = useGetConsentBreakdownQuery({
     stagedResourceUrn: stagedResource.urn,
-    status,
+    statuses: DiscoveryErrorStatuses,
     page: pageIndex,
     size: pageSize,
   });
@@ -58,10 +67,17 @@ export const useConsentBreakdownTable = ({
   const antTableConfig = useMemo(
     () => ({
       enableSelection: false,
-      getRowKey: (record: ConsentBreakdown) => record.location,
+      getRowKey: (record: ConsentBreakdown) =>
+        `${record.location}-${record.page}`,
       isLoading: isFetching,
       dataSource: items,
       totalRows: totalRows ?? 0,
+      customTableProps: {
+        scroll: {
+          scrollToFirstRowOnChange: true,
+        },
+        tableLayout: "fixed",
+      },
     }),
     [isFetching, items, totalRows],
   );
@@ -77,19 +93,62 @@ export const useConsentBreakdownTable = ({
         title: "Location",
         dataIndex: ConsentBreakdownColumnKeys.LOCATION,
         key: ConsentBreakdownColumnKeys.LOCATION,
-        render: (location: string) =>
-          PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
-          location,
+        render: (location: string) => {
+          const isoEntry = isoStringToEntry(location);
+          const locationText = isoEntry
+            ? formatIsoLocation({ isoEntry, showFlag: true })
+            : (PRIVACY_NOTICE_REGION_RECORD?.[
+                location as PrivacyNoticeRegion
+              ] ?? location);
+
+          return (
+            <Typography.Text ellipsis={{ tooltip: location }}>
+              {locationText}
+            </Typography.Text>
+          );
+        },
+        width: 180,
       },
       {
         title: "Page",
         dataIndex: ConsentBreakdownColumnKeys.PAGE,
         key: ConsentBreakdownColumnKeys.PAGE,
-        render: (page: string) => (
-          <Link href={page} target="_blank" rel="noopener noreferrer">
-            {page}
-          </Link>
-        ),
+        render: (page: string) => {
+          const truncatedPage = truncateUrl(page, 50);
+          return (
+            <Link
+              href={page}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="primary"
+            >
+              <Typography.Text ellipsis={{ tooltip: page }} unStyled>
+                {truncatedPage}
+              </Typography.Text>
+            </Link>
+          );
+        },
+        minWidth: 100,
+      },
+      {
+        title: "Compliance",
+        dataIndex: ConsentBreakdownColumnKeys.STATUS,
+        key: ConsentBreakdownColumnKeys.STATUS,
+        width: 160,
+        render: (status: ConsentStatus) => {
+          const tagTooltip = DiscoveryStatusDescriptions[status];
+
+          return (
+            <Tooltip title={tagTooltip}>
+              <Tag
+                color="error"
+                data-testid={`status-badge_${status.replace(/_/g, "-")}`}
+              >
+                {DiscoveryStatusDisplayNames[status]}
+              </Tag>
+            </Tooltip>
+          );
+        },
       },
     ],
     [],

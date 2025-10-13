@@ -113,6 +113,7 @@ const TaskAssignedUsersSection = ({
           <Select
             className="!mt-0"
             placeholder="Select a user to assign"
+            aria-label="Select a user to assign"
             value={userToAssign}
             onChange={(val) => setUserToAssign(val)}
             options={availableUserOptions}
@@ -159,6 +160,7 @@ const TaskAssignedUsersSection = ({
                     danger
                     icon={<Icons.TrashCan />}
                     onClick={() => record.email && handleRemove(record.email)}
+                    aria-label="Delete"
                   />
                 </Flex>
               ),

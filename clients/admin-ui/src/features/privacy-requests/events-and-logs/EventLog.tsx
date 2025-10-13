@@ -189,7 +189,8 @@ const EventLog = ({
       backgroundColor={
         detail.status === ExecutionLogStatus.ERROR ||
         (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-        detail.status === ExecutionLogStatus.AWAITING_PROCESSING
+        detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+        detail.status === ExecutionLogStatus.POLLING
           ? palette.FIDESUI_NEUTRAL_50
           : "unset"
       }
@@ -197,7 +198,8 @@ const EventLog = ({
         if (
           detail.status === ExecutionLogStatus.ERROR ||
           (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-          detail.status === ExecutionLogStatus.AWAITING_PROCESSING
+          detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+          detail.status === ExecutionLogStatus.POLLING
         ) {
           onDetailPanel(detail.message, detail.status);
         }

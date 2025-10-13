@@ -161,6 +161,7 @@ export const DatasetReferencePicker = ({
         onChange={handleDatasetChange}
         options={datasetOptions}
         placeholder="Select a dataset"
+        aria-label="Select a dataset"
         disabled={disabled}
         loading={datasetsLoading}
         allowClear
@@ -174,6 +175,7 @@ export const DatasetReferencePicker = ({
         onChange={handleFieldChange}
         treeData={treeData}
         placeholder="Select a field"
+        aria-label="Select a field"
         disabled={disabled || !selectedDataset}
         allowClear
         showSearch

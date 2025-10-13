@@ -179,6 +179,10 @@ class AwaitingAsyncTask(BaseException):
     """Request Task is Awaiting Processing - Awaiting Async Task"""
 
 
+class AwaitingAsyncProcessing(BaseException):
+    """Request Task is actively being processed by external system - Fides is polling"""
+
+
 class UpstreamTasksNotReady(BaseException):
     """Privacy Request Task awaiting upstream tasks"""
 
@@ -402,3 +406,7 @@ class MonitorConfigNotFoundException(BaseException):
 
 class MissingNamespaceSchemaException(BaseException):
     """Attempting to use namespace fides_meta without specifying the schema to validate it."""
+
+
+class ConnectionNotFoundException(BaseException):
+    """ConnectionConfig could not be found"""

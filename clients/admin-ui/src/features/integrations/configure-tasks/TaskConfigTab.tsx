@@ -8,7 +8,7 @@ import {
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import ManualTaskAssignmentSection from "./components/ManualTaskAssignmentSection";
-import ManualTaskConfigTable from "./components/ManualTaskConfigTable";
+import ManualTaskConfigList from "./components/ManualTaskConfigList";
 import CreateExternalUserModal from "./CreateExternalUserModal";
 import { useUserAssignment } from "./hooks/useUserAssignment";
 
@@ -41,7 +41,8 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           intervention.
         </Typography.Paragraph>
 
-        <ManualTaskConfigTable integration={integration} />
+        <ManualTaskConfigList integration={integration} />
+
         <Divider className="my-2" />
 
         <ManualTaskAssignmentSection

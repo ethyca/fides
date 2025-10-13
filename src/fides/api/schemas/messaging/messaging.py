@@ -89,6 +89,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     USER_INVITE = "user_invite"
     EXTERNAL_USER_WELCOME = "external_user_welcome"
+    MANUAL_TASK_DIGEST = "manual_task_digest"
     TEST_MESSAGE = "test_message"
 
 
@@ -101,6 +102,7 @@ CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
+    MessagingActionType.MANUAL_TASK_DIGEST.value,
 )
 
 
@@ -219,6 +221,18 @@ class ExternalUserWelcomeBodyParams(BaseModel):
     org_name: str
 
 
+class ManualTaskDigestBodyParams(BaseModel):
+    """Body params required to send manual task digest emails"""
+
+    vendor_contact_name: str
+    organization_name: str
+    portal_url: str
+    imminent_task_count: int
+    upcoming_task_count: int
+    total_task_count: int
+    company_logo_url: Optional[str] = None
+
+
 class FidesopsMessage(
     BaseModel,
 ):
@@ -256,6 +270,7 @@ class FidesopsMessage(
             MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
             MessagingActionType.USER_INVITE: UserInviteBodyParams,
             MessagingActionType.EXTERNAL_USER_WELCOME: ExternalUserWelcomeBodyParams,
+            MessagingActionType.MANUAL_TASK_DIGEST: ManualTaskDigestBodyParams,
         }
 
         valid_body_params = valid_body_params_for_action_type.get(

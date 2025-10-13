@@ -119,6 +119,11 @@ declare global {
         collectionName: string,
         fieldName: string,
       ) => void;
+
+      /**
+       * Get the modal component from an Ant Design Modal component
+       */
+      getAntModal: () => Chainable;
     }
   }
 }
@@ -165,6 +170,8 @@ Cypress.Commands.add(
       });
     cy.antSelectDropdownVisible();
     cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(200); // Wait for the dropdown to close
   },
 );
 
@@ -188,7 +195,7 @@ Cypress.Commands.add(
     cy.get(subject.selector)
       .find(`.ant-select-selection-item[title="${option}"]`)
       .find(".ant-select-selection-item-remove")
-      .click();
+      .click({ force: true });
   },
 );
 
@@ -332,5 +339,7 @@ Cypress.Commands.add(
       .click();
   },
 );
+
+Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
 
 export {};

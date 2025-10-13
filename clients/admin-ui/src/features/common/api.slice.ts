@@ -52,6 +52,7 @@ export const baseApi = createApi({
     "Manual Tasks",
     "Messaging Templates",
     "Messaging Config",
+    "Monitor Tasks",
     "Dictionary",
     "System Vendors",
     "Latest Scan",
@@ -81,6 +82,9 @@ export const baseApi = createApi({
     "TCF Purpose Override",
     "OpenID Provider",
     "Taxonomy",
+    "Digest Configs",
+    "Monitor",
+    "Monitor Field Results",
   ],
   endpoints: () => ({}),
 });

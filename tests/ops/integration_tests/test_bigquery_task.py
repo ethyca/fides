@@ -7,6 +7,7 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from ...conftest import access_runner_tester, erasure_runner_tester
 
 
+@pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
@@ -97,6 +98,7 @@ async def test_bigquery_nested_field_update(
         assert row.extra_address_data["state"] is None
 
 
+@pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(

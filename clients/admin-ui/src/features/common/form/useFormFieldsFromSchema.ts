@@ -75,6 +75,15 @@ export const useFormFieldsFromSchema = (
               `https://${updatedValues.secrets[key]}`;
           }
         }
+        // sending "" when the backend expects an integer will cause an error
+        if (secretsSchema.properties[key].type === "integer") {
+          if (
+            typeof updatedValues.secrets[key] === "string" &&
+            updatedValues.secrets[key].trim() === ""
+          ) {
+            updatedValues.secrets[key] = undefined;
+          }
+        }
       });
     }
     return updatedValues;

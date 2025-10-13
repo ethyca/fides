@@ -14,7 +14,7 @@ import { useState } from "react";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
-  ConsentStatus,
+  ConsentAlertInfo,
   DiffStatus,
   StagedResourceAPIResponse,
 } from "~/types/api";
@@ -29,29 +29,24 @@ import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
 interface DiscoveredAssetsTableProps {
   monitorId: string;
   systemId: string;
-  onSystemName?: (name: string) => void;
+  consentStatus?: ConsentAlertInfo | null;
 }
 
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
-  onSystemName,
+  consentStatus,
 }: DiscoveredAssetsTableProps) => {
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
-  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
-    stagedResource: StagedResourceAPIResponse;
-    status: ConsentStatus;
-  } | null>(null);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] =
+    useState<StagedResourceAPIResponse | null>(null);
 
-  const handleShowBreakdown = (
-    stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
-  ) => {
-    setConsentBreakdownModalData({ stagedResource, status });
+  const handleShowBreakdown = (stagedResource: StagedResourceAPIResponse) => {
+    setConsentBreakdownModalData(stagedResource);
   };
 
   const handleCloseBreakdown = () => {
@@ -98,8 +93,8 @@ export const DiscoveredAssetsTable = ({
   } = useDiscoveredAssetsTable({
     monitorId,
     systemId,
-    onSystemName,
-    onShowBreakdown: handleShowBreakdown,
+    consentStatus,
+    onShowComplianceIssueDetails: handleShowBreakdown,
   });
 
   const handleClearFilters = () => {
@@ -261,8 +256,7 @@ export const DiscoveredAssetsTable = ({
       {consentBreakdownModalData && (
         <ConsentBreakdownModal
           isOpen={!!consentBreakdownModalData}
-          stagedResource={consentBreakdownModalData.stagedResource}
-          status={consentBreakdownModalData.status}
+          stagedResource={consentBreakdownModalData}
           onCancel={handleCloseBreakdown}
         />
       )}
