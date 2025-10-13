@@ -8,7 +8,7 @@ from sqlalchemy.engine import URL, Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.common_exceptions import ConnectionException
+from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.service.connectors import (
@@ -26,17 +26,17 @@ from fides.api.service.connectors.microsoft_sql_server_connector import (
     MicrosoftSQLServerConnector,
 )
 from fides.api.service.connectors.mysql_connector import MySQLConnector
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestType,
+    register,
+)
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from fides.api.service.saas_request.saas_request_override_factory import (
-    SaaSRequestType,
-    register,
-)
-from fides.api.common_exceptions import ClientUnsuccessfulException
+
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
