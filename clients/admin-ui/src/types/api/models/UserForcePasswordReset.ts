@@ -8,3 +8,4 @@
 export type UserForcePasswordReset = {
   new_password: string;
 };
+

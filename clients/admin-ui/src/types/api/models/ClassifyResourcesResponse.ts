@@ -6,5 +6,6 @@
  * Response model for confirm operations on staged resources
  */
 export type ClassifyResourcesResponse = {
-  task_id?: string | null;
+  task_ids?: Array<string>;
 };
+

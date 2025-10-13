@@ -8,7 +8,7 @@
 export type SystemSummary = {
   id: string;
   fides_key: string;
-  vendor_id?: string | null;
+  vendor_id?: (string | null);
   name: string;
   purposes: number;
   cookies: number;
@@ -16,3 +16,4 @@ export type SystemSummary = {
   legal_bases: number;
   consent_categories: number;
 };
+

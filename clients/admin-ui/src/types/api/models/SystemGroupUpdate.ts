@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CustomTaxonomyColor } from "./CustomTaxonomyColor";
+import type { CustomTaxonomyColor } from './CustomTaxonomyColor';
 
 /**
  * Schema for updating system group entities.
@@ -15,29 +15,30 @@ export type SystemGroupUpdate = {
   /**
    * A detailed description of what this resource is
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    * The parent key for hierarchical relationships
    */
-  parent_key?: string | null;
+  parent_key?: (string | null);
   /**
    * Whether the resource is active
    */
-  active?: boolean | null;
+  active?: (boolean | null);
   /**
    * Optional color label for the group
    */
-  label_color?: CustomTaxonomyColor | null;
+  label_color?: (CustomTaxonomyColor | null);
   /**
    * Optional username of the group's steward
    */
-  data_steward?: string | null;
+  data_steward?: (string | null);
   /**
    * List of DataUse fides_keys associated with the group
    */
-  data_uses?: Array<string> | null;
+  data_uses?: (Array<string> | null);
   /**
    * A list of system fides_keys that are part of this group
    */
-  systems?: Array<string> | null;
+  systems?: (Array<string> | null);
 };
+

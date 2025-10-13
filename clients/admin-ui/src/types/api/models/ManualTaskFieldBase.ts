@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualTaskFieldMetadata } from "./ManualTaskFieldMetadata";
-import type { ManualTaskFieldType } from "./ManualTaskFieldType";
+import type { ManualTaskFieldMetadata } from './ManualTaskFieldMetadata';
+import type { ManualTaskFieldType } from './ManualTaskFieldType';
 
 /**
  * Base schema for all field definitions.
@@ -22,3 +22,4 @@ export type ManualTaskFieldBase = {
    */
   field_metadata: ManualTaskFieldMetadata;
 };
+

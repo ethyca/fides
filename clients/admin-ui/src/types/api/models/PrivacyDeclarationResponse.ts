@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { LegalBasisForProcessingEnum } from "./LegalBasisForProcessingEnum";
-import type { SpecialCategoryLegalBasisEnum } from "./SpecialCategoryLegalBasisEnum";
+import type { LegalBasisForProcessingEnum } from './LegalBasisForProcessingEnum';
+import type { SpecialCategoryLegalBasisEnum } from './SpecialCategoryLegalBasisEnum';
 
 /**
  * Extension of base pydantic model to include DB `id` field in the response
@@ -12,7 +12,7 @@ export type PrivacyDeclarationResponse = {
   /**
    * The name of the privacy declaration on the system.
    */
-  name?: string | null;
+  name?: (string | null);
   /**
    * An array of data categories describing a system in a privacy declaration.
    */
@@ -28,15 +28,15 @@ export type PrivacyDeclarationResponse = {
   /**
    * Referenced Dataset fides keys used by the system.
    */
-  dataset_references?: Array<string> | null;
+  dataset_references?: (Array<string> | null);
   /**
    * The resources to which data is sent. Any `fides_key`s included in this list reference `DataFlow` entries in the `egress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
    */
-  egress?: Array<string> | null;
+  egress?: (Array<string> | null);
   /**
    * The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
    */
-  ingress?: Array<string> | null;
+  ingress?: (Array<string> | null);
   /**
    * The features of processing personal data.
    */
@@ -48,15 +48,15 @@ export type PrivacyDeclarationResponse = {
   /**
    * The legal basis under which personal data is processed for this purpose.
    */
-  legal_basis_for_processing?: LegalBasisForProcessingEnum | null;
+  legal_basis_for_processing?: (LegalBasisForProcessingEnum | null);
   /**
    * Where the legitimate interest impact assessment is stored
    */
-  impact_assessment_location?: string | null;
+  impact_assessment_location?: (string | null);
   /**
    * An optional string to describe the time period for which data is retained for this purpose.
    */
-  retention_period?: string | null;
+  retention_period?: (string | null);
   /**
    * This system processes special category data
    */
@@ -64,7 +64,7 @@ export type PrivacyDeclarationResponse = {
   /**
    * The legal basis under which the special category data is processed.
    */
-  special_category_legal_basis?: SpecialCategoryLegalBasisEnum | null;
+  special_category_legal_basis?: (SpecialCategoryLegalBasisEnum | null);
   /**
    * This system shares data with third parties for this purpose.
    */
@@ -72,7 +72,7 @@ export type PrivacyDeclarationResponse = {
   /**
    * The types of third parties the data is shared with.
    */
-  third_parties?: string | null;
+  third_parties?: (string | null);
   /**
    * The categories of personal data that this system shares with third parties.
    */
@@ -82,3 +82,4 @@ export type PrivacyDeclarationResponse = {
    */
   id: string;
 };
+

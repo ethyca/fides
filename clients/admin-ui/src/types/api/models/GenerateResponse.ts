@@ -8,3 +8,4 @@
 export type GenerateResponse = {
   generate_results?: null;
 };
+

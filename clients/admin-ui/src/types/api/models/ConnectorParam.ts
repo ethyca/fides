@@ -7,10 +7,11 @@
  */
 export type ConnectorParam = {
   name: string;
-  label?: string | null;
-  options?: Array<string> | null;
-  default_value?: string | Array<string> | number | Array<number> | null;
-  multiselect?: boolean | null;
-  description?: string | null;
-  sensitive?: boolean | null;
+  label?: (string | null);
+  options?: (Array<string> | null);
+  default_value?: (string | Array<string> | number | Array<number> | null);
+  multiselect?: (boolean | null);
+  description?: (string | null);
+  sensitive?: (boolean | null);
 };
+

@@ -12,3 +12,4 @@ export type PolicyUnavailableMessages = {
   action_button_text: string;
   action_link: string;
 };
+

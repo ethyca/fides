@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConfidenceScoreRange } from "./ConfidenceScoreRange";
+import type { ConfidenceScoreRange } from './ConfidenceScoreRange';
 
 /**
  * Pydantic Schema used to represent a classification with a confidence score
@@ -10,8 +10,10 @@ import type { ConfidenceScoreRange } from "./ConfidenceScoreRange";
 export type ClassificationWithConfidence = {
   label: string;
   score: number;
+  rationale?: (string | null);
   /**
    * The confidence score according to the classification score and the confidence score threshold
    */
   confidence_score: ConfidenceScoreRange;
 };
+

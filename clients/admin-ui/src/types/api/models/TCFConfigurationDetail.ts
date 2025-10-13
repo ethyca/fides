@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { TCFRestrictionType } from "./TCFRestrictionType";
+import type { TCFRestrictionType } from './TCFRestrictionType';
 
 /**
  * Schema for TCF Configuration detail responses
@@ -21,3 +21,4 @@ export type TCFConfigurationDetail = {
    */
   restriction_types_per_purpose?: Record<string, Array<TCFRestrictionType>>;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MaskingStrategies } from "./MaskingStrategies";
+import type { MaskingStrategies } from './MaskingStrategies';
 
 /**
  * Overrides collection-level masking strategies.
@@ -10,3 +10,4 @@ import type { MaskingStrategies } from "./MaskingStrategies";
 export type MaskingStrategyOverride = {
   strategy: MaskingStrategies;
 };
+

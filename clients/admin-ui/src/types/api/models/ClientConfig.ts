@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Strategy } from "./Strategy";
+import type { Strategy } from './Strategy';
 
 /**
  * Definition for an authenticated base HTTP client
@@ -10,5 +10,6 @@ import type { Strategy } from "./Strategy";
 export type ClientConfig = {
   protocol: string;
   host: string;
-  authentication?: Strategy | null;
+  authentication?: (Strategy | null);
 };
+

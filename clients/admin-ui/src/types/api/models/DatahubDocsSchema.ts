@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PeriodicIntegrationFrequency } from "./PeriodicIntegrationFrequency";
+import type { PeriodicIntegrationFrequency } from './PeriodicIntegrationFrequency';
 
 /**
  * Datahub Schema for API docs.
@@ -25,3 +25,4 @@ export type DatahubDocsSchema = {
    */
   glossary_node: string;
 };
+

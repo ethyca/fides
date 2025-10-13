@@ -5,3 +5,4 @@
 export type FidesCloudStatus = {
   enabled?: boolean;
 };
+

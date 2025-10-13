@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds } from "./fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds";
-import type { GoogleCloudSQLIPType } from "./GoogleCloudSQLIPType";
+import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds } from './fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds';
+import type { GoogleCloudSQLIPType } from './GoogleCloudSQLIPType';
 
 /**
  * Google Cloud SQL MySQL Secrets Schema for API Docs
@@ -25,5 +25,6 @@ export type GoogleCloudSQLMySQLDocsSchema = {
   /**
    * Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview
    */
-  ip_type?: GoogleCloudSQLIPType | null;
+  ip_type?: (GoogleCloudSQLIPType | null);
 };
+

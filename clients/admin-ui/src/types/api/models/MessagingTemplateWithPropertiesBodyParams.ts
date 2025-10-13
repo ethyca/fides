@@ -4,6 +4,7 @@
 
 export type MessagingTemplateWithPropertiesBodyParams = {
   content: any;
-  properties?: Array<string> | null;
+  properties?: (Array<string> | null);
   is_enabled: boolean;
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ResourceFilter } from "./ResourceFilter";
+import type { ResourceFilter } from './ResourceFilter';
 
 /**
  * The OrganizationMetadata resource model.
@@ -13,5 +13,6 @@ export type OrganizationMetadata = {
   /**
    * A list of filters that can be used when generating or scanning systems.
    */
-  resource_filters?: Array<ResourceFilter> | null;
+  resource_filters?: (Array<ResourceFilter> | null);
 };
+

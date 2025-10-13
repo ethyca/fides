@@ -8,5 +8,6 @@
  */
 export type DatasetTraversalDetails = {
   is_traversable: boolean;
-  msg: string | null;
+  msg: (string | null);
 };
+

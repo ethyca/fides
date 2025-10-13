@@ -13,13 +13,14 @@ export type AssignedUserSummary = {
   /**
    * Email Address
    */
-  email_address?: string | null;
+  email_address?: (string | null);
   /**
    * First name
    */
-  first_name?: string | null;
+  first_name?: (string | null);
   /**
    * Last name
    */
-  last_name?: string | null;
+  last_name?: (string | null);
 };
+

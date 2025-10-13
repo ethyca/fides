@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ColumnMapItem } from "./ColumnMapItem";
+import type { ColumnMapItem } from './ColumnMapItem';
 
 /**
  * The configuration for a custom report.
@@ -17,3 +17,4 @@ export type CustomReportConfig = {
    */
   column_map?: Record<string, ColumnMapItem>;
 };
+

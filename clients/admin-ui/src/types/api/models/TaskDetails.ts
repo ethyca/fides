@@ -7,5 +7,6 @@ export type TaskDetails = {
   task_name: string;
   args: Array<any>;
   keyword_args?: null;
-  started_at?: string | null;
+  started_at?: (string | null);
 };
+

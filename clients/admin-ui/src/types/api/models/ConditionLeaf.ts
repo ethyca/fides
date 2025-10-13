@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Operator } from "./Operator";
+import type { Operator } from './Operator';
 
 export type ConditionLeaf = {
   /**
@@ -16,5 +16,6 @@ export type ConditionLeaf = {
   /**
    * Expected value for comparison
    */
-  value?: string | number | boolean | null;
+  value?: (string | number | boolean | null);
 };
+

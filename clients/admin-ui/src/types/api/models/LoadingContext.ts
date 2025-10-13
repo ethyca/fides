@@ -6,8 +6,8 @@
  * Enum for the loading context of an asset
  */
 export enum LoadingContext {
-  DEFAULT = "default",
-  GRANTED = "granted",
-  DENIED = "denied",
-  CMP_ERROR = "cmp_error",
+  DEFAULT = 'default',
+  GRANTED = 'granted',
+  DENIED = 'denied',
+  CMP_ERROR = 'cmp_error',
 }

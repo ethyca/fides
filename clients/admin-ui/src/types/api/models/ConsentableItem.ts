@@ -9,7 +9,8 @@ export type ConsentableItem = {
   external_id: string;
   type: string;
   name: string;
-  notice_id?: string | null;
+  notice_id?: (string | null);
   children?: Array<ConsentableItem>;
-  unmapped?: boolean | null;
+  unmapped?: (boolean | null);
 };
+

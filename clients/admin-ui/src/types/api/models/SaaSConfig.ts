@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClientConfig } from "./ClientConfig";
-import type { ConnectorParam } from "./ConnectorParam";
-import type { ConsentRequestMap } from "./ConsentRequestMap";
-import type { Endpoint } from "./Endpoint";
-import type { ExternalDatasetReference } from "./ExternalDatasetReference";
-import type { RateLimitConfig } from "./RateLimitConfig";
-import type { SaaSDisplayInfo } from "./SaaSDisplayInfo";
-import type { SaaSRequest } from "./SaaSRequest";
+import type { ClientConfig } from './ClientConfig';
+import type { ConnectorParam } from './ConnectorParam';
+import type { ConsentRequestMap } from './ConsentRequestMap';
+import type { Endpoint } from './Endpoint';
+import type { ExternalDatasetReference } from './ExternalDatasetReference';
+import type { RateLimitConfig } from './RateLimitConfig';
+import type { SaaSDisplayInfo } from './SaaSDisplayInfo';
+import type { SaaSRequest } from './SaaSRequest';
 
 /**
  * Used to store endpoint and param configurations for a SaaS connector.
@@ -28,13 +28,14 @@ export type SaaSConfig = {
   version: string;
   replaceable?: boolean;
   connector_params: Array<ConnectorParam>;
-  external_references?: Array<ExternalDatasetReference> | null;
+  external_references?: (Array<ExternalDatasetReference> | null);
   client_config: ClientConfig;
   endpoints: Array<Endpoint>;
   test_request: SaaSRequest;
-  data_protection_request?: SaaSRequest | null;
-  rate_limit_config?: RateLimitConfig | null;
-  consent_requests?: ConsentRequestMap | null;
-  user_guide?: string | null;
-  display_info?: SaaSDisplayInfo | null;
+  data_protection_request?: (SaaSRequest | null);
+  rate_limit_config?: (RateLimitConfig | null);
+  consent_requests?: (ConsentRequestMap | null);
+  user_guide?: (string | null);
+  display_info?: (SaaSDisplayInfo | null);
 };
+

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Classification } from "./Classification";
+import type { ClassificationWithConfidence } from "./ClassificationWithConfidence";
 import type { DiffStatus } from "./DiffStatus";
 
 /**
@@ -14,7 +14,7 @@ export type DatastoreStagedResourceAPIResponse = {
   diff_status?: DiffStatus | null;
   description?: string | null;
   updated_at?: string | null;
-  classifications?: Array<Classification>;
+  classifications?: Array<ClassificationWithConfidence>;
   /**
    * User assigned data categories overriding auto assigned classifications
    */

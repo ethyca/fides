@@ -17,7 +17,7 @@
  * - Privacy requests for certain geographic regions
  */
 export enum DigestConditionType {
-  RECEIVER = "receiver",
-  CONTENT = "content",
-  PRIORITY = "priority",
+  RECEIVER = 'receiver',
+  CONTENT = 'content',
+  PRIORITY = 'priority',
 }

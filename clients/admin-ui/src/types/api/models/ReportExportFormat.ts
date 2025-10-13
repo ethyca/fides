@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export enum ReportExportFormat {
-  XLSX = "xlsx",
-  CSV = "csv",
+  XLSX = 'xlsx',
+  CSV = 'csv',
 }

@@ -12,3 +12,4 @@ export type SystemPurposeSummary = {
   features: Array<string>;
   data_categories: Array<string>;
 };
+

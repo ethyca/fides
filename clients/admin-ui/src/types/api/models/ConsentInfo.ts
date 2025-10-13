@@ -11,7 +11,7 @@ export type ConsentInfo = {
    */
   default?: Record<string, Array<string>>;
   /**
-   * Pages where the asset was found without consent, indexed by location
+   * Pages where the asset was found with denied consent, indexed by location
    */
   denied?: Record<string, Array<string>>;
   /**
@@ -23,3 +23,4 @@ export type ConsentInfo = {
    */
   cmp_error?: Record<string, Array<string>>;
 };
+

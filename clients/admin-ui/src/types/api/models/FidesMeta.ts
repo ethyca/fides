@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { FidesDatasetReference } from "./FidesDatasetReference";
-import type { FieldMaskingStrategyOverride } from "./FieldMaskingStrategyOverride";
+import type { FidesDatasetReference } from './FidesDatasetReference';
+import type { FieldMaskingStrategyOverride } from './FieldMaskingStrategyOverride';
 
 /**
  * Supplementary metadata used by the Fides application for additional features.
@@ -12,41 +12,42 @@ export type FidesMeta = {
   /**
    * Fields that current field references or is referenced by. Used for drawing the edges of a DSR graph.
    */
-  references?: Array<FidesDatasetReference> | null;
+  references?: (Array<FidesDatasetReference> | null);
   /**
    * The type of the identity data that should be used to query this collection for a DSR.
    */
-  identity?: string | null;
+  identity?: (string | null);
   /**
    * Whether the current field can be considered a primary key of the current collection
    */
-  primary_key?: boolean | null;
+  primary_key?: (boolean | null);
   /**
    * Optionally specify the data type. Fides will attempt to cast values to this type when querying.
    */
-  data_type?: string | null;
+  data_type?: (string | null);
   /**
    * Optionally specify the allowable field length. Fides will not generate values that exceed this size.
    */
-  length?: number | null;
+  length?: (number | null);
   /**
    * Optionally specify to query for the entire array if the array is an entrypoint into the node. Default is False.
    */
-  return_all_elements?: boolean | null;
+  return_all_elements?: (boolean | null);
   /**
    * Optionally specify if a field is read-only, meaning it can't be updated or deleted.
    */
-  read_only?: boolean | null;
+  read_only?: (boolean | null);
   /**
    * Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR.
    */
-  custom_request_field?: string | null;
+  custom_request_field?: (string | null);
   /**
    * Optionally specify a masking strategy override for this field.
    */
-  masking_strategy_override?: FieldMaskingStrategyOverride | null;
+  masking_strategy_override?: (FieldMaskingStrategyOverride | null);
   /**
-   * Optionally specify that this entity's name should be redacted in DSR reports. When set to "name", the entity will be redacted using the indexed format (e.g., "dataset_1", "collection_1", "field_1").
+   * Specify 'name' to indicate the field name should be redacted.
    */
-  redact?: "name" | null;
+  redact?: ('name' | null);
 };
+

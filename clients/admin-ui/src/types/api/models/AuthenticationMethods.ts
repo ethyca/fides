@@ -9,3 +9,4 @@ export type AuthenticationMethods = {
   username_password: boolean;
   sso: boolean;
 };
+

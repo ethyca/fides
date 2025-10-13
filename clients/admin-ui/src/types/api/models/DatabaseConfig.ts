@@ -8,3 +8,4 @@
 export type DatabaseConfig = {
   connection_string: string;
 };
+

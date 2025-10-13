@@ -9,5 +9,6 @@ export type PromoteResourcesResponse = {
   /**
    * The task ID of the promote operation
    */
-  task_id?: string | null;
+  task_id?: (string | null);
 };
+

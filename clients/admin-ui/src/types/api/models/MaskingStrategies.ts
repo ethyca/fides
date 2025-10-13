@@ -6,5 +6,5 @@
  * Possible options for masking strategy overrides
  */
 export enum MaskingStrategies {
-  DELETE = "delete",
+  DELETE = 'delete',
 }

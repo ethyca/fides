@@ -2,27 +2,23 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConditionGroup } from "./ConditionGroup";
-import type { ConditionLeaf } from "./ConditionLeaf";
-import type { DigestType } from "./DigestType";
-import type { MessagingMethod } from "./MessagingMethod";
+import type { ConditionGroup } from './ConditionGroup';
+import type { ConditionLeaf } from './ConditionLeaf';
+import type { DigestType } from './DigestType';
+import type { MessagingMethod } from './MessagingMethod';
 
 /**
  * Response schema for digest configurations.
  */
 export type DigestConfigResponse = {
   /**
-   * Digest configuration ID
-   */
-  id: string;
-  /**
-   * Digest configuration name
+   * Human-readable name for the digest configuration
    */
   name: string;
   /**
-   * Digest configuration description
+   * Optional description of the digest configuration
    */
-  description: string | null;
+  description?: (string | null);
   /**
    * Digest type
    */
@@ -34,7 +30,7 @@ export type DigestConfigResponse = {
   /**
    * Type of messaging service (email, sms, etc.)
    */
-  messaging_service_type: MessagingMethod;
+  messaging_service_type?: MessagingMethod;
   /**
    * Cron expression for digest scheduling (default: weekly on Monday at 9 AM)
    */
@@ -46,11 +42,15 @@ export type DigestConfigResponse = {
   /**
    * Additional configuration metadata (service-specific settings)
    */
-  config_metadata: null;
+  config_metadata?: null;
+  /**
+   * Digest configuration ID
+   */
+  id: string;
   /**
    * Digest conditions
    */
-  conditions: Record<string, ConditionLeaf | ConditionGroup>;
+  conditions: Record<string, (ConditionLeaf | ConditionGroup)>;
   /**
    * Creation timestamp
    */
@@ -62,9 +62,10 @@ export type DigestConfigResponse = {
   /**
    * Last sent timestamp
    */
-  last_sent_at: string | null;
+  last_sent_at: (string | null);
   /**
    * Next scheduled timestamp
    */
-  next_scheduled_at: string | null;
+  next_scheduled_at: (string | null);
 };
+

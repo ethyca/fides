@@ -11,6 +11,7 @@
  */
 export type ManualAction = {
   locators: any;
-  get: Array<string> | null;
+  get: (Array<string> | null);
   update: null;
 };
+

@@ -19,3 +19,4 @@ export type ViolationAttributes = {
    */
   data_uses: Array<string>;
 };
+

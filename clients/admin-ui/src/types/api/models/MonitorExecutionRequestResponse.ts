@@ -7,5 +7,6 @@
  */
 export type MonitorExecutionRequestResponse = {
   monitor_execution_id: string;
-  task_id?: string | null;
+  task_id?: (string | null);
 };
+

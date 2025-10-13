@@ -8,8 +8,9 @@
  */
 export type ParamValue = {
   name: string;
-  identity?: string | null;
+  identity?: (string | null);
   references?: null;
-  connector_param?: string | null;
-  unpack?: boolean | null;
+  connector_param?: (string | null);
+  unpack?: (boolean | null);
 };
+

@@ -9,6 +9,6 @@
  * - reply comments are public and may cause an email or other communciation to be sent
  */
 export enum CommentType {
-  NOTE = "note",
-  REPLY = "reply",
+  NOTE = 'note',
+  REPLY = 'reply',
 }

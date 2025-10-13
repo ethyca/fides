@@ -13,7 +13,7 @@ export type AttachmentResponse = {
   /**
    * The user ID
    */
-  user_id: string | null;
+  user_id: (string | null);
   /**
    * The user name
    */
@@ -21,11 +21,11 @@ export type AttachmentResponse = {
   /**
    * The user first name
    */
-  user_first_name: string | null;
+  user_first_name: (string | null);
   /**
    * The user last name
    */
-  user_last_name: string | null;
+  user_last_name: (string | null);
   /**
    * The attachment name
    */
@@ -37,13 +37,14 @@ export type AttachmentResponse = {
   /**
    * The size of the attachment
    */
-  retrieved_attachment_size: number | null;
+  retrieved_attachment_size: (number | null);
   /**
    * The URL to retrieve the attachment
    */
-  retrieved_attachment_url: string | null;
+  retrieved_attachment_url: (string | null);
   /**
    * The creation date
    */
   created_at: string;
 };
+

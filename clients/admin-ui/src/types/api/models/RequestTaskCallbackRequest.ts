@@ -13,5 +13,6 @@ export type RequestTaskCallbackRequest = {
   /**
    * Number of records masked, as an integer
    */
-  rows_masked?: number | null;
+  rows_masked?: (number | null);
 };
+

@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassificationStatus } from "./ClassificationStatus";
-import type { GenerateTypes } from "./GenerateTypes";
+import type { ClassificationStatus } from './ClassificationStatus';
+import type { GenerateTypes } from './GenerateTypes';
 
 export type ClassifyInstanceResponseValues = {
   status: ClassificationStatus;
@@ -17,3 +17,4 @@ export type ClassifyInstanceResponseValues = {
   updated_at: string;
   has_labels?: boolean;
 };
+

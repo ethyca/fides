@@ -7,6 +7,7 @@ import type { ExperienceTranslationCreate } from "./ExperienceTranslationCreate"
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * Schema for creating Experience Configs via the API
@@ -22,8 +23,15 @@ export type ExperienceConfigCreate = {
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
+  allow_vendor_asset_disclosure?: boolean | null;
+  asset_disclosure_include_types?: Array<string> | null;
   regions?: Array<PrivacyNoticeRegion>;
+  tcf_configuration_id?: string | null;
   component: ComponentType;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
   privacy_notice_ids?: Array<string>;
   translations?: Array<ExperienceTranslationCreate>;
   properties?: Array<MinimalProperty>;

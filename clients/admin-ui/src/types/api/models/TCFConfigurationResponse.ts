@@ -15,3 +15,4 @@ export type TCFConfigurationResponse = {
    */
   name: string;
 };
+

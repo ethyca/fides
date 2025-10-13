@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualFieldRequestType } from "./ManualFieldRequestType";
-import type { ManualTaskFieldType } from "./ManualTaskFieldType";
+import type { ManualFieldRequestType } from './ManualFieldRequestType';
+import type { ManualTaskFieldType } from './ManualTaskFieldType';
 
 /**
  * Simplified schema for creating a manual field.
@@ -12,7 +12,7 @@ export type ManualFieldCreate = {
   /**
    * Unique key for the field
    */
-  key?: string | null;
+  key?: (string | null);
   /**
    * Display label for the field
    */
@@ -30,3 +30,4 @@ export type ManualFieldCreate = {
    */
   request_type: ManualFieldRequestType;
 };
+

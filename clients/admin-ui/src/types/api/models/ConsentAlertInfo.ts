@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AlertLevel } from "./AlertLevel";
+import type { AlertLevel } from './AlertLevel';
 
 /**
  * Used to summarize consent status information for a group of staged resources.
@@ -17,3 +17,4 @@ export type ConsentAlertInfo = {
    */
   status: AlertLevel;
 };
+

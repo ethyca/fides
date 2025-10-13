@@ -4,6 +4,7 @@
 
 export type ExternalDatasetReference = {
   name: string;
-  label?: string | null;
-  description?: string | null;
+  label?: (string | null);
+  description?: (string | null);
 };
+

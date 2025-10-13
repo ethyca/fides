@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CustomTaxonomyColor } from "./CustomTaxonomyColor";
+import type { CustomTaxonomyColor } from './CustomTaxonomyColor';
 
 /**
  * Schema for creating system group entities.
@@ -11,7 +11,7 @@ export type SystemGroupCreate = {
   /**
    * A unique key used to identify this resource
    */
-  fides_key?: string | null;
+  fides_key?: (string | null);
   /**
    * Human-readable name for this resource
    */
@@ -19,23 +19,23 @@ export type SystemGroupCreate = {
   /**
    * A detailed description of what this resource is
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    * The parent key for hierarchical relationships
    */
-  parent_key?: string | null;
+  parent_key?: (string | null);
   /**
    * Whether the resource is active
    */
-  active?: boolean | null;
+  active?: (boolean | null);
   /**
    * Optional color label for the group
    */
-  label_color?: CustomTaxonomyColor | null;
+  label_color?: (CustomTaxonomyColor | null);
   /**
    * Optional username of the group's steward
    */
-  data_steward?: string | null;
+  data_steward?: (string | null);
   /**
    * List of DataUse fides_keys associated with the group
    */
@@ -45,3 +45,4 @@ export type SystemGroupCreate = {
    */
   systems?: Array<string>;
 };
+

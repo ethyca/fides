@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from "./ConsentMechanism";
-import type { EnforcementLevel } from "./EnforcementLevel";
-import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { ConsentMechanism } from './ConsentMechanism';
+import type { EnforcementLevel } from './EnforcementLevel';
+import type { NoticeTranslationResponse } from './NoticeTranslationResponse';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Another limited Privacy Notice Schema for the Detail view in the Admin UI
@@ -15,7 +15,7 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  * "configured_regions" is a property calculated by observing which Experience Configs have linked this Notice
  */
 export type PrivacyNoticeResponseWithRegions = {
-  default_preference?: UserConsentPreference | null;
+  default_preference?: (UserConsentPreference | null);
   id: string;
   name: string;
   disabled: boolean;
@@ -33,3 +33,4 @@ export type PrivacyNoticeResponseWithRegions = {
   translations?: Array<NoticeTranslationResponse>;
   children?: Array<PrivacyNoticeResponseWithRegions>;
 };
+

@@ -11,7 +11,7 @@ export type MongoDBDocsSchema = {
    */
   host: string;
   /**
-   * The network port number on which the server is listening for incoming connections (default: 27017).
+   * The network port number on which the server is listening for incoming connections (default: 27017). Port will be ignored if using SRV.
    */
   port?: number;
   /**
@@ -29,9 +29,10 @@ export type MongoDBDocsSchema = {
   /**
    * Enable SRV record lookup for service discovery (mongodb+srv://). Required for MongoDB Atlas. Enables SSL by default.
    */
-  use_srv?: boolean;
+  use_srv?: (boolean | null);
   /**
    * Enable SSL/TLS encryption. With SRV: defaults to enabled (can override). Without SRV: defaults to disabled.
    */
-  ssl_enabled?: boolean;
+  ssl_enabled?: (boolean | null);
 };
+

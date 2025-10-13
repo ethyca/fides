@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DigestType } from "./DigestType";
-import type { MessagingMethod } from "./MessagingMethod";
+import type { DigestType } from './DigestType';
+import type { MessagingMethod } from './MessagingMethod';
 
 /**
  * Request schema for creating or updating digest configurations.
@@ -16,7 +16,7 @@ export type DigestConfigRequest = {
   /**
    * Optional description of the digest configuration
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    * Digest type
    */
@@ -28,7 +28,7 @@ export type DigestConfigRequest = {
   /**
    * Type of messaging service (email, sms, etc.)
    */
-  messaging_service_type?: MessagingMethod | null;
+  messaging_service_type?: MessagingMethod;
   /**
    * Cron expression for digest scheduling (default: weekly on Monday at 9 AM)
    */
@@ -42,3 +42,4 @@ export type DigestConfigRequest = {
    */
   config_metadata?: null;
 };
+

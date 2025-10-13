@@ -7,14 +7,12 @@
  */
 export type AssetCreate = {
   data_uses?: Array<string>;
-  description?: string | null;
-  /**
-   * Human-readable duration for which this asset persists (e.g., cookie lifetime)
-   */
-  duration?: string | null;
+  description?: (string | null);
+  duration?: (string | null);
   name: string;
   asset_type: string;
-  domain?: string | null;
-  base_url?: string | null;
+  domain?: (string | null);
+  base_url?: (string | null);
   locations?: Array<string>;
 };
+

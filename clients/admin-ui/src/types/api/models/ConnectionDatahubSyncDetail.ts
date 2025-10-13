@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionDatahubSyncDetailStatus } from "./ConnectionDatahubSyncDetailStatus";
+import type { ConnectionDatahubSyncDetailStatus } from './ConnectionDatahubSyncDetailStatus';
 
 /**
  * Detail of a Datahub sync.
@@ -12,3 +12,4 @@ export type ConnectionDatahubSyncDetail = {
   status: ConnectionDatahubSyncDetailStatus;
   message: string;
 };
+

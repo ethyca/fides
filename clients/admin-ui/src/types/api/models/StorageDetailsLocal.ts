@@ -8,3 +8,4 @@
 export type StorageDetailsLocal = {
   naming?: string;
 };
+

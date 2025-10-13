@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from "./Identity";
-import type { ServingComponent } from "./ServingComponent";
+import type { Identity } from './Identity';
+import type { ServingComponent } from './ServingComponent';
 
 /**
  * Request body to use when saving that consent was served
@@ -20,12 +20,13 @@ export type RecordConsentServedRequest = {
   tcf_system_legitimate_interests?: Array<string>;
   privacy_notice_history_ids?: Array<string>;
   browser_identity: Identity;
-  code?: string | null;
-  privacy_experience_id?: string | null;
-  privacy_experience_config_history_id?: string | null;
-  user_geography?: string | null;
-  acknowledge_mode?: boolean | null;
-  served_notice_history_id?: string | null;
+  code?: (string | null);
+  privacy_experience_id?: (string | null);
+  privacy_experience_config_history_id?: (string | null);
+  user_geography?: (string | null);
+  acknowledge_mode?: (boolean | null);
+  served_notice_history_id?: (string | null);
   serving_component: ServingComponent;
-  property_id?: string | null;
+  property_id?: (string | null);
 };
+

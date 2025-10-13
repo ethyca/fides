@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ContactDetails } from "./ContactDetails";
-import type { OrganizationMetadata } from "./OrganizationMetadata";
+import type { ContactDetails } from './ContactDetails';
+import type { OrganizationMetadata } from './OrganizationMetadata';
 
 /**
  * The Organization resource model.
@@ -19,15 +19,15 @@ export type Organization = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string> | null;
+  tags?: (Array<string> | null);
   /**
    * Human-Readable name for this resource.
    */
-  name?: string | null;
+  name?: (string | null);
   /**
    * A detailed description of what this resource is.
    */
-  description?: string | null;
+  description?: (string | null);
   /**
    * An inherited field from the FidesModel that is unused with an Organization.
    */
@@ -43,7 +43,7 @@ export type Organization = {
    * potentially under a system/dataset.
    *
    */
-  controller?: ContactDetails | null;
+  controller?: (ContactDetails | null);
   /**
    *
    * The contact details information model.
@@ -55,7 +55,7 @@ export type Organization = {
    * potentially under a system/dataset.
    *
    */
-  data_protection_officer?: ContactDetails | null;
+  data_protection_officer?: (ContactDetails | null);
   /**
    *
    * The OrganizationMetadata resource model.
@@ -63,7 +63,7 @@ export type Organization = {
    * Object used to hold application specific metadata for an organization
    *
    */
-  fidesctl_meta?: OrganizationMetadata | null;
+  fidesctl_meta?: (OrganizationMetadata | null);
   /**
    *
    * The contact details information model.
@@ -75,9 +75,10 @@ export type Organization = {
    * potentially under a system/dataset.
    *
    */
-  representative?: ContactDetails | null;
+  representative?: (ContactDetails | null);
   /**
    * Am optional URL to the organization security policy.
    */
-  security_policy?: string | null;
+  security_policy?: (string | null);
 };
+

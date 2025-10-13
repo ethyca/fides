@@ -16,5 +16,6 @@ export type RangeEntry = {
   /**
    * The ending vendor ID in the range (inclusive)
    */
-  end_vendor_id?: number | null;
+  end_vendor_id?: (number | null);
 };
+

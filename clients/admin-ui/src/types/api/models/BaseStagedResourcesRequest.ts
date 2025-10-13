@@ -11,3 +11,4 @@ export type BaseStagedResourcesRequest = {
    */
   staged_resource_urns: Array<string>;
 };
+

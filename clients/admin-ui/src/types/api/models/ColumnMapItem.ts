@@ -9,9 +9,10 @@ export type ColumnMapItem = {
   /**
    * The custom label for the column
    */
-  label?: string | null;
+  label?: (string | null);
   /**
    * Whether the column is shown
    */
-  enabled?: boolean | null;
+  enabled?: (boolean | null);
 };
+

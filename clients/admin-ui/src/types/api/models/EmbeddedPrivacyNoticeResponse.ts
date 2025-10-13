@@ -9,3 +9,4 @@ export type EmbeddedPrivacyNoticeResponse = {
   id: string;
   name: string;
 };
+

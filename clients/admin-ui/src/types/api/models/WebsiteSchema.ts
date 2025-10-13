@@ -8,3 +8,4 @@
 export type WebsiteSchema = {
   url: string;
 };
+

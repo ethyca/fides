@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export enum PropertyType {
-  WEBSITE = "Website",
-  OTHER = "Other",
+  WEBSITE = 'Website',
+  OTHER = 'Other',
 }

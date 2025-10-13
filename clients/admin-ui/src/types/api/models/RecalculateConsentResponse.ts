@@ -11,3 +11,4 @@ export type RecalculateConsentResponse = {
    */
   updated: number;
 };
+

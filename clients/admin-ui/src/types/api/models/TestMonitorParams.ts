@@ -9,7 +9,7 @@ export type TestMonitorParams = {
   /**
    * Regex pattern to identify sharded tables
    */
-  sharded_table_pattern?: string | null;
+  sharded_table_pattern?: (string | null);
   /**
    * Number of databases to generate
    */
@@ -42,4 +42,9 @@ export type TestMonitorParams = {
    * Number of fields to generate for each nested field
    */
   num_fields_per_nested?: number;
+  /**
+   * Whether to simulate classification when calling the /classify endpoint
+   */
+  simulate_classification?: boolean;
 };
+

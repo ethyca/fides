@@ -7,6 +7,7 @@
  */
 export type ConfirmResourcesResponse = {
   classify_instances?: Array<Record<string, string>>;
-  classification_task_id?: string | null;
-  removal_promotion_task_id?: string | null;
+  classification_task_id?: (string | null);
+  removal_promotion_task_id?: (string | null);
 };
+

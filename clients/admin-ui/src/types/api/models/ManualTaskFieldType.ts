@@ -6,7 +6,7 @@
  * Enum for manual task field types.
  */
 export enum ManualTaskFieldType {
-  TEXT = "text",
-  CHECKBOX = "checkbox",
-  ATTACHMENT = "attachment",
+  TEXT = 'text',
+  CHECKBOX = 'checkbox',
+  ATTACHMENT = 'attachment',
 }

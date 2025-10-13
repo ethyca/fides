@@ -13,10 +13,10 @@
  * - Janus SDK: Request created from the Mobile SDK
  */
 export enum PrivacyRequestSource {
-  PRIVACY_CENTER = "Privacy Center",
-  REQUEST_MANAGER = "Request Manager",
-  CONSENT_WEBHOOK = "Consent Webhook",
-  FIDES_JS = "Fides.js",
-  DATASET_TEST = "Dataset Test",
-  JANUS_SDK = "Janus SDK",
+  PRIVACY_CENTER = 'Privacy Center',
+  REQUEST_MANAGER = 'Request Manager',
+  CONSENT_WEBHOOK = 'Consent Webhook',
+  FIDES_JS = 'Fides.js',
+  DATASET_TEST = 'Dataset Test',
+  JANUS_SDK = 'Janus SDK',
 }

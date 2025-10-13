@@ -6,6 +6,6 @@
  * Request types supported by manual fields (subset of ActionType)
  */
 export enum ManualFieldRequestType {
-  ACCESS = "access",
-  ERASURE = "erasure",
+  ACCESS = 'access',
+  ERASURE = 'erasure',
 }

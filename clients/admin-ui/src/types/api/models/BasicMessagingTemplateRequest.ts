@@ -6,3 +6,4 @@ export type BasicMessagingTemplateRequest = {
   type: string;
   content: any;
 };
+

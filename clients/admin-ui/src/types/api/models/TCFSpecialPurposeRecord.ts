@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { EmbeddedVendor } from "./EmbeddedVendor";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { EmbeddedVendor } from './EmbeddedVendor';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * Schema for a TCF Special Purpose returned in the TCF Overlay Experience
@@ -29,8 +29,9 @@ export type TCFSpecialPurposeRecord = {
    * The fideslang default taxonomy data uses that are associated with the purpose.
    */
   data_uses: Array<string>;
-  default_preference?: UserConsentPreference | null;
+  default_preference?: (UserConsentPreference | null);
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
   legal_bases?: Array<string>;
 };
+

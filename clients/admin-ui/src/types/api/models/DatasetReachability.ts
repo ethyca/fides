@@ -7,5 +7,6 @@
  */
 export type DatasetReachability = {
   reachable: boolean;
-  details: string | null;
+  details: (string | null);
 };
+
