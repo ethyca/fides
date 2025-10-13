@@ -88,6 +88,7 @@
     var(--fides-overlay-font-size-body) +
       (var(--fides-overlay-link-v-padding) * 2)
   );
+  --fides-overlay-toggle-width: 50px;
 }
 
 @keyframes spin {
@@ -630,7 +631,7 @@ button.fides-i18n-button {
 
   /* total width 50 (34 + 2x8) */
   padding-inline: 8px;
-  width: 34px;
+  width: calc(var(--fides-overlay-toggle-width) - var(--16px));
   height: 24px;
   justify-content: end;
   box-sizing: content-box;
@@ -823,6 +824,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   white-space: nowrap;
   padding: 0 8px;
   display: inline-flex;
+  align-items: center;
 }
 
 .fides-gpc-badge {
@@ -1171,29 +1173,47 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   }
 }
 
-/* TODO: TCF is broken */
+/* Notice toggles on small screens */
+.fides-notice-toggle-title .fides-badge-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 1;
+  min-width: fit-content;
+}
 
-.fides-badge-container:not(section .fides-badge-container) {
-  position: absolute;
-  right: calc(50px + var(--fides-overlay-padding) + var(--16px));
+.fides-notice-toggle-title .fides-notice-toggle-controls {
+  order: 2;
 }
 
 @media (max-width: 480px) {
-  .fides-badge-container:not(section .fides-badge-container) {
+  .fides-notice-toggle-title .fides-badge-container span {
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  .fides-notice-toggle .fides-notice-toggle-title .fides-notice-toggle-trigger {
+    /* leave space for the toggle and an 8px margin */
+    max-width: calc(100% - var(--fides-overlay-toggle-width) - var(--8px));
+  }
+
+  .fides-notice-toggle-title .fides-badge-container {
     position: static;
     width: 100%;
     display: flex;
     justify-content: center;
     margin-bottom: 8px;
+    order: 2;
   }
 
-  .fides-notice-toggle-title:not(section .fides-notice-toggle-title) {
+  .fides-notice-toggle .fides-notice-toggle-title {
     flex-wrap: wrap;
   }
 
-  #fides-banner-heading:not(section #fides-banner-heading) {
+  div#fides-banner-heading {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: start;
+    justify-content: start;
     gap: 8px;
     margin-bottom: 8px;
   }
