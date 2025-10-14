@@ -22,11 +22,18 @@ jobs:
             // Calculate total lines from ALL files (including renamed)
             const additions = files.reduce((sum, file) => sum + file.additions, 0);
             const deletions = files.reduce((sum, file) => sum + file.deletions, 0);
-            const totalLinesChanged = additions + deletions;
+            const totalLinesChanged = additions;
 
-            // Count files excluding renamed ones
-            const nonRenamedFiles = files.filter(file => file.status !== 'renamed');
-            const changedFiles = nonRenamedFiles.length;
+            // Filter out renamed files and empty __init__.py files
+            const nonExcludedFiles = files.filter(file => {
+              const isRenamed = file.status === 'renamed';
+              const isEmptyInit = file.filename.endsWith('__init__.py') &&
+                                  file.additions === 0 &&
+                                  file.deletions === 0;
+              return !isRenamed && !isEmptyInit;
+            });
+
+            const changedFiles = nonExcludedFiles.length;
 
             const linesLimit = 500;
             const filesLimit = 15;
@@ -34,22 +41,28 @@ jobs:
             let failMessage = '';
 
             if (totalLinesChanged > linesLimit) {
-              failMessage += `Lines changed: ${totalLinesChanged} (limit: ${linesLimit})\n`;
+              const lineWord = totalLinesChanged === 1 ? 'Line' : 'Lines';
+              failMessage += `${lineWord} changed: ${totalLinesChanged} (limit: ${linesLimit})\n`;
             }
 
             if (changedFiles > filesLimit) {
-              failMessage += `Files changed: ${changedFiles} (limit: ${filesLimit})\n`;
+              const fileWord = changedFiles === 1 ? 'File' : 'Files';
+              failMessage += `${fileWord} changed: ${changedFiles} (limit: ${filesLimit})\n`;
             }
 
             if (failMessage) {
-              const renamedCount = files.length - nonRenamedFiles.length;
-              if (renamedCount > 0) {
-                failMessage += `(${renamedCount} renamed/moved file(s) excluded from file count)\n`;
+              const excludedCount = files.length - nonExcludedFiles.length;
+              if (excludedCount > 0) {
+                const excludedFileWord = excludedCount === 1 ? 'file' : 'files';
+                failMessage += `(${excludedCount} ${excludedFileWord} excluded: renamed files and empty __init__.py)\n`;
               }
               failMessage += '\nPlease consider splitting this PR into smaller, more focused changes.';
 
               core.setFailed(failMessage);
             } else {
-              const renamedCount = files.length - nonRenamedFiles.length;
-              console.log(`PR size check passed (${totalLinesChanged} lines, ${changedFiles} files${renamedCount > 0 ? `, ${renamedCount} renamed files excluded from count` : ''})`);
+              const excludedCount = files.length - nonExcludedFiles.length;
+              const lineWord = totalLinesChanged === 1 ? 'line' : 'lines';
+              const fileWord = changedFiles === 1 ? 'file' : 'files';
+              const excludedFileWord = excludedCount === 1 ? 'file' : 'files';
+              console.log(`PR size check passed (${totalLinesChanged} ${lineWord}, ${changedFiles} ${fileWord}${excludedCount > 0 ? `, ${excludedCount} ${excludedFileWord} excluded` : ''})`);
             }
