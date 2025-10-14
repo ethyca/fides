@@ -269,3 +269,31 @@ export const truncateUrl = (url: string, limit: number): string => {
     return url;
   }
 };
+
+/**
+ * Formats a number with a suffix for large numbers (k, M, etc.)
+ * @param num - The number to format
+ * @param digits - The number of digits to round to (default is 0)
+ * @returns The formatted number as a string
+ *
+ * @example
+ * nFormatter(1111); // returns "1k"
+ * nFormatter(1111, 0); // returns "1k"
+ * nFormatter(1111, 1); // returns "1.1k"
+ * nFormatter(1111, 2); // returns "1.11k"
+ */
+export const nFormatter = (num: number = 0, digits: number = 0) => {
+  const lookup = [
+    { value: 1, symbol: "" },
+    { value: 1e3, symbol: "k" },
+    { value: 1e6, symbol: "M" },
+  ];
+  const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/;
+  const item = lookup
+    .slice()
+    .reverse()
+    .find((i) => num >= i.value);
+  return item
+    ? (num / item.value).toFixed(digits).replace(regexp, "").concat(item.symbol)
+    : "0";
+};

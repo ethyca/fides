@@ -1,4 +1,8 @@
-import { ConsentStatus } from "~/types/api";
+import {
+  ConsentStatus,
+  DatastoreMonitorUpdates,
+  WebMonitorUpdates,
+} from "~/types/api";
 
 export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
   [ConsentStatus.WITH_CONSENT]: "Consent respected",
@@ -57,3 +61,25 @@ export enum ConsentBreakdownColumnKeys {
   PAGE = "page",
   STATUS = "status",
 }
+
+export const MonitorUpdateNames: Record<
+  | keyof WebMonitorUpdates
+  | keyof Omit<
+      DatastoreMonitorUpdates,
+      | "classified_low_confidence"
+      | "classified_high_confidence"
+      | "classified_manually"
+    >,
+  string
+> = {
+  cookie: "Cookie",
+  browser_request: "Browser request",
+  image: "Image",
+  iframe: "iFrame",
+  javascript_tag: "JavaScript tag",
+  unlabeled: "Unlabeled",
+  in_review: "In review",
+  classifying: "Classifying",
+  removals: "Removals",
+  approved: "Approved",
+};

@@ -18,10 +18,13 @@ import {
   formatDate,
   getDomain,
   getWebsiteIconUrl,
+  nFormatter,
 } from "~/features/common/utils";
 import { ConnectionType } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
+import styles from "./MonitorResult.module.scss";
+import { MonitorResultDescription } from "./MonitorResultDescription";
 import { MonitorAggregatedResults } from "./types";
 
 const { Text } = Typography;
@@ -49,6 +52,10 @@ export const MonitorResult = ({
     connection_type: connectionType,
   } = monitorSummary;
 
+  const isWebMonitor =
+    connectionType === ConnectionType.TEST_WEBSITE ||
+    connectionType === ConnectionType.WEBSITE;
+
   const property = useMemo(() => {
     return secrets?.url ? getDomain(secrets.url) : undefined;
   }, [secrets?.url]);
@@ -56,12 +63,6 @@ export const MonitorResult = ({
   const iconUrl = useMemo(() => {
     return property ? getWebsiteIconUrl(property, 60) : undefined;
   }, [property]);
-
-  const assetCountString = Object.entries(updates)
-    .map((update) => {
-      return `${update[1]} ${update[0]}s`;
-    })
-    .join(", ");
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -88,27 +89,46 @@ export const MonitorResult = ({
                     backgroundColor: "transparent",
                     color: "var(--ant-color-text)",
                   }}
-                  alt={`${property} icon`}
+                  alt={property ? `${property} icon` : "Monitor icon"}
                 />
               }
               title={
-                <Flex align="center" gap={4}>
-                  <NextLink href={href} className="whitespace-nowrap">
-                    {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
-                  </NextLink>
-                  <DiscoveryStatusIcon consentStatus={consentStatus} />
-                  {connectionType === ConnectionType.TEST_WEBSITE && (
-                    <Tag color="nectar" style={{ fontWeight: "normal" }}>
-                      test monitor
-                    </Tag>
+                <Flex
+                  align="center"
+                  gap={4}
+                  className={styles["monitor-result__title"]}
+                >
+                  {isWebMonitor ? (
+                    <>
+                      <NextLink
+                        href={href}
+                      >{`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}</NextLink>
+                      <DiscoveryStatusIcon consentStatus={consentStatus} />
+                      {connectionType === ConnectionType.TEST_WEBSITE && (
+                        <Tag color="nectar">test monitor</Tag>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <NextLink href={href}>{name}</NextLink>
+                      <Text type="secondary">
+                        {nFormatter(totalUpdates)}{" "}
+                        {totalUpdates === 1 ? "field" : "fields"}
+                      </Text>
+                    </>
                   )}
                 </Flex>
               }
-              description={`${assetCountString} detected.`}
+              description={
+                <MonitorResultDescription
+                  updates={updates}
+                  monitorType={connectionType}
+                />
+              }
             />
           </Col>
           <Col span={4} className="flex items-center justify-end">
-            <Text ellipsis={{ tooltip: name }}>{name}</Text>
+            {isWebMonitor && <Text ellipsis={{ tooltip: name }}>{name}</Text>}
           </Col>
           <Col span={3} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
