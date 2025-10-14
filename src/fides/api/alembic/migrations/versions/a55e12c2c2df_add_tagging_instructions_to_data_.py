@@ -1,7 +1,7 @@
 """add_tagging_instructions_to_data_category
 
 Revision ID: a55e12c2c2df
-Revises: 4bfbeff34611
+Revises: 65a1bc82ae09
 Create Date: 2025-10-13 21:14:00.723464
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a55e12c2c2df"
-down_revision = "4bfbeff34611"
+down_revision = "65a1bc82ae09"
 branch_labels = None
 depends_on = None
 
