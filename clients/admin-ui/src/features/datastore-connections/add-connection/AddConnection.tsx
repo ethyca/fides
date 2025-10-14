@@ -78,10 +78,7 @@ const AddConnection = () => {
     <>
       <PageHeader
         heading="Connections"
-        breadcrumbItems={[
-          { title: "Unlinked connections", href: DATASTORE_CONNECTION_ROUTE },
-          { title: "New connection" },
-        ]}
+        breadcrumbItems={[{ title: "New connection" }]}
       >
         <Title level={3} className="mb-0 mt-4">
           {connectionOption ? (

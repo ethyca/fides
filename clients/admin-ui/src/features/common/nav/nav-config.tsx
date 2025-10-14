@@ -140,11 +140,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
       },
-      {
-        title: "Connection manager",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
-      },
     ],
   },
   {

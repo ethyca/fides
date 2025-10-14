@@ -13,7 +13,7 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 
@@ -39,7 +39,7 @@ const DSRCustomizationForm = ({
   const { errorAlert } = useAlert();
 
   const handleCancel = () => {
-    router.push(DATASTORE_CONNECTION_ROUTE);
+    router.push(SYSTEM_ROUTE);
   };
 
   const handleSubmit = (values: any, actions: any) => {
