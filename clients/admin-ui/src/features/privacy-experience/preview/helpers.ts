@@ -69,6 +69,7 @@ export const buildBaseConfig = (
         allow_language_selection: true,
         auto_detect_language: true,
         auto_subdomain_cookie_deletion: true,
+        cookie_deletion_based_on_host_domain: true,
         component: experienceConfig.component,
         disabled: false,
         dismissable: experienceConfig.dismissable,

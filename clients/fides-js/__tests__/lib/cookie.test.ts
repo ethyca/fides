@@ -433,6 +433,22 @@ describe("cookies", () => {
           { domain: ".example.co.jp" },
         ],
       },
+      // Host-domain deletion behavior
+      {
+        cookies: [{ name: "host-cookie", domain: "foo.bar.com", path: "/" }],
+        removeSubdomainCookies: false,
+        cookieDeletionBasedOnHostDomain: true,
+        expectedAttributes: [{ domain: "example.co.jp", path: "/" }],
+      },
+      {
+        cookies: [{ name: "host-cookie", domain: "foo.bar.com", path: "/" }],
+        removeSubdomainCookies: true,
+        cookieDeletionBasedOnHostDomain: true,
+        expectedAttributes: [
+          { domain: "example.co.jp", path: "/" },
+          { domain: ".example.co.jp" },
+        ],
+      },
       // these cookies won't actually end up being deleted in the browser
       // https://ethyca.atlassian.net/browse/PROD-2830
       {
@@ -453,13 +469,19 @@ describe("cookies", () => {
       ({
         cookies,
         removeSubdomainCookies,
+        cookieDeletionBasedOnHostDomain,
         expectedAttributes,
       }: {
         cookies: CookiesType[];
         removeSubdomainCookies?: boolean;
+        cookieDeletionBasedOnHostDomain?: boolean;
         expectedAttributes: Array<CookieAttributes | undefined>;
       }) => {
-        removeCookiesFromBrowser(cookies, removeSubdomainCookies);
+        removeCookiesFromBrowser(
+          cookies,
+          cookieDeletionBasedOnHostDomain ?? false,
+          removeSubdomainCookies,
+        );
         const expectedLength = removeSubdomainCookies
           ? cookies.length * 2
           : cookies.length;
