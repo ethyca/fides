@@ -12,6 +12,7 @@ import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSyste
 import { ConnectionType as ConnectionTypeModel } from "~/types/api/models/ConnectionType";
 
 import { getBrandIconUrl, getDomain } from "../common/utils";
+import styles from "./ConnectionTypeLogo.module.scss";
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
@@ -214,12 +215,13 @@ const ConnectionTypeLogo = ({
       src={imageSrc}
       size={size ?? 32}
       icon={fallbackIcon}
-      style={{
-        backgroundColor: "transparent",
-        color: "var(--ant-color-text)",
-      }}
       alt={altValue}
       {...props}
+      className={
+        props.className
+          ? `${props.className} ${styles.connectionTypeLogo}`
+          : styles.connectionTypeLogo
+      }
     />
   );
 };
