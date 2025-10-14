@@ -8,6 +8,7 @@ import {
   AntRow as Row,
   AntSkeleton as Skeleton,
   AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
   Icons,
 } from "fidesui";
@@ -74,11 +75,14 @@ export const MonitorResult = ({
       })
     : undefined;
 
+  // TODO: add support for Okta as "systems"
+  const monitorResultCountType = isWebMonitor ? "asset" : "field";
+
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
-        <Row gutter={12} className="w-full">
-          <Col span={17} className="align-middle">
+        <Row gutter={{ xs: 6, lg: 12 }} className="w-full">
+          <Col span={18} className="align-middle">
             <List.Item.Meta
               avatar={
                 <Avatar
@@ -98,23 +102,17 @@ export const MonitorResult = ({
                   gap={4}
                   className={styles["monitor-result__title"]}
                 >
-                  {isWebMonitor ? (
+                  <NextLink href={href}>{name}</NextLink>
+                  <Text type="secondary">
+                    {nFormatter(totalUpdates)} {monitorResultCountType}
+                    {totalUpdates === 1 ? "" : "s"}
+                  </Text>
+                  {isWebMonitor && (
                     <>
-                      <NextLink
-                        href={href}
-                      >{`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}</NextLink>
                       <DiscoveryStatusIcon consentStatus={consentStatus} />
                       {connectionType === ConnectionType.TEST_WEBSITE && (
                         <Tag color="nectar">test monitor</Tag>
                       )}
-                    </>
-                  ) : (
-                    <>
-                      <NextLink href={href}>{name}</NextLink>
-                      <Text type="secondary">
-                        {nFormatter(totalUpdates)}{" "}
-                        {totalUpdates === 1 ? "field" : "fields"}
-                      </Text>
                     </>
                   )}
                 </Flex>
@@ -127,17 +125,14 @@ export const MonitorResult = ({
               }
             />
           </Col>
-          <Col span={4} className="flex items-center justify-end">
-            {isWebMonitor && <Text ellipsis={{ tooltip: name }}>{name}</Text>}
-          </Col>
-          <Col span={3} className="flex items-center justify-end">
+          <Col span={6} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
-              <Text
-                data-testid="monitor-date"
-                ellipsis={{ tooltip: formattedLastMonitored }}
-              >
-                {lastMonitoredDistance}
-              </Text>
+              <Tooltip title={formattedLastMonitored}>
+                <Text type="secondary" data-testid="monitor-date">
+                  <span className="hidden lg:inline">Last scan: </span>
+                  {lastMonitoredDistance}
+                </Text>
+              </Tooltip>
             )}
           </Col>
         </Row>
