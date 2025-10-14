@@ -44,7 +44,7 @@ export const MonitorFieldFilters = ({
         ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diffStatus].label
         : null;
 
-      if (currentResourceStatus) {
+      if (!!currentResourceStatus && !agg.includes(currentResourceStatus)) {
         return [...agg, currentResourceStatus];
       }
 
@@ -60,7 +60,7 @@ export const MonitorFieldFilters = ({
           (rs) => rs === current,
         );
 
-        if (!!currentConfidenceScore && !agg.includes(currentConfidenceScore)) {
+        if (currentConfidenceScore) {
           return [...agg, currentConfidenceScore];
         }
 
