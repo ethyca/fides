@@ -71,7 +71,7 @@ describe("OneTrust to Fides consent migration", () => {
         cy.wait("@patchPrivacyPreference").then((interception) => {
           // Check method separately since order doesn't matter for that
           expect(interception.request.body.method).to.equal(
-            ConsentMethod.OT_MIGRATION,
+            ConsentMethod.EXTERNAL_PROVIDER,
           );
 
           // Check that all expected preferences exist, regardless of order
@@ -132,7 +132,7 @@ describe("OneTrust to Fides consent migration", () => {
               .is.eql(true);
             expect(cookieKeyConsent.fides_meta)
               .property("consentMethod")
-              .is.eql(ConsentMethod.OT_MIGRATION);
+              .is.eql(ConsentMethod.EXTERNAL_PROVIDER);
           });
         });
 
@@ -178,7 +178,7 @@ describe("OneTrust to Fides consent migration", () => {
       cy.wait("@patchPrivacyPreference").then((interception) => {
         // Check method separately since order doesn't matter for that
         expect(interception.request.body.method).to.equal(
-          ConsentMethod.OT_MIGRATION,
+          ConsentMethod.EXTERNAL_PROVIDER,
         );
 
         // Check that all expected preferences exist, regardless of order
@@ -234,7 +234,7 @@ describe("OneTrust to Fides consent migration", () => {
           expect(cookieKeyConsent.consent).property(ANALYTICS_KEY).is.eql(true);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.OT_MIGRATION);
+            .is.eql(ConsentMethod.EXTERNAL_PROVIDER);
         });
       });
 
@@ -279,7 +279,7 @@ describe("OneTrust to Fides consent migration", () => {
       cy.wait("@patchPrivacyPreference").then((interception) => {
         // Check method separately since order doesn't matter for that
         expect(interception.request.body.method).to.equal(
-          ConsentMethod.OT_MIGRATION,
+          ConsentMethod.EXTERNAL_PROVIDER,
         );
 
         // Check that all expected preferences exist, regardless of order
