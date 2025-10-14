@@ -36,7 +36,6 @@ const buildMonitorLink = (
 ) =>
   isAlphaFlat &&
   monitorType !== ConnectionType.TEST_WEBSITE &&
-  isAlphaFlat &&
   monitorType !== ConnectionType.WEBSITE
     ? `${ACTION_CENTER_ROUTE}/${monitorKey}/data-explorer`
     : `${ACTION_CENTER_ROUTE}/${monitorKey}`;
