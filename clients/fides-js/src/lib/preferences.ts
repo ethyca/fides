@@ -221,6 +221,7 @@ export const updateConsentPreferences = async ({
         if (preference.notice?.cookies) {
           removeCookiesFromBrowser(
             preference.notice.cookies,
+            experience.experience_config?.cookie_deletion_based_on_host_domain,
             experience.experience_config?.auto_subdomain_cookie_deletion,
           );
         }

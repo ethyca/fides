@@ -21,6 +21,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.72.0..main)
 
+### Added
+- Added support for new experience config to delete cookie based on host domain [#6706](https://github.com/ethyca/fides/pull/6706)
+
+### Fixed
+- Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
+
 ## [2.72.0](https://github.com/ethyca/fides/compare/2.71.1...2.72.0)
 
 ### Added
