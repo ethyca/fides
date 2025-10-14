@@ -306,10 +306,10 @@ def run_access_node(
                         )
                         # Currently, upstream tasks and "input keys" (which are built by data dependencies)
                         # are the same, but they may not be the same in the future.
-                        upstream_access_data: List[
-                            List[Row]
-                        ] = _build_upstream_access_data(
-                            graph_task.execution_node.input_keys, upstream_results
+                        upstream_access_data: List[List[Row]] = (
+                            _build_upstream_access_data(
+                                graph_task.execution_node.input_keys, upstream_results
+                            )
                         )
                         # Run the main access function
                         graph_task.access_request(*upstream_access_data)

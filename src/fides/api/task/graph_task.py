@@ -62,7 +62,6 @@ from fides.api.util.collection_util import (
 from fides.api.util.consent_util import (
     add_errored_system_status_for_consent_reporting_on_preferences,
 )
-from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
