@@ -66,6 +66,9 @@ describe("Action center", () => {
         results.forEach((result) => {
           const monitorKey = result.key;
           const monitorType = result.connection_type;
+          const isWebMonitor =
+            monitorType === ConnectionType.WEBSITE ||
+            monitorType === ConnectionType.TEST_WEBSITE;
           cy.getByTestId(`monitor-result-${monitorType}-${monitorKey}`).should(
             "exist",
           );
@@ -77,7 +80,7 @@ describe("Action center", () => {
                 .should(
                   "have.attr",
                   "href",
-                  `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType !== ConnectionType.WEBSITE ? "/data-explorer" : ""}`,
+                  `${ACTION_CENTER_ROUTE}/${monitorKey}${isWebMonitor ? "" : "/data-explorer"}`,
                 );
               cy.get("[data-testid='monitor-date']").should("contain", " ago");
             },
