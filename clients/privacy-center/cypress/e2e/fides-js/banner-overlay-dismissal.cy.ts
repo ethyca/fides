@@ -1,6 +1,6 @@
 import { CONSENT_COOKIE_NAME, ConsentMethod, FidesCookie } from "fides-js";
 
-import { stubConfig, stubTCFExperience } from "../support/stubs";
+import { stubConfig, stubTCFExperience } from "../../support/stubs";
 
 describe("Banner and modal dismissal", () => {
   // Helper function for some test case assertions
