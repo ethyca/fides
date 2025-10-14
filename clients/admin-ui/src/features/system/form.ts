@@ -8,7 +8,7 @@ import { SystemSchemaExtended } from "~/types/api";
 export type FormValues = SystemSchemaExtended &
   CustomFieldsFormValues & {
     customFieldValues?: CustomFieldValues;
-    data_stewards: string;
+    data_stewards: string[];
   };
 
 export const defaultInitialValues: FormValues = {
@@ -32,7 +32,7 @@ export const defaultInitialValues: FormValues = {
   joint_controller_info: "",
   data_security_practices: "",
   privacy_declarations: [],
-  data_stewards: "",
+  data_stewards: [],
   dpo: "",
   cookie_max_age_seconds: undefined,
   uses_cookies: false,
@@ -48,8 +48,7 @@ export const transformSystemToFormValues = (
 ): FormValues => {
   // @ts-ignore
   const dataStewards = system?.data_stewards
-    ?.map((user: any) => user.username)
-    .join(", ");
+    ?.map((user: any) => user.username) || [];
 
   return {
     ...system,
@@ -84,7 +83,7 @@ export const transformSystemToFormValues = (
     legal_basis_for_transfers: system.legal_basis_for_transfers
       ? system.legal_basis_for_transfers
       : "",
-    data_stewards: dataStewards || "",
+    data_stewards: dataStewards,
     system_groups: system.system_groups || [],
   };
 };

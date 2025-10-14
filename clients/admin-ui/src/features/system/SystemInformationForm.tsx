@@ -53,6 +53,7 @@ import {
   transformSystemToFormValues,
 } from "~/features/system/form";
 import {
+  useBulkAssignStewardMutation,
   useCreateSystemMutation,
   useGetAllSystemsQuery,
   useLazyGetSystemsQuery,
@@ -63,6 +64,7 @@ import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slic
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
+import { useGetAllUsersQuery } from "~/features/user-management";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
@@ -160,6 +162,7 @@ const SystemInformationForm = ({
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
   const [populateSystemAssets] = usePopulateSystemAssetsMutation();
+  const [bulkAssignSteward] = useBulkAssignStewardMutation();
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
@@ -176,6 +179,21 @@ const SystemInformationForm = ({
         label: group.name,
       })) || [],
     [allSystemGroups],
+  );
+
+  const { data: allUsers } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    include_external: false,
+  });
+
+  const userOptions = useMemo(
+    () =>
+      allUsers?.items.map((user) => ({
+        value: user.username,
+        label: user.username,
+      })) || [],
+    [allUsers],
   );
 
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
@@ -242,10 +260,11 @@ const SystemInformationForm = ({
 
     const systemBody = transformFormValuesToSystem(valuesToSubmit);
 
-    const handleResult = (
+    const handleResult = async (
       result:
         | { data: SystemResponse }
         | { error: FetchBaseQueryError | SerializedError },
+      dataStewardsToAssign: string[],
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
@@ -258,6 +277,26 @@ const SystemInformationForm = ({
           description: errorMsg,
         });
       } else {
+        // Assign data stewards if any are selected
+        if (dataStewardsToAssign.length > 0 && result.data?.fides_key) {
+          for (const username of dataStewardsToAssign) {
+            const stewardResult = await bulkAssignSteward({
+              data_steward: username,
+              system_keys: [result.data.fides_key],
+            });
+            if (isErrorResult(stewardResult)) {
+              const errorMsg = getErrorMessage(
+                stewardResult.error,
+                `Failed to assign ${username} as data steward.`,
+              );
+              toast({
+                status: "warning",
+                description: errorMsg,
+              });
+            }
+          }
+        }
+
         toast.closeAll();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
@@ -288,7 +327,7 @@ const SystemInformationForm = ({
       }
     }
 
-    handleResult(result);
+    await handleResult(result, values.data_stewards || []);
   };
 
   const handleVendorSelected = (newVendorId?: string | null) => {
@@ -575,12 +614,13 @@ const SystemInformationForm = ({
                 />
               </SystemFormInputGroup>
               <SystemFormInputGroup heading="Administrative properties">
-                <CustomTextInput
-                  label="Data stewards"
+                <ControlledSelect
                   name="data_stewards"
+                  label="Data stewards"
+                  options={userOptions}
                   tooltip="Who are the stewards assigned to the system?"
-                  variant="stacked"
-                  disabled
+                  mode="multiple"
+                  layout="stacked"
                 />
                 <DictSuggestionTextInput
                   id="privacy_policy"
