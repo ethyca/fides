@@ -352,8 +352,8 @@ saas_config:
             {
               "user_info": {
                 <custom_privacy_request_fields>
-              }, 
-              "privacy_request": { 
+              },
+              "privacy_request": {
                 <privacy_request>
               }
             }
@@ -460,3 +460,14 @@ saas_config:
             {
               "fields": "<field_list>"
             }
+    - name: outside_reference_on_delete_example
+      requests:
+        delete:
+          method: POST
+          path: /v1/outside_reference_on_delete_example
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: saas_connector_example
+                  field: customer.id
+                  direction: from
