@@ -1,6 +1,5 @@
 import { formatDistanceStrict } from "date-fns";
 import {
-  AntAvatar as Avatar,
   AntCol as Col,
   AntFlex as Flex,
   AntList as List,
@@ -10,17 +9,14 @@ import {
   AntTag as Tag,
   AntTooltip as Tooltip,
   AntTypography as Typography,
-  Icons,
 } from "fidesui";
 import NextLink from "next/link";
 import { useMemo } from "react";
 
-import {
-  formatDate,
-  getDomain,
-  getWebsiteIconUrl,
-  nFormatter,
-} from "~/features/common/utils";
+import { formatDate, getDomain, nFormatter } from "~/features/common/utils";
+import ConnectionTypeLogo, {
+  ConnectionLogoKind,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import { ConnectionType } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
@@ -58,17 +54,10 @@ export const MonitorResult = ({
     secrets,
     key,
     connection_type: connectionType,
+    saas_config: saasConfig,
   } = monitorSummary;
 
   const monitorType = getMonitorType(connectionType);
-
-  const property = useMemo(() => {
-    return secrets?.url ? getDomain(secrets.url) : undefined;
-  }, [secrets?.url]);
-
-  const iconUrl = useMemo(() => {
-    return property ? getWebsiteIconUrl(property, 60) : undefined;
-  }, [property]);
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -89,15 +78,15 @@ export const MonitorResult = ({
           <Col span={18} className="align-middle">
             <List.Item.Meta
               avatar={
-                <Avatar
-                  src={iconUrl}
-                  size={30}
-                  icon={<Icons.Wikis size={30} />}
-                  style={{
-                    backgroundColor: "transparent",
-                    color: "var(--ant-color-text)",
+                <ConnectionTypeLogo
+                  data={{
+                    kind: ConnectionLogoKind.CONNECTION,
+                    connectionType,
+                    name,
+                    key,
+                    saasType: saasConfig?.type,
+                    websiteUrl: secrets?.url,
                   }}
-                  alt={property ? `${property} icon` : "Monitor icon"}
                 />
               }
               title={

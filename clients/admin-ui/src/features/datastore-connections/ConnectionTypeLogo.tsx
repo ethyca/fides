@@ -1,12 +1,17 @@
-import { Image, ImageProps } from "fidesui";
-import React from "react";
+import {
+  AntAvatar as Avatar,
+  AntAvatarProps as AvatarProps,
+  EthycaLogo,
+  Icons,
+} from "fidesui";
+import React, { useMemo } from "react";
 
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import type { ConnectionConfigurationResponse } from "~/types/api";
 import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 import { ConnectionType as ConnectionTypeModel } from "~/types/api/models/ConnectionType";
 
-import { getDomain, getWebsiteIconUrl } from "../common/utils";
+import { getBrandIconUrl, getDomain } from "../common/utils";
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
@@ -103,6 +108,10 @@ export const connectionLogoFromKey = (key: string): ConnectionLogoSource => ({
   key,
 });
 
+const isWebsite = (connectionType: ConnectionTypeModel) =>
+  connectionType === ConnectionTypeModel.WEBSITE ||
+  connectionType === ConnectionTypeModel.TEST_WEBSITE;
+
 const resolveSaasLogo = (saasType?: string | null) => {
   if (!saasType) {
     return undefined;
@@ -139,12 +148,13 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
   }
 
   if (data.kind === ConnectionLogoKind.CONNECTION) {
-    if (data.connectionType === ConnectionTypeModel.WEBSITE) {
+    if (isWebsite(data.connectionType)) {
       if (!data.websiteUrl) {
         return FALLBACK_WEBSITE_LOGO_PATH;
       }
       const domain = getDomain(data.websiteUrl);
-      return getWebsiteIconUrl(domain, 100);
+      const brandIconUrl = getBrandIconUrl(domain, 100);
+      return brandIconUrl;
     }
 
     if (data.connectionType === ConnectionTypeModel.SAAS) {
@@ -173,14 +183,14 @@ const getAltValue = (data: ConnectionLogoSource): string => {
   return data.key || "connection";
 };
 
-const getFallbackSrc = (data: ConnectionLogoSource): string => {
+const getFallbackIcon = (data: ConnectionLogoSource, size: number) => {
   if (
     data.kind === ConnectionLogoKind.CONNECTION &&
-    data.connectionType === ConnectionTypeModel.WEBSITE
+    isWebsite(data.connectionType)
   ) {
-    return FALLBACK_WEBSITE_LOGO_PATH;
+    return <Icons.Wikis size={size} />;
   }
-  return FALLBACK_CONNECTOR_LOGOS_PATH;
+  return <EthycaLogo width={size} height={size} />;
 };
 
 type ConnectionTypeLogoProps = {
@@ -189,15 +199,26 @@ type ConnectionTypeLogoProps = {
 
 const ConnectionTypeLogo = ({
   data,
+  size,
   ...props
-}: ConnectionTypeLogoProps & ImageProps) => {
+}: ConnectionTypeLogoProps & AvatarProps) => {
+  const imageSrc = useMemo(() => getImageSrc(data), [data]);
+  const fallbackIcon = useMemo(
+    () => getFallbackIcon(data, (size as number) ?? 32),
+    [data, size],
+  );
+  const altValue = useMemo(() => getAltValue(data), [data]);
   return (
-    <Image
-      boxSize="32px"
-      objectFit="cover"
-      src={getImageSrc(data)}
-      fallbackSrc={getFallbackSrc(data)}
-      alt={getAltValue(data)}
+    <Avatar
+      shape="square"
+      src={imageSrc}
+      size={size ?? 32}
+      icon={fallbackIcon}
+      style={{
+        backgroundColor: "transparent",
+        color: "var(--ant-color-text)",
+      }}
+      alt={altValue}
       {...props}
     />
   );
