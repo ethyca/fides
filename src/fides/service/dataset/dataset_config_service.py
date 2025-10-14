@@ -64,7 +64,21 @@ class DatasetConfigService:
         try:
             if isinstance(dataset, DatasetConfigCtlDataset):
                 ctl_dataset = _get_ctl_dataset(self.db, dataset.ctl_dataset_fides_key)
-                dataset_to_validate = FideslangDataset.model_validate(ctl_dataset)
+                # Convert SQL model to dict, extracting only the fields needed for FideslangDataset
+                ctl_dataset_dict = {
+                    "fides_key": ctl_dataset.fides_key,
+                    "name": ctl_dataset.name,
+                    "description": ctl_dataset.description,
+                    "meta": ctl_dataset.meta,
+                    "data_categories": ctl_dataset.data_categories,
+                    "fides_meta": ctl_dataset.fides_meta,
+                    "collections": ctl_dataset.collections,
+                    "organization_fides_key": ctl_dataset.organization_fides_key,
+                }
+                # Only include optional fields if they are not None
+                if hasattr(ctl_dataset, "tags") and ctl_dataset.tags is not None:
+                    ctl_dataset_dict["tags"] = ctl_dataset.tags
+                dataset_to_validate = FideslangDataset.model_validate(ctl_dataset_dict)
                 data_dict = {
                     "connection_config_id": connection_config.id,
                     "fides_key": dataset.fides_key,
