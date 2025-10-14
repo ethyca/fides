@@ -235,7 +235,8 @@
         overflow-x: hidden;
       }
       h2 {
-        margin-bottom: 8px;
+        font-size: 1.1rem;
+        margin-bottom: 4px;
       }
       pre {
         background-color: #e6e6e8;
@@ -323,6 +324,11 @@
 
       <h2>Property id</h2>
       <pre id="property-id"></pre>
+
+      <h2>Global Privacy Control (GPC) enabled</h2>
+      <pre
+        id="gpc"
+      ><script>document.write(!!window.navigator.globalPrivacyControl)</script></pre>
     </main>
   </body>
 

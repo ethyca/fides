@@ -294,7 +294,12 @@ const TcfPurposes = ({
               notice,
               consentContext,
             });
-            return <GpcBadge status={gpcStatus} />;
+            return (
+              <GpcBadge
+                status={gpcStatus}
+                data-testid={`gpc-${notice.notice_key}`}
+              />
+            );
           }
           return undefined;
         }}
