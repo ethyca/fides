@@ -1,6 +1,6 @@
 import { ComponentType, CONSENT_COOKIE_NAME } from "fides-js";
 
-import { stubConfig } from "../support/stubs";
+import { stubConfig } from "../../support/stubs";
 
 describe("Fides.showModal", () => {
   describe("Overlay enabled", () => {

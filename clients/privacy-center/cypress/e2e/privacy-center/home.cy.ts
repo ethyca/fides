@@ -1,5 +1,5 @@
-import { Config } from "../../types/config";
-import { API_URL } from "../support/constants";
+import { Config } from "../../../types/config";
+import { API_URL } from "../../support/constants";
 
 describe("Home", () => {
   it("renders the configured page info", () => {

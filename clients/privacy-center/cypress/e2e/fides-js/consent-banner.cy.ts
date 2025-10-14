@@ -15,12 +15,12 @@ import {
   UserConsentPreference,
 } from "fides-js";
 
-import { TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
+import { TEST_OVERRIDE_WINDOW_PATH } from "../../support/constants";
 import {
   mockPrivacyNotice,
   mockPrivacyNoticeTranslation,
-} from "../support/mocks";
-import { OVERRIDE, overrideTranslation, stubConfig } from "../support/stubs";
+} from "../../support/mocks";
+import { OVERRIDE, overrideTranslation, stubConfig } from "../../support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
