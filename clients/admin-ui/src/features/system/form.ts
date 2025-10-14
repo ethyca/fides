@@ -3,7 +3,7 @@ import {
   CustomFieldValues,
 } from "~/features/common/custom-fields";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { SystemSchemaExtended } from "~/types/api";
+import { SystemResponse, SystemSchemaExtended } from "~/types/api";
 
 export type FormValues = SystemSchemaExtended &
   CustomFieldsFormValues & {
@@ -43,12 +43,11 @@ export const defaultInitialValues: FormValues = {
 };
 
 export const transformSystemToFormValues = (
-  system: SystemSchemaExtended,
+  system: SystemResponse & Pick<SystemSchemaExtended, "system_groups">,
   customFieldValues?: CustomFieldValues,
 ): FormValues => {
-  // @ts-ignore
-  const dataStewards = system?.data_stewards
-    ?.map((user: any) => user.username) || [];
+  const dataStewards =
+    system?.data_stewards?.map((user) => user.username) || [];
 
   return {
     ...system,

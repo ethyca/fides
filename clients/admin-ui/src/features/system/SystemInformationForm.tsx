@@ -63,8 +63,8 @@ import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
-import { ResourceTypes, SystemResponse } from "~/types/api";
 import { useGetAllUsersQuery } from "~/features/user-management";
+import { ResourceTypes, SystemResponse } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
@@ -279,22 +279,26 @@ const SystemInformationForm = ({
       } else {
         // Assign data stewards if any are selected
         if (dataStewardsToAssign.length > 0 && result.data?.fides_key) {
-          for (const username of dataStewardsToAssign) {
-            const stewardResult = await bulkAssignSteward({
+          const stewardPromises = dataStewardsToAssign.map((username) =>
+            bulkAssignSteward({
               data_steward: username,
               system_keys: [result.data.fides_key],
-            });
+            }),
+          );
+          const stewardResults = await Promise.all(stewardPromises);
+
+          stewardResults.forEach((stewardResult, index) => {
             if (isErrorResult(stewardResult)) {
               const errorMsg = getErrorMessage(
                 stewardResult.error,
-                `Failed to assign ${username} as data steward.`,
+                `Failed to assign ${dataStewardsToAssign[index]} as data steward.`,
               );
               toast({
                 status: "warning",
                 description: errorMsg,
               });
             }
-          }
+          });
         }
 
         toast.closeAll();
