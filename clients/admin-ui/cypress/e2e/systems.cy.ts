@@ -380,7 +380,7 @@ describe("System management page", () => {
       cy.intercept("/api/v1/system/*", {
         fixture: "systems/system.json",
       }).as("getDemoAnalyticsSystem");
-      cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
       cy.wait("@getDemoAnalyticsSystem");
       cy.fixture("systems/system.json").then((system) => {
         const newSystem = { ...system, fides_key: "demo_analytics_system" };
@@ -388,8 +388,6 @@ describe("System management page", () => {
           "putDemoAnalyticsSystem",
         );
       });
-
-      cy.getAntTab("Data uses").click({ force: true });
     });
 
     it.skip("warns when a data use and processing activity is being added that is already used", () => {
@@ -535,22 +533,6 @@ describe("System management page", () => {
     });
 
     describe("delete privacy declaration", () => {
-      beforeEach(() => {
-        cy.intercept("GET", "/api/v1/system/*", {
-          fixture: "systems/system.json",
-        }).as("getDemoAnalyticsSystem");
-        cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
-        cy.wait("@getDemoAnalyticsSystem");
-        cy.fixture("systems/system.json").then((system) => {
-          const newSystem = { ...system, fides_key: "demo_analytics_system" };
-          cy.intercept("PUT", "/api/v1/system*", { body: newSystem }).as(
-            "putDemoAnalyticsSystem",
-          );
-        });
-
-        cy.getAntTab("Data uses").click({ force: true });
-      });
-
       it("can visit the privacy declaration tab", () => {
         cy.getByTestId("privacy-declarations-table");
         cy.getByTestId("row-functional.service.improve");
