@@ -22,6 +22,7 @@ export type ExperienceConfigCreate = {
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
+  cookie_deletion_based_on_host_domain?: boolean | null;
   regions?: Array<PrivacyNoticeRegion>;
   component: ComponentType;
   privacy_notice_ids?: Array<string>;

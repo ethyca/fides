@@ -71,7 +71,9 @@ export const NoticeToggles = ({
               title={title}
               checked={checked}
               onToggle={handleToggle}
-              gpcBadge={<GpcBadge status={gpcStatus} />}
+              gpcBadge={
+                <GpcBadge status={gpcStatus} data-testid={`gpc-${noticeKey}`} />
+              }
               disabled={disabled}
               onLabel={toggleOnLabel}
               offLabel={toggleOffLabel}

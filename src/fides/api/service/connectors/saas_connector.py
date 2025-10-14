@@ -12,6 +12,8 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
+    ClientUnsuccessfulException,
+    ConnectionException,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
@@ -589,7 +591,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         for row in rows:
             try:
                 prepared_request = query_config.generate_update_stmt(
-                    row, policy, privacy_request
+                    row, policy, privacy_request, input_data
                 )
             except ValueError as exc:
                 if masking_request.skip_missing_param_values:
@@ -948,6 +950,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 client,
                 secrets,
             )  # type: ignore
+        except (ConnectionException, ClientUnsuccessfulException):
+            # Re-raise these exceptions as-is so the connection service can handle them properly
+            raise
         except Exception as exc:
             logger.error(
                 "Encountered error executing override test function '{}'",

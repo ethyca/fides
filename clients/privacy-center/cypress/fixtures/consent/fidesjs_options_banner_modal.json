@@ -75,6 +75,7 @@
       "allow_language_selection": true,
       "auto_detect_language": true,
       "auto_subdomain_cookie_deletion": true,
+      "cookie_deletion_based_on_host_domain": true,
       "disabled": false,
       "id": "pri_exp-banner-modal-000",
       "component": "banner_and_modal",

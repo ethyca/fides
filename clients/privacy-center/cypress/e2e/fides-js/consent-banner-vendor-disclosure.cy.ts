@@ -1,4 +1,4 @@
-import { OVERRIDE, stubConfig } from "../support/stubs";
+import { OVERRIDE, stubConfig } from "../../support/stubs";
 
 describe("Consent banner with vendor asset disclosure", () => {
   beforeEach(() => {

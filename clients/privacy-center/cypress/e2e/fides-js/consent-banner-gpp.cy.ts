@@ -16,9 +16,9 @@ import {
   PrivacyExperience,
 } from "fides-js";
 
-import { API_URL, TCF_VERSION_HASH } from "../support/constants";
-import { mockCookie } from "../support/mocks";
-import { stubConfig, stubTCFExperience } from "../support/stubs";
+import { API_URL, TCF_VERSION_HASH } from "../../support/constants";
+import { mockCookie } from "../../support/mocks";
+import { stubConfig, stubTCFExperience } from "../../support/stubs";
 
 describe("Fides-js GPP extension", () => {
   /**

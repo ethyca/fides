@@ -1,7 +1,7 @@
 import type { FidesEventDetail, FidesEventType } from "fides-js";
 import { ConsentFlagType, ConsentNonApplicableFlagMode } from "fides-js";
 
-import { stubConfig, stubTCFExperience } from "../support/stubs";
+import { stubConfig, stubTCFExperience } from "../../support/stubs";
 
 interface FidesEventExpectation {
   type: FidesEventType;

@@ -1,4 +1,4 @@
-import { API_URL } from "../support/constants";
+import { API_URL } from "../../support/constants";
 
 describe("External Manual Tasks", () => {
   beforeEach(() => {

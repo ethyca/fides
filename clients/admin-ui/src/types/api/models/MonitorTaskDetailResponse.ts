@@ -21,4 +21,8 @@ export type MonitorTaskDetailResponse = {
   message?: string | null;
   task_arguments?: any;
   execution_logs?: Array<ExecutionLogResponse>;
+  monitor_name?: string | null;
+  connection_name?: string | null;
+  connection_type?: string | null;
+  field_count?: number | null;
 };

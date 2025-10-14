@@ -8,6 +8,7 @@ on:
       - "clients/**"
       - ".vscode/**"
       - ".github/workflows/frontend_checks.yml"
+      - ".github/workflows/cypress_*.yml"
   push:
     branches:
       - "main"
@@ -471,7 +472,6 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3

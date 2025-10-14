@@ -19,7 +19,24 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.72.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.72.1..main)
+
+### Added
+
+- Added support for new experience config to delete cookie based on host domain [#6706](https://github.com/ethyca/fides/pull/6706)
+- Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
+
+### Developer Experience
+- Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
+- Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
+
+### Fixed
+- Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
+
+## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
+
+### Fixed
+- Request overrides connection exceptions are now correctly handled [#6726](https://github.com/ethyca/fides/pull/6726)
 
 ### Changed
 - Improve Privacy Center FidesJS performance and reliability by caching bundles in memory and adding `stale-while-revalidate` and `stale-if-error` cache headers for improved CDN performance and origin failure resilience [#6689](https://github.com/ethyca/fides/pull/6689)

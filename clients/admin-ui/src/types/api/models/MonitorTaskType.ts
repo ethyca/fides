@@ -8,6 +8,7 @@
 export enum MonitorTaskType {
   DETECTION = "detection",
   CLASSIFICATION = "classification",
+  LLM_CLASSIFICATION = "llm_classification",
   PROMOTION = "promotion",
   REMOVAL_PROMOTION = "removal_promotion",
 }

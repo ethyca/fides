@@ -237,7 +237,7 @@ const Overlay: FunctionComponent<Props> = ({
           "Modal link element found, updating it to show and trigger modal on click.",
         );
         modalLinkRef.current = modalLink;
-        modalLinkRef.current.addEventListener("click", window.Fides.showModal);
+        modalLinkRef.current.addEventListener("click", window.Fides?.showModal);
         // show the modal link in the DOM
         modalLinkRef.current.classList.add("fides-modal-link-shown");
       } else {
