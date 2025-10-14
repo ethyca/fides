@@ -501,11 +501,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """On completion activities"""
         if ex:
-            logger.warning(
-                "Ending {}, {} with failure {}",
+            logger.error(
+                "Ending {}, {} with failure: {}",
                 self.resources.request.id,
                 self.key,
-                Pii(ex),
+                ex,
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
             # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
@@ -886,7 +886,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         privacy_request_id = self.resources.request.id
 
         with get_db() as db:
-
             privacy_preferences = db.query(PrivacyPreferenceHistory).filter(
                 PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
             )
@@ -1007,7 +1006,6 @@ def build_affected_field_logs(
     policy_id = policy.id
 
     with get_db() as db:
-
         rules = db.query(Rule).filter(Rule.policy_id == policy_id)
 
         targeted_field_paths: Dict[FieldAddress, str] = {}

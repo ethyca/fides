@@ -277,15 +277,18 @@ def run_access_node(
 
     try:
         with self.get_new_session() as session:
-            privacy_request, request_task, upstream_results = (
-                run_prerequisite_task_checks(
-                    session, privacy_request_id, privacy_request_task_id
-                )
+            (
+                privacy_request,
+                request_task,
+                upstream_results,
+            ) = run_prerequisite_task_checks(
+                session, privacy_request_id, privacy_request_task_id
             )
             with logger.contextualize(
                 privacy_request_source=(
                     privacy_request.source.value if privacy_request.source else None
-                )
+                ),
+                collection=request_task.collection_address,
             ):
                 log_task_starting(request_task)
 
@@ -303,10 +306,10 @@ def run_access_node(
                         )
                         # Currently, upstream tasks and "input keys" (which are built by data dependencies)
                         # are the same, but they may not be the same in the future.
-                        upstream_access_data: List[List[Row]] = (
-                            _build_upstream_access_data(
-                                graph_task.execution_node.input_keys, upstream_results
-                            )
+                        upstream_access_data: List[
+                            List[Row]
+                        ] = _build_upstream_access_data(
+                            graph_task.execution_node.input_keys, upstream_results
                         )
                         # Run the main access function
                         graph_task.access_request(*upstream_access_data)
@@ -346,7 +349,8 @@ def run_erasure_node(
         with logger.contextualize(
             privacy_request_source=(
                 privacy_request.source.value if privacy_request.source else None
-            )
+            ),
+            collection=request_task.collection_address,
         ):
             log_task_starting(request_task)
 
@@ -419,7 +423,8 @@ def run_consent_node(
         with logger.contextualize(
             privacy_request_source=(
                 privacy_request.source.value if privacy_request.source else None
-            )
+            ),
+            collection=request_task.collection_address,
         ):
             log_task_starting(request_task)
 
