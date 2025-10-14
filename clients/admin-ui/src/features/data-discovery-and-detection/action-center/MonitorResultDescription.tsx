@@ -42,10 +42,12 @@ export const MonitorResultDescription = ({
   ) {
     const webUpdatesString = updateStrings.join(", ");
 
+    // TODO: see below
     return <span>{webUpdatesString} detected.</span>;
   }
 
   const datastoreUpdatesString = updateStrings.join(", ");
 
+  // TODO: Eventually this will get more complex, but for now we wrap it in a simple span to make the return type a JSX.Element and not a string, to appease the TypeScript linter. (same thing above for the web updates string)
   return <span>{datastoreUpdatesString}</span>;
 };
