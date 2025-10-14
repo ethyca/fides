@@ -8,6 +8,7 @@ import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
+import { ConnectionType } from "~/types/api";
 
 describe("Action center", () => {
   beforeEach(() => {
@@ -56,40 +57,52 @@ describe("Action center", () => {
     const integrationMonitorKey = "My_New_BQ_Monitor";
     beforeEach(() => {
       cy.visit(ACTION_CENTER_ROUTE);
-      cy.wait("@getMonitorResults");
     });
     it("should render the current monitor results", () => {
       cy.get("[data-testid='Action center']").should("exist");
       cy.get("[data-testid*='monitor-result-']").should("have.length", 3);
-      cy.get("[data-testid^='monitor-result-']").each((result) => {
-        const monitorKey = result
-          .attr("data-testid")
-          .replace("monitor-result-", "");
-        // property icon
-        cy.wrap(result).find(".ant-list-item-meta-avatar").should("exist");
-        // linked title
-        cy.wrap(result)
-          .contains("assets detected")
-          .should("have.attr", "href", `${ACTION_CENTER_ROUTE}/${monitorKey}`);
-        // last monitored relative date with real date in tooltip
-        cy.wrap(result)
-          .find("[data-testid='monitor-date']")
-          .contains(" ago")
-          .realHover();
+      cy.wait("@getMonitorResults").then((interception) => {
+        const results = interception.response.body.items;
+        results.forEach((result) => {
+          const monitorKey = result.key;
+          const monitorType = result.connection_type;
+          cy.getByTestId(`monitor-result-${monitorType}-${monitorKey}`).should(
+            "exist",
+          );
+          cy.getByTestId(`monitor-result-${monitorType}-${monitorKey}`).within(
+            () => {
+              cy.get(".ant-list-item-meta-avatar").should("exist");
+              cy.get("[data-testid='monitor-link']")
+                .should("have.text", result.name)
+                .should(
+                  "have.attr",
+                  "href",
+                  `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType !== ConnectionType.WEBSITE ? "/data-explorer" : ""}`,
+                );
+              cy.get("[data-testid='monitor-date']").should("contain", " ago");
+            },
+          );
+        });
+        // description
+        cy.getByTestId(
+          `monitor-result-${results[0].connection_type}-${results[0].key}`,
+        ).should("contain", "92 Browser requests, 5 Cookies detected.");
+        cy.getByTestId(
+          `monitor-result-${results[2].connection_type}-${results[2].key}`,
+        ).should(
+          "contain",
+          "22 Classifying, 13 In review, 2 Removals, 216 Unlabeled",
+        );
+        // date tooltip
+        cy.getByTestId(
+          `monitor-result-${results[0].connection_type}-${results[0].key}`,
+        ).within(() => {
+          cy.get("[data-testid='monitor-date']").realHover();
+        });
         cy.get(".ant-tooltip-inner").should("contain", "December");
       });
-      // description
-      cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
-        "contain",
-        "92 Browser requests, 5 Cookies detected.",
-      );
-      // monitor name
-      cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
-        "contain",
-        "my web monitor 2",
-      );
     });
-    it("should have appropriate actions for web monitors", () => {
+    it("should have appropriate actions for monitors", () => {
       // Add button
       // TODO: [HJ-337] uncomment when Add button is implemented
       // cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
@@ -99,22 +112,11 @@ describe("Action center", () => {
         "href",
         `${ACTION_CENTER_ROUTE}/${webMonitorKey}`,
       );
-    });
-    it.skip("Should have appropriate actions for Integrations monitors", () => {
-      // Classify button
       cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/${integrationMonitorKey}`,
+        `${ACTION_CENTER_ROUTE}/${integrationMonitorKey}/data-explorer`,
       );
-      // Ignore button
-      cy.getByTestId(`ignore-button-${integrationMonitorKey}`).should("exist");
-    });
-    it.skip("Should have appropriate actions for SSO monitors", () => {
-      // Add button
-      cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
-      // Ignore button
-      cy.getByTestId(`ignore-button-${webMonitorKey}`).should("exist");
     });
     it.skip("Should paginate results", () => {
       // TODO: mock pagination and also test skeleton loading state

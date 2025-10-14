@@ -19,6 +19,9 @@ export const MonitorResultDescription = ({
   updates: MonitorAggregatedResults["updates"];
   monitorType: ConnectionType;
 }) => {
+  const isWebMonitor =
+    monitorType === ConnectionType.TEST_WEBSITE ||
+    monitorType === ConnectionType.WEBSITE;
   const updateStrings = useMemo(() => {
     if (!updates) {
       return [];
@@ -28,18 +31,15 @@ export const MonitorResultDescription = ({
       .filter((update) => !MonitorUpdatesToIgnore.includes(update[0]))
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map((update) => {
-        return `${nFormatter(update[1])} ${MonitorUpdateNames[update[0] as keyof MonitorAggregatedResults["updates"]]}`;
+        return `${nFormatter(update[1])} ${MonitorUpdateNames[update[0] as keyof MonitorAggregatedResults["updates"]]}${!isWebMonitor || update[1] === 1 ? "" : "s"}`;
       });
-  }, [updates]);
+  }, [updates, isWebMonitor]);
 
   if (!updates) {
     return null;
   }
 
-  if (
-    monitorType === ConnectionType.TEST_WEBSITE ||
-    monitorType === ConnectionType.WEBSITE
-  ) {
+  if (isWebMonitor) {
     const webUpdatesString = updateStrings.join(", ");
 
     // TODO: see below

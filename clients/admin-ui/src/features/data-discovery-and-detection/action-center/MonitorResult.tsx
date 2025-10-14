@@ -79,7 +79,10 @@ export const MonitorResult = ({
   const monitorResultCountType = isWebMonitor ? "asset" : "field";
 
   return (
-    <List.Item data-testid={`monitor-result-${key}`} {...props}>
+    <List.Item
+      data-testid={`monitor-result-${connectionType}-${key}`}
+      {...props}
+    >
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <Row gutter={{ xs: 6, lg: 12 }} className="w-full">
           <Col span={18} className="align-middle">
@@ -102,7 +105,9 @@ export const MonitorResult = ({
                   gap={4}
                   className={styles["monitor-result__title"]}
                 >
-                  <NextLink href={href}>{name}</NextLink>
+                  <NextLink href={href} data-testid="monitor-link">
+                    {name}
+                  </NextLink>
                   <Text type="secondary">
                     {nFormatter(totalUpdates)} {monitorResultCountType}
                     {totalUpdates === 1 ? "" : "s"}
