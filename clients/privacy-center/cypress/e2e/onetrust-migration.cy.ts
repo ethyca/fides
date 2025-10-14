@@ -341,7 +341,7 @@ describe("OneTrust to Fides consent migration", () => {
             .is.eql(false);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.OT_MIGRATION);
+            .is.eql(ConsentMethod.EXTERNAL_PROVIDER);
         });
       });
 
