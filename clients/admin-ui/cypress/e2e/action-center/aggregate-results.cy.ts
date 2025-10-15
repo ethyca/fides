@@ -69,37 +69,30 @@ describe("Action center", () => {
         results.forEach((result) => {
           const monitorKey = result.key;
           const monitorType = getMonitorType(result.connection_type);
-          cy.getByTestId(`monitor-result-${monitorType}-${monitorKey}`).should(
-            "exist",
-          );
-          cy.getByTestId(`monitor-result-${monitorType}-${monitorKey}`).within(
-            () => {
-              cy.get(".ant-list-item-meta-avatar").should("exist");
-              cy.get("[data-testid='monitor-link']")
-                .should("have.text", result.name)
-                .should(
-                  "have.attr",
-                  "href",
-                  `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}`,
-                );
-              cy.get("[data-testid='monitor-date']").should("contain", " ago");
-            },
-          );
+          cy.getByTestId(`monitor-result-${monitorKey}`).should("exist");
+          cy.getByTestId(`monitor-result-${monitorKey}`).within(() => {
+            cy.get(".ant-list-item-meta-avatar").should("exist");
+            cy.get("[data-testid='monitor-link']")
+              .should("have.text", result.name)
+              .should(
+                "have.attr",
+                "href",
+                `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}`,
+              );
+            cy.get("[data-testid='monitor-date']").should("contain", " ago");
+          });
         });
         // description
-        cy.getByTestId(
-          `monitor-result-${results[0].connection_type}-${results[0].key}`,
-        ).should("contain", "92 Browser requests, 5 Cookies detected.");
-        cy.getByTestId(
-          `monitor-result-${results[2].connection_type}-${results[2].key}`,
-        ).should(
+        cy.getByTestId(`monitor-result-${results[0].key}`).should(
+          "contain",
+          "92 Browser requests, 5 Cookies detected.",
+        );
+        cy.getByTestId(`monitor-result-${results[2].key}`).should(
           "contain",
           "22 Classifying, 13 In review, 2 Removals, 216 Unlabeled",
         );
         // date tooltip
-        cy.getByTestId(
-          `monitor-result-${results[0].connection_type}-${results[0].key}`,
-        ).within(() => {
+        cy.getByTestId(`monitor-result-${results[0].key}`).within(() => {
           cy.get("[data-testid='monitor-date']").realHover();
         });
         cy.get(".ant-tooltip-inner").should("contain", "December");

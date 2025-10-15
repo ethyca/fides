@@ -528,7 +528,7 @@ describe("Action center Asset Results", () => {
 
       it("should display consent warning icons on monitors with consent issues", () => {
         // Check that monitors with consent issues show warning icon
-        cy.getByTestId("monitor-result-website-my_web_monitor_2").within(() => {
+        cy.getByTestId("monitor-result-my_web_monitor_2").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
@@ -537,16 +537,14 @@ describe("Action center Asset Results", () => {
           "One or more assets were detected with compliance issues",
         );
 
-        cy.getByTestId("monitor-result-website-my_web_monitor_1").within(() => {
+        cy.getByTestId("monitor-result-my_web_monitor_1").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
         });
 
         // Monitor without compliance issues should not show warning icon
-        cy.getByTestId("monitor-result-bigquery-My_New_BQ_Monitor").within(
-          () => {
-            cy.getByTestId("discovery-status-icon-alert").should("not.exist");
-          },
-        );
+        cy.getByTestId("monitor-result-My_New_BQ_Monitor").within(() => {
+          cy.getByTestId("discovery-status-icon-alert").should("not.exist");
+        });
       });
     });
 

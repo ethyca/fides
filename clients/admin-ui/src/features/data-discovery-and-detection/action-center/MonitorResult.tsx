@@ -83,10 +83,7 @@ export const MonitorResult = ({
   const monitorResultCountType = MONITOR_RESULT_COUNT_TYPES[monitorType];
 
   return (
-    <List.Item
-      data-testid={`monitor-result-${connectionType}-${key}`}
-      {...props}
-    >
+    <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <Row gutter={{ xs: 6, lg: 12 }} className="w-full">
           <Col span={18} className="align-middle">
