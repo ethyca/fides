@@ -301,6 +301,8 @@ const SystemInformationForm = ({
           });
         }
 
+        }
+
         toast.closeAll();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
