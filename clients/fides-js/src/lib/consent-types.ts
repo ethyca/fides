@@ -922,7 +922,7 @@ export enum ConsentMethod {
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice", // api only
   ACKNOWLEDGE = "acknowledge",
-  OT_MIGRATION = "ot_migration",
+  EXTERNAL_PROVIDER = "external_provider",
 }
 
 export type PrivacyPreferencesRequest = {
