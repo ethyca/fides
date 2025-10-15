@@ -9,6 +9,7 @@ import {
   AntFlex as Flex,
   AntInput as Input,
   AntLayout as Layout,
+  AntList as List,
   AntRadio as Radio,
   AntRow as Row,
   AntSelect as Select,
@@ -20,9 +21,12 @@ import {
   Icons,
 } from "fidesui";
 import type { NextPage } from "next";
+import { useState } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
+
+import { listData } from "./custom-list/constants";
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;
@@ -36,6 +40,11 @@ for (let i = 10; i < 36; i += 1) {
 }
 
 const AntPOC: NextPage = () => {
+  const [selectedListKeys, setSelectedListKeys] = useState<React.Key[]>([
+    "1",
+    "3",
+  ]);
+
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">
@@ -382,6 +391,95 @@ const AntPOC: NextPage = () => {
                 <Link href="https://ant.design" target="_blank">
                   Ant Design (Link)
                 </Link>
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+        <br />
+        <Row gutter={16}>
+          <Col span={24}>
+            <Card
+              title="List with rowSelection"
+              variant="borderless"
+              className="h-full"
+            >
+              <Space direction="vertical" className="w-full">
+                <Text>
+                  CustomList supports rowSelection similar to Table, with
+                  checkboxes in the avatar position. Selected items:{" "}
+                  <Text strong>{selectedListKeys.length}</Text>
+                </Text>
+                <List
+                  dataSource={listData}
+                  rowSelection={{
+                    selectedRowKeys: selectedListKeys,
+                    onChange: (keys, rows) => {
+                      console.log("Selected keys:", keys);
+                      console.log("Selected rows:", rows);
+                      setSelectedListKeys(keys);
+                    },
+                    getCheckboxProps: (item) => ({
+                      disabled: item.locked,
+                    }),
+                  }}
+                  renderItem={(item, index, checkbox) => (
+                    <List.Item
+                      actions={[
+                        <Button
+                          key="view"
+                          type="link"
+                          size="small"
+                          onClick={() =>
+                            console.log("View clicked for:", item.title)
+                          }
+                        >
+                          View
+                        </Button>,
+                      ]}
+                    >
+                      <List.Item.Meta
+                        title={item.title}
+                        description={item.description}
+                        avatar={checkbox}
+                      />
+                      <Tag
+                        color={item.status === "completed" ? "success" : "info"}
+                      >
+                        {item.status}
+                      </Tag>
+                    </List.Item>
+                  )}
+                />
+                {selectedListKeys.length > 0 && (
+                  <Alert
+                    message={`${selectedListKeys.length} item(s) selected`}
+                    description={
+                      <Space direction="vertical" size="small">
+                        <Text>
+                          You can perform bulk actions on selected items.
+                        </Text>
+                        <Space>
+                          <Button
+                            size="small"
+                            onClick={() =>
+                              console.log("Bulk action on:", selectedListKeys)
+                            }
+                          >
+                            Bulk action
+                          </Button>
+                          <Button
+                            size="small"
+                            onClick={() => setSelectedListKeys([])}
+                          >
+                            Clear selection
+                          </Button>
+                        </Space>
+                      </Space>
+                    }
+                    type="info"
+                    showIcon
+                  />
+                )}
               </Space>
             </Card>
           </Col>
