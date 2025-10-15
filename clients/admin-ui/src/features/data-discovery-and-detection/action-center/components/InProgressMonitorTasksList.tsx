@@ -5,6 +5,7 @@ import {
   AntList as List,
   AntPopover as Popover,
   AntSpace as Space,
+  Icons,
 } from "fidesui";
 import { useCallback } from "react";
 
@@ -60,7 +61,7 @@ export const InProgressMonitorTasksList = () => {
 
   const filterContent = (
     <div className="min-w-[220px] p-2">
-      <div className="flex flex-col gap-1.5 mb-[14px]">
+      <div className="flex flex-col gap-1.5 mb-5">
         <Checkbox.Group
           value={statusFilters}
           onChange={handleStatusesChanged}
@@ -108,7 +109,13 @@ export const InProgressMonitorTasksList = () => {
           trigger="click"
           placement="bottomRight"
         >
-          <Button className="flex items-center gap-2">Filter</Button>
+          <Button
+            className="flex items-center gap-2"
+            icon={<Icons.ChevronDown />}
+            iconPosition="end"
+          >
+            Filter
+          </Button>
         </Popover>
       </Flex>
 
