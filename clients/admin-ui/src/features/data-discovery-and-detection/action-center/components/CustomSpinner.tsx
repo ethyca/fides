@@ -1,11 +1,7 @@
 import "./CustomSpinner.css";
 
-interface CustomSpinnerProps {
-  size?: string;
-}
-
-export const CustomSpinner = ({ size = "14px" }: CustomSpinnerProps) => (
-  <div className="custom-spinner" style={{ width: size, height: size }}>
+export const CustomSpinner = () => (
+  <div className="custom-spinner w-[14px] h-[14px]">
     <div className="custom-spinner-dot custom-spinner-dot-1" />
     <div className="custom-spinner-dot custom-spinner-dot-2" />
     <div className="custom-spinner-dot custom-spinner-dot-3" />
