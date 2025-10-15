@@ -65,6 +65,11 @@ export const InProgressMonitorTasksList = () => {
     setFilterPopoverOpen(false);
   }, [applyFilters]);
 
+  const handleResetFilters = useCallback(() => {
+    resetToDefault();
+    setFilterPopoverOpen(false);
+  }, [resetToDefault]);
+
   const filterContent = (
     <div className="min-w-[220px] p-2">
       <Flex vertical className="mb-5 gap-1.5">
@@ -87,7 +92,7 @@ export const InProgressMonitorTasksList = () => {
         </Checkbox>
       </Flex>
       <Flex justify="space-between">
-        <Button size="small" onClick={resetToDefault}>
+        <Button size="small" onClick={handleResetFilters}>
           Reset
         </Button>
         <Button size="small" type="primary" onClick={handleApplyFilters}>
