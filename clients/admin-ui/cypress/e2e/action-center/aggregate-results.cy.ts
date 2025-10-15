@@ -8,7 +8,10 @@ import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
-import { ConnectionType } from "~/types/api";
+import {
+  getMonitorType,
+  MONITOR_TYPES,
+} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 describe("Action center", () => {
   beforeEach(() => {
@@ -65,10 +68,7 @@ describe("Action center", () => {
         const results = interception.response.body.items;
         results.forEach((result) => {
           const monitorKey = result.key;
-          const monitorType = result.connection_type;
-          const isWebMonitor =
-            monitorType === ConnectionType.WEBSITE ||
-            monitorType === ConnectionType.TEST_WEBSITE;
+          const monitorType = getMonitorType(result.connection_type);
           cy.getByTestId(`monitor-result-${monitorType}-${monitorKey}`).should(
             "exist",
           );
@@ -80,7 +80,7 @@ describe("Action center", () => {
                 .should(
                   "have.attr",
                   "href",
-                  `${ACTION_CENTER_ROUTE}/${monitorKey}${isWebMonitor ? "" : "/data-explorer"}`,
+                  `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}`,
                 );
               cy.get("[data-testid='monitor-date']").should("contain", " ago");
             },

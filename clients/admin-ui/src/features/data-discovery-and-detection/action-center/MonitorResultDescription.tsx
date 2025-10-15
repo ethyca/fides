@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 
 import { nFormatter } from "~/features/common/utils";
-import { ConnectionType } from "~/types/api";
 
 import { MonitorUpdateNames } from "./constants";
 import { MonitorAggregatedResults } from "./types";
@@ -14,14 +13,11 @@ const MonitorUpdatesToIgnore = [
 
 export const MonitorResultDescription = ({
   updates,
-  monitorType,
+  isAssetList,
 }: {
   updates: MonitorAggregatedResults["updates"];
-  monitorType: ConnectionType;
+  isAssetList?: boolean;
 }) => {
-  const isWebMonitor =
-    monitorType === ConnectionType.TEST_WEBSITE ||
-    monitorType === ConnectionType.WEBSITE;
   const updateStrings = useMemo(() => {
     if (!updates) {
       return [];
@@ -31,19 +27,19 @@ export const MonitorResultDescription = ({
       .filter((update) => !MonitorUpdatesToIgnore.includes(update[0]))
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map((update) => {
-        return `${nFormatter(update[1])} ${MonitorUpdateNames[update[0] as keyof MonitorAggregatedResults["updates"]]}${!isWebMonitor || update[1] === 1 ? "" : "s"}`;
+        return `${nFormatter(update[1])} ${MonitorUpdateNames[update[0] as keyof MonitorAggregatedResults["updates"]]}${!isAssetList || update[1] === 1 ? "" : "s"}`;
       });
-  }, [updates, isWebMonitor]);
+  }, [updates, isAssetList]);
 
   if (!updates) {
     return null;
   }
 
-  if (isWebMonitor) {
-    const webUpdatesString = updateStrings.join(", ");
+  if (isAssetList) {
+    const assetListString = updateStrings.join(", ");
 
     // TODO: see below
-    return <span>{webUpdatesString} detected.</span>;
+    return <span>{assetListString} detected.</span>;
   }
 
   const datastoreUpdatesString = updateStrings.join(", ");

@@ -27,8 +27,15 @@ import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
 import { MonitorAggregatedResults } from "./types";
+import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
 
 const { Text } = Typography;
+
+const MONITOR_RESULT_COUNT_TYPES = {
+  [MONITOR_TYPES.WEBSITE]: "asset",
+  [MONITOR_TYPES.DATASTORE]: "field",
+  [MONITOR_TYPES.INFRASTRUCTURE]: "system",
+} as const;
 
 interface MonitorResultProps extends ListItemProps {
   monitorSummary: MonitorAggregatedResults;
@@ -53,9 +60,7 @@ export const MonitorResult = ({
     connection_type: connectionType,
   } = monitorSummary;
 
-  const isWebMonitor =
-    connectionType === ConnectionType.TEST_WEBSITE ||
-    connectionType === ConnectionType.WEBSITE;
+  const monitorType = getMonitorType(connectionType);
 
   const property = useMemo(() => {
     return secrets?.url ? getDomain(secrets.url) : undefined;
@@ -75,8 +80,7 @@ export const MonitorResult = ({
       })
     : undefined;
 
-  // TODO: add support for Okta as "systems"
-  const monitorResultCountType = isWebMonitor ? "asset" : "field";
+  const monitorResultCountType = MONITOR_RESULT_COUNT_TYPES[monitorType];
 
   return (
     <List.Item
@@ -112,20 +116,18 @@ export const MonitorResult = ({
                     {nFormatter(totalUpdates)} {monitorResultCountType}
                     {totalUpdates === 1 ? "" : "s"}
                   </Text>
-                  {isWebMonitor && (
-                    <>
-                      <DiscoveryStatusIcon consentStatus={consentStatus} />
-                      {connectionType === ConnectionType.TEST_WEBSITE && (
-                        <Tag color="nectar">test monitor</Tag>
-                      )}
-                    </>
+                  {consentStatus && (
+                    <DiscoveryStatusIcon consentStatus={consentStatus} />
+                  )}
+                  {connectionType === ConnectionType.TEST_WEBSITE && (
+                    <Tag color="nectar">test monitor</Tag>
                   )}
                 </Flex>
               }
               description={
                 <MonitorResultDescription
                   updates={updates}
-                  monitorType={connectionType}
+                  isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
                 />
               }
             />
