@@ -26,7 +26,7 @@ export const MonitorResultDescription = ({
       )
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map((update) => {
-        return `${nFormatter(update[1])} ${MONITOR_UPDATE_NAMES.get(update[0] as keyof MonitorAggregatedResults["updates"])}${!isAssetList || update[1] === 1 ? "" : "s"}`;
+        return `${nFormatter(update[1])} ${MONITOR_UPDATE_NAMES.get(update[0] as keyof MonitorAggregatedResults["updates"])}${isAssetList && update[1] !== 1 ? "s" : ""}`;
       });
   }, [updates, isAssetList]);
 
