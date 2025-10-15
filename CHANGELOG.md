@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 - Added support for new experience config to delete cookie based on host domain [#6706](https://github.com/ethyca/fides/pull/6706)
 - Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
+- Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
 
 ### Changed
 - Added `collection` to privacy request logging metadata [#6753](https://github.com/ethyca/fides/pull/6753)
@@ -37,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
+- Added `has_table` checks for BigQuery erasures [#6760](https://github.com/ethyca/fides/pull/6760)
 
 ## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
 
