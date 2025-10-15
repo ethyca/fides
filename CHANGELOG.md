@@ -27,6 +27,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
 
+### Changed
+- Added `collection` to privacy request logging metadata [#6753](https://github.com/ethyca/fides/pull/6753)
+- Removed PII filtering from request task error logging [#6753](https://github.com/ethyca/fides/pull/6753)
+
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
