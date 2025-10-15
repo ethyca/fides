@@ -16,6 +16,17 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
   ) => React.ReactNode;
 }
 
+/**
+ * Helper to extract a unique key from a list item.
+ * Checks for explicit key property, falls back to index.
+ */
+const getItemKey = <T,>(item: T, index: number): React.Key => {
+  if (item && typeof item === "object" && "key" in item) {
+    return (item as { key: React.Key }).key;
+  }
+  return index;
+};
+
 const withCustomProps = (WrappedComponent: typeof List) => {
   const WrappedList = <T,>({
     rowSelection,
@@ -23,8 +34,8 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     dataSource,
     ...props
   }: CustomListProps<T>) => {
-    // If no rowSelection, just render the original List
-    if (!rowSelection || !renderItem) {
+    // If not using rowSelection or renderItem, render without checkbox enhancement
+    if (!renderItem || !rowSelection) {
       return (
         <WrappedComponent
           {...props}
@@ -36,43 +47,38 @@ const withCustomProps = (WrappedComponent: typeof List) => {
 
     const { selectedRowKeys = [], onChange, getCheckboxProps } = rowSelection;
 
-    // Create a map for quick lookup of selected keys
+    // Create a Set for O(1) lookup of selected keys
     const selectedKeysSet = useMemo(
       () => new Set(selectedRowKeys),
       [selectedRowKeys],
     );
 
-    // Create a map of key to data for efficient lookup
+    // Build key-to-item map only when needed for onChange callback
     const keyToDataMap = useMemo(() => {
-      const map = new Map<React.Key, T>();
-      if (dataSource) {
-        dataSource.forEach((item, index) => {
-          // Extract the key from the item
-          const key =
-            (item as any).key !== undefined ? (item as any).key : index;
-          map.set(key, item);
-        });
+      if (!onChange || !dataSource) {
+        return null;
       }
+
+      const map = new Map<React.Key, T>();
+      dataSource.forEach((item, index) => {
+        const key = getItemKey(item, index);
+        map.set(key, item);
+      });
       return map;
-    }, [dataSource]);
+    }, [dataSource, onChange]);
 
     // Handle checkbox selection
     const handleCheckboxChange = useCallback(
-      (item: T, itemKey: React.Key, checked: boolean) => {
-        if (!onChange) {
+      (itemKey: React.Key, checked: boolean) => {
+        if (!onChange || !keyToDataMap) {
           return;
         }
 
-        let newSelectedRowKeys: React.Key[];
-        if (checked) {
-          // Add to selection
-          newSelectedRowKeys = [...selectedRowKeys, itemKey];
-        } else {
-          // Remove from selection
-          newSelectedRowKeys = selectedRowKeys.filter((key) => key !== itemKey);
-        }
+        const newSelectedRowKeys = checked
+          ? [...selectedRowKeys, itemKey]
+          : selectedRowKeys.filter((key) => key !== itemKey);
 
-        // Get the corresponding row data for all selected keys
+        // Map selected keys to their corresponding data items
         const newSelectedRows = newSelectedRowKeys
           .map((key) => keyToDataMap.get(key))
           .filter((row): row is T => row !== undefined);
@@ -82,37 +88,25 @@ const withCustomProps = (WrappedComponent: typeof List) => {
       [selectedRowKeys, onChange, keyToDataMap],
     );
 
-    // Wrapped render function that provides checkbox to user's renderItem
+    // Enhanced render function that provides checkbox to user's renderItem
     const wrappedRenderItem = useCallback(
       (item: T, index: number) => {
-        // Extract the key from the item (React List requires items to have keys)
-        const itemKey =
-          (item as any).key !== undefined ? (item as any).key : index;
+        const itemKey = getItemKey(item, index);
         const isSelected = selectedKeysSet.has(itemKey);
         const checkboxProps = getCheckboxProps?.(item) || {};
 
-        // Create the checkbox element if rowSelection is enabled
-        const checkbox = rowSelection ? (
+        const checkbox = (
           <Checkbox
             checked={isSelected}
-            onChange={(e) =>
-              handleCheckboxChange(item, itemKey, e.target.checked)
-            }
+            onChange={(e) => handleCheckboxChange(itemKey, e.target.checked)}
             {...checkboxProps}
             aria-label={`Select item ${itemKey}`}
           />
-        ) : undefined;
+        );
 
-        // Pass checkbox to user's renderItem function
         return renderItem(item, index, checkbox);
       },
-      [
-        renderItem,
-        selectedKeysSet,
-        getCheckboxProps,
-        handleCheckboxChange,
-        rowSelection,
-      ],
+      [renderItem, selectedKeysSet, getCheckboxProps, handleCheckboxChange],
     );
 
     return (
@@ -129,19 +123,25 @@ const withCustomProps = (WrappedComponent: typeof List) => {
 };
 
 /**
- * Higher-order component that adds rowSelection functionality to Ant Design's List component.
- * Provides selection capability similar to Table's rowSelection, with checkboxes provided to renderItem.
+ * Enhanced List component that adds row selection functionality to Ant Design's List.
+ * Provides selection capability similar to Table's rowSelection API.
  *
- * Default customizations:
- * - Provides checkbox as third parameter to renderItem when rowSelection is enabled
- * - Maintains selection state through selectedRowKeys
- * - Supports conditional disabling via getCheckboxProps
- * - Returns both selected keys and full row objects in onChange
+ * Features:
+ * - Checkbox provided as third parameter to renderItem when rowSelection is enabled
+ * - Controlled selection state via selectedRowKeys
+ * - Conditional disabling through getCheckboxProps
+ * - onChange callback receives both selected keys and full item objects
+ *
+ * Key Extraction:
+ * - Items should have a `key` property for stable selection tracking
+ * - Falls back to array index if no key property exists (not recommended for dynamic lists)
  *
  * @example
  * ```tsx
- * // Basic usage with rowSelection
- * <CustomList
+ * import { AntList as List } from "fidesui";
+ *
+ * // With row selection
+ * <List
  *   dataSource={items}
  *   rowSelection={{
  *     selectedRowKeys: selected,
@@ -149,22 +149,20 @@ const withCustomProps = (WrappedComponent: typeof List) => {
  *     getCheckboxProps: (item) => ({ disabled: item.locked })
  *   }}
  *   renderItem={(item, index, checkbox) => (
- *     <CustomList.Item>
- *       <Flex gap="middle" align="start">
- *         {checkbox}
- *         <CustomList.Item.Meta
- *           title={item.title}
- *           description={item.description}
- *         />
- *       </Flex>
- *     </CustomList.Item>
+ *     <List.Item>
+ *       <List.Item.Meta
+ *         avatar={checkbox}
+ *         title={item.title}
+ *         description={item.description}
+ *       />
+ *     </List.Item>
  *   )}
  * />
  *
- * // Without rowSelection (works like normal List, checkbox will be undefined)
- * <CustomList
+ * // Without row selection (checkbox will be undefined)
+ * <List
  *   dataSource={items}
- *   renderItem={(item) => <CustomList.Item>{item.title}</CustomList.Item>}
+ *   renderItem={(item) => <List.Item>{item.title}</List.Item>}
  * />
  * ```
  */
