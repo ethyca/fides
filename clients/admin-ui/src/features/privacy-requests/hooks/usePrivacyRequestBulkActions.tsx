@@ -64,10 +64,10 @@ export const usePrivacyRequestBulkActions = ({
       BulkActionType.DENY,
       selectedRequests,
     );
-    const canFinalize = isActionSupportedByRequests(
-      BulkActionType.FINALIZE,
-      selectedRequests,
-    );
+    // const canFinalize = isActionSupportedByRequests(
+    //   BulkActionType.FINALIZE,
+    //   selectedRequests,
+    // );
     const canDelete = isActionSupportedByRequests(
       BulkActionType.DELETE,
       selectedRequests,
@@ -91,13 +91,14 @@ export const usePrivacyRequestBulkActions = ({
       {
         type: "divider",
       },
-      {
-        key: BulkActionType.FINALIZE,
-        label: "Finalize",
-        icon: <Icons.Stamp />,
-        onClick: () => handleActionClick(BulkActionType.FINALIZE),
-        disabled: !canFinalize,
-      },
+      // To be added when bulk endpoint is available for finalize
+      // {
+      //   key: BulkActionType.FINALIZE,
+      //   label: "Finalize",
+      //   icon: <Icons.Stamp />,
+      //   onClick: () => handleActionClick(BulkActionType.FINALIZE),
+      //   disabled: !canFinalize,
+      // },
       {
         key: BulkActionType.DELETE,
         label: "Delete",
