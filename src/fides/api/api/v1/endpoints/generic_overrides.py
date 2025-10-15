@@ -265,23 +265,10 @@ async def delete_dataset(
     """Delete a dataset by fides key"""
     try:
         dataset = dataset_service.delete_dataset(fides_key)
-        # Convert SQL model to dict, extracting only the fields needed for FideslangDataset
-        dataset_dict = {
-            "fides_key": dataset.fides_key,
-            "name": dataset.name,
-            "description": dataset.description,
-            "meta": dataset.meta,
-            "data_categories": dataset.data_categories,
-            "fides_meta": dataset.fides_meta,
-            "collections": dataset.collections,
-            "organization_fides_key": dataset.organization_fides_key,
-        }
-        if hasattr(dataset, "tags") and dataset.tags is not None:
-            dataset_dict["tags"] = dataset.tags
         return JSONResponse(
             content={
                 "message": "resource deleted",
-                "resource": FideslangDataset.model_validate(dataset_dict).model_dump(
+                "resource": FideslangDataset.model_validate(dataset).model_dump(
                     mode="json"
                 ),
             },
