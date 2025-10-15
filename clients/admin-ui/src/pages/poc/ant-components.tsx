@@ -26,7 +26,47 @@ import { useState } from "react";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
 
-import { listData } from "../../features/poc/custom-list/constants";
+interface ListDataItem {
+  key: string;
+  title: string;
+  description: string;
+  status: "active" | "completed";
+  locked?: boolean;
+}
+
+const listData: ListDataItem[] = [
+  {
+    key: "1",
+    title: "Item One",
+    description: "First item description",
+    status: "active",
+  },
+  {
+    key: "2",
+    title: "Item Two",
+    description: "Second item description",
+    status: "completed",
+  },
+  {
+    key: "3",
+    title: "Item Three",
+    description: "Third item description",
+    status: "completed",
+  },
+  {
+    key: "4",
+    title: "Item Four (Locked)",
+    description: "This item is locked",
+    status: "active",
+    locked: true,
+  },
+  {
+    key: "5",
+    title: "Item Five",
+    description: "Fifth item description",
+    status: "active",
+  },
+];
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;
@@ -418,11 +458,11 @@ const AntPOC: NextPage = () => {
                       console.log("Selected rows:", rows);
                       setSelectedListKeys(keys);
                     },
-                    getCheckboxProps: (item) => ({
+                    getCheckboxProps: (item: ListDataItem) => ({
                       disabled: item.locked,
                     }),
                   }}
-                  renderItem={(item, index, checkbox) => (
+                  renderItem={(item: ListDataItem, index, checkbox) => (
                     <List.Item
                       actions={[
                         <Button

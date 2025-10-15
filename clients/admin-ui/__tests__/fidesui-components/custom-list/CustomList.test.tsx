@@ -1,57 +1,28 @@
 import { fireEvent, render } from "@testing-library/react";
 import { AntList as List } from "fidesui";
 
-interface TestDataItem {
-  key: string;
-  title: string;
-  description: string;
-  locked?: boolean;
-}
+import { MOCK_LIST_DATA, TestDataItem } from "./mockListData";
 
-const MOCK_LIST_DATA: TestDataItem[] = [
-  {
-    key: "1",
-    title: "Item One",
-    description: "First item description",
-  },
-  {
-    key: "2",
-    title: "Item Two",
-    description: "Second item description",
-  },
-  {
-    key: "3",
-    title: "Item Three",
-    description: "Third item description",
-  },
-  {
-    key: "4",
-    title: "Item Four (Locked)",
-    description: "This item is locked",
-    locked: true,
-  },
-  {
-    key: "5",
-    title: "Item Five",
-    description: "Fifth item description",
-  },
-];
+// Reusable render function
+const defaultRenderItem = (
+  item: TestDataItem,
+  index: number,
+  checkbox?: React.ReactNode,
+) => (
+  <List.Item>
+    <List.Item.Meta
+      title={item.title}
+      description={item.description}
+      avatar={checkbox}
+    />
+  </List.Item>
+);
 
 describe("CustomList with rowSelection", () => {
   describe("Basic rendering", () => {
     it("renders list without rowSelection (no checkbox)", () => {
       const { getByText, container } = render(
-        <List
-          dataSource={MOCK_LIST_DATA}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-              />
-            </List.Item>
-          )}
-        />,
+        <List dataSource={MOCK_LIST_DATA} renderItem={defaultRenderItem} />,
       );
 
       expect(getByText("Item One")).toBeInTheDocument();
@@ -69,15 +40,7 @@ describe("CustomList with rowSelection", () => {
             selectedRowKeys: [],
             onChange: jest.fn(),
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
@@ -97,15 +60,7 @@ describe("CustomList with rowSelection", () => {
             selectedRowKeys: ["1", "3"],
             onChange: jest.fn(),
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
@@ -126,15 +81,7 @@ describe("CustomList with rowSelection", () => {
             selectedRowKeys: ["1", "2", "3"],
             onChange: jest.fn(),
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
@@ -157,15 +104,7 @@ describe("CustomList with rowSelection", () => {
             selectedRowKeys: [],
             onChange: handleChange,
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
@@ -185,15 +124,7 @@ describe("CustomList with rowSelection", () => {
             selectedRowKeys: ["1"],
             onChange: handleChange,
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
@@ -217,15 +148,7 @@ describe("CustomList with rowSelection", () => {
             selectedRowKeys: ["1", "2"],
             onChange: handleChange,
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
@@ -239,30 +162,24 @@ describe("CustomList with rowSelection", () => {
   });
 
   describe("Disabled checkboxes", () => {
-    it("getCheckboxProps can disable specific items", () => {
+    it("handles disabled checkboxes correctly", () => {
+      const handleChange = jest.fn();
       const { container } = render(
         <List
           dataSource={MOCK_LIST_DATA}
           rowSelection={{
             selectedRowKeys: [],
-            onChange: jest.fn(),
+            onChange: handleChange,
             getCheckboxProps: (item) => ({
               disabled: item.locked,
             }),
           }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
+          renderItem={defaultRenderItem}
         />,
       );
 
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+
       // First three checkboxes should not be disabled
       expect(checkboxes[0]).not.toBeDisabled();
       expect(checkboxes[1]).not.toBeDisabled();
@@ -270,68 +187,14 @@ describe("CustomList with rowSelection", () => {
       // Fourth checkbox (locked item) should be disabled
       expect(checkboxes[3]).toBeDisabled();
       expect(checkboxes[4]).not.toBeDisabled();
-    });
 
-    it("disabled checkboxes cannot be toggled", () => {
-      const handleChange = jest.fn();
-      const { container } = render(
-        <List
-          dataSource={MOCK_LIST_DATA}
-          rowSelection={{
-            selectedRowKeys: [],
-            onChange: handleChange,
-            getCheckboxProps: (item) => ({
-              disabled: item.locked,
-            }),
-          }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
-        />,
-      );
-
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
       // Try to click the disabled checkbox (index 3 - locked item)
       fireEvent.click(checkboxes[3]);
-
       // onChange should not be called because checkbox is disabled
       expect(handleChange).not.toHaveBeenCalled();
-    });
 
-    it("non-disabled checkboxes can still be toggled when some are disabled", () => {
-      const handleChange = jest.fn();
-      const { container } = render(
-        <List
-          dataSource={MOCK_LIST_DATA}
-          rowSelection={{
-            selectedRowKeys: [],
-            onChange: handleChange,
-            getCheckboxProps: (item) => ({
-              disabled: item.locked,
-            }),
-          }}
-          renderItem={(item, index, checkbox) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.title}
-                description={item.description}
-                avatar={checkbox}
-              />
-            </List.Item>
-          )}
-        />,
-      );
-
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-      // Click a non-disabled checkbox
+      // Non-disabled checkboxes can still be toggled
       fireEvent.click(checkboxes[0]);
-
       expect(handleChange).toHaveBeenCalledTimes(1);
       expect(handleChange).toHaveBeenCalledWith(["1"], [MOCK_LIST_DATA[0]]);
     });
