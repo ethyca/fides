@@ -10,7 +10,7 @@ import {
   useDisclosure,
 } from "fidesui";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { DownloadLightIcon } from "~/features/common/Icon";
@@ -33,6 +33,9 @@ export const PrivacyRequestsDashboard = () => {
   );
   const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
+  const [selectedRequestKeys, setSelectedRequestKeys] = useState<React.Key[]>(
+    [],
+  );
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
@@ -121,7 +124,15 @@ export const PrivacyRequestsDashboard = () => {
             <List<PrivacyRequestEntity>
               bordered
               dataSource={requests}
-              renderItem={(item) => <ListItem item={item} />}
+              rowSelection={{
+                selectedRowKeys: selectedRequestKeys,
+                onChange: (keys) => {
+                  setSelectedRequestKeys(keys);
+                },
+              }}
+              renderItem={(item, index, checkbox) => (
+                <ListItem item={item} checkbox={checkbox} />
+              )}
             />
           </Spin>
           <Pagination
