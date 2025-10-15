@@ -27,6 +27,7 @@ import {
   useGetAggregateMonitorResultsQuery,
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
+import { CustomSpinner } from "./CustomSpinner";
 
 const { Text, Title } = Typography;
 
