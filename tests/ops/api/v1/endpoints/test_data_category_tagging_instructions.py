@@ -11,6 +11,7 @@ from fides.api.models.sql_models import DataCategory
 from fides.common.api.scope_registry import (
     DATA_CATEGORY,
     DATA_CATEGORY_CREATE,
+    DATA_CATEGORY_READ,
     DATA_CATEGORY_UPDATE,
     STORAGE_READ,
 )
@@ -19,6 +20,29 @@ from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 class TestDataCategoryTaggingInstructionsSchema:
     """Test that tagging_instructions is included in schemas."""
+
+    @pytest.fixture(scope="function", autouse=True)
+    def cleanup_test_categories(self, db: Session):
+        """Clean up any test categories before and after each test."""
+        # Cleanup before test
+        for key in [
+            "test_create_with_instructions",
+            "test_create_no_instructions",
+            "test_update_category",
+        ]:
+            cat = DataCategory.get_by(db=db, field="fides_key", value=key)
+            if cat:
+                cat.delete(db)
+        yield
+        # Cleanup after test
+        for key in [
+            "test_create_with_instructions",
+            "test_create_no_instructions",
+            "test_update_category",
+        ]:
+            cat = DataCategory.get_by(db=db, field="fides_key", value=key)
+            if cat:
+                cat.delete(db)
 
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -38,6 +62,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         }
         category = DataCategory.create(db=db, data=payload, check_name=False)
         yield category
+        category.delete(db)
 
     def test_create_data_category_with_tagging_instructions(
         self,
@@ -51,6 +76,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         payload = {
             "name": "Test Category",
             "fides_key": "test_create_with_instructions",
+            "organization_fides_key": "default_organization",
             "active": True,
             "is_default": False,
             "description": "Test category",
@@ -66,6 +92,13 @@ class TestDataCategoryTaggingInstructionsSchema:
             == "* DO TAG: names\n* DO NOT TAG: ids"
         )
 
+        # Cleanup
+        category = DataCategory.get_by(
+            db=db, field="fides_key", value="test_create_with_instructions"
+        )
+        if category:
+            category.delete(db)
+
     def test_create_data_category_without_tagging_instructions(
         self,
         db: Session,
@@ -78,6 +111,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         payload = {
             "name": "Test Category No Instructions",
             "fides_key": "test_create_no_instructions",
+            "organization_fides_key": "default_organization",
             "active": True,
             "is_default": False,
             "description": "Test category without tagging instructions",
@@ -88,6 +122,13 @@ class TestDataCategoryTaggingInstructionsSchema:
 
         response_body = json.loads(response.text)
         assert response_body.get("tagging_instructions") is None
+
+        # Cleanup
+        category = DataCategory.get_by(
+            db=db, field="fides_key", value="test_create_no_instructions"
+        )
+        if category:
+            category.delete(db)
 
     def test_update_data_category_with_tagging_instructions(
         self,
@@ -126,6 +167,9 @@ class TestDataCategoryTaggingInstructionsSchema:
         assert response_body["tagging_instructions"] == "* DO TAG: updated instructions"
         assert response_body["name"] == "Updated Category"
 
+        # Cleanup
+        category.delete(db)
+
     def test_get_data_category_includes_tagging_instructions(
         self,
         api_client: TestClient,
@@ -133,14 +177,18 @@ class TestDataCategoryTaggingInstructionsSchema:
         generate_auth_header,
     ):
         """Test that GET includes tagging_instructions in response."""
-        auth_header = generate_auth_header([STORAGE_READ])
+        auth_header = generate_auth_header([DATA_CATEGORY_READ])
         url = f"{V1_URL_PREFIX}/{DATA_CATEGORY}?fides_key={data_category_with_tagging_instructions.fides_key}"
 
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
 
         response_body = json.loads(response.text)
-        items = response_body.get("items", [])
+        # Handle both list and paginated responses
+        if isinstance(response_body, list):
+            items = response_body
+        else:
+            items = response_body.get("items", [])
         assert len(items) > 0
 
         category = next(
@@ -160,6 +208,21 @@ class TestDataCategoryTaggingInstructionsSchema:
 class TestUpdateTaggingInstructionsPatchEndpoint:
     """Test the PATCH endpoint for updating tagging_instructions."""
 
+    @pytest.fixture(scope="function", autouse=True)
+    def cleanup_patch_test_categories(self, db: Session):
+        """Clean up any test categories before and after each test."""
+        # Cleanup before test
+        for key in ["test_patch_category", "test_overwrite_category"]:
+            cat = DataCategory.get_by(db=db, field="fides_key", value=key)
+            if cat:
+                cat.delete(db)
+        yield
+        # Cleanup after test
+        for key in ["test_patch_category", "test_overwrite_category"]:
+            cat = DataCategory.get_by(db=db, field="fides_key", value=key)
+            if cat:
+                cat.delete(db)
+
     @pytest.fixture(scope="function")
     def data_category_for_patch(self, db: Session):
         """Create a data category for PATCH testing."""
@@ -173,6 +236,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         }
         category = DataCategory.create(db=db, data=payload, check_name=False)
         yield category
+        category.delete(db)
 
     @pytest.fixture(scope="function")
     def patch_url(self, data_category_for_patch):
@@ -288,9 +352,27 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         assert response_body["tagging_instructions"] == new_instructions
         assert "old instructions" not in response_body["tagging_instructions"]
 
+        # Cleanup
+        category.delete(db)
+
 
 class TestDeleteTaggingInstructionsEndpoint:
     """Test the DELETE endpoint for removing tagging_instructions."""
+
+    @pytest.fixture(scope="function", autouse=True)
+    def cleanup_delete_test_categories(self, db: Session):
+        """Clean up any test categories before and after each test."""
+        # Cleanup before test
+        for key in ["test_delete_instructions", "test_no_instructions_delete"]:
+            cat = DataCategory.get_by(db=db, field="fides_key", value=key)
+            if cat:
+                cat.delete(db)
+        yield
+        # Cleanup after test
+        for key in ["test_delete_instructions", "test_no_instructions_delete"]:
+            cat = DataCategory.get_by(db=db, field="fides_key", value=key)
+            if cat:
+                cat.delete(db)
 
     @pytest.fixture(scope="function")
     def data_category_with_instructions(self, db: Session):
@@ -306,6 +388,7 @@ class TestDeleteTaggingInstructionsEndpoint:
         }
         category = DataCategory.create(db=db, data=payload, check_name=False)
         yield category
+        category.delete(db)
 
     @pytest.fixture(scope="function")
     def delete_url(self, data_category_with_instructions):
@@ -380,12 +463,12 @@ class TestDeleteTaggingInstructionsEndpoint:
             db=db,
             check_name=False,
             data={
-                "name": "No Instructions",
-                "fides_key": "test_no_instructions",
+                "name": "No Instructions Delete Test",
+                "fides_key": "test_no_instructions_delete",
                 "organization_fides_key": "default_organization",
                 "active": True,
                 "is_default": False,
-                "description": "Category without instructions",
+                "description": "Category without instructions for delete test",
             },
         )
 
@@ -399,3 +482,6 @@ class TestDeleteTaggingInstructionsEndpoint:
 
         response_body = json.loads(response.text)
         assert response_body["tagging_instructions"] is None
+
+        # Cleanup
+        category.delete(db)
