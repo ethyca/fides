@@ -59,32 +59,34 @@ export const InProgressMonitorTasksList = () => {
   );
 
   const filterContent = (
-    <div className="min-w-[220px] space-y-3 p-2">
-      <Checkbox.Group
-        value={statusFilters}
-        onChange={handleStatusesChanged}
-        className="flex flex-col gap-2"
-      >
-        {availableStatuses.map((status) => (
-          <Checkbox key={status} value={status}>
-            {formatStatusForDisplay(status)}
-          </Checkbox>
-        ))}
-      </Checkbox.Group>
-      <Checkbox
-        checked={showDismissed}
-        onChange={(e) => updateShowDismissed(e.target.checked)}
-      >
-        Dismissed
-      </Checkbox>
-      <Space>
+    <div className="min-w-[220px] p-2">
+      <div className="flex flex-col gap-2 mb-3">
+        <Checkbox.Group
+          value={statusFilters}
+          onChange={handleStatusesChanged}
+          className="flex flex-col gap-2"
+        >
+          {availableStatuses.map((status) => (
+            <Checkbox key={status} value={status}>
+              {formatStatusForDisplay(status)}
+            </Checkbox>
+          ))}
+        </Checkbox.Group>
+        <Checkbox
+          checked={showDismissed}
+          onChange={(e) => updateShowDismissed(e.target.checked)}
+        >
+          Dismissed
+        </Checkbox>
+      </div>
+      <Flex justify="space-between">
         <Button size="small" onClick={resetToDefault}>
           Reset
         </Button>
         <Button size="small" type="primary" onClick={applyFilters}>
           Apply
         </Button>
-      </Space>
+      </Flex>
     </div>
   );
 
