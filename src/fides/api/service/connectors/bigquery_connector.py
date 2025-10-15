@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
-from fides.api.common_exceptions import ConnectionException
+from fides.api.common_exceptions import ConnectionException, TableNotFound
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
@@ -194,23 +194,41 @@ class BigQueryConnector(SQLConnector):
         update_or_delete_ct = 0
         client = self.client()
 
-        if query_config.uses_delete_masking_strategy():
-            delete_stmts = query_config.generate_delete(client, input_data or {})
-            logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
-            update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                delete_stmts, self.should_dry_run(SqlDryRunMode.erasure), client
-            )
-        else:
-            for row in rows:
-                update_or_delete_stmts: List[Executable] = query_config.generate_update(
-                    row, policy, privacy_request, client
-                )
-                logger.debug(
-                    f"Generated {len(update_or_delete_stmts)} UPDATE statements"
-                )
+        try:
+            if query_config.uses_delete_masking_strategy():
+                delete_stmts = query_config.generate_delete(client, input_data or {})
+                logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
                 update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                    update_or_delete_stmts,
+                    delete_stmts,
                     self.should_dry_run(SqlDryRunMode.erasure),
                     client,
                 )
+            else:
+                for row in rows:
+                    update_or_delete_stmts: List[Executable] = (
+                        query_config.generate_update(
+                            row, policy, privacy_request, client
+                        )
+                    )
+                    logger.debug(
+                        f"Generated {len(update_or_delete_stmts)} UPDATE statements"
+                    )
+                    update_or_delete_ct += self._execute_statements_with_sql_dry_run(
+                        update_or_delete_stmts,
+                        self.should_dry_run(SqlDryRunMode.erasure),
+                        client,
+                    )
+        except Exception as exc:
+            # Check if table exists using qualified table name
+            qualified_table_name = self.get_qualified_table_name(node)
+            if not self.table_exists(qualified_table_name):
+                # For data erasure, we can always skip the collection since other collections
+                # don't depend on erasure results
+                skip_msg = (
+                    f"Table '{qualified_table_name}' did not exist during data erasure."
+                )
+                raise TableNotFound(skip_msg) from exc
+            # Table exists or can't check - re-raise original exception
+            raise
+
         return update_or_delete_ct
