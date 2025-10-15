@@ -1,11 +1,11 @@
 import { CONSENT_COOKIE_NAME, getFidesConsentCookie } from "fides-js";
 
-import { stubConfig } from "../support/stubs";
+import { stubConfig } from "../../support/stubs";
 
 const domains: {
   domain: string;
   expected: string;
-}[] = require("../fixtures/domains.json");
+}[] = require("../../fixtures/domains.json");
 
 /**
  * This test is for validating our cookie domain logic. We want to ensure that cookies are able to be set on the topmost domain without needing to be the full domain.
