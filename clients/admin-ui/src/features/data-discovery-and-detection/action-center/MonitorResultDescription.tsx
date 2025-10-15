@@ -23,8 +23,10 @@ export const MonitorResultDescription = ({
       return [];
     }
     return Object.entries(updates)
-      .filter((update) => update[1] > 0)
-      .filter((update) => !MonitorUpdatesToIgnore.includes(update[0]))
+      .filter(
+        (update) =>
+          update[1] > 0 && !MonitorUpdatesToIgnore.includes(update[0]),
+      )
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map((update) => {
         return `${nFormatter(update[1])} ${MonitorUpdateNames[update[0] as keyof MonitorAggregatedResults["updates"]]}${!isAssetList || update[1] === 1 ? "" : "s"}`;
