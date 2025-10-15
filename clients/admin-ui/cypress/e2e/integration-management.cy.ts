@@ -836,9 +836,7 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("controlled-select-execution_frequency").antSelect(
             "Daily",
           );
-          cy.getByTestId("input-execution_start_date").type(
-            "2034-06-03T10:00",
-          );
+          cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
           cy.getByTestId("next-btn").click();
           cy.wait("@getDatabasesPage1");
           cy.getByTestId("prj-bigquery-000001-checkbox").click();
@@ -846,9 +844,15 @@ describe("Integration management for data detection & discovery", () => {
 
           cy.wait("@putMonitor").then((interception) => {
             // Verify LLM classifier fields are in the request
-            expect(interception.request.body.classify_params.context_classifier).to.equal("llm");
-            expect(interception.request.body.classify_params.model_override).to.equal("gpt-4");
-            expect(interception.request.body.classify_params.prompt_template).to.equal("full");
+            expect(
+              interception.request.body.classify_params.context_classifier,
+            ).to.equal("llm");
+            expect(
+              interception.request.body.classify_params.model_override,
+            ).to.equal("gpt-4");
+            expect(
+              interception.request.body.classify_params.prompt_template,
+            ).to.equal("full");
           });
         });
 
@@ -999,9 +1003,12 @@ describe("Integration management for data detection & discovery", () => {
 
           cy.wait("@putMonitor").then((interception) => {
             // Verify LLM classifier fields are cleared
-            expect(interception.request.body.classify_params.context_classifier).to.be.undefined;
-            expect(interception.request.body.classify_params.model_override).to.be.undefined;
-            expect(interception.request.body.classify_params.prompt_template).to.be.undefined;
+            expect(interception.request.body.classify_params.context_classifier)
+              .to.be.undefined;
+            expect(interception.request.body.classify_params.model_override).to
+              .be.undefined;
+            expect(interception.request.body.classify_params.prompt_template).to
+              .be.undefined;
           });
         });
       });
