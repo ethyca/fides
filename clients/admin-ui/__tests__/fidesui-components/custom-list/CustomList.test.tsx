@@ -1,11 +1,12 @@
 import { fireEvent, render } from "@testing-library/react";
 import { AntList as List } from "fidesui";
 
-import { MOCK_LIST_DATA, TestDataItem } from "./mockListData";
+import type { ListDataItem } from "~/features/poc/mockListData";
+import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
 
 // Reusable render function
 const defaultRenderItem = (
-  item: TestDataItem,
+  item: ListDataItem,
   index: number,
   checkbox?: React.ReactNode,
 ) => (

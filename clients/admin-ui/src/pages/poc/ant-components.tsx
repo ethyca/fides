@@ -25,48 +25,8 @@ import { useState } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
-
-interface ListDataItem {
-  key: string;
-  title: string;
-  description: string;
-  status: "active" | "completed";
-  locked?: boolean;
-}
-
-const listData: ListDataItem[] = [
-  {
-    key: "1",
-    title: "Item One",
-    description: "First item description",
-    status: "active",
-  },
-  {
-    key: "2",
-    title: "Item Two",
-    description: "Second item description",
-    status: "completed",
-  },
-  {
-    key: "3",
-    title: "Item Three",
-    description: "Third item description",
-    status: "completed",
-  },
-  {
-    key: "4",
-    title: "Item Four (Locked)",
-    description: "This item is locked",
-    status: "active",
-    locked: true,
-  },
-  {
-    key: "5",
-    title: "Item Five",
-    description: "Fifth item description",
-    status: "active",
-  },
-];
+import type { ListDataItem } from "~/features/poc/mockListData";
+import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;
@@ -450,7 +410,7 @@ const AntPOC: NextPage = () => {
                   <Text strong>{selectedListKeys.length}</Text>
                 </Text>
                 <List
-                  dataSource={listData}
+                  dataSource={MOCK_LIST_DATA}
                   rowSelection={{
                     selectedRowKeys: selectedListKeys,
                     onChange: (keys, rows) => {
