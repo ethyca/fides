@@ -288,6 +288,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkSoftDeleteRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: `privacy-request/bulk/soft-delete`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
       Partial<PrivacyRequestParams>
@@ -491,6 +502,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
 export const {
   useApproveRequestMutation,
   useBulkRetryMutation,
+  useBulkSoftDeleteRequestMutation,
   useDenyRequestMutation,
   useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,

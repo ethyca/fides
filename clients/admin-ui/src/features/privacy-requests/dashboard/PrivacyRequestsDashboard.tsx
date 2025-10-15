@@ -98,6 +98,7 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems, confirmationModalState } =
     usePrivacyRequestBulkActions({
       selectedRequests,
+      messageApi,
     });
 
   return (
