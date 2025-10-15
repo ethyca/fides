@@ -29,7 +29,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         """Create a data category with tagging_instructions for testing."""
         payload = {
             "name": "Test Category",
-            "fides_key": "test.category.with_instructions",
+            "fides_key": "test_category_with_instructions",
             "active": True,
             "is_default": False,
             "description": "Test category for tagging instructions",
@@ -49,7 +49,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         auth_header = generate_auth_header([DATA_CATEGORY_CREATE])
         payload = {
             "name": "Test Category",
-            "fides_key": "test.create.with.instructions",
+            "fides_key": "test_create_with_instructions",
             "active": True,
             "is_default": False,
             "description": "Test category",
@@ -76,7 +76,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         auth_header = generate_auth_header([DATA_CATEGORY_CREATE])
         payload = {
             "name": "Test Category No Instructions",
-            "fides_key": "test.create.no.instructions",
+            "fides_key": "test_create_no_instructions",
             "active": True,
             "is_default": False,
             "description": "Test category without tagging instructions",
@@ -101,7 +101,7 @@ class TestDataCategoryTaggingInstructionsSchema:
             db=db,
             data={
                 "name": "Test Update Category",
-                "fides_key": "test.update.category",
+                "fides_key": "test_update_category",
                 "active": True,
                 "is_default": False,
                 "description": "Category to update",
@@ -110,7 +110,7 @@ class TestDataCategoryTaggingInstructionsSchema:
 
         auth_header = generate_auth_header([DATA_CATEGORY_UPDATE])
         payload = {
-            "fides_key": "test.update.category",
+            "fides_key": "test_update_category",
             "name": "Updated Category",
             "description": "Updated description",
             "tagging_instructions": "* DO TAG: updated instructions",
@@ -162,7 +162,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         """Create a data category for PATCH testing."""
         payload = {
             "name": "Patch Test Category",
-            "fides_key": "test.patch.category",
+            "fides_key": "test_patch_category",
             "active": True,
             "is_default": False,
             "description": "Category for patch testing",
@@ -257,7 +257,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
             db=db,
             data={
                 "name": "Overwrite Test",
-                "fides_key": "test.overwrite.category",
+                "fides_key": "test_overwrite_category",
                 "active": True,
                 "is_default": False,
                 "description": "Test overwriting instructions",
@@ -291,7 +291,7 @@ class TestDeleteTaggingInstructionsEndpoint:
         """Create a data category with tagging_instructions for deletion testing."""
         payload = {
             "name": "Delete Test Category",
-            "fides_key": "test.delete.category",
+            "fides_key": "test_delete_category",
             "active": True,
             "is_default": False,
             "description": "Category for delete testing",
@@ -373,7 +373,7 @@ class TestDeleteTaggingInstructionsEndpoint:
             db=db,
             data={
                 "name": "No Instructions",
-                "fides_key": "test.no.instructions",
+                "fides_key": "test_no_instructions",
                 "active": True,
                 "is_default": False,
                 "description": "Category without instructions",
