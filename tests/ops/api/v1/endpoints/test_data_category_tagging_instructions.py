@@ -30,6 +30,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         payload = {
             "name": "Test Category",
             "fides_key": "test_category_with_instructions",
+            "organization_fides_key": "default_organization",
             "active": True,
             "is_default": False,
             "description": "Test category for tagging instructions",
@@ -102,6 +103,7 @@ class TestDataCategoryTaggingInstructionsSchema:
             data={
                 "name": "Test Update Category",
                 "fides_key": "test_update_category",
+                "organization_fides_key": "default_organization",
                 "active": True,
                 "is_default": False,
                 "description": "Category to update",
@@ -163,6 +165,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         payload = {
             "name": "Patch Test Category",
             "fides_key": "test_patch_category",
+            "organization_fides_key": "default_organization",
             "active": True,
             "is_default": False,
             "description": "Category for patch testing",
@@ -258,6 +261,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
             data={
                 "name": "Overwrite Test",
                 "fides_key": "test_overwrite_category",
+                "organization_fides_key": "default_organization",
                 "active": True,
                 "is_default": False,
                 "description": "Test overwriting instructions",
@@ -292,6 +296,7 @@ class TestDeleteTaggingInstructionsEndpoint:
         payload = {
             "name": "Delete Test Category",
             "fides_key": "test_delete_category",
+            "organization_fides_key": "default_organization",
             "active": True,
             "is_default": False,
             "description": "Category for delete testing",
@@ -374,6 +379,7 @@ class TestDeleteTaggingInstructionsEndpoint:
             data={
                 "name": "No Instructions",
                 "fides_key": "test_no_instructions",
+                "organization_fides_key": "default_organization",
                 "active": True,
                 "is_default": False,
                 "description": "Category without instructions",
