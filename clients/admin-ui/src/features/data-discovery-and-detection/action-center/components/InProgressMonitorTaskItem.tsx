@@ -220,7 +220,7 @@ export const InProgressMonitorTaskItem = ({
         </Col>
         <Col span={3} className="flex items-center justify-end">
           {isInProgress ? (
-            <CustomSpinner size="14px" />
+            <CustomSpinner />
           ) : (
             <Text type="secondary" size="sm">
               {formatDistanceStrict(new Date(task.updated_at), new Date(), {
