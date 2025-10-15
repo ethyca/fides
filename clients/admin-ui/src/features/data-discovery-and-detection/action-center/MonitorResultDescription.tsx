@@ -1,15 +1,19 @@
 import { useMemo } from "react";
 
 import { nFormatter } from "~/features/common/utils";
+import { DatastoreMonitorUpdates, WebMonitorUpdates } from "~/types/api";
 
 import { MonitorUpdateNames } from "./constants";
 import { MonitorAggregatedResults } from "./types";
 
-const MonitorUpdatesToIgnore = [
+const MONITOR_UPDATES_TO_IGNORE = [
   "classified_low_confidence",
   "classified_high_confidence",
   "classified_manually",
-];
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];
 
 export const MonitorResultDescription = ({
   updates,
@@ -25,7 +29,9 @@ export const MonitorResultDescription = ({
     return Object.entries(updates)
       .filter(
         (update) =>
-          update[1] > 0 && !MonitorUpdatesToIgnore.includes(update[0]),
+          !MONITOR_UPDATES_TO_IGNORE.includes(
+            update[0] as keyof MonitorAggregatedResults["updates"],
+          ),
       )
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map((update) => {
@@ -46,6 +52,6 @@ export const MonitorResultDescription = ({
 
   const datastoreUpdatesString = updateStrings.join(", ");
 
-  // TODO: Eventually this will get more complex, but for now we wrap it in a simple span to make the return type a JSX.Element and not a string, to appease the TypeScript linter. (same thing above for the web updates string)
+  // TODO: Eventually this will get more complex, but for now we wrap it in a simple span to make the return type a JSX.Element and not a string, to appease the TypeScript linter. (same thing above for assets)
   return <span>{datastoreUpdatesString}</span>;
 };
