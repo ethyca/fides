@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntCard as Card,
   AntCheckbox as Checkbox,
   AntCol as Col,
   AntForm as Form,
@@ -70,11 +71,10 @@ export const MonitorFieldFilters = ({
     );
 
   return (
-    <div
-      /** Note: limitation of using tailwind is not having access to all of ant design's style attributes
-       * ex: large border radius variant and secondary box shadow
-       */
-      className="rounded-[var(--ant-border-radius)] bg-[var(--ant-color-bg-base)] shadow-md"
+    <Card
+      variant="borderless"
+      /** required due to tailwind shadow configuration */
+      style={{ boxShadow: "var(--ant-box-shadow-secondary)" }}
     >
       <Space size="middle" className="p-[var(--ant-padding)]">
         <Form layout="vertical">
@@ -147,6 +147,6 @@ export const MonitorFieldFilters = ({
           </Button>
         </Form>
       </Space>
-    </div>
+    </Card>
   );
 };
