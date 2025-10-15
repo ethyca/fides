@@ -6,7 +6,7 @@ import {
   AntPopover as Popover,
   Icons,
 } from "fidesui";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { MonitorTaskInProgressResponse } from "~/types/api";
@@ -29,6 +29,8 @@ const formatStatusForDisplay = (
 };
 
 export const InProgressMonitorTasksList = () => {
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
+
   const {
     // List state and data
     searchQuery,
@@ -58,9 +60,14 @@ export const InProgressMonitorTasksList = () => {
     [updateStatusFilters],
   );
 
+  const handleApplyFilters = useCallback(() => {
+    applyFilters();
+    setFilterPopoverOpen(false);
+  }, [applyFilters]);
+
   const filterContent = (
     <div className="min-w-[220px] p-2">
-      <div className="mb-5 flex flex-col gap-1.5">
+      <Flex vertical className="mb-5 gap-1.5">
         <Checkbox.Group
           value={statusFilters}
           onChange={handleStatusesChanged}
@@ -78,12 +85,12 @@ export const InProgressMonitorTasksList = () => {
         >
           Dismissed
         </Checkbox>
-      </div>
+      </Flex>
       <Flex justify="space-between">
         <Button size="small" onClick={resetToDefault}>
           Reset
         </Button>
-        <Button size="small" type="primary" onClick={applyFilters}>
+        <Button size="small" type="primary" onClick={handleApplyFilters}>
           Apply
         </Button>
       </Flex>
@@ -107,6 +114,8 @@ export const InProgressMonitorTasksList = () => {
           content={filterContent}
           trigger="click"
           placement="bottomRight"
+          open={filterPopoverOpen}
+          onOpenChange={setFilterPopoverOpen}
         >
           <Button icon={<Icons.ChevronDown />} iconPosition="end">
             Filter
