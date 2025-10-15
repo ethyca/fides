@@ -585,7 +585,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             if sub_request.status == ExecutionLogStatus.complete.value:
                 continue
 
-            param_values = sub_request.param_values
+            param_values = sub_request.param_values.copy()
+
+            # Add secrets to param_values to enable placeholder resolution in polling requests
+            # This ensures that placeholders coming from the connectors secrets are resolved
+            if client.configuration.secrets:
+                param_values.update(client.configuration.secrets)
 
             try:
                 # Check status of the sub-request
