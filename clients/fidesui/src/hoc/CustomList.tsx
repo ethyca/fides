@@ -16,10 +16,6 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
   ) => React.ReactNode;
 }
 
-/**
- * Helper to extract a unique key from a list item.
- * Checks for explicit key property, falls back to index.
- */
 const getItemKey = <T,>(item: T, index: number): React.Key => {
   if (item && typeof item === "object" && "key" in item) {
     return (item as { key: React.Key }).key;
@@ -123,48 +119,9 @@ const withCustomProps = (WrappedComponent: typeof List) => {
 };
 
 /**
- * Enhanced List component that adds row selection functionality to Ant Design's List.
- * Provides selection capability similar to Table's rowSelection API.
- *
- * Features:
- * - Checkbox provided as third parameter to renderItem when rowSelection is enabled
- * - Controlled selection state via selectedRowKeys
- * - Conditional disabling through getCheckboxProps
- * - onChange callback receives both selected keys and full item objects
- *
- * Key Extraction:
- * - Items should have a `key` property for stable selection tracking
- * - Falls back to array index if no key property exists (not recommended for dynamic lists)
- *
- * @example
- * ```tsx
- * import { AntList as List } from "fidesui";
- *
- * // With row selection
- * <List
- *   dataSource={items}
- *   rowSelection={{
- *     selectedRowKeys: selected,
- *     onChange: (keys, rows) => setSelected(keys),
- *     getCheckboxProps: (item) => ({ disabled: item.locked })
- *   }}
- *   renderItem={(item, index, checkbox) => (
- *     <List.Item>
- *       <List.Item.Meta
- *         avatar={checkbox}
- *         title={item.title}
- *         description={item.description}
- *       />
- *     </List.Item>
- *   )}
- * />
- *
- * // Without row selection (checkbox will be undefined)
- * <List
- *   dataSource={items}
- *   renderItem={(item) => <List.Item>{item.title}</List.Item>}
- * />
- * ```
+ * Enhanced List component that adds row selection functionality to Ant Design's Table.
+ * It adds a checkbox param to the renderItem so you can render it (usually in the avatar position).
+ * For an example, check out the CustomList POC in the admin-ui repo.
  */
 const CustomListComponent = withCustomProps(List);
 
