@@ -124,7 +124,7 @@ Whether the user should be shown the consent experience. Only available on Fides
 
 #### extraDetails.consentMethod?
 
-> `optional` **consentMethod**: `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"acknowledge"` \| `"gpc"` \| `"script"` \| `"ot_migration"`
+> `optional` **consentMethod**: `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"acknowledge"` \| `"gpc"` \| `"script"` \| `"external_provider"`
 
 What consent method (if any) caused this event.
 
