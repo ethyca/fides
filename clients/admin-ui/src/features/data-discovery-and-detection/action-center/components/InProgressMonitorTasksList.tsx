@@ -42,7 +42,7 @@ export const InProgressMonitorTasksList = () => {
 
     // Filter actions
     resetToDefault,
-    clearAllFilters,
+    applyFilters,
 
     // Available filter options
     availableStatuses,
@@ -74,16 +74,15 @@ export const InProgressMonitorTasksList = () => {
       <Checkbox
         checked={showDismissed}
         onChange={(e) => updateShowDismissed(e.target.checked)}
-        className="mb-2"
       >
-        Show dismissed tasks
+        Dismissed
       </Checkbox>
       <Space>
         <Button size="small" onClick={resetToDefault}>
-          Default
+          Reset
         </Button>
-        <Button size="small" onClick={clearAllFilters}>
-          Clear
+        <Button size="small" type="primary" onClick={applyFilters}>
+          Apply
         </Button>
       </Space>
     </div>

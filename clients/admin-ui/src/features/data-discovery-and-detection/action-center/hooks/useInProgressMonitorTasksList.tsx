@@ -17,14 +17,25 @@ export const useInProgressMonitorTasksList = () => {
 
   const { searchQuery, updateSearch: setSearchQuery } = useSearch();
 
-  const [statusFilters, setStatusFilters] = useState<ExecutionLogStatus[]>([
+  const defaultStatusFilters = [
     ExecutionLogStatus.PENDING,
     ExecutionLogStatus.IN_PROCESSING,
     ExecutionLogStatus.PAUSED,
     ExecutionLogStatus.RETRYING,
     ExecutionLogStatus.ERROR,
-  ]); // Default to all "in progress" states plus error tasks
-  const [showDismissed, setShowDismissed] = useState(false); // Default to not showing dismissed tasks
+  ];
+
+  // Applied filters are what's actually used in the query
+  const [appliedStatusFilters, setAppliedStatusFilters] = useState<
+    ExecutionLogStatus[]
+  >(defaultStatusFilters);
+  const [appliedShowDismissed, setAppliedShowDismissed] = useState(false);
+
+  // Staged filters are what the user is selecting in the UI
+  const [stagedStatusFilters, setStagedStatusFilters] = useState<
+    ExecutionLogStatus[]
+  >(defaultStatusFilters);
+  const [stagedShowDismissed, setStagedShowDismissed] = useState(false);
 
   const updateSearch = useCallback(
     (newSearch: string) => {
@@ -34,41 +45,26 @@ export const useInProgressMonitorTasksList = () => {
     [setSearchQuery, updatePageIndex],
   );
 
-  const updateStatusFilters = useCallback(
-    (filters: ExecutionLogStatus[]) => {
-      setStatusFilters(filters);
-      updatePageIndex(1);
-    },
-    [updatePageIndex],
-  );
+  const updateStatusFilters = useCallback((filters: ExecutionLogStatus[]) => {
+    setStagedStatusFilters(filters);
+  }, []);
 
-  const updateShowDismissed = useCallback(
-    (show: boolean) => {
-      setShowDismissed(show);
-      updatePageIndex(1);
-    },
-    [updatePageIndex],
-  );
+  const updateShowDismissed = useCallback((show: boolean) => {
+    setStagedShowDismissed(show);
+  }, []);
 
-  // Default button: Reset to all "In Progress" states plus error tasks (pending, in_processing, paused, retrying, error)
+  // Apply button: Apply staged filters to actual query
+  const applyFilters = useCallback(() => {
+    setAppliedStatusFilters(stagedStatusFilters);
+    setAppliedShowDismissed(stagedShowDismissed);
+    updatePageIndex(1);
+  }, [stagedStatusFilters, stagedShowDismissed, updatePageIndex]);
+
+  // Reset button: Reset staged filters to default
   const resetToDefault = useCallback(() => {
-    setStatusFilters([
-      ExecutionLogStatus.PENDING,
-      ExecutionLogStatus.IN_PROCESSING,
-      ExecutionLogStatus.PAUSED,
-      ExecutionLogStatus.RETRYING,
-      ExecutionLogStatus.ERROR,
-    ]);
-    setShowDismissed(false);
-    resetPagination();
-  }, [resetPagination]);
-
-  // Clear button: Remove all filters
-  const clearAllFilters = useCallback(() => {
-    setStatusFilters([]);
-    setShowDismissed(true); // When clearing all filters, show everything including dismissed
-    resetPagination();
-  }, [resetPagination]);
+    setStagedStatusFilters(defaultStatusFilters);
+    setStagedShowDismissed(false);
+  }, []);
 
   // All possible status values from ExecutionLogStatus enum
   // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
@@ -86,8 +82,9 @@ export const useInProgressMonitorTasksList = () => {
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    statuses: statusFilters.length > 0 ? statusFilters : undefined,
-    return_dismissed: showDismissed,
+    statuses:
+      appliedStatusFilters.length > 0 ? appliedStatusFilters : undefined,
+    return_dismissed: appliedShowDismissed,
   });
 
   const listProps = useMemo(
@@ -128,15 +125,15 @@ export const useInProgressMonitorTasksList = () => {
     searchQuery,
     updateSearch,
 
-    // Filter states and controls
-    statusFilters,
+    // Filter states and controls (staged, not yet applied)
+    statusFilters: stagedStatusFilters,
     updateStatusFilters,
-    showDismissed,
+    showDismissed: stagedShowDismissed,
     updateShowDismissed,
 
     // Filter actions
     resetToDefault,
-    clearAllFilters,
+    applyFilters,
 
     // Available filter options
     availableStatuses: allPossibleStatuses,
