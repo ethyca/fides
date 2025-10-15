@@ -2,12 +2,10 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
-  AntMenuProps as MenuProps,
   AntMessage as message,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  Icons,
   Portal,
   useDisclosure,
 } from "fidesui";
@@ -27,6 +25,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
+import { usePrivacyRequestBulkActions } from "../hooks/usePrivacyRequestBulkActions";
 import { ListItem } from "./list-item/ListItem";
 
 export const PrivacyRequestsDashboard = () => {
@@ -53,8 +52,13 @@ export const PrivacyRequestsDashboard = () => {
   });
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
+    // Add explicit key property for Ant Design List selection
+    const itemsWithKeys = results.items.map((item) => ({
+      ...item,
+      key: item.id,
+    }));
 
-    return results;
+    return { ...results, items: itemsWithKeys };
   }, [data]);
 
   const { downloadReport } = useDownloadPrivacyRequestReport();
@@ -83,52 +87,36 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
-  const bulkActionMenuItems: MenuProps["items"] = [
-    {
-      key: "approve",
-      label: "Approve",
-      icon: <Icons.Checkmark />,
-      onClick: () => {
-        // TODO: Implement approve functionality
-        // eslint-disable-next-line no-console
-        console.log("Approve clicked for:", selectedRequestKeys);
-      },
+  // Get selected requests from the list
+  const selectedRequests = useMemo(
+    () =>
+      requests.filter((request) => selectedRequestKeys.includes(request.id)),
+    [requests, selectedRequestKeys],
+  );
+
+  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
+    selectedRequests,
+    onApprove: () => {
+      // TODO: Implement approve functionality
+      // eslint-disable-next-line no-console
+      console.log("Approve clicked for:", selectedRequestKeys);
     },
-    {
-      key: "deny",
-      label: "Deny",
-      icon: <Icons.Close />,
-      onClick: () => {
-        // TODO: Implement deny functionality
-        // eslint-disable-next-line no-console
-        console.log("Deny clicked for:", selectedRequestKeys);
-      },
+    onDeny: () => {
+      // TODO: Implement deny functionality
+      // eslint-disable-next-line no-console
+      console.log("Deny clicked for:", selectedRequestKeys);
     },
-    {
-      type: "divider",
+    onFinalize: () => {
+      // TODO: Implement finalize functionality
+      // eslint-disable-next-line no-console
+      console.log("Finalize clicked for:", selectedRequestKeys);
     },
-    {
-      key: "finalize",
-      label: "Finalize",
-      icon: <Icons.Stamp />,
-      onClick: () => {
-        // TODO: Implement finalize functionality
-        // eslint-disable-next-line no-console
-        console.log("Finalize clicked for:", selectedRequestKeys);
-      },
+    onDelete: () => {
+      // TODO: Implement delete functionality
+      // eslint-disable-next-line no-console
+      console.log("Delete clicked for:", selectedRequestKeys);
     },
-    {
-      key: "delete",
-      label: "Delete",
-      icon: <Icons.TrashCan />,
-      danger: true,
-      onClick: () => {
-        // TODO: Implement delete functionality
-        // eslint-disable-next-line no-console
-        console.log("Delete clicked for:", selectedRequestKeys);
-      },
-    },
-  ];
+  });
 
   return (
     <div>
