@@ -34,6 +34,16 @@ export const MonitorResultDescription = ({
       .sort((a, b) => {
         const indexA = MONITOR_UPDATE_ORDER.indexOf(a[0] as MonitorUpdateKey);
         const indexB = MONITOR_UPDATE_ORDER.indexOf(b[0] as MonitorUpdateKey);
+        // Handle keys not in order array by placing them at the end
+        if (indexA === -1 && indexB === -1) {
+          return 0;
+        }
+        if (indexA === -1) {
+          return 1;
+        }
+        if (indexB === -1) {
+          return -1;
+        }
         return indexA - indexB;
       })
       .map(([key, count]) => {
