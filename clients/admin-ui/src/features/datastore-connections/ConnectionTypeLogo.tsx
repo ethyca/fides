@@ -43,6 +43,8 @@ type SystemTypeLike = Pick<
   "identifier" | "human_readable" | "encoded_icon"
 >;
 
+export const DEFAULT_LOGO_SIZE = 32;
+
 export enum ConnectionLogoKind {
   CONNECTION = "connection",
   SYSTEM = "system",
@@ -154,7 +156,8 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
         return FALLBACK_WEBSITE_LOGO_PATH;
       }
       const domain = getDomain(data.websiteUrl);
-      const brandIconUrl = getBrandIconUrl(domain, 100);
+      const retinaSize = (size ?? DEFAULT_LOGO_SIZE) * 2;
+      const brandIconUrl = getBrandIconUrl(domain, retinaSize);
       return brandIconUrl;
     }
 
@@ -203,9 +206,12 @@ const ConnectionTypeLogo = ({
   size,
   ...props
 }: ConnectionTypeLogoProps & AvatarProps) => {
-  const imageSrc = useMemo(() => getImageSrc(data), [data]);
+  const imageSrc = useMemo(
+    () => getImageSrc(data, size as number),
+    [data, size],
+  );
   const fallbackIcon = useMemo(
-    () => getFallbackIcon(data, (size as number) ?? 32),
+    () => getFallbackIcon(data, (size as number) ?? DEFAULT_LOGO_SIZE),
     [data, size],
   );
   const altValue = useMemo(() => getAltValue(data), [data]);
@@ -213,7 +219,7 @@ const ConnectionTypeLogo = ({
     <Avatar
       shape="square"
       src={imageSrc}
-      size={size ?? 32}
+      size={size ?? DEFAULT_LOGO_SIZE}
       icon={fallbackIcon}
       alt={altValue}
       {...props}
