@@ -28,9 +28,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
+- Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
 
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
+- Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
 
 ## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
 
