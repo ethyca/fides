@@ -271,29 +271,21 @@ export const truncateUrl = (url: string, limit: number): string => {
 };
 
 /**
- * Formats a number with a suffix for large numbers (k, M, etc.)
+ * Formats a number with a suffix for large numbers (K, M, etc.)
  * @param num - The number to format
  * @param digits - The number of digits to round to (default is 0)
  * @returns The formatted number as a string
  *
+ * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
+ *
  * @example
- * nFormatter(1111); // returns "1k"
- * nFormatter(1111, 0); // returns "1k"
- * nFormatter(1111, 1); // returns "1.1k"
- * nFormatter(1111, 2); // returns "1.11k"
+ * nFormatter(1111); // returns "1K"
+ * nFormatter(1111, 0); // returns "1K"
+ * nFormatter(1111, 1); // returns "1.1K"
+ * nFormatter(1111, 2); // returns "1.11K"
  */
-export const nFormatter = (num: number = 0, digits: number = 0) => {
-  const lookup = [
-    { value: 1, symbol: "" },
-    { value: 1e3, symbol: "k" },
-    { value: 1e6, symbol: "M" },
-  ];
-  const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/;
-  const item = lookup
-    .slice()
-    .reverse()
-    .find((i) => num >= i.value);
-  return item
-    ? (num / item.value).toFixed(digits).replace(regexp, "").concat(item.symbol)
-    : "0";
-};
+export const nFormatter = (num: number = 0, digits: number = 0) =>
+  Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: digits,
+  }).format(num);
