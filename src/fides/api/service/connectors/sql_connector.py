@@ -370,7 +370,7 @@ class SQLConnector(BaseConnector[Engine]):
             return True
 
     def _check_table_exists(
-        self, inspector, table_name: str, schema: Optional[str] = None
+        self, inspector: Any, table_name: str, schema: Optional[str] = None
     ) -> bool:
         """Helper method to check table existence and log if not found."""
         table_exists = inspector.has_table(table_name, schema=schema)
