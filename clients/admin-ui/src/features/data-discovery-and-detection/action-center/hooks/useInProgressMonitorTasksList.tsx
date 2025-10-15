@@ -26,15 +26,13 @@ export const useInProgressMonitorTasksList = () => {
   ];
 
   // Applied filters are what's actually used in the query
-  const [appliedStatusFilters, setAppliedStatusFilters] = useState<
-    ExecutionLogStatus[]
-  >(defaultStatusFilters);
+  const [appliedStatusFilters, setAppliedStatusFilters] =
+    useState<ExecutionLogStatus[]>(defaultStatusFilters);
   const [appliedShowDismissed, setAppliedShowDismissed] = useState(false);
 
   // Staged filters are what the user is selecting in the UI
-  const [stagedStatusFilters, setStagedStatusFilters] = useState<
-    ExecutionLogStatus[]
-  >(defaultStatusFilters);
+  const [stagedStatusFilters, setStagedStatusFilters] =
+    useState<ExecutionLogStatus[]>(defaultStatusFilters);
   const [stagedShowDismissed, setStagedShowDismissed] = useState(false);
 
   const updateSearch = useCallback(
