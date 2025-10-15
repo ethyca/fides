@@ -36,7 +36,7 @@ class TestDataCategoryTaggingInstructionsSchema:
             "description": "Test category for tagging instructions",
             "tagging_instructions": "* DO TAG: email addresses\n* DO NOT TAG: encrypted data",
         }
-        category = DataCategory.create(db=db, data=payload)
+        category = DataCategory.create(db=db, data=payload, check_name=False)
         yield category
 
     def test_create_data_category_with_tagging_instructions(
@@ -100,6 +100,7 @@ class TestDataCategoryTaggingInstructionsSchema:
         # First create a category without tagging_instructions
         category = DataCategory.create(
             db=db,
+            check_name=False,
             data={
                 "name": "Test Update Category",
                 "fides_key": "test_update_category",
@@ -170,7 +171,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
             "is_default": False,
             "description": "Category for patch testing",
         }
-        category = DataCategory.create(db=db, data=payload)
+        category = DataCategory.create(db=db, data=payload, check_name=False)
         yield category
 
     @pytest.fixture(scope="function")
@@ -258,6 +259,7 @@ class TestUpdateTaggingInstructionsPatchEndpoint:
         # Create category with existing instructions
         category = DataCategory.create(
             db=db,
+            check_name=False,
             data={
                 "name": "Overwrite Test",
                 "fides_key": "test_overwrite_category",
@@ -302,7 +304,7 @@ class TestDeleteTaggingInstructionsEndpoint:
             "description": "Category for delete testing",
             "tagging_instructions": "* DO TAG: to be deleted",
         }
-        category = DataCategory.create(db=db, data=payload)
+        category = DataCategory.create(db=db, data=payload, check_name=False)
         yield category
 
     @pytest.fixture(scope="function")
@@ -376,6 +378,7 @@ class TestDeleteTaggingInstructionsEndpoint:
         # Create category without instructions
         category = DataCategory.create(
             db=db,
+            check_name=False,
             data={
                 "name": "No Instructions",
                 "fides_key": "test_no_instructions",
