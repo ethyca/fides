@@ -26,7 +26,7 @@ import { useState } from "react";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
 
-import { listData } from "./custom-list/constants";
+import { listData } from "../../features/poc/custom-list/constants";
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;

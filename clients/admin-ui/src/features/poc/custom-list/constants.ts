@@ -1,4 +1,12 @@
-export const listData = [
+export interface ListDataItem {
+  key: string;
+  title: string;
+  description: string;
+  status: "active" | "completed";
+  locked?: boolean;
+}
+
+export const listData: ListDataItem[] = [
   {
     key: "1",
     title: "Task Alpha",
