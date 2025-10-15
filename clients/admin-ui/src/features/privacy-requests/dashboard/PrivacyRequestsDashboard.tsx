@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { DownloadLightIcon } from "~/features/common/Icon";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
   selectPrivacyRequestFilters,
@@ -94,29 +95,10 @@ export const PrivacyRequestsDashboard = () => {
     [requests, selectedRequestKeys],
   );
 
-  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
-    selectedRequests,
-    onApprove: () => {
-      // TODO: Implement approve functionality
-      // eslint-disable-next-line no-console
-      console.log("Approve clicked for:", selectedRequestKeys);
-    },
-    onDeny: () => {
-      // TODO: Implement deny functionality
-      // eslint-disable-next-line no-console
-      console.log("Deny clicked for:", selectedRequestKeys);
-    },
-    onFinalize: () => {
-      // TODO: Implement finalize functionality
-      // eslint-disable-next-line no-console
-      console.log("Finalize clicked for:", selectedRequestKeys);
-    },
-    onDelete: () => {
-      // TODO: Implement delete functionality
-      // eslint-disable-next-line no-console
-      console.log("Delete clicked for:", selectedRequestKeys);
-    },
-  });
+  const { bulkActionMenuItems, confirmationModalState } =
+    usePrivacyRequestBulkActions({
+      selectedRequests,
+    });
 
   return (
     <div>
@@ -188,6 +170,7 @@ export const PrivacyRequestsDashboard = () => {
         </Flex>
       )}
       {messageContext}
+      <ConfirmationModal {...confirmationModalState} />
     </div>
   );
 };
