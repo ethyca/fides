@@ -1,7 +1,6 @@
 import {
   AntAvatar as Avatar,
   AntAvatarProps as AvatarProps,
-  EthycaLogo,
   Icons,
 } from "fidesui";
 import React, { useMemo } from "react";
@@ -16,7 +15,6 @@ import styles from "./ConnectionTypeLogo.module.scss";
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
-  FALLBACK_CONNECTOR_LOGOS_PATH,
   SAAS_TYPE_LOGO_MAP,
 } from "./constants";
 
@@ -71,10 +69,6 @@ export type ConnectionLogoSource =
       key: string;
     };
 
-const FALLBACK_WEBSITE_LOGO_PATH =
-  CONNECTOR_LOGOS_PATH +
-  CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.WEBSITE);
-
 const connectionLikeToLogo = (
   connection: ConnectionLike,
 ): ConnectionLogoSource => ({
@@ -125,7 +119,7 @@ const resolveSaasLogo = (saasType?: string | null) => {
 
 const buildStaticLogoPath = (key: string) => {
   if (!key) {
-    return FALLBACK_CONNECTOR_LOGOS_PATH;
+    return undefined;
   }
   if (key.startsWith("data:")) {
     return key;
@@ -137,7 +131,10 @@ const buildStaticLogoPath = (key: string) => {
   return CONNECTOR_LOGOS_PATH + normalizedKey;
 };
 
-const getImageSrc = (data: ConnectionLogoSource): string => {
+const getImageSrc = (
+  data: ConnectionLogoSource,
+  size?: number,
+): string | undefined => {
   if (data.kind === ConnectionLogoKind.SYSTEM) {
     if (data.encodedIcon) {
       return `data:image/svg+xml;base64,${data.encodedIcon}`;
@@ -145,15 +142,13 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
     const item = [...CONNECTION_TYPE_LOGO_MAP].find(
       ([key]) => key.toLowerCase() === data.identifier.toLowerCase(),
     );
-    return item
-      ? CONNECTOR_LOGOS_PATH + item[1]
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
+    return item ? CONNECTOR_LOGOS_PATH + item[1] : undefined;
   }
 
   if (data.kind === ConnectionLogoKind.CONNECTION) {
     if (isWebsite(data.connectionType)) {
       if (!data.websiteUrl) {
-        return FALLBACK_WEBSITE_LOGO_PATH;
+        return undefined;
       }
       const domain = getDomain(data.websiteUrl);
       const retinaSize = (size ?? DEFAULT_LOGO_SIZE) * 2;
@@ -169,9 +164,11 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
     }
 
     const mappedLogo = CONNECTION_TYPE_LOGO_MAP.get(data.connectionType);
-    return mappedLogo
-      ? CONNECTOR_LOGOS_PATH + mappedLogo
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
+    return mappedLogo ? CONNECTOR_LOGOS_PATH + mappedLogo : undefined;
+  }
+
+  if (!data.key) {
+    return undefined;
   }
 
   return buildStaticLogoPath(data.key);
@@ -194,7 +191,7 @@ const getFallbackIcon = (data: ConnectionLogoSource, size: number) => {
   ) {
     return <Icons.Wikis size={size} />;
   }
-  return <EthycaLogo width={size} height={size} />;
+  return <Icons.Db2Database size={size} />;
 };
 
 type ConnectionTypeLogoProps = {
@@ -215,6 +212,9 @@ const ConnectionTypeLogo = ({
     [data, size],
   );
   const altValue = useMemo(() => getAltValue(data), [data]);
+  if (!data) {
+    return null;
+  }
   return (
     <Avatar
       shape="square"
