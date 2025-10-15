@@ -262,4 +262,3 @@ multilang_migration_backup_*
 
 .cursor/rules
 .cursor/implementation-plans
-.cursor/commands

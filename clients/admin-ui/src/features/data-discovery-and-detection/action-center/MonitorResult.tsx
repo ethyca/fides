@@ -11,9 +11,8 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 import NextLink from "next/link";
-import { useMemo } from "react";
 
-import { formatDate, getDomain, nFormatter } from "~/features/common/utils";
+import { formatDate, nFormatter } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
