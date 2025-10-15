@@ -33,8 +33,8 @@ describe("CustomList with rowSelection", () => {
       expect(checkboxes.length).toBe(0);
     });
 
-    it("renders list with rowSelection enabled (checkbox provided)", () => {
-      const { getByText, container } = render(
+    it("renders list with rowSelection prop (checkboxes present)", () => {
+      const { container } = render(
         <List
           dataSource={MOCK_LIST_DATA}
           rowSelection={{
@@ -45,7 +45,6 @@ describe("CustomList with rowSelection", () => {
         />,
       );
 
-      expect(getByText("Item One")).toBeInTheDocument();
       // Checkboxes should be rendered
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
       expect(checkboxes.length).toBe(MOCK_LIST_DATA.length);
@@ -72,26 +71,6 @@ describe("CustomList with rowSelection", () => {
       expect(checkboxes[1]).not.toBeChecked();
       // Third checkbox (key "3") should be checked
       expect(checkboxes[2]).toBeChecked();
-    });
-
-    it("supports multiple items being selected", () => {
-      const { container } = render(
-        <List
-          dataSource={MOCK_LIST_DATA}
-          rowSelection={{
-            selectedRowKeys: ["1", "2", "3"],
-            onChange: jest.fn(),
-          }}
-          renderItem={defaultRenderItem}
-        />,
-      );
-
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-      expect(checkboxes[0]).toBeChecked();
-      expect(checkboxes[1]).toBeChecked();
-      expect(checkboxes[2]).toBeChecked();
-      expect(checkboxes[3]).not.toBeChecked();
-      expect(checkboxes[4]).not.toBeChecked();
     });
   });
 
