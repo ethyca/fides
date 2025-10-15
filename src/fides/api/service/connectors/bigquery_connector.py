@@ -151,6 +151,7 @@ class BigQueryConnector(SQLConnector):
         statements: List[Executable],
         sql_dry_run_enabled: bool,
         client: Engine,
+        node: Optional[ExecutionNode] = None,
     ) -> int:
         """
         Execute SQL statements with sql_dry_run support.
@@ -159,6 +160,7 @@ class BigQueryConnector(SQLConnector):
             statements: List of SQL statements to execute
             sql_dry_run_enabled: Whether sql_dry_run mode is enabled
             client: Database engine
+            node: ExecutionNode for table existence checking (optional)
 
         Returns:
             int: Number of affected rows (0 in sql_dry_run mode)
@@ -174,9 +176,24 @@ class BigQueryConnector(SQLConnector):
         row_count = 0
         with client.connect() as connection:
             for stmt in statements:
-                results = connection.execute(stmt)
-                logger.debug(f"Affected {results.rowcount} rows")
-                row_count += results.rowcount
+                try:
+                    results = connection.execute(stmt)
+                    logger.debug(f"Affected {results.rowcount} rows")
+                    row_count += results.rowcount
+                except Exception as exc:
+                    # Check if table exists using qualified table name (if node provided)
+                    if node is not None:
+                        qualified_table_name = self.get_qualified_table_name(node)
+                        if not self.table_exists(qualified_table_name):
+                            # Central decision point - will raise TableNotFound or ConnectionException
+                            self.handle_table_not_found(
+                                node=node,
+                                table_name=qualified_table_name,
+                                operation_context="data erasure",
+                                original_exception=exc,
+                            )
+                    # Table exists or can't check - re-raise original exception
+                    raise
         return row_count
 
     def mask_data(
@@ -198,7 +215,7 @@ class BigQueryConnector(SQLConnector):
             delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
             update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                delete_stmts, self.should_dry_run(SqlDryRunMode.erasure), client
+                delete_stmts, self.should_dry_run(SqlDryRunMode.erasure), client, node
             )
         else:
             for row in rows:
@@ -212,5 +229,6 @@ class BigQueryConnector(SQLConnector):
                     update_or_delete_stmts,
                     self.should_dry_run(SqlDryRunMode.erasure),
                     client,
+                    node,
                 )
         return update_or_delete_ct
