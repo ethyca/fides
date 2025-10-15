@@ -766,6 +766,246 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@putMonitor");
       });
 
+      describe("LLM classifier configuration", () => {
+        it("should not show LLM classifier fields without feature flag", () => {
+          cy.intercept("GET", "/api/v1/plus/health", {
+            fixture: "health-plus-no-alpha.json",
+          }).as("getHealthNoAlpha");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // LLM classifier switch should not be visible
+          cy.contains("Use LLM Classifier").should("not.exist");
+        });
+
+        it("should show LLM classifier switch with feature flag enabled", () => {
+          cy.intercept("GET", "/api/v1/plus/health", {
+            body: {
+              webserver: "healthy",
+              database: "healthy",
+              cache: "healthy",
+              version: "test",
+              feature_flags: {
+                alphaFullActionCenter: true,
+              },
+            },
+          }).as("getHealthWithAlpha");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // LLM classifier switch should be visible
+          cy.contains("Use LLM Classifier").should("exist");
+        });
+
+        it("can configure a monitor with LLM classifier enabled", () => {
+          cy.intercept("GET", "/api/v1/plus/health", {
+            body: {
+              webserver: "healthy",
+              database: "healthy",
+              cache: "healthy",
+              version: "test",
+              feature_flags: {
+                alphaFullActionCenter: true,
+              },
+            },
+          }).as("getHealthWithAlpha");
+
+          cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+            response: 200,
+          }).as("putMonitor");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+          cy.getByTestId("input-name").type("Monitor with LLM");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("use-llm-classifier-switch").click();
+
+          // LLM fields should now be visible
+          cy.getByTestId("input-model_override").should("be.visible");
+          cy.getByTestId("controlled-select-prompt_template").should(
+            "be.visible",
+          );
+
+          // Fill in LLM fields
+          cy.getByTestId("input-model_override").type("gpt-4");
+          cy.getByTestId("controlled-select-prompt_template").antSelect("Full");
+
+          cy.getByTestId("controlled-select-execution_frequency").antSelect(
+            "Daily",
+          );
+          cy.getByTestId("input-execution_start_date").type(
+            "2034-06-03T10:00",
+          );
+          cy.getByTestId("next-btn").click();
+          cy.wait("@getDatabasesPage1");
+          cy.getByTestId("prj-bigquery-000001-checkbox").click();
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@putMonitor").then((interception) => {
+            // Verify LLM classifier fields are in the request
+            expect(interception.request.body.classify_params.context_classifier).to.equal("llm");
+            expect(interception.request.body.classify_params.model_override).to.equal("gpt-4");
+            expect(interception.request.body.classify_params.prompt_template).to.equal("full");
+          });
+        });
+
+        it("should hide LLM fields when switch is toggled off", () => {
+          cy.intercept("GET", "/api/v1/plus/health", {
+            body: {
+              webserver: "healthy",
+              database: "healthy",
+              cache: "healthy",
+              version: "test",
+              feature_flags: {
+                alphaFullActionCenter: true,
+              },
+            },
+          }).as("getHealthWithAlpha");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("use-llm-classifier-switch").click();
+          cy.getByTestId("input-model_override").should("be.visible");
+
+          // Toggle it back off
+          cy.getByTestId("use-llm-classifier-switch").click();
+          cy.getByTestId("input-model_override").should("not.exist");
+          cy.getByTestId("controlled-select-prompt_template").should(
+            "not.exist",
+          );
+        });
+
+        it("should load existing monitor with LLM classifier enabled", () => {
+          cy.intercept("GET", "/api/v1/plus/health", {
+            body: {
+              webserver: "healthy",
+              database: "healthy",
+              cache: "healthy",
+              version: "test",
+              feature_flags: {
+                alphaFullActionCenter: true,
+              },
+            },
+          }).as("getHealthWithAlpha");
+
+          // Add a monitor with LLM classifier to the fixture
+          cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+            body: {
+              items: [
+                {
+                  key: "test_monitor_with_llm",
+                  name: "Test Monitor with LLM",
+                  connection_config_key: "bq_integration",
+                  execution_frequency: "monthly",
+                  execution_start_date: "2024-06-04T19:11:00+00:00",
+                  databases: ["prj-bigquery-000001"],
+                  classify_params: {
+                    context_classifier: "llm",
+                    model_override: "gpt-4",
+                    prompt_template: "full",
+                    num_samples: 25,
+                    num_threads: 1,
+                  },
+                },
+              ],
+              total: 1,
+              page: 1,
+              size: 50,
+            },
+          }).as("getMonitorsWithLLM");
+
+          cy.visit(
+            `${INTEGRATION_MANAGEMENT_ROUTE}/bq_integration?tab=monitors`,
+          );
+          cy.wait("@getMonitorsWithLLM");
+
+          cy.getAntTableRow("test_monitor_with_llm").within(() => {
+            cy.getByTestId("edit-monitor-btn").click();
+          });
+
+          // LLM switch should be checked
+          cy.getByTestId("use-llm-classifier-switch").should("be.checked");
+
+          // LLM fields should be visible and populated
+          cy.getByTestId("input-model_override")
+            .should("be.visible")
+            .should("have.value", "gpt-4");
+        });
+
+        it("should clear LLM fields when toggling off in edit mode", () => {
+          cy.intercept("GET", "/api/v1/plus/health", {
+            body: {
+              webserver: "healthy",
+              database: "healthy",
+              cache: "healthy",
+              version: "test",
+              feature_flags: {
+                alphaFullActionCenter: true,
+              },
+            },
+          }).as("getHealthWithAlpha");
+
+          cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+            body: {
+              items: [
+                {
+                  key: "test_monitor_with_llm",
+                  name: "Test Monitor with LLM",
+                  connection_config_key: "bq_integration",
+                  execution_frequency: "monthly",
+                  execution_start_date: "2024-06-04T19:11:00+00:00",
+                  databases: ["prj-bigquery-000001"],
+                  classify_params: {
+                    context_classifier: "llm",
+                    model_override: "gpt-4",
+                    prompt_template: "full",
+                    num_samples: 25,
+                    num_threads: 1,
+                  },
+                },
+              ],
+              total: 1,
+              page: 1,
+              size: 50,
+            },
+          }).as("getMonitorsWithLLM");
+
+          cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+            response: 200,
+          }).as("putMonitor");
+
+          cy.visit(
+            `${INTEGRATION_MANAGEMENT_ROUTE}/bq_integration?tab=monitors`,
+          );
+          cy.wait("@getMonitorsWithLLM");
+
+          cy.getAntTableRow("test_monitor_with_llm").within(() => {
+            cy.getByTestId("edit-monitor-btn").click();
+          });
+
+          // Toggle LLM classifier off
+          cy.getByTestId("use-llm-classifier-switch").click();
+
+          // Fields should be hidden
+          cy.getByTestId("input-model_override").should("not.exist");
+
+          cy.getByTestId("next-btn").click();
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@putMonitor").then((interception) => {
+            // Verify LLM classifier fields are cleared
+            expect(interception.request.body.classify_params.context_classifier).to.be.undefined;
+            expect(interception.request.body.classify_params.model_override).to.be.undefined;
+            expect(interception.request.body.classify_params.prompt_template).to.be.undefined;
+          });
+        });
+      });
+
       describe("shared monitor configs", () => {
         beforeEach(() => {
           stubTaxonomyEntities();
