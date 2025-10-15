@@ -1,7 +1,11 @@
 import { AntMenuProps as MenuProps, Icons } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import { BulkActionType, isActionSupportedByRequests } from "../helpers";
+import {
+  BulkActionType,
+  getAvailableActionsForRequest,
+  isActionSupportedByRequests,
+} from "../helpers";
 import { PrivacyRequestEntity } from "../types";
 
 interface UsePrivacyRequestBulkActionsProps {
@@ -106,17 +110,37 @@ export const usePrivacyRequestBulkActions = ({
   }, [selectedRequests, handleActionClick]);
 
   const confirmationModalState: ConfirmationModalState = useMemo(() => {
-    const count = selectedRequests.length;
+    const totalCount = selectedRequests.length;
     const actionLabel = pendingAction ? ACTION_LABELS[pendingAction] : "";
+
+    // Count how many requests actually support this action
+    const supportedCount = pendingAction
+      ? selectedRequests.filter((request) =>
+          getAvailableActionsForRequest(request).includes(pendingAction),
+        ).length
+      : 0;
+
+    const allSupported = supportedCount === totalCount;
+
+    // Generate title
+    const title = `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} privacy requests`;
+
+    // Generate message based on whether all requests support the action
+    let message: string;
+    if (allSupported) {
+      message = `You are about to ${actionLabel} ${totalCount} privacy ${totalCount === 1 ? "request" : "requests"}. Are you sure you want to continue?`;
+    } else {
+      message = `You have selected ${totalCount} ${totalCount === 1 ? "request" : "requests"}, but only ${supportedCount} ${supportedCount === 1 ? "request" : "requests"} can perform this action. If you continue, the bulk action will only be applied to ${supportedCount} ${supportedCount === 1 ? "request" : "requests"}.`;
+    }
 
     return {
       isOpen: pendingAction !== null,
       onClose: handleCloseModal,
       onConfirm: handleConfirm,
-      title: `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} privacy requests`,
-      message: `You are about to ${actionLabel} ${count} privacy ${count === 1 ? "request" : "requests"}. Are you sure you want to continue?`,
+      title,
+      message,
     };
-  }, [pendingAction, selectedRequests.length, handleCloseModal, handleConfirm]);
+  }, [pendingAction, selectedRequests, handleCloseModal, handleConfirm]);
 
   return {
     bulkActionMenuItems,
