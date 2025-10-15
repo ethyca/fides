@@ -83,14 +83,16 @@ describe("Action center", () => {
           });
         });
         // description
-        cy.getByTestId(`monitor-result-${results[0].key}`).should(
-          "contain",
-          "92 Browser requests, 5 Cookies detected.",
-        );
-        cy.getByTestId(`monitor-result-${results[2].key}`).should(
-          "contain",
-          "22 Classifying, 13 In review, 2 Removals, 216 Unlabeled",
-        );
+        cy.getByTestId(`monitor-result-${results[0].key}`)
+          .find(".ant-list-item-meta-description")
+          .should("contain", "92 Browser requests, 5 Cookies detected.");
+        cy.getByTestId(`monitor-result-${results[2].key}`)
+          .find(".ant-list-item-meta-description")
+          .should(
+            "contain",
+            "22 Classifying, 13 In review, 2 Removals, 216 Unlabeled",
+          )
+          .should("not.contain", "0 Assets");
         // date tooltip
         cy.getByTestId(`monitor-result-${results[0].key}`).within(() => {
           cy.get("[data-testid='monitor-date']").realHover();

@@ -19,6 +19,7 @@ export const MonitorResultDescription = ({
     return Object.entries(updates)
       .filter(
         (update) =>
+          update[1] > 0 &&
           !MONITOR_UPDATES_TO_IGNORE.includes(
             update[0] as keyof MonitorAggregatedResults["updates"],
           ),
