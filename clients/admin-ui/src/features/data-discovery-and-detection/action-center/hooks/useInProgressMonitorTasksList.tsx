@@ -7,23 +7,21 @@ import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
 export const useInProgressMonitorTasksList = () => {
-  const {
-    pageIndex,
-    pageSize,
-    updatePageIndex,
-    resetPagination,
-    showSizeChanger,
-  } = usePagination({ defaultPageSize: 20, showSizeChanger: false });
+  const { pageIndex, pageSize, updatePageIndex, showSizeChanger } =
+    usePagination({ defaultPageSize: 20, showSizeChanger: false });
 
   const { searchQuery, updateSearch: setSearchQuery } = useSearch();
 
-  const defaultStatusFilters = [
-    ExecutionLogStatus.PENDING,
-    ExecutionLogStatus.IN_PROCESSING,
-    ExecutionLogStatus.PAUSED,
-    ExecutionLogStatus.RETRYING,
-    ExecutionLogStatus.ERROR,
-  ];
+  const defaultStatusFilters = useMemo(
+    () => [
+      ExecutionLogStatus.PENDING,
+      ExecutionLogStatus.IN_PROCESSING,
+      ExecutionLogStatus.PAUSED,
+      ExecutionLogStatus.RETRYING,
+      ExecutionLogStatus.ERROR,
+    ],
+    [],
+  );
 
   // Applied filters are what's actually used in the query
   const [appliedStatusFilters, setAppliedStatusFilters] =
@@ -62,7 +60,7 @@ export const useInProgressMonitorTasksList = () => {
   const resetToDefault = useCallback(() => {
     setStagedStatusFilters(defaultStatusFilters);
     setStagedShowDismissed(false);
-  }, []);
+  }, [defaultStatusFilters]);
 
   // All possible status values from ExecutionLogStatus enum
   // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
