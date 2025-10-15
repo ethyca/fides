@@ -2,10 +2,12 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
+  AntMenuProps as MenuProps,
   AntMessage as message,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
+  Icons,
   Portal,
   useDisclosure,
 } from "fidesui";
@@ -13,6 +15,7 @@ import { parseAsString, useQueryState } from "nuqs";
 import React, { useCallback, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
+import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
@@ -80,6 +83,53 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
+  const bulkActionMenuItems: MenuProps["items"] = [
+    {
+      key: "approve",
+      label: "Approve",
+      icon: <Icons.Checkmark />,
+      onClick: () => {
+        // TODO: Implement approve functionality
+        // eslint-disable-next-line no-console
+        console.log("Approve clicked for:", selectedRequestKeys);
+      },
+    },
+    {
+      key: "deny",
+      label: "Deny",
+      icon: <Icons.Close />,
+      onClick: () => {
+        // TODO: Implement deny functionality
+        // eslint-disable-next-line no-console
+        console.log("Deny clicked for:", selectedRequestKeys);
+      },
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "finalize",
+      label: "Finalize",
+      icon: <Icons.Stamp />,
+      onClick: () => {
+        // TODO: Implement finalize functionality
+        // eslint-disable-next-line no-console
+        console.log("Finalize clicked for:", selectedRequestKeys);
+      },
+    },
+    {
+      key: "delete",
+      label: "Delete",
+      icon: <Icons.TrashCan />,
+      danger: true,
+      onClick: () => {
+        // TODO: Implement delete functionality
+        // eslint-disable-next-line no-console
+        console.log("Delete clicked for:", selectedRequestKeys);
+      },
+    },
+  ];
+
   return (
     <div>
       <TableActionBar>
@@ -89,6 +139,10 @@ export const PrivacyRequestsDashboard = () => {
           placeholder="Search by request ID or identity value"
         />
         <div className="flex items-center gap-2">
+          <BulkActionsDropdown
+            selectedIds={selectedRequestKeys}
+            menuItems={bulkActionMenuItems}
+          />
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
           </Button>
