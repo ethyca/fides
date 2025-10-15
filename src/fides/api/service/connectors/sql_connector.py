@@ -345,7 +345,7 @@ class SQLConnector(BaseConnector[Engine]):
 
                 # For simple table names
                 if "." not in qualified_table_name:
-                    return inspector.has_table(qualified_table_name)
+                    return self._check_table_exists(inspector, qualified_table_name)
 
                 # For qualified names like schema.table or database.schema.table
                 parts = qualified_table_name.split(".")
@@ -353,21 +353,31 @@ class SQLConnector(BaseConnector[Engine]):
                 if len(parts) == 2:
                     # schema.table format
                     schema_name, table_name = parts
-                    return inspector.has_table(table_name, schema=schema_name)
+                    return self._check_table_exists(inspector, table_name, schema_name)
 
                 if len(parts) >= 3:
                     # database.schema.table format (use schema.table)
                     schema_name, table_name = parts[-2], parts[-1]
-                    return inspector.has_table(table_name, schema=schema_name)
+                    return self._check_table_exists(inspector, table_name, schema_name)
 
                 # Fallback for unexpected format
-                return inspector.has_table(qualified_table_name)
+                return self._check_table_exists(inspector, qualified_table_name)
 
         except Exception as exc:
             # Graceful fallback - if we can't check, assume table exists
             # to preserve existing behavior for connectors that don't implement this
             logger.error("Unable to check if table exists, assuming it does: {}", exc)
             return True
+
+    def _check_table_exists(
+        self, inspector, table_name: str, schema: Optional[str] = None
+    ) -> bool:
+        """Helper method to check table existence and log if not found."""
+        table_exists = inspector.has_table(table_name, schema=schema)
+        if not table_exists:
+            qualified_name = f"{schema}.{table_name}" if schema else table_name
+            logger.error("Table '{}' does not exist", qualified_name)
+        return table_exists
 
     def handle_table_not_found(
         self,
