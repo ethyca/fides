@@ -9,9 +9,16 @@ import {
 import { capitalize } from "lodash";
 
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 
-import { RESOURCE_STATUS, useMonitorFieldsFilters } from "./useFilters";
+import {
+  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
+  ResourceStatusLabel,
+} from "./MonitorFields.const";
+import { useMonitorFieldsFilters } from "./useFilters";
+
+const ConfidenceScoreRangeValues = Object.values(ConfidenceScoreRange);
 
 export const MonitorFieldFilters = ({
   resourceStatus,
@@ -23,9 +30,44 @@ export const MonitorFieldFilters = ({
   reset,
   monitorId,
 }: ReturnType<typeof useMonitorFieldsFilters> & { monitorId: string }) => {
-  const { data: datastoreFilterResponse } = useGetDatastoreFiltersQuery({
-    monitor_config_id: monitorId,
-  });
+  const { data: datastoreFilterResponse } = useGetDatastoreFiltersQuery(
+    {
+      monitor_config_id: monitorId,
+    },
+    { refetchOnMountOrArgChange: true },
+  );
+
+  const availableResourceFilters = datastoreFilterResponse?.diff_status?.reduce(
+    (agg, current) => {
+      const diffStatus = Object.values(DiffStatus).find((rs) => rs === current);
+      const currentResourceStatus = diffStatus
+        ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diffStatus].label
+        : null;
+
+      if (!!currentResourceStatus && !agg.includes(currentResourceStatus)) {
+        return [...agg, currentResourceStatus];
+      }
+
+      return agg;
+    },
+    [] as ResourceStatusLabel[],
+  );
+
+  const availableConfidenceScores =
+    datastoreFilterResponse?.confidence_score?.reduce(
+      (agg, current) => {
+        const currentConfidenceScore = Object.values(ConfidenceScoreRange).find(
+          (rs) => rs === current,
+        );
+
+        if (currentConfidenceScore) {
+          return [...agg, currentConfidenceScore];
+        }
+
+        return agg;
+      },
+      [] as typeof ConfidenceScoreRangeValues,
+    );
 
   return (
     <div
@@ -44,7 +86,7 @@ export const MonitorFieldFilters = ({
               }
             >
               <Row>
-                {RESOURCE_STATUS.map((label) => {
+                {availableResourceFilters?.flatMap((label) => {
                   return (
                     <Col span={24} key={label}>
                       <Checkbox value={label}>{label}</Checkbox>
@@ -62,7 +104,7 @@ export const MonitorFieldFilters = ({
               }
             >
               <Row>
-                {Object.values(ConfidenceScoreRange).map((cs) => {
+                {availableConfidenceScores?.map((cs) => {
                   return (
                     <Col span={24} key={cs}>
                       <Checkbox value={cs}>{capitalize(cs)}</Checkbox>
