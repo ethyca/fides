@@ -13,7 +13,7 @@ import { ConsentMigrationProvider } from "./types";
 export class OneTrustProvider implements ConsentMigrationProvider {
   readonly cookieName = "OptanonConsent";
 
-  readonly migrationMethod = ConsentMethod.OT_MIGRATION;
+  readonly migrationMethod = ConsentMethod.EXTERNAL_PROVIDER;
 
   getConsentCookie(): string | undefined {
     return getCookieByName(this.cookieName);

@@ -48,7 +48,7 @@ import { TcfSavePreferences } from "./tcf/types";
 const EXTERNAL_CONSENT_METHODS = [
   ConsentMethod.SCRIPT,
   ConsentMethod.GPC,
-  ConsentMethod.OT_MIGRATION,
+  ConsentMethod.EXTERNAL_PROVIDER,
 ];
 
 /**
@@ -254,7 +254,7 @@ const validateConsent = (
     if (
       nonApplicableNotice &&
       !value &&
-      consentMethod !== ConsentMethod.OT_MIGRATION
+      consentMethod !== ConsentMethod.EXTERNAL_PROVIDER
     ) {
       return new Error(
         `Provided notice key '${key}' is not applicable to the current experience.`,
@@ -274,7 +274,7 @@ const validateConsent = (
       isNoticeOnly &&
       value !== true &&
       value !== UserConsentPreference.ACKNOWLEDGE &&
-      consentMethod !== ConsentMethod.OT_MIGRATION
+      consentMethod !== ConsentMethod.EXTERNAL_PROVIDER
     ) {
       return new Error(
         `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,

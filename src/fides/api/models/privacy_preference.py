@@ -58,6 +58,7 @@ class ConsentMethod(Enum):
     gpc = "gpc"
     individual_notice = "individual_notice"
     acknowledge = "acknowledge"
+    external_provider = "external_provider"
 
 
 class ServingComponent(Enum):
