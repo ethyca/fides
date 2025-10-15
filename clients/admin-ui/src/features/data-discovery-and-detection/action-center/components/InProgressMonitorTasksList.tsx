@@ -60,11 +60,11 @@ export const InProgressMonitorTasksList = () => {
 
   const filterContent = (
     <div className="min-w-[220px] p-2">
-      <div className="flex flex-col gap-2 mb-3">
+      <div className="flex flex-col gap-1.5 mb-[14px]">
         <Checkbox.Group
           value={statusFilters}
           onChange={handleStatusesChanged}
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-1.5"
         >
           {availableStatuses.map((status) => (
             <Checkbox key={status} value={status}>
