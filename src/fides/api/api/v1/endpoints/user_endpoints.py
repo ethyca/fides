@@ -609,6 +609,8 @@ def get_users(
     params: Params = Depends(),
     username: Optional[str] = None,
     include_external: bool = True,
+    include_internal: bool = True,
+    include_approver: bool = True,
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
 ) -> AbstractPage[FidesUser]:
@@ -631,6 +633,14 @@ def get_users(
         if not include_external:
             query = query.join(FidesUserPermissions).filter(
                 ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
+            )
+        if not include_internal:
+            query = query.join(FidesUserPermissions).filter(
+                ~FidesUserPermissions.roles.op("@>")([RESPONDENT])
+            )
+        if not include_approver:
+            query = query.join(FidesUserPermissions).filter(
+                ~FidesUserPermissions.roles.op("@>")([APPROVER])
             )
     else:
         # User has USER_READ_OWN scope, only show their own data
