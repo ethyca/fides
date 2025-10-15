@@ -1,19 +1,9 @@
 import { useMemo } from "react";
 
 import { nFormatter } from "~/features/common/utils";
-import { DatastoreMonitorUpdates, WebMonitorUpdates } from "~/types/api";
 
-import { MonitorUpdateNames } from "./constants";
+import { MONITOR_UPDATE_NAMES, MONITOR_UPDATES_TO_IGNORE } from "./constants";
 import { MonitorAggregatedResults } from "./types";
-
-const MONITOR_UPDATES_TO_IGNORE = [
-  "classified_low_confidence",
-  "classified_high_confidence",
-  "classified_manually",
-] as const satisfies readonly (
-  | keyof DatastoreMonitorUpdates
-  | keyof WebMonitorUpdates
-)[];
 
 export const MonitorResultDescription = ({
   updates,
@@ -35,7 +25,7 @@ export const MonitorResultDescription = ({
       )
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map((update) => {
-        return `${nFormatter(update[1])} ${MonitorUpdateNames[update[0] as keyof MonitorAggregatedResults["updates"]]}${!isAssetList || update[1] === 1 ? "" : "s"}`;
+        return `${nFormatter(update[1])} ${MONITOR_UPDATE_NAMES.get(update[0] as keyof MonitorAggregatedResults["updates"])}${!isAssetList || update[1] === 1 ? "" : "s"}`;
       });
   }, [updates, isAssetList]);
 

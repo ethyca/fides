@@ -62,24 +62,31 @@ export enum ConsentBreakdownColumnKeys {
   STATUS = "status",
 }
 
-export const MonitorUpdateNames: Record<
+export const MONITOR_UPDATES_TO_IGNORE = [
+  "classified_low_confidence",
+  "classified_high_confidence",
+  "classified_manually",
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];
+
+export const MONITOR_UPDATE_NAMES = new Map<
   | keyof WebMonitorUpdates
   | keyof Omit<
       DatastoreMonitorUpdates,
-      | "classified_low_confidence"
-      | "classified_high_confidence"
-      | "classified_manually"
+      (typeof MONITOR_UPDATES_TO_IGNORE)[number]
     >,
   string
-> = {
-  cookie: "Cookie",
-  browser_request: "Browser request",
-  image: "Image",
-  iframe: "iFrame",
-  javascript_tag: "JavaScript tag",
-  unlabeled: "Unlabeled",
-  in_review: "In review",
-  classifying: "Classifying",
-  removals: "Removals",
-  approved: "Approved",
-};
+>([
+  ["cookie", "Cookie"],
+  ["browser_request", "Browser request"],
+  ["image", "Image"],
+  ["iframe", "iFrame"],
+  ["javascript_tag", "JavaScript tag"],
+  ["unlabeled", "Unlabeled"],
+  ["in_review", "In review"],
+  ["classifying", "Classifying"],
+  ["removals", "Removals"],
+  ["approved", "Approved"],
+]);
