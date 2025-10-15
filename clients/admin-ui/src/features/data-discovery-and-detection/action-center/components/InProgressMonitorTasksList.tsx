@@ -60,15 +60,10 @@ export const InProgressMonitorTasksList = () => {
     [updateStatusFilters],
   );
 
-  const handleApplyFilters = useCallback(() => {
-    applyFilters();
+  const handleFilterActionAndClose = useCallback((action: () => void) => {
+    action();
     setFilterPopoverOpen(false);
-  }, [applyFilters]);
-
-  const handleResetFilters = useCallback(() => {
-    resetToDefault();
-    setFilterPopoverOpen(false);
-  }, [resetToDefault]);
+  }, []);
 
   const filterContent = (
     <div className="min-w-[220px] p-2">
@@ -92,10 +87,17 @@ export const InProgressMonitorTasksList = () => {
         </Checkbox>
       </Flex>
       <Flex justify="space-between">
-        <Button size="small" onClick={handleResetFilters}>
+        <Button
+          size="small"
+          onClick={() => handleFilterActionAndClose(resetToDefault)}
+        >
           Reset
         </Button>
-        <Button size="small" type="primary" onClick={handleApplyFilters}>
+        <Button
+          size="small"
+          type="primary"
+          onClick={() => handleFilterActionAndClose(applyFilters)}
+        >
           Apply
         </Button>
       </Flex>
