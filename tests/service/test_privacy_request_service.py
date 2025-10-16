@@ -1416,10 +1416,11 @@ class TestPrivacyRequestService:
         db: Session,
         privacy_request_service: PrivacyRequestService,
         privacy_request_requires_manual_finalization,
+        reviewing_user: FidesUser,
     ):
         """Test successful finalization of privacy requests"""
         request_id = privacy_request_requires_manual_finalization.id
-        user_id = "user_123"
+        user_id = reviewing_user.id
 
         result = privacy_request_service.finalize_privacy_requests(
             [request_id], user_id=user_id
@@ -1442,6 +1443,7 @@ class TestPrivacyRequestService:
         privacy_request_service: PrivacyRequestService,
         policy: Policy,
         privacy_request_requires_manual_finalization,
+        reviewing_user: FidesUser,
     ):
         """Test finalize_privacy_requests with a mix of valid and invalid requests"""
         # Create a second privacy request in wrong status
@@ -1453,7 +1455,7 @@ class TestPrivacyRequestService:
             authenticated=True,
         )
 
-        user_id = "user_123"
+        user_id = reviewing_user.id
         result = privacy_request_service.finalize_privacy_requests(
             [privacy_request_requires_manual_finalization.id, pending_request.id],
             user_id=user_id,
