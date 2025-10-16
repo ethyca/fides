@@ -69,15 +69,19 @@ const ActionCenterFields: NextPage = () => {
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
-    monitor_config_id: monitorId,
-    size: pageSize,
-    page: pageIndex,
-    staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-    search: search.searchProps.value,
-    diff_status: resourceStatus
-      ? resourceStatus.flatMap(intoDiffStatus)
-      : undefined,
-    confidence_score: confidenceScore || undefined,
+    path: {
+      monitor_config_id: monitorId,
+    },
+    query: {
+      size: pageSize,
+      page: pageIndex,
+      staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+      search: search.searchProps.value,
+      diff_status: resourceStatus
+        ? resourceStatus.flatMap(intoDiffStatus)
+        : undefined,
+      confidence_score: confidenceScore || undefined,
+    },
   });
   const toast = useToast();
   const [classifyStagedResourcesMutation] =
