@@ -8,7 +8,6 @@ import { PrivacyRequestEntity } from "./types";
 export enum BulkActionType {
   APPROVE = "approve",
   DENY = "deny",
-  FINALIZE = "finalize",
   DELETE = "delete",
 }
 
@@ -24,11 +23,6 @@ export const getAvailableActionsForRequest = (
   // Approve and Deny are only available for pending requests
   if (request.status === PrivacyRequestStatus.PENDING) {
     availableActions.push(BulkActionType.APPROVE, BulkActionType.DENY);
-  }
-
-  // Finalize is only available for requests requiring manual finalization
-  if (request.status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION) {
-    availableActions.push(BulkActionType.FINALIZE);
   }
 
   // Delete is always available (no status restriction)
