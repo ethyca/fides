@@ -153,9 +153,7 @@ export const PrivacyRequestsDashboard = () => {
               dataSource={requests}
               rowSelection={{
                 selectedRowKeys: selectedIds,
-                onChange: (keys) => {
-                  setSelectedIds(keys);
-                },
+                onChange: setSelectedIds,
               }}
               renderItem={(item, index, checkbox) => (
                 <ListItem item={item} checkbox={checkbox} />
