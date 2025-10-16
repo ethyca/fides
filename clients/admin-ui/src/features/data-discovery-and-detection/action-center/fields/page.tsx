@@ -61,8 +61,12 @@ const ActionCenterFields: NextPage = () => {
       defaultPageSize: FIELD_PAGE_SIZE,
     });
   const search = useSearch();
-  const { resourceStatus, confidenceScore, ...restMonitorFieldsFilters } =
-    useMonitorFieldsFilters();
+  const {
+    resourceStatus,
+    confidenceScore,
+    dataCategory,
+    ...restMonitorFieldsFilters
+  } = useMonitorFieldsFilters();
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
   });
@@ -78,6 +82,7 @@ const ActionCenterFields: NextPage = () => {
       ? resourceStatus.flatMap(intoDiffStatus)
       : undefined,
     confidence_score: confidenceScore || undefined,
+    data_category: dataCategory || undefined,
   });
   const toast = useToast();
   const [classifyStagedResourcesMutation] =
@@ -144,7 +149,13 @@ const ActionCenterFields: NextPage = () => {
   useEffect(() => {
     resetPagination();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resourceStatus, confidenceScore, selectedNodeKeys, search.searchQuery]);
+  }, [
+    resourceStatus,
+    confidenceScore,
+    selectedNodeKeys,
+    search.searchQuery,
+    dataCategory,
+  ]);
 
   return (
     <FixedLayout
@@ -203,6 +214,7 @@ const ActionCenterFields: NextPage = () => {
                     <MonitorFieldFilters
                       resourceStatus={resourceStatus}
                       confidenceScore={confidenceScore}
+                      dataCategory={dataCategory}
                       {...restMonitorFieldsFilters}
                       monitorId={monitorId}
                     />

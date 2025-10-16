@@ -102,6 +102,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         search?: string;
         diff_status?: Array<DiffStatus>;
         confidence_score?: Array<ConfidenceScoreRange>;
+        data_category?: Array<string>;
       }
     >({
       query: ({
