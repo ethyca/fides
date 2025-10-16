@@ -1,16 +1,16 @@
-Closes [<issue>]
+Ticket [<issue>] <!-- simply paste the ticket number between the brackets and it will auto-convert to a link -->
 
 ### Description Of Changes
 
-_Write some things here about the changes and any potential caveats_
+<!-- Write some things about the changes and any potential caveats -->
 
 ### Code Changes
 
-* _list your code changes here_
+* <!-- list your code changes -->
 
 ### Steps to Confirm
 
-1.  _list any manual steps for reviewers to confirm the changes_
+1. <!-- list any manual steps for reviewers to confirm the changes -->
 
 ### Pre-Merge Checklist
 
