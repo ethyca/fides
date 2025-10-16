@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.72.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.72.2..main)
 
 ### Added
 
@@ -35,6 +35,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
+
+## [2.72.2](https://github.com/ethyca/fides/compare/2.72.1...2.72.2)
+
+### Changed
+- Added `collection` to privacy request logging metadata [#6753](https://github.com/ethyca/fides/pull/6753)
+- Removed PII filtering from request task error logging [#6753](https://github.com/ethyca/fides/pull/6753)
+
+### Fixed
+- Added `has_table` checks for BigQuery erasures [#6760](https://github.com/ethyca/fides/pull/6760)
 
 ## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
 
