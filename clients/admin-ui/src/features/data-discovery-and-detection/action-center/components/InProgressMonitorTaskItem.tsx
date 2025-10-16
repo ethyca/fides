@@ -200,9 +200,7 @@ export const InProgressMonitorTaskItem = ({
       <Row gutter={12} className="w-full">
         <Col span={14} className="align-middle">
           <Space align="center" size={8} wrap>
-            {logoSource && (
-              <ConnectionTypeLogo data={logoSource} boxSize="24px" />
-            )}
+            {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
             <Title level={5} className="m-0">
               {taskTitle}
             </Title>
