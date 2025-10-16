@@ -14,12 +14,13 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_center_config import PrivacyCenterConfig
-from fides.api.models.privacy_request import ExecutionLog
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
+    BulkUpdateFailed,
     PrivacyRequestCreate,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -80,6 +81,56 @@ class TestPrivacyRequestService:
             user.delete(db)
         except ObjectDeletedError:
             pass
+
+    @pytest.fixture
+    def deleted_privacy_request(
+        self,
+        db: Session,
+        policy: Policy,
+    ):
+        """Create a deleted privacy request"""
+        from fides.api.models.privacy_request import PrivacyRequest
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "ext-test-deleted",
+                "started_processing_at": datetime.now(timezone.utc),
+                "requested_at": datetime.now(timezone.utc),
+                "status": PrivacyRequestStatus.complete,
+                "origin": "https://example.com",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        privacy_request.deleted_at = datetime.now(timezone.utc)
+        privacy_request.save(db=db)
+        yield privacy_request
+        privacy_request.delete(db)
+
+    @pytest.fixture
+    def privacy_request_requires_manual_finalization(
+        self,
+        db: Session,
+        policy: Policy,
+    ):
+        """Create a privacy request in requires_manual_finalization status"""
+        from fides.api.models.privacy_request import PrivacyRequest
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "ext-test-finalize",
+                "started_processing_at": datetime.now(timezone.utc),
+                "requested_at": datetime.now(timezone.utc),
+                "status": PrivacyRequestStatus.requires_manual_finalization,
+                "origin": "https://example.com",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        yield privacy_request
+        privacy_request.delete(db)
 
     @pytest.mark.integration
     @pytest.mark.integration_postgres
@@ -1251,92 +1302,41 @@ class TestPrivacyRequestService:
         self,
         privacy_request_service: PrivacyRequestService,
     ):
-        """Test validation helper returns None when privacy request doesn't exist"""
-        failed: List = []
+        """Test validation helper returns BulkUpdateFailed when privacy request doesn't exist"""
         result = privacy_request_service._validate_privacy_request_for_bulk_operation(
-            "nonexistent_id", failed
+            "nonexistent_id"
         )
 
-        assert result is None
-        assert len(failed) == 1
-        assert failed[0].message == "No privacy request found with id 'nonexistent_id'"
-        assert failed[0].data == {"privacy_request_id": "nonexistent_id"}
+        assert isinstance(result, BulkUpdateFailed)
+        assert result.message == "No privacy request found with id 'nonexistent_id'"
+        assert result.data == {"privacy_request_id": "nonexistent_id"}
 
     def test_validate_privacy_request_for_bulk_operation_deleted(
         self,
-        db: Session,
         privacy_request_service: PrivacyRequestService,
-        policy: Policy,
+        deleted_privacy_request: PrivacyRequest,
     ):
-        """Test validation helper returns None when privacy request is deleted"""
-        privacy_request = privacy_request_service.create_privacy_request(
-            PrivacyRequestCreate(
-                identity=Identity(email="user@example.com"),
-                policy_key=policy.key,
-            ),
-            authenticated=True,
-        )
-
-        # Soft delete the privacy request
-        privacy_request.deleted_at = datetime.now(timezone.utc)
-        privacy_request.save(db=db)
-
-        failed: List = []
+        """Test validation helper returns BulkUpdateFailed when privacy request is deleted"""
         result = privacy_request_service._validate_privacy_request_for_bulk_operation(
-            privacy_request.id, failed
+            deleted_privacy_request.id
         )
 
-        assert result is None
-        assert len(failed) == 1
-        assert failed[0].message == "Cannot transition status for a deleted request"
-        assert failed[0].data["id"] == privacy_request.id
+        assert isinstance(result, BulkUpdateFailed)
+        assert result.message == "Cannot transition status for a deleted request"
+        assert result.data["id"] == deleted_privacy_request.id
 
     def test_validate_privacy_request_for_bulk_operation_success(
         self,
         privacy_request_service: PrivacyRequestService,
-        policy: Policy,
+        privacy_request: PrivacyRequest,
     ):
         """Test validation helper returns the privacy request when valid"""
-        privacy_request = privacy_request_service.create_privacy_request(
-            PrivacyRequestCreate(
-                identity=Identity(email="user@example.com"),
-                policy_key=policy.key,
-            ),
-            authenticated=True,
-        )
-
-        failed: List = []
         result = privacy_request_service._validate_privacy_request_for_bulk_operation(
-            privacy_request.id, failed
+            privacy_request.id
         )
 
-        assert result is not None
+        assert isinstance(result, PrivacyRequest)
         assert result.id == privacy_request.id
-        assert len(failed) == 0
-
-    @pytest.fixture
-    def privacy_request_requires_manual_finalization(
-        self,
-        db: Session,
-        policy: Policy,
-    ):
-        """Create a privacy request in requires_manual_finalization status"""
-        from fides.api.models.privacy_request import PrivacyRequest
-
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "ext-test-finalize",
-                "started_processing_at": datetime.now(timezone.utc),
-                "requested_at": datetime.now(timezone.utc),
-                "status": PrivacyRequestStatus.requires_manual_finalization,
-                "origin": "https://example.com",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-        yield privacy_request
-        privacy_request.delete(db)
 
     def test_finalize_privacy_requests_not_found(
         self,
@@ -1356,25 +1356,12 @@ class TestPrivacyRequestService:
 
     def test_finalize_privacy_requests_deleted(
         self,
-        db: Session,
         privacy_request_service: PrivacyRequestService,
-        policy: Policy,
+        deleted_privacy_request: PrivacyRequest,
     ):
         """Test finalize_privacy_requests handles deleted privacy requests"""
-        privacy_request = privacy_request_service.create_privacy_request(
-            PrivacyRequestCreate(
-                identity=Identity(email="user@example.com"),
-                policy_key=policy.key,
-            ),
-            authenticated=True,
-        )
-
-        # Soft delete the privacy request
-        privacy_request.deleted_at = datetime.now(timezone.utc)
-        privacy_request.save(db=db)
-
         result = privacy_request_service.finalize_privacy_requests(
-            [privacy_request.id], user_id="user_123"
+            [deleted_privacy_request.id], user_id="user_123"
         )
 
         assert len(result.succeeded) == 0
@@ -1382,6 +1369,7 @@ class TestPrivacyRequestService:
         assert (
             result.failed[0].message == "Cannot transition status for a deleted request"
         )
+        assert result.failed[0].data["id"] == deleted_privacy_request.id
 
     def test_finalize_privacy_requests_wrong_status(
         self,
@@ -1416,10 +1404,11 @@ class TestPrivacyRequestService:
         db: Session,
         privacy_request_service: PrivacyRequestService,
         privacy_request_requires_manual_finalization,
+        reviewing_user: FidesUser,
     ):
         """Test successful finalization of privacy requests"""
         request_id = privacy_request_requires_manual_finalization.id
-        user_id = "user_123"
+        user_id = reviewing_user.id
 
         result = privacy_request_service.finalize_privacy_requests(
             [request_id], user_id=user_id
@@ -1440,22 +1429,16 @@ class TestPrivacyRequestService:
         self,
         db: Session,
         privacy_request_service: PrivacyRequestService,
-        policy: Policy,
         privacy_request_requires_manual_finalization,
+        privacy_request: PrivacyRequest,
+        reviewing_user: FidesUser,
     ):
         """Test finalize_privacy_requests with a mix of valid and invalid requests"""
         # Create a second privacy request in wrong status
-        pending_request = privacy_request_service.create_privacy_request(
-            PrivacyRequestCreate(
-                identity=Identity(email="user@example.com"),
-                policy_key=policy.key,
-            ),
-            authenticated=True,
-        )
 
-        user_id = "user_123"
+        user_id = reviewing_user.id
         result = privacy_request_service.finalize_privacy_requests(
-            [privacy_request_requires_manual_finalization.id, pending_request.id],
+            [privacy_request_requires_manual_finalization.id, privacy_request.id],
             user_id=user_id,
         )
 
@@ -1469,6 +1452,6 @@ class TestPrivacyRequestService:
         assert privacy_request_requires_manual_finalization.finalized_at is not None
         assert privacy_request_requires_manual_finalization.finalized_by == user_id
 
-        db.refresh(pending_request)
-        assert pending_request.finalized_at is None
-        assert pending_request.finalized_by is None
+        db.refresh(privacy_request)
+        assert privacy_request.finalized_at is None
+        assert privacy_request.finalized_by is None

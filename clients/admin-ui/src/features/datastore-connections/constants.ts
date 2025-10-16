@@ -68,8 +68,3 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
 export const SAAS_TYPE_LOGO_MAP = new Map<SaasConnectionTypes, string>([
   [SaasConnectionTypes.SALESFORCE, "salesforce.svg"],
 ]);
-
-/**
- * Fallback connector image path if original src path doesn't exist
- */
-export const FALLBACK_CONNECTOR_LOGOS_PATH = `${CONNECTOR_LOGOS_PATH}ethyca.svg`;

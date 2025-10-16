@@ -3,6 +3,7 @@ from typing import Generator
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.db.seed import load_default_taxonomy
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -20,6 +21,15 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 )
 from fides.api.util.data_category import DataCategory
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
+
+
+@pytest.fixture(scope="function", autouse=True)
+def load_default_data_categories(db: Session):
+    """
+    Automatically load default taxonomy for all tests in this module.
+    Required for dataset validation which checks data categories against the database.
+    """
+    load_default_taxonomy(db)
 
 
 @pytest.fixture(scope="function")
