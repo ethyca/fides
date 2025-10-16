@@ -57,7 +57,7 @@
   "alphaFullActionCenter": {
     "description": "Enable additional Action Center features",
     "development": true,
-    "test": false,
+    "test": true,
     "production": false
   },
   "privacyRequestV2": {

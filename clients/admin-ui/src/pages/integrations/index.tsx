@@ -43,7 +43,7 @@ const IntegrationLogo = ({
   integration: ConnectionConfigurationResponse;
 }) => {
   const logoData = useConnectionLogo(integration);
-  return <ConnectionTypeLogo data={logoData} boxSize="20px" />;
+  return <ConnectionTypeLogo data={logoData} size={20} />;
 };
 
 const IntegrationListView: NextPage = () => {

@@ -16,6 +16,7 @@ export type {
   TablePaginationConfig as AntTablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,

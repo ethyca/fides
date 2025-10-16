@@ -1,16 +1,20 @@
-import { Image, ImageProps } from "fidesui";
-import React from "react";
+import {
+  AntAvatar as Avatar,
+  AntAvatarProps as AvatarProps,
+  Icons,
+} from "fidesui";
+import React, { useMemo } from "react";
 
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import type { ConnectionConfigurationResponse } from "~/types/api";
 import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 import { ConnectionType as ConnectionTypeModel } from "~/types/api/models/ConnectionType";
 
-import { getDomain, getWebsiteIconUrl } from "../common/utils";
+import { getBrandIconUrl, getDomain } from "../common/utils";
+import styles from "./ConnectionTypeLogo.module.scss";
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
-  FALLBACK_CONNECTOR_LOGOS_PATH,
   SAAS_TYPE_LOGO_MAP,
 } from "./constants";
 
@@ -37,6 +41,8 @@ type SystemTypeLike = Pick<
   "identifier" | "human_readable" | "encoded_icon"
 >;
 
+export const DEFAULT_LOGO_SIZE = 32;
+
 export enum ConnectionLogoKind {
   CONNECTION = "connection",
   SYSTEM = "system",
@@ -62,10 +68,6 @@ export type ConnectionLogoSource =
       kind: ConnectionLogoKind.STATIC;
       key: string;
     };
-
-const FALLBACK_WEBSITE_LOGO_PATH =
-  CONNECTOR_LOGOS_PATH +
-  CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.WEBSITE);
 
 const connectionLikeToLogo = (
   connection: ConnectionLike,
@@ -103,6 +105,10 @@ export const connectionLogoFromKey = (key: string): ConnectionLogoSource => ({
   key,
 });
 
+const isWebsite = (connectionType: ConnectionTypeModel) =>
+  connectionType === ConnectionTypeModel.WEBSITE ||
+  connectionType === ConnectionTypeModel.TEST_WEBSITE;
+
 const resolveSaasLogo = (saasType?: string | null) => {
   if (!saasType) {
     return undefined;
@@ -113,7 +119,7 @@ const resolveSaasLogo = (saasType?: string | null) => {
 
 const buildStaticLogoPath = (key: string) => {
   if (!key) {
-    return FALLBACK_CONNECTOR_LOGOS_PATH;
+    return undefined;
   }
   if (key.startsWith("data:")) {
     return key;
@@ -125,7 +131,10 @@ const buildStaticLogoPath = (key: string) => {
   return CONNECTOR_LOGOS_PATH + normalizedKey;
 };
 
-const getImageSrc = (data: ConnectionLogoSource): string => {
+const getImageSrc = (
+  data: ConnectionLogoSource,
+  size?: number,
+): string | undefined => {
   if (data.kind === ConnectionLogoKind.SYSTEM) {
     if (data.encodedIcon) {
       return `data:image/svg+xml;base64,${data.encodedIcon}`;
@@ -133,18 +142,18 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
     const item = [...CONNECTION_TYPE_LOGO_MAP].find(
       ([key]) => key.toLowerCase() === data.identifier.toLowerCase(),
     );
-    return item
-      ? CONNECTOR_LOGOS_PATH + item[1]
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
+    return item ? CONNECTOR_LOGOS_PATH + item[1] : undefined;
   }
 
   if (data.kind === ConnectionLogoKind.CONNECTION) {
-    if (data.connectionType === ConnectionTypeModel.WEBSITE) {
+    if (isWebsite(data.connectionType)) {
       if (!data.websiteUrl) {
-        return FALLBACK_WEBSITE_LOGO_PATH;
+        return undefined;
       }
       const domain = getDomain(data.websiteUrl);
-      return getWebsiteIconUrl(domain, 100);
+      const retinaSize = (size ?? DEFAULT_LOGO_SIZE) * 2;
+      const brandIconUrl = getBrandIconUrl(domain, retinaSize);
+      return brandIconUrl;
     }
 
     if (data.connectionType === ConnectionTypeModel.SAAS) {
@@ -155,9 +164,11 @@ const getImageSrc = (data: ConnectionLogoSource): string => {
     }
 
     const mappedLogo = CONNECTION_TYPE_LOGO_MAP.get(data.connectionType);
-    return mappedLogo
-      ? CONNECTOR_LOGOS_PATH + mappedLogo
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
+    return mappedLogo ? CONNECTOR_LOGOS_PATH + mappedLogo : undefined;
+  }
+
+  if (!data.key) {
+    return undefined;
   }
 
   return buildStaticLogoPath(data.key);
@@ -173,14 +184,14 @@ const getAltValue = (data: ConnectionLogoSource): string => {
   return data.key || "connection";
 };
 
-const getFallbackSrc = (data: ConnectionLogoSource): string => {
+const getFallbackIcon = (data: ConnectionLogoSource, size: number) => {
   if (
     data.kind === ConnectionLogoKind.CONNECTION &&
-    data.connectionType === ConnectionTypeModel.WEBSITE
+    isWebsite(data.connectionType)
   ) {
-    return FALLBACK_WEBSITE_LOGO_PATH;
+    return <Icons.Wikis size={size} />;
   }
-  return FALLBACK_CONNECTOR_LOGOS_PATH;
+  return <Icons.Db2Database size={size} />;
 };
 
 type ConnectionTypeLogoProps = {
@@ -189,16 +200,34 @@ type ConnectionTypeLogoProps = {
 
 const ConnectionTypeLogo = ({
   data,
+  size,
   ...props
-}: ConnectionTypeLogoProps & ImageProps) => {
+}: ConnectionTypeLogoProps & AvatarProps) => {
+  const imageSrc = useMemo(
+    () => getImageSrc(data, size as number),
+    [data, size],
+  );
+  const fallbackIcon = useMemo(
+    () => getFallbackIcon(data, (size as number) ?? DEFAULT_LOGO_SIZE),
+    [data, size],
+  );
+  const altValue = useMemo(() => getAltValue(data), [data]);
+  if (!data) {
+    return null;
+  }
   return (
-    <Image
-      boxSize="32px"
-      objectFit="cover"
-      src={getImageSrc(data)}
-      fallbackSrc={getFallbackSrc(data)}
-      alt={getAltValue(data)}
+    <Avatar
+      shape="square"
+      src={imageSrc}
+      size={size ?? DEFAULT_LOGO_SIZE}
+      icon={fallbackIcon}
+      alt={altValue}
       {...props}
+      className={
+        props.className
+          ? `${props.className} ${styles.connectionTypeLogo}`
+          : styles.connectionTypeLogo
+      }
     />
   );
 };

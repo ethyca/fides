@@ -151,7 +151,7 @@ export interface FidesEvent extends CustomEvent {
         | "acknowledge"
         | "gpc"
         | "script"
-        | "ot_migration";
+        | "external_provider";
 
       /**
        * What UI element (if any) triggered this event, as well as the origin of

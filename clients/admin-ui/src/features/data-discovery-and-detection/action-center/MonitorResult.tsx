@@ -1,6 +1,5 @@
 import { formatDistanceStrict } from "date-fns";
 import {
-  AntAvatar as Avatar,
   AntCol as Col,
   AntFlex as Flex,
   AntList as List,
@@ -8,23 +7,30 @@ import {
   AntRow as Row,
   AntSkeleton as Skeleton,
   AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
-  Icons,
 } from "fidesui";
 import NextLink from "next/link";
-import { useMemo } from "react";
 
-import {
-  formatDate,
-  getDomain,
-  getWebsiteIconUrl,
-} from "~/features/common/utils";
+import { formatDate, nFormatter } from "~/features/common/utils";
+import ConnectionTypeLogo, {
+  ConnectionLogoKind,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import { ConnectionType } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
+import styles from "./MonitorResult.module.scss";
+import { MonitorResultDescription } from "./MonitorResultDescription";
 import { MonitorAggregatedResults } from "./types";
+import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
 
 const { Text } = Typography;
+
+const MONITOR_RESULT_COUNT_TYPES = {
+  [MONITOR_TYPES.WEBSITE]: "asset",
+  [MONITOR_TYPES.DATASTORE]: "field",
+  [MONITOR_TYPES.INFRASTRUCTURE]: "system",
+} as const;
 
 interface MonitorResultProps extends ListItemProps {
   monitorSummary: MonitorAggregatedResults;
@@ -47,21 +53,10 @@ export const MonitorResult = ({
     secrets,
     key,
     connection_type: connectionType,
+    saas_config: saasConfig,
   } = monitorSummary;
 
-  const property = useMemo(() => {
-    return secrets?.url ? getDomain(secrets.url) : undefined;
-  }, [secrets?.url]);
-
-  const iconUrl = useMemo(() => {
-    return property ? getWebsiteIconUrl(property, 60) : undefined;
-  }, [property]);
-
-  const assetCountString = Object.entries(updates)
-    .map((update) => {
-      return `${update[1]} ${update[0]}s`;
-    })
-    .join(", ");
+  const monitorType = getMonitorType(connectionType);
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -73,51 +68,63 @@ export const MonitorResult = ({
       })
     : undefined;
 
+  const monitorResultCountType = MONITOR_RESULT_COUNT_TYPES[monitorType];
+
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
-        <Row gutter={12} className="w-full">
-          <Col span={17} className="align-middle">
+        <Row gutter={{ xs: 6, lg: 12 }} className="w-full">
+          <Col span={18} className="align-middle">
             <List.Item.Meta
               avatar={
-                <Avatar
-                  src={iconUrl}
-                  size={30}
-                  icon={<Icons.Wikis size={30} />}
-                  style={{
-                    backgroundColor: "transparent",
-                    color: "var(--ant-color-text)",
+                <ConnectionTypeLogo
+                  data={{
+                    kind: ConnectionLogoKind.CONNECTION,
+                    connectionType,
+                    name,
+                    key,
+                    saasType: saasConfig?.type,
+                    websiteUrl: secrets?.url,
                   }}
-                  alt={`${property} icon`}
                 />
               }
               title={
-                <Flex align="center" gap={4}>
-                  <NextLink href={href} className="whitespace-nowrap">
-                    {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
+                <Flex
+                  align="center"
+                  gap={4}
+                  className={styles["monitor-result__title"]}
+                >
+                  <NextLink href={href} data-testid="monitor-link">
+                    {name}
                   </NextLink>
-                  <DiscoveryStatusIcon consentStatus={consentStatus} />
+                  <Text type="secondary">
+                    {nFormatter(totalUpdates)} {monitorResultCountType}
+                    {totalUpdates === 1 ? "" : "s"}
+                  </Text>
+                  {consentStatus && (
+                    <DiscoveryStatusIcon consentStatus={consentStatus} />
+                  )}
                   {connectionType === ConnectionType.TEST_WEBSITE && (
-                    <Tag color="nectar" style={{ fontWeight: "normal" }}>
-                      test monitor
-                    </Tag>
+                    <Tag color="nectar">test monitor</Tag>
                   )}
                 </Flex>
               }
-              description={`${assetCountString} detected.`}
+              description={
+                <MonitorResultDescription
+                  updates={updates}
+                  isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+                />
+              }
             />
           </Col>
-          <Col span={4} className="flex items-center justify-end">
-            <Text ellipsis={{ tooltip: name }}>{name}</Text>
-          </Col>
-          <Col span={3} className="flex items-center justify-end">
+          <Col span={6} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
-              <Text
-                data-testid="monitor-date"
-                ellipsis={{ tooltip: formattedLastMonitored }}
-              >
-                {lastMonitoredDistance}
-              </Text>
+              <Tooltip title={formattedLastMonitored}>
+                <Text type="secondary" data-testid="monitor-date">
+                  <span className="hidden lg:inline">Last scan: </span>
+                  {lastMonitoredDistance}
+                </Text>
+              </Tooltip>
             )}
           </Col>
         </Row>

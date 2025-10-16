@@ -9,15 +9,18 @@ import {
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
 const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
-  const { getDataUseDisplayNameProps, getDataUses } = useTaxonomies();
-  const dataUses = getDataUses();
+  const { getDataCategoryDisplayNameProps, getDataCategories } =
+    useTaxonomies();
+  const dataCategories = getDataCategories();
   const [open, setOpen] = useState(false);
 
-  const options: TaxonomySelectOption[] = dataUses.map((dataUse) => {
-    const { name, primaryName } = getDataUseDisplayNameProps(dataUse.fides_key);
+  const options: TaxonomySelectOption[] = dataCategories.map((dataCategory) => {
+    const { name, primaryName } = getDataCategoryDisplayNameProps(
+      dataCategory.fides_key,
+    );
 
     return {
-      value: dataUse.fides_key,
+      value: dataCategory.fides_key,
       label: (
         <div>
           <strong>{primaryName || name}</strong>
@@ -26,7 +29,7 @@ const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
       ),
       name,
       primaryName,
-      description: dataUse.description || "",
+      description: dataCategory.description || "",
     };
   });
 
