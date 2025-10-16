@@ -16,7 +16,11 @@ import { capitalize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
-import { ConnectionType, MonitorTaskInProgressResponse } from "~/types/api";
+import {
+  ConnectionType,
+  MonitorTaskInProgressResponse,
+  MonitorTaskType,
+} from "~/types/api";
 
 import {
   useDismissMonitorTaskMutation,
@@ -50,7 +54,8 @@ export const InProgressMonitorTaskItem = ({
   const [dismissMonitorTask, { isLoading: isDismissing }] =
     useDismissMonitorTaskMutation();
   const isDismissed = Boolean(task.dismissed_in_activity_view);
-  const canRetry = task.status === "error" && task.action_type !== "detection";
+  const canRetry =
+    task.status === "error" && task.action_type !== MonitorTaskType.DETECTION;
 
   // Build a minimal monitor key -> icon data map for ConnectionTypeLogo
   const { data: monitorAgg } = useGetAggregateMonitorResultsQuery({
@@ -100,17 +105,21 @@ export const InProgressMonitorTaskItem = ({
     "paused",
     "retrying",
   ].includes((task.status || "").toLowerCase());
+  const fieldCount = task.field_count || taskCount;
   const taskTitle = (() => {
-    if (task.action_type === "classification") {
+    if (
+      task.action_type === MonitorTaskType.CLASSIFICATION ||
+      task.action_type === MonitorTaskType.LLM_CLASSIFICATION
+    ) {
       const verb = task.status === "complete" ? "Classified" : "Classifying";
-      return `${verb} ${taskCount} ${taskCount === 1 ? "field" : "fields"}`;
+      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
     }
-    if (task.action_type === "detection") {
+    if (task.action_type === MonitorTaskType.DETECTION) {
       return task.status === "complete"
         ? "Monitor scanned"
         : "Monitor scanning";
     }
-    if (task.action_type === "promotion") {
+    if (task.action_type === MonitorTaskType.PROMOTION) {
       return task.status === "complete" ? "Promoted" : "Promoting";
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
@@ -191,9 +200,7 @@ export const InProgressMonitorTaskItem = ({
       <Row gutter={12} className="w-full">
         <Col span={17} className="align-middle">
           <Space align="center" size={8} wrap>
-            {logoSource && (
-              <ConnectionTypeLogo data={logoSource} boxSize="24px" />
-            )}
+            {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
             <Title level={5} className="m-0">
               {taskTitle}
             </Title>

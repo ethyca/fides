@@ -15,14 +15,14 @@ import {
 import {
   FIDES_SEPARATOR,
   TCF_FULL_MAX_ATTEMPTS,
-} from "../../../fides-js/src/lib/tcf/constants";
+} from "../../../../fides-js/src/lib/tcf/constants";
 import {
   API_URL,
   TCF_VERSION_HASH,
   TEST_OVERRIDE_WINDOW_PATH,
-} from "../support/constants";
-import { mockCookie, mockTcfVendorObjects } from "../support/mocks";
-import { OVERRIDE, stubConfig, stubTCFExperience } from "../support/stubs";
+} from "../../support/constants";
+import { mockCookie, mockTcfVendorObjects } from "../../support/mocks";
+import { OVERRIDE, stubConfig, stubTCFExperience } from "../../support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";

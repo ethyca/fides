@@ -34,6 +34,7 @@ export const CONSENT_METHOD_LABELS: Record<ConsentMethod, string> = {
   [ConsentMethod.SCRIPT]: "Script",
   [ConsentMethod.INDIVIDUAL_NOTICE]: "Individual Notice",
   [ConsentMethod.ACKNOWLEDGE]: "Acknowledge",
+  [ConsentMethod.EXTERNAL_PROVIDER]: "External Provider",
 };
 
 export const REQUEST_ORIGIN_LABELS: Record<RequestOrigin, string> = {

@@ -4,8 +4,8 @@ import {
   PrivacyExperience,
 } from "fides-js";
 
-import { mockCookie } from "../support/mocks";
-import { OVERRIDE, stubConfig, stubTCFExperience } from "../support/stubs";
+import { mockCookie } from "../../support/mocks";
+import { OVERRIDE, stubConfig, stubTCFExperience } from "../../support/stubs";
 
 describe("Fides.shouldShowExperience()", () => {
   interface TestCaseOptions {

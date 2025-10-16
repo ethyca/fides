@@ -10,8 +10,8 @@ import {
 
 import { Locale } from "~/../fides-js/src/lib/i18n";
 
-import { API_URL, TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
-import { stubConfig, stubTCFExperience } from "../support/stubs";
+import { API_URL, TEST_OVERRIDE_WINDOW_PATH } from "../../support/constants";
+import { stubConfig, stubTCFExperience } from "../../support/stubs";
 
 /**
  * Define (lots of) reusable test data for all the tests!
