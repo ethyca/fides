@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 - Added support for new experience config to delete cookie based on host domain [#6706](https://github.com/ethyca/fides/pull/6706)
 - Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
+- Added `tagging_instructions` field to `DataCategory` model for LLM classification customization [#6736](https://github.com/ethyca/fides/pull/6736) https://github.com/ethyca/fides/labels/db-migration
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
 
 ### Developer Experience
