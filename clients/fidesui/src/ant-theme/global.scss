@@ -195,3 +195,10 @@ h6 {
 .ant-list-item-action-split {
   display: none;
 }
+
+.ant-popover {
+  .ant-popover-inner-content {
+    // default to no padding. It's easier to pad the instance content than use negative margins to compensate for the padding.
+    --ant-popover-inner-content-padding: 0;
+  }
+}

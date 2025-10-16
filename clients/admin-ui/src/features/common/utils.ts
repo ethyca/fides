@@ -119,7 +119,7 @@ export const getOptionsFromMap = <T = string>(
     value: key,
   }));
 
-export const getWebsiteIconUrl = (domain: string, size = 24) => {
+export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
