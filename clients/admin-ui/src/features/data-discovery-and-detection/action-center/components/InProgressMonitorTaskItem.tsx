@@ -199,15 +199,24 @@ export const InProgressMonitorTaskItem = ({
     <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
         <Col span={14} className="align-middle">
-          <Space align="center" size={8} wrap>
-            {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
-            <Title level={5} className="m-0">
-              {taskTitle}
-            </Title>
-            {!isInProgress && (
-              <Tag color={getStatusColor(task.status)}>
-                {formatText(task.status)}
-              </Tag>
+          <Space direction="vertical" size={4}>
+            <Space align="center" size={8} wrap>
+              {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
+              <Title level={5} className="m-0">
+                {taskTitle}
+              </Title>
+              {!isInProgress && (
+                <Tag color={getStatusColor(task.status)}>
+                  {formatText(task.status)}
+                </Tag>
+              )}
+            </Space>
+            {task.status === "error" && (
+              <Space className="pl-1">
+                <Text type="secondary" size="sm">
+                  {task.message || "Unknown error"}
+                </Text>
+              </Space>
             )}
           </Space>
         </Col>
