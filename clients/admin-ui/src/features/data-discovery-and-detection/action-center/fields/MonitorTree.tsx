@@ -13,7 +13,10 @@ import { Key, useEffect, useState } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
+import {
+  DiffStatus,
+  Page_DatastoreStagedResourceTreeAPIResponse_,
+} from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -43,7 +46,7 @@ const mapResponseToTreeData = (
           return null;
       }
     },
-    isLeaf: !treeNode.has_children,
+    isLeaf: !treeNode.has_grandchildren,
   }));
 
   return (dataItems?.length ?? 0) < TREE_PAGE_SIZE
@@ -139,17 +142,22 @@ const MonitorTree = ({
         return;
       }
 
-      trigger({
+      // First, trigger the fast query without ancestor details
+      const queryParams = {
         monitor_config_id: monitorId,
         staged_resource_urn: key.toString(),
         size: TREE_PAGE_SIZE,
-      }).then(({ data }) => {
-        if (data) {
+      };
+      trigger({
+        ...queryParams,
+        include_descendant_details: false,
+      }).then(({ data: fastData }) => {
+        if (fastData) {
           setTreeData((origin) =>
             updateTreeData(
               origin,
               key,
-              mapResponseToTreeData(data, key.toString()),
+              mapResponseToTreeData(fastData, key.toString()),
             ),
           );
           setNodePaginationState({
@@ -157,6 +165,22 @@ const MonitorTree = ({
             [key.toString()]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
           });
         }
+
+        // Immediately trigger the detailed query in the background
+        trigger({
+          ...queryParams,
+          include_descendant_details: true,
+        }).then(({ data: detailedData }) => {
+          if (detailedData) {
+            setTreeData((origin) =>
+              updateTreeData(
+                origin,
+                key,
+                mapResponseToTreeData(detailedData, key.toString()),
+              ),
+            );
+          }
+        });
       });
 
       resolve();
@@ -180,35 +204,74 @@ const MonitorTree = ({
         );
       });
 
-      trigger({
+      // First, trigger the fast query without ancestor details
+      const queryParams = {
         monitor_config_id: monitorId,
         staged_resource_urn: key,
         size: TREE_PAGE_SIZE,
         page: newPage,
-      }).then(({ data }) => {
-        if (data) {
+      };
+      trigger({
+        ...queryParams,
+        include_descendant_details: false,
+      }).then(({ data: fastData }) => {
+        if (fastData) {
           setTreeData((origin) =>
-            appendTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
+            appendTreeNodeData(
+              origin,
+              key,
+              mapResponseToTreeData(fastData, key),
+            ),
           );
           setNodePaginationState({
             ...nodePagination,
             [key]: { pageSize: TREE_PAGE_SIZE, pageIndex: newPage },
           });
         }
+
+        // Immediately trigger the detailed query in the background
+        trigger({
+          ...queryParams,
+          include_descendant_details: true,
+        }).then(({ data: detailedData }) => {
+          if (detailedData) {
+            setTreeData((origin) =>
+              appendTreeNodeData(
+                origin,
+                key,
+                mapResponseToTreeData(detailedData, key),
+              ),
+            );
+          }
+        });
       });
     }
   };
 
   useEffect(() => {
     const getInitTreeData = async () => {
-      const { data } = await trigger({
+      // First, trigger the fast query without ancestor details
+      const { data: fastData } = await trigger({
         monitor_config_id: monitorId,
         size: TREE_PAGE_SIZE,
+        include_descendant_details: false,
       });
 
-      if (data && treeData.length <= 0) {
-        setTreeData(mapResponseToTreeData(data));
+      if (fastData && treeData.length <= 0) {
+        setTreeData(mapResponseToTreeData(fastData));
       }
+
+      // Immediately trigger the detailed query in the background
+      trigger({
+        monitor_config_id: monitorId,
+        size: TREE_PAGE_SIZE,
+        include_descendant_details: true,
+      }).then(({ data: detailedData }) => {
+        if (detailedData) {
+          // Update tree data with the detailed version
+          setTreeData(mapResponseToTreeData(detailedData));
+        }
+      });
     };
 
     getInitTreeData();
