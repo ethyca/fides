@@ -1,3 +1,5 @@
+import { paths } from "@ethyca/fides-api-ts";
+
 import { baseApi } from "~/features/common/api.slice";
 import {
   buildArrayQueryParams,
@@ -18,10 +20,8 @@ import {
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginationQueryParams,
@@ -95,29 +95,30 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
     }),
     getMonitorFields: build.query<
-      Page_DatastoreStagedResourceAPIResponse_,
-      Partial<PaginationQueryParams> & {
-        staged_resource_urn?: Array<string>;
-        monitor_config_id: string;
-        search?: string;
-        diff_status?: Array<DiffStatus>;
-        confidence_score?: Array<ConfidenceScoreRange>;
-      }
+      paths["/api/v1/plus/discovery-monitor/{monitor_config_id}/fields"]["get"]["responses"]["200"]["content"]["application/json"],
+      paths["/api/v1/plus/discovery-monitor/{monitor_config_id}/fields"]["get"]["parameters"]
     >({
-      query: ({
-        page = 1,
-        size = 20,
-        monitor_config_id,
-        search,
-        diff_status,
-        confidence_score,
-        ...arrayQueryParams
-      }) => {
+      query: ({ query, path: { monitor_config_id } }) => {
+        const {
+          page = 1,
+          size = 20,
+          search,
+        } = query || {
+          page: 1,
+          size: 20,
+        };
         const queryParams = buildArrayQueryParams({
-          ...arrayQueryParams,
+          ...(query?.confidence_score
+            ? { confidence_score: query.confidence_score }
+            : {}),
+          ...(query?.data_category
+            ? { data_category: query.data_category }
+            : {}),
+          ...(query?.diff_status ? { diff_status: query.diff_status } : {}),
           ...(search ? { search: [search] } : {}),
-          ...(diff_status ? { diff_status } : {}),
-          ...(confidence_score ? { confidence_score } : {}),
+          ...(query?.staged_resource_urn
+            ? { staged_resource_urn: query.staged_resource_urn }
+            : {}),
         });
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/fields?${queryParams?.toString()}`,

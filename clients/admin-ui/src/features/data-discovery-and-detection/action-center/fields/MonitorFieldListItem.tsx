@@ -1,3 +1,4 @@
+import { paths } from "@ethyca/fides-api-ts";
 import {
   AntButton as Button,
   AntCheckbox as Checkbox,
@@ -16,7 +17,6 @@ import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import ClassificationSelect from "./ClassificationSelect";
 import { RESOURCE_STATUS } from "./useFilters";
@@ -79,7 +79,7 @@ const tagRender: TagRender = (props) => {
 };
 
 type ListRenderItem = ListProps<
-  Page_DatastoreStagedResourceAPIResponse_["items"][number]
+  paths["/api/v1/plus/discovery-monitor/{monitor_config_id}/fields"]["get"]["responses"]["200"]["content"]["application/json"]["items"][number]
 >["renderItem"];
 
 type MonitorFieldListItemRenderParams = Parameters<
