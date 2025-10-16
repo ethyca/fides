@@ -43,8 +43,8 @@ export const InProgressMonitorTasksList = () => {
     updateShowDismissed,
 
     // Filter actions
-    resetToDefault,
     applyFilters,
+    resetAndApplyFilters,
 
     // Available filter options
     availableStatuses,
@@ -66,10 +66,9 @@ export const InProgressMonitorTasksList = () => {
   }, [applyFilters]);
 
   const handleResetAndClose = useCallback(() => {
-    resetToDefault();
-    applyFilters(); // Apply the reset filters to the query
+    resetAndApplyFilters();
     setFilterPopoverOpen(false);
-  }, [resetToDefault, applyFilters]);
+  }, [resetAndApplyFilters]);
 
   const filterContent = (
     <div className="min-w-[220px] p-2">

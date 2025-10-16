@@ -56,11 +56,14 @@ export const useInProgressMonitorTasksList = () => {
     updatePageIndex(1);
   }, [stagedStatusFilters, stagedShowDismissed, updatePageIndex]);
 
-  // Reset button: Reset staged filters to default
-  const resetToDefault = useCallback(() => {
+  // Reset button: Reset to defaults and immediately apply them
+  const resetAndApplyFilters = useCallback(() => {
     setStagedStatusFilters(defaultStatusFilters);
     setStagedShowDismissed(false);
-  }, [defaultStatusFilters]);
+    setAppliedStatusFilters(defaultStatusFilters);
+    setAppliedShowDismissed(false);
+    updatePageIndex(1);
+  }, [defaultStatusFilters, updatePageIndex]);
 
   // All possible status values from ExecutionLogStatus enum
   // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
@@ -128,8 +131,8 @@ export const useInProgressMonitorTasksList = () => {
     updateShowDismissed,
 
     // Filter actions
-    resetToDefault,
     applyFilters,
+    resetAndApplyFilters,
 
     // Available filter options
     availableStatuses: allPossibleStatuses,
