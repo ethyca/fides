@@ -8,15 +8,7 @@ import {
 
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 
-export const RESOURCE_STATUS = [
-  "Attention Required",
-  "In Review",
-  "Classifying",
-  "Approved",
-  "Unmonitored",
-  "Confirmed",
-  "Removed",
-] as const;
+import { RESOURCE_STATUS } from "./MonitorFields.const";
 
 export const useMonitorFieldsFilters = () => {
   const [resourceStatus, setResourceStatus] = useQueryState(
