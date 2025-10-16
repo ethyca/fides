@@ -4,6 +4,7 @@ import {
   AntFlex as Flex,
   AntList as List,
   AntPopover as Popover,
+  Divider,
   Icons,
 } from "fidesui";
 import { useCallback, useState } from "react";
@@ -71,8 +72,8 @@ export const InProgressMonitorTasksList = () => {
   }, [resetAndApplyFilters]);
 
   const filterContent = (
-    <div className="min-w-[220px] p-2">
-      <Flex vertical className="mb-5 gap-1.5">
+    <Flex vertical className="min-w-[220px] p-0">
+      <Flex vertical className="gap-1.5 px-2 py-1">
         <Checkbox.Group
           value={statusFilters}
           onChange={handleStatusesChanged}
@@ -91,15 +92,21 @@ export const InProgressMonitorTasksList = () => {
           Dismissed
         </Checkbox>
       </Flex>
-      <Flex justify="space-between">
-        <Button size="small" onClick={handleResetAndClose}>
+      <Divider className="-mx-4 mt-3 border-t border-gray-200" />
+      <Flex justify="space-between" className="px-0 pt-3">
+        <Button
+          size="small"
+          type="text"
+          onClick={handleResetAndClose}
+          className="text-gray-500"
+        >
           Reset
         </Button>
         <Button size="small" type="primary" onClick={handleApplyAndClose}>
           Apply
         </Button>
       </Flex>
-    </div>
+    </Flex>
   );
 
   return (
@@ -121,6 +128,7 @@ export const InProgressMonitorTasksList = () => {
           placement="bottomRight"
           open={filterPopoverOpen}
           onOpenChange={setFilterPopoverOpen}
+          styles={{ body: { padding: 0 } }}
         >
           <Button icon={<Icons.ChevronDown />} iconPosition="end">
             Filter
