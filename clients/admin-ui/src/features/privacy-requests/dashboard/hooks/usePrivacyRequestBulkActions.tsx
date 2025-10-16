@@ -3,7 +3,7 @@ import {
   AntMessage as message,
   Icons,
 } from "fidesui";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import {
   BulkActionType,
@@ -20,7 +20,9 @@ import { PrivacyRequestEntity } from "../../types";
 type MessageInstance = ReturnType<typeof message.useMessage>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
-  selectedRequests: PrivacyRequestEntity[];
+  requests: PrivacyRequestEntity[];
+  selectedIds: React.Key[];
+  clearSelectedIds: () => void;
   messageApi: MessageInstance;
 }
 
@@ -60,12 +62,25 @@ const formatResultMessage = (
 
 /**
  * Hook to manage bulk actions for privacy requests.
- * Returns menu items with disabled state.
+ * Returns menu items with disabled state and handles selection logic.
  */
 export const usePrivacyRequestBulkActions = ({
-  selectedRequests,
+  requests,
+  selectedIds,
+  clearSelectedIds,
   messageApi,
 }: UsePrivacyRequestBulkActionsProps) => {
+  // Get selected requests from the list
+  const selectedRequests = useMemo(
+    () => requests.filter((request) => selectedIds.includes(request.id)),
+    [requests, selectedIds],
+  );
+
+  // Clear selected request keys when the data changes
+  // eg. with pagination, filters or actions performed
+  useEffect(() => {
+    clearSelectedIds();
+  }, [requests, clearSelectedIds]);
   // Mutation hooks
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
   const [bulkDenyRequest] = useBulkDenyRequestMutation();

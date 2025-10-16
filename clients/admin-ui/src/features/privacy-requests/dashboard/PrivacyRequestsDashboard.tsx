@@ -10,7 +10,7 @@ import {
   useDisclosure,
 } from "fidesui";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
@@ -50,12 +50,6 @@ export const PrivacyRequestsDashboard = () => {
     fuzzy_search_str: fuzzySearchTerm,
   });
 
-  // Clear selected request keys when the data changes
-  // eg. with pagination, filters or actions performed
-  useEffect(() => {
-    clearSelectedIds();
-  }, [data, clearSelectedIds]);
-
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
     const itemsWithKeys = results.items.map((item) => ({
@@ -92,14 +86,10 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
-  // Get selected requests from the list
-  const selectedRequests = useMemo(
-    () => requests.filter((request) => selectedIds.includes(request.id)),
-    [requests, selectedIds],
-  );
-
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
-    selectedRequests,
+    requests,
+    selectedIds,
+    clearSelectedIds,
     messageApi,
   });
 
