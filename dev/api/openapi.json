@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.72.3b0.post0.dev5"
+    "version": "2.72.3b0.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14482,6 +14482,114 @@
         ]
       }
     },
+    "/api/v1/data_category/{fides_key}/tagging_instructions": {
+      "patch": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Update Tagging Instructions",
+        "description": "Update or add tagging_instructions for a data category.\nThis is used by LLM-based classification to provide custom instructions for tagging.",
+        "operationId": "Update_tagging_instructions_api_v1_data_category__fides_key__tagging_instructions_patch",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_category:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_Update_tagging_instructions_api_v1_data_category__fides_key__tagging_instructions_patch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Delete Tagging Instructions",
+        "description": "Remove tagging_instructions from a data category.\nSets the tagging_instructions field to None.",
+        "operationId": "Delete_tagging_instructions_api_v1_data_category__fides_key__tagging_instructions_delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "data_category:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "tags": [
@@ -15403,6 +15511,19 @@
         ],
         "title": "BigQueryDocsSchema",
         "description": "BigQuery Secrets Schema for API Docs"
+      },
+      "Body_Update_tagging_instructions_api_v1_data_category__fides_key__tagging_instructions_patch": {
+        "properties": {
+          "tagging_instructions": {
+            "type": "string",
+            "title": "Tagging Instructions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tagging_instructions"
+        ],
+        "title": "Body_Update_tagging_instructions_api_v1_data_category__fides_key__tagging_instructions_patch"
       },
       "Body_acquire_access_token_api_v1_oauth_token_post": {
         "properties": {
@@ -17231,6 +17352,18 @@
             "title": "Active",
             "description": "Indicates whether the resource is currently 'active'.",
             "default": true
+          },
+          "tagging_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tagging Instructions",
+            "description": "Instructions for LLM-based data classification tagging."
           }
         },
         "type": "object",
@@ -17364,6 +17497,18 @@
               }
             ],
             "title": "Parent Key"
+          },
+          "tagging_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tagging Instructions",
+            "description": "Instructions for LLM-based data classification tagging."
           }
         },
         "type": "object",
