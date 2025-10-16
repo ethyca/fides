@@ -6,6 +6,7 @@ import {
   AntListItemProps as ListItemProps,
   AntRow as Row,
   AntSpace as Space,
+  AntSpin as Spin,
   AntTag as Tag,
   AntTypography as Typography,
   useToast,
@@ -26,7 +27,6 @@ import {
   useGetAggregateMonitorResultsQuery,
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
-import { CustomSpinner } from "./CustomSpinner";
 
 const { Text, Title } = Typography;
 
@@ -220,7 +220,7 @@ export const InProgressMonitorTaskItem = ({
         </Col>
         <Col span={3} className="flex items-center justify-end">
           {isInProgress ? (
-            <CustomSpinner />
+            <Spin size="small" />
           ) : (
             <Text type="secondary" size="sm">
               {formatDistanceStrict(new Date(task.updated_at), new Date(), {
