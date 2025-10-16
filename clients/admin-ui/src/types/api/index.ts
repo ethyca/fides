@@ -395,6 +395,7 @@ export type { Page_DatamapReport_ } from "./models/Page_DatamapReport_";
 export type { Page_Dataset_ } from "./models/Page_Dataset_";
 export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchema_";
 export type { Page_DatasetResponse_ } from "./models/Page_DatasetResponse_";
+export type { Page_DatastoreStagedResourceTreeAPIResponse_ } from "./models/Page_DatastoreStagedResourceTreeAPIResponse_";
 export type { Page_ExecutionLogDetailResponse_ } from "./models/Page_ExecutionLogDetailResponse_";
 export type { Page_ExperienceConfigListViewResponse_ } from "./models/Page_ExperienceConfigListViewResponse_";
 export type { Page_Language_ } from "./models/Page_Language_";
