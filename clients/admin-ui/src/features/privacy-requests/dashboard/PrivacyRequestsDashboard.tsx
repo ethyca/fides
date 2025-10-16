@@ -58,7 +58,6 @@ export const PrivacyRequestsDashboard = () => {
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
-    // Add explicit key property for Ant Design List selection
     const itemsWithKeys = results.items.map((item) => ({
       ...item,
       key: item.id,
