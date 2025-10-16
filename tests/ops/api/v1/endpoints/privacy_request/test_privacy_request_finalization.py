@@ -47,9 +47,6 @@ class TestFinalizePrivacyRequest:
         )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
         response = api_client.post(url, headers=auth_header)
-        from loguru import logger
-
-        logger.info(response.json()["detail"])
         assert response.status_code == 400
         assert "Cannot manually finalize privacy request" in response.json()["detail"]
 
