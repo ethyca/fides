@@ -32,8 +32,6 @@ const ACTION_LABELS: Record<BulkActionType, string> = {
   [BulkActionType.DELETE]: "delete",
 };
 
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
 const pluralize = (count: number, singular: string, plural: string) =>
   count === 1 ? singular : plural;
 
@@ -70,36 +68,36 @@ export const usePrivacyRequestBulkActions = ({
   clearSelectedIds,
   messageApi,
 }: UsePrivacyRequestBulkActionsProps) => {
-  // Get selected requests from the list
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
     [requests, selectedIds],
   );
 
-  // Clear selected request keys when the data changes
+  // Clear selected requests when the data changes
   // eg. with pagination, filters or actions performed
   useEffect(() => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
-  // Mutation hooks
+
+  // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
   const [bulkDenyRequest] = useBulkDenyRequestMutation();
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
 
   const handleActionClick = useCallback(
     async (action: BulkActionType) => {
+      // Filter out requests that don't support the action that was chosen
+      // We will later add a warning modal for this
       const supportedRequests = selectedRequests.filter((request) =>
         getAvailableActionsForRequest(request).includes(action),
       );
 
       const requestIds = supportedRequests.map((r) => r.id);
-      if (requestIds.length === 0) {
-        return;
-      }
+      const requestCount = requestIds.length;
 
       const actionLabel = ACTION_LABELS[action];
       const hideLoading = messageApi.loading(
-        `${capitalize(actionLabel)}ing ${requestIds.length} privacy ${pluralize(requestIds.length, "request", "requests")}...`,
+        `Executing bulk action on ${requestCount} privacy ${pluralize(requestCount, "request", "requests")}...`,
         0,
       );
 
