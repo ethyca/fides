@@ -4,7 +4,6 @@ import {
   AntCol as Col,
   AntDivider as Divider,
   AntListItemProps as ListItemProps,
-  AntPopover as Popover,
   AntRow as Row,
   AntSpace as Space,
   AntSpin as Spin,
@@ -209,42 +208,6 @@ export const InProgressMonitorTaskItem = ({
               <Tag color={getStatusColor(task.status)}>
                 {formatText(task.status)}
               </Tag>
-            )}
-            {task.status === "error" && (
-              <>
-                {canRetry && (
-                  <Button
-                    size="small"
-                    type="primary"
-                    loading={isRetrying}
-                    onClick={handleRetryTask}
-                  >
-                    Retry
-                  </Button>
-                )}
-                {!isDismissed && (
-                  <Button
-                    size="small"
-                    loading={isDismissing}
-                    onClick={handleDismissTask}
-                  >
-                    Dismiss
-                  </Button>
-                )}
-                <Popover
-                  content={
-                    <div className="mx-4 max-w-[360px] py-3">
-                      {task.message}
-                    </div>
-                  }
-                  title={null}
-                  trigger="click"
-                >
-                  <Button type="link" size="small">
-                    Failure reason
-                  </Button>
-                </Popover>
-              </>
             )}
           </Space>
         </Col>
