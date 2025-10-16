@@ -10,7 +10,7 @@ import {
   useDisclosure,
 } from "fidesui";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
@@ -51,6 +51,16 @@ export const PrivacyRequestsDashboard = () => {
     size: pageSize,
     fuzzy_search_str: fuzzySearchTerm,
   });
+
+  // Clear selected request keys when the data changes
+  // eg. with pagination, filters or actions performed
+  const clearSelectedRequestKeys = useCallback(() => {
+    setSelectedRequestKeys([]);
+  }, []);
+  useEffect(() => {
+    clearSelectedRequestKeys();
+  }, [data, clearSelectedRequestKeys]);
+
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
     // Add explicit key property for Ant Design List selection
