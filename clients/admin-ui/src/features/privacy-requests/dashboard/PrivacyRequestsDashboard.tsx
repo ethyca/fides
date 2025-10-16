@@ -15,7 +15,6 @@ import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { DownloadLightIcon } from "~/features/common/Icon";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
   selectPrivacyRequestFilters,
@@ -26,7 +25,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
-import { usePrivacyRequestBulkActions } from "../hooks/usePrivacyRequestBulkActions";
+import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import { ListItem } from "./list-item/ListItem";
 
 export const PrivacyRequestsDashboard = () => {
@@ -105,11 +104,10 @@ export const PrivacyRequestsDashboard = () => {
     [requests, selectedRequestKeys],
   );
 
-  const { bulkActionMenuItems, confirmationModalState } =
-    usePrivacyRequestBulkActions({
-      selectedRequests,
-      messageApi,
-    });
+  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
+    selectedRequests,
+    messageApi,
+  });
 
   return (
     <div>
@@ -181,7 +179,6 @@ export const PrivacyRequestsDashboard = () => {
         </Flex>
       )}
       {messageContext}
-      <ConfirmationModal {...confirmationModalState} />
     </div>
   );
 };
