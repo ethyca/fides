@@ -2,13 +2,13 @@ import { formatDistanceStrict } from "date-fns";
 import {
   AntButton as Button,
   AntCol as Col,
+  AntDivider as Divider,
   AntListItemProps as ListItemProps,
-  AntPopover as Popover,
   AntRow as Row,
   AntSpace as Space,
+  AntSpin as Spin,
   AntTag as Tag,
   AntTypography as Typography,
-  Spinner,
   useToast,
 } from "fidesui";
 
@@ -198,48 +198,25 @@ export const InProgressMonitorTaskItem = ({
   return (
     <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
-        <Col span={17} className="align-middle">
-          <Space align="center" size={8} wrap>
-            {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
-            <Title level={5} className="m-0">
-              {taskTitle}
-            </Title>
-            {!isInProgress && (
-              <Tag color={getStatusColor(task.status)}>
-                {formatText(task.status)}
-              </Tag>
-            )}
+        <Col span={14} className="align-middle">
+          <Space direction="vertical" size={4}>
+            <Space align="center" size={8} wrap>
+              {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
+              <Title level={5} className="m-0">
+                {taskTitle}
+              </Title>
+              {!isInProgress && (
+                <Tag color={getStatusColor(task.status)}>
+                  {formatText(task.status)}
+                </Tag>
+              )}
+            </Space>
             {task.status === "error" && (
-              <>
-                {canRetry && (
-                  <Button
-                    size="small"
-                    type="primary"
-                    loading={isRetrying}
-                    onClick={handleRetryTask}
-                  >
-                    Retry
-                  </Button>
-                )}
-                {!isDismissed && (
-                  <Button
-                    size="small"
-                    loading={isDismissing}
-                    onClick={handleDismissTask}
-                  >
-                    Dismiss
-                  </Button>
-                )}
-                <Popover
-                  content={<div className="max-w-[360px]">{task.message}</div>}
-                  title={null}
-                  trigger="click"
-                >
-                  <Button type="link" size="small">
-                    Failure reason
-                  </Button>
-                </Popover>
-              </>
+              <Space className="pl-1">
+                <Text type="secondary" size="sm">
+                  {task.message || "Unknown error"}
+                </Text>
+              </Space>
             )}
           </Space>
         </Col>
@@ -250,13 +227,41 @@ export const InProgressMonitorTaskItem = ({
         </Col>
         <Col span={3} className="flex items-center justify-end">
           {isInProgress ? (
-            <Spinner size="sm" color="primary" thickness="2px" speed="0.6s" />
+            <Spin size="small" />
           ) : (
             <Text type="secondary" size="sm">
               {formatDistanceStrict(new Date(task.updated_at), new Date(), {
                 addSuffix: true,
               })}
             </Text>
+          )}
+        </Col>
+        <Col span={3} className="flex items-center justify-end">
+          {task.status === "error" && (
+            <Space size={0} split={<Divider type="vertical" />}>
+              {canRetry && (
+                <Button
+                  type="link"
+                  size="small"
+                  loading={isRetrying}
+                  onClick={handleRetryTask}
+                  className="p-0"
+                >
+                  Retry
+                </Button>
+              )}
+              {!isDismissed && (
+                <Button
+                  type="link"
+                  size="small"
+                  loading={isDismissing}
+                  onClick={handleDismissTask}
+                  className="p-0"
+                >
+                  Dismiss
+                </Button>
+              )}
+            </Space>
           )}
         </Col>
       </Row>

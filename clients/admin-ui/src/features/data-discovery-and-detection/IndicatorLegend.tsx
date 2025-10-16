@@ -17,7 +17,7 @@ import {
 
 export const IndicatorLegend = () => {
   const content = (
-    <div style={{ maxWidth: 300 }}>
+    <div className="mx-4 max-w-[300px] py-3">
       <Row gutter={[16, 8]}>
         <Col span={12}>
           <Space>

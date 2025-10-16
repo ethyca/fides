@@ -184,6 +184,9 @@ class DataCategory(Base, FidesBase):
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
 
+    # LLM Classification
+    tagging_instructions = Column(Text, nullable=True)
+
     children: "RelationshipProperty[List[DataCategory]]" = relationship(
         "DataCategory",
         back_populates="parent",
