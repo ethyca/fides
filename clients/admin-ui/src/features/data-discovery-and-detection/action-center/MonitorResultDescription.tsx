@@ -19,7 +19,7 @@ export const MonitorResultDescription = ({
   isAssetList?: boolean;
 }) => {
   const getMonitorUpdateName = (key: string) => {
-    return MONITOR_UPDATE_NAMES.get(key as MonitorUpdateKey);
+    return MONITOR_UPDATE_NAMES.get(key as MonitorUpdateKey) ?? key;
   };
   const updateStrings = useMemo(() => {
     if (!updates) {
