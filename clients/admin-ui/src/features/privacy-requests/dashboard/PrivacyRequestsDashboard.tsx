@@ -10,10 +10,11 @@ import {
   useDisclosure,
 } from "fidesui";
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
+import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
@@ -35,9 +36,7 @@ export const PrivacyRequestsDashboard = () => {
   );
   const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
-  const [selectedRequestKeys, setSelectedRequestKeys] = useState<React.Key[]>(
-    [],
-  );
+  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
@@ -53,12 +52,9 @@ export const PrivacyRequestsDashboard = () => {
 
   // Clear selected request keys when the data changes
   // eg. with pagination, filters or actions performed
-  const clearSelectedRequestKeys = useCallback(() => {
-    setSelectedRequestKeys([]);
-  }, []);
   useEffect(() => {
-    clearSelectedRequestKeys();
-  }, [data, clearSelectedRequestKeys]);
+    clearSelectedIds();
+  }, [data, clearSelectedIds]);
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -99,9 +95,8 @@ export const PrivacyRequestsDashboard = () => {
 
   // Get selected requests from the list
   const selectedRequests = useMemo(
-    () =>
-      requests.filter((request) => selectedRequestKeys.includes(request.id)),
-    [requests, selectedRequestKeys],
+    () => requests.filter((request) => selectedIds.includes(request.id)),
+    [requests, selectedIds],
   );
 
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
@@ -119,7 +114,7 @@ export const PrivacyRequestsDashboard = () => {
         />
         <div className="flex items-center gap-2">
           <BulkActionsDropdown
-            selectedIds={selectedRequestKeys}
+            selectedIds={selectedIds}
             menuItems={bulkActionMenuItems}
           />
           <Button data-testid="filter-btn" onClick={onOpen}>
@@ -158,9 +153,9 @@ export const PrivacyRequestsDashboard = () => {
               bordered
               dataSource={requests}
               rowSelection={{
-                selectedRowKeys: selectedRequestKeys,
+                selectedRowKeys: selectedIds,
                 onChange: (keys) => {
-                  setSelectedRequestKeys(keys);
+                  setSelectedIds(keys);
                 },
               }}
               renderItem={(item, index, checkbox) => (
