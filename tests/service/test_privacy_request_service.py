@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import List
-from unittest.mock import create_autospec
+from unittest.mock import create_autospec, patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -89,8 +89,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Create a deleted privacy request"""
-        from fides.api.models.privacy_request import PrivacyRequest
-
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -115,8 +113,6 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Create a privacy request in requires_manual_finalization status"""
-        from fides.api.models.privacy_request import PrivacyRequest
-
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -248,10 +244,6 @@ class TestPrivacyRequestService:
         )
 
         # Manually set status to complete since there are no datasets/connections to process
-        from fides.api.models.privacy_request.privacy_request import (
-            PrivacyRequestStatus,
-        )
-
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=db)
 
@@ -1455,3 +1447,31 @@ class TestPrivacyRequestService:
         db.refresh(privacy_request)
         assert privacy_request.finalized_at is None
         assert privacy_request.finalized_by is None
+
+    def test_finalize_privacy_requests_exception_handling(
+        self,
+        privacy_request_service: PrivacyRequestService,
+        privacy_request_requires_manual_finalization,
+        reviewing_user: FidesUser,
+    ):
+        """Test finalize_privacy_requests handles exceptions during finalization"""
+        user_id = reviewing_user.id
+
+        # Mock queue_privacy_request to raise an exception
+        with patch(
+            "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
+        ) as mock_queue:
+            mock_queue.side_effect = Exception("Queue error")
+
+            result = privacy_request_service.finalize_privacy_requests(
+                [privacy_request_requires_manual_finalization.id],
+                user_id=user_id,
+            )
+
+            assert len(result.succeeded) == 0
+            assert len(result.failed) == 1
+            assert result.failed[0].message == "Privacy request could not be finalized"
+            assert (
+                result.failed[0].data["id"]
+                == privacy_request_requires_manual_finalization.id
+            )
