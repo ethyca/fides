@@ -37,37 +37,20 @@ import { isErrorResult } from "~/types/errors";
 
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
+import {
+  FIELD_PAGE_SIZE,
+  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
+  ResourceStatusLabel,
+} from "./MonitorFields.const";
 import MonitorTree from "./MonitorTree";
-import { RESOURCE_STATUS, useMonitorFieldsFilters } from "./useFilters";
-
-const FIELD_PAGE_SIZE = 25;
-
-type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue" | "green";
-
-const ResourceStatus: Record<
-  DiffStatus,
-  {
-    label: ResourceStatusLabel;
-    color?: ResourceStatusLabelColor;
-  }
-> = {
-  classifying: { label: "Classifying", color: "blue" },
-  classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "In Review", color: "nectar" },
-  classification_addition: { label: "In Review", color: "blue" },
-  addition: { label: "Attention Required", color: "blue" },
-  muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Removed", color: "red" },
-  removing: { label: "In Review", color: "nectar" },
-  promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Confirmed", color: "nectar" },
-  approved: { label: "Approved", color: "green" },
-} as const;
+import { useMonitorFieldsFilters } from "./useFilters";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
-    ResourceStatus[status].label === resourceStatusLabel ? [status] : [],
+    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
+    resourceStatusLabel
+      ? [status]
+      : [],
   );
 
 const ActionCenterFields: NextPage = () => {
