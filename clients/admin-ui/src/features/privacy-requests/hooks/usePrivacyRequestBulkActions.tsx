@@ -11,9 +11,9 @@ import {
   isActionSupportedByRequests,
 } from "../helpers";
 import {
-  useApproveRequestMutation,
+  useBulkApproveRequestMutation,
+  useBulkDenyRequestMutation,
   useBulkSoftDeleteRequestMutation,
-  useDenyRequestMutation,
 } from "../privacy-requests.slice";
 import { PrivacyRequestEntity } from "../types";
 
@@ -39,6 +39,34 @@ const ACTION_LABELS: Record<BulkActionType, string> = {
   [BulkActionType.DELETE]: "delete",
 };
 
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
+const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
+const formatResultMessage = (
+  actionLabel: string,
+  successCount: number,
+  failedCount: number,
+): { type: "success" | "warning" | "error"; message: string } => {
+  if (failedCount > 0 && successCount > 0) {
+    return {
+      type: "warning",
+      message: `Successfully ${actionLabel}d ${successCount} ${pluralize(successCount, "request", "requests")}. ${failedCount} ${pluralize(failedCount, "request", "requests")} failed.`,
+    };
+  }
+  if (failedCount > 0) {
+    return {
+      type: "error",
+      message: `Failed to ${actionLabel} ${failedCount} ${pluralize(failedCount, "request", "requests")}.`,
+    };
+  }
+  return {
+    type: "success",
+    message: `Successfully ${actionLabel}d ${successCount} privacy ${pluralize(successCount, "request", "requests")}`,
+  };
+};
+
 /**
  * Hook to manage bulk actions for privacy requests.
  * Returns menu items with disabled state and confirmation modal state.
@@ -52,8 +80,8 @@ export const usePrivacyRequestBulkActions = ({
   );
 
   // Mutation hooks
-  const [approveRequest] = useApproveRequestMutation();
-  const [denyRequest] = useDenyRequestMutation();
+  const [bulkApproveRequest] = useBulkApproveRequestMutation();
+  const [bulkDenyRequest] = useBulkDenyRequestMutation();
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
 
   const handleActionClick = useCallback((action: BulkActionType) => {
@@ -69,13 +97,11 @@ export const usePrivacyRequestBulkActions = ({
       return;
     }
 
-    // Filter requests that support this action
     const supportedRequests = selectedRequests.filter((request) =>
       getAvailableActionsForRequest(request).includes(pendingAction),
     );
 
     const requestIds = supportedRequests.map((r) => r.id);
-
     if (requestIds.length === 0) {
       setPendingAction(null);
       return;
@@ -83,82 +109,45 @@ export const usePrivacyRequestBulkActions = ({
 
     const actionLabel = ACTION_LABELS[pendingAction];
     const hideLoading = messageApi.loading(
-      `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)}ing ${requestIds.length} privacy ${requestIds.length === 1 ? "request" : "requests"}...`,
+      `${capitalize(actionLabel)}ing ${requestIds.length} privacy ${pluralize(requestIds.length, "request", "requests")}...`,
       0,
     );
 
-    try {
-      let successCount = 0;
-      let failedCount = 0;
+    // Execute appropriate bulk mutation
+    let result;
+    switch (pendingAction) {
+      case BulkActionType.APPROVE:
+        result = await bulkApproveRequest({ request_ids: requestIds });
+        break;
+      case BulkActionType.DENY:
+        result = await bulkDenyRequest({ request_ids: requestIds, reason: "" });
+        break;
+      case BulkActionType.DELETE:
+        result = await bulkSoftDeleteRequest({ request_ids: requestIds });
+        break;
+      default:
+        hideLoading();
+        setPendingAction(null);
+        return;
+    }
 
-      // Execute the appropriate bulk action
-      if (pendingAction === BulkActionType.DELETE) {
-        // Delete has a true bulk endpoint
-        const result = await bulkSoftDeleteRequest({
-          request_ids: requestIds,
-        });
+    hideLoading();
 
-        if ("error" in result) {
-          throw new Error(`Failed to ${actionLabel} requests`);
-        }
-
-        if ("data" in result) {
-          successCount = result.data.succeeded?.length || 0;
-          failedCount = result.data.failed?.length || 0;
-        }
-      } else {
-        // Approve and Deny: call the single-request mutation for each request
-        const results = await Promise.allSettled(
-          supportedRequests.map(async (request) => {
-            if (pendingAction === BulkActionType.APPROVE) {
-              return approveRequest(request);
-            }
-            if (pendingAction === BulkActionType.DENY) {
-              return denyRequest({ id: request.id, reason: "" });
-            }
-            return null;
-          }),
-        );
-
-        // Count successes and failures
-        results.forEach((result) => {
-          if (
-            result.status === "fulfilled" &&
-            result.value &&
-            !("error" in result.value)
-          ) {
-            successCount += 1;
-          } else {
-            failedCount += 1;
-          }
-        });
-      }
-
-      hideLoading();
-
-      // Show appropriate message based on results
-      if (failedCount > 0 && successCount > 0) {
-        messageApi.warning(
-          `Successfully ${actionLabel}d ${successCount} ${successCount === 1 ? "request" : "requests"}. ${failedCount} ${failedCount === 1 ? "request" : "requests"} failed.`,
-          5,
-        );
-      } else if (failedCount > 0) {
-        messageApi.error(
-          `Failed to ${actionLabel} ${failedCount} ${failedCount === 1 ? "request" : "requests"}.`,
-          5,
-        );
-      } else {
-        messageApi.success(
-          `Successfully ${actionLabel}d ${successCount} privacy ${successCount === 1 ? "request" : "requests"}`,
-          5,
-        );
-      }
-    } catch (error) {
-      hideLoading();
+    // Handle result
+    if ("error" in result) {
       messageApi.error(
         `Failed to ${actionLabel} requests. Please try again.`,
         5,
       );
+    } else if ("data" in result) {
+      const successCount = result.data.succeeded?.length || 0;
+      const failedCount = result.data.failed?.length || 0;
+      const { type, message: msg } = formatResultMessage(
+        actionLabel,
+        successCount,
+        failedCount,
+      );
+      messageApi[type](msg, 5);
     }
 
     setPendingAction(null);
@@ -166,8 +155,8 @@ export const usePrivacyRequestBulkActions = ({
     pendingAction,
     selectedRequests,
     messageApi,
-    approveRequest,
-    denyRequest,
+    bulkApproveRequest,
+    bulkDenyRequest,
     bulkSoftDeleteRequest,
   ]);
 
@@ -240,14 +229,14 @@ export const usePrivacyRequestBulkActions = ({
     const allSupported = supportedCount === totalCount;
 
     // Generate title
-    const title = `${actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1)} privacy requests`;
+    const title = `${capitalize(actionLabel)} privacy requests`;
 
     // Generate message based on whether all requests support the action
     let modalMessage: string;
     if (allSupported) {
-      modalMessage = `You are about to ${actionLabel} ${totalCount} privacy ${totalCount === 1 ? "request" : "requests"}. Are you sure you want to continue?`;
+      modalMessage = `You are about to ${actionLabel} ${totalCount} privacy ${pluralize(totalCount, "request", "requests")}. Are you sure you want to continue?`;
     } else {
-      modalMessage = `You have selected ${totalCount} ${totalCount === 1 ? "request" : "requests"}, but only ${supportedCount} ${supportedCount === 1 ? "request" : "requests"} can perform this action. If you continue, the bulk action will only be applied to ${supportedCount} ${supportedCount === 1 ? "request" : "requests"}.`;
+      modalMessage = `You have selected ${totalCount} ${pluralize(totalCount, "request", "requests")}, but only ${supportedCount} ${pluralize(supportedCount, "request", "requests")} can perform this action. If you continue, the bulk action will only be applied to ${supportedCount} ${pluralize(supportedCount, "request", "requests")}.`;
     }
 
     return {

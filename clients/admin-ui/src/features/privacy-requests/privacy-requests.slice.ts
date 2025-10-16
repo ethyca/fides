@@ -259,6 +259,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkApproveRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: "privacy-request/administrate/approve",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
       query: (values) => ({
         url: `privacy-request/bulk/retry`,
@@ -275,6 +286,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
           request_ids: [id],
           reason,
         },
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    bulkDenyRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[]; reason?: string }
+    >({
+      query: (body) => ({
+        url: "privacy-request/administrate/deny",
+        method: "PATCH",
+        body,
       }),
       invalidatesTags: ["Request"],
     }),
@@ -501,6 +523,8 @@ export const privacyRequestApi = baseApi.injectEndpoints({
 
 export const {
   useApproveRequestMutation,
+  useBulkApproveRequestMutation,
+  useBulkDenyRequestMutation,
   useBulkRetryMutation,
   useBulkSoftDeleteRequestMutation,
   useDenyRequestMutation,
