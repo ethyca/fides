@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -81,34 +81,26 @@ class PrivacyRequestService:
     def _validate_privacy_request_for_bulk_operation(
         self,
         request_id: str,
-        failed: List[BulkUpdateFailed],
-    ) -> Optional[PrivacyRequest]:
+    ) -> Union[PrivacyRequest, BulkUpdateFailed]:
         """
         Common validation logic for bulk operations.
-        Returns the privacy request if valid, or None if validation fails.
-        Adds failure details to the failed list when validation fails.
+        Returns either a valid PrivacyRequest or a BulkUpdateFailed object.
         """
         privacy_request = self.get_privacy_request(request_id)
 
         if not privacy_request:
-            failed.append(
-                BulkUpdateFailed(
-                    message=f"No privacy request found with id '{request_id}'",
-                    data={"privacy_request_id": request_id},
-                )
+            return BulkUpdateFailed(
+                message=f"No privacy request found with id '{request_id}'",
+                data={"privacy_request_id": request_id},
             )
-            return None
 
         if privacy_request.deleted_at is not None:
-            failed.append(
-                BulkUpdateFailed(
-                    message="Cannot transition status for a deleted request",
-                    data=PrivacyRequestResponse.model_validate(
-                        privacy_request
-                    ).model_dump(mode="json"),
-                )
+            return BulkUpdateFailed(
+                message="Cannot transition status for a deleted request",
+                data=PrivacyRequestResponse.model_validate(privacy_request).model_dump(
+                    mode="json"
+                ),
             )
-            return None
 
         return privacy_request
 
@@ -530,11 +522,12 @@ class PrivacyRequestService:
         failed: List[BulkUpdateFailed] = []
 
         for request_id in request_ids:
-            privacy_request = self._validate_privacy_request_for_bulk_operation(
-                request_id, failed
-            )
-            if not privacy_request:
+            result = self._validate_privacy_request_for_bulk_operation(request_id)
+            if isinstance(result, BulkUpdateFailed):
+                failed.append(result)
                 continue
+
+            privacy_request = result
 
             if privacy_request.status != PrivacyRequestStatus.pending:
                 failed.append(
@@ -600,11 +593,12 @@ class PrivacyRequestService:
         failed: List[BulkUpdateFailed] = []
 
         for request_id in request_ids:
-            privacy_request = self._validate_privacy_request_for_bulk_operation(
-                request_id, failed
-            )
-            if not privacy_request:
+            result = self._validate_privacy_request_for_bulk_operation(request_id)
+            if isinstance(result, BulkUpdateFailed):
+                failed.append(result)
                 continue
+
+            privacy_request = result
 
             if privacy_request.status != PrivacyRequestStatus.pending:
                 failed.append(
@@ -659,11 +653,12 @@ class PrivacyRequestService:
         failed: List[BulkUpdateFailed] = []
 
         for request_id in request_ids:
-            privacy_request = self._validate_privacy_request_for_bulk_operation(
-                request_id, failed
-            )
-            if not privacy_request:
+            result = self._validate_privacy_request_for_bulk_operation(request_id)
+            if isinstance(result, BulkUpdateFailed):
+                failed.append(result)
                 continue
+
+            privacy_request = result
 
             if (
                 privacy_request.status
