@@ -78,6 +78,40 @@ class PrivacyRequestService:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
 
+    def _validate_privacy_request_for_bulk_operation(
+        self,
+        request_id: str,
+        failed: List[BulkUpdateFailed],
+    ) -> Optional[PrivacyRequest]:
+        """
+        Common validation logic for bulk operations.
+        Returns the privacy request if valid, or None if validation fails.
+        Adds failure details to the failed list when validation fails.
+        """
+        privacy_request = self.get_privacy_request(request_id)
+
+        if not privacy_request:
+            failed.append(
+                BulkUpdateFailed(
+                    message=f"No privacy request found with id '{request_id}'",
+                    data={"privacy_request_id": request_id},
+                )
+            )
+            return None
+
+        if privacy_request.deleted_at is not None:
+            failed.append(
+                BulkUpdateFailed(
+                    message="Cannot transition status for a deleted request",
+                    data=PrivacyRequestResponse.model_validate(
+                        privacy_request
+                    ).model_dump(mode="json"),
+                )
+            )
+            return None
+
+        return privacy_request
+
     def _validate_required_location_fields(
         self, privacy_request_data: PrivacyRequestCreate
     ) -> None:
@@ -496,26 +530,10 @@ class PrivacyRequestService:
         failed: List[BulkUpdateFailed] = []
 
         for request_id in request_ids:
-            privacy_request = self.get_privacy_request(request_id)
-
+            privacy_request = self._validate_privacy_request_for_bulk_operation(
+                request_id, failed
+            )
             if not privacy_request:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
-                        data={"privacy_request_id": request_id},
-                    )
-                )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status for a deleted request",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
-                    )
-                )
                 continue
 
             if privacy_request.status != PrivacyRequestStatus.pending:
@@ -582,26 +600,10 @@ class PrivacyRequestService:
         failed: List[BulkUpdateFailed] = []
 
         for request_id in request_ids:
-            privacy_request = self.get_privacy_request(request_id)
-
+            privacy_request = self._validate_privacy_request_for_bulk_operation(
+                request_id, failed
+            )
             if not privacy_request:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
-                        data={"privacy_request_id": request_id},
-                    )
-                )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status for a deleted request",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
-                    )
-                )
                 continue
 
             if privacy_request.status != PrivacyRequestStatus.pending:
@@ -638,6 +640,64 @@ class PrivacyRequestService:
                 failed.append(
                     BulkUpdateFailed(
                         message="Privacy request could not be updated",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
+
+        return BulkReviewResponse(succeeded=succeeded, failed=failed)
+
+    def finalize_privacy_requests(
+        self,
+        request_ids: List[str],
+        *,
+        user_id: Optional[str] = None,
+    ) -> BulkReviewResponse:
+        """Bulk finalize privacy requests that are in requires_manual_finalization status"""
+        succeeded: List[PrivacyRequest] = []
+        failed: List[BulkUpdateFailed] = []
+
+        for request_id in request_ids:
+            privacy_request = self._validate_privacy_request_for_bulk_operation(
+                request_id, failed
+            )
+            if not privacy_request:
+                continue
+
+            if (
+                privacy_request.status
+                != PrivacyRequestStatus.requires_manual_finalization
+            ):
+                failed.append(
+                    BulkUpdateFailed(
+                        message=f"Cannot manually finalize privacy request: status is {privacy_request.status}, not requires_manual_finalization",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
+                continue
+
+            try:
+                # Set finalized_by and finalized_at here, so the request runner service knows not to
+                # put the request back into the requires_finalization state.
+                privacy_request.finalized_at = datetime.utcnow()
+                privacy_request.finalized_by = user_id
+                privacy_request.save(db=self.db)
+
+                # Queue the privacy request for finalization
+                queue_privacy_request(
+                    privacy_request_id=privacy_request.id,
+                    from_step=CurrentStep.finalization.value,
+                )
+
+                succeeded.append(privacy_request)
+            except Exception as exc:
+                logger.exception(exc)
+                failed.append(
+                    BulkUpdateFailed(
+                        message="Privacy request could not be finalized",
                         data=PrivacyRequestResponse.model_validate(
                             privacy_request
                         ).model_dump(mode="json"),
