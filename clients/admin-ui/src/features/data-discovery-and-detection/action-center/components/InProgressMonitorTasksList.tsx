@@ -128,8 +128,6 @@ export const InProgressMonitorTasksList = () => {
           placement="bottomRight"
           open={filterPopoverOpen}
           onOpenChange={setFilterPopoverOpen}
-          // @ts-expect-error setting a custom css variable
-          overlayInnerStyle={{ "--ant-popover-inner-content-padding": 0 }}
         >
           <Button icon={<Icons.ChevronDown />} iconPosition="end">
             Filter

@@ -381,8 +381,6 @@ export const CustomReportTemplates = ({
         styles={{
           root: {
             width: "320px",
-            // @ts-expect-error setting a custom css variable
-            "--ant-popover-inner-content-padding": "0",
           },
         }}
         zIndex={1400} // below chakra modals
