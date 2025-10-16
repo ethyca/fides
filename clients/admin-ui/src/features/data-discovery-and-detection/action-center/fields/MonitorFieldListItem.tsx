@@ -64,7 +64,7 @@ type MonitorFieldListItemRenderParams = Parameters<
 >[0] & {
   selected?: boolean;
   onSelect?: (key: string, selected?: boolean) => void;
-  onSetDataUses: (dataUses: string[], urn: string) => void;
+  onSetDataCategories: (dataCategories: string[], urn: string) => void;
   onIgnore: (urn: string) => void;
 };
 
@@ -79,12 +79,12 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   diff_status,
   selected,
   onSelect,
-  onSetDataUses,
+  onSetDataCategories,
   user_assigned_data_categories,
   onIgnore,
 }) => {
   const onChange: TaxonomySelectProps["onChange"] = (values: string[]) => {
-    onSetDataUses(
+    onSetDataCategories(
       values.flatMap((value) =>
         !classifications?.find(
           (classification) => classification.label !== value,

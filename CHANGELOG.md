@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
+- Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
 
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
@@ -43,6 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Added `has_table` checks for BigQuery erasures [#6760](https://github.com/ethyca/fides/pull/6760)
+- Using correct data select types in alpha fields [#6758](https://github.com/ethyca/fides/pull/6758)
 
 ## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
 

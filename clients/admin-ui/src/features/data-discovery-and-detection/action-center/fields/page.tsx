@@ -88,11 +88,14 @@ const ActionCenterFields: NextPage = () => {
   const { errorAlert } = useAlert();
   const [promoteResources] = usePromoteResourcesMutation();
 
-  const handleSetDataUses = async (dataUses: string[], urn: string) => {
+  const handleSetDataCategories = async (
+    dataCategories: string[],
+    urn: string,
+  ) => {
     const mutationResult = await updateResourceCategoryMutation({
       monitor_config_id: monitorId,
       staged_resource_urn: urn,
-      user_assigned_data_categories: dataUses,
+      user_assigned_data_categories: dataCategories,
     });
 
     if (isErrorResult(mutationResult)) {
@@ -244,7 +247,7 @@ const ActionCenterFields: NextPage = () => {
                       : setSelectedFields(
                           selectedFields.filter((val) => val !== key),
                         ),
-                  onSetDataUses: handleSetDataUses,
+                  onSetDataCategories: handleSetDataCategories,
                   onIgnore: handleIgnore,
                 })
               }

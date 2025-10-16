@@ -2,10 +2,10 @@ import { describe, expect, it } from "@jest/globals";
 
 import {
   createSelectedMap,
+  getBrandIconUrl,
   getKeysFromMap,
   getOptionsFromMap,
   getPII,
-  getWebsiteIconUrl,
   nFormatter,
   truncateUrl,
 } from "~/features/common/utils";
@@ -88,15 +88,15 @@ describe(getOptionsFromMap.name, () => {
   });
 });
 
-describe(getWebsiteIconUrl.name, () => {
+describe(getBrandIconUrl.name, () => {
   it("should return the icon URL", () => {
-    const result = getWebsiteIconUrl("example.com");
+    const result = getBrandIconUrl("example.com");
     expect(result).toEqual(
       "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/24/w/24?c=1idbRjELpikqQ1PLiqb",
     );
   });
   it("should return the icon URL with a custom size", () => {
-    const result = getWebsiteIconUrl("example.com", 56);
+    const result = getBrandIconUrl("example.com", 56);
     expect(result).toEqual(
       "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/56/w/56?c=1idbRjELpikqQ1PLiqb",
     );
