@@ -16,7 +16,7 @@ from fides.api.common_exceptions import FidesopsException, ValidationError
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDataset
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config import CONFIG
 from fides.config.helpers import load_file
@@ -335,15 +335,16 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
                 return None
     return value
 
+
 def check_dataset_reference_values(
-    input_data: Dict[str, Any],
-    param_values: Dict[str, Any]
-    ) -> bool:
+    input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
+) -> List[str]:
+    """
+    Check if all the dataset reference values are present in the input_data map
+    """
     # get the list of param_value references
     required_param_value_references = [
-        param_value.name
-        for param_value in param_values or []
-        if param_value.references
+        param_value.name for param_value in param_values or [] if param_value.references
     ]
 
     # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
@@ -359,6 +360,7 @@ def check_dataset_reference_values(
     )
 
     return missing_dataset_reference_values
+
 
 def map_param_values(
     action: str,

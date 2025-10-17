@@ -154,7 +154,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         self.session.commit()
 
         for read_request in async_requests_to_process:
-            missing_dataset_reference_values = check_dataset_reference_values(input_data, read_request.param_values)
+            missing_dataset_reference_values = check_dataset_reference_values(
+                input_data, read_request.param_values
+            )
             if missing_dataset_reference_values:
                 logger.info(
                     "The Initial polling request of {} is missing the following dataset reference values [{}], skipping traversal",
