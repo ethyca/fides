@@ -10,7 +10,7 @@ from loguru import logger
 # pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, joinedload
 
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
@@ -500,7 +500,15 @@ def run_privacy_request(
                         CurrentStep.dataset_validation
                     )
 
-                datasets = DatasetConfig.all(db=session)
+                # Eager load relationships to avoid N+1 queries
+                datasets = (
+                    session.query(DatasetConfig)
+                    .options(
+                        joinedload(DatasetConfig.connection_config),
+                        joinedload(DatasetConfig.ctl_dataset),
+                    )
+                    .all()
+                )
                 dataset_graphs = [
                     dataset_config.get_graph()
                     for dataset_config in datasets
