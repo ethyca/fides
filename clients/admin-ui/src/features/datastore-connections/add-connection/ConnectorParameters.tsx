@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
@@ -37,7 +37,7 @@ export const ConnectorParameters = ({
   };
 
   const handleRouteToDatastore = useCallback(() => {
-    router.push(DATASTORE_CONNECTION_ROUTE);
+    router.push(SYSTEM_ROUTE);
   }, [router]);
 
   // eslint-disable-next-line consistent-return

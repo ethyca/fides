@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 import CustomInput from "../forms/CustomInput";
 import { BaseConnectorParametersFields } from "../types";
@@ -37,7 +37,7 @@ const ConnectorParametersForm = ({
   };
 
   const handleCancel = () => {
-    router.push(DATASTORE_CONNECTION_ROUTE);
+    router.push(SYSTEM_ROUTE);
   };
 
   const handleSubmit = (values: any, actions: any) => {
