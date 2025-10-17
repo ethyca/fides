@@ -47,8 +47,6 @@ export const ModalMethodsCard = () => {
 
   const { openFormModal } = useFormModal<{
     name: string;
-    email: string;
-    message: string;
   }>(modalApi as any, {
     title: "Custom form modal",
     content: renderFormContent,
