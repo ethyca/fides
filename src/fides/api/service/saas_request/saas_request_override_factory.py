@@ -1,6 +1,6 @@
 from enum import Enum
 from inspect import Signature, signature
-from typing import TYPE_CHECKING, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Union
 
 from loguru import logger
 
@@ -319,9 +319,10 @@ def validate_polling_result_override_function(f: Callable) -> None:
 
     # Check return type annotation - handle both direct class and string literals
     return_annotation = sig.return_annotation
-    if return_annotation not in (PollingResult, "PollingResult"):
+    logger.info(f"Return annotation: {return_annotation}")
+    if return_annotation not in (PollingResult, "PollingResult",Optional[PollingResult]):
         raise InvalidSaaSRequestOverrideException(
-            "Polling result override function must return a PollingResult"
+            "Polling result override function must return a PollingResult or None"
         )
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
