@@ -12,7 +12,7 @@ from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import Header, ParamValue, QueryParam, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -1231,3 +1231,219 @@ class TestGenerateProductList:
             {"first": "c", "second": 2},
             {"first": "c", "second": 3},
         ]
+
+
+@pytest.mark.unit_saas
+class TestSaaSQueryConfigSecretsInclusion:
+    """Test suite to verify that secrets are properly included in parameter resolution."""
+
+    @pytest.fixture
+    def mock_privacy_request(self):
+        """Create a mock privacy request for testing."""
+        privacy_request = Mock(spec=PrivacyRequest)
+        privacy_request.id = "test_privacy_request_id"
+        return privacy_request
+
+    @pytest.fixture
+    def sample_secrets(self):
+        """Sample secrets that would be used in SaaS configurations."""
+        return {
+            "api_key": "test_api_key_12345",
+            "client_id": "test_client_id_67890",
+            "access_token": "test_access_token_abcdef"
+        }
+
+    @pytest.fixture
+    def sample_input_data(self):
+        """Sample input data with identity information."""
+        return {
+            "email": ["user@example.com"],
+            "user_id": ["12345"],
+            "phone": ["+1234567890"]
+        }
+
+    def test_secrets_included_in_param_values_for_query(self, sample_secrets, sample_input_data, mock_privacy_request):
+        """Test that secrets are properly included when generating query parameters."""
+
+        # Create a SaaSRequest with placeholders that need secrets
+        saas_request = SaaSRequest(
+            path="/api/users/<user_id>",
+            method=HTTPMethod.get,
+            query_params=[
+                QueryParam(name="api_key", value="<api_key>"),
+                QueryParam(name="client_id", value="<client_id>")
+            ],
+            headers=[
+                Header(name="Authorization", value="Bearer <access_token>")
+            ]
+        )
+
+        # Create SaaSQueryConfig with secrets
+        config = SaaSQueryConfig(
+            node=generate_node("test_dataset", "test_collection", "test_field"),
+            endpoints={},
+            secrets=sample_secrets,
+            privacy_request=mock_privacy_request
+        )
+        # Set the current request for testing
+        config.current_request = saas_request
+
+        # Generate query parameters
+        result = config.generate_query(sample_input_data, policy=None)
+
+        # Verify that secrets were resolved in the result
+        assert result.path == "/api/users/12345"  # user_id from input_data
+
+        # Check query parameters - secrets should be resolved
+        query_params_dict = {param.name: param.value for param in result.query_params}
+        assert query_params_dict["api_key"] == "test_api_key_12345"
+        assert query_params_dict["client_id"] == "test_client_id_67890"
+
+        # Check headers - secrets should be resolved
+        headers_dict = {header.name: header.value for header in result.headers}
+        assert headers_dict["Authorization"] == "Bearer test_access_token_abcdef"
+
+    def test_secrets_and_input_data_combined(self, sample_secrets, sample_input_data, mock_privacy_request):
+        """Test that both secrets and input data are properly resolved together."""
+
+        # Create a SaaSRequest that uses both secrets and input data
+        saas_request = SaaSRequest(
+            path="/api/users/<user_id>/data",
+            method=HTTPMethod.get,
+            query_params=[
+                QueryParam(name="passkey", value="<api_key>"),  # From secrets
+                QueryParam(name="email", value="<email>"),      # From input_data
+                QueryParam(name="format", value="json")         # Static value
+            ],
+            headers=[
+                Header(name="X-Client-ID", value="<client_id>"),  # From secrets
+                Header(name="Content-Type", value="application/json")  # Static value
+            ]
+        )
+
+        # Create param_values for input data (simulating identity references)
+        param_values_config = [
+            ParamValue(name="user_id", identity="user_id"),
+            ParamValue(name="email", identity="email")
+        ]
+
+        # Create SaaSQueryConfig
+        config = SaaSQueryConfig(
+            node=generate_node("test_dataset", "test_collection", "test_field"),
+            endpoints={},
+            secrets=sample_secrets,
+            privacy_request=mock_privacy_request
+        )
+
+        # Set param_values on the request and set as current request
+        saas_request.param_values = param_values_config
+        config.current_request = saas_request
+
+        # Generate query parameters
+        result = config.generate_query(sample_input_data, policy=None)
+
+        # Verify path uses input data
+        assert result.path == "/api/users/12345/data"
+
+        # Verify query parameters use both secrets and input data
+        query_params_dict = {param.name: param.value for param in result.query_params}
+        assert query_params_dict["passkey"] == "test_api_key_12345"  # From secrets
+        assert query_params_dict["email"] == "user@example.com"     # From input_data
+        assert query_params_dict["format"] == "json"                # Static value
+
+        # Verify headers use secrets
+        headers_dict = {header.name: header.value for header in result.headers}
+        assert headers_dict["X-Client-ID"] == "test_client_id_67890"  # From secrets
+        assert headers_dict["Content-Type"] == "application/json"    # Static value
+
+    def test_missing_secrets_handled_gracefully(self, sample_input_data, mock_privacy_request):
+        """Test that missing secrets are handled gracefully (placeholders remain unresolved)."""
+
+        # Create secrets that don't include all needed keys
+        incomplete_secrets = {"api_key": "test_api_key"}  # Missing client_id
+
+        saas_request = SaaSRequest(
+            path="/api/data",
+            method=HTTPMethod.get,
+            query_params=[
+                QueryParam(name="api_key", value="<api_key>"),      # Available
+                QueryParam(name="client_id", value="<client_id>")   # Missing
+            ]
+        )
+
+        config = SaaSQueryConfig(
+            node=generate_node("test_dataset", "test_collection", "test_field"),
+            endpoints={},
+            secrets=incomplete_secrets,
+            privacy_request=mock_privacy_request
+        )
+        config.current_request = saas_request
+
+        result = config.generate_query(sample_input_data, policy=None)
+
+        # Verify available secret is resolved, missing one remains as placeholder
+        query_params_dict = {param.name: param.value for param in result.query_params}
+        assert query_params_dict["api_key"] == "test_api_key"  # Resolved
+        assert query_params_dict["client_id"] is None          # Unresolved placeholder becomes None
+
+    def test_empty_secrets_handled(self, sample_input_data, mock_privacy_request):
+        """Test that configuration with no secrets works correctly."""
+
+        saas_request = SaaSRequest(
+            path="/api/public",
+            method=HTTPMethod.get,
+            query_params=[
+                QueryParam(name="format", value="json")  # No placeholders
+            ]
+        )
+
+        config = SaaSQueryConfig(
+            node=generate_node("test_dataset", "test_collection", "test_field"),
+            endpoints={},
+            secrets=None,  # No secrets
+            privacy_request=mock_privacy_request
+        )
+        config.current_request = saas_request
+
+        result = config.generate_query(sample_input_data, policy=None)
+
+        # Should work fine without secrets
+        query_params_dict = {param.name: param.value for param in result.query_params}
+        assert query_params_dict["format"] == "json"
+
+    def test_update_request_includes_secrets(self, sample_secrets, mock_privacy_request):
+        """Test that update/erasure requests also properly include secrets."""
+
+        # Create an update request with secrets
+        update_request = SaaSRequest(
+            path="/api/users/<user_id>",
+            method=HTTPMethod.delete,
+            headers=[
+                Header(name="Authorization", value="Bearer <access_token>"),
+                Header(name="X-API-Key", value="<api_key>")
+            ]
+        )
+
+        config = SaaSQueryConfig(
+            node=generate_node("test_dataset", "test_collection", "test_field"),
+            endpoints={},
+            secrets=sample_secrets,
+            privacy_request=mock_privacy_request
+        )
+        # Set as masking request for update operations
+        config.masking_request = update_request
+
+        # Mock row data for update
+        row_data = {"user_id": "12345", "email": "user@example.com"}
+
+        # Generate update statement
+        result = config.generate_update_stmt(
+            row=row_data,
+            policy=Mock(),
+            request=mock_privacy_request
+        )
+
+        # Verify secrets are resolved in headers
+        headers_dict = {header.name: header.value for header in result.headers}
+        assert headers_dict["Authorization"] == "Bearer test_access_token_abcdef"
+        assert headers_dict["X-API-Key"] == "test_api_key_12345"
