@@ -59,6 +59,7 @@ const ClassificationSelect = ({
       onOpenChange={(visible) => setOpen(visible)}
       onSelect={(value) => {
         onSelectDataCategory(value);
+        setOpen(false);
       }}
       {...props}
     />
