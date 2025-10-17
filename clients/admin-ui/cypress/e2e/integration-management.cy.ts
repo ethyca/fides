@@ -767,7 +767,7 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       describe("LLM classifier configuration", () => {
-        it.only("can configure a monitor with LLM classifier enabled", () => {
+        it("can configure a monitor with LLM classifier enabled", () => {
           cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
             response: 200,
           }).as("putMonitor");
@@ -818,7 +818,7 @@ describe("Integration management for data detection & discovery", () => {
           });
         });
 
-        it.only("should hide LLM fields when switch is toggled off", () => {
+        it("should hide LLM fields when switch is toggled off", () => {
           cy.getByTestId("add-monitor-btn").click();
           cy.getByTestId("add-modal-content").should("be.visible");
 
