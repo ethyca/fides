@@ -8,7 +8,10 @@ import {
 } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
+const ClassificationSelect = ({
+  onSelectDataCategory,
+  ...props
+}: { onSelectDataCategory: (value: string) => void } & TaxonomySelectProps) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
   const dataCategories = getDataCategories();
@@ -54,10 +57,8 @@ const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
       maxTagCount="responsive"
       open={open}
       onOpenChange={(visible) => setOpen(visible)}
-      onSelect={(value, option) => {
-        if (props.onSelect) {
-          props.onSelect(value, option);
-        }
+      onSelect={(value) => {
+        onSelectDataCategory(value);
         setOpen(false);
       }}
       {...props}
