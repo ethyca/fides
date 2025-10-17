@@ -3,6 +3,7 @@ import {
   AntCard as Card,
   AntFlex as Flex,
   AntForm as Form,
+  AntFormInstance as FormInstance,
   AntInput as Input,
   AntModal as modal,
   AntParagraph as Paragraph,
@@ -11,7 +12,7 @@ import {
 import React from "react";
 
 interface SampleFormProps {
-  form: any;
+  form: FormInstance;
 }
 
 const SampleForm = ({ form }: SampleFormProps) => {
@@ -42,7 +43,7 @@ const SampleForm = ({ form }: SampleFormProps) => {
 export const ModalMethodsCard = () => {
   const [modalApi, modalApiContext] = modal.useModal();
 
-  const renderFormContent = (form: any) => <SampleForm form={form} />;
+  const renderFormContent = (form: FormInstance) => <SampleForm form={form} />;
 
   const { openFormModal } = useFormModal<{
     name: string;
