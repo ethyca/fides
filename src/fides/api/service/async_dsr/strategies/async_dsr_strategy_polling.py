@@ -45,7 +45,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.saas_util import map_param_values
+from fides.api.util.saas_util import check_dataset_reference_values, map_param_values
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -154,9 +154,19 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         self.session.commit()
 
         for read_request in async_requests_to_process:
+            missing_dataset_reference_values = check_dataset_reference_values(input_data, read_request.param_values)
+            if missing_dataset_reference_values:
+                logger.info(
+                    "The Initial polling request of {} is missing the following dataset reference values [{}], skipping traversal",
+                    request_task.dataset_name,
+                    ", ".join(missing_dataset_reference_values),
+                )
+                return []
+
             logger.info(
                 f"Creating initial polling sub-requests for task {request_task.id}"
             )
+
             self._handle_polling_initial_request(
                 request_task,
                 query_config,
