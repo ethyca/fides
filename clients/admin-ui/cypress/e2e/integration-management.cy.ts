@@ -766,6 +766,75 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@putMonitor");
       });
 
+      describe("LLM classifier configuration", () => {
+        it("can configure a monitor with LLM classifier enabled", () => {
+          cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+            response: 200,
+          }).as("putMonitor");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+          cy.getByTestId("input-name").type("Monitor with LLM");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("input-use_llm_classifier").click();
+
+          // LLM fields should now exist (not checking visibility due to modal overlay issues)
+          cy.getByTestId("input-model_override").should("exist");
+          cy.getByTestId("controlled-select-prompt_template").should("exist");
+
+          // Give fields a moment to render before interacting
+          cy.getByTestId("input-model_override").should("have.value", "");
+          cy.getByTestId("input-model_override").type("gpt-4");
+
+          // Use force: true for the select to work around modal overlay issues
+          cy.getByTestId("controlled-select-prompt_template").antSelect(
+            "Full",
+            {
+              force: true,
+            },
+          );
+
+          cy.getByTestId("controlled-select-execution_frequency").antSelect(
+            "Daily",
+          );
+          cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+          cy.getByTestId("next-btn").click();
+          cy.wait("@getDatabasesPage1");
+          cy.getByTestId("prj-bigquery-000001-checkbox").click();
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@putMonitor").then((interception) => {
+            // Verify LLM classifier fields are in the request
+            expect(
+              interception.request.body.classify_params.context_classifier,
+            ).to.equal("llm");
+            expect(
+              interception.request.body.classify_params.model_override,
+            ).to.equal("gpt-4");
+            expect(
+              interception.request.body.classify_params.prompt_template,
+            ).to.equal("full");
+          });
+        });
+
+        it("should hide LLM fields when switch is toggled off", () => {
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("input-use_llm_classifier").click();
+          cy.getByTestId("input-model_override").should("be.visible");
+
+          // Toggle it back off
+          cy.getByTestId("input-use_llm_classifier").click();
+          cy.getByTestId("input-model_override").should("not.exist");
+          cy.getByTestId("controlled-select-prompt_template").should(
+            "not.exist",
+          );
+        });
+      });
+
       describe("shared monitor configs", () => {
         beforeEach(() => {
           stubTaxonomyEntities();
