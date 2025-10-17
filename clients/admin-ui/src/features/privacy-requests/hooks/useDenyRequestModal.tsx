@@ -5,8 +5,9 @@ import {
   AntFormInstance as FormInstance,
   AntInput as Input,
   AntParagraph as Paragraph,
+  useFormModal,
 } from "fidesui";
-import React from "react";
+import React, { useCallback } from "react";
 
 const DenyRequestForm = ({ form }: { form: FormInstance }) => {
   return (
@@ -33,40 +34,22 @@ const DenyRequestForm = ({ form }: { form: FormInstance }) => {
 };
 
 export const useDenyPrivacyRequestModal = (modalApi: ModalStaticFunctions) => {
-  const [form] = Form.useForm();
+  const { openFormModal } = useFormModal<{ denialReason: string }>(modalApi, {
+    title: "Privacy request denial",
+    content: (form) => <DenyRequestForm form={form} />,
+    okText: "Confirm",
+    cancelText: "Cancel",
+    width: 500,
+    centered: true,
+  });
 
-  const openDenyPrivacyRequestModal = React.useCallback(
-    () =>
-      new Promise<string | null>((resolve) => {
-        modalApi.confirm({
-          title: "Privacy request denial",
-          content: <DenyRequestForm form={form} />,
-          okText: "Confirm",
-          cancelText: "Cancel",
-          onOk: (closeModal) => {
-            form
-              .validateFields()
-              .then((values) => {
-                // if validation passes, close modal, reset form, and resolve with the denial reason.
-                closeModal(values);
-                form.resetFields();
-                resolve(values.denialReason);
-              })
-              .catch(() => {
-                // form validation is expected if form isn't filled. safe to ignore.
-              });
-          },
-          onCancel: () => {
-            // if modal is cancelled, resolve with null.
-            form.resetFields();
-            resolve(null);
-          },
-          width: 500,
-          centered: true,
-          open: true,
-        });
-      }),
-    [modalApi, form],
-  );
+  const openDenyPrivacyRequestModal = useCallback(async () => {
+    const reason = await openFormModal();
+    if (!reason) {
+      return null;
+    }
+    return reason?.denialReason;
+  }, [openFormModal]);
+
   return { openDenyPrivacyRequestModal };
 };
