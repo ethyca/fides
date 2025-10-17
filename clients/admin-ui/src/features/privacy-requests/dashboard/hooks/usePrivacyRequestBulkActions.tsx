@@ -71,8 +71,7 @@ export const usePrivacyRequestBulkActions = ({
     [requests, selectedIds],
   );
 
-  // Clear selected requests when the data changes
-  // eg. with pagination, filters or actions performed
+  // Clear selected requests when the data changes. eg. with pagination, filters or actions performed
   useEffect(() => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
