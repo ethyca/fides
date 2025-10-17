@@ -3,6 +3,7 @@ import {
   AntFlex as Flex,
   AntList as List,
   AntMessage as message,
+  AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
@@ -16,7 +17,6 @@ import { useSelector } from "react-redux";
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import {
@@ -38,6 +38,8 @@ export const PrivacyRequestsDashboard = () => {
   );
   const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
+  const [modalApi, modalContext] = modal.useModal();
+
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
   const pagination = useAntPagination();
@@ -88,13 +90,13 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
-  const { bulkActionMenuItems, confirmationModalState, denyModalState } =
-    usePrivacyRequestBulkActions({
-      requests,
-      selectedIds,
-      clearSelectedIds,
-      messageApi,
-    });
+  const { bulkActionMenuItems, denyModalState } = usePrivacyRequestBulkActions({
+    requests,
+    selectedIds,
+    clearSelectedIds,
+    messageApi,
+    modalApi,
+  });
 
   return (
     <div>
@@ -164,7 +166,7 @@ export const PrivacyRequestsDashboard = () => {
         </Flex>
       )}
       {messageContext}
-      <ConfirmationModal {...confirmationModalState} />
+      {modalContext}
       <DenyPrivacyRequestModal {...denyModalState} />
     </div>
   );
