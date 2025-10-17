@@ -12,7 +12,6 @@ import {
   SparkleIcon,
 } from "fidesui";
 
-import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
@@ -83,20 +82,18 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   user_assigned_data_categories,
   onIgnore,
 }) => {
-  const onSelectDataCategory: TaxonomySelectProps["onChange"] = (
-    value: string,
-  ) => {
+  const onSelectDataCategory = (value: string) => {
     if (
       classifications?.find((classification) => classification.label === value)
     ) {
       return;
     }
 
-    if (
-      user_assigned_data_categories &&
-      !user_assigned_data_categories?.includes(value)
-    ) {
-      onSetDataCategories([...user_assigned_data_categories, value], urn);
+    if (!user_assigned_data_categories?.includes(value)) {
+      onSetDataCategories(
+        [...(user_assigned_data_categories ?? []), value],
+        urn,
+      );
     }
   };
 
