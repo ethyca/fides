@@ -1,4 +1,3 @@
-from fides.api.schemas.saas.saas_config import ParamValue
 import pytest
 
 from fides.api.graph.config import (
@@ -9,6 +8,7 @@ from fides.api.graph.config import (
     ObjectField,
     ScalarField,
 )
+from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.saas_util import (
     assign_placeholders,
@@ -623,6 +623,7 @@ class TestNullsafeUrlencode:
         result_parts = set(result.split("&"))
         assert result_parts == expected_parts
 
+
 @pytest.mark.unit_saas
 class TestCheckDatasetReferenceValues:
     def test_check_dataset_missing_reference_values_no_values_missing(self):
@@ -631,19 +632,33 @@ class TestCheckDatasetReferenceValues:
             "fidesops_grouped_inputs": [],
             "user_id": ["test_user_123"],
             "email": ["user@example.com"],
-            "privacy_request": [{
-                "id": "pri_test_request_id",
-                "status": "in_processing",
-                "policy": {
-                    "name": "Test Access Policy",
-                    "key": "test_access_policy"
-                },
-                "source": "Test Source"
-            }]
+            "privacy_request": [
+                {
+                    "id": "pri_test_request_id",
+                    "status": "in_processing",
+                    "policy": {
+                        "name": "Test Access Policy",
+                        "key": "test_access_policy",
+                    },
+                    "source": "Test Source",
+                }
+            ],
         }
         param_values = [
-            ParamValue(name="user_id", identity=None, references=["customer.user_id"], connector_param=None, unpack=False),
-            ParamValue(name="email", identity=None, references=["customer.email"], connector_param=None, unpack=False)
+            ParamValue(
+                name="user_id",
+                identity=None,
+                references=["customer.user_id"],
+                connector_param=None,
+                unpack=False,
+            ),
+            ParamValue(
+                name="email",
+                identity=None,
+                references=["customer.email"],
+                connector_param=None,
+                unpack=False,
+            ),
         ]
         assert check_dataset_missing_reference_values(input_data, param_values) == []
 
@@ -652,13 +667,26 @@ class TestCheckDatasetReferenceValues:
         input_data = {
             "fidesops_grouped_inputs": [],
             "user_id": ["test_user_123"],
-            "privacy_request": [{
-                "id": "pri_test_request_id",
-                "status": "in_processing"
-            }]
+            "privacy_request": [
+                {"id": "pri_test_request_id", "status": "in_processing"}
+            ],
         }
         param_values = [
-            ParamValue(name="user_id", identity=None, references=["customer.user_id"], connector_param=None, unpack=False),
-            ParamValue(name="missing_param", identity=None, references=["customer.missing_field"], connector_param=None, unpack=False)
+            ParamValue(
+                name="user_id",
+                identity=None,
+                references=["customer.user_id"],
+                connector_param=None,
+                unpack=False,
+            ),
+            ParamValue(
+                name="missing_param",
+                identity=None,
+                references=["customer.missing_field"],
+                connector_param=None,
+                unpack=False,
+            ),
         ]
-        assert check_dataset_missing_reference_values(input_data, param_values) == ["missing_param"]
+        assert check_dataset_missing_reference_values(input_data, param_values) == [
+            "missing_param"
+        ]
