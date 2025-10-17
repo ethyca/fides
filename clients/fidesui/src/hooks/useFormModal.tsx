@@ -17,7 +17,7 @@ export type UseFormModalOptions = Omit<
 };
 
 /**
- * Generic hook for opening a modal with a form
+ * Generic hook for opening a modal with a form, validating and getting the result of the form
  * @param modalApi - The modal API from useModal
  * @param options - The options for the modal
  * @returns Promise that resolves with form values or null if cancelled
