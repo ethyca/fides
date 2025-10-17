@@ -16,10 +16,12 @@ import {
 
 interface ListItemProps {
   item: PrivacyRequestEntity;
+  checkbox?: React.ReactNode;
 }
 
-export const ListItem = ({ item }: ListItemProps) => (
+export const ListItem = ({ item, checkbox }: ListItemProps) => (
   <List.Item>
+    <div className="pr-4">{checkbox}</div>
     <div className="grow">
       <Header privacyRequest={item} />
       <Flex vertical gap={16} wrap className="pt-1">
