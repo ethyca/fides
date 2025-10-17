@@ -1,10 +1,14 @@
 import {
   AntButton as Button,
+  AntDrawer as Drawer,
   AntDropdown as Dropdown,
   AntFlex as Flex,
+  AntForm as Form,
+  AntInput as Input,
   AntList as List,
   AntPagination as Pagination,
   AntSplitter as Splitter,
+  AntTag as Tag,
   AntText as Text,
   AntTitle as Title,
   Icons,
@@ -15,6 +19,7 @@ import { useRouter } from "next/router";
 import { Key, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import FixedLayout from "~/features/common/FixedLayout";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert, useSearch } from "~/features/common/hooks";
@@ -27,12 +32,13 @@ import {
   useGetMonitorConfigQuery,
   useGetMonitorFieldsQuery,
   useIgnoreMonitorResultAssetsMutation,
+  useLazyGetStagedResourceDetailsQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
   usePromoteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { DiffStatus } from "~/types/api";
+import { Database, DiffStatus, Field, Schema, Table } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
@@ -44,6 +50,27 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree from "./MonitorTree";
 import { useMonitorFieldsFilters } from "./useFilters";
+
+const DrawerTitle = ({
+  name,
+  diff_status,
+}: Field | Schema | Database | Table) => {
+  return (
+    <Flex align="center" gap="small">
+      <Icons.ShowDataCards />
+      <Flex>{name}</Flex>
+      {!!diff_status && (
+        <Tag
+          bordered={false}
+          color={MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color}
+          className="font-normal text-[var(--ant-font-size-sm)]"
+        >
+          {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
+        </Tag>
+      )}
+    </Flex>
+  );
+};
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
@@ -92,6 +119,10 @@ const ActionCenterFields: NextPage = () => {
     useIgnoreMonitorResultAssetsMutation();
   const { errorAlert } = useAlert();
   const [promoteResources] = usePromoteResourcesMutation();
+  const [detailsUrn, setDetailsUrn] = useState<string>();
+  const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
+    useLazyGetStagedResourceDetailsQuery();
+  const resource = stagedResourceDetailsResult.currentData;
 
   const handleSetDataCategories = async (
     dataCategories: string[],
@@ -106,6 +137,10 @@ const ActionCenterFields: NextPage = () => {
     if (isErrorResult(mutationResult)) {
       errorAlert(getErrorMessage(mutationResult.error));
     }
+  };
+
+  const handleNavigate = async (urn: string) => {
+    setDetailsUrn(urn);
   };
 
   const handleIgnore = async (urn: string) => {
@@ -143,6 +178,14 @@ const ActionCenterFields: NextPage = () => {
 
     toast(successToastParams(`Classifying initiated`));
   };
+
+  useEffect(() => {
+    if (detailsUrn) {
+      stagedResourceDetailsTrigger({ stagedResourceUrn: detailsUrn });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailsUrn]);
+
   /**
    * @todo: this should be handled on a form/state action level
    */
@@ -198,7 +241,6 @@ const ActionCenterFields: NextPage = () => {
                 )}
               </Flex>
             </Flex>
-
             <Flex justify="space-between">
               <DebouncedSearchInput
                 value={search.searchQuery}
@@ -260,6 +302,7 @@ const ActionCenterFields: NextPage = () => {
                           selectedFields.filter((val) => val !== key),
                         ),
                   onSetDataCategories: handleSetDataCategories,
+                  onNavigate: handleNavigate,
                   onIgnore: handleIgnore,
                 })
               }
@@ -272,6 +315,54 @@ const ActionCenterFields: NextPage = () => {
           </Flex>
         </Splitter.Panel>
       </Splitter>
+      <Drawer
+        title={resource ? <DrawerTitle {...resource} /> : null}
+        footer={
+          <Flex gap="small" justify="flex-end">
+            <Button>Reject</Button>
+            <Button>Approve</Button>
+            <Button type="primary">Confirm</Button>
+          </Flex>
+        }
+        open={!!detailsUrn}
+        onClose={() => setDetailsUrn(undefined)}
+        size="large"
+      >
+        {resource ? (
+          <Form layout="vertical">
+            <Form.Item label="System">
+              <Input value={resource.monitor_config_id ?? ""} disabled />
+            </Form.Item>
+            <Form.Item label="Path">
+              <Input value={resource.urn} disabled />
+            </Form.Item>
+            <Form.Item label="Data type">
+              <Input value={resource.resource_type ?? ""} disabled />
+            </Form.Item>
+            <Form.Item label="Description">
+              <Input.TextArea value={resource.description ?? ""} />
+            </Form.Item>
+            <Form.Item label="Data categories">
+              <DataCategorySelect
+                variant="outlined"
+                mode="tags"
+                maxTagCount="responsive"
+                value={[
+                  ...(resource.classifications?.map(({ label }) => label) ??
+                    []),
+                  ...(resource.user_assigned_data_categories?.map(
+                    (value) => value,
+                  ) ?? []),
+                ]}
+                autoFocus={false}
+                onChange={(value) =>
+                  handleSetDataCategories(value, resource.urn)
+                }
+              />
+            </Form.Item>
+          </Form>
+        ) : null}
+      </Drawer>
     </FixedLayout>
   );
 };

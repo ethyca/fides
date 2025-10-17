@@ -85,6 +85,7 @@ export const baseApi = createApi({
     "Digest Configs",
     "Monitor",
     "Monitor Field Results",
+    "Monitor Field Details",
   ],
   endpoints: () => ({}),
 });

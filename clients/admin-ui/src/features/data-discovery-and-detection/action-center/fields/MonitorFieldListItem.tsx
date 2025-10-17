@@ -11,6 +11,7 @@ import {
   Icons,
   SparkleIcon,
 } from "fidesui";
+import styles from "fidesui/src/hoc/CustomTypography.module.scss";
 
 import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
@@ -29,7 +30,7 @@ type TagRender = (
   },
 ) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
 
-const tagRender: TagRender = (props) => {
+export const tagRender: TagRender = (props) => {
   const { label, closable, onClose, isFromClassifier } = props;
 
   const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -65,6 +66,7 @@ type MonitorFieldListItemRenderParams = Parameters<
   selected?: boolean;
   onSelect?: (key: string, selected?: boolean) => void;
   onSetDataCategories: (dataCategories: string[], urn: string) => void;
+  onNavigate?: (key: string) => void;
   onIgnore: (urn: string) => void;
 };
 
@@ -80,6 +82,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   selected,
   onSelect,
   onSetDataCategories,
+  onNavigate,
   user_assigned_data_categories,
   onIgnore,
 }) => {
@@ -183,7 +186,13 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         title={
           <Flex justify="space-between">
             <Flex gap="small" align="center" className="w-full">
-              {name}
+              <Button
+                type="link"
+                className={`h-auto p-0 ${styles.primaryColorLink}`}
+                onClick={() => onNavigate && onNavigate(urn)}
+              >
+                {name}
+              </Button>
               {diff_status && (
                 <Tag
                   bordered={false}

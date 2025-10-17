@@ -5,7 +5,10 @@ import {
 } from "~/features/common/utils";
 import {
   ConsentStatus,
+  Database,
+  DatastoreStagedResource,
   DiffStatus,
+  Field,
   MonitorConfig,
   MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
@@ -14,6 +17,7 @@ import {
   PromoteResourcesResponse,
   Schema,
   StagedResourceAPIResponse,
+  Table,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
@@ -362,6 +366,17 @@ const actionCenterApi = baseApi.injectEndpoints({
         };
       },
     }),
+    getStagedResourceDetails: build.query<
+      DatastoreStagedResource | Database | Schema | Table | Field,
+      { stagedResourceUrn: string }
+    >({
+      query: ({ stagedResourceUrn }) => ({
+        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+          stagedResourceUrn,
+        )}`,
+      }),
+      providesTags: ["Monitor Field Details"],
+    }),
     getWebsiteMonitorResourceFilters: build.query<
       WebsiteMonitorResourcesFilters,
       {
@@ -537,4 +552,6 @@ export const {
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
   useClassifyStagedResourcesMutation,
+  useGetStagedResourceDetailsQuery,
+  useLazyGetStagedResourceDetailsQuery,
 } = actionCenterApi;
