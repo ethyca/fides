@@ -120,37 +120,32 @@ export const InProgressMonitorTaskItem = ({
         : "Monitor scanning";
     }
     if (task.action_type === MonitorTaskType.PROMOTION) {
-      return task.status === "complete" ? "Promoted" : "Promoting";
+      const verb = task.status === "complete" ? "Confirmed" : "Confirming";
+      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
   })();
 
-  const monitorGroupLabel = (() => {
-    const type = (task.connection_type || "").toString().toUpperCase();
-    if (type.includes("WEBSITE")) {
-      return "Product monitor";
-    }
-    return "Analytics monitor";
-  })();
+  const monitorName = task.monitor_name || "Unknown monitor";
 
   const getStatusColor = (status?: string) => {
     switch (status) {
       case "pending":
-        return "orange";
+        return "default";
       case "in_processing":
         return "processing";
       case "complete":
-        return "green";
+        return "success";
       case "error":
-        return "red";
+        return "error";
       case "paused": // This is the actual enum value for "awaiting_processing"
         return "purple";
       case "retrying":
-        return "orange";
+        return "default";
       case "skipped":
-        return "gray";
+        return "default";
       default:
-        return "gray";
+        return "default";
     }
   };
 
@@ -222,7 +217,7 @@ export const InProgressMonitorTaskItem = ({
         </Col>
         <Col span={4} className="flex items-center justify-end">
           <Text type="secondary" size="sm">
-            {monitorGroupLabel}
+            {monitorName}
           </Text>
         </Col>
         <Col span={3} className="flex items-center justify-end">
