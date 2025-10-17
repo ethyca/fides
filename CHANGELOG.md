@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
+- Added new CustomList component to fidesui with selection support [#6759](https://github.com/ethyca/fides/pull/6759)
 - Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
 
 ### Fixed
