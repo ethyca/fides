@@ -2,31 +2,52 @@ import { useMemo } from "react";
 
 import { nFormatter } from "~/features/common/utils";
 
-import { MONITOR_UPDATE_NAMES, MONITOR_UPDATES_TO_IGNORE } from "./constants";
-import { MonitorAggregatedResults } from "./types";
+import {
+  MONITOR_UPDATE_NAMES,
+  MONITOR_UPDATE_ORDER,
+  MONITOR_UPDATES_TO_IGNORE,
+} from "./constants";
+import { MonitorUpdates } from "./types";
+
+type MonitorUpdateKey = keyof MonitorUpdates;
 
 export const MonitorResultDescription = ({
   updates,
   isAssetList,
 }: {
-  updates: MonitorAggregatedResults["updates"];
+  updates: MonitorUpdates;
   isAssetList?: boolean;
 }) => {
+  const getMonitorUpdateName = (key: string) => {
+    return MONITOR_UPDATE_NAMES.get(key as MonitorUpdateKey) ?? key;
+  };
   const updateStrings = useMemo(() => {
     if (!updates) {
       return [];
     }
     return Object.entries(updates)
       .filter(
-        (update) =>
-          update[1] > 0 &&
-          !MONITOR_UPDATES_TO_IGNORE.includes(
-            update[0] as keyof MonitorAggregatedResults["updates"],
-          ),
+        ([key, count]) =>
+          count > 0 &&
+          !MONITOR_UPDATES_TO_IGNORE.includes(key as MonitorUpdateKey),
       )
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map((update) => {
-        return `${nFormatter(update[1])} ${MONITOR_UPDATE_NAMES.get(update[0] as keyof MonitorAggregatedResults["updates"])}${isAssetList && update[1] !== 1 ? "s" : ""}`;
+      .sort((a, b) => {
+        const indexA = MONITOR_UPDATE_ORDER.indexOf(a[0] as MonitorUpdateKey);
+        const indexB = MONITOR_UPDATE_ORDER.indexOf(b[0] as MonitorUpdateKey);
+        // Handle keys not in order array by placing them at the end
+        if (indexA === -1 && indexB === -1) {
+          return 0;
+        }
+        if (indexA === -1) {
+          return 1;
+        }
+        if (indexB === -1) {
+          return -1;
+        }
+        return indexA - indexB;
+      })
+      .map(([key, count]) => {
+        return `${nFormatter(count)} ${getMonitorUpdateName(key)}${isAssetList && count !== 1 ? "s" : ""}`;
       });
   }, [updates, isAssetList]);
 
