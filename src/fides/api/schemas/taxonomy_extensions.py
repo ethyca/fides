@@ -23,6 +23,10 @@ class DataUse(BaseDataUse):
 
 class DataCategory(BaseDataCategory):
     active: bool = active_field
+    tagging_instructions: Optional[str] = Field(
+        default=None,
+        description="Instructions for LLM-based data classification tagging.",
+    )
 
 
 class DataSubject(BaseDataSubject):
@@ -44,6 +48,10 @@ class DataUseCreateOrUpdate(TaxonomyCreateOrUpdateBase):
 
 class DataCategoryCreateOrUpdate(TaxonomyCreateOrUpdateBase):
     parent_key: Optional[FidesKey] = None
+    tagging_instructions: Optional[str] = Field(
+        default=None,
+        description="Instructions for LLM-based data classification tagging.",
+    )
 
 
 class DataSubjectCreateOrUpdate(TaxonomyCreateOrUpdateBase):

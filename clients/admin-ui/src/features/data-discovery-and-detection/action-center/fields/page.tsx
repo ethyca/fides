@@ -37,37 +37,20 @@ import { isErrorResult } from "~/types/errors";
 
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
+import {
+  FIELD_PAGE_SIZE,
+  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
+  ResourceStatusLabel,
+} from "./MonitorFields.const";
 import MonitorTree from "./MonitorTree";
-import { RESOURCE_STATUS, useMonitorFieldsFilters } from "./useFilters";
-
-const FIELD_PAGE_SIZE = 25;
-
-type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue" | "green";
-
-const ResourceStatus: Record<
-  DiffStatus,
-  {
-    label: ResourceStatusLabel;
-    color?: ResourceStatusLabelColor;
-  }
-> = {
-  classifying: { label: "Classifying", color: "blue" },
-  classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "In Review", color: "nectar" },
-  classification_addition: { label: "In Review", color: "blue" },
-  addition: { label: "Attention Required", color: "blue" },
-  muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Removed", color: "red" },
-  removing: { label: "In Review", color: "nectar" },
-  promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Confirmed", color: "nectar" },
-  approved: { label: "Approved", color: "green" },
-} as const;
+import { useMonitorFieldsFilters } from "./useFilters";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
-    ResourceStatus[status].label === resourceStatusLabel ? [status] : [],
+    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
+    resourceStatusLabel
+      ? [status]
+      : [],
   );
 
 const ActionCenterFields: NextPage = () => {
@@ -78,8 +61,12 @@ const ActionCenterFields: NextPage = () => {
       defaultPageSize: FIELD_PAGE_SIZE,
     });
   const search = useSearch();
-  const { resourceStatus, confidenceScore, ...restMonitorFieldsFilters } =
-    useMonitorFieldsFilters();
+  const {
+    resourceStatus,
+    confidenceScore,
+    dataCategory,
+    ...restMonitorFieldsFilters
+  } = useMonitorFieldsFilters();
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
   });
@@ -95,6 +82,7 @@ const ActionCenterFields: NextPage = () => {
       ? resourceStatus.flatMap(intoDiffStatus)
       : undefined,
     confidence_score: confidenceScore || undefined,
+    data_category: dataCategory || undefined,
   });
   const toast = useToast();
   const [classifyStagedResourcesMutation] =
@@ -105,11 +93,14 @@ const ActionCenterFields: NextPage = () => {
   const { errorAlert } = useAlert();
   const [promoteResources] = usePromoteResourcesMutation();
 
-  const handleSetDataUses = async (dataUses: string[], urn: string) => {
+  const handleSetDataCategories = async (
+    dataCategories: string[],
+    urn: string,
+  ) => {
     const mutationResult = await updateResourceCategoryMutation({
       monitor_config_id: monitorId,
       staged_resource_urn: urn,
-      user_assigned_data_categories: dataUses,
+      user_assigned_data_categories: dataCategories,
     });
 
     if (isErrorResult(mutationResult)) {
@@ -158,7 +149,13 @@ const ActionCenterFields: NextPage = () => {
   useEffect(() => {
     resetPagination();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resourceStatus, confidenceScore, selectedNodeKeys, search.searchQuery]);
+  }, [
+    resourceStatus,
+    confidenceScore,
+    selectedNodeKeys,
+    search.searchQuery,
+    dataCategory,
+  ]);
 
   return (
     <FixedLayout
@@ -217,6 +214,7 @@ const ActionCenterFields: NextPage = () => {
                     <MonitorFieldFilters
                       resourceStatus={resourceStatus}
                       confidenceScore={confidenceScore}
+                      dataCategory={dataCategory}
                       {...restMonitorFieldsFilters}
                       monitorId={monitorId}
                     />
@@ -261,7 +259,7 @@ const ActionCenterFields: NextPage = () => {
                       : setSelectedFields(
                           selectedFields.filter((val) => val !== key),
                         ),
-                  onSetDataUses: handleSetDataUses,
+                  onSetDataCategories: handleSetDataCategories,
                   onIgnore: handleIgnore,
                 })
               }
