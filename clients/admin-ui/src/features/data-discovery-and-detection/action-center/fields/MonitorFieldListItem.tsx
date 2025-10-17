@@ -219,11 +219,16 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             ]}
             tagRender={(props) => {
               const handleClose = () => {
-                console.log("VITO - Closing:", {
-                  value: props.value,
-                  label: props.label,
-                  urn,
-                });
+                if (
+                  user_assigned_data_categories &&
+                  user_assigned_data_categories.includes(props.value)
+                ) {
+                  const newDataCategories =
+                    user_assigned_data_categories?.filter(
+                      (category) => category !== props.value,
+                    ) ?? [];
+                  onSetDataCategories(newDataCategories, urn);
+                }
               };
 
               return tagRender({
