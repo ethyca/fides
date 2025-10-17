@@ -71,6 +71,7 @@ from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     PRIVACY_REQUEST_OBJECT,
     assign_placeholders,
+    check_dataset_reference_values,
     map_param_values,
 )
 
@@ -229,7 +230,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # pylint: disable=too-many-branches
         self.set_privacy_request_state(privacy_request, node, request_task)
-
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # Delegate async requests
@@ -379,25 +379,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
     ) -> List[str]:
         """Return a list of dataset reference values that are not found in the input_data map"""
-
-        # get the list of param_value references
-        required_param_value_references = [
-            param_value.name
-            for param_value in param_values or []
-            if param_value.references
-        ]
-
-        # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
-        provided_input_keys = (
-            list(input_data.get("fidesops_grouped_inputs")[0].keys())  # type: ignore
-            if input_data.get("fidesops_grouped_inputs")
-            else []
-        ) + list(input_data.keys())
-
-        # find the missing values
-        missing_dataset_reference_values = list(
-            set(required_param_value_references) - set(provided_input_keys)
-        )
+        missing_dataset_reference_values = check_dataset_reference_values(input_data, param_values)
 
         if missing_dataset_reference_values:
             logger.info(

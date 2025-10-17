@@ -335,6 +335,30 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
                 return None
     return value
 
+def check_dataset_reference_values(
+    input_data: Dict[str, Any],
+    param_values: Dict[str, Any]
+    ) -> bool:
+    # get the list of param_value references
+    required_param_value_references = [
+        param_value.name
+        for param_value in param_values or []
+        if param_value.references
+    ]
+
+    # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
+    provided_input_keys = (
+        list(input_data.get("fidesops_grouped_inputs")[0].keys())  # type: ignore
+        if input_data.get("fidesops_grouped_inputs")
+        else []
+    ) + list(input_data.keys())
+
+    # find the missing values
+    missing_dataset_reference_values = list(
+        set(required_param_value_references) - set(provided_input_keys)
+    )
+
+    return missing_dataset_reference_values
 
 def map_param_values(
     action: str,
