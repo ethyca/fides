@@ -27,7 +27,7 @@ export type DatastoreStagedResourceTreeAPIResponse = {
   /**
    * Indicates if the resource has been added, removed, or changed
    */
-  change_indicator?: TreeResourceChangeIndicator | null;
+  update_status?: TreeResourceChangeIndicator | null;
   /**
    * Whether the resource has grandchildren
    */

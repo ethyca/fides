@@ -45,7 +45,7 @@ const mapResponseToTreeData = (
           return null;
       }
     },
-    status: treeNode.change_indicator,
+    status: treeNode.update_status,
     isLeaf: !treeNode.has_grandchildren,
   }));
 
