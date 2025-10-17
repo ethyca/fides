@@ -49,9 +49,6 @@ export const MonitorTreeDataTitle = ({
   treeData: TreeDataNode[];
   onLoadMore: (key: string) => void;
 }) => {
-  // if title is a function, this component will not be rendered
-  const titleString = node.title as React.ReactNode;
-
   if (node.key.toString().startsWith(TREE_NODE_LOAD_MORE_KEY_PREFIX)) {
     const nodeParent = recFindNodeParent(treeData, node.key.toString());
     return (
@@ -65,7 +62,7 @@ export const MonitorTreeDataTitle = ({
         }}
         className="p-0"
       >
-        {titleString}
+        {node.title}
       </Button>
     );
   }
@@ -73,7 +70,7 @@ export const MonitorTreeDataTitle = ({
   if (node.key.toString().startsWith(TREE_NODE_SKELETON_KEY_PREFIX)) {
     return (
       <Skeleton paragraph={false} title={{ width: "80px" }} active>
-        {titleString}
+        {node.title}
       </Skeleton>
     );
   }
@@ -99,7 +96,7 @@ export const MonitorTreeDataTitle = ({
           style={{ color: statusIconColor }}
         />
       )}
-      <Text ellipsis={{ tooltip: titleString }}>{titleString}</Text>
+      <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
     </Space>
   );
 };

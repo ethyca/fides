@@ -9,7 +9,7 @@ import {
   SparkleIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { Key, useEffect, useState } from "react";
+import { Key, ReactNode, useEffect, useState } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -26,9 +26,11 @@ import {
 } from "./MonitorFields.const";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
 
-// Extend TreeDataNode to include the diff_status from the API response
+// Extend TreeDataNode to include the diff_status from the API response and prevent title from being a function
 export interface CustomTreeDataNode extends TreeDataNode {
+  title?: ReactNode;
   status?: TreeResourceChangeIndicator | null;
+  children?: CustomTreeDataNode[];
 }
 
 const mapResponseToTreeData = (
@@ -69,10 +71,10 @@ const mapResponseToTreeData = (
 };
 
 const appendTreeNodeData = (
-  list: TreeDataNode[],
+  list: CustomTreeDataNode[],
   key: React.Key,
-  children: TreeDataNode[],
-): TreeDataNode[] =>
+  children: CustomTreeDataNode[],
+): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
@@ -102,10 +104,10 @@ const appendTreeNodeData = (
   });
 
 const updateTreeData = (
-  list: TreeDataNode[],
+  list: CustomTreeDataNode[],
   key: React.Key,
-  children: TreeDataNode[],
-): TreeDataNode[] =>
+  children: CustomTreeDataNode[],
+): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
@@ -138,7 +140,7 @@ const MonitorTree = ({
   const [nodePagination, setNodePaginationState] = useState<
     Record<string, PaginationState>
   >({});
-  const [treeData, setTreeData] = useState<TreeDataNode[]>([]);
+  const [treeData, setTreeData] = useState<CustomTreeDataNode[]>([]);
 
   const onLoadData: TreeProps["loadData"] = ({ children, key }) => {
     return new Promise<void>((resolve) => {
