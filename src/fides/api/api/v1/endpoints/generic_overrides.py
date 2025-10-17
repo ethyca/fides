@@ -78,7 +78,7 @@ data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)
     status_code=status.HTTP_201_CREATED,
     name="Create dataset",
 )
-async def create_dataset(
+def create_dataset(
     dataset: FideslangDataset,
     dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> Dict:
@@ -108,7 +108,7 @@ async def create_dataset(
     status_code=status.HTTP_200_OK,
     name="Update dataset",
 )
-async def update_dataset(
+def update_dataset(
     dataset: FideslangDataset,
     dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> Dict:
@@ -239,7 +239,7 @@ async def list_dataset_paginated(
     response_model=FideslangDataset,
     name="Get dataset",
 )
-async def get_dataset(
+def get_dataset(
     fides_key: str,
     dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> Dict:
@@ -258,7 +258,7 @@ async def get_dataset(
     dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_DELETE])],
     name="Delete dataset",
 )
-async def delete_dataset(
+def delete_dataset(
     fides_key: str,
     dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> JSONResponse:
@@ -294,7 +294,7 @@ async def delete_dataset(
         )
     ],
 )
-async def upsert_datasets(
+def upsert_datasets(
     datasets: List[FideslangDataset],
     response: Response,
     dataset_service: DatasetService = Depends(get_dataset_service),
@@ -359,7 +359,7 @@ def clean_datasets(
     status_code=status.HTTP_201_CREATED,
     name="Create",
 )
-async def create_data_use(
+def create_data_use(
     data_use: DataUseCreateOrUpdate,
     taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
@@ -389,7 +389,7 @@ async def create_data_use(
     status_code=status.HTTP_201_CREATED,
     name="Create",
 )
-async def create_data_category(
+def create_data_category(
     data_category: DataCategoryCreateOrUpdate,
     taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
@@ -420,7 +420,7 @@ async def create_data_category(
     status_code=status.HTTP_201_CREATED,
     name="Create",
 )
-async def create_data_subject(
+def create_data_subject(
     data_subject: DataSubjectCreateOrUpdate,
     taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
@@ -451,7 +451,7 @@ async def create_data_subject(
     status_code=status.HTTP_200_OK,
     name="Update",
 )
-async def update_data_use(
+def update_data_use(
     data_use: DataUseCreateOrUpdate,
     taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
@@ -487,7 +487,7 @@ async def update_data_use(
     status_code=status.HTTP_200_OK,
     name="Update",
 )
-async def update_data_category(
+def update_data_category(
     data_category: DataCategoryCreateOrUpdate,
     taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
 ) -> Dict:
