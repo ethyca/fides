@@ -34,11 +34,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
 - Added new CustomList component to fidesui with selection support [#6759](https://github.com/ethyca/fides/pull/6759)
 - Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
+- Adds a reusable form modal hook for confirmation modals [#6789](https://github.com/ethyca/fides/pull/6789)
 
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
-- Adds a reusable form modal hook to fidesui [#6789](https://github.com/ethyca/fides/pull/6789)
 
 ## [2.72.2](https://github.com/ethyca/fides/compare/2.72.1...2.72.2)
 
