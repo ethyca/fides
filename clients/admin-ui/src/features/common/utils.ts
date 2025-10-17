@@ -5,6 +5,9 @@ import { User } from "../user-management/types";
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
+export const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
 /**
  * "Fun On A Bun" => "Fun on a bun"
  * "fun on a bun" => "Fun on a bun"

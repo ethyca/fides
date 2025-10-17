@@ -5,6 +5,8 @@ import {
 } from "fidesui";
 import { useCallback, useEffect, useMemo } from "react";
 
+import { pluralize } from "~/features/common/utils";
+
 import {
   BulkActionType,
   getAvailableActionsForRequest,
@@ -31,9 +33,6 @@ const ACTION_LABELS: Record<BulkActionType, string> = {
   [BulkActionType.DENY]: "deny",
   [BulkActionType.DELETE]: "delete",
 };
-
-const pluralize = (count: number, singular: string, plural: string) =>
-  count === 1 ? singular : plural;
 
 const formatResultMessage = (
   actionLabel: string,
