@@ -83,17 +83,21 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   user_assigned_data_categories,
   onIgnore,
 }) => {
-  const onChange: TaxonomySelectProps["onChange"] = (values: string[]) => {
-    onSetDataCategories(
-      values.flatMap((value) =>
-        !classifications?.find(
-          (classification) => classification.label !== value,
-        )
-          ? [value]
-          : [],
-      ),
-      urn,
-    );
+  const onSelectDataCategory: TaxonomySelectProps["onChange"] = (
+    value: string,
+  ) => {
+    if (
+      classifications?.find((classification) => classification.label === value)
+    ) {
+      return;
+    }
+
+    if (
+      user_assigned_data_categories &&
+      !user_assigned_data_categories?.includes(value)
+    ) {
+      onSetDataCategories([...user_assigned_data_categories, value], urn);
+    }
   };
 
   return (
@@ -213,15 +217,24 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
               ...(classifications?.map(({ label }) => label) ?? []),
               ...(user_assigned_data_categories?.map((value) => value) ?? []),
             ]}
-            tagRender={(props) =>
-              tagRender({
+            tagRender={(props) => {
+              const handleClose = () => {
+                console.log("VITO - Closing:", {
+                  value: props.value,
+                  label: props.label,
+                  urn,
+                });
+              };
+
+              return tagRender({
                 ...props,
                 isFromClassifier: !!classifications?.find(
                   (item) => item.label === props.value,
                 ),
-              })
-            }
-            onChange={onChange}
+                onClose: handleClose,
+              });
+            }}
+            onSelectDataCategory={onSelectDataCategory}
           />
         }
       />
