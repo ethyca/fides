@@ -54,6 +54,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Request overrides connection exceptions are now correctly handled [#6726](https://github.com/ethyca/fides/pull/6726)
 
+### Changed
+- Improve Privacy Center FidesJS performance and reliability by caching bundles in memory and adding `stale-while-revalidate` and `stale-if-error` cache headers for improved CDN performance and origin failure resilience [#6689](https://github.com/ethyca/fides/pull/6689)
+
 ## [2.72.0](https://github.com/ethyca/fides/compare/2.71.1...2.72.0)
 
 ### Added
