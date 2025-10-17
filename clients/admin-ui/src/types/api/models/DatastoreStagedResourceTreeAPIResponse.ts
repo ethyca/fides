@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { DiffStatus } from "./DiffStatus";
+import type { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 
 /**
  * Pydantic Schema used to represent a datastore staged resource children, used only for API responses.
@@ -16,10 +17,6 @@ export type DatastoreStagedResourceTreeAPIResponse = {
    */
   diff_status?: DiffStatus | null;
   /**
-   * Whether the resource has children
-   */
-  has_children: boolean;
-  /**
    * The monitor config that detected this resource
    */
   monitor_config_id: string;
@@ -27,6 +24,10 @@ export type DatastoreStagedResourceTreeAPIResponse = {
    * A map of diff statuses present in the descendants of this resource, e.g. {'addition': true}
    */
   child_diff_statuses?: Record<string, boolean> | null;
+  /**
+   * Indicates if the resource has been added, removed, or changed
+   */
+  change_indicator?: TreeResourceChangeIndicator | null;
   /**
    * Whether the resource has grandchildren
    */
