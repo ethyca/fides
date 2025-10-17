@@ -18,7 +18,6 @@ import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
-import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import {
   selectPrivacyRequestFilters,
   useGetAllPrivacyRequestsQuery,
@@ -90,7 +89,7 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
-  const { bulkActionMenuItems, denyModalState } = usePrivacyRequestBulkActions({
+  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
     clearSelectedIds,
@@ -167,7 +166,6 @@ export const PrivacyRequestsDashboard = () => {
       )}
       {messageContext}
       {modalContext}
-      <DenyPrivacyRequestModal {...denyModalState} />
     </div>
   );
 };

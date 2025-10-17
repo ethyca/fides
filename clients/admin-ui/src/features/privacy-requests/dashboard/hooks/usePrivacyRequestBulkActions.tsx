@@ -4,7 +4,7 @@ import {
   AntModal as modal,
   Icons,
 } from "fidesui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
 
@@ -13,6 +13,7 @@ import {
   getAvailableActionsForRequest,
   isActionSupportedByRequests,
 } from "../../helpers";
+import { useDenyPrivacyRequestModal } from "../../hooks/useDenyRequestModal";
 import {
   useBulkApproveRequestMutation,
   useBulkDenyRequestMutation,
@@ -29,12 +30,6 @@ interface UsePrivacyRequestBulkActionsProps {
   clearSelectedIds: () => void;
   messageApi: MessageInstance;
   modalApi: ModalInstance;
-}
-
-interface DenyModalState {
-  isOpen: boolean;
-  onClose: () => void;
-  onDenyRequest: (reason: string) => Promise<any>;
 }
 
 const formatResultMessage = (
@@ -86,6 +81,11 @@ export const usePrivacyRequestBulkActions = ({
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
   const [bulkDenyRequest] = useBulkDenyRequestMutation();
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
+
+  // Use the deny modal hook
+  const { openDenyPrivacyRequestModal } = useDenyPrivacyRequestModal(
+    modalApi as any,
+  );
 
   const handleApproveAction = useCallback(() => {
     const totalCount = selectedRequests.length;
@@ -192,15 +192,44 @@ export const usePrivacyRequestBulkActions = ({
     });
   }, [selectedRequests, messageApi, bulkSoftDeleteRequest, modalApi]);
 
-  const [pendingDenyAction, setPendingDenyAction] = useState(false);
+  const handleDenyActionClick = useCallback(async () => {
+    const supportedRequests = selectedRequests.filter((request) =>
+      getAvailableActionsForRequest(request).includes(BulkActionType.DENY),
+    );
 
-  const handleDenyActionClick = useCallback(() => {
-    setPendingDenyAction(true);
-  }, []);
+    if (supportedRequests.length === 0) {
+      return;
+    }
 
-  const handleCloseDenyModal = useCallback(() => {
-    setPendingDenyAction(false);
-  }, []);
+    const reason = await openDenyPrivacyRequestModal();
+    if (!reason) {
+      return;
+    }
+
+    const result = await bulkDenyRequest({
+      request_ids: supportedRequests.map((r) => r.id),
+      reason,
+    });
+
+    // Handle result
+    if ("error" in result) {
+      messageApi.error("Failed to deny requests. Please try again.", 5);
+    } else if ("data" in result) {
+      const successCount = result.data.succeeded?.length || 0;
+      const failedCount = result.data.failed?.length || 0;
+      const { type, message: msg } = formatResultMessage(
+        "deny",
+        successCount,
+        failedCount,
+      );
+      messageApi[type](msg, 5);
+    }
+  }, [
+    selectedRequests,
+    openDenyPrivacyRequestModal,
+    bulkDenyRequest,
+    messageApi,
+  ]);
 
   const bulkActionMenuItems: MenuProps["items"] = useMemo(() => {
     const canApprove = isActionSupportedByRequests(
@@ -250,63 +279,7 @@ export const usePrivacyRequestBulkActions = ({
     handleDeleteAction,
   ]);
 
-  const denyModalState: DenyModalState = useMemo(() => {
-    const handleDenyRequest = async (reason: string) => {
-      const supportedRequests = selectedRequests.filter((request) =>
-        getAvailableActionsForRequest(request).includes(BulkActionType.DENY),
-      );
-
-      const requestIds = supportedRequests.map((r) => r.id);
-      if (requestIds.length === 0) {
-        setPendingDenyAction(false);
-        return;
-      }
-
-      const requestCount = requestIds.length;
-      const hideLoading = messageApi.loading(
-        `Executing bulk action on ${requestCount} privacy ${pluralize(requestCount, "request", "requests")}...`,
-        0,
-      );
-
-      const result = await bulkDenyRequest({
-        request_ids: requestIds,
-        reason,
-      });
-
-      hideLoading();
-
-      // Handle result
-      if ("error" in result) {
-        messageApi.error(`Failed to deny requests. Please try again.`, 5);
-      } else if ("data" in result) {
-        const successCount = result.data.succeeded?.length || 0;
-        const failedCount = result.data.failed?.length || 0;
-        const { type, message: msg } = formatResultMessage(
-          "deny",
-          successCount,
-          failedCount,
-        );
-        messageApi[type](msg, 5);
-      }
-
-      setPendingDenyAction(false);
-    };
-
-    return {
-      isOpen: pendingDenyAction,
-      onClose: handleCloseDenyModal,
-      onDenyRequest: handleDenyRequest,
-    };
-  }, [
-    pendingDenyAction,
-    selectedRequests,
-    handleCloseDenyModal,
-    messageApi,
-    bulkDenyRequest,
-  ]);
-
   return {
     bulkActionMenuItems,
-    denyModalState,
   };
 };

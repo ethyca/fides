@@ -23,6 +23,14 @@ const mockMessageApi = {
   warning: jest.fn(),
 } as any;
 
+const mockModalApi = {
+  confirm: jest.fn(),
+  info: jest.fn(),
+  success: jest.fn(),
+  error: jest.fn(),
+  warning: jest.fn(),
+} as any;
+
 describe("usePrivacyRequestBulkActions", () => {
   const mockRequests: PrivacyRequestEntity[] = [
     { id: "1", status: PrivacyRequestStatus.PENDING } as PrivacyRequestEntity,
@@ -41,6 +49,7 @@ describe("usePrivacyRequestBulkActions", () => {
         selectedIds: ["1", "2"],
         clearSelectedIds: mockClearSelectedIds,
         messageApi: mockMessageApi,
+        modalApi: mockModalApi,
       }),
     );
 

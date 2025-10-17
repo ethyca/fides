@@ -1,32 +1,21 @@
 import type { ModalStaticFunctions } from "antd/es/modal/confirm";
-import { CustomTextArea } from "common/form/inputs";
-import { AntForm as Form } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntForm as Form,
+  AntFormInstance as FormInstance,
+  AntInput as Input,
+  AntParagraph as Paragraph,
+} from "fidesui";
 import React from "react";
 
-// Component to handle the form logic
-const DenyRequestForm = ({
-  onFinish,
-}: {
-  onFinish: (reason: string) => void;
-}) => {
-  const [form] = Form.useForm();
-
-  const handleSubmit = (values: { denialReason: string }) => {
-    onFinish(values.denialReason);
-  };
-
+const DenyRequestForm = ({ form }: { form: FormInstance }) => {
   return (
-    <div>
-      <div style={{ color: "#6B7280", fontSize: "14px", marginBottom: "16px" }}>
+    <Flex vertical gap={4}>
+      <Paragraph>
         Please enter a reason for denying this privacy request. Please note:
         this can be seen by the user in their notification email.
-      </div>
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{ denialReason: "" }}
-        onFinish={handleSubmit}
-      >
+      </Paragraph>
+      <Form form={form} layout="vertical">
         <Form.Item
           name="denialReason"
           rules={[
@@ -36,38 +25,48 @@ const DenyRequestForm = ({
             },
           ]}
         >
-          <CustomTextArea
-            name="denialReason"
-            textAreaProps={{
-              focusBorderColor: "primary.600",
-              resize: "none",
-              placeholder: "Enter reason for denial...",
-            }}
-          />
+          <Input.TextArea placeholder="Enter reason for denial..." rows={4} />
         </Form.Item>
       </Form>
-    </div>
+    </Flex>
   );
 };
 
 export const useDenyPrivacyRequestModal = (modalApi: ModalStaticFunctions) => {
-  const openDenyPrivacyRequestModal = React.useCallback(
-    (onFinish: (reason: string) => void) => {
-      modalApi.confirm({
-        title: "Privacy request denial",
-        content: <DenyRequestForm onFinish={onFinish} />,
-        okText: "Confirm",
-        cancelText: "Cancel",
-        onOk: () => {
-          // The form will handle submission through onFinish
-          return Promise.resolve();
-        },
-        width: 456,
-        centered: true,
-      });
-    },
-    [modalApi],
-  );
+  const [form] = Form.useForm();
 
+  const openDenyPrivacyRequestModal = React.useCallback(
+    () =>
+      new Promise<string | null>((resolve) => {
+        modalApi.confirm({
+          title: "Privacy request denial",
+          content: <DenyRequestForm form={form} />,
+          okText: "Confirm",
+          cancelText: "Cancel",
+          onOk: (closeModal) => {
+            form
+              .validateFields()
+              .then((values) => {
+                // if validation passes, close modal, reset form, and resolve with the denial reason.
+                closeModal(values);
+                form.resetFields();
+                resolve(values.denialReason);
+              })
+              .catch(() => {
+                // form validation is expected if form isn't filled. safe to ignore.
+              });
+          },
+          onCancel: () => {
+            // if modal is cancelled, resolve with null.
+            form.resetFields();
+            resolve(null);
+          },
+          width: 500,
+          centered: true,
+          open: true,
+        });
+      }),
+    [modalApi, form],
+  );
   return { openDenyPrivacyRequestModal };
 };
