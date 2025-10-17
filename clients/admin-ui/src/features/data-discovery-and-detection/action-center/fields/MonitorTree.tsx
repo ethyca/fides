@@ -3,20 +3,16 @@ import {
   AntFlex as Flex,
   AntTitle as Title,
   AntTree as Tree,
-  AntTreeDataNode as TreeDataNode,
   AntTreeProps as TreeProps,
   Icons,
   SparkleIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { Key, ReactNode, useEffect, useRef, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import {
-  Page_DatastoreStagedResourceTreeAPIResponse_,
-  TreeResourceChangeIndicator,
-} from "~/types/api";
+import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -25,13 +21,7 @@ import {
   TREE_PAGE_SIZE,
 } from "./MonitorFields.const";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
-
-// Extend TreeDataNode to include the diff_status from the API response and prevent title from being a function
-export interface CustomTreeDataNode extends TreeDataNode {
-  title?: ReactNode;
-  status?: TreeResourceChangeIndicator | null;
-  children?: CustomTreeDataNode[];
-}
+import { CustomTreeDataNode } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -44,6 +34,8 @@ const mapResponseToTreeData = (
     icon: () => {
       switch (treeNode.resource_type) {
         case "Database":
+          return <Icons.Layers className="h-full" />;
+        case "Schema":
           return <Icons.Db2Database className="h-full" />;
         case "Table":
           return <Icons.Table className="h-full" />;
@@ -148,52 +140,55 @@ const MonitorTree = ({
    * Fetches tree data with the double-query pattern (fast then detailed)
    * Handles race conditions by tracking request sequences per node
    */
-  const fetchTreeDataWithDetails = async ({
-    nodeKey,
-    queryParams,
-    updateFn,
-    onFastDataLoaded,
-  }: {
-    nodeKey: string;
-    queryParams: {
-      monitor_config_id: string;
-      staged_resource_urn?: string;
-      size: number;
-      page?: number;
-    };
-    updateFn: (data: Page_DatastoreStagedResourceTreeAPIResponse_) => void;
-    onFastDataLoaded?: (pageIndex: number) => void;
-  }) => {
-    // Increment sequence for this node to track this request
-    const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
-    requestSequenceRef.current[nodeKey] = currentSequence;
+  const fetchTreeDataWithDetails = useCallback(
+    async ({
+      nodeKey,
+      queryParams,
+      updateFn,
+      onFastDataLoaded,
+    }: {
+      nodeKey: string;
+      queryParams: {
+        monitor_config_id: string;
+        staged_resource_urn?: string;
+        size: number;
+        page?: number;
+      };
+      updateFn: (data: Page_DatastoreStagedResourceTreeAPIResponse_) => void;
+      onFastDataLoaded?: (pageIndex: number) => void;
+    }) => {
+      // Increment sequence for this node to track this request
+      const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
+      requestSequenceRef.current[nodeKey] = currentSequence;
 
-    // First, trigger the fast query without descendant details
-    const { data: fastData } = await trigger({
-      ...queryParams,
-      include_descendant_details: false,
-    });
+      // First, trigger the fast query without descendant details
+      const { data: fastData } = await trigger({
+        ...queryParams,
+        include_descendant_details: false,
+      });
 
-    // Only update if this is still the latest request for this node
-    if (fastData && requestSequenceRef.current[nodeKey] === currentSequence) {
-      updateFn(fastData);
-      onFastDataLoaded?.(queryParams.page ?? 1);
-    }
-
-    // Immediately trigger the detailed query in the background
-    trigger({
-      ...queryParams,
-      include_descendant_details: true,
-    }).then(({ data: detailedData }) => {
       // Only update if this is still the latest request for this node
-      if (
-        detailedData &&
-        requestSequenceRef.current[nodeKey] === currentSequence
-      ) {
-        updateFn(detailedData);
+      if (fastData && requestSequenceRef.current[nodeKey] === currentSequence) {
+        updateFn(fastData);
+        onFastDataLoaded?.(queryParams.page ?? 1);
       }
-    });
-  };
+
+      // Immediately trigger the detailed query in the background
+      trigger({
+        ...queryParams,
+        include_descendant_details: true,
+      }).then(({ data: detailedData }) => {
+        // Only update if this is still the latest request for this node
+        if (
+          detailedData &&
+          requestSequenceRef.current[nodeKey] === currentSequence
+        ) {
+          updateFn(detailedData);
+        }
+      });
+    },
+    [trigger],
+  );
 
   const onLoadData: TreeProps["loadData"] = ({ children, key }) => {
     return new Promise<void>((resolve) => {
@@ -290,7 +285,7 @@ const MonitorTree = ({
     };
 
     getInitTreeData();
-  }, [setTreeData]);
+  }, [fetchTreeDataWithDetails, monitorId, setTreeData, treeData.length]);
 
   return (
     <Flex gap="middle" vertical className="h-full">
@@ -321,7 +316,7 @@ const MonitorTree = ({
         <Flex justify="space-between" align="center">
           <span>{selectedNodeKeys.length} selected</span>
           <Button
-            aria-label="Classify Selected Nodes"
+            aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
             icon={<SparkleIcon />}
             size="small"
             onClick={onClickClassifyButton}
