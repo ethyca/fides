@@ -75,7 +75,6 @@ class TestFinalizePrivacyRequest:
             privacy_request_requires_manual_finalization.status
             == PrivacyRequestStatus.complete
         )
-        print(user.id)
         assert privacy_request_requires_manual_finalization.finalized_by is not None
         assert privacy_request_requires_manual_finalization.finalized_by == user.id
 
