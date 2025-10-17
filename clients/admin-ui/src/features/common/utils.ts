@@ -5,6 +5,9 @@ import { User } from "../user-management/types";
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
+export const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
 /**
  * "Fun On A Bun" => "Fun on a bun"
  * "fun on a bun" => "Fun on a bun"
@@ -119,7 +122,7 @@ export const getOptionsFromMap = <T = string>(
     value: key,
   }));
 
-export const getWebsiteIconUrl = (domain: string, size = 24) => {
+export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
