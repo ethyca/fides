@@ -10,7 +10,7 @@ from loguru import logger
 # pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, joinedload
 
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
@@ -489,7 +489,26 @@ def run_privacy_request(
                 )
 
             try:
-                datasets = DatasetConfig.all(db=session)
+                # Dataset validation CHECKPOINT
+                # Only build dataset graph with manual tasks on first run to avoid expensive
+                # re-validation on DSR 3.0 re-entry
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.dataset_validation,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.dataset_validation
+                    )
+
+                # Eager load relationships to avoid N+1 queries
+                datasets = (
+                    session.query(DatasetConfig)
+                    .options(
+                        joinedload(DatasetConfig.connection_config),
+                        joinedload(DatasetConfig.ctl_dataset),
+                    )
+                    .all()
+                )
                 dataset_graphs = [
                     dataset_config.get_graph()
                     for dataset_config in datasets
@@ -497,20 +516,29 @@ def run_privacy_request(
                 ]
 
                 # Add manual task artificial graphs to dataset graphs
-                manual_task_graphs = create_manual_task_artificial_graphs(session)
-                dataset_graphs.extend(manual_task_graphs)
+                # Only do this expensive operation on first pass through dataset validation
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.dataset_validation,
+                    from_checkpoint=resume_step,
+                ):
+                    manual_task_graphs = create_manual_task_artificial_graphs(session)
+                    dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
-                # Add success log for dataset configuration
-                privacy_request.add_success_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Dataset reference validation",
-                    collection_name=None,
-                    message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                )
+                # Add success log for dataset configuration (only on first pass)
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.dataset_validation,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.add_success_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Dataset reference validation",
+                        collection_name=None,
+                        message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
 
                 identity_data = {
                     key: value["value"] if isinstance(value, dict) else value

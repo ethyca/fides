@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from fides.api.graph.config import (
     Collection,
@@ -27,12 +27,14 @@ PRIVACY_REQUEST_CONFIG_TYPES = {
 def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConfig]:
     """
     Get all connection configs that have manual tasks.
+    Eager loads the system relationship to avoid N+1 queries.
     """
     connection_configs = (
         db.query(ConnectionConfig)
         .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
         .filter(ManualTask.parent_entity_type == "connection_config")
         .filter(ConnectionConfig.disabled.is_(False))
+        .options(joinedload(ConnectionConfig.system))
         .all()
     )
     return connection_configs

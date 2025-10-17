@@ -19,6 +19,7 @@ class ActionType(str, EnumType):
 
 
 class CurrentStep(EnumType):
+    dataset_validation = "dataset_validation"
     pre_webhooks = "pre_webhooks"
     access = "access"
     upload_access = "upload_access"
