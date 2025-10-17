@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
 - Added `tagging_instructions` field to `DataCategory` model for LLM classification customization [#6736](https://github.com/ethyca/fides/pull/6736) https://github.com/ethyca/fides/labels/db-migration
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
+- Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
