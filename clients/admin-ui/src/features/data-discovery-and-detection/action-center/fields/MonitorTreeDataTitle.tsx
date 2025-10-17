@@ -1,16 +1,22 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
-  AntTreeDataNode as TreeDataNode,
+  Icons,
 } from "fidesui";
+// TODO: fix this export to be better encapsulated in fidesui
+import palette from "fidesui/src/palette/palette.module.scss";
+
+import { TreeResourceChangeIndicator } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
+import { CustomTreeDataNode } from "./types";
 
-const findNodeParent = (data: TreeDataNode[], key: string) => {
+const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
     const { children } = node;
     return children && !!children.find((child) => child.key.toString() === key);
@@ -18,9 +24,9 @@ const findNodeParent = (data: TreeDataNode[], key: string) => {
 };
 
 const recFindNodeParent = (
-  data: TreeDataNode[],
+  data: CustomTreeDataNode[],
   key: string,
-): TreeDataNode | null => {
+): CustomTreeDataNode | null => {
   return data.reduce(
     (agg, current) => {
       if (current.children) {
@@ -31,7 +37,7 @@ const recFindNodeParent = (
       }
       return agg;
     },
-    null as null | TreeDataNode,
+    null as null | CustomTreeDataNode,
   );
 };
 
@@ -40,10 +46,14 @@ export const MonitorTreeDataTitle = ({
   treeData,
   onLoadMore,
 }: {
-  node: TreeDataNode;
-  treeData: TreeDataNode[];
+  node: CustomTreeDataNode;
+  treeData: CustomTreeDataNode[];
   onLoadMore: (key: string) => void;
 }) => {
+  if (!node.title) {
+    return null;
+  }
+
   if (node.key.toString().startsWith(TREE_NODE_LOAD_MORE_KEY_PREFIX)) {
     const nodeParent = recFindNodeParent(treeData, node.key.toString());
     return (
@@ -52,12 +62,12 @@ export const MonitorTreeDataTitle = ({
         block
         onClick={() => {
           if (nodeParent?.key) {
-            onLoadMore(nodeParent?.key.toString());
+            onLoadMore(nodeParent.key.toString());
           }
         }}
         className="p-0"
       >
-        {typeof node.title === "function" ? node.title(node) : node.title}
+        {node.title}
       </Button>
     );
   }
@@ -65,19 +75,33 @@ export const MonitorTreeDataTitle = ({
   if (node.key.toString().startsWith(TREE_NODE_SKELETON_KEY_PREFIX)) {
     return (
       <Skeleton paragraph={false} title={{ width: "80px" }} active>
-        {typeof node.title === "function" ? node.title(node) : node.title}
+        {node.title}
       </Skeleton>
     );
   }
 
+  const statusIconColor = (() => {
+    switch (node.status) {
+      case TreeResourceChangeIndicator.ADDITION:
+        return palette.FIDESUI_SUCCESS;
+      case TreeResourceChangeIndicator.REMOVAL:
+        return palette.FIDESUI_ERROR;
+      case TreeResourceChangeIndicator.CHANGE:
+        return palette.FIDESUI_WARNING;
+      default:
+        return null;
+    }
+  })();
+
   return (
-    <Text
-      ellipsis={{
-        tooltip:
-          typeof node.title === "function" ? node.title(node) : node.title,
-      }}
-    >
-      {typeof node.title === "function" ? node.title(node) : node.title}
-    </Text>
+    <Flex gap={4} align="center" className="inline-flex">
+      {statusIconColor && (
+        <Icons.CircleSolid
+          className="size-2"
+          style={{ color: statusIconColor }}
+        />
+      )}
+      <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
+    </Flex>
   );
 };
