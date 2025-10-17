@@ -1,6 +1,7 @@
 import {
   AntMenuProps as MenuProps,
   AntMessage as message,
+  AntModal as modal,
   Icons,
 } from "fidesui";
 import { useCallback, useEffect, useMemo } from "react";
@@ -12,6 +13,7 @@ import {
   getAvailableActionsForRequest,
   isActionSupportedByRequests,
 } from "../../helpers";
+import { useDenyPrivacyRequestModal } from "../../hooks/useDenyRequestModal";
 import {
   useBulkApproveRequestMutation,
   useBulkDenyRequestMutation,
@@ -20,19 +22,15 @@ import {
 import { PrivacyRequestEntity } from "../../types";
 
 type MessageInstance = ReturnType<typeof message.useMessage>[0];
+type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
   requests: PrivacyRequestEntity[];
   selectedIds: React.Key[];
   clearSelectedIds: () => void;
   messageApi: MessageInstance;
+  modalApi: ModalInstance;
 }
-
-const ACTION_LABELS: Record<BulkActionType, string> = {
-  [BulkActionType.APPROVE]: "approve",
-  [BulkActionType.DENY]: "deny",
-  [BulkActionType.DELETE]: "delete",
-};
 
 const formatResultMessage = (
   actionLabel: string,
@@ -66,14 +64,14 @@ export const usePrivacyRequestBulkActions = ({
   selectedIds,
   clearSelectedIds,
   messageApi,
+  modalApi,
 }: UsePrivacyRequestBulkActionsProps) => {
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
     [requests, selectedIds],
   );
 
-  // Clear selected requests when the data changes
-  // eg. with pagination, filters or actions performed
+  // Clear selected requests when the data changes. eg. with pagination, filters or actions performed
   useEffect(() => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
@@ -83,70 +81,154 @@ export const usePrivacyRequestBulkActions = ({
   const [bulkDenyRequest] = useBulkDenyRequestMutation();
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
 
-  const handleActionClick = useCallback(
-    async (action: BulkActionType) => {
-      // Filter out requests that don't support the action that was chosen
-      // We will later add a warning modal for this
-      const supportedRequests = selectedRequests.filter((request) =>
-        getAvailableActionsForRequest(request).includes(action),
-      );
-
-      const requestIds = supportedRequests.map((r) => r.id);
-      const requestCount = requestIds.length;
-
-      const actionLabel = ACTION_LABELS[action];
-      const hideLoading = messageApi.loading(
-        `Executing bulk action on ${requestCount} privacy ${pluralize(requestCount, "request", "requests")}...`,
-        0,
-      );
-
-      // Execute appropriate bulk mutation
-      let result;
-      switch (action) {
-        case BulkActionType.APPROVE:
-          result = await bulkApproveRequest({ request_ids: requestIds });
-          break;
-        case BulkActionType.DENY:
-          result = await bulkDenyRequest({
-            request_ids: requestIds,
-            reason: "",
-          });
-          break;
-        case BulkActionType.DELETE:
-          result = await bulkSoftDeleteRequest({ request_ids: requestIds });
-          break;
-        default:
-          hideLoading();
-          return;
-      }
-
-      hideLoading();
-
-      // Handle result
-      if ("error" in result) {
-        messageApi.error(
-          `Failed to ${actionLabel} requests. Please try again.`,
-          5,
-        );
-      } else if ("data" in result) {
-        const successCount = result.data.succeeded?.length || 0;
-        const failedCount = result.data.failed?.length || 0;
-        const { type, message: msg } = formatResultMessage(
-          actionLabel,
-          successCount,
-          failedCount,
-        );
-        messageApi[type](msg, 5);
-      }
-    },
-    [
-      selectedRequests,
-      messageApi,
-      bulkApproveRequest,
-      bulkDenyRequest,
-      bulkSoftDeleteRequest,
-    ],
+  // Use the deny modal hook
+  const { openDenyPrivacyRequestModal } = useDenyPrivacyRequestModal(
+    modalApi as any,
   );
+
+  const handleApproveAction = useCallback(() => {
+    const totalCount = selectedRequests.length;
+    const supportedRequests = selectedRequests.filter((request) =>
+      getAvailableActionsForRequest(request).includes(BulkActionType.APPROVE),
+    );
+    const supportedCount = supportedRequests.length;
+    const allSupported = supportedCount === totalCount;
+
+    let content: string;
+    if (allSupported) {
+      content = `You are about to approve ${totalCount} privacy ${pluralize(totalCount, "request", "requests")}. Are you sure you want to continue?`;
+    } else {
+      content = `You have selected ${totalCount} ${pluralize(totalCount, "request", "requests")}, but only ${supportedCount} ${pluralize(supportedCount, "request", "requests")} can perform this action. If you continue, the bulk action will only be applied to ${supportedCount} ${pluralize(supportedCount, "request", "requests")}.`;
+    }
+
+    modalApi.confirm({
+      title: "Approve privacy requests",
+      content,
+      okText: "Continue",
+      cancelText: "Cancel",
+      onOk: async () => {
+        const requestIds = supportedRequests.map((r) => r.id);
+        if (requestIds.length === 0) {
+          return;
+        }
+
+        const requestCount = requestIds.length;
+        const hideLoading = messageApi.loading(
+          `Executing bulk action on ${requestCount} privacy ${pluralize(requestCount, "request", "requests")}...`,
+          0,
+        );
+
+        const result = await bulkApproveRequest({ request_ids: requestIds });
+        hideLoading();
+
+        // Handle result
+        if ("error" in result) {
+          messageApi.error("Failed to approve requests. Please try again.", 5);
+        } else if ("data" in result) {
+          const successCount = result.data.succeeded?.length || 0;
+          const failedCount = result.data.failed?.length || 0;
+          const { type, message: msg } = formatResultMessage(
+            "approve",
+            successCount,
+            failedCount,
+          );
+          messageApi[type](msg, 5);
+        }
+      },
+    });
+  }, [selectedRequests, messageApi, bulkApproveRequest, modalApi]);
+
+  const handleDeleteAction = useCallback(() => {
+    const totalCount = selectedRequests.length;
+    const supportedRequests = selectedRequests.filter((request) =>
+      getAvailableActionsForRequest(request).includes(BulkActionType.DELETE),
+    );
+    const supportedCount = supportedRequests.length;
+    const allSupported = supportedCount === totalCount;
+
+    let content: string;
+    if (allSupported) {
+      content = `You are about to delete ${totalCount} privacy ${pluralize(totalCount, "request", "requests")}. Are you sure you want to continue?`;
+    } else {
+      content = `You have selected ${totalCount} ${pluralize(totalCount, "request", "requests")}, but only ${supportedCount} ${pluralize(supportedCount, "request", "requests")} can perform this action. If you continue, the bulk action will only be applied to ${supportedCount} ${pluralize(supportedCount, "request", "requests")}.`;
+    }
+
+    modalApi.confirm({
+      title: "Delete privacy requests",
+      content,
+      okText: "Continue",
+      cancelText: "Cancel",
+      okType: "danger",
+      onOk: async () => {
+        const requestIds = supportedRequests.map((r) => r.id);
+        if (requestIds.length === 0) {
+          return;
+        }
+
+        const requestCount = requestIds.length;
+        const hideLoading = messageApi.loading(
+          `Executing bulk action on ${requestCount} privacy ${pluralize(requestCount, "request", "requests")}...`,
+          0,
+        );
+
+        const result = await bulkSoftDeleteRequest({ request_ids: requestIds });
+        hideLoading();
+
+        // Handle result
+        if ("error" in result) {
+          messageApi.error("Failed to delete requests. Please try again.", 5);
+        } else if ("data" in result) {
+          const successCount = result.data.succeeded?.length || 0;
+          const failedCount = result.data.failed?.length || 0;
+          const { type, message: msg } = formatResultMessage(
+            "delete",
+            successCount,
+            failedCount,
+          );
+          messageApi[type](msg, 5);
+        }
+      },
+    });
+  }, [selectedRequests, messageApi, bulkSoftDeleteRequest, modalApi]);
+
+  const handleDenyActionClick = useCallback(async () => {
+    const supportedRequests = selectedRequests.filter((request) =>
+      getAvailableActionsForRequest(request).includes(BulkActionType.DENY),
+    );
+
+    if (supportedRequests.length === 0) {
+      return;
+    }
+
+    const reason = await openDenyPrivacyRequestModal();
+    if (!reason) {
+      return;
+    }
+
+    const result = await bulkDenyRequest({
+      request_ids: supportedRequests.map((r) => r.id),
+      reason,
+    });
+
+    // Handle result
+    if ("error" in result) {
+      messageApi.error("Failed to deny requests. Please try again.", 5);
+    } else if ("data" in result) {
+      const successCount = result.data.succeeded?.length || 0;
+      const failedCount = result.data.failed?.length || 0;
+      const { type, message: msg } = formatResultMessage(
+        "deny",
+        successCount,
+        failedCount,
+      );
+      messageApi[type](msg, 5);
+    }
+  }, [
+    selectedRequests,
+    openDenyPrivacyRequestModal,
+    bulkDenyRequest,
+    messageApi,
+  ]);
 
   const bulkActionMenuItems: MenuProps["items"] = useMemo(() => {
     const canApprove = isActionSupportedByRequests(
@@ -167,14 +249,14 @@ export const usePrivacyRequestBulkActions = ({
         key: BulkActionType.APPROVE,
         label: "Approve",
         icon: <Icons.Checkmark />,
-        onClick: () => handleActionClick(BulkActionType.APPROVE),
+        onClick: handleApproveAction,
         disabled: !canApprove,
       },
       {
         key: BulkActionType.DENY,
         label: "Deny",
         icon: <Icons.Close />,
-        onClick: () => handleActionClick(BulkActionType.DENY),
+        onClick: handleDenyActionClick,
         disabled: !canDeny,
       },
       {
@@ -185,11 +267,16 @@ export const usePrivacyRequestBulkActions = ({
         label: "Delete",
         icon: <Icons.TrashCan />,
         danger: true,
-        onClick: () => handleActionClick(BulkActionType.DELETE),
+        onClick: handleDeleteAction,
         disabled: !canDelete,
       },
     ];
-  }, [selectedRequests, handleActionClick]);
+  }, [
+    selectedRequests,
+    handleApproveAction,
+    handleDenyActionClick,
+    handleDeleteAction,
+  ]);
 
   return {
     bulkActionMenuItems,
