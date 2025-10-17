@@ -620,6 +620,7 @@ export type { TestStatusMessage } from "./models/TestStatusMessage";
 export type { TestWebsiteMonitorParams } from "./models/TestWebsiteMonitorParams";
 export type { TimeBasedPartitioning } from "./models/TimeBasedPartitioning";
 export type { TimescaleDocsSchema } from "./models/TimescaleDocsSchema";
+export { TreeResourceChangeIndicator } from "./models/TreeResourceChangeIndicator";
 export type { UnlabeledIdentities } from "./models/UnlabeledIdentities";
 export type { UnverifiedIdentity } from "./models/UnverifiedIdentity";
 export type { UnverifiedPrivacyPreferencesRequest } from "./models/UnverifiedPrivacyPreferencesRequest";
