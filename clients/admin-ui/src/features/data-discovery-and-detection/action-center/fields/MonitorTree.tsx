@@ -14,8 +14,8 @@ import { Key, useEffect, useState } from "react";
 import { PaginationState } from "~/features/common/pagination";
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
-  DiffStatus,
   Page_DatastoreStagedResourceTreeAPIResponse_,
+  TreeResourceChangeIndicator,
 } from "~/types/api";
 
 import {
@@ -26,14 +26,19 @@ import {
 } from "./MonitorFields.const";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
 
+// Extend TreeDataNode to include the diff_status from the API response
+export interface CustomTreeDataNode extends TreeDataNode {
+  status?: TreeResourceChangeIndicator | null;
+}
+
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
-): TreeDataNode[] => {
-  const dataItems = data.items.map((treeNode) => ({
+): CustomTreeDataNode[] => {
+  const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => ({
     title: treeNode.name,
     key: treeNode.urn,
-    selectable: treeNode.has_children,
+    selectable: true,
     icon: () => {
       switch (treeNode.resource_type) {
         case "Database":
@@ -46,6 +51,7 @@ const mapResponseToTreeData = (
           return null;
       }
     },
+    status: treeNode.change_indicator,
     isLeaf: !treeNode.has_grandchildren,
   }));
 

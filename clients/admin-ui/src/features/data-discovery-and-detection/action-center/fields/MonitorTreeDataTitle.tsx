@@ -1,14 +1,19 @@
 import {
   AntButton as Button,
   AntSkeleton as Skeleton,
+  AntSpace as Space,
   AntText as Text,
-  AntTreeDataNode as TreeDataNode,
+  Icons,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
+
+import { TreeResourceChangeIndicator } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
+import { CustomTreeDataNode as TreeDataNode } from "./MonitorTree";
 
 const findNodeParent = (data: TreeDataNode[], key: string) => {
   return data.find((node) => {
@@ -44,6 +49,9 @@ export const MonitorTreeDataTitle = ({
   treeData: TreeDataNode[];
   onLoadMore: (key: string) => void;
 }) => {
+  // if title is a function, this component will not be rendered
+  const titleString = node.title as React.ReactNode;
+
   if (node.key.toString().startsWith(TREE_NODE_LOAD_MORE_KEY_PREFIX)) {
     const nodeParent = recFindNodeParent(treeData, node.key.toString());
     return (
@@ -57,7 +65,7 @@ export const MonitorTreeDataTitle = ({
         }}
         className="p-0"
       >
-        {typeof node.title === "function" ? node.title(node) : node.title}
+        {titleString}
       </Button>
     );
   }
@@ -65,19 +73,33 @@ export const MonitorTreeDataTitle = ({
   if (node.key.toString().startsWith(TREE_NODE_SKELETON_KEY_PREFIX)) {
     return (
       <Skeleton paragraph={false} title={{ width: "80px" }} active>
-        {typeof node.title === "function" ? node.title(node) : node.title}
+        {titleString}
       </Skeleton>
     );
   }
 
+  const statusIconColor = (() => {
+    switch (node.status) {
+      case TreeResourceChangeIndicator.ADDITION:
+        return palette.FIDESUI_SUCCESS;
+      case TreeResourceChangeIndicator.REMOVAL:
+        return palette.FIDESUI_ERROR;
+      case TreeResourceChangeIndicator.CHANGE:
+        return palette.FIDESUI_WARNING;
+      default:
+        return null;
+    }
+  })();
+
   return (
-    <Text
-      ellipsis={{
-        tooltip:
-          typeof node.title === "function" ? node.title(node) : node.title,
-      }}
-    >
-      {typeof node.title === "function" ? node.title(node) : node.title}
-    </Text>
+    <Space size={4}>
+      {statusIconColor && (
+        <Icons.CircleSolid
+          className="size-2"
+          style={{ color: statusIconColor }}
+        />
+      )}
+      <Text ellipsis={{ tooltip: titleString }}>{titleString}</Text>
+    </Space>
   );
 };
