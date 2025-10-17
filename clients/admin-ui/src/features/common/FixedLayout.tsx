@@ -6,10 +6,12 @@ const FixedLayout = ({
   children,
   title,
   mainProps,
+  fullHeight = false,
 }: {
   children: React.ReactNode;
   title: string;
   mainProps?: FlexProps;
+  fullHeight?: boolean;
 }) => (
   // NOTE: unlike the main Layout, this layout specifies a fixed height
   // of 100vh for the page, and overflow="auto" for the main content area. This
@@ -23,8 +25,8 @@ const FixedLayout = ({
   <Flex
     data-testid={title}
     direction="column"
-    height="calc(100vh - 48px)"
-    width="calc(100vw - 240px)"
+    height={fullHeight ? "100vh" : "calc(100vh - 48px)"}
+    width={fullHeight ? "100vw" : "calc(100vw - 240px)"}
   >
     <Head>
       <title>Fides Admin UI - {title}</title>
