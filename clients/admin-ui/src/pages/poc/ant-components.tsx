@@ -40,6 +40,8 @@ for (let i = 10; i < 36; i += 1) {
 }
 
 const AntPOC: NextPage = () => {
+  // Start the list component with 2 items selected to showcase
+  // different states of selection
   const [selectedListKeys, setSelectedListKeys] = useState<React.Key[]>([
     "1",
     "3",

@@ -354,6 +354,9 @@ dataset:
     - name: replaced_by
       data_categories:
         - system.operations
+    - name: tagging_instructions
+      data_categories:
+        - system.operations
   - name: ctl_data_subjects
     fields:
     - name: automated_decisions_or_profiling
