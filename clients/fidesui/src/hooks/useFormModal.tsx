@@ -3,10 +3,12 @@ import type { ModalStaticFunctions } from "antd/es/modal/confirm";
 import { Form, FormInstance } from "antd/lib";
 import React from "react";
 
-// options for the useFormModal hook are all options for the modal with the following changes:
-// 1. no onOk or onCancel props as they will be handled by the hook to support form validation and resetting.
-// 2. for content you must provide a function that receives the form instance and returns the content to display
-// in the modal. Pass the form instance to your form component. eg. content: (form) => <MyForm form={form} />
+/**
+ * Options for the useFormModal hook. Extends modal options with the following changes:
+ * - No onOk or onCancel props (handled by the hook for form validation and resetting)
+ * - Content must be a function that receives the form instance and returns the content to display
+ * @example content: (form) => <MyForm form={form} />
+ */
 export type UseFormModalOptions = Omit<
   ModalFuncProps,
   "onOk" | "onCancel" | "content"
@@ -14,9 +16,12 @@ export type UseFormModalOptions = Omit<
   content: (form: FormInstance) => React.ReactNode;
 };
 
-// The useFormModal hooks is a generic hook that can be used to open a modal with a form.
-// It's props are: modalApi (the modal api from useModal) and options (the options for the modal).
-// It returns a promise that resolves with the values of the form or null if the modal is cancelled.
+/**
+ * Generic hook for opening a modal with a form
+ * @param modalApi - The modal API from useModal
+ * @param options - The options for the modal
+ * @returns Promise that resolves with form values or null if cancelled
+ */
 export const useFormModal = <T = any,>(
   modalApi: ModalStaticFunctions,
   options: UseFormModalOptions,
@@ -32,16 +37,21 @@ export const useFormModal = <T = any,>(
           ...modalOptions,
           content: content(form),
           onOk: (closeModal) => {
+            // on confirm, validate the form
             form
               .validateFields()
               .then((values) => {
+                // if validation passes, close the modal, reset the form, and resolve with the values
                 closeModal(values);
                 form.resetFields();
                 resolve(values);
               })
-              .catch(() => {});
+              .catch(() => {
+                // if validation fails (eg. missing required fields), do nothing.
+              });
           },
           onCancel: () => {
+            // if modal is cancelled, reset the form and resolve with null.
             form.resetFields();
             resolve(null);
           },
