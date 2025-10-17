@@ -529,6 +529,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 request_config=self.result_request,
                 secrets=client.configuration.secrets,
             )
+            if polling_result is None:
+                sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
+                logger.info(f"No polling result from override function for sub-request {sub_request.id}")
+                return
         else:
             # Standard HTTP request processing
             polling_handler = PollingRequestHandler(
