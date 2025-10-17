@@ -71,7 +71,7 @@ from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     PRIVACY_REQUEST_OBJECT,
     assign_placeholders,
-    check_dataset_reference_values,
+    check_dataset_missing_reference_values,
     map_param_values,
 )
 
@@ -379,7 +379,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
     ) -> List[str]:
         """Return a list of dataset reference values that are not found in the input_data map"""
-        missing_dataset_reference_values = check_dataset_reference_values(
+        missing_dataset_reference_values = check_dataset_missing_reference_values(
             input_data, param_values
         )
 

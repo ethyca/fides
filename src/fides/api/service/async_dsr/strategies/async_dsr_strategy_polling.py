@@ -45,7 +45,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.saas_util import check_dataset_reference_values, map_param_values
+from fides.api.util.saas_util import check_dataset_missing_reference_values, map_param_values
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -154,7 +154,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         self.session.commit()
 
         for read_request in async_requests_to_process:
-            missing_dataset_reference_values = check_dataset_reference_values(
+            missing_dataset_reference_values = check_dataset_missing_reference_values(
                 input_data, read_request.param_values
             )
             if missing_dataset_reference_values:

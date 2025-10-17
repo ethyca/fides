@@ -1,3 +1,4 @@
+from fides.api.schemas.saas.saas_config import ParamValue
 import pytest
 
 from fides.api.graph.config import (
@@ -11,6 +12,7 @@ from fides.api.graph.config import (
 from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.saas_util import (
     assign_placeholders,
+    check_dataset_missing_reference_values,
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
@@ -620,3 +622,20 @@ class TestNullsafeUrlencode:
         }
         result_parts = set(result.split("&"))
         assert result_parts == expected_parts
+
+@pytest.mark.unit_saas
+class TestCheckDatasetReferenceValues:
+    def test_check_dataset_missing_reference_values_no_values_missing(self):
+        """Test that no values are missing when all the reference values are present"""
+        input_data = {"fidesops_grouped_inputs": [{"user": {"name": "John"}}]}
+        param_values = [ParamValue(name="name", references=["user.name"])]
+        assert check_dataset_missing_reference_values(input_data, param_values) == []
+
+    def test_check_dataset_missing_reference_values_values_missing(self):
+        """Test that we identify missing values when some reference values are not present"""
+        input_data = {"fidesops_grouped_inputs": [{"user": {"name": "John"}}]}
+        param_values = [
+            ParamValue(name="name", references=["user.name"]),
+            ParamValue(name="email", references=["user.email"])
+        ]
+        assert check_dataset_missing_reference_values(input_data, param_values) == ["user.name"]
