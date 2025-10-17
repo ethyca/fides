@@ -70,12 +70,7 @@ jobs:
           print(json.dumps([",".join(group) for group in groups]))
           ')" >> $GITHUB_OUTPUT
 
-  Admin-UI-Cypress:
-    needs: prepare-matrix
-    strategy:
-      fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
-      matrix:
-        spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -100,6 +95,43 @@ jobs:
       - name: Build NextJS
         working-directory: clients/admin-ui
         run: npm run build:test
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            clients/node_modules
+            clients/*/node_modules
+            clients/admin-ui/public/lib
+            clients/admin-ui/.next
+            clients/admin-ui/out
+          retention-days: 0
+
+  Admin-UI-Cypress:
+    needs: [prepare-matrix, build]
+    strategy:
+      fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
+      matrix:
+        spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20.x
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: clients
 
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
