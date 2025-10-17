@@ -488,19 +488,12 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
 
     logs = get_sorted_execution_logs(db, pr)
 
-    if dsr_version == "use_dsr_3_0":
-        assert logs == [
-            ("Dataset reference validation", "complete"),
-            ("Dataset traversal", "complete"),
-            ("Dataset reference validation", "complete"),
-            ("Access package upload", "complete"),
-        ]
-    else:
-        assert logs == [
-            ("Dataset reference validation", "complete"),
-            ("Dataset traversal", "complete"),
-            ("Access package upload", "complete"),
-        ]
+    # Dataset reference validation now only runs once (checkpoint added to prevent duplicate validation)
+    assert logs == [
+        ("Dataset reference validation", "complete"),
+        ("Dataset traversal", "complete"),
+        ("Access package upload", "complete"),
+    ]
 
 
 @pytest.mark.integration_postgres
