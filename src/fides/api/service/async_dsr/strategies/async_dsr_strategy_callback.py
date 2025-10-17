@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+from fides.api.util.saas_util import check_dataset_reference_values
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -110,6 +111,14 @@ class AsyncCallbackStrategy(AsyncDSRStrategy):
         policy = privacy_request.policy
 
         for read_request in async_requests_to_process:
+            missing_dataset_reference_values = check_dataset_reference_values(input_data, read_request.param_values)
+            if missing_dataset_reference_values:
+                logger.info(
+                    "The Initial Callback access request of {} is missing the following dataset reference values [{}], skipping traversal",
+                    request_task.dataset_name,
+                    ", ".join(missing_dataset_reference_values),
+                )
+                return []
             if read_request.path:  # Only execute if there's an actual request to make
                 try:
                     # Set the current request context
