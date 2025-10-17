@@ -1,6 +1,7 @@
 import { AntTreeDataNode as TreeDataNode } from "fidesui";
 
 import { TreeResourceChangeIndicator } from "~/types/api";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 /**
  * Extend TreeDataNode to include the update status from the API response
@@ -11,3 +12,13 @@ export interface CustomTreeDataNode extends TreeDataNode {
   status?: TreeResourceChangeIndicator | null;
   children?: CustomTreeDataNode[];
 }
+
+export type FieldActionTypeValue = `${FieldActionType}`;
+
+export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
+export type ResourceStatusLabelColor =
+  | "nectar"
+  | "red"
+  | "orange"
+  | "blue"
+  | "green";
