@@ -1,4 +1,5 @@
 import {
+  AntAvatar as Avatar,
   AntButton as Button,
   AntDrawer as Drawer,
   AntDropdown as Dropdown,
@@ -12,12 +13,14 @@ import {
   AntText as Text,
   AntTitle as Title,
   Icons,
+  SparkleIcon,
   useToast,
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Key, useEffect, useState } from "react";
 
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -329,38 +332,57 @@ const ActionCenterFields: NextPage = () => {
         size="large"
       >
         {resource ? (
-          <Form layout="vertical">
-            <Form.Item label="System">
-              <Input value={resource.monitor_config_id ?? ""} disabled />
-            </Form.Item>
-            <Form.Item label="Path">
-              <Input value={resource.urn} disabled />
-            </Form.Item>
-            <Form.Item label="Data type">
-              <Input value={resource.resource_type ?? ""} disabled />
-            </Form.Item>
-            <Form.Item label="Description">
-              <Input.TextArea value={resource.description ?? ""} />
-            </Form.Item>
-            <Form.Item label="Data categories">
-              <DataCategorySelect
-                variant="outlined"
-                mode="tags"
-                maxTagCount="responsive"
-                value={[
-                  ...(resource.classifications?.map(({ label }) => label) ??
-                    []),
-                  ...(resource.user_assigned_data_categories?.map(
-                    (value) => value,
-                  ) ?? []),
-                ]}
-                autoFocus={false}
-                onChange={(value) =>
-                  handleSetDataCategories(value, resource.urn)
-                }
-              />
-            </Form.Item>
-          </Form>
+          <>
+            <Form layout="vertical">
+              <Form.Item label="System">
+                <Input value={resource.monitor_config_id ?? ""} disabled />
+              </Form.Item>
+              <Form.Item label="Path">
+                <Input value={resource.urn} disabled />
+              </Form.Item>
+              <Form.Item label="Data type">
+                <Input value={resource.resource_type ?? ""} disabled />
+              </Form.Item>
+              <Form.Item label="Description">
+                <Input.TextArea value={resource.description ?? ""} />
+              </Form.Item>
+              <Form.Item label="Data categories">
+                <DataCategorySelect
+                  variant="outlined"
+                  mode="tags"
+                  maxTagCount="responsive"
+                  value={[
+                    ...(resource.classifications?.map(({ label }) => label) ??
+                      []),
+                    ...(resource.user_assigned_data_categories?.map(
+                      (value) => value,
+                    ) ?? []),
+                  ]}
+                  autoFocus={false}
+                  onChange={(value) =>
+                    handleSetDataCategories(value, resource.urn)
+                  }
+                />
+              </Form.Item>
+            </Form>
+            <List
+              dataSource={resource.classifications}
+              renderItem={(item) => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={<Avatar icon={<SparkleIcon color="black" />} />}
+                    title={
+                      <Flex align="center" gap="small">
+                        <div>{item.label}</div>
+                        <ClassifierProgress percent={item.score} />
+                      </Flex>
+                    }
+                    description={item.rationale}
+                  />
+                </List.Item>
+              )}
+            />
+          </>
         ) : null}
       </Drawer>
     </FixedLayout>

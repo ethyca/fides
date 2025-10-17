@@ -4,7 +4,6 @@ import {
   AntFlex as Flex,
   AntList as List,
   AntListProps as ListProps,
-  AntProgress as Progress,
   AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
@@ -13,6 +12,7 @@ import {
 } from "fidesui";
 import styles from "fidesui/src/hoc/CustomTypography.module.scss";
 
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
@@ -110,7 +110,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             className="pr-[var(--ant-padding-xl)]"
             key="progress"
           >
-            <Progress
+            <ClassifierProgress
               percent={
                 classifications.find(
                   (classification) =>
@@ -120,23 +120,6 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                   ? 100
                   : 25
               }
-              percentPosition={{
-                align: "start",
-                type: "outer",
-              }}
-              strokeColor={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? "var(--ant-color-success-text)"
-                  : "var(--ant-color-warning-text)"
-              }
-              steps={2}
-              showInfo={false}
-              strokeLinecap="round"
-              size={[24, 8]}
             />
             <Text size="sm" type="secondary" className="font-normal">
               {capitalize(
