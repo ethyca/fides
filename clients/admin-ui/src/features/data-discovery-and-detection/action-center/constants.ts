@@ -90,3 +90,19 @@ export const MONITOR_UPDATE_NAMES = new Map<
   ["removals", "Removals"],
   ["approved", "Approved"],
 ]);
+
+export const MONITOR_UPDATE_ORDER = [
+  "cookie",
+  "image",
+  "javascript_tag",
+  "iframe",
+  "browser_request",
+  "unlabeled",
+  "classifying",
+  "in_review",
+  "approved",
+  "removals",
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];
