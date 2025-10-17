@@ -12,23 +12,39 @@ export enum BulkActionType {
 }
 
 /**
+ * Maps each privacy request status to its available bulk actions
+ * Using readonly mapping for type safety and performance
+ */
+const AVAILABLE_ACTIONS_BY_STATUS: Record<
+  PrivacyRequestStatus,
+  readonly BulkActionType[]
+> = {
+  [PrivacyRequestStatus.PENDING]: [
+    BulkActionType.APPROVE,
+    BulkActionType.DENY,
+    BulkActionType.DELETE,
+  ],
+  [PrivacyRequestStatus.IDENTITY_UNVERIFIED]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.REQUIRES_INPUT]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.APPROVED]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.DENIED]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.IN_PROCESSING]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.COMPLETE]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.PAUSED]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.AWAITING_EMAIL_SEND]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
+} as const;
+
+/**
  * Determines which bulk actions are available for a given privacy request
  * based on its current status
  */
 export const getAvailableActionsForRequest = (
   request: PrivacyRequestEntity,
-): BulkActionType[] => {
-  const availableActions: BulkActionType[] = [];
-
-  // Approve and Deny are only available for pending requests
-  if (request.status === PrivacyRequestStatus.PENDING) {
-    availableActions.push(BulkActionType.APPROVE, BulkActionType.DENY);
-  }
-
-  // Delete is always available (no status restriction)
-  availableActions.push(BulkActionType.DELETE);
-
-  return availableActions;
+): readonly BulkActionType[] => {
+  return AVAILABLE_ACTIONS_BY_STATUS[request.status];
 };
 
 /**
