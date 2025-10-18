@@ -8,8 +8,9 @@ const DataExplorerRedirect: NextPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    router.push(ACTION_CENTER_ROUTE);
-  }, [router]);
+    router.replace(ACTION_CENTER_ROUTE);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 };
