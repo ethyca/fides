@@ -87,7 +87,7 @@ export const useInProgressMonitorTasksList = () => {
       return_dismissed: appliedShowDismissed,
     },
     {
-      pollingInterval: 1000,
+      pollingInterval: 3000,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     },
