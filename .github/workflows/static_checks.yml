@@ -2,6 +2,7 @@ name: Backend Static Code Checks
 
 on:
   pull_request:
+  merge_group:
   push:
     branches:
       - "main"

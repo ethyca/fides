@@ -10,6 +10,7 @@ on:
       - ".cursor/**"
       - ".github/workflows/frontend_checks.yml"
       - ".github/workflows/cypress_*.yml"
+  merge_group:
   push:
     branches:
       - "main"
