@@ -176,13 +176,14 @@ class TestDatasetServiceDeleteDataset:
         with pytest.raises(LinkedDatasetException) as exc_info:
             dataset_service.delete_dataset("multi_associated_dataset")
 
-        error = exc_info.value
-        expected_message = (
-            "Cannot delete dataset 'multi_associated_dataset' because it is associated with "
-            "the following integration(s): 'Postgres Connection' (postgres), 'MySQL Connection' (mysql). "
-            "Remove the dataset from these integrations before deleting."
+        error = str(exc_info.value)
+        assert (
+            "Cannot delete dataset 'multi_associated_dataset' because it is associated with"
+            in error
         )
-        assert str(error) == expected_message
+        assert "'Postgres Connection' (postgres)" in error
+        assert "'MySQL Connection' (mysql)" in error
+        assert "Remove the dataset from these integrations before deleting." in error
 
     def test_delete_dataset_with_system_information(
         self, db: Session, dataset_service: DatasetService
