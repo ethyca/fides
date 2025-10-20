@@ -1,4 +1,8 @@
-import { ConsentStatus } from "~/types/api";
+import {
+  ConsentStatus,
+  DatastoreMonitorUpdates,
+  WebMonitorUpdates,
+} from "~/types/api";
 
 export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
   [ConsentStatus.WITH_CONSENT]: "Consent respected",
@@ -57,3 +61,48 @@ export enum ConsentBreakdownColumnKeys {
   PAGE = "page",
   STATUS = "status",
 }
+
+export const MONITOR_UPDATES_TO_IGNORE = [
+  "classified_low_confidence",
+  "classified_high_confidence",
+  "classified_manually",
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];
+
+export const MONITOR_UPDATE_NAMES = new Map<
+  | keyof WebMonitorUpdates
+  | keyof Omit<
+      DatastoreMonitorUpdates,
+      (typeof MONITOR_UPDATES_TO_IGNORE)[number]
+    >,
+  string
+>([
+  ["cookie", "Cookie"],
+  ["browser_request", "Browser request"],
+  ["image", "Image"],
+  ["iframe", "iFrame"],
+  ["javascript_tag", "JavaScript tag"],
+  ["unlabeled", "Unlabeled"],
+  ["in_review", "In review"],
+  ["classifying", "Classifying"],
+  ["removals", "Removals"],
+  ["approved", "Approved"],
+]);
+
+export const MONITOR_UPDATE_ORDER = [
+  "cookie",
+  "image",
+  "javascript_tag",
+  "iframe",
+  "browser_request",
+  "unlabeled",
+  "classifying",
+  "in_review",
+  "approved",
+  "removals",
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];

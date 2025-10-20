@@ -1,7 +1,7 @@
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 
-import { ConsentOptionCreate, PrivacyNoticeResponse } from "../../types/api";
-import { API_URL } from "../support/constants";
+import { ConsentOptionCreate, PrivacyNoticeResponse } from "../../../types/api";
+import { API_URL } from "../../support/constants";
 
 const VERIFICATION_CODE = "112358";
 const PRIVACY_NOTICE_ID_1 = "pri_notice-advertising-000";

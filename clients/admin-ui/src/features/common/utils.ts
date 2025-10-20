@@ -5,6 +5,9 @@ import { User } from "../user-management/types";
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
+export const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
 /**
  * "Fun On A Bun" => "Fun on a bun"
  * "fun on a bun" => "Fun on a bun"
@@ -119,7 +122,7 @@ export const getOptionsFromMap = <T = string>(
     value: key,
   }));
 
-export const getWebsiteIconUrl = (domain: string, size = 24) => {
+export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
@@ -269,3 +272,23 @@ export const truncateUrl = (url: string, limit: number): string => {
     return url;
   }
 };
+
+/**
+ * Formats a number with a suffix for large numbers (K, M, etc.)
+ * @param num - The number to format
+ * @param digits - The number of digits to round to (default is 0)
+ * @returns The formatted number as a string
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
+ *
+ * @example
+ * nFormatter(1111); // returns "1K"
+ * nFormatter(1111, 0); // returns "1K"
+ * nFormatter(1111, 1); // returns "1.1K"
+ * nFormatter(1111, 2); // returns "1.11K"
+ */
+export const nFormatter = (num: number = 0, digits: number = 0) =>
+  Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: digits,
+  }).format(num);

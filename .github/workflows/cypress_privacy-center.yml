@@ -1,10 +1,10 @@
-name: Privacy Center/FidesJS Cypress Tests
+name: Privacy Center Cypress Tests
 
 on:
   pull_request:
     paths:
       - "clients/privacy-center/**"
-      - "clients/fides-js/**"
+      - "!clients/privacy-center/pages/api/fides-js.ts"
       - ".github/workflows/cypress_privacy-center.yml"
   push:
     branches:
@@ -37,14 +37,19 @@ jobs:
         working-directory: clients/fides-js
         run: npm run build:test
 
+      - name: Build NextJS
+        working-directory: clients/privacy-center
+        run: npm run build:test
+
       - name: Cypress Privacy Center E2E Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: clients/privacy-center
           install: false
-          start: npm run cy:start
+          start: npm run start:test
           wait-on: "http://localhost:3001"
           wait-on-timeout: 180
+          spec: cypress/e2e/privacy-center/**
 
       - uses: actions/upload-artifact@v4
         if: failure()

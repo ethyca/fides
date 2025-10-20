@@ -567,6 +567,7 @@ export interface ExperienceConfigMinimal
     | "auto_detect_language"
     | "dismissable"
     | "auto_subdomain_cookie_deletion"
+    | "cookie_deletion_based_on_host_domain"
     | "layer1_button_options"
     | "reject_all_mechanism"
   > {
@@ -921,7 +922,7 @@ export enum ConsentMethod {
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice", // api only
   ACKNOWLEDGE = "acknowledge",
-  OT_MIGRATION = "ot_migration",
+  EXTERNAL_PROVIDER = "external_provider",
 }
 
 export type PrivacyPreferencesRequest = {

@@ -1,4 +1,4 @@
-import { API_URL } from "../support/constants";
+import { API_URL } from "../../support/constants";
 
 describe("Privacy Request with custom fields with query params", () => {
   beforeEach(() => {

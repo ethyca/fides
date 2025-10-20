@@ -73,7 +73,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       }
     >({
       query: ({ monitor_config_id }) => ({
-        url: `/plus/filters/datastore_monitor_resources/?monitor_config_id=${monitor_config_id}`,
+        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}`,
       }),
     }),
 
@@ -102,6 +102,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         search?: string;
         diff_status?: Array<DiffStatus>;
         confidence_score?: Array<ConfidenceScoreRange>;
+        data_category?: Array<string>;
       }
     >({
       query: ({
