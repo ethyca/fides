@@ -12,13 +12,6 @@ on:
       - ".github/workflows/cypress_*.yml"
   merge_group:
     types: [checks_requested]
-    paths-ignore:
-      - "**.md"
-      - "clients/**"
-      - ".vscode/**"
-      - ".cursor/**"
-      - ".github/workflows/frontend_checks.yml"
-      - ".github/workflows/cypress_*.yml"
   push:
     branches:
       - "main"
@@ -283,14 +276,13 @@ jobs:
 
   Pytest-Ctl-External:
     needs: Check-Container-Startup
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # In PRs run with the "unsafe" label, or run on a "push" event to main, or run on merge_group events
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -345,14 +337,13 @@ jobs:
 
   External-Datastores:
     needs: Check-Container-Startup
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # In PRs run with the "unsafe" label, or run on a "push" event to main, or run on merge_group events
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -450,10 +441,9 @@ jobs:
 
   External-SaaS-Connectors:
     needs: Check-Container-Startup
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # In PRs run with the "unsafe" label, or run on a "push" event to main, or run on merge_group events
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     permissions:
       contents: read
       id-token: write
@@ -494,3 +484,58 @@ jobs:
           SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
           SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
         run: nox -s "pytest(ops-saas)"
+
+  ####################
+  ## Summary Status ##
+  ####################
+  # This job is the one that should be marked as required in branch protection
+  # It will pass if all required jobs pass or are skipped
+  Backend-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Collect-Tests
+      - Build
+      - Performance-Checks
+      - Check-Container-Startup
+      - Misc-Tests
+      - Safe-Tests
+      # Unsafe tests are optional, so we don't include them in the summary
+    steps:
+      - name: Check job results
+        run: |
+          echo "Collect-Tests: ${{ needs.Collect-Tests.result }}"
+          echo "Build: ${{ needs.Build.result }}"
+          echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
+          echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
+          echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
+          echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
+
+          # Check if any required job failed (not skipped, not success)
+          # Possible values: success, failure, cancelled, skipped
+          # We only fail if a job actually failed (not if it was skipped)
+          if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Build.result }}" == "failure" ] || \
+             [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
+             [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Build.result }}" == "cancelled" ] || \
+             [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
+             [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          # Performance checks can fail without blocking (continue-on-error: true)
+          if [ "${{ needs.Performance-Checks.result }}" == "failure" ]; then
+            echo "⚠️ Performance checks failed but not blocking"
+          fi
+
+          echo "✅ All required backend checks passed or were skipped"
