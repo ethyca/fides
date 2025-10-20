@@ -8,6 +8,8 @@ on:
   pull_request:
     paths:
       - "clients/cypress-e2e/**"
+  merge_group:
+    types: [checks_requested]
 
 env:
   CI: true
