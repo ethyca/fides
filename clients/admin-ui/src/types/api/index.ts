@@ -67,6 +67,8 @@ export type { Classification } from "./models/Classification";
 export type { ClassificationResponse } from "./models/ClassificationResponse";
 export { ClassificationStatus } from "./models/ClassificationStatus";
 export type { ClassifyCollection } from "./models/ClassifyCollection";
+export type { ClassifyLlmParams } from "./models/ClassifyLlmParams";
+export { ClassifyLlmPromptTemplateOptions } from "./models/ClassifyLlmPromptTemplateOptions";
 export type { ClassifyDataFlow } from "./models/ClassifyDataFlow";
 export type { ClassifyDataset } from "./models/ClassifyDataset";
 export type { ClassifyDatasetResponse } from "./models/ClassifyDatasetResponse";
