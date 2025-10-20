@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import {
@@ -16,15 +17,23 @@ const MonitorResultAssets: NextPage = () => {
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const systemId = decodeURIComponent(router.query.systemId as string);
 
-  const { data: systemResults } = useGetDiscoveredSystemAggregateQuery({
-    key: monitorId,
-    page: 1,
-    size: 1,
-    search: "",
-    diff_status: [DiffStatus.ADDITION],
-    resolved_system_id: systemId,
-  });
+  const { data: systemResults, isLoading } =
+    useGetDiscoveredSystemAggregateQuery({
+      key: monitorId,
+      page: 1,
+      size: 1,
+      search: "",
+      diff_status: [DiffStatus.ADDITION],
+      resolved_system_id: systemId,
+    });
   const system = systemResults?.items[0];
+
+  // if there are no results, redirect to the monitor page
+  useEffect(() => {
+    if (systemResults?.items.length === 0) {
+      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+    }
+  }, [systemResults?.items.length, router, monitorId]);
 
   return (
     <FixedLayout title="Action center - Discovered assets">
@@ -37,7 +46,7 @@ const MonitorResultAssets: NextPage = () => {
             title:
               systemId === UNCATEGORIZED_SEGMENT
                 ? "Uncategorized assets"
-                : (system?.name ?? systemId),
+                : system?.name,
           },
         ]}
       />
