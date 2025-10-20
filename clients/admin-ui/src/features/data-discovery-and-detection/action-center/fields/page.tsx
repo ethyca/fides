@@ -376,7 +376,6 @@ const ActionCenterFields: NextPage = () => {
                         title={
                           <Flex align="center" gap="small">
                             <div>{item.label}</div>
-                            <ClassifierProgress percent={item.score} />
                           </Flex>
                         }
                         description={item.rationale}
