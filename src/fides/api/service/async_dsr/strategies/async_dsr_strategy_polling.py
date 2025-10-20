@@ -162,7 +162,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             )
             if missing_dataset_reference_values:
                 logger.info(
-                    "The Initial polling request of {} is missing the following dataset reference values [{}], skipping traversal",
+                    "The Initial polling request {} of {} is missing the following dataset reference values [{}], skipping traversal",
+                    query_config.collection_name,
                     request_task.dataset_name,
                     ", ".join(missing_dataset_reference_values),
                 )
