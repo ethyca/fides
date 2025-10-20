@@ -16,6 +16,7 @@ export type {
   TablePaginationConfig as AntTablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
@@ -24,7 +25,6 @@ export type {
   FormInstance as AntFormInstance,
   FormItemProps as AntFormItemProps,
   InputProps as AntInputProps,
-  ListProps as AntListProps,
   MenuProps as AntMenuProps,
   ModalProps as AntModalProps,
   RadioGroupProps as AntRadioGroupProps,
@@ -62,7 +62,6 @@ export {
   Input as AntInput,
   InputNumber as AntInputNumber,
   Layout as AntLayout,
-  List as AntList,
   Menu as AntMenu,
   message as AntMessage,
   Modal as AntModal,
@@ -99,12 +98,17 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
   CustomDateRangePicker as AntDateRangePicker,
+  CustomList as AntList,
   CustomSelect as AntSelect,
   CustomTable as AntTable,
   CustomTag as AntTag,
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type {
+  CustomListProps as AntListProps,
+  RowSelection as AntRowSelection,
+} from "./hoc/CustomList";
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 

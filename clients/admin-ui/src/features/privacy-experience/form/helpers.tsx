@@ -52,6 +52,7 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   translations: defaultTranslations,
   auto_detect_language: true,
   auto_subdomain_cookie_deletion: true,
+  cookie_deletion_based_on_host_domain: true,
   allow_vendor_asset_disclosure: false,
   asset_disclosure_include_types: [],
 };

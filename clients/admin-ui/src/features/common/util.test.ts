@@ -2,10 +2,11 @@ import { describe, expect, it } from "@jest/globals";
 
 import {
   createSelectedMap,
+  getBrandIconUrl,
   getKeysFromMap,
   getOptionsFromMap,
   getPII,
-  getWebsiteIconUrl,
+  nFormatter,
   truncateUrl,
 } from "~/features/common/utils";
 
@@ -87,15 +88,15 @@ describe(getOptionsFromMap.name, () => {
   });
 });
 
-describe(getWebsiteIconUrl.name, () => {
+describe(getBrandIconUrl.name, () => {
   it("should return the icon URL", () => {
-    const result = getWebsiteIconUrl("example.com");
+    const result = getBrandIconUrl("example.com");
     expect(result).toEqual(
       "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/24/w/24?c=1idbRjELpikqQ1PLiqb",
     );
   });
   it("should return the icon URL with a custom size", () => {
-    const result = getWebsiteIconUrl("example.com", 56);
+    const result = getBrandIconUrl("example.com", 56);
     expect(result).toEqual(
       "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/56/w/56?c=1idbRjELpikqQ1PLiqb",
     );
@@ -159,5 +160,29 @@ describe(truncateUrl.name, () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe(nFormatter.name, () => {
+  it("should return the formatted number", () => {
+    const tests = [
+      { num: 0, digits: 1, result: "0" },
+      { num: 12, digits: 1, result: "12" },
+      { num: 1234, digits: 1, result: "1.2K" },
+      { num: 1234, result: "1K" },
+      { num: 100000000, digits: 1, result: "100M" },
+      { num: 299792458, digits: 1, result: "299.8M" },
+      { num: 759878, digits: 1, result: "759.9K" },
+      { num: 759878, digits: 2, result: "759.88K" },
+      { num: 759878, digits: 0, result: "760K" },
+      { num: 123, digits: 1, result: "123" },
+      { num: 123.456, digits: 1, result: "123.5" },
+      { num: 123.456, digits: 2, result: "123.46" },
+      { num: 123.456, digits: 4, result: "123.456" },
+    ];
+    tests.forEach((test) => {
+      const result = nFormatter(test.num, test.digits);
+      expect(result).toEqual(test.result);
+    });
   });
 });
