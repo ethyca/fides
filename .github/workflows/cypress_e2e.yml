@@ -36,7 +36,9 @@ jobs:
               - '.github/workflows/cypress_e2e.yml'
 
       - if: steps.filter.outputs.e2e == 'true'
-        run: echo "E2E tests triggered by:"; echo "${{ steps.filter.outputs.e2e_files }}"
+        run: |
+          echo "E2E tests triggered by:"
+          echo "${{ steps.filter.outputs.e2e_files }}"
 
   Cypress-E2E:
     needs: Check-E2E-Changes

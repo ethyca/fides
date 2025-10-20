@@ -32,7 +32,9 @@ jobs:
               - '.github/workflows/cypress_privacy-center.yml'
 
       - if: steps.filter.outputs.privacy_center == 'true'
-        run: echo "Privacy Center tests triggered by:"; echo "${{ steps.filter.outputs.privacy_center_files }}"
+        run: |
+          echo "Privacy Center tests triggered by:"
+          echo "${{ steps.filter.outputs.privacy_center_files }}"
 
   Privacy-Center-Cypress:
     needs: Check-Privacy-Center-Changes

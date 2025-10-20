@@ -49,7 +49,9 @@ jobs:
               - '.github/workflows/backend_checks.yml'
 
       - if: steps.filter.outputs.backend == 'true'
-        run: echo "Backend tests triggered by:"; echo "${{ steps.filter.outputs.backend_files }}"
+        run: |
+          echo "Backend tests triggered by:"
+          echo "${{ steps.filter.outputs.backend_files }}"
 
   Collect-Tests:
     needs: Check-Backend-Changes

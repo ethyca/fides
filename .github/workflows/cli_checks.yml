@@ -40,7 +40,9 @@ jobs:
               - '.github/workflows/cli_checks.yml'
 
       - if: steps.filter.outputs.cli == 'true'
-        run: echo "CLI tests triggered by:"; echo "${{ steps.filter.outputs.cli_files }}"
+        run: |
+          echo "CLI tests triggered by:"
+          echo "${{ steps.filter.outputs.cli_files }}"
 
   # Basic smoke test of a local install of the fides Python CLI
   Fides-Install:

@@ -32,7 +32,9 @@ jobs:
               - '.github/workflows/frontend_checks.yml'
 
       - if: steps.filter.outputs.frontend == 'true'
-        run: echo "Frontend tests triggered by:"; echo "${{ steps.filter.outputs.frontend_files }}"
+        run: |
+          echo "Frontend tests triggered by:"
+          echo "${{ steps.filter.outputs.frontend_files }}"
 
   Clients-Unit:
     needs: Check-Frontend-Changes
