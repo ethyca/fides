@@ -13,6 +13,8 @@ import { parseAsString, useQueryState } from "nuqs";
 import React, { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
+import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
+import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
 import {
@@ -24,6 +26,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
+import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import { ListItem } from "./list-item/ListItem";
 
 export const PrivacyRequestsDashboard = () => {
@@ -33,6 +36,7 @@ export const PrivacyRequestsDashboard = () => {
   );
   const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
+  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
@@ -45,10 +49,15 @@ export const PrivacyRequestsDashboard = () => {
     size: pageSize,
     fuzzy_search_str: fuzzySearchTerm,
   });
+
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
+    const itemsWithKeys = results.items.map((item) => ({
+      ...item,
+      key: item.id,
+    }));
 
-    return results;
+    return { ...results, items: itemsWithKeys };
   }, [data]);
 
   const { downloadReport } = useDownloadPrivacyRequestReport();
@@ -77,6 +86,13 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
+  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
+    requests,
+    selectedIds,
+    clearSelectedIds,
+    messageApi,
+  });
+
   return (
     <div>
       <TableActionBar>
@@ -86,6 +102,10 @@ export const PrivacyRequestsDashboard = () => {
           placeholder="Search by request ID or identity value"
         />
         <div className="flex items-center gap-2">
+          <BulkActionsDropdown
+            selectedIds={selectedIds}
+            menuItems={bulkActionMenuItems}
+          />
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
           </Button>
@@ -121,7 +141,13 @@ export const PrivacyRequestsDashboard = () => {
             <List<PrivacyRequestEntity>
               bordered
               dataSource={requests}
-              renderItem={(item) => <ListItem item={item} />}
+              rowSelection={{
+                selectedRowKeys: selectedIds,
+                onChange: setSelectedIds,
+              }}
+              renderItem={(item, index, checkbox) => (
+                <ListItem item={item} checkbox={checkbox} />
+              )}
             />
           </Spin>
           <Pagination
