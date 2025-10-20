@@ -79,9 +79,7 @@ jobs:
           echo "Check-CLI-Changes: ${{ needs.Check-CLI-Changes.result }}"
           echo "Fides-Install: ${{ needs.Fides-Install.result }}"
 
-          # Check if any required job failed
-          # Possible values: success, failure, cancelled, skipped
-          # We only fail if a job actually failed (not if it was skipped)
+          # Fail only if jobs failed (not if skipped)
           if [ "${{ needs.Check-CLI-Changes.result }}" == "failure" ] || \
              [ "${{ needs.Fides-Install.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"

@@ -155,9 +155,7 @@ jobs:
           echo "prepare-matrix: ${{ needs.prepare-matrix.result }}"
           echo "Admin-UI-Cypress: ${{ needs.Admin-UI-Cypress.result }}"
 
-          # Check if any required job failed
-          # Possible values: success, failure, cancelled, skipped
-          # We only fail if a job actually failed (not if it was skipped)
+          # Fail only if jobs failed (not if skipped)
           if [ "${{ needs.Check-Admin-UI-Changes.result }}" == "failure" ] || \
              [ "${{ needs.prepare-matrix.result }}" == "failure" ] || \
              [ "${{ needs.Admin-UI-Cypress.result }}" == "failure" ]; then

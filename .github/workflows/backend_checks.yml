@@ -538,9 +538,7 @@ jobs:
           echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
           echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
 
-          # Check if any required job failed (not skipped, not success)
-          # Possible values: success, failure, cancelled, skipped
-          # We only fail if a job actually failed (not if it was skipped)
+          # Fail only if jobs failed (not if skipped)
           if [ "${{ needs.Check-Backend-Changes.result }}" == "failure" ] || \
              [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Build.result }}" == "failure" ] || \
