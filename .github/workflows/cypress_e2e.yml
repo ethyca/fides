@@ -10,6 +10,8 @@ on:
       - "clients/cypress-e2e/**"
   merge_group:
     types: [checks_requested]
+    paths:
+      - "clients/cypress-e2e/**"
 
 env:
   CI: true

@@ -13,6 +13,11 @@ on:
       - ".github/workflows/frontend_checks.yml"
   merge_group:
     types: [checks_requested]
+    paths-ignore:
+      - "**.md"
+      - "clients/**"
+      - ".vscode/**"
+      - ".github/workflows/frontend_checks.yml"
   push:
     branches:
       - "main"

@@ -7,6 +7,9 @@ on:
       - ".github/workflows/frontend_checks.yml"
   merge_group:
     types: [checks_requested]
+    paths:
+      - "clients/**"
+      - ".github/workflows/frontend_checks.yml"
   push:
     branches:
       - "main"

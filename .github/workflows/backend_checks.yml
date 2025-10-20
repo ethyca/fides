@@ -12,6 +12,13 @@ on:
       - ".github/workflows/cypress_*.yml"
   merge_group:
     types: [checks_requested]
+    paths-ignore:
+      - "**.md"
+      - "clients/**"
+      - ".vscode/**"
+      - ".cursor/**"
+      - ".github/workflows/frontend_checks.yml"
+      - ".github/workflows/cypress_*.yml"
   push:
     branches:
       - "main"
