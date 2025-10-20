@@ -11,6 +11,7 @@ on:
       - ".github/workflows/frontend_checks.yml"
       - ".github/workflows/cypress_*.yml"
   merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
