@@ -12,7 +12,8 @@ import {
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Key, useEffect, useState } from "react";
+import { Key, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -36,7 +37,7 @@ import { DiffStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
-import renderMonitorFieldListItem from "./MonitorFieldListItem";
+import MonitorFieldListItem from "./MonitorFieldListItem";
 import {
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
@@ -72,6 +73,10 @@ const ActionCenterFields: NextPage = () => {
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [focusedFieldIndex, setFocusedFieldIndex] = useState<number | null>(
+    null,
+  );
+  const actionsButtonRef = useRef<HTMLButtonElement>(null);
   const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
     monitor_config_id: monitorId,
     size: pageSize,
@@ -157,6 +162,73 @@ const ActionCenterFields: NextPage = () => {
     dataCategory,
   ]);
 
+  // Reset focused index when filters change
+  useEffect(() => {
+    setFocusedFieldIndex(null);
+  }, [
+    pageIndex,
+    resourceStatus,
+    confidenceScore,
+    selectedNodeKeys,
+    search.searchQuery,
+    dataCategory,
+  ]);
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (focusedFieldIndex !== null) {
+      const element = document.getElementById(
+        `field-item-${focusedFieldIndex}`,
+      );
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }, [focusedFieldIndex]);
+
+  // Keyboard navigation: j = up, k = down
+  useHotkeys(
+    "j",
+    () => {
+      const totalItems = fieldsDataResponse?.items?.length || 0;
+      if (totalItems > 0) {
+        setFocusedFieldIndex((prev) =>
+          prev === null ? 0 : Math.max(prev - 1, 0),
+        );
+      }
+    },
+    [fieldsDataResponse?.items?.length],
+  );
+
+  useHotkeys(
+    "k",
+    () => {
+      const totalItems = fieldsDataResponse?.items?.length || 0;
+      if (totalItems > 0) {
+        setFocusedFieldIndex((prev) =>
+          prev === null ? 0 : Math.min(prev + 1, totalItems - 1),
+        );
+      }
+    },
+    [fieldsDataResponse?.items?.length],
+  );
+
+  // Keyboard action: escape = clear focus
+  useHotkeys("escape", () => {
+    setFocusedFieldIndex(null);
+  });
+
+  // Keyboard action: enter = open Actions dropdown
+  useHotkeys(
+    "enter",
+    () => {
+      if (focusedFieldIndex !== null && selectedFields.length > 0) {
+        actionsButtonRef.current?.focus();
+      }
+    },
+    [focusedFieldIndex, selectedFields.length],
+  );
+
   return (
     <FixedLayout
       title="Action center - Discovered assets by system"
@@ -225,6 +297,7 @@ const ActionCenterFields: NextPage = () => {
                   </Button>
                 </Dropdown>
                 <Dropdown
+                  trigger={["click"]}
                   menu={{
                     items: [
                       {
@@ -237,6 +310,7 @@ const ActionCenterFields: NextPage = () => {
                   disabled={selectedFields.length <= 0}
                 >
                   <Button
+                    ref={actionsButtonRef}
                     type="primary"
                     icon={<Icons.ChevronDown />}
                     iconPosition="end"
@@ -249,20 +323,24 @@ const ActionCenterFields: NextPage = () => {
             <List
               dataSource={fieldsDataResponse?.items}
               className="overflow-scroll"
-              renderItem={(props) =>
-                renderMonitorFieldListItem({
-                  ...props,
-                  selected: selectedFields.includes(props.urn),
-                  onSelect: (key, selected) =>
+              renderItem={(props, index) => (
+                <MonitorFieldListItem
+                  key={props.urn}
+                  {...props}
+                  selected={selectedFields.includes(props.urn)}
+                  focused={index === focusedFieldIndex}
+                  onSelect={(key, selected) =>
                     selected
                       ? setSelectedFields([...selectedFields, key])
                       : setSelectedFields(
                           selectedFields.filter((val) => val !== key),
-                        ),
-                  onSetDataCategories: handleSetDataCategories,
-                  onIgnore: handleIgnore,
-                })
-              }
+                        )
+                  }
+                  onSetDataCategories={handleSetDataCategories}
+                  onIgnore={handleIgnore}
+                  index={index}
+                />
+              )}
             />
             <Pagination
               {...paginationProps}

@@ -3,7 +3,6 @@ import {
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
-  AntListProps as ListProps,
   AntProgress as Progress,
   AntSelectProps as SelectProps,
   AntTag as Tag,
@@ -11,6 +10,7 @@ import {
   Icons,
   SparkleIcon,
 } from "fidesui";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
@@ -19,6 +19,7 @@ import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import ClassificationSelect from "./ClassificationSelect";
+import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
@@ -55,34 +56,29 @@ const tagRender: TagRender = (props) => {
   );
 };
 
-type ListRenderItem = ListProps<
-  Page_DatastoreStagedResourceAPIResponse_["items"][number]
->["renderItem"];
+type MonitorFieldListItemProps =
+  Page_DatastoreStagedResourceAPIResponse_["items"][number] & {
+    selected?: boolean;
+    focused?: boolean;
+    onSelect?: (key: string, selected?: boolean) => void;
+    onSetDataCategories: (dataCategories: string[], urn: string) => void;
+    onIgnore: (urn: string) => void;
+    index: number;
+  };
 
-type MonitorFieldListItemRenderParams = Parameters<
-  NonNullable<ListRenderItem>
->[0] & {
-  selected?: boolean;
-  onSelect?: (key: string, selected?: boolean) => void;
-  onSetDataCategories: (dataCategories: string[], urn: string) => void;
-  onIgnore: (urn: string) => void;
-};
-
-type RenderMonitorFieldListItem = (
-  props: MonitorFieldListItemRenderParams,
-) => ReturnType<NonNullable<ListRenderItem>>;
-
-const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
+const MonitorFieldListItem = ({
   urn,
   classifications,
   name,
   diff_status,
   selected,
+  focused,
   onSelect,
   onSetDataCategories,
   user_assigned_data_categories,
   onIgnore,
-}) => {
+  index,
+}: MonitorFieldListItemProps) => {
   const onChange: TaxonomySelectProps["onChange"] = (values: string[]) => {
     onSetDataCategories(
       values.flatMap((value) =>
@@ -96,9 +92,25 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     );
   };
 
+  // Handle space bar to toggle selection when focused
+  useHotkeys(
+    "space",
+    (e) => {
+      if (focused && onSelect) {
+        e.preventDefault(); // Prevent page scroll
+        onSelect(urn, !selected);
+      }
+    },
+    { enabled: focused },
+    [focused, selected, urn, onSelect],
+  );
+
   return (
     <List.Item
       key={urn}
+      tabIndex={-1}
+      id={`field-item-${index}`}
+      className={`${focused ? styles["list-item--focused"] : ""}`}
       actions={[
         classifications && classifications.length > 0 && (
           <Flex
@@ -228,4 +240,5 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     </List.Item>
   );
 };
-export default renderMonitorFieldListItem;
+
+export default MonitorFieldListItem;

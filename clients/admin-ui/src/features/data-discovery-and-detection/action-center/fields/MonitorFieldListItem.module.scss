@@ -1,0 +1,5 @@
+.list-item {
+  &--focused {
+    background-color: var(--ant-color-primary-bg);
+  }
+}
