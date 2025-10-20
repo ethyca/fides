@@ -372,7 +372,7 @@ const ActionCenterFields: NextPage = () => {
                   renderItem={(item) => (
                     <List.Item>
                       <List.Item.Meta
-                        avatar={<Avatar icon={<SparkleIcon color="#FAFAFA" />} />}
+                        avatar={<Avatar style={{backgroundColor: "#FAFAFA"}} icon={<SparkleIcon color="black" />} />}
                         title={
                           <Flex align="center" gap="small">
                             <div>{item.label}</div>
