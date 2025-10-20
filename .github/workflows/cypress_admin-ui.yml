@@ -145,27 +145,23 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - Check-Admin-UI-Changes
       - prepare-matrix
       - Admin-UI-Cypress
     steps:
       - name: Check job results
         run: |
-          echo "Check-Admin-UI-Changes: ${{ needs.Check-Admin-UI-Changes.result }}"
           echo "prepare-matrix: ${{ needs.prepare-matrix.result }}"
           echo "Admin-UI-Cypress: ${{ needs.Admin-UI-Cypress.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.Check-Admin-UI-Changes.result }}" == "failure" ] || \
-             [ "${{ needs.prepare-matrix.result }}" == "failure" ] || \
+          if [ "${{ needs.prepare-matrix.result }}" == "failure" ] || \
              [ "${{ needs.Admin-UI-Cypress.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Check-Admin-UI-Changes.result }}" == "cancelled" ] || \
-             [ "${{ needs.prepare-matrix.result }}" == "cancelled" ] || \
+          if [ "${{ needs.prepare-matrix.result }}" == "cancelled" ] || \
              [ "${{ needs.Admin-UI-Cypress.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1

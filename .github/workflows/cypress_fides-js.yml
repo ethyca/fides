@@ -84,24 +84,20 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - Check-FidesJS-Changes
       - Privacy-Center-Cypress
     steps:
       - name: Check job results
         run: |
-          echo "Check-FidesJS-Changes: ${{ needs.Check-FidesJS-Changes.result }}"
           echo "Privacy-Center-Cypress: ${{ needs.Privacy-Center-Cypress.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.Check-FidesJS-Changes.result }}" == "failure" ] || \
-             [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Check-FidesJS-Changes.result }}" == "cancelled" ] || \
-             [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1
           fi

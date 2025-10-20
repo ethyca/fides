@@ -83,24 +83,20 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - Check-Privacy-Center-Changes
       - Privacy-Center-Cypress
     steps:
       - name: Check job results
         run: |
-          echo "Check-Privacy-Center-Changes: ${{ needs.Check-Privacy-Center-Changes.result }}"
           echo "Privacy-Center-Cypress: ${{ needs.Privacy-Center-Cypress.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.Check-Privacy-Center-Changes.result }}" == "failure" ] || \
-             [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Check-Privacy-Center-Changes.result }}" == "cancelled" ] || \
-             [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1
           fi

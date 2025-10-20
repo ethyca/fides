@@ -71,24 +71,20 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - Check-CLI-Changes
       - Fides-Install
     steps:
       - name: Check job results
         run: |
-          echo "Check-CLI-Changes: ${{ needs.Check-CLI-Changes.result }}"
           echo "Fides-Install: ${{ needs.Fides-Install.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.Check-CLI-Changes.result }}" == "failure" ] || \
-             [ "${{ needs.Fides-Install.result }}" == "failure" ]; then
+          if [ "${{ needs.Fides-Install.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Check-CLI-Changes.result }}" == "cancelled" ] || \
-             [ "${{ needs.Fides-Install.result }}" == "cancelled" ]; then
+          if [ "${{ needs.Fides-Install.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1
           fi

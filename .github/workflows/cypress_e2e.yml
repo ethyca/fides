@@ -104,24 +104,20 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - Check-E2E-Changes
       - Cypress-E2E
     steps:
       - name: Check job results
         run: |
-          echo "Check-E2E-Changes: ${{ needs.Check-E2E-Changes.result }}"
           echo "Cypress-E2E: ${{ needs.Cypress-E2E.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.Check-E2E-Changes.result }}" == "failure" ] || \
-             [ "${{ needs.Cypress-E2E.result }}" == "failure" ]; then
+          if [ "${{ needs.Cypress-E2E.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Check-E2E-Changes.result }}" == "cancelled" ] || \
-             [ "${{ needs.Cypress-E2E.result }}" == "cancelled" ]; then
+          if [ "${{ needs.Cypress-E2E.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1
           fi

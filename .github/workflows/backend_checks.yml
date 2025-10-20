@@ -519,7 +519,6 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
-      - Check-Backend-Changes
       - Collect-Tests
       - Build
       - Performance-Checks
@@ -530,7 +529,6 @@ jobs:
     steps:
       - name: Check job results
         run: |
-          echo "Check-Backend-Changes: ${{ needs.Check-Backend-Changes.result }}"
           echo "Collect-Tests: ${{ needs.Collect-Tests.result }}"
           echo "Build: ${{ needs.Build.result }}"
           echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
@@ -539,8 +537,7 @@ jobs:
           echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.Check-Backend-Changes.result }}" == "failure" ] || \
-             [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
+          if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Build.result }}" == "failure" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
@@ -550,8 +547,7 @@ jobs:
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Check-Backend-Changes.result }}" == "cancelled" ] || \
-             [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
+          if [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
              [ "${{ needs.Build.result }}" == "cancelled" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
