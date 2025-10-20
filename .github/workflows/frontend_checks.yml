@@ -2,14 +2,8 @@ name: Frontend Code Checks
 
 on:
   pull_request:
-    paths:
-      - "clients/**"
-      - ".github/workflows/frontend_checks.yml"
   merge_group:
     types: [checks_requested]
-    paths:
-      - "clients/**"
-      - ".github/workflows/frontend_checks.yml"
   push:
     branches:
       - "main"
@@ -19,7 +13,26 @@ env:
   CI: true
 
 jobs:
+  Check-Frontend-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_frontend_changes: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for frontend file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'clients/**'
+              - '.github/workflows/frontend_checks.yml'
+
   Clients-Unit:
+    needs: Check-Frontend-Changes
+    if: needs.Check-Frontend-Changes.outputs.has_frontend_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -73,3 +86,38 @@ jobs:
       - name: Unit test (${{ matrix.clients }})
         working-directory: clients/${{ matrix.clients }}
         run: npm run test:ci
+
+  ####################
+  ## Summary Status ##
+  ####################
+  # This job is the one that should be marked as required in branch protection
+  # It will pass if all required jobs pass or are skipped
+  Frontend-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Check-Frontend-Changes
+      - Clients-Unit
+    steps:
+      - name: Check job results
+        run: |
+          echo "Check-Frontend-Changes: ${{ needs.Check-Frontend-Changes.result }}"
+          echo "Clients-Unit: ${{ needs.Clients-Unit.result }}"
+
+          # Check if any required job failed
+          # Possible values: success, failure, cancelled, skipped
+          # We only fail if a job actually failed (not if it was skipped)
+          if [ "${{ needs.Check-Frontend-Changes.result }}" == "failure" ] || \
+             [ "${{ needs.Clients-Unit.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Check-Frontend-Changes.result }}" == "cancelled" ] || \
+             [ "${{ needs.Clients-Unit.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required frontend checks passed or were skipped"

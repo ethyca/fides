@@ -2,14 +2,6 @@ name: Backend Code Checks
 
 on:
   pull_request:
-    # This only ignores paths if there are _no_ commits on the branch that touch other files
-    paths-ignore:
-      - "**.md"
-      - "clients/**"
-      - ".vscode/**"
-      - ".cursor/**"
-      - ".github/workflows/frontend_checks.yml"
-      - ".github/workflows/cypress_*.yml"
   merge_group:
     types: [checks_requested]
   push:
@@ -30,7 +22,34 @@ jobs:
   ###############
   ## Prechecks ##
   ###############
+  Check-Backend-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_backend_changes: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for backend file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - '**/*.py'
+              - '**/*.pxl'
+              - '**/*requirements.txt'
+              - 'Dockerfile'
+              - 'Makefile'
+              - 'pyproject.toml'
+              - 'setup.cfg'
+              - 'noxfile.py'
+              - 'data/**'
+              - '.github/workflows/backend_checks.yml'
+
   Collect-Tests:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,7 +68,8 @@ jobs:
         run: nox -s collect_tests
 
   Build:
-    needs: Collect-Tests
+    needs: [Check-Backend-Changes, Collect-Tests]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
@@ -85,7 +105,8 @@ jobs:
   ## Performance ##
   ##################
   Performance-Checks:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -129,7 +150,8 @@ jobs:
   ## Misc Checks ##
   #################
   Check-Container-Startup:
-    needs: Build
+    needs: [Check-Backend-Changes, Build]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -167,7 +189,8 @@ jobs:
         run: nox -s check_worker_startup
 
   Misc-Tests:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         test_selection:
@@ -215,7 +238,8 @@ jobs:
   ## Safe Tests ##
   ################
   Safe-Tests:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -275,8 +299,8 @@ jobs:
   # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
-    needs: Check-Container-Startup
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
@@ -336,8 +360,8 @@ jobs:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
   External-Datastores:
-    needs: Check-Container-Startup
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
@@ -440,8 +464,8 @@ jobs:
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
-    needs: Check-Container-Startup
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -494,6 +518,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
+      - Check-Backend-Changes
       - Collect-Tests
       - Build
       - Performance-Checks
@@ -504,6 +529,7 @@ jobs:
     steps:
       - name: Check job results
         run: |
+          echo "Check-Backend-Changes: ${{ needs.Check-Backend-Changes.result }}"
           echo "Collect-Tests: ${{ needs.Collect-Tests.result }}"
           echo "Build: ${{ needs.Build.result }}"
           echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
@@ -514,7 +540,8 @@ jobs:
           # Check if any required job failed (not skipped, not success)
           # Possible values: success, failure, cancelled, skipped
           # We only fail if a job actually failed (not if it was skipped)
-          if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
+          if [ "${{ needs.Check-Backend-Changes.result }}" == "failure" ] || \
+             [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Build.result }}" == "failure" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
@@ -524,7 +551,8 @@ jobs:
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
+          if [ "${{ needs.Check-Backend-Changes.result }}" == "cancelled" ] || \
+             [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
              [ "${{ needs.Build.result }}" == "cancelled" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \

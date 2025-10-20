@@ -6,12 +6,8 @@ on:
       - "main"
       - "release-**"
   pull_request:
-    paths:
-      - "clients/cypress-e2e/**"
   merge_group:
     types: [checks_requested]
-    paths:
-      - "clients/cypress-e2e/**"
 
 env:
   CI: true
@@ -21,7 +17,26 @@ env:
   DEFAULT_PYTHON_VERSION: "3.10.16"
 
 jobs:
+  Check-E2E-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_e2e_changes: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for E2E file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            e2e:
+              - 'clients/cypress-e2e/**'
+              - '.github/workflows/cypress_e2e.yml'
+
   Cypress-E2E:
+    needs: Check-E2E-Changes
+    if: needs.Check-E2E-Changes.outputs.has_e2e_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -79,3 +94,38 @@ jobs:
         with:
           name: cypress-videos-cypress-e2e
           path: /home/runner/work/fides/fides/clients/cypress-e2e/cypress/videos/*.mp4
+
+  ####################
+  ## Summary Status ##
+  ####################
+  # This job is the one that should be marked as required in branch protection
+  # It will pass if all required jobs pass or are skipped
+  Cypress-E2E-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Check-E2E-Changes
+      - Cypress-E2E
+    steps:
+      - name: Check job results
+        run: |
+          echo "Check-E2E-Changes: ${{ needs.Check-E2E-Changes.result }}"
+          echo "Cypress-E2E: ${{ needs.Cypress-E2E.result }}"
+
+          # Check if any required job failed
+          # Possible values: success, failure, cancelled, skipped
+          # We only fail if a job actually failed (not if it was skipped)
+          if [ "${{ needs.Check-E2E-Changes.result }}" == "failure" ] || \
+             [ "${{ needs.Cypress-E2E.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Check-E2E-Changes.result }}" == "cancelled" ] || \
+             [ "${{ needs.Cypress-E2E.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required Cypress E2E checks passed or were skipped"
