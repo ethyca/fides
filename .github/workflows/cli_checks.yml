@@ -6,18 +6,8 @@ name: CLI Command Checks
 
 on:
   pull_request:
-    paths-ignore:
-      - "**.md"
-      - "clients/**"
-      - ".vscode/**"
-      - ".github/workflows/frontend_checks.yml"
   merge_group:
     types: [checks_requested]
-    paths-ignore:
-      - "**.md"
-      - "clients/**"
-      - ".vscode/**"
-      - ".github/workflows/frontend_checks.yml"
   push:
     branches:
       - "main"
@@ -27,8 +17,31 @@ env:
   DEFAULT_PYTHON_VERSION: "3.10.16"
 
 jobs:
+  Check-CLI-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_cli_changes: ${{ steps.filter.outputs.cli }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for CLI-related file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cli:
+              - '**/*.py'
+              - '**/*requirements.txt'
+              - 'pyproject.toml'
+              - 'setup.cfg'
+              - 'setup.py'
+              - '.github/workflows/cli_checks.yml'
+
   # Basic smoke test of a local install of the fides Python CLI
   Fides-Install:
+    needs: Check-CLI-Changes
+    if: needs.Check-CLI-Changes.outputs.has_cli_changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -48,3 +61,37 @@ jobs:
 
       - name: Run `fides --version`
         run: fides --version
+
+  ####################
+  ## Summary Status ##
+  ####################
+  # This summary rolls up to Backend-Checks-Summary as the top-level required check
+  CLI-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Check-CLI-Changes
+      - Fides-Install
+    steps:
+      - name: Check job results
+        run: |
+          echo "Check-CLI-Changes: ${{ needs.Check-CLI-Changes.result }}"
+          echo "Fides-Install: ${{ needs.Fides-Install.result }}"
+
+          # Check if any required job failed
+          # Possible values: success, failure, cancelled, skipped
+          # We only fail if a job actually failed (not if it was skipped)
+          if [ "${{ needs.Check-CLI-Changes.result }}" == "failure" ] || \
+             [ "${{ needs.Fides-Install.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Check-CLI-Changes.result }}" == "cancelled" ] || \
+             [ "${{ needs.Fides-Install.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required CLI checks passed or were skipped"

@@ -2,10 +2,8 @@ name: FidesJS Banner/Modal Cypress Tests
 
 on:
   pull_request:
-    paths:
-      - "clients/privacy-center/pages/api/fides-js.ts"
-      - "clients/fides-js/**"
-      - ".github/workflows/cypress_fides-js.yml"
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -15,7 +13,27 @@ env:
   CI: true
 
 jobs:
+  Check-FidesJS-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_fidesjs_changes: ${{ steps.filter.outputs.fidesjs }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for FidesJS file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            fidesjs:
+              - 'clients/privacy-center/pages/api/fides-js.ts'
+              - 'clients/fides-js/**'
+              - '.github/workflows/cypress_fides-js.yml'
+
   Privacy-Center-Cypress:
+    needs: Check-FidesJS-Changes
+    if: needs.Check-FidesJS-Changes.outputs.has_fidesjs_changes == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,3 +74,37 @@ jobs:
         with:
           name: cypress-videos-fides-js
           path: /home/runner/work/fides/fides/clients/fides-js/cypress/videos/*.mp4
+
+  ####################
+  ## Summary Status ##
+  ####################
+  # This summary rolls up to Frontend-Checks-Summary as the top-level required check
+  FidesJS-Cypress-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Check-FidesJS-Changes
+      - Privacy-Center-Cypress
+    steps:
+      - name: Check job results
+        run: |
+          echo "Check-FidesJS-Changes: ${{ needs.Check-FidesJS-Changes.result }}"
+          echo "Privacy-Center-Cypress: ${{ needs.Privacy-Center-Cypress.result }}"
+
+          # Check if any required job failed
+          # Possible values: success, failure, cancelled, skipped
+          # We only fail if a job actually failed (not if it was skipped)
+          if [ "${{ needs.Check-FidesJS-Changes.result }}" == "failure" ] || \
+             [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Check-FidesJS-Changes.result }}" == "cancelled" ] || \
+             [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required FidesJS Cypress checks passed or were skipped"

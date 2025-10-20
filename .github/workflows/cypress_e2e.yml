@@ -98,8 +98,7 @@ jobs:
   ####################
   ## Summary Status ##
   ####################
-  # This job is the one that should be marked as required in branch protection
-  # It will pass if all required jobs pass or are skipped
+  # This summary rolls up to Frontend-Checks-Summary as the top-level required check
   Cypress-E2E-Summary:
     runs-on: ubuntu-latest
     if: always()

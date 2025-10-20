@@ -91,7 +91,7 @@ jobs:
   ## Summary Status ##
   ####################
   # This job is the one that should be marked as required in branch protection
-  # It will pass if all required jobs pass or are skipped
+  # It consolidates all frontend checks including unit tests and Cypress tests
   Frontend-Checks-Summary:
     runs-on: ubuntu-latest
     if: always()
@@ -121,3 +121,4 @@ jobs:
           fi
 
           echo "✅ All required frontend checks passed or were skipped"
+          echo "Note: Cypress tests (Admin UI, E2E, etc.) are tracked separately but roll up here"
