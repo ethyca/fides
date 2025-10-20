@@ -365,23 +365,26 @@ const ActionCenterFields: NextPage = () => {
                 />
               </Form.Item>
             </Form>
-            <List
-              dataSource={resource.classifications}
-              renderItem={(item) => (
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={<Avatar icon={<SparkleIcon color="black" />} />}
-                    title={
-                      <Flex align="center" gap="small">
-                        <div>{item.label}</div>
-                        <ClassifierProgress percent={item.score} />
-                      </Flex>
-                    }
-                    description={item.rationale}
-                  />
-                </List.Item>
+            {resource.classifications &&
+              resource.classifications.length > 0 && (
+                <List
+                  dataSource={resource.classifications}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={<Avatar icon={<SparkleIcon color="#FAFAFA" />} />}
+                        title={
+                          <Flex align="center" gap="small">
+                            <div>{item.label}</div>
+                            <ClassifierProgress percent={item.score} />
+                          </Flex>
+                        }
+                        description={item.rationale}
+                      />
+                    </List.Item>
+                  )}
+                />
               )}
-            />
           </>
         ) : null}
       </Drawer>
