@@ -22,7 +22,7 @@ def upgrade():
         "consent_documents",
         sa.Column("search_data", postgresql.json.JSONB),
         sa.Column("record_data", postgresql.TEXT),
-        sa.Column("is_latest", postgresql.BOOLEAN),
+        sa.Column("is_latest", postgresql.BOOLEAN, nullable=False, server_default="f"),
         sa.Column(
             "created_at",
             postgresql.TIMESTAMP(timezone=True),
