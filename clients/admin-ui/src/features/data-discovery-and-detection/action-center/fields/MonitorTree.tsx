@@ -161,23 +161,30 @@ const MonitorTree = ({
       const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
       requestSequenceRef.current[nodeKey] = currentSequence;
 
-      // First, trigger the fast query without descendant details
-      const { data: fastData } = await trigger({
+      // Trigger both queries simultaneously
+      const fastQuery = trigger({
         ...queryParams,
         include_descendant_details: false,
       });
-
-      // Only update if this is still the latest request for this node
-      if (fastData && requestSequenceRef.current[nodeKey] === currentSequence) {
-        updateFn(fastData);
-        onFastDataLoaded?.(queryParams.page ?? 1);
-      }
-
-      // Immediately trigger the detailed query in the background
-      trigger({
+      const detailedQuery = trigger({
         ...queryParams,
         include_descendant_details: true,
-      }).then(({ data: detailedData }) => {
+      });
+
+      // Handle fast query result as soon as it arrives
+      fastQuery.then(({ data: fastData }) => {
+        // Only update if this is still the latest request for this node
+        if (
+          fastData &&
+          requestSequenceRef.current[nodeKey] === currentSequence
+        ) {
+          updateFn(fastData);
+          onFastDataLoaded?.(queryParams.page ?? 1);
+        }
+      });
+
+      // Handle detailed query result when it arrives
+      detailedQuery.then(({ data: detailedData }) => {
         // Only update if this is still the latest request for this node
         if (
           detailedData &&
