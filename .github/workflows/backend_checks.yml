@@ -281,8 +281,8 @@ jobs:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
+    # In PRs run with the "unsafe" label, or run on a "push" event to main, or run on merge_group events
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -343,8 +343,8 @@ jobs:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
+    # In PRs run with the "unsafe" label, or run on a "push" event to main, or run on merge_group events
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -444,8 +444,8 @@ jobs:
     needs: Check-Container-Startup
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
+    # In PRs run with the "unsafe" label, or run on a "push" event to main, or run on merge_group events
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group'
     permissions:
       contents: read
       id-token: write
