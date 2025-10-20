@@ -39,11 +39,8 @@ jobs:
               - 'setup.py'
               - '.github/workflows/cli_checks.yml'
 
-      - name: Log matching files
-        if: steps.filter.outputs.cli == 'true'
-        run: |
-          echo "CLI tests will run due to changes in these files:"
-          echo "${{ steps.filter.outputs.cli_files }}"
+      - if: steps.filter.outputs.cli == 'true'
+        run: echo "CLI tests triggered by:"; echo "${{ steps.filter.outputs.cli_files }}"
 
   # Basic smoke test of a local install of the fides Python CLI
   Fides-Install:
@@ -69,10 +66,6 @@ jobs:
       - name: Run `fides --version`
         run: fides --version
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This summary rolls up to Backend-Checks-Summary as the top-level required check
   CLI-Checks-Summary:
     runs-on: ubuntu-latest
     if: always()

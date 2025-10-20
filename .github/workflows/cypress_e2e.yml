@@ -35,11 +35,8 @@ jobs:
               - 'clients/cypress-e2e/**'
               - '.github/workflows/cypress_e2e.yml'
 
-      - name: Log matching files
-        if: steps.filter.outputs.e2e == 'true'
-        run: |
-          echo "E2E Cypress tests will run due to changes in these files:"
-          echo "${{ steps.filter.outputs.e2e_files }}"
+      - if: steps.filter.outputs.e2e == 'true'
+        run: echo "E2E tests triggered by:"; echo "${{ steps.filter.outputs.e2e_files }}"
 
   Cypress-E2E:
     needs: Check-E2E-Changes
@@ -102,10 +99,6 @@ jobs:
           name: cypress-videos-cypress-e2e
           path: /home/runner/work/fides/fides/clients/cypress-e2e/cypress/videos/*.mp4
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This summary rolls up to Frontend-Checks-Summary as the top-level required check
   Cypress-E2E-Summary:
     runs-on: ubuntu-latest
     if: always()

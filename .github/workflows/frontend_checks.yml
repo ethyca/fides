@@ -31,11 +31,8 @@ jobs:
               - 'clients/**'
               - '.github/workflows/frontend_checks.yml'
 
-      - name: Log matching files
-        if: steps.filter.outputs.frontend == 'true'
-        run: |
-          echo "Frontend tests will run due to changes in these files:"
-          echo "${{ steps.filter.outputs.frontend_files }}"
+      - if: steps.filter.outputs.frontend == 'true'
+        run: echo "Frontend tests triggered by:"; echo "${{ steps.filter.outputs.frontend_files }}"
 
   Clients-Unit:
     needs: Check-Frontend-Changes
@@ -94,11 +91,7 @@ jobs:
         working-directory: clients/${{ matrix.clients }}
         run: npm run test:ci
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This job is the one that should be marked as required in branch protection
-  # It consolidates all frontend checks including unit tests and Cypress tests
+  # Summary job for branch protection - consolidates all frontend checks
   Frontend-Checks-Summary:
     runs-on: ubuntu-latest
     if: always()

@@ -31,11 +31,8 @@ jobs:
               - 'clients/admin-ui/**'
               - '.github/workflows/cypress_admin-ui.yml'
 
-      - name: Log matching files
-        if: steps.filter.outputs.admin_ui == 'true'
-        run: |
-          echo "Admin UI Cypress tests will run due to changes in these files:"
-          echo "${{ steps.filter.outputs.admin_ui_files }}"
+      - if: steps.filter.outputs.admin_ui == 'true'
+        run: echo "Admin UI tests triggered by:"; echo "${{ steps.filter.outputs.admin_ui_files }}"
 
   prepare-matrix:
     needs: Check-Admin-UI-Changes
@@ -143,10 +140,6 @@ jobs:
           name: cypress-videos-admin-ui-${{ strategy.job-index }}
           path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This summary rolls up to Frontend-Checks-Summary as the top-level required check
   Admin-UI-Cypress-Summary:
     runs-on: ubuntu-latest
     if: always()

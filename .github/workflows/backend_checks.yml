@@ -48,11 +48,8 @@ jobs:
               - 'data/**'
               - '.github/workflows/backend_checks.yml'
 
-      - name: Log matching files
-        if: steps.filter.outputs.backend == 'true'
-        run: |
-          echo "Backend tests will run due to changes in these files:"
-          echo "${{ steps.filter.outputs.backend_files }}"
+      - if: steps.filter.outputs.backend == 'true'
+        run: echo "Backend tests triggered by:"; echo "${{ steps.filter.outputs.backend_files }}"
 
   Collect-Tests:
     needs: Check-Backend-Changes
@@ -516,11 +513,7 @@ jobs:
           SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
         run: nox -s "pytest(ops-saas)"
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This job is the one that should be marked as required in branch protection
-  # It will pass if all required jobs pass or are skipped
+  # Summary job for branch protection - passes if all jobs pass or are skipped
   Backend-Checks-Summary:
     runs-on: ubuntu-latest
     if: always()

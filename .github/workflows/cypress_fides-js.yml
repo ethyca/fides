@@ -32,11 +32,8 @@ jobs:
               - 'clients/fides-js/**'
               - '.github/workflows/cypress_fides-js.yml'
 
-      - name: Log matching files
-        if: steps.filter.outputs.fidesjs == 'true'
-        run: |
-          echo "FidesJS Cypress tests will run due to changes in these files:"
-          echo "${{ steps.filter.outputs.fidesjs_files }}"
+      - if: steps.filter.outputs.fidesjs == 'true'
+        run: echo "FidesJS tests triggered by:"; echo "${{ steps.filter.outputs.fidesjs_files }}"
 
   Privacy-Center-Cypress:
     needs: Check-FidesJS-Changes
@@ -82,10 +79,6 @@ jobs:
           name: cypress-videos-fides-js
           path: /home/runner/work/fides/fides/clients/fides-js/cypress/videos/*.mp4
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This summary rolls up to Frontend-Checks-Summary as the top-level required check
   FidesJS-Cypress-Summary:
     runs-on: ubuntu-latest
     if: always()

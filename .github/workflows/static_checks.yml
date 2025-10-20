@@ -54,11 +54,7 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
-  ####################
-  ## Summary Status ##
-  ####################
-  # This job is the one that should be marked as required in branch protection
-  # It will pass if all required jobs pass or are skipped
+  # Summary job for branch protection
   Static-Checks-Summary:
     runs-on: ubuntu-latest
     if: always()
