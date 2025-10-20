@@ -3,17 +3,16 @@ import {
   AntFlex as Flex,
   AntTitle as Title,
   AntTree as Tree,
-  AntTreeDataNode as TreeDataNode,
   AntTreeProps as TreeProps,
   Icons,
   SparkleIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { Key, useEffect, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
+import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -22,18 +21,21 @@ import {
   TREE_PAGE_SIZE,
 } from "./MonitorFields.const";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
+import { CustomTreeDataNode } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
-): TreeDataNode[] => {
-  const dataItems = data.items.map((treeNode) => ({
+): CustomTreeDataNode[] => {
+  const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => ({
     title: treeNode.name,
     key: treeNode.urn,
-    selectable: treeNode.has_children,
+    selectable: true, // all nodes are selectable since we ignore lowest level descendants in the data
     icon: () => {
       switch (treeNode.resource_type) {
         case "Database":
+          return <Icons.Layers className="h-full" />;
+        case "Schema":
           return <Icons.Db2Database className="h-full" />;
         case "Table":
           return <Icons.Table className="h-full" />;
@@ -43,7 +45,8 @@ const mapResponseToTreeData = (
           return null;
       }
     },
-    isLeaf: !treeNode.has_children,
+    status: treeNode.update_status,
+    isLeaf: !treeNode.has_grandchildren,
   }));
 
   return (dataItems?.length ?? 0) < TREE_PAGE_SIZE
@@ -60,10 +63,10 @@ const mapResponseToTreeData = (
 };
 
 const appendTreeNodeData = (
-  list: TreeDataNode[],
+  list: CustomTreeDataNode[],
   key: React.Key,
-  children: TreeDataNode[],
-): TreeDataNode[] =>
+  children: CustomTreeDataNode[],
+): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
@@ -93,10 +96,10 @@ const appendTreeNodeData = (
   });
 
 const updateTreeData = (
-  list: TreeDataNode[],
+  list: CustomTreeDataNode[],
   key: React.Key,
-  children: TreeDataNode[],
-): TreeDataNode[] =>
+  children: CustomTreeDataNode[],
+): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
@@ -129,7 +132,70 @@ const MonitorTree = ({
   const [nodePagination, setNodePaginationState] = useState<
     Record<string, PaginationState>
   >({});
-  const [treeData, setTreeData] = useState<TreeDataNode[]>([]);
+  const [treeData, setTreeData] = useState<CustomTreeDataNode[]>([]);
+  // Track request sequences to prevent race conditions
+  const requestSequenceRef = useRef<Record<string, number>>({});
+
+  /**
+   * Fetches tree data with the double-query pattern (fast then detailed)
+   * Handles race conditions by tracking request sequences per node
+   */
+  const fetchTreeDataWithDetails = useCallback(
+    async ({
+      nodeKey,
+      queryParams,
+      updateFn,
+      onFastDataLoaded,
+    }: {
+      nodeKey: string;
+      queryParams: {
+        monitor_config_id: string;
+        staged_resource_urn?: string;
+        size: number;
+        page?: number;
+      };
+      updateFn: (data: Page_DatastoreStagedResourceTreeAPIResponse_) => void;
+      onFastDataLoaded?: (pageIndex: number) => void;
+    }) => {
+      // Increment sequence for this node to track this request
+      const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
+      requestSequenceRef.current[nodeKey] = currentSequence;
+
+      // Trigger both queries simultaneously
+      const fastQuery = trigger({
+        ...queryParams,
+        include_descendant_details: false,
+      });
+      const detailedQuery = trigger({
+        ...queryParams,
+        include_descendant_details: true,
+      });
+
+      // Handle fast query result as soon as it arrives
+      fastQuery.then(({ data: fastData }) => {
+        // Only update if this is still the latest request for this node
+        if (
+          fastData &&
+          requestSequenceRef.current[nodeKey] === currentSequence
+        ) {
+          updateFn(fastData);
+          onFastDataLoaded?.(queryParams.page ?? 1);
+        }
+      });
+
+      // Handle detailed query result when it arrives
+      detailedQuery.then(({ data: detailedData }) => {
+        // Only update if this is still the latest request for this node
+        if (
+          detailedData &&
+          requestSequenceRef.current[nodeKey] === currentSequence
+        ) {
+          updateFn(detailedData);
+        }
+      });
+    },
+    [trigger],
+  );
 
   const onLoadData: TreeProps["loadData"] = ({ children, key }) => {
     return new Promise<void>((resolve) => {
@@ -139,24 +205,25 @@ const MonitorTree = ({
         return;
       }
 
-      trigger({
-        monitor_config_id: monitorId,
-        staged_resource_urn: key.toString(),
-        size: TREE_PAGE_SIZE,
-      }).then(({ data }) => {
-        if (data) {
+      const nodeKey = key.toString();
+      fetchTreeDataWithDetails({
+        nodeKey,
+        queryParams: {
+          monitor_config_id: monitorId,
+          staged_resource_urn: nodeKey,
+          size: TREE_PAGE_SIZE,
+        },
+        updateFn: (data) => {
           setTreeData((origin) =>
-            updateTreeData(
-              origin,
-              key,
-              mapResponseToTreeData(data, key.toString()),
-            ),
+            updateTreeData(origin, key, mapResponseToTreeData(data, nodeKey)),
           );
+        },
+        onFastDataLoaded: () => {
           setNodePaginationState({
             ...nodePagination,
-            [key.toString()]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
+            [nodeKey]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
           });
-        }
+        },
       });
 
       resolve();
@@ -168,6 +235,8 @@ const MonitorTree = ({
 
     if (currentNodePagination) {
       const newPage = currentNodePagination.pageIndex + 1;
+
+      // Show skeleton loaders while loading
       setTreeData((origin) => {
         return appendTreeNodeData(
           origin,
@@ -180,40 +249,50 @@ const MonitorTree = ({
         );
       });
 
-      trigger({
-        monitor_config_id: monitorId,
-        staged_resource_urn: key,
-        size: TREE_PAGE_SIZE,
-        page: newPage,
-      }).then(({ data }) => {
-        if (data) {
+      fetchTreeDataWithDetails({
+        nodeKey: key,
+        queryParams: {
+          monitor_config_id: monitorId,
+          staged_resource_urn: key,
+          size: TREE_PAGE_SIZE,
+          page: newPage,
+        },
+        updateFn: (data) => {
           setTreeData((origin) =>
             appendTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
           );
+        },
+        onFastDataLoaded: (pageIndex) => {
           setNodePaginationState({
             ...nodePagination,
-            [key]: { pageSize: TREE_PAGE_SIZE, pageIndex: newPage },
+            [key]: { pageSize: TREE_PAGE_SIZE, pageIndex },
           });
-        }
+        },
       });
     }
   };
 
   useEffect(() => {
     const getInitTreeData = async () => {
-      const { data } = await trigger({
-        monitor_config_id: monitorId,
-        size: TREE_PAGE_SIZE,
-      });
-
-      if (data && treeData.length <= 0) {
-        setTreeData(mapResponseToTreeData(data));
+      // Only load if tree is empty
+      if (treeData.length > 0) {
+        return;
       }
+
+      fetchTreeDataWithDetails({
+        nodeKey: "root",
+        queryParams: {
+          monitor_config_id: monitorId,
+          size: TREE_PAGE_SIZE,
+        },
+        updateFn: (data) => {
+          setTreeData(mapResponseToTreeData(data));
+        },
+      });
     };
 
     getInitTreeData();
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [setTreeData]);
+  }, [fetchTreeDataWithDetails, monitorId, setTreeData, treeData.length]);
 
   return (
     <Flex gap="middle" vertical className="h-full">
@@ -244,7 +323,7 @@ const MonitorTree = ({
         <Flex justify="space-between" align="center">
           <span>{selectedNodeKeys.length} selected</span>
           <Button
-            aria-label="Classify Selected Nodes"
+            aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
             icon={<SparkleIcon />}
             size="small"
             onClick={onClickClassifyButton}
