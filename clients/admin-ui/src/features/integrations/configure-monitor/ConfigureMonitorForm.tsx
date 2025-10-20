@@ -12,7 +12,6 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import { PROMPT_TEMPLATE_OPTIONS } from "~/features/integrations/configure-monitor/Constants";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
   ClassifyLlmPromptTemplateOptions,
@@ -22,6 +21,8 @@ import {
   MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
+
+import { PROMPT_TEMPLATE_OPTIONS } from "./constants";
 
 interface MonitorConfigFormValues {
   name: string;
