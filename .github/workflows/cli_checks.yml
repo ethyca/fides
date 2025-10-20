@@ -29,6 +29,7 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             cli:
               - '**/*.py'
@@ -37,6 +38,12 @@ jobs:
               - 'setup.cfg'
               - 'setup.py'
               - '.github/workflows/cli_checks.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.cli == 'true'
+        run: |
+          echo "CLI tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.cli_files }}"
 
   # Basic smoke test of a local install of the fides Python CLI
   Fides-Install:

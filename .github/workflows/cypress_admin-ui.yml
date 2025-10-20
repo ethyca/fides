@@ -25,10 +25,17 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             admin_ui:
               - 'clients/admin-ui/**'
               - '.github/workflows/cypress_admin-ui.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.admin_ui == 'true'
+        run: |
+          echo "Admin UI Cypress tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.admin_ui_files }}"
 
   prepare-matrix:
     needs: Check-Admin-UI-Changes

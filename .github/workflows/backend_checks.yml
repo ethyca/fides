@@ -34,6 +34,7 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             backend:
               - '**/*.py'
@@ -46,6 +47,12 @@ jobs:
               - 'noxfile.py'
               - 'data/**'
               - '.github/workflows/backend_checks.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.backend == 'true'
+        run: |
+          echo "Backend tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.backend_files }}"
 
   Collect-Tests:
     needs: Check-Backend-Changes

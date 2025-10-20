@@ -25,11 +25,17 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             privacy_center:
               - 'clients/privacy-center/**'
-              - '!clients/privacy-center/pages/api/fides-js.ts'
               - '.github/workflows/cypress_privacy-center.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.privacy_center == 'true'
+        run: |
+          echo "Privacy Center tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.privacy_center_files }}"
 
   Privacy-Center-Cypress:
     needs: Check-Privacy-Center-Changes

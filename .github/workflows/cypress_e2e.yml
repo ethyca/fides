@@ -29,10 +29,17 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             e2e:
               - 'clients/cypress-e2e/**'
               - '.github/workflows/cypress_e2e.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.e2e == 'true'
+        run: |
+          echo "E2E Cypress tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.e2e_files }}"
 
   Cypress-E2E:
     needs: Check-E2E-Changes

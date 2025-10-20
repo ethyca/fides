@@ -25,11 +25,18 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             fidesjs:
               - 'clients/privacy-center/pages/api/fides-js.ts'
               - 'clients/fides-js/**'
               - '.github/workflows/cypress_fides-js.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.fidesjs == 'true'
+        run: |
+          echo "FidesJS Cypress tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.fidesjs_files }}"
 
   Privacy-Center-Cypress:
     needs: Check-FidesJS-Changes

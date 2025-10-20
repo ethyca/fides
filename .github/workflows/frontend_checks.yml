@@ -25,10 +25,17 @@ jobs:
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          list-files: shell
           filters: |
             frontend:
               - 'clients/**'
               - '.github/workflows/frontend_checks.yml'
+
+      - name: Log matching files
+        if: steps.filter.outputs.frontend == 'true'
+        run: |
+          echo "Frontend tests will run due to changes in these files:"
+          echo "${{ steps.filter.outputs.frontend_files }}"
 
   Clients-Unit:
     needs: Check-Frontend-Changes
