@@ -12,6 +12,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import { PROMPT_TEMPLATE_OPTIONS } from "~/features/integrations/configure-monitor/Constants";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
   ClassifyLlmPromptTemplateOptions,
@@ -30,7 +31,45 @@ interface MonitorConfigFormValues {
   use_llm_classifier: boolean;
   model_override?: string;
   prompt_template?: ClassifyLlmPromptTemplateOptions;
+  content_classification_enabled?: boolean;
 }
+
+const DEFAULT_CLASSIFIER_PARAMS = {
+  num_samples: 25,
+  num_threads: 1,
+};
+
+const getClassifyParams = (
+  isEditing: boolean,
+  monitor: MonitorConfig | undefined,
+  values: MonitorConfigFormValues,
+) => {
+  const baseParams = isEditing
+    ? {
+        ...monitor?.classify_params,
+      }
+    : DEFAULT_CLASSIFIER_PARAMS;
+
+  if (values.use_llm_classifier) {
+    return {
+      ...baseParams,
+      context_classifier: "llm",
+      ...(values.model_override && { model_override: values.model_override }),
+      ...(values.prompt_template && {
+        prompt_template: values.prompt_template,
+      }),
+      content_classification_enabled: false, // for now, content classification is always disabled for LLM classification
+    };
+  }
+
+  return {
+    ...baseParams,
+    context_classifier: undefined,
+    model_override: undefined,
+    prompt_template: undefined,
+    content_classification_enabled: undefined,
+  };
+};
 
 const ConfigureMonitorForm = ({
   monitor,
@@ -78,30 +117,7 @@ const ConfigureMonitorForm = ({
             execution_start_date: undefined,
           };
 
-    const classifyParams = isEditing
-      ? {
-          ...monitor?.classify_params,
-        }
-      : {
-          num_samples: 25,
-          num_threads: 1,
-        };
-
-    // Update classify_params based on LLM classifier settings
-    if (values.use_llm_classifier) {
-      classifyParams.context_classifier = "llm";
-      if (values.model_override) {
-        classifyParams.model_override = values.model_override;
-      }
-      if (values.prompt_template) {
-        classifyParams.prompt_template = values.prompt_template;
-      }
-    } else {
-      // Remove LLM-specific fields if classifier is not enabled
-      classifyParams.context_classifier = undefined;
-      classifyParams.model_override = undefined;
-      classifyParams.prompt_template = undefined;
-    }
+    const classifyParams = getClassifyParams(isEditing, monitor, values);
 
     const payload: EditableMonitorConfig = isEditing
       ? {
@@ -151,19 +167,12 @@ const ConfigureMonitorForm = ({
     prompt_template: isLlmClassifierEnabled
       ? (monitor?.classify_params?.prompt_template ?? undefined)
       : undefined,
+    content_classification_enabled: !isLlmClassifierEnabled
+      ? (monitor?.classify_params?.content_classification_enabled ?? undefined)
+      : undefined, // for now, content classification is always disabled for LLM classification
   };
 
   const frequencyOptions = enumToOptions(MonitorFrequency);
-  const promptTemplateOptions = [
-    {
-      value: ClassifyLlmPromptTemplateOptions.BASE,
-      label: "Base",
-    },
-    {
-      value: ClassifyLlmPromptTemplateOptions.FULL,
-      label: "Full",
-    },
-  ];
 
   return (
     <Formik
@@ -220,7 +229,7 @@ const ConfigureMonitorForm = ({
                       name="prompt_template"
                       id="prompt_template"
                       label="Prompt Template"
-                      options={promptTemplateOptions}
+                      options={PROMPT_TEMPLATE_OPTIONS}
                       layout="stacked"
                       tooltip="Select the prompt template to use for LLM classification"
                     />
