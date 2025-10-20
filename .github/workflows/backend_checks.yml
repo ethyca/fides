@@ -48,10 +48,9 @@ jobs:
               - 'data/**'
               - '.github/workflows/backend_checks.yml'
 
-      - if: steps.filter.outputs.backend == 'true'
-        run: |
-          echo "Backend tests triggered by:"
-          echo "${{ steps.filter.outputs.backend_files }}"
+      - name: Log changed files
+        if: steps.filter.outputs.backend == 'true'
+        run: echo "${{ steps.filter.outputs.backend_files }}"
 
   Collect-Tests:
     needs: Check-Backend-Changes

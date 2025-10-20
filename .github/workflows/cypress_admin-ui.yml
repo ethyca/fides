@@ -31,10 +31,9 @@ jobs:
               - 'clients/admin-ui/**'
               - '.github/workflows/cypress_admin-ui.yml'
 
-      - if: steps.filter.outputs.admin_ui == 'true'
-        run: |
-          echo "Admin UI tests triggered by:"
-          echo "${{ steps.filter.outputs.admin_ui_files }}"
+      - name: Log changed files
+        if: steps.filter.outputs.admin_ui == 'true'
+        run: echo "${{ steps.filter.outputs.admin_ui_files }}"
 
   prepare-matrix:
     needs: Check-Admin-UI-Changes

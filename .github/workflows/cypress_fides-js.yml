@@ -32,10 +32,9 @@ jobs:
               - 'clients/fides-js/**'
               - '.github/workflows/cypress_fides-js.yml'
 
-      - if: steps.filter.outputs.fidesjs == 'true'
-        run: |
-          echo "FidesJS tests triggered by:"
-          echo "${{ steps.filter.outputs.fidesjs_files }}"
+      - name: Log changed files
+        if: steps.filter.outputs.fidesjs == 'true'
+        run: echo "${{ steps.filter.outputs.fidesjs_files }}"
 
   Privacy-Center-Cypress:
     needs: Check-FidesJS-Changes
