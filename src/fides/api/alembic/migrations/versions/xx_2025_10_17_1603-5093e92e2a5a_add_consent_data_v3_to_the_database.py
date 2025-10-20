@@ -27,7 +27,7 @@ def upgrade():
             "created_at",
             postgresql.TIMESTAMP(timezone=True),
             nullable=False,
-            default=sa.func.now,
+            server_default=sa.text("now()"),
         ),
         sa.Column("updated_at", postgresql.TIMESTAMP(timezone=True), nullable=True),
         sa.Column("consented_at", postgresql.TIMESTAMP(timezone=True), nullable=True),
