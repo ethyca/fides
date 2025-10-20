@@ -52,4 +52,3 @@ def upgrade():
 
 def downgrade():
     op.drop_table("consent_documents")
-    pass
