@@ -232,18 +232,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config: SaaSQueryConfig = self.query_config(node)
 
-        # Delegate async requests
-        with get_db() as db:
-            if async_dsr_strategy := _get_async_dsr_strategy(
-                db, request_task, query_config, ActionType.access
-            ):
-                return async_dsr_strategy.async_retrieve_data(
-                    client=self.create_client(),
-                    request_task_id=request_task.id,
-                    query_config=query_config,
-                    input_data=input_data,
-                )
-
         # generate initial set of requests if read request is defined, otherwise raise an exception
         # An endpoint can be defined with multiple 'read' requests if the data for a single
         # collection can be accessed in multiple ways for example:
@@ -280,6 +268,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
+        # check all the values specified by param_values are provided in input_data
+        for read_request in read_requests:
+            if self._missing_dataset_reference_values(
+                input_data, read_request.param_values
+            ):
+                return []
+
+        # Delegate async requests
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.access
+            ):
+
+                return async_dsr_strategy.async_retrieve_data(
+                    client=self.create_client(),
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    input_data=input_data,
+                )
+
+
 
         rows: List[Row] = []
         for read_request in read_requests:
@@ -382,10 +391,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         missing_dataset_reference_values = check_dataset_missing_reference_values(
             input_data, param_values
         )
-
+        logger.info(f"Missing dataset reference values: {missing_dataset_reference_values}")
         if missing_dataset_reference_values:
             logger.info(
-                "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
+                "The  action type {} for the '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
+                self.current_privacy_request.policy.get_action_type(),
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
@@ -539,6 +549,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
             )
+            return rows_updated
+
+        if self._missing_dataset_reference_values(
+            input_data, masking_request.param_values
+        ):
             return rows_updated
 
         self.set_saas_request_state(masking_request)
