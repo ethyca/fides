@@ -23,13 +23,17 @@ import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/Data
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
+  PaginatedResponse,
   PaginationQueryParams,
   SearchQueryParams,
   SortQueryParams,
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
-import { MonitorSummaryPaginatedResponse } from "./types";
+import {
+  MonitorAggregatedResults,
+  MonitorSummaryPaginatedResponse,
+} from "./types";
 import { getMonitorType } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
@@ -54,7 +58,9 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/aggregate-results`,
         params: { page, size, search, diff_status: "addition" },
       }),
-      transformResponse: (response: MonitorSummaryPaginatedResponse) => ({
+      transformResponse: (
+        response: PaginatedResponse<MonitorAggregatedResults>,
+      ) => ({
         ...response,
         items: response.items.map((monitor) => ({
           ...monitor,
