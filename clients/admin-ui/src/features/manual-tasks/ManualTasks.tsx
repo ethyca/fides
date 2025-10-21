@@ -247,8 +247,8 @@ export const ManualTasks = () => {
           testid="privacy-request-id-filter"
         />
         <Button
-          aria-label="Export report"
-          data-testid="export-btn"
+          aria-label="Export manual tasks as CSV"
+          data-testid="export-manual-tasks-btn"
           icon={<DownloadLightIcon ml="1.5px" />}
           onClick={handleExport}
         />
