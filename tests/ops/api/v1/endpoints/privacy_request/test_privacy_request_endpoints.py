@@ -3133,7 +3133,7 @@ class TestPrivacyRequestSearch:
                             }
                         ],
                     },
-                }
+                },
             ],
             "total": 1,
             "page": 1,
