@@ -61,6 +61,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Added `has_table` checks for BigQuery erasures [#6760](https://github.com/ethyca/fides/pull/6760)
 - Using correct data select types in alpha fields [#6758](https://github.com/ethyca/fides/pull/6758)
+- Redirected users from invalid system detail pages in Action Center [#6795](https://github.com/ethyca/fides/pull/6795)
 
 ## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
 
