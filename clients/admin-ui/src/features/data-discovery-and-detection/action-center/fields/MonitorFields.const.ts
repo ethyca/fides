@@ -12,11 +12,11 @@ export const TREE_NODE_SKELETON_KEY_PREFIX = "skeleton";
 export const FIELD_PAGE_SIZE = 25;
 
 export const RESOURCE_STATUS = [
-  "Attention Required",
+  "Unlabeled",
   "In Review",
   "Classifying",
   "Approved",
-  "Unmonitored",
+  "Ignored",
   "Confirmed",
   "Removed",
 ] as const;
@@ -25,7 +25,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   DiffStatus,
   {
     label: ResourceStatusLabel;
-    color: CUSTOM_TAG_COLOR;
+    color: CUSTOM_TAG_COLOR | undefined;
   }
 > = {
   classifying: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
@@ -34,12 +34,15 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     label: "In Review",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
-  classification_addition: { label: "In Review", color: CUSTOM_TAG_COLOR.INFO },
-  addition: { label: "Attention Required", color: CUSTOM_TAG_COLOR.INFO },
-  muted: { label: "Unmonitored", color: CUSTOM_TAG_COLOR.CAUTION },
+  classification_addition: {
+    label: "In Review",
+    color: CUSTOM_TAG_COLOR.CAUTION,
+  },
+  addition: { label: "Unlabeled", color: undefined }, // No tag for this status
+  muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
   removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
   promoting: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
-  monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.CAUTION },
+  monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
   approved: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
 } as const;
