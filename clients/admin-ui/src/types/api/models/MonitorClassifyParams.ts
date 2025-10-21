@@ -22,7 +22,7 @@ export type MonitorClassifyParams = {
   context_classification_enabled?: boolean;
   context_classifier?: string;
   custom_llm_instructions?: string | null;
-  model_override?: string | null;
+  llm_model_override?: string | null;
   prompt_template?: ClassifyLlmPromptTemplateOptions | null;
   num_workers?: number;
   language?: string;
