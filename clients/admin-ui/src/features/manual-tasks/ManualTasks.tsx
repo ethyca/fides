@@ -1,4 +1,5 @@
 import {
+  AntButton as Button,
   AntFilterValue as FilterValue,
   AntTable as Table,
   AntTablePaginationConfig as TablePaginationConfig,
@@ -24,6 +25,7 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
+import { DownloadLightIcon } from "../common/Icon";
 import { DEFAULT_PAGE_SIZES } from "../common/table/constants";
 import { useManualTaskColumns } from "./hooks";
 import { useGetTasksQuery } from "./manual-tasks.slice";
@@ -179,6 +181,10 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
+  const handleExport = async () => {
+    console.log("Exporting manual tasks");
+  };
+
   const onUserClick = (userId: string) => {
     router.push({
       pathname: USER_PROFILE_ROUTE,
@@ -233,12 +239,18 @@ export const ManualTasks = () => {
 
   return (
     <div className="mt-2 space-y-4">
-      <Flex gap={3} align="center" className="mb-4">
+      <Flex gap={3} align="center" justify="space-between" className="mb-4">
         <GlobalFilterV2
           globalFilter={filters.privacyRequestId || ""}
           setGlobalFilter={handlePrivacyRequestIdChange}
           placeholder="Search by privacy request ID"
           testid="privacy-request-id-filter"
+        />
+        <Button
+          aria-label="Export report"
+          data-testid="export-btn"
+          icon={<DownloadLightIcon ml="1.5px" />}
+          onClick={handleExport}
         />
       </Flex>
 
