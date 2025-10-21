@@ -135,6 +135,8 @@ const MonitorTree = ({
   const [treeData, setTreeData] = useState<CustomTreeDataNode[]>([]);
   // Track request sequences to prevent race conditions
   const requestSequenceRef = useRef<Record<string, number>>({});
+  // Track whether detailed query has completed for each node to prevent fast query from overwriting it
+  const detailedQueryCompletedRef = useRef<Record<string, number>>({});
 
   /**
    * Fetches tree data with the double-query pattern (fast then detailed)
@@ -174,9 +176,11 @@ const MonitorTree = ({
       // Handle fast query result as soon as it arrives
       fastQuery.then(({ data: fastData }) => {
         // Only update if this is still the latest request for this node
+        // AND the detailed query hasn't already completed for this sequence
         if (
           fastData &&
-          requestSequenceRef.current[nodeKey] === currentSequence
+          requestSequenceRef.current[nodeKey] === currentSequence &&
+          detailedQueryCompletedRef.current[nodeKey] !== currentSequence
         ) {
           updateFn(fastData);
           onFastDataLoaded?.(queryParams.page ?? 1);
@@ -190,6 +194,8 @@ const MonitorTree = ({
           detailedData &&
           requestSequenceRef.current[nodeKey] === currentSequence
         ) {
+          // Mark that detailed query has completed for this sequence
+          detailedQueryCompletedRef.current[nodeKey] = currentSequence;
           updateFn(detailedData);
         }
       });
