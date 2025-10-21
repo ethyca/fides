@@ -383,7 +383,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         return result
 
     def _missing_dataset_reference_values(
-        self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
+        self, input_data: Dict[str, List[Any]], param_values: Optional[List[ParamValue]]
     ) -> List[str]:
         """Return a list of dataset reference values that are not found in the input_data map"""
         missing_dataset_reference_values = check_dataset_missing_reference_values(
@@ -395,7 +395,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if missing_dataset_reference_values:
             logger.info(
                 "The  action type {} for the '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
-                self.current_privacy_request.policy.get_action_type(),
+                self.current_privacy_request.policy.get_action_type(),  # type: ignore
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
@@ -550,11 +550,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 self.saas_config.fides_key,  # type: ignore
             )
             return rows_updated
-
-        if self._missing_dataset_reference_values(
-            input_data, masking_request.param_values
-        ):
-            return rows_updated
+        if input_data:
+            # Check that the input data contains all the dataset reference values required for the masking request
+            if self._missing_dataset_reference_values(
+                input_data, masking_request.param_values
+            ):
+                return rows_updated
 
         self.set_saas_request_state(masking_request)
 
