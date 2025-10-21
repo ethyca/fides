@@ -29,11 +29,6 @@ import useTopLevelActionCenterTabs, {
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
-const buildMonitorLink = (monitorType: MONITOR_TYPES, monitorKey: string) =>
-  monitorType !== MONITOR_TYPES.WEBSITE
-    ? `${ACTION_CENTER_ROUTE}/data-explorer/${monitorKey}`
-    : `${ACTION_CENTER_ROUTE}/${monitorKey}`;
-
 const ActionCenterPage = () => {
   const toast = useToast();
   const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
@@ -193,9 +188,10 @@ const ActionCenterPage = () => {
               emptyText: <EmptyMonitorsResult />,
             }}
             renderItem={(summary) => {
-              const link = summary.key
-                ? buildMonitorLink(summary.monitorType, summary.key)
-                : "";
+              const link =
+                summary.key && summary.monitorType
+                  ? `${ACTION_CENTER_ROUTE}/${summary.monitorType}/${summary.key}`
+                  : "";
               return (
                 !!summary?.key && (
                   <MonitorResult
