@@ -1966,7 +1966,7 @@ class TestGetPrivacyRequests:
                             }
                         ],
                     },
-                }
+                },
             ],
             "total": 1,
             "page": 1,
