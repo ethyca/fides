@@ -8,10 +8,7 @@ import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
-import {
-  getMonitorType,
-  MONITOR_TYPES,
-} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 describe("Action center", () => {
   beforeEach(() => {
@@ -76,7 +73,7 @@ describe("Action center", () => {
               .should(
                 "have.attr",
                 "href",
-                `${ACTION_CENTER_ROUTE}${monitorType}/${key}`,
+                `${ACTION_CENTER_ROUTE}/${monitorType}/${key}`,
               );
             cy.get("[data-testid='monitor-date']").should("contain", " ago");
           });
