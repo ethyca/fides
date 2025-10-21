@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features";
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
@@ -17,11 +17,13 @@ const Systems: NextPage = () => {
   const { dictionaryService: isCompassEnabled } = useFeatures();
 
   return (
-    <FixedLayout title="System inventory">
+    <Layout title="System inventory" mainProps={{ w: "calc(100vw - 240px)" }}>
       <Box data-testid="system-management">
         <PageHeader
           heading="System inventory"
           breadcrumbItems={[{ title: "All systems" }]}
+          isSticky={false}
+          style={{ position: "relative" }}
         >
           {isCompassEnabled && (
             <AntDropdown
@@ -45,7 +47,7 @@ const Systems: NextPage = () => {
                 type="primary"
                 data-testid="add-system-btn"
                 icon={<Icons.ChevronDown />}
-                className="absolute right-8 top-8"
+                className="absolute right-0 top-0"
               >
                 Add system
               </Button>
@@ -63,7 +65,7 @@ const Systems: NextPage = () => {
         </PageHeader>
         <SystemsTable />
       </Box>
-    </FixedLayout>
+    </Layout>
   );
 };
 
