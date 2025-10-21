@@ -14,6 +14,8 @@ export const RESOURCE_STATUS = [
   "Classifying",
   "Approved",
   "Unmonitored",
+  "Confirmed",
+  "Removed",
 ] as const;
 
 export const useMonitorFieldsFilters = () => {

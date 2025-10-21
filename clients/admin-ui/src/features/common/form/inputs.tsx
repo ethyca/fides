@@ -375,6 +375,11 @@ interface CustomSwitchProps {
   isDisabled?: boolean;
   onChange?: (checked: boolean) => void;
   className?: string;
+  /**
+   * When provided, the switch will render with this checked state instead of the Formik-managed value.
+   * Useful for read-only or UI-only switches that shouldn't be toggleable.
+   */
+  checkedOverride?: boolean;
 }
 export const CustomSwitch = ({
   label,
@@ -383,6 +388,7 @@ export const CustomSwitch = ({
   size = "small",
   onChange,
   isDisabled,
+  checkedOverride,
   ...props
 }: CustomSwitchProps & Omit<FieldHookConfig<boolean>, "onChange">) => {
   const [field, meta] = useField({
@@ -395,7 +401,7 @@ export const CustomSwitch = ({
     <Field name={field.name}>
       {({ form: { setFieldValue } }: FieldProps) => (
         <Switch
-          checked={field.checked}
+          checked={checkedOverride ?? field.checked}
           onChange={(v) => {
             setFieldValue(field.name, v);
             onChange?.(v);
@@ -443,7 +449,7 @@ export const CustomSwitch = ({
     return (
       <FormControl isInvalid={isInvalid} width="full">
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <HStack spacing={1}>
+          <HStack spacing={1} mr={1}>
             <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={0}>
               {label}
             </Label>

@@ -20,6 +20,7 @@
     "allow_language_selection": true,
     "auto_detect_language": true,
     "auto_subdomain_cookie_deletion": true,
+    "cookie_deletion_based_on_host_domain": true,
     "language": "en",
     "accept_button_label": "Accept Test",
     "acknowledge_button_label": "Acknowledge Test",

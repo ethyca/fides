@@ -170,6 +170,8 @@ Cypress.Commands.add(
       });
     cy.antSelectDropdownVisible();
     cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(200); // Wait for the dropdown to close
   },
 );
 

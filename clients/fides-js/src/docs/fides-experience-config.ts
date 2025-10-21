@@ -22,9 +22,14 @@ export interface FidesExperienceConfig {
   auto_detect_language?: boolean;
 
   /**
-   * This property corresponds with the "Automatically delete subdomain cookies" option.
+   * This property corresponds with the "Delete from host’s subdomain" Cookie Deletion option.
    */
   auto_subdomain_cookie_deletion?: boolean;
+
+  /**
+   * This property corresponds with the "Delete from host’s domain" Cookie Deletion option.
+   */
+  cookie_deletion_based_on_host_domain?: boolean;
 
   /**
    * Each configured experience is presented to the user as one of 4 types of components: `"banner_and_modal"`, `"modal"`, `"privacy_center"`, or `"tcf_overlay"`. This property corresponds with the current user's Experience type.
