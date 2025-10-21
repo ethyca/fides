@@ -36,9 +36,8 @@ const buildMonitorLink = (
 ) =>
   isAlphaFlat &&
   monitorType !== ConnectionType.TEST_WEBSITE &&
-  isAlphaFlat &&
   monitorType !== ConnectionType.WEBSITE
-    ? `${ACTION_CENTER_ROUTE}/${monitorKey}/data-explorer`
+    ? `${ACTION_CENTER_ROUTE}/data-explorer/${monitorKey}`
     : `${ACTION_CENTER_ROUTE}/${monitorKey}`;
 
 const ActionCenterPage = () => {
@@ -115,8 +114,8 @@ const ActionCenterPage = () => {
 
   // TODO: [HJ-337] Add button functionality
 
-  // const handleAdd = (monidorId: string) => {
-  //   console.log("Add report", monidorId);
+  // const handleAdd = (monitorId: string) => {
+  //   console.log("Add report", monitorId);
   // };
 
   const getWebsiteMonitorActions = useCallback(
