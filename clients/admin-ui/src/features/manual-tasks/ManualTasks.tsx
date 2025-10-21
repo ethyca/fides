@@ -5,6 +5,7 @@ import {
   AntTablePaginationConfig as TablePaginationConfig,
   AntTypography as Typography,
   Flex,
+  Icons,
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useRouter } from "next/router";
@@ -25,7 +26,6 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-import { DownloadLightIcon } from "../common/Icon";
 import { DEFAULT_PAGE_SIZES } from "../common/table/constants";
 import { useManualTaskColumns } from "./hooks";
 import useDownloadManualTasksReport from "./hooks/useDownloadManualTasksReport";
@@ -259,7 +259,7 @@ export const ManualTasks = () => {
         <Button
           aria-label="Export manual tasks as CSV"
           data-testid="export-manual-tasks-btn"
-          icon={<DownloadLightIcon ml="1.5px" />}
+          icon={<Icons.Download />}
           loading={isDownloadingReport}
           onClick={handleExport}
         />
