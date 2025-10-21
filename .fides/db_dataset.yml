@@ -1752,6 +1752,14 @@ dataset:
       data_categories: [ system.operations ]
     - name: deleted_by
       data_categories: [ system.operations ]
+    - name: is_duplicate
+      data_categories: [ system.operations ]
+    - name: duplicate_request_group_id
+      data_categories: [ system.operations ]
+    - name: duplicate_detected_at
+      data_categories: [ system.operations ]
+    - name: duplicate_detection_method
+      data_categories: [ system.operations ]
   - name: privacyrequesterror
     data_categories: []
     fields:

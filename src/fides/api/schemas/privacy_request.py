@@ -344,7 +344,6 @@ class PrivacyRequestResponse(FidesSchema):
     finalized_by: Optional[str] = None
     is_duplicate: Optional[bool] = None
     duplicate_request_group_id: Optional[str] = None
-    primary_request_id: Optional[str] = None
     duplicate_detected_at: Optional[datetime] = None
     duplicate_detection_method: Optional[str] = None
 

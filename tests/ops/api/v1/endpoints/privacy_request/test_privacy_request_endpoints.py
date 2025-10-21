@@ -147,7 +147,6 @@ NULLABLE_FIELDS = {
     "deleted_by": None,
     "is_duplicate": None,
     "duplicate_request_group_id": None,
-    "primary_request_id": None,
     "duplicate_detected_at": None,
     "duplicate_detection_method": None,
 }

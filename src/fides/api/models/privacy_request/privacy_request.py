@@ -230,12 +230,6 @@ class PrivacyRequest(
     deleted_by = Column(String, nullable=True)
     is_duplicate = Column(Boolean, nullable=True, index=True)
     duplicate_request_group_id = Column(String, nullable=True, index=True)
-    primary_request_id = Column(
-        String,
-        ForeignKey("privacyrequest.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-    )
     duplicate_detected_at = Column(DateTime(timezone=True), nullable=True)
     duplicate_detection_method = Column(String, nullable=True)
 
