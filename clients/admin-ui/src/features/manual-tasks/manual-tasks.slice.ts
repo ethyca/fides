@@ -16,7 +16,7 @@ import { PaginationQueryParams } from "~/types/query-params";
 import { PAGE_SIZES } from "../common/table/v2";
 
 // Interface for task query parameters
-interface TaskQueryParams extends PaginationQueryParams {
+interface TaskQueryParams {
   status?: ManualFieldStatus;
   request_type?: ManualFieldRequestType;
   system_name?: string;
@@ -29,7 +29,9 @@ export const manualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getTasks: build.query<
       ManualFieldSearchResponse,
-      TaskQueryParams | { include_full_submission_details?: boolean }
+      | TaskQueryParams
+      | PaginationQueryParams
+      | { include_full_submission_details?: boolean }
     >({
       query: (params) => {
         const queryParams = params || { page: 1, size: 25 };

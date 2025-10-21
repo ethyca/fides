@@ -612,4 +612,59 @@ describe("External Manual Tasks", () => {
       });
     });
   });
+
+  describe("Export Functionality", () => {
+    beforeEach(() => {
+      // Authenticate and get to tasks
+      cy.visit("/external-tasks?access_token=test_token_123");
+      cy.get('[data-testid="otp-request-email-input"]').type(
+        "user@example.com",
+      );
+      cy.get('[data-testid="otp-request-button"]').click();
+      cy.wait("@postRequestOtp");
+      cy.get('[data-testid="otp-input"]').type("123456");
+      cy.get('[data-testid="otp-verify-button"]').click();
+      cy.wait("@postVerifyOtp");
+      cy.wait("@getExternalTasks");
+    });
+
+    it("should display export button and call export endpoint with correct parameters", () => {
+      // Mock the export endpoint
+      cy.intercept("POST", `${API_URL}/plus/manual-fields/export*`, {
+        statusCode: 200,
+        headers: {
+          "content-type": "text/csv",
+        },
+        body: "name,status,request_type,privacy_request.id,privacy_request.days_left,privacy_request.subject_identities.email,privacy_request.subject_identities.external_id,privacy_request.subject_identities.phone_number,created_at\nExport Customer Data from Salesforce,new,access,pri_ext_001,15,customer@email.com,,,2024-01-01T00:00:00Z",
+      }).as("exportTasks");
+
+      // Check that the export button is present
+      cy.get('[data-testid="export-external-tasks-btn"]').should("be.visible");
+      cy.get('[data-testid="export-external-tasks-btn"]').click();
+
+      // Verify the export endpoint was called with correct parameters
+      cy.wait("@exportTasks").then((interception) => {
+        expect(interception.request.method).to.equal("POST");
+        expect(interception.request.url).to.include(
+          "/plus/manual-fields/export",
+        );
+
+        // Check request body
+        expect(interception.request.body).to.deep.include({
+          format: "csv",
+          fields: [
+            "name",
+            "status",
+            "request_type",
+            "privacy_request.id",
+            "privacy_request.days_left",
+            "privacy_request.subject_identities.email",
+            "privacy_request.subject_identities.external_id",
+            "privacy_request.subject_identities.phone_number",
+            "created_at",
+          ],
+        });
+      });
+    });
+  });
 });
