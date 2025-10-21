@@ -780,12 +780,12 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("input-use_llm_classifier").click();
 
           // LLM fields should now exist (not checking visibility due to modal overlay issues)
-          cy.getByTestId("input-model_override").should("exist");
+          cy.getByTestId("input-llm_model_override").should("exist");
           cy.getByTestId("controlled-select-prompt_template").should("exist");
 
           // Give fields a moment to render before interacting
-          cy.getByTestId("input-model_override").should("have.value", "");
-          cy.getByTestId("input-model_override").type("gpt-4");
+          cy.getByTestId("input-llm_model_override").should("have.value", "");
+          cy.getByTestId("input-llm_model_override").type("gpt-4");
 
           // Use force: true for the select to work around modal overlay issues
           cy.getByTestId("controlled-select-prompt_template").antSelect(
@@ -810,7 +810,7 @@ describe("Integration management for data detection & discovery", () => {
               interception.request.body.classify_params.context_classifier,
             ).to.equal("llm");
             expect(
-              interception.request.body.classify_params.model_override,
+              interception.request.body.classify_params.llm_model_override,
             ).to.equal("gpt-4");
             expect(
               interception.request.body.classify_params.prompt_template,
@@ -824,11 +824,11 @@ describe("Integration management for data detection & discovery", () => {
 
           // Toggle LLM classifier on
           cy.getByTestId("input-use_llm_classifier").click();
-          cy.getByTestId("input-model_override").should("be.visible");
+          cy.getByTestId("input-llm_model_override").should("be.visible");
 
           // Toggle it back off
           cy.getByTestId("input-use_llm_classifier").click();
-          cy.getByTestId("input-model_override").should("not.exist");
+          cy.getByTestId("input-llm_model_override").should("not.exist");
           cy.getByTestId("controlled-select-prompt_template").should(
             "not.exist",
           );
