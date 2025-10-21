@@ -2,7 +2,6 @@ import ast
 import csv
 import io
 import json
-from copy import deepcopy
 from datetime import datetime, timedelta
 from random import randint
 from typing import List
