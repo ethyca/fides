@@ -124,6 +124,7 @@ if TYPE_CHECKING:
     )
 
 
+# Change in a code file
 class PrivacyRequest(
     IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
 ):  # pylint: disable=R0904,too-many-instance-attributes
@@ -940,9 +941,9 @@ class PrivacyRequest(
         Fetch the collection -> data use map cached for this privacy request
         """
         cache: FidesopsRedis = get_cache()
-        value_dict: Optional[Dict[str, Optional[Dict[str, Set[str]]]]] = (
-            cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
-        )
+        value_dict: Optional[
+            Dict[str, Optional[Dict[str, Set[str]]]]
+        ] = cache.get_encoded_objects_by_prefix(f"DATA_USE_MAP__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_pre_approval_webhook(
@@ -1580,10 +1581,10 @@ def _get_manual_access_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_ACCESS_INPUT__{privacy_request.id}__{manual_webhook.id}"
     )
     if cached_results:
         return list(cached_results.values())[0]
@@ -1596,10 +1597,10 @@ def _get_manual_erasure_input_from_cache(
     """Get raw manual input uploaded to the privacy request for the given webhook
     from the cache without attempting to coerce into a Pydantic schema"""
     cache: FidesopsRedis = get_cache()
-    cached_results: Optional[Optional[Dict[str, Any]]] = (
-        cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
-        )
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_ERASURE_INPUT__{privacy_request.id}__{manual_webhook.id}"
     )
     if cached_results:
         return list(cached_results.values())[0]
