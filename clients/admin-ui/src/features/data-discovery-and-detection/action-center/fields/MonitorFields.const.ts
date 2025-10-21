@@ -25,7 +25,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   DiffStatus,
   {
     label: ResourceStatusLabel;
-    color: CUSTOM_TAG_COLOR | undefined;
+    color?: CUSTOM_TAG_COLOR;
   }
 > = {
   classifying: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
@@ -38,7 +38,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     label: "In Review",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
-  addition: { label: "Unlabeled", color: undefined }, // No tag for this status
+  addition: { label: "Unlabeled" }, // No tag for this status
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
   removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
