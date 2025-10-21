@@ -8,7 +8,7 @@ import type { ClassifyLlmPromptTemplateOptions } from "./ClassifyLlmPromptTempla
  * Parameters for the llm/classifier/llm_context_classifier function
  */
 export type ClassifyLlmParams = {
-  model_override?: string | null;
+  llm_model_override?: string | null;
   custom_llm_instructions?: string | null;
   prompt_template?: ClassifyLlmPromptTemplateOptions | null;
   include_rationale?: boolean;
