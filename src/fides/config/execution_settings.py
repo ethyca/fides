@@ -66,7 +66,7 @@ class ExecutionSettings(FidesSettings):
         description="Hours between status checks for async tasks",
     )
     async_polling_request_timeout_days: int = Field(
-        default=30,
+        default=3600,
         description="Maximum time in days to wait for an async polling request to complete before timing out",
     )
     erasure_request_finalization_required: bool = Field(
