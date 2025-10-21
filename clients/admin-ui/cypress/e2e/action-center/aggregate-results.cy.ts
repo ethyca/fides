@@ -77,7 +77,7 @@ describe("Action center", () => {
               .should(
                 "have.attr",
                 "href",
-                `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}`,
+                `${ACTION_CENTER_ROUTE}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}/${monitorKey}`,
               );
             cy.get("[data-testid='monitor-date']").should("contain", " ago");
           });
@@ -85,14 +85,13 @@ describe("Action center", () => {
         // description
         cy.getByTestId(`monitor-result-${results[0].key}`)
           .find(".ant-list-item-meta-description")
-          .should("contain", "92 Browser requests, 5 Cookies detected.");
+          .should("have.text", "5 Cookies, 92 Browser requests detected.");
         cy.getByTestId(`monitor-result-${results[2].key}`)
           .find(".ant-list-item-meta-description")
           .should(
-            "contain",
-            "22 Classifying, 13 In review, 2 Removals, 216 Unlabeled",
-          )
-          .should("not.contain", "0 Assets");
+            "have.text",
+            "216 Unlabeled, 22 Classifying, 13 In review, 2 Removals",
+          );
         // date tooltip
         cy.getByTestId(`monitor-result-${results[0].key}`).within(() => {
           cy.get("[data-testid='monitor-date']").realHover();
@@ -113,7 +112,7 @@ describe("Action center", () => {
       cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/${integrationMonitorKey}/data-explorer`,
+        `${ACTION_CENTER_ROUTE}/data-explorer/${integrationMonitorKey}`,
       );
     });
     it.skip("Should paginate results", () => {

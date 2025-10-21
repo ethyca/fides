@@ -259,6 +259,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkApproveRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: "privacy-request/administrate/approve",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
       query: (values) => ({
         url: `privacy-request/bulk/retry`,
@@ -278,6 +289,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkDenyRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[]; reason?: string }
+    >({
+      query: (body) => ({
+        url: "privacy-request/administrate/deny",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     softDeleteRequest: build.mutation<
       PrivacyRequestEntity,
       Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
@@ -285,6 +307,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       query: ({ id }) => ({
         url: `privacy-request/${id}/soft-delete`,
         method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    bulkSoftDeleteRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: `privacy-request/bulk/soft-delete`,
+        method: "POST",
+        body,
       }),
       invalidatesTags: ["Request"],
     }),
@@ -490,7 +523,10 @@ export const privacyRequestApi = baseApi.injectEndpoints({
 
 export const {
   useApproveRequestMutation,
+  useBulkApproveRequestMutation,
+  useBulkDenyRequestMutation,
   useBulkRetryMutation,
+  useBulkSoftDeleteRequestMutation,
   useDenyRequestMutation,
   useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
