@@ -4983,8 +4983,8 @@ class TestResumePrivacyRequest:
             "policy": {
                 "execution_timeframe": 7,
                 "drp_action": None,
-                "name": privacy_request.policy.name,
                 "key": privacy_request.policy.key,
+                "name": privacy_request.policy.name,
                 "rules": [
                     rule.model_dump(mode="json")
                     for rule in PolicyResponse.model_validate(
