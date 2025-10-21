@@ -72,7 +72,8 @@ const useConsentReportingTableColumns = ({
             preference;
 
           const badgeColor =
-            (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) || "";
+            (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) ||
+            undefined;
 
           const hasTcfDetails =
             preference === "tcf" && row.original.tcf_preferences;
