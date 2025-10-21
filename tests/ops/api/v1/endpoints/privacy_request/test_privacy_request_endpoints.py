@@ -4978,7 +4978,7 @@ class TestResumePrivacyRequest:
             "started_processing_at": stringify_date(
                 privacy_request.started_processing_at
             ),
-            "status": privacy_request.status.value,
+            "status": "in_processing",
             "external_id": privacy_request.external_id,
             "policy": {
                 "execution_timeframe": 7,
