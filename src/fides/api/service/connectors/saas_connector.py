@@ -291,11 +291,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         rows: List[Row] = []
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
-            # check all the values specified by param_values are provided in input_data
-            if self._missing_dataset_reference_values(
-                input_data, read_request.param_values
-            ):
-                return []
 
             # hook for user-provided request override functions
             if read_request.request_override:
