@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown,
-  AntSpace,
-  Box,
-  Icons,
-} from "fidesui";
+import { AntButton as Button, AntDropdown, Box, Icons } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React from "react";
