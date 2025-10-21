@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.72.2..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.72.3..main)
 
 ### Added
 
@@ -28,6 +28,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for bulk actions in the new request manager page [#6773](https://github.com/ethyca/fides/pull/6773)
 - Added `tagging_instructions` field to `DataCategory` model for LLM classification customization [#6736](https://github.com/ethyca/fides/pull/6736) https://github.com/ethyca/fides/labels/db-migration
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
+- Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
+- Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
@@ -38,7 +40,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
-- Fixed an issue where the check for missing reference values on the saas_request was only being executed on access requests[]()
+- Fixed action center routing to prevent empty page when reloading data explorer [#6791](https://github.com/ethyca/fides/pull/6791)
+- Fixed an issue where the check for missing reference values on the saas_request was only being executed on access requests[#6782](https://github.com/ethyca/fides/pull/6782)
+
+### Changed
+- Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)
+
+## [2.72.3](https://github.com/ethyca/fides/compare/2.72.2...2.72.3)
+
+### Fixed
+- Support fields in "Approved" status in D&D [#6794](https://github.com/ethyca/fides/pull/6794)
 
 ## [2.72.2](https://github.com/ethyca/fides/compare/2.72.1...2.72.2)
 
