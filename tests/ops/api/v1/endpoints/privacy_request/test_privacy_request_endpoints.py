@@ -2402,8 +2402,8 @@ class TestPrivacyRequestSearch:
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "policy": {
-                        "execution_timeframe": 7,
                         "drp_action": None,
+                        "execution_timeframe": 7,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
