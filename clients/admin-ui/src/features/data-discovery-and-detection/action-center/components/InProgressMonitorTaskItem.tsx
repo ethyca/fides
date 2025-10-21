@@ -53,7 +53,7 @@ export const InProgressMonitorTaskItem = ({
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
     useDismissMonitorTaskMutation();
-  const isDismissed = Boolean(task.dismissed_in_activity_view);
+  const isDismissed = Boolean(task.dismissed);
   const canRetry =
     task.status === "error" && task.action_type !== MonitorTaskType.DETECTION;
 
@@ -120,37 +120,32 @@ export const InProgressMonitorTaskItem = ({
         : "Monitor scanning";
     }
     if (task.action_type === MonitorTaskType.PROMOTION) {
-      return task.status === "complete" ? "Promoted" : "Promoting";
+      const verb = task.status === "complete" ? "Confirmed" : "Confirming";
+      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
   })();
 
-  const monitorGroupLabel = (() => {
-    const type = (task.connection_type || "").toString().toUpperCase();
-    if (type.includes("WEBSITE")) {
-      return "Product monitor";
-    }
-    return "Analytics monitor";
-  })();
+  const monitorName = task.monitor_name || "Unknown monitor";
 
   const getStatusColor = (status?: string) => {
     switch (status) {
       case "pending":
-        return "orange";
+        return "default";
       case "in_processing":
         return "processing";
       case "complete":
-        return "green";
+        return "success";
       case "error":
-        return "red";
+        return "error";
       case "paused": // This is the actual enum value for "awaiting_processing"
         return "purple";
       case "retrying":
-        return "orange";
+        return "default";
       case "skipped":
-        return "gray";
+        return "default";
       default:
-        return "gray";
+        return "default";
     }
   };
 
@@ -199,21 +194,30 @@ export const InProgressMonitorTaskItem = ({
     <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
         <Col span={14} className="align-middle">
-          <Space align="center" size={8} wrap>
-            {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
-            <Title level={5} className="m-0">
-              {taskTitle}
-            </Title>
-            {!isInProgress && (
-              <Tag color={getStatusColor(task.status)}>
-                {formatText(task.status)}
-              </Tag>
+          <Space direction="vertical" size={4}>
+            <Space align="center" size={8} wrap>
+              {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
+              <Title level={5} className="m-0">
+                {taskTitle}
+              </Title>
+              {!isInProgress && (
+                <Tag color={getStatusColor(task.status)}>
+                  {formatText(task.status)}
+                </Tag>
+              )}
+            </Space>
+            {task.status === "error" && (
+              <Space className="pl-1">
+                <Text type="secondary" size="sm">
+                  {task.message || "Unknown error"}
+                </Text>
+              </Space>
             )}
           </Space>
         </Col>
         <Col span={4} className="flex items-center justify-end">
           <Text type="secondary" size="sm">
-            {monitorGroupLabel}
+            {monitorName}
           </Text>
         </Col>
         <Col span={3} className="flex items-center justify-end">

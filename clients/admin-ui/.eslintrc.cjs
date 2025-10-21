@@ -14,7 +14,9 @@ module.exports = {
         devDependencies: [
           "src/mocks/**",
           "**/*.test.ts",
+          "**/*.test.tsx",
           "**/*.spec.ts",
+          "**/*.spec.tsx",
           "cypress/**",
         ],
       },

@@ -82,6 +82,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       Partial<PaginationQueryParams> & {
         monitor_config_id: string;
         staged_resource_urn?: string;
+        include_descendant_details?: boolean;
       }
     >({
       query: ({
@@ -89,9 +90,10 @@ const actionCenterApi = baseApi.injectEndpoints({
         size = 20,
         monitor_config_id,
         staged_resource_urn,
+        include_descendant_details,
       }) => ({
-        url: `/plus/discovery-monitor/${monitor_config_id}/tree${staged_resource_urn ? `?staged_resource_urn=${staged_resource_urn}` : ""}`,
-        params: { page, size },
+        url: `/plus/discovery-monitor/${monitor_config_id}/tree`,
+        params: { staged_resource_urn, include_descendant_details, page, size },
       }),
     }),
     getMonitorFields: build.query<
@@ -102,6 +104,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         search?: string;
         diff_status?: Array<DiffStatus>;
         confidence_score?: Array<ConfidenceScoreRange>;
+        data_category?: Array<string>;
       }
     >({
       query: ({

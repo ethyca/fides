@@ -110,10 +110,12 @@ export const MonitorResult = ({
                 </Flex>
               }
               description={
-                <MonitorResultDescription
-                  updates={updates}
-                  isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
-                />
+                !!updates && (
+                  <MonitorResultDescription
+                    updates={updates}
+                    isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+                  />
+                )
               }
             />
           </Col>
