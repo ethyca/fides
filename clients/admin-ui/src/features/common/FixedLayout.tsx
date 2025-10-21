@@ -5,10 +5,14 @@ import React from "react";
 const FixedLayout = ({
   children,
   title,
+  fullHeight,
+  fullWidth,
   mainProps,
 }: {
   children: React.ReactNode;
   title: string;
+  fullHeight?: boolean;
+  fullWidth?: boolean;
   mainProps?: FlexProps;
 }) => (
   // NOTE: unlike the main Layout, this layout specifies a fixed height
@@ -23,8 +27,8 @@ const FixedLayout = ({
   <Flex
     data-testid={title}
     direction="column"
-    height="calc(100vh - 48px)"
-    width="calc(100vw - 240px)"
+    height={fullHeight ? "100vh" : "calc(100vh - 48px)"}
+    width={fullWidth ? "100vw" : "calc(100vw - 240px)"}
   >
     <Head>
       <title>Fides Admin UI - {title}</title>

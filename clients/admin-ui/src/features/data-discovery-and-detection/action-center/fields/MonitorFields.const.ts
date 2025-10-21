@@ -1,5 +1,7 @@
 import { DiffStatus } from "~/types/api";
 
+import { ResourceStatusLabel, ResourceStatusLabelColor } from "./types";
+
 export const TREE_PAGE_SIZE = 100;
 export const TREE_NODE_LOAD_MORE_TEXT = "Load more...";
 export const TREE_NODE_LOAD_MORE_KEY_PREFIX = "load_more";
@@ -16,14 +18,6 @@ export const RESOURCE_STATUS = [
   "Confirmed",
   "Removed",
 ] as const;
-
-export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-export type ResourceStatusLabelColor =
-  | "nectar"
-  | "red"
-  | "orange"
-  | "blue"
-  | "green";
 
 export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   DiffStatus,
