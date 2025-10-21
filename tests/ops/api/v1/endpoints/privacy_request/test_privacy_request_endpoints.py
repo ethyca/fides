@@ -1086,26 +1086,31 @@ class TestGetPrivacyRequests:
             url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["started_processing_at"] = stringify_date(
-            privacy_request.started_processing_at
-        )
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "drp_action": None,
-            "execution_timeframe": 7,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
-        }
         expected_resp = {
-            "items": [fields],
+            "items": [
+                {
+                    **NULLABLE_FIELDS,
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "policy": {
+                        "execution_timeframe": 7,
+                        "drp_action": None,
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
+                                privacy_request.policy
+                            ).rules
+                        ],
+                    },
+                }
+            ],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -1133,27 +1138,31 @@ class TestGetPrivacyRequests:
         )
         assert 200 == response.status_code
 
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["started_processing_at"] = stringify_date(
-            privacy_request.started_processing_at
-        )
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "execution_timeframe": 7,
-            "drp_action": None,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
-        }
-
         expected_resp = {
-            "items": [fields],
+            "items": [
+                {
+                    **NULLABLE_FIELDS,
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "policy": {
+                        "execution_timeframe": 7,
+                        "drp_action": None,
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
+                                privacy_request.policy
+                            ).rules
+                        ],
+                    },
+                }
+            ],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -1823,122 +1832,142 @@ class TestGetPrivacyRequests:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["started_processing_at"] = stringify_date(
-            privacy_request.started_processing_at
-        )
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "execution_timeframe": 7,
-            "drp_action": None,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
-        }
-        fields["results"] = {
-            "Request approved": [
-                {
-                    "connection_key": None,
-                    "collection_name": None,
-                    "fields_affected": None,
-                    "message": "",
-                    "action_type": None,
-                    "status": "approved",
-                    "updated_at": stringify_date(audit_log.updated_at),
-                    "user_id": "system",
-                }
-            ],
-            "my-mongo-db": [
-                {
-                    "connection_key": None,
-                    "collection_name": "orders",
-                    "fields_affected": [
-                        {
-                            "path": "my-mongo-db:orders:name",
-                            "field_name": "name",
-                            "data_categories": ["user.contact.name"],
-                        }
-                    ],
-                    "message": None,
-                    "action_type": "access",
-                    "status": "in_processing",
-                    "updated_at": stringify_date(mongo_execution_log.updated_at),
-                    "user_id": None,
-                }
-            ],
-            "my-postgres-db": [
-                {
-                    "connection_key": None,
-                    "collection_name": "user",
-                    "fields_affected": [
-                        {
-                            "path": "my-postgres-db:user:email",
-                            "field_name": "email",
-                            "data_categories": ["user.contact.email"],
-                        }
-                    ],
-                    "message": None,
-                    "action_type": "access",
-                    "status": "pending",
-                    "updated_at": stringify_date(postgres_execution_log.updated_at),
-                    "user_id": None,
-                },
-                {
-                    "connection_key": None,
-                    "collection_name": "address",
-                    "fields_affected": [
-                        {
-                            "path": "my-postgres-db:address:street",
-                            "field_name": "street",
-                            "data_categories": ["user.contact.address.street"],
-                        },
-                        {
-                            "path": "my-postgres-db:address:city",
-                            "field_name": "city",
-                            "data_categories": ["user.contact.address.city"],
-                        },
-                    ],
-                    "message": "Database timed out.",
-                    "action_type": "access",
-                    "status": "error",
-                    "updated_at": stringify_date(
-                        second_postgres_execution_log.updated_at
-                    ),
-                    "user_id": None,
-                },
-            ],
-            "my-async-connector": [
-                {
-                    "connection_key": None,
-                    "collection_name": "my_async_collection",
-                    "fields_affected": [
-                        {
-                            "path": "my-async-connector:my_async_collection:street",
-                            "field_name": "street",
-                            "data_categories": ["user.contact.address.street"],
-                        },
-                        {
-                            "path": "my-async-connector:my_async_collection:city",
-                            "field_name": "city",
-                            "data_categories": ["user.contact.address.city"],
-                        },
-                    ],
-                    "message": None,
-                    "action_type": "access",
-                    "status": "awaiting_processing",
-                    "updated_at": stringify_date(async_execution_log.updated_at),
-                    "user_id": None,
-                }
-            ],
-        }
+
         expected_resp = {
-            "items": [fields],
+            "items": [
+                {
+                    **NULLABLE_FIELDS,
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "policy": {
+                        "execution_timeframe": 7,
+                        "drp_action": None,
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
+                                privacy_request.policy
+                            ).rules
+                        ],
+                    },
+                    "results": {
+                        "Request approved": [
+                            {
+                                "connection_key": None,
+                                "collection_name": None,
+                                "fields_affected": None,
+                                "message": "",
+                                "action_type": None,
+                                "status": "approved",
+                                "updated_at": stringify_date(audit_log.updated_at),
+                                "user_id": "system",
+                            }
+                        ],
+                        "my-mongo-db": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "orders",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-mongo-db:orders:name",
+                                        "field_name": "name",
+                                        "data_categories": ["user.contact.name"],
+                                    }
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "in_processing",
+                                "updated_at": stringify_date(
+                                    mongo_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            }
+                        ],
+                        "my-postgres-db": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "user",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-postgres-db:user:email",
+                                        "field_name": "email",
+                                        "data_categories": ["user.contact.email"],
+                                    }
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "pending",
+                                "updated_at": stringify_date(
+                                    postgres_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            },
+                            {
+                                "connection_key": None,
+                                "collection_name": "address",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-postgres-db:address:street",
+                                        "field_name": "street",
+                                        "data_categories": [
+                                            "user.contact.address.street"
+                                        ],
+                                    },
+                                    {
+                                        "path": "my-postgres-db:address:city",
+                                        "field_name": "city",
+                                        "data_categories": [
+                                            "user.contact.address.city"
+                                        ],
+                                    },
+                                ],
+                                "message": "Database timed out.",
+                                "action_type": "access",
+                                "status": "error",
+                                "updated_at": stringify_date(
+                                    second_postgres_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            },
+                        ],
+                        "my-async-connector": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "my_async_collection",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-async-connector:my_async_collection:street",
+                                        "field_name": "street",
+                                        "data_categories": [
+                                            "user.contact.address.street"
+                                        ],
+                                    },
+                                    {
+                                        "path": "my-async-connector:my_async_collection:city",
+                                        "field_name": "city",
+                                        "data_categories": [
+                                            "user.contact.address.city"
+                                        ],
+                                    },
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "awaiting_processing",
+                                "updated_at": stringify_date(
+                                    async_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            }
+                        ],
+                    },
+                }
+            ],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -2361,23 +2390,31 @@ class TestPrivacyRequestSearch:
         )
         assert 200 == response.status_code
 
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "execution_timeframe": 7,
-            "drp_action": None,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
-        }
         expected_resp = {
-            "items": [fields],
+            "items": [
+                {
+                    **NULLABLE_FIELDS,
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "policy": {
+                        "execution_timeframe": 7,
+                        "drp_action": None,
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
+                                privacy_request.policy
+                            ).rules
+                        ],
+                    },
+                }
+            ],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -2405,26 +2442,31 @@ class TestPrivacyRequestSearch:
         )
         assert 200 == response.status_code
 
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["started_processing_at"] = stringify_date(
-            privacy_request.started_processing_at
-        )
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "execution_timeframe": 7,
-            "drp_action": None,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
-        }
         expected_resp = {
-            "items": [fields],
+            "items": [
+                {
+                    **NULLABLE_FIELDS,
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "policy": {
+                        "execution_timeframe": 7,
+                        "drp_action": None,
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
+                                privacy_request.policy
+                            ).rules
+                        ],
+                    },
+                }
+            ],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -2957,122 +2999,142 @@ class TestPrivacyRequestSearch:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["started_processing_at"] = stringify_date(
-            privacy_request.started_processing_at
-        )
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "execution_timeframe": 7,
-            "drp_action": None,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
-        }
-        fields["results"] = {
-            "Request approved": [
-                {
-                    "connection_key": None,
-                    "collection_name": None,
-                    "fields_affected": None,
-                    "message": "",
-                    "action_type": None,
-                    "status": "approved",
-                    "updated_at": stringify_date(audit_log.updated_at),
-                    "user_id": "system",
-                }
-            ],
-            "my-mongo-db": [
-                {
-                    "connection_key": None,
-                    "collection_name": "orders",
-                    "fields_affected": [
-                        {
-                            "path": "my-mongo-db:orders:name",
-                            "field_name": "name",
-                            "data_categories": ["user.contact.name"],
-                        }
-                    ],
-                    "message": None,
-                    "action_type": "access",
-                    "status": "in_processing",
-                    "updated_at": stringify_date(mongo_execution_log.updated_at),
-                    "user_id": None,
-                }
-            ],
-            "my-postgres-db": [
-                {
-                    "connection_key": None,
-                    "collection_name": "user",
-                    "fields_affected": [
-                        {
-                            "path": "my-postgres-db:user:email",
-                            "field_name": "email",
-                            "data_categories": ["user.contact.email"],
-                        }
-                    ],
-                    "message": None,
-                    "action_type": "access",
-                    "status": "pending",
-                    "updated_at": stringify_date(postgres_execution_log.updated_at),
-                    "user_id": None,
-                },
-                {
-                    "connection_key": None,
-                    "collection_name": "address",
-                    "fields_affected": [
-                        {
-                            "path": "my-postgres-db:address:street",
-                            "field_name": "street",
-                            "data_categories": ["user.contact.address.street"],
-                        },
-                        {
-                            "path": "my-postgres-db:address:city",
-                            "field_name": "city",
-                            "data_categories": ["user.contact.address.city"],
-                        },
-                    ],
-                    "message": "Database timed out.",
-                    "action_type": "access",
-                    "status": "error",
-                    "updated_at": stringify_date(
-                        second_postgres_execution_log.updated_at
-                    ),
-                    "user_id": None,
-                },
-            ],
-            "my-async-connector": [
-                {
-                    "connection_key": None,
-                    "collection_name": "my_async_collection",
-                    "fields_affected": [
-                        {
-                            "path": "my-async-connector:my_async_collection:street",
-                            "field_name": "street",
-                            "data_categories": ["user.contact.address.street"],
-                        },
-                        {
-                            "path": "my-async-connector:my_async_collection:city",
-                            "field_name": "city",
-                            "data_categories": ["user.contact.address.city"],
-                        },
-                    ],
-                    "message": None,
-                    "action_type": "access",
-                    "status": "awaiting_processing",
-                    "updated_at": stringify_date(async_execution_log.updated_at),
-                    "user_id": None,
-                }
-            ],
-        }
+
         expected_resp = {
-            "items": [fields],
+            "items": [
+                {
+                    **NULLABLE_FIELDS,
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "policy": {
+                        "execution_timeframe": 7,
+                        "drp_action": None,
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
+                                privacy_request.policy
+                            ).rules
+                        ],
+                    },
+                    "results": {
+                        "Request approved": [
+                            {
+                                "connection_key": None,
+                                "collection_name": None,
+                                "fields_affected": None,
+                                "message": "",
+                                "action_type": None,
+                                "status": "approved",
+                                "updated_at": stringify_date(audit_log.updated_at),
+                                "user_id": "system",
+                            }
+                        ],
+                        "my-mongo-db": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "orders",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-mongo-db:orders:name",
+                                        "field_name": "name",
+                                        "data_categories": ["user.contact.name"],
+                                    }
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "in_processing",
+                                "updated_at": stringify_date(
+                                    mongo_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            }
+                        ],
+                        "my-postgres-db": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "user",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-postgres-db:user:email",
+                                        "field_name": "email",
+                                        "data_categories": ["user.contact.email"],
+                                    }
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "pending",
+                                "updated_at": stringify_date(
+                                    postgres_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            },
+                            {
+                                "connection_key": None,
+                                "collection_name": "address",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-postgres-db:address:street",
+                                        "field_name": "street",
+                                        "data_categories": [
+                                            "user.contact.address.street"
+                                        ],
+                                    },
+                                    {
+                                        "path": "my-postgres-db:address:city",
+                                        "field_name": "city",
+                                        "data_categories": [
+                                            "user.contact.address.city"
+                                        ],
+                                    },
+                                ],
+                                "message": "Database timed out.",
+                                "action_type": "access",
+                                "status": "error",
+                                "updated_at": stringify_date(
+                                    second_postgres_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            },
+                        ],
+                        "my-async-connector": [
+                            {
+                                "connection_key": None,
+                                "collection_name": "my_async_collection",
+                                "fields_affected": [
+                                    {
+                                        "path": "my-async-connector:my_async_collection:street",
+                                        "field_name": "street",
+                                        "data_categories": [
+                                            "user.contact.address.street"
+                                        ],
+                                    },
+                                    {
+                                        "path": "my-async-connector:my_async_collection:city",
+                                        "field_name": "city",
+                                        "data_categories": [
+                                            "user.contact.address.city"
+                                        ],
+                                    },
+                                ],
+                                "message": None,
+                                "action_type": "access",
+                                "status": "awaiting_processing",
+                                "updated_at": stringify_date(
+                                    async_execution_log.updated_at
+                                ),
+                                "user_id": None,
+                            }
+                        ],
+                    },
+                }
+            ],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -4911,25 +4973,29 @@ class TestResumePrivacyRequest:
         assert response.status_code == 200
         response_body = json.loads(response.text)
         assert submit_mock.called
-        fields = deepcopy(NULLABLE_FIELDS)
-        fields["id"] = privacy_request.id
-        fields["created_at"] = stringify_date(privacy_request.created_at)
-        fields["started_processing_at"] = stringify_date(
-            privacy_request.started_processing_at
-        )
-        fields["status"] = privacy_request.status.value
-        fields["external_id"] = privacy_request.external_id
-        fields["policy"] = {
-            "execution_timeframe": 7,
-            "drp_action": None,
-            "name": privacy_request.policy.name,
-            "key": privacy_request.policy.key,
-            "rules": [
-                rule.model_dump(mode="json")
-                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
-            ],
+        resp = {
+            **NULLABLE_FIELDS,
+            "id": privacy_request.id,
+            "created_at": stringify_date(privacy_request.created_at),
+            "started_processing_at": stringify_date(
+                privacy_request.started_processing_at
+            ),
+            "status": privacy_request.status.value,
+            "external_id": privacy_request.external_id,
+            "policy": {
+                "execution_timeframe": 7,
+                "drp_action": None,
+                "name": privacy_request.policy.name,
+                "key": privacy_request.policy.key,
+                "rules": [
+                    rule.model_dump(mode="json")
+                    for rule in PolicyResponse.model_validate(
+                        privacy_request.policy
+                    ).rules
+                ],
+            },
         }
-        assert response_body == fields
+        assert response_body == resp
 
         privacy_request.delete(db)
 
