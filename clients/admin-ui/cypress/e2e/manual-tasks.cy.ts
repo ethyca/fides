@@ -580,6 +580,57 @@ describe("Manual Tasks", () => {
     });
   });
 
+  describe("Export Functionality", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests?tab=manual-tasks");
+      cy.wait("@getManualTasks");
+    });
+
+    it("should display export button and call export endpoint with correct parameters", () => {
+      // Mock the export endpoint
+      cy.intercept("POST", "/api/v1/plus/manual-fields/export*", {
+        statusCode: 200,
+        headers: {
+          "content-type": "text/csv",
+        },
+        body: "name,status,request_type,assigned_users,privacy_request.id,privacy_request.days_left,privacy_request.subject_identities.email,privacy_request.subject_identities.external_id,privacy_request.subject_identities.phone_number,created_at\nExport Customer Data from Salesforce,new,access,123,pri_123,15,customer@email.com,,,2024-01-01T00:00:00Z",
+      }).as("exportTasks");
+
+      // Check that the export button is present
+      cy.getByTestId("export-manual-tasks-btn").should("be.visible");
+      cy.getByTestId("export-manual-tasks-btn").click();
+
+      // Verify the export endpoint was called with correct parameters
+      cy.wait("@exportTasks").then((interception) => {
+        expect(interception.request.method).to.equal("POST");
+        expect(interception.request.url).to.include(
+          "/api/v1/plus/manual-fields/export",
+        );
+
+        // Check query parameters
+        const url = new URL(interception.request.url);
+        expect(url.searchParams.get("assigned_user_id")).to.equal("123");
+
+        // Check request body
+        expect(interception.request.body).to.deep.include({
+          format: "csv",
+          fields: [
+            "name",
+            "status",
+            "request_type",
+            "assigned_users",
+            "privacy_request.id",
+            "privacy_request.days_left",
+            "privacy_request.subject_identities.email",
+            "privacy_request.subject_identities.external_id",
+            "privacy_request.subject_identities.phone_number",
+            "created_at",
+          ],
+        });
+      });
+    });
+  });
+
   describe("Internal Respondent Access", () => {
     beforeEach(() => {
       cy.login();
