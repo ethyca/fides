@@ -18,11 +18,11 @@ import { PAGE_SIZES } from "../common/table/v2";
 // Interface for task query parameters
 interface TaskQueryParams extends PaginationQueryParams {
   status?: ManualFieldStatus;
-  requestType?: ManualFieldRequestType;
-  systemName?: string;
-  assignedUserId?: string;
-  privacyRequestId?: string;
-  includeFullSubmissionDetails?: boolean;
+  request_type?: ManualFieldRequestType;
+  system_name?: string;
+  assigned_user_id?: string;
+  privacy_request_id?: string;
+  include_full_submission_details?: boolean;
 }
 
 // API endpoints
@@ -31,37 +31,10 @@ export const manualTasksApi = baseApi.injectEndpoints({
     getTasks: build.query<ManualFieldSearchResponse, TaskQueryParams | void>({
       query: (params) => {
         const queryParams = params || { page: 1, size: 25 };
-        const searchParams = new URLSearchParams();
 
-        // Convert page to be 1-indexed for API
-        const page = queryParams.page || 1;
-        searchParams.append("page", String(page));
-        searchParams.append("size", String(queryParams.size || 25));
-
-        if (queryParams.status) {
-          searchParams.append("status", queryParams.status);
-        }
-        if (queryParams.requestType) {
-          searchParams.append("request_type", queryParams.requestType);
-        }
-        if (queryParams.systemName) {
-          searchParams.append("system_name", queryParams.systemName);
-        }
-        if (queryParams.assignedUserId) {
-          searchParams.append("assigned_user_id", queryParams.assignedUserId);
-        }
-        if (queryParams.privacyRequestId) {
-          searchParams.append(
-            "privacy_request_id",
-            queryParams.privacyRequestId,
-          );
-        }
-        if (queryParams.includeFullSubmissionDetails) {
-          searchParams.append("include_full_submission_details", "true");
-        }
         return {
           url: "plus/manual-fields",
-          params: searchParams,
+          params: queryParams,
         };
       },
       providesTags: () => [{ type: "Manual Tasks" }],

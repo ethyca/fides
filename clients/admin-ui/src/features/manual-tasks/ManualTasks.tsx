@@ -91,10 +91,10 @@ export const ManualTasks = () => {
     page: pageIndex,
     size: pageSize,
     status: filters.status as ManualFieldStatus,
-    systemName: filters.systemName,
-    requestType: filters.requestType as ManualFieldRequestType,
-    assignedUserId: filters.assignedUsers,
-    privacyRequestId: filters.privacyRequestId,
+    system_name: filters.systemName,
+    request_type: filters.requestType as ManualFieldRequestType,
+    assigned_user_id: filters.assignedUsers,
+    privacy_request_id: filters.privacyRequestId,
   });
 
   // Separate query for filter options without any filters applied
