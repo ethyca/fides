@@ -42,6 +42,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
 - Fixed action center routing to prevent empty page when reloading data explorer [#6791](https://github.com/ethyca/fides/pull/6791)
 
+### Changed
+- Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)
+
 ## [2.72.3](https://github.com/ethyca/fides/compare/2.72.2...2.72.3)
 
 ### Fixed
