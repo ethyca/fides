@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  ACTION_CENTER_ROUTE,
+  ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
@@ -55,7 +55,6 @@ import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActio
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
-import { MONITOR_TYPES } from "../utils/getMonitorType";
 import isConsentCategory from "../utils/isConsentCategory";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -616,9 +615,12 @@ export const useDiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      router.push(
-        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}`,
-      );
+      router.push({
+        pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
+        query: {
+          monitorId: encodeURIComponent(monitorId),
+        },
+      });
       toast(
         successToastParams(
           `${assetCount} assets from ${systemName} have been added to the system inventory.`,
