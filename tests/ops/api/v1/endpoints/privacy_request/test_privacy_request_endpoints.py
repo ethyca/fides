@@ -4971,7 +4971,7 @@ class TestResumePrivacyRequest:
         assert response.status_code == 200
         response_body = json.loads(response.text)
         assert submit_mock.called
-        resp = {
+        assert response_body = {
             **NULLABLE_FIELDS,
             "id": privacy_request.id,
             "created_at": stringify_date(privacy_request.created_at),
