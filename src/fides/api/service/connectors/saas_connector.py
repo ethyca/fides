@@ -288,8 +288,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     input_data=input_data,
                 )
 
-
-
         rows: List[Row] = []
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
@@ -391,7 +389,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         missing_dataset_reference_values = check_dataset_missing_reference_values(
             input_data, param_values
         )
-        logger.info(f"Missing dataset reference values: {missing_dataset_reference_values}")
+        logger.info(
+            f"Missing dataset reference values: {missing_dataset_reference_values}"
+        )
         if missing_dataset_reference_values:
             logger.info(
                 "The  action type {} for the '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
