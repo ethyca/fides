@@ -30,7 +30,7 @@ interface MonitorConfigFormValues {
   execution_start_date: string;
   shared_config_id?: string;
   use_llm_classifier: boolean;
-  model_override?: string;
+  llm_model_override?: string;
   prompt_template?: ClassifyLlmPromptTemplateOptions;
   content_classification_enabled?: boolean;
 }
@@ -55,7 +55,9 @@ const getClassifyParams = (
     return {
       ...baseParams,
       context_classifier: "llm",
-      ...(values.model_override && { model_override: values.model_override }),
+      ...(values.llm_model_override && {
+        llm_model_override: values.llm_model_override,
+      }),
       ...(values.prompt_template && {
         prompt_template: values.prompt_template,
       }),
@@ -66,7 +68,7 @@ const getClassifyParams = (
   return {
     ...baseParams,
     context_classifier: undefined,
-    model_override: undefined,
+    llm_model_override: undefined,
     prompt_template: undefined,
     content_classification_enabled: undefined,
   };
@@ -162,8 +164,8 @@ const ConfigureMonitorForm = ({
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
     use_llm_classifier: isLlmClassifierEnabled,
-    model_override: isLlmClassifierEnabled
-      ? (monitor?.classify_params?.model_override ?? undefined)
+    llm_model_override: isLlmClassifierEnabled
+      ? (monitor?.classify_params?.llm_model_override ?? undefined)
       : undefined,
     prompt_template: isLlmClassifierEnabled
       ? (monitor?.classify_params?.prompt_template ?? undefined)
@@ -220,8 +222,8 @@ const ConfigureMonitorForm = ({
                 {values.use_llm_classifier && (
                   <>
                     <CustomTextInput
-                      name="model_override"
-                      id="model_override"
+                      name="llm_model_override"
+                      id="llm_model_override"
                       label="Model Override"
                       variant="stacked"
                       tooltip="Optionally specify a custom model to use for LLM classification"
