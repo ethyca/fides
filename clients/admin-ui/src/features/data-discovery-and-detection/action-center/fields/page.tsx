@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntCheckbox as Checkbox,
   AntDropdown as Dropdown,
   AntFlex as Flex,
   AntList as List,
@@ -25,24 +26,25 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useClassifyStagedResourcesMutation,
   useGetMonitorConfigQuery,
-  useGetMonitorFieldsQuery,
   useIgnoreMonitorResultAssetsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import {
-  usePromoteResourcesMutation,
-  useUpdateResourceCategoryMutation,
-} from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { DiffStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+import { DROPDOWN_OPTIONS, FIELD_ACTION_LABEL } from "./FieldActions.const";
+import {
+  useFieldActionsMutation,
+  useGetMonitorFieldsQuery,
+} from "./monitor-fields.slice";
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
-  ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree from "./MonitorTree";
+import { FieldActionTypeValue, ResourceStatusLabel } from "./types";
 import { useMonitorFieldsFilters } from "./useFilters";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
@@ -72,17 +74,22 @@ const ActionCenterFields: NextPage = () => {
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState<boolean>(false);
   const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
-    monitor_config_id: monitorId,
-    size: pageSize,
-    page: pageIndex,
-    staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-    search: search.searchProps.value,
-    diff_status: resourceStatus
-      ? resourceStatus.flatMap(intoDiffStatus)
-      : undefined,
-    confidence_score: confidenceScore || undefined,
-    data_category: dataCategory || undefined,
+    path: {
+      monitor_config_id: monitorId,
+    },
+    query: {
+      size: pageSize,
+      page: pageIndex,
+      staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+      search: search.searchProps.value,
+      diff_status: resourceStatus
+        ? resourceStatus.flatMap(intoDiffStatus)
+        : undefined,
+      confidence_score: confidenceScore || undefined,
+      data_category: dataCategory || undefined,
+    },
   });
   const toast = useToast();
   const [classifyStagedResourcesMutation] =
@@ -91,7 +98,7 @@ const ActionCenterFields: NextPage = () => {
   const [ignoreMonitorResultAssetsMutation] =
     useIgnoreMonitorResultAssetsMutation();
   const { errorAlert } = useAlert();
-  const [promoteResources] = usePromoteResourcesMutation();
+  const [bulkAction] = useFieldActionsMutation();
 
   const handleSetDataCategories = async (
     dataCategories: string[],
@@ -118,14 +125,34 @@ const ActionCenterFields: NextPage = () => {
     }
   };
 
-  const handlePromote = async (urns: string[]) => {
-    const mutationResult = await promoteResources({
-      staged_resource_urns: urns,
+  const handleBulkAction = async (actionType: FieldActionTypeValue) => {
+    const mutationResult = await bulkAction({
+      query: {
+        staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+        search: search.searchProps.value,
+        diff_status: resourceStatus
+          ? resourceStatus.flatMap(intoDiffStatus)
+          : undefined,
+        confidence_score: confidenceScore || undefined,
+        data_category: dataCategory || undefined,
+      },
+      path: {
+        monitor_config_id: monitorId,
+        action_type: actionType,
+      },
     });
 
     if (isErrorResult(mutationResult)) {
       errorAlert(getErrorMessage(mutationResult.error));
+      return;
     }
+
+    const actionItemCount = mutationResult.data.task_ids?.length ?? 0;
+    toast(
+      successToastParams(
+        `Successful ${FIELD_ACTION_LABEL[actionType]} action for ${actionItemCount} item${actionItemCount !== 1 ? "s" : ""}`,
+      ),
+    );
   };
 
   const handleClassifyStagedResources = async () => {
@@ -143,6 +170,30 @@ const ActionCenterFields: NextPage = () => {
 
     toast(successToastParams(`Classifying initiated`));
   };
+
+  const handleOnSelectAll = (nextSelectAll: boolean) => {
+    setSelectAll(nextSelectAll);
+    setSelectedFields(
+      nextSelectAll && fieldsDataResponse
+        ? fieldsDataResponse.items.map((item) => item.urn)
+        : [],
+    );
+  };
+
+  const handleOnSelect = (key: string, selected?: boolean) => {
+    setSelectAll(false);
+    setSelectedFields(
+      selected
+        ? [...selectedFields, key]
+        : selectedFields.filter((val) => val !== key),
+    );
+  };
+
+  const selectedFieldCount =
+    selectAll && fieldsDataResponse?.total
+      ? fieldsDataResponse?.total
+      : selectedFields.length;
+
   /**
    * @todo: this should be handled on a form/state action level
    */
@@ -161,6 +212,7 @@ const ActionCenterFields: NextPage = () => {
     <FixedLayout
       title="Action center - Discovered assets by system"
       mainProps={{ overflow: "hidden" }}
+      fullHeight
     >
       <PageHeader
         heading="Action center"
@@ -227,11 +279,11 @@ const ActionCenterFields: NextPage = () => {
                 <Dropdown
                   menu={{
                     items: [
-                      {
-                        key: "promote",
-                        onClick: () => handlePromote(selectedFields),
-                        label: "Promote",
-                      },
+                      ...DROPDOWN_OPTIONS.map((actionType) => ({
+                        key: actionType,
+                        label: FIELD_ACTION_LABEL[actionType],
+                        onClick: () => handleBulkAction(actionType),
+                      })),
                     ],
                   }}
                   disabled={selectedFields.length <= 0}
@@ -246,6 +298,18 @@ const ActionCenterFields: NextPage = () => {
                 </Dropdown>
               </Flex>
             </Flex>
+            <Flex gap="middle">
+              <Checkbox
+                checked={selectAll}
+                onChange={(e) => handleOnSelectAll(e.target.checked)}
+              />
+              <Text>Select all</Text>
+              {!!selectedFieldCount && (
+                <Text strong>
+                  {selectedFieldCount.toLocaleString()} selected
+                </Text>
+              )}
+            </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
               className="overflow-scroll"
@@ -253,12 +317,7 @@ const ActionCenterFields: NextPage = () => {
                 renderMonitorFieldListItem({
                   ...props,
                   selected: selectedFields.includes(props.urn),
-                  onSelect: (key, selected) =>
-                    selected
-                      ? setSelectedFields([...selectedFields, key])
-                      : setSelectedFields(
-                          selectedFields.filter((val) => val !== key),
-                        ),
+                  onSelect: handleOnSelect,
                   onSetDataCategories: handleSetDataCategories,
                   onIgnore: handleIgnore,
                 })
