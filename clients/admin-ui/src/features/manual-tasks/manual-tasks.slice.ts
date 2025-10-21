@@ -22,19 +22,48 @@ interface TaskQueryParams extends PaginationQueryParams {
   system_name?: string;
   assigned_user_id?: string;
   privacy_request_id?: string;
-  include_full_submission_details?: boolean;
 }
 
 // API endpoints
 export const manualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getTasks: build.query<ManualFieldSearchResponse, TaskQueryParams | void>({
+    getTasks: build.query<
+      ManualFieldSearchResponse,
+      TaskQueryParams | { include_full_submission_details?: boolean }
+    >({
       query: (params) => {
         const queryParams = params || { page: 1, size: 25 };
 
         return {
           url: "plus/manual-fields",
           params: queryParams,
+        };
+      },
+      providesTags: () => [{ type: "Manual Tasks" }],
+    }),
+    exportTasks: build.query<ManualFieldSearchResponse, TaskQueryParams>({
+      query: (params) => {
+        const queryParams = params || { page: 1, size: 25 };
+
+        return {
+          url: "plus/manual-fields/export",
+          params: queryParams,
+          body: {
+            format: "csv",
+            fields: [
+              "name",
+              "status",
+              // "system_name",
+              "request_type",
+              "assigned_users",
+              "privacy_request.id",
+              "privacy_request.days_left",
+              "privacy_request.subject_identities.email",
+              "privacy_request.subject_identities.external_id",
+              "privacy_request.subject_identities.phone_number",
+              "created_at",
+            ],
+          },
         };
       },
       providesTags: () => [{ type: "Manual Tasks" }],
