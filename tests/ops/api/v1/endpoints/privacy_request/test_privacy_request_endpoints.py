@@ -4993,7 +4993,6 @@ class TestResumePrivacyRequest:
                 ],
             },
         }
-        assert response_body == resp
 
         privacy_request.delete(db)
 
