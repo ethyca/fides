@@ -2,14 +2,8 @@ name: Backend Code Checks
 
 on:
   pull_request:
-    # This only ignores paths if there are _no_ commits on the branch that touch other files
-    paths-ignore:
-      - "**.md"
-      - "clients/**"
-      - ".vscode/**"
-      - ".cursor/**"
-      - ".github/workflows/frontend_checks.yml"
-      - ".github/workflows/cypress_*.yml"
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -28,7 +22,39 @@ jobs:
   ###############
   ## Prechecks ##
   ###############
+  Check-Backend-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_backend_changes: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for backend file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            backend:
+              - '**/*.py'
+              - '**/*.pxl'
+              - '**/*requirements.txt'
+              - 'Dockerfile'
+              - 'Makefile'
+              - 'pyproject.toml'
+              - 'setup.cfg'
+              - 'noxfile.py'
+              - 'data/**'
+              - '.github/workflows/backend_checks.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.backend == 'true'
+        run: echo "${{ steps.filter.outputs.backend_files }}"
+
   Collect-Tests:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,7 +73,8 @@ jobs:
         run: nox -s collect_tests
 
   Build:
-    needs: Collect-Tests
+    needs: [Check-Backend-Changes, Collect-Tests]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
@@ -83,7 +110,8 @@ jobs:
   ## Performance ##
   ##################
   Performance-Checks:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -127,7 +155,8 @@ jobs:
   ## Misc Checks ##
   #################
   Check-Container-Startup:
-    needs: Build
+    needs: [Check-Backend-Changes, Build]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -165,7 +194,8 @@ jobs:
         run: nox -s check_worker_startup
 
   Misc-Tests:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         test_selection:
@@ -213,7 +243,8 @@ jobs:
   ## Safe Tests ##
   ################
   Safe-Tests:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -273,15 +304,14 @@ jobs:
   # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -335,15 +365,14 @@ jobs:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
   External-Datastores:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -440,11 +469,10 @@ jobs:
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
       contents: read
       id-token: write
@@ -485,3 +513,52 @@ jobs:
           SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
           SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
         run: nox -s "pytest(ops-saas)"
+
+  # Summary job for branch protection - passes if all jobs pass or are skipped
+  Backend-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Collect-Tests
+      - Build
+      - Performance-Checks
+      - Check-Container-Startup
+      - Misc-Tests
+      - Safe-Tests
+      # Unsafe tests are optional, so we don't include them in the summary
+    steps:
+      - name: Check job results
+        run: |
+          echo "Collect-Tests: ${{ needs.Collect-Tests.result }}"
+          echo "Build: ${{ needs.Build.result }}"
+          echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
+          echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
+          echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
+          echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
+
+          # Fail only if jobs failed (not if skipped)
+          if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Build.result }}" == "failure" ] || \
+             [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
+             [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Build.result }}" == "cancelled" ] || \
+             [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
+             [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          # Performance checks can fail without blocking (continue-on-error: true)
+          if [ "${{ needs.Performance-Checks.result }}" == "failure" ]; then
+            echo "⚠️ Performance checks failed but not blocking"
+          fi
+
+          echo "✅ All required backend checks passed or were skipped"

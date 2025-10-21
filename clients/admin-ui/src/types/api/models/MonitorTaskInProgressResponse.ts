@@ -15,7 +15,7 @@ export type MonitorTaskInProgressResponse = {
   status: string;
   message?: string | null;
   staged_resource_urns?: Array<string> | null;
-  dismissed_in_activity_view?: boolean | null;
+  dismissed?: boolean | null;
   connection_type?: string | null;
   connection_name?: string | null;
   field_count?: number | null;
