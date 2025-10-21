@@ -5,13 +5,15 @@ import React from "react";
 const FixedLayout = ({
   children,
   title,
+  fullHeight,
+  fullWidth,
   mainProps,
-  fullHeight = false,
 }: {
   children: React.ReactNode;
   title: string;
-  mainProps?: FlexProps;
   fullHeight?: boolean;
+  fullWidth?: boolean;
+  mainProps?: FlexProps;
 }) => (
   // NOTE: unlike the main Layout, this layout specifies a fixed height
   // of 100vh for the page, and overflow="auto" for the main content area. This
@@ -26,7 +28,7 @@ const FixedLayout = ({
     data-testid={title}
     direction="column"
     height={fullHeight ? "100vh" : "calc(100vh - 48px)"}
-    width={fullHeight ? "100vw" : "calc(100vw - 240px)"}
+    width={fullWidth ? "100vw" : "calc(100vw - 240px)"}
   >
     <Head>
       <title>Fides Admin UI - {title}</title>
