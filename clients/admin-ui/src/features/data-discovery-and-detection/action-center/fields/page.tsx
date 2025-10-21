@@ -212,6 +212,7 @@ const ActionCenterFields: NextPage = () => {
     <FixedLayout
       title="Action center - Discovered assets by system"
       mainProps={{ overflow: "hidden" }}
+      fullHeight
     >
       <PageHeader
         heading="Action center"
