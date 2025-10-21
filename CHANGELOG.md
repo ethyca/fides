@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
 - Added new CustomList component to fidesui with selection support [#6759](https://github.com/ethyca/fides/pull/6759)
 - Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
+- Adds a reusable form modal hook for confirmation modals [#6789](https://github.com/ethyca/fides/pull/6789)
 - Added fullHeight prop to FixedLayout component for full viewport usage [#6787](https://github.com/ethyca/fides/pull/6787)
 
 ### Fixed
