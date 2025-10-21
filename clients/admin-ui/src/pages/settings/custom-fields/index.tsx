@@ -1,5 +1,5 @@
 import Layout from "common/Layout";
-import { AntTypography, Box } from "fidesui";
+import { AntTypography } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
@@ -11,14 +11,16 @@ const CUSTOM_FIELDS_COPY =
 
 const CustomFields: NextPage = () => (
   <Layout title="Custom fields">
-    <Box data-testid="custom-fields-management">
-      <PageHeader heading="Custom fields">
-        <AntTypography.Paragraph className="max-w-screen-md">
-          {CUSTOM_FIELDS_COPY}
-        </AntTypography.Paragraph>
-      </PageHeader>
-      <CustomFieldsTable />
-    </Box>
+    <PageHeader
+      heading="Custom fields"
+      isSticky={false}
+      style={{ paddingBottom: 0 }}
+    >
+      <AntTypography.Paragraph className="max-w-screen-md">
+        {CUSTOM_FIELDS_COPY}
+      </AntTypography.Paragraph>
+    </PageHeader>
+    <CustomFieldsTable />
   </Layout>
 );
 export default CustomFields;

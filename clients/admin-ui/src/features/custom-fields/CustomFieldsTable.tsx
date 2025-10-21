@@ -13,7 +13,10 @@ const CustomFieldsTable = () => {
 
   return (
     <Flex vertical gap="middle">
-      <Flex justify="space-between">
+      <Flex
+        justify="space-between"
+        className="sticky -top-6 z-10 bg-white py-4"
+      >
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}
@@ -27,7 +30,7 @@ const CustomFieldsTable = () => {
           Add custom field
         </Button>
       </Flex>
-      <Table {...tableProps} columns={columns} />
+      <Table {...tableProps} columns={columns} className="-mt-4" />
     </Flex>
   );
 };
