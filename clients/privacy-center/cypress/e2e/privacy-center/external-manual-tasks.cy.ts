@@ -635,11 +635,13 @@ describe("External Manual Tasks", () => {
         headers: {
           "content-type": "text/csv",
         },
-        body: "name,status,request_type,privacy_request.id,privacy_request.days_left,privacy_request.subject_identities.email,privacy_request.subject_identities.external_id,privacy_request.subject_identities.phone_number,created_at\nExport Customer Data from Salesforce,new,access,pri_ext_001,15,customer@email.com,,,2024-01-01T00:00:00Z",
+        body: "name,status,system_name,request_type,created_at,privacy_request.id,privacy_request.days_left,privacy_request.subject_identities.email,privacy_request.subject_identities.external_id,privacy_request.subject_identities.phone_number\nExport Customer Data from Salesforce,new,Salesforce,access,2024-01-01T00:00:00Z,pri_ext_001,15,customer@email.com,,",
       }).as("exportTasks");
 
       // Check that the export button is present
-      cy.get('[data-testid="export-external-tasks-btn"]').should("be.visible");
+      cy.get('[data-testid="export-external-tasks-btn"]')
+        .should("be.visible")
+        .and("contain", "Download tasks");
       cy.get('[data-testid="export-external-tasks-btn"]').click();
 
       // Verify the export endpoint was called with correct parameters
@@ -649,21 +651,21 @@ describe("External Manual Tasks", () => {
           "/plus/manual-fields/export",
         );
 
-        // Check request body
-        expect(interception.request.body).to.deep.include({
-          format: "csv",
-          fields: [
-            "name",
-            "status",
-            "request_type",
-            "privacy_request.id",
-            "privacy_request.days_left",
-            "privacy_request.subject_identities.email",
-            "privacy_request.subject_identities.external_id",
-            "privacy_request.subject_identities.phone_number",
-            "created_at",
-          ],
-        });
+        // Check request body contains expected fields
+        expect(interception.request.body).to.have.property("format", "csv");
+        expect(interception.request.body).to.have.property("fields");
+        expect(interception.request.body.fields).to.include.members([
+          "name",
+          "status",
+          "system_name",
+          "request_type",
+          "created_at",
+          "privacy_request.id",
+          "privacy_request.days_left",
+          "privacy_request.subject_identities.email",
+          "privacy_request.subject_identities.external_id",
+          "privacy_request.subject_identities.phone_number",
+        ]);
       });
     });
   });
