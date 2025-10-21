@@ -1832,7 +1832,6 @@ class TestGetPrivacyRequests:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-
         expected_resp = {
             "items": [
                 {
