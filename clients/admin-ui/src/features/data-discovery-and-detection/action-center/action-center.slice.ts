@@ -4,6 +4,7 @@ import {
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
+  ConnectionType,
   ConsentStatus,
   DiffStatus,
   MonitorConfig,
@@ -29,6 +30,7 @@ import {
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
 import { MonitorSummaryPaginatedResponse } from "./types";
+import { getMonitorType } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -51,6 +53,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ page = 1, size = 20, search }) => ({
         url: `/plus/discovery-monitor/aggregate-results`,
         params: { page, size, search, diff_status: "addition" },
+      }),
+      transformResponse: (response: MonitorSummaryPaginatedResponse) => ({
+        ...response,
+        items: response.items.map((monitor) => ({
+          ...monitor,
+          monitorType: getMonitorType(monitor.connection_type),
+          isTestMonitor:
+            monitor.connection_type === ConnectionType.TEST_WEBSITE ||
+            monitor.connection_type === ConnectionType.FIDES,
+        })),
       }),
       providesTags: ["Discovery Monitor Results"],
     }),
