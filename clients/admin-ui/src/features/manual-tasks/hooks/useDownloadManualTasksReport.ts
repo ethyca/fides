@@ -18,7 +18,7 @@ const useDownloadManualTasksReport = () => {
       toast({ status: "error", description: message });
     } else {
       const a = document.createElement("a");
-      const csvBlob = new Blob([result.data], { type: "text/csv" });
+      const csvBlob = new Blob([result.data!], { type: "text/csv" });
       const csvUrl = window.URL.createObjectURL(csvBlob);
       a.href = csvUrl;
       a.download = `manual-tasks-report.csv`;
