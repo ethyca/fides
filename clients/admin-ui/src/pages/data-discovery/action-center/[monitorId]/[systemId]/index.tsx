@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
@@ -27,7 +27,7 @@ const MonitorResultAssets: NextPage = () => {
   const system = systemResults?.items[0];
 
   return (
-    <FixedLayout title="Action center - Discovered assets">
+    <Layout title="Action center - Discovered assets">
       <PageHeader
         heading="Action center"
         breadcrumbItems={[
@@ -40,13 +40,14 @@ const MonitorResultAssets: NextPage = () => {
                 : (system?.name ?? systemId),
           },
         ]}
+        isSticky={false}
       />
       <DiscoveredAssetsTable
         monitorId={monitorId}
         systemId={systemId}
         consentStatus={system?.consent_status}
       />
-    </FixedLayout>
+    </Layout>
   );
 };
 

@@ -177,6 +177,9 @@ export const useDiscoveredAssetsTable = ({
             </div>
           ),
         },
+        sticky: {
+          offsetHeader: 40,
+        },
       },
     }),
     [activeTab, isLoading, isFetching, data?.items, data?.total],
