@@ -342,6 +342,11 @@ class PrivacyRequestResponse(FidesSchema):
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
+    is_duplicate: Optional[bool] = None
+    duplicate_request_group_id: Optional[str] = None
+    primary_request_id: Optional[str] = None
+    duplicate_detected_at: Optional[datetime] = None
+    duplicate_detection_method: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 

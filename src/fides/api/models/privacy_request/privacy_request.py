@@ -228,6 +228,16 @@ class PrivacyRequest(
     deleted_at = Column(DateTime(timezone=True), nullable=True)
     # and who deleted it
     deleted_by = Column(String, nullable=True)
+    is_duplicate = Column(Boolean, nullable=True, index=True)
+    duplicate_request_group_id = Column(String, nullable=True, index=True)
+    primary_request_id = Column(
+        String,
+        ForeignKey("privacyrequest.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    duplicate_detected_at = Column(DateTime(timezone=True), nullable=True)
+    duplicate_detection_method = Column(String, nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.

@@ -2,6 +2,7 @@ import ast
 import csv
 import io
 import json
+from copy import deepcopy
 from datetime import datetime, timedelta
 from random import randint
 from typing import List
@@ -122,6 +123,35 @@ from tests.conftest import access_runner_tester, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
+
+NULLABLE_FIELDS = {
+    "custom_privacy_request_fields": None,
+    "custom_privacy_request_fields_approved_at": None,
+    "custom_privacy_request_fields_approved_by": None,
+    "days_left": None,
+    "finished_processing_at": None,
+    "identity_verified_at": None,
+    "finalized_at": None,
+    "finalized_by": None,
+    "identity": None,
+    "reviewed_at": None,
+    "reviewed_by": None,
+    "submitted_by": None,
+    "paused_at": None,
+    "reviewer": None,
+    "submitter": None,
+    "source": None,
+    "location": None,
+    "action_required_details": None,
+    "resume_endpoint": None,
+    "deleted_at": None,
+    "deleted_by": None,
+    "is_duplicate": None,
+    "duplicate_request_group_id": None,
+    "primary_request_id": None,
+    "duplicate_detected_at": None,
+    "duplicate_detection_method": None,
+}
 
 page_size = Params().size
 
@@ -1056,52 +1086,26 @@ class TestGetPrivacyRequests:
             url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
-
-        expected_resp = {
-            "items": [
-                {
-                    "id": privacy_request.id,
-                    "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
-                    "started_processing_at": stringify_date(
-                        privacy_request.started_processing_at
-                    ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
-                    "status": privacy_request.status.value,
-                    "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
-                    "policy": {
-                        "drp_action": None,
-                        "execution_timeframe": 7,
-                        "name": privacy_request.policy.name,
-                        "key": privacy_request.policy.key,
-                        "rules": [
-                            rule.model_dump(mode="json")
-                            for rule in PolicyResponse.model_validate(
-                                privacy_request.policy
-                            ).rules
-                        ],
-                    },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
-                }
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["started_processing_at"] = stringify_date(
+            privacy_request.started_processing_at
+        )
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "drp_action": None,
+            "execution_timeframe": 7,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
             ],
+        }
+        expected_resp = {
+            "items": [fields],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -1129,51 +1133,27 @@ class TestGetPrivacyRequests:
         )
         assert 200 == response.status_code
 
-        expected_resp = {
-            "items": [
-                {
-                    "id": privacy_request.id,
-                    "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
-                    "started_processing_at": stringify_date(
-                        privacy_request.started_processing_at
-                    ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
-                    "status": privacy_request.status.value,
-                    "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
-                    "policy": {
-                        "execution_timeframe": 7,
-                        "drp_action": None,
-                        "name": privacy_request.policy.name,
-                        "key": privacy_request.policy.key,
-                        "rules": [
-                            rule.model_dump(mode="json")
-                            for rule in PolicyResponse.model_validate(
-                                privacy_request.policy
-                            ).rules
-                        ],
-                    },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
-                }
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["started_processing_at"] = stringify_date(
+            privacy_request.started_processing_at
+        )
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "execution_timeframe": 7,
+            "drp_action": None,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
             ],
+        }
+
+        expected_resp = {
+            "items": [fields],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -1843,161 +1823,122 @@ class TestGetPrivacyRequests:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-        expected_resp = {
-            "items": [
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["started_processing_at"] = stringify_date(
+            privacy_request.started_processing_at
+        )
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "execution_timeframe": 7,
+            "drp_action": None,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
+            ],
+        }
+        fields["results"] = {
+            "Request approved": [
                 {
-                    "id": privacy_request.id,
-                    "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
-                    "started_processing_at": stringify_date(
-                        privacy_request.started_processing_at
+                    "connection_key": None,
+                    "collection_name": None,
+                    "fields_affected": None,
+                    "message": "",
+                    "action_type": None,
+                    "status": "approved",
+                    "updated_at": stringify_date(audit_log.updated_at),
+                    "user_id": "system",
+                }
+            ],
+            "my-mongo-db": [
+                {
+                    "connection_key": None,
+                    "collection_name": "orders",
+                    "fields_affected": [
+                        {
+                            "path": "my-mongo-db:orders:name",
+                            "field_name": "name",
+                            "data_categories": ["user.contact.name"],
+                        }
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "in_processing",
+                    "updated_at": stringify_date(mongo_execution_log.updated_at),
+                    "user_id": None,
+                }
+            ],
+            "my-postgres-db": [
+                {
+                    "connection_key": None,
+                    "collection_name": "user",
+                    "fields_affected": [
+                        {
+                            "path": "my-postgres-db:user:email",
+                            "field_name": "email",
+                            "data_categories": ["user.contact.email"],
+                        }
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "pending",
+                    "updated_at": stringify_date(postgres_execution_log.updated_at),
+                    "user_id": None,
+                },
+                {
+                    "connection_key": None,
+                    "collection_name": "address",
+                    "fields_affected": [
+                        {
+                            "path": "my-postgres-db:address:street",
+                            "field_name": "street",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "path": "my-postgres-db:address:city",
+                            "field_name": "city",
+                            "data_categories": ["user.contact.address.city"],
+                        },
+                    ],
+                    "message": "Database timed out.",
+                    "action_type": "access",
+                    "status": "error",
+                    "updated_at": stringify_date(
+                        second_postgres_execution_log.updated_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
-                    "status": privacy_request.status.value,
-                    "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
-                    "policy": {
-                        "execution_timeframe": 7,
-                        "drp_action": None,
-                        "name": privacy_request.policy.name,
-                        "key": privacy_request.policy.key,
-                        "rules": [
-                            rule.model_dump(mode="json")
-                            for rule in PolicyResponse.model_validate(
-                                privacy_request.policy
-                            ).rules
-                        ],
-                    },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
-                    "results": {
-                        "Request approved": [
-                            {
-                                "connection_key": None,
-                                "collection_name": None,
-                                "fields_affected": None,
-                                "message": "",
-                                "action_type": None,
-                                "status": "approved",
-                                "updated_at": stringify_date(audit_log.updated_at),
-                                "user_id": "system",
-                            }
-                        ],
-                        "my-mongo-db": [
-                            {
-                                "connection_key": None,
-                                "collection_name": "orders",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-mongo-db:orders:name",
-                                        "field_name": "name",
-                                        "data_categories": ["user.contact.name"],
-                                    }
-                                ],
-                                "message": None,
-                                "action_type": "access",
-                                "status": "in_processing",
-                                "updated_at": stringify_date(
-                                    mongo_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            }
-                        ],
-                        "my-postgres-db": [
-                            {
-                                "connection_key": None,
-                                "collection_name": "user",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-postgres-db:user:email",
-                                        "field_name": "email",
-                                        "data_categories": ["user.contact.email"],
-                                    }
-                                ],
-                                "message": None,
-                                "action_type": "access",
-                                "status": "pending",
-                                "updated_at": stringify_date(
-                                    postgres_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            },
-                            {
-                                "connection_key": None,
-                                "collection_name": "address",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-postgres-db:address:street",
-                                        "field_name": "street",
-                                        "data_categories": [
-                                            "user.contact.address.street"
-                                        ],
-                                    },
-                                    {
-                                        "path": "my-postgres-db:address:city",
-                                        "field_name": "city",
-                                        "data_categories": [
-                                            "user.contact.address.city"
-                                        ],
-                                    },
-                                ],
-                                "message": "Database timed out.",
-                                "action_type": "access",
-                                "status": "error",
-                                "updated_at": stringify_date(
-                                    second_postgres_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            },
-                        ],
-                        "my-async-connector": [
-                            {
-                                "connection_key": None,
-                                "collection_name": "my_async_collection",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-async-connector:my_async_collection:street",
-                                        "field_name": "street",
-                                        "data_categories": [
-                                            "user.contact.address.street"
-                                        ],
-                                    },
-                                    {
-                                        "path": "my-async-connector:my_async_collection:city",
-                                        "field_name": "city",
-                                        "data_categories": [
-                                            "user.contact.address.city"
-                                        ],
-                                    },
-                                ],
-                                "message": None,
-                                "action_type": "access",
-                                "status": "awaiting_processing",
-                                "updated_at": stringify_date(
-                                    async_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            }
-                        ],
-                    },
+                    "user_id": None,
                 },
             ],
+            "my-async-connector": [
+                {
+                    "connection_key": None,
+                    "collection_name": "my_async_collection",
+                    "fields_affected": [
+                        {
+                            "path": "my-async-connector:my_async_collection:street",
+                            "field_name": "street",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "path": "my-async-connector:my_async_collection:city",
+                            "field_name": "city",
+                            "data_categories": ["user.contact.address.city"],
+                        },
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "awaiting_processing",
+                    "updated_at": stringify_date(async_execution_log.updated_at),
+                    "user_id": None,
+                }
+            ],
+        }
+        expected_resp = {
+            "items": [fields],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -2420,51 +2361,23 @@ class TestPrivacyRequestSearch:
         )
         assert 200 == response.status_code
 
-        expected_resp = {
-            "items": [
-                {
-                    "id": privacy_request.id,
-                    "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
-                    "started_processing_at": stringify_date(
-                        privacy_request.started_processing_at
-                    ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
-                    "status": privacy_request.status.value,
-                    "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
-                    "policy": {
-                        "drp_action": None,
-                        "execution_timeframe": 7,
-                        "name": privacy_request.policy.name,
-                        "key": privacy_request.policy.key,
-                        "rules": [
-                            rule.model_dump(mode="json")
-                            for rule in PolicyResponse.model_validate(
-                                privacy_request.policy
-                            ).rules
-                        ],
-                    },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
-                }
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "execution_timeframe": 7,
+            "drp_action": None,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
             ],
+        }
+        expected_resp = {
+            "items": [fields],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -2492,51 +2405,26 @@ class TestPrivacyRequestSearch:
         )
         assert 200 == response.status_code
 
-        expected_resp = {
-            "items": [
-                {
-                    "id": privacy_request.id,
-                    "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
-                    "started_processing_at": stringify_date(
-                        privacy_request.started_processing_at
-                    ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
-                    "status": privacy_request.status.value,
-                    "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
-                    "policy": {
-                        "execution_timeframe": 7,
-                        "drp_action": None,
-                        "name": privacy_request.policy.name,
-                        "key": privacy_request.policy.key,
-                        "rules": [
-                            rule.model_dump(mode="json")
-                            for rule in PolicyResponse.model_validate(
-                                privacy_request.policy
-                            ).rules
-                        ],
-                    },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
-                }
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["started_processing_at"] = stringify_date(
+            privacy_request.started_processing_at
+        )
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "execution_timeframe": 7,
+            "drp_action": None,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
             ],
+        }
+        expected_resp = {
+            "items": [fields],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -3069,161 +2957,122 @@ class TestPrivacyRequestSearch:
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
-        expected_resp = {
-            "items": [
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["started_processing_at"] = stringify_date(
+            privacy_request.started_processing_at
+        )
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "execution_timeframe": 7,
+            "drp_action": None,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
+            ],
+        }
+        fields["results"] = {
+            "Request approved": [
                 {
-                    "id": privacy_request.id,
-                    "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
-                    "started_processing_at": stringify_date(
-                        privacy_request.started_processing_at
+                    "connection_key": None,
+                    "collection_name": None,
+                    "fields_affected": None,
+                    "message": "",
+                    "action_type": None,
+                    "status": "approved",
+                    "updated_at": stringify_date(audit_log.updated_at),
+                    "user_id": "system",
+                }
+            ],
+            "my-mongo-db": [
+                {
+                    "connection_key": None,
+                    "collection_name": "orders",
+                    "fields_affected": [
+                        {
+                            "path": "my-mongo-db:orders:name",
+                            "field_name": "name",
+                            "data_categories": ["user.contact.name"],
+                        }
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "in_processing",
+                    "updated_at": stringify_date(mongo_execution_log.updated_at),
+                    "user_id": None,
+                }
+            ],
+            "my-postgres-db": [
+                {
+                    "connection_key": None,
+                    "collection_name": "user",
+                    "fields_affected": [
+                        {
+                            "path": "my-postgres-db:user:email",
+                            "field_name": "email",
+                            "data_categories": ["user.contact.email"],
+                        }
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "pending",
+                    "updated_at": stringify_date(postgres_execution_log.updated_at),
+                    "user_id": None,
+                },
+                {
+                    "connection_key": None,
+                    "collection_name": "address",
+                    "fields_affected": [
+                        {
+                            "path": "my-postgres-db:address:street",
+                            "field_name": "street",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "path": "my-postgres-db:address:city",
+                            "field_name": "city",
+                            "data_categories": ["user.contact.address.city"],
+                        },
+                    ],
+                    "message": "Database timed out.",
+                    "action_type": "access",
+                    "status": "error",
+                    "updated_at": stringify_date(
+                        second_postgres_execution_log.updated_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
-                    "status": privacy_request.status.value,
-                    "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
-                    "policy": {
-                        "execution_timeframe": 7,
-                        "drp_action": None,
-                        "name": privacy_request.policy.name,
-                        "key": privacy_request.policy.key,
-                        "rules": [
-                            rule.model_dump(mode="json")
-                            for rule in PolicyResponse.model_validate(
-                                privacy_request.policy
-                            ).rules
-                        ],
-                    },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
-                    "results": {
-                        "Request approved": [
-                            {
-                                "connection_key": None,
-                                "collection_name": None,
-                                "fields_affected": None,
-                                "message": "",
-                                "action_type": None,
-                                "status": "approved",
-                                "updated_at": stringify_date(audit_log.updated_at),
-                                "user_id": "system",
-                            }
-                        ],
-                        "my-mongo-db": [
-                            {
-                                "connection_key": None,
-                                "collection_name": "orders",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-mongo-db:orders:name",
-                                        "field_name": "name",
-                                        "data_categories": ["user.contact.name"],
-                                    }
-                                ],
-                                "message": None,
-                                "action_type": "access",
-                                "status": "in_processing",
-                                "updated_at": stringify_date(
-                                    mongo_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            }
-                        ],
-                        "my-postgres-db": [
-                            {
-                                "connection_key": None,
-                                "collection_name": "user",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-postgres-db:user:email",
-                                        "field_name": "email",
-                                        "data_categories": ["user.contact.email"],
-                                    }
-                                ],
-                                "message": None,
-                                "action_type": "access",
-                                "status": "pending",
-                                "updated_at": stringify_date(
-                                    postgres_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            },
-                            {
-                                "connection_key": None,
-                                "collection_name": "address",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-postgres-db:address:street",
-                                        "field_name": "street",
-                                        "data_categories": [
-                                            "user.contact.address.street"
-                                        ],
-                                    },
-                                    {
-                                        "path": "my-postgres-db:address:city",
-                                        "field_name": "city",
-                                        "data_categories": [
-                                            "user.contact.address.city"
-                                        ],
-                                    },
-                                ],
-                                "message": "Database timed out.",
-                                "action_type": "access",
-                                "status": "error",
-                                "updated_at": stringify_date(
-                                    second_postgres_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            },
-                        ],
-                        "my-async-connector": [
-                            {
-                                "connection_key": None,
-                                "collection_name": "my_async_collection",
-                                "fields_affected": [
-                                    {
-                                        "path": "my-async-connector:my_async_collection:street",
-                                        "field_name": "street",
-                                        "data_categories": [
-                                            "user.contact.address.street"
-                                        ],
-                                    },
-                                    {
-                                        "path": "my-async-connector:my_async_collection:city",
-                                        "field_name": "city",
-                                        "data_categories": [
-                                            "user.contact.address.city"
-                                        ],
-                                    },
-                                ],
-                                "message": None,
-                                "action_type": "access",
-                                "status": "awaiting_processing",
-                                "updated_at": stringify_date(
-                                    async_execution_log.updated_at
-                                ),
-                                "user_id": None,
-                            }
-                        ],
-                    },
+                    "user_id": None,
                 },
             ],
+            "my-async-connector": [
+                {
+                    "connection_key": None,
+                    "collection_name": "my_async_collection",
+                    "fields_affected": [
+                        {
+                            "path": "my-async-connector:my_async_collection:street",
+                            "field_name": "street",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "path": "my-async-connector:my_async_collection:city",
+                            "field_name": "city",
+                            "data_categories": ["user.contact.address.city"],
+                        },
+                    ],
+                    "message": None,
+                    "action_type": "access",
+                    "status": "awaiting_processing",
+                    "updated_at": stringify_date(async_execution_log.updated_at),
+                    "user_id": None,
+                }
+            ],
+        }
+        expected_resp = {
+            "items": [fields],
             "total": 1,
             "page": 1,
             "pages": 1,
@@ -5062,48 +4911,25 @@ class TestResumePrivacyRequest:
         assert response.status_code == 200
         response_body = json.loads(response.text)
         assert submit_mock.called
-        assert response_body == {
-            "id": privacy_request.id,
-            "created_at": stringify_date(privacy_request.created_at),
-            "custom_privacy_request_fields": None,
-            "custom_privacy_request_fields_approved_at": None,
-            "custom_privacy_request_fields_approved_by": None,
-            "days_left": None,
-            "started_processing_at": stringify_date(
-                privacy_request.started_processing_at
-            ),
-            "finished_processing_at": None,
-            "identity_verified_at": None,
-            "status": "in_processing",
-            "external_id": privacy_request.external_id,
-            "finalized_at": None,
-            "finalized_by": None,
-            "identity": None,
-            "reviewed_at": None,
-            "reviewed_by": None,
-            "submitted_by": None,
-            "reviewer": None,
-            "submitter": None,
-            "source": None,
-            "location": None,
-            "paused_at": None,
-            "policy": {
-                "execution_timeframe": 7,
-                "drp_action": None,
-                "key": privacy_request.policy.key,
-                "name": privacy_request.policy.name,
-                "rules": [
-                    rule.model_dump(mode="json")
-                    for rule in PolicyResponse.model_validate(
-                        privacy_request.policy
-                    ).rules
-                ],
-            },
-            "action_required_details": None,
-            "resume_endpoint": None,
-            "deleted_at": None,
-            "deleted_by": None,
+        fields = deepcopy(NULLABLE_FIELDS)
+        fields["id"] = privacy_request.id
+        fields["created_at"] = stringify_date(privacy_request.created_at)
+        fields["started_processing_at"] = stringify_date(
+            privacy_request.started_processing_at
+        )
+        fields["status"] = privacy_request.status.value
+        fields["external_id"] = privacy_request.external_id
+        fields["policy"] = {
+            "execution_timeframe": 7,
+            "drp_action": None,
+            "name": privacy_request.policy.name,
+            "key": privacy_request.policy.key,
+            "rules": [
+                rule.model_dump(mode="json")
+                for rule in PolicyResponse.model_validate(privacy_request.policy).rules
+            ],
         }
+        assert response_body == fields
 
         privacy_request.delete(db)
 
