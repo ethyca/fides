@@ -28,6 +28,7 @@ import {
 import { DownloadLightIcon } from "../common/Icon";
 import { DEFAULT_PAGE_SIZES } from "../common/table/constants";
 import { useManualTaskColumns } from "./hooks";
+import useDownloadManualTasksReport from "./hooks/useDownloadManualTasksReport";
 import { useGetTasksQuery } from "./manual-tasks.slice";
 
 interface ManualTaskFilters {
@@ -96,6 +97,19 @@ export const ManualTasks = () => {
     assigned_user_id: filters.assignedUsers,
     privacy_request_id: filters.privacyRequestId,
   });
+
+  const { downloadReport, isDownloadingReport } =
+    useDownloadManualTasksReport();
+
+  const handleExport = async () => {
+    await downloadReport({
+      status: filters.status as ManualFieldStatus,
+      system_name: filters.systemName,
+      request_type: filters.requestType as ManualFieldRequestType,
+      assigned_user_id: filters.assignedUsers,
+      privacy_request_id: filters.privacyRequestId,
+    });
+  };
 
   // Separate query for filter options without any filters applied
   const { data: filterOptionsData } = useGetTasksQuery({
@@ -181,10 +195,6 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const handleExport = async () => {
-    console.log("Exporting manual tasks");
-  };
-
   const onUserClick = (userId: string) => {
     router.push({
       pathname: USER_PROFILE_ROUTE,
@@ -250,6 +260,7 @@ export const ManualTasks = () => {
           aria-label="Export manual tasks as CSV"
           data-testid="export-manual-tasks-btn"
           icon={<DownloadLightIcon ml="1.5px" />}
+          loading={isDownloadingReport}
           onClick={handleExport}
         />
       </Flex>

@@ -41,12 +41,13 @@ export const manualTasksApi = baseApi.injectEndpoints({
       },
       providesTags: () => [{ type: "Manual Tasks" }],
     }),
-    exportTasks: build.query<ManualFieldSearchResponse, TaskQueryParams>({
+    exportTasks: build.query<Blob, TaskQueryParams>({
       query: (params) => {
         const queryParams = params || { page: 1, size: 25 };
 
         return {
           url: "plus/manual-fields/export",
+          method: "POST",
           params: queryParams,
           body: {
             format: "csv",
@@ -64,9 +65,9 @@ export const manualTasksApi = baseApi.injectEndpoints({
               "created_at",
             ],
           },
+          responseHandler: "content-type",
         };
       },
-      providesTags: () => [{ type: "Manual Tasks" }],
     }),
 
     completeTask: build.mutation<
@@ -178,6 +179,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
 export const {
   useGetTasksQuery,
   useCompleteTaskMutation,
+  useLazyExportTasksQuery,
   useSkipTaskMutation,
   useGetTaskByIdQuery,
   useLazyGetTaskByIdQuery,
