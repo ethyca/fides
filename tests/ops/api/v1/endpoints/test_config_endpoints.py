@@ -1354,6 +1354,7 @@ class TestGetConfig:
             "storage",
             "consent",
             "privacy_center",
+            "privacy_request_duplicate_detection",
         }
 
         for key in config.keys():
