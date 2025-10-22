@@ -22,7 +22,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.72.3..main)
 
 ### Added
-
 - Added support for new experience config to delete cookie based on host domain [#6706](https://github.com/ethyca/fides/pull/6706)
 - Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
 - Added support for bulk actions in the new request manager page [#6773](https://github.com/ethyca/fides/pull/6773)
@@ -31,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
 - Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
 - Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
+- Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
