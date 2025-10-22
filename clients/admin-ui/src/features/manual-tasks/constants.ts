@@ -1,15 +1,23 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
 import { ManualFieldRequestType, ManualFieldStatus } from "~/types/api";
 
 export interface StatusMapEntry {
-  color: string;
+  color: CUSTOM_TAG_COLOR;
   label: string;
 }
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
 export const STATUS_MAP: Record<ManualFieldStatus, StatusMapEntry> = {
-  [ManualFieldStatus.NEW]: { color: "info", label: "New" },
-  [ManualFieldStatus.COMPLETED]: { color: "success", label: "Completed" },
-  [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
+  [ManualFieldStatus.NEW]: { color: CUSTOM_TAG_COLOR.INFO, label: "New" },
+  [ManualFieldStatus.COMPLETED]: {
+    color: CUSTOM_TAG_COLOR.SUCCESS,
+    label: "Completed",
+  },
+  [ManualFieldStatus.SKIPPED]: {
+    color: CUSTOM_TAG_COLOR.MARBLE,
+    label: "Skipped",
+  },
 };
 
 // Filter options for status column

@@ -2,10 +2,8 @@ name: Privacy Center Cypress Tests
 
 on:
   pull_request:
-    paths:
-      - "clients/privacy-center/**"
-      - "!clients/privacy-center/pages/api/fides-js.ts"
-      - ".github/workflows/cypress_privacy-center.yml"
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -15,7 +13,31 @@ env:
   CI: true
 
 jobs:
+  Check-Privacy-Center-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_privacy_center_changes: ${{ steps.filter.outputs.privacy_center }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for Privacy Center file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            privacy_center:
+              - 'clients/privacy-center/**'
+              - '.github/workflows/cypress_privacy-center.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.privacy_center == 'true'
+        run: echo "${{ steps.filter.outputs.privacy_center_files }}"
+
   Privacy-Center-Cypress:
+    needs: Check-Privacy-Center-Changes
+    if: needs.Check-Privacy-Center-Changes.outputs.has_privacy_center_changes == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,3 +78,27 @@ jobs:
         with:
           name: cypress-videos-privacy-center
           path: /home/runner/work/fides/fides/clients/privacy-center/cypress/videos/*.mp4
+
+  Privacy-Center-Cypress-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Privacy-Center-Cypress
+    steps:
+      - name: Check job results
+        run: |
+          echo "Privacy-Center-Cypress: ${{ needs.Privacy-Center-Cypress.result }}"
+
+          # Fail only if jobs failed (not if skipped)
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required Privacy Center Cypress checks passed or were skipped"

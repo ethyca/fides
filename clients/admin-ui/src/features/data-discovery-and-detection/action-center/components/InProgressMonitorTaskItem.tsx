@@ -9,6 +9,7 @@ import {
   AntSpin as Spin,
   AntTag as Tag,
   AntTypography as Typography,
+  CUSTOM_TAG_COLOR,
   useToast,
 } from "fidesui";
 
@@ -53,7 +54,7 @@ export const InProgressMonitorTaskItem = ({
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
     useDismissMonitorTaskMutation();
-  const isDismissed = Boolean(task.dismissed_in_activity_view);
+  const isDismissed = Boolean(task.dismissed);
   const canRetry =
     task.status === "error" && task.action_type !== MonitorTaskType.DETECTION;
 
@@ -131,21 +132,21 @@ export const InProgressMonitorTaskItem = ({
   const getStatusColor = (status?: string) => {
     switch (status) {
       case "pending":
-        return "default";
+        return CUSTOM_TAG_COLOR.DEFAULT;
       case "in_processing":
-        return "processing";
+        return CUSTOM_TAG_COLOR.INFO;
       case "complete":
-        return "success";
+        return CUSTOM_TAG_COLOR.SUCCESS;
       case "error":
-        return "error";
+        return CUSTOM_TAG_COLOR.ERROR;
       case "paused": // This is the actual enum value for "awaiting_processing"
-        return "purple";
+        return CUSTOM_TAG_COLOR.MARBLE;
       case "retrying":
-        return "default";
+        return CUSTOM_TAG_COLOR.DEFAULT;
       case "skipped":
-        return "default";
+        return CUSTOM_TAG_COLOR.DEFAULT;
       default:
-        return "default";
+        return CUSTOM_TAG_COLOR.DEFAULT;
     }
   };
 

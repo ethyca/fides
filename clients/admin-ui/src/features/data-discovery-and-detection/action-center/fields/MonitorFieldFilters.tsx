@@ -7,25 +7,23 @@ import {
   AntRow as Row,
   AntSpace as Space,
 } from "fidesui";
-import { capitalize } from "lodash";
 
+import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 
-import {
-  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
-  ResourceStatusLabel,
-} from "./MonitorFields.const";
+// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
+import { ResourceStatusLabel } from "./types";
 import { useMonitorFieldsFilters } from "./useFilters";
 
-const ConfidenceScoreRangeValues = Object.values(ConfidenceScoreRange);
+// const ConfidenceScoreRangeValues = Object.values(ConfidenceScoreRange);
 
 export const MonitorFieldFilters = ({
   resourceStatus,
   setResourceStatus,
-  confidenceScore,
-  setConfidenceScore,
+  // confidenceScore,
+  // setConfidenceScore,
   dataCategory,
   setDataCategory,
   reset,
@@ -54,7 +52,8 @@ export const MonitorFieldFilters = ({
     [] as ResourceStatusLabel[],
   );
 
-  const availableConfidenceScores =
+  /* TODO: Uncomment this when we have a proper confidence score from the backend */
+  /* const availableConfidenceScores =
     datastoreFilterResponse?.confidence_score?.reduce(
       (agg, current) => {
         const currentConfidenceScore = Object.values(ConfidenceScoreRange).find(
@@ -68,7 +67,7 @@ export const MonitorFieldFilters = ({
         return agg;
       },
       [] as typeof ConfidenceScoreRangeValues,
-    );
+    ); */
 
   return (
     <Card
@@ -96,7 +95,8 @@ export const MonitorFieldFilters = ({
               </Row>
             </Checkbox.Group>
           </Form.Item>
-          <Form.Item label="Confidence" className="w-min whitespace-nowrap">
+          {/* TODO: Uncomment this when we have a proper confidence score from the backend */}
+          {/* <Form.Item label="Confidence" className="w-min whitespace-nowrap">
             <Checkbox.Group
               value={confidenceScore || []}
               onChange={(scores) =>
@@ -113,7 +113,7 @@ export const MonitorFieldFilters = ({
                 })}
               </Row>
             </Checkbox.Group>
-          </Form.Item>
+          </Form.Item> */}
           {datastoreFilterResponse?.data_category &&
             datastoreFilterResponse?.data_category?.length > 0 && (
               <Form.Item

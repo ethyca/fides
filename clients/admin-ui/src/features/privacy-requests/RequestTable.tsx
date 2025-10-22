@@ -10,6 +10,7 @@ import {
   Box,
   BoxProps,
   HStack,
+  Icons,
   Portal,
   useDisclosure,
   useToast,
@@ -19,7 +20,6 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { DownloadLightIcon } from "~/features/common/Icon";
 import {
   FidesTableV2,
   GlobalFilterV2,
@@ -39,6 +39,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+import { useRequestFilters } from "./hooks/useRequestFilters";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
@@ -52,6 +53,9 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
+
+  const { anyFiltersApplied, handleClearAllFilters } =
+    useRequestFilters(resetPagination);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -131,13 +135,18 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           placeholder="Search by request ID or identity value"
         />
         <HStack alignItems="center" spacing={2}>
+          {anyFiltersApplied && (
+            <Button type="text" onClick={handleClearAllFilters}>
+              Clear filters
+            </Button>
+          )}
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
           </Button>
           <Button
             aria-label="Export report"
             data-testid="export-btn"
-            icon={<DownloadLightIcon ml="1.5px" />}
+            icon={<Icons.Download />}
             onClick={handleExport}
           />
         </HStack>

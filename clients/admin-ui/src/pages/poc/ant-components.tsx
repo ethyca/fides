@@ -27,6 +27,7 @@ import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
 import type { ListDataItem } from "~/features/poc/mockListData";
 import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
+import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;
@@ -484,6 +485,12 @@ const AntPOC: NextPage = () => {
                 )}
               </Space>
             </Card>
+          </Col>
+        </Row>
+        <br />
+        <Row gutter={16}>
+          <Col span={24}>
+            <ModalMethodsCard />
           </Col>
         </Row>
       </Content>
