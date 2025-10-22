@@ -9,8 +9,7 @@ import {
   Portal,
   useDisclosure,
 } from "fidesui";
-import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
@@ -27,27 +26,27 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
+import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
 
 export const PrivacyRequestsDashboard = () => {
-  const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
-    "search",
-    parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
-  );
+  const pagination = useAntPagination();
+  const { filterQueryParams, fuzzySearchTerm, setFuzzySearchTerm } =
+    usePrivacyRequestsFilters({
+      pagination,
+    });
+
   const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
-
-  const pagination = useAntPagination();
-  const { pageIndex, pageSize, resetPagination } = pagination;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
     ...filters,
-    page: pageIndex,
-    size: pageSize,
-    fuzzy_search_str: fuzzySearchTerm,
+    ...filterQueryParams,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
   });
 
   const { items: requests, total: totalRows } = useMemo(() => {
@@ -61,14 +60,6 @@ export const PrivacyRequestsDashboard = () => {
   }, [data]);
 
   const { downloadReport } = useDownloadPrivacyRequestReport();
-
-  const handleSearch = useCallback(
-    (searchTerm: string) => {
-      setFuzzySearchTerm(searchTerm ?? "");
-      resetPagination();
-    },
-    [resetPagination, setFuzzySearchTerm],
-  );
 
   const handleExport = async () => {
     let messageStr;
@@ -98,7 +89,7 @@ export const PrivacyRequestsDashboard = () => {
       <TableActionBar>
         <GlobalFilterV2
           globalFilter={fuzzySearchTerm}
-          setGlobalFilter={handleSearch}
+          setGlobalFilter={setFuzzySearchTerm}
           placeholder="Search by request ID or identity value"
         />
         <div className="flex items-center gap-2">
@@ -120,7 +111,7 @@ export const PrivacyRequestsDashboard = () => {
           <RequestTableFilterModal
             isOpen={isOpen}
             onClose={onClose}
-            onFilterChange={resetPagination}
+            onFilterChange={pagination.resetPagination}
           />
         </Portal>
       </TableActionBar>
