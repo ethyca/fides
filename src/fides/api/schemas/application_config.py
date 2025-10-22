@@ -118,14 +118,9 @@ class DuplicateDetectionApplicationConfig(FidesSchema):
         le=3650,  # Max 10 years
     )
 
-    auto_detect_on_creation: Optional[bool] = Field(
+    automatically_filter_duplicates_from_results: Optional[bool] = Field(
         default=True,
-        description="Whether to automatically detect duplicates when a request is created.",
-    )
-
-    exclude_duplicates_by_default: Optional[bool] = Field(
-        default=True,
-        description="Whether to hide duplicates by default in list views.",
+        description="Whether to automatically filter out duplicate requests from list/search results.",
     )
 
     model_config = ConfigDict(extra="forbid")
@@ -159,7 +154,9 @@ class ApplicationConfig(FidesSchema):
     consent: Optional[ConsentConfig] = None
     admin_ui: Optional[AdminUIConfig] = None
     privacy_center: Optional[PrivacyCenterConfig] = None
-    duplicate_detection: Optional[DuplicateDetectionApplicationConfig] = None
+    privacy_request_duplicate_detection: Optional[
+        DuplicateDetectionApplicationConfig
+    ] = None
 
     @model_validator(mode="before")
     @classmethod

@@ -19,14 +19,11 @@ class DuplicateDetectionSettings(FidesSettings):
         le=3650,  # Max 10 years
     )
 
-    auto_detect_on_creation: bool = Field(
+    automatically_filter_duplicates_from_results: bool = Field(
         default=True,
-        description="Whether to automatically detect duplicates when a request is created.",
+        description="Whether to automatically filter out duplicate requests from list/search results.",
     )
 
-    exclude_duplicates_by_default: bool = Field(
-        default=True,
-        description="Whether to hide duplicates by default in list views.",
+    model_config = SettingsConfigDict(
+        env_prefix="FIDES__PRIVACY_REQUEST_DUPLICATE_DETECTION__"
     )
-
-    model_config = SettingsConfigDict(env_prefix="FIDES__DUPLICATE_DETECTION__")

@@ -43,11 +43,13 @@ def original_cors_middleware_origins() -> Generator:
     )
 
 
+@pytest.fixture(scope="function")
+def url() -> str:
+    return urls.V1_URL_PREFIX + urls.CONFIG
+
+
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPatchApplicationConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -667,9 +669,6 @@ class TestPatchApplicationConfig:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPutApplicationConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -1040,9 +1039,6 @@ class TestPutApplicationConfig:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestGetApplicationConfigApiSet:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -1156,9 +1152,6 @@ class TestGetApplicationConfigApiSet:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestDeleteApplicationConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -1335,9 +1328,6 @@ class TestDeleteApplicationConfig:
 
 
 class TestGetConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     def test_get_config(
         self,
@@ -1498,10 +1488,6 @@ class TestGetConfig:
 class TestPatchDuplicateDetectionConfig:
     """Tests for duplicate detection configuration."""
 
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
-
     def test_patch_duplicate_detection_config(
         self,
         api_client: TestClient,
@@ -1514,11 +1500,10 @@ class TestPatchDuplicateDetectionConfig:
 
         # Patch duplicate detection settings
         payload = {
-            "duplicate_detection": {
+            "privacy_request_duplicate_detection": {
                 "enabled": True,
                 "time_window_days": 30,
-                "auto_detect_on_creation": False,
-                "exclude_duplicates_by_default": False,
+                "automatically_filter_duplicates_from_results": False,
             }
         }
 
@@ -1529,23 +1514,35 @@ class TestPatchDuplicateDetectionConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings["duplicate_detection"]["enabled"] is True
-        assert response_settings["duplicate_detection"]["time_window_days"] == 30
         assert (
-            response_settings["duplicate_detection"]["auto_detect_on_creation"] is False
+            response_settings["privacy_request_duplicate_detection"]["enabled"] is True
         )
         assert (
-            response_settings["duplicate_detection"]["exclude_duplicates_by_default"]
+            response_settings["privacy_request_duplicate_detection"]["time_window_days"]
+            == 30
+        )
+        assert (
+            response_settings["privacy_request_duplicate_detection"][
+                "automatically_filter_duplicates_from_results"
+            ]
             is False
         )
 
         # Verify in database
         db_settings = db.query(ApplicationConfig).first()
-        assert db_settings.api_set["duplicate_detection"]["enabled"] is True
-        assert db_settings.api_set["duplicate_detection"]["time_window_days"] == 30
+        assert (
+            db_settings.api_set["privacy_request_duplicate_detection"]["enabled"]
+            is True
+        )
+        assert (
+            db_settings.api_set["privacy_request_duplicate_detection"][
+                "time_window_days"
+            ]
+            == 30
+        )
 
         # Patch single property
-        updated_payload = {"duplicate_detection": {"enabled": False}}
+        updated_payload = {"privacy_request_duplicate_detection": {"enabled": False}}
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -1553,11 +1550,13 @@ class TestPatchDuplicateDetectionConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings["duplicate_detection"]["enabled"] is False
-        # Other properties should remain unchanged
-        assert response_settings["duplicate_detection"]["time_window_days"] == 30
         assert (
-            response_settings["duplicate_detection"]["auto_detect_on_creation"] is False
+            response_settings["privacy_request_duplicate_detection"]["enabled"] is False
+        )
+        # Other properties should remain unchanged
+        assert (
+            response_settings["privacy_request_duplicate_detection"]["time_window_days"]
+            == 30
         )
 
     def test_patch_duplicate_detection_invalid_time_window(
@@ -1573,7 +1572,7 @@ class TestPatchDuplicateDetectionConfig:
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={"duplicate_detection": {"time_window_days": 0}},
+            json={"privacy_request_duplicate_detection": {"time_window_days": 0}},
         )
         assert response.status_code == 422
 
@@ -1581,7 +1580,7 @@ class TestPatchDuplicateDetectionConfig:
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={"duplicate_detection": {"time_window_days": 3651}},
+            json={"privacy_request_duplicate_detection": {"time_window_days": 3651}},
         )
         assert response.status_code == 422
 
@@ -1589,14 +1588,14 @@ class TestPatchDuplicateDetectionConfig:
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={"duplicate_detection": {"time_window_days": 1}},
+            json={"privacy_request_duplicate_detection": {"time_window_days": 1}},
         )
         assert response.status_code == 200
 
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={"duplicate_detection": {"time_window_days": 3650}},
+            json={"privacy_request_duplicate_detection": {"time_window_days": 3650}},
         )
         assert response.status_code == 200
 
@@ -1618,10 +1617,14 @@ class TestPatchDuplicateDetectionConfig:
         # Should return empty dict or defaults when not configured
         config = response.json()
         # Either key doesn't exist or has default values
-        if "duplicate_detection" in config:
-            assert config["duplicate_detection"]["enabled"] is False
-            assert config["duplicate_detection"]["time_window_days"] == 365
-            assert config["duplicate_detection"]["auto_detect_on_creation"] is True
+        if "privacy_request_duplicate_detection" in config:
+            assert config["privacy_request_duplicate_detection"]["enabled"] is False
             assert (
-                config["duplicate_detection"]["exclude_duplicates_by_default"] is True
+                config["privacy_request_duplicate_detection"]["time_window_days"] == 365
+            )
+            assert (
+                config["privacy_request_duplicate_detection"][
+                    "automatically_filter_duplicates_from_results"
+                ]
+                is True
             )

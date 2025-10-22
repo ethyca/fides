@@ -156,12 +156,11 @@ class ConsentSettingsProxy(ConfigProxyBase):
 
 
 class DuplicateDetectionSettingsProxy(ConfigProxyBase):
-    prefix = "duplicate_detection"
+    prefix = "privacy_request_duplicate_detection"
 
     enabled: bool
     time_window_days: int
-    auto_detect_on_creation: bool
-    exclude_duplicates_by_default: bool
+    automatically_filter_duplicates_from_results: bool
 
 
 # pylint: disable=too-many-instance-attributes
@@ -193,7 +192,7 @@ class ConfigProxy:
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
         self.consent = ConsentSettingsProxy(db)
-        self.duplicate_detection = DuplicateDetectionSettingsProxy(db)
+        self.privacy_request_duplicate_detection = DuplicateDetectionSettingsProxy(db)
         self.privacy_center = PrivacyCenterSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:

@@ -67,8 +67,7 @@ tcf_enabled = false
 ac_enabled = false
 override_vendor_purposes = false
 
-[duplicate_detection]
+[privacy_request_duplicate_detection]
 enabled = false
 time_window_days = 365
-auto_detect_on_creation = true
-exclude_duplicates_by_default = true
+automatically_filter_duplicates_from_results = true

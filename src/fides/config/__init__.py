@@ -80,7 +80,7 @@ class FidesConfig(FidesSettings):
         description="This is a special section that is used to store arbitrary key/value pairs to be used as credentials."
     )
     database: DatabaseSettings
-    duplicate_detection: DuplicateDetectionSettings
+    privacy_request_duplicate_detection: DuplicateDetectionSettings
     execution: ExecutionSettings
     logging: LoggingSettings
     notifications: NotificationSettings
@@ -163,7 +163,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "consent": ConsentSettings,
         "cli": CLISettings,
         "database": DatabaseSettings,
-        "duplicate_detection": DuplicateDetectionSettings,
+        "privacy_request_duplicate_detection": DuplicateDetectionSettings,
         "execution": ExecutionSettings,
         "logging": LoggingSettings,
         "notifications": NotificationSettings,
