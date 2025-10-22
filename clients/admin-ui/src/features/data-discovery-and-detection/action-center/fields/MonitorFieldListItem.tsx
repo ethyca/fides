@@ -12,7 +12,6 @@ import {
   SparkleIcon,
 } from "fidesui";
 
-import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
 import { capitalize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
@@ -83,17 +82,19 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   user_assigned_data_categories,
   onIgnore,
 }) => {
-  const onChange: TaxonomySelectProps["onChange"] = (values: string[]) => {
-    onSetDataCategories(
-      values.flatMap((value) =>
-        !classifications?.find(
-          (classification) => classification.label !== value,
-        )
-          ? [value]
-          : [],
-      ),
-      urn,
-    );
+  const onSelectDataCategory = (value: string) => {
+    if (
+      classifications?.find((classification) => classification.label === value)
+    ) {
+      return;
+    }
+
+    if (!user_assigned_data_categories?.includes(value)) {
+      onSetDataCategories(
+        [...(user_assigned_data_categories ?? []), value],
+        urn,
+      );
+    }
   };
 
   return (
@@ -213,15 +214,35 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
               ...(classifications?.map(({ label }) => label) ?? []),
               ...(user_assigned_data_categories?.map((value) => value) ?? []),
             ]}
-            tagRender={(props) =>
-              tagRender({
+            tagRender={(props) => {
+              const isFromClassifier = !!classifications?.find(
+                (item) => item.label === props.value,
+              );
+
+              // TODO: This is temporary, it will be fixed in https://ethyca.atlassian.net/browse/ENG-1687
+              const closable =
+                !isFromClassifier &&
+                !!user_assigned_data_categories &&
+                user_assigned_data_categories.includes(props.value);
+
+              const handleClose = () => {
+                if (closable) {
+                  const newDataCategories =
+                    user_assigned_data_categories?.filter(
+                      (category) => category !== props.value,
+                    ) ?? [];
+                  onSetDataCategories(newDataCategories, urn);
+                }
+              };
+
+              return tagRender({
                 ...props,
-                isFromClassifier: !!classifications?.find(
-                  (item) => item.label === props.value,
-                ),
-              })
-            }
-            onChange={onChange}
+                isFromClassifier,
+                closable,
+                onClose: handleClose,
+              });
+            }}
+            onSelectDataCategory={onSelectDataCategory}
           />
         }
       />
