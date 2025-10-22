@@ -71,6 +71,7 @@ from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     PRIVACY_REQUEST_OBJECT,
     assign_placeholders,
+    check_dataset_missing_reference_values,
     map_param_values,
 )
 
@@ -229,20 +230,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # pylint: disable=too-many-branches
         self.set_privacy_request_state(privacy_request, node, request_task)
-
         query_config: SaaSQueryConfig = self.query_config(node)
-
-        # Delegate async requests
-        with get_db() as db:
-            if async_dsr_strategy := _get_async_dsr_strategy(
-                db, request_task, query_config, ActionType.access
-            ):
-                return async_dsr_strategy.async_retrieve_data(
-                    client=self.create_client(),
-                    request_task_id=request_task.id,
-                    query_config=query_config,
-                    input_data=input_data,
-                )
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
         # An endpoint can be defined with multiple 'read' requests if the data for a single
@@ -280,15 +268,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
-
-        rows: List[Row] = []
+        # check all the values specified by param_values are provided in input_data
         for read_request in read_requests:
-            self.set_saas_request_state(read_request)
-            # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
                 input_data, read_request.param_values
             ):
                 return []
+
+        # Delegate async requests
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.access
+            ):
+
+                return async_dsr_strategy.async_retrieve_data(
+                    client=self.create_client(),
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    input_data=input_data,
+                )
+
+        rows: List[Row] = []
+        for read_request in read_requests:
+            self.set_saas_request_state(read_request)
 
             # hook for user-provided request override functions
             if read_request.request_override:
@@ -376,29 +378,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         return result
 
     def _missing_dataset_reference_values(
-        self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
+        self, input_data: Dict[str, List[Any]], param_values: Optional[List[ParamValue]]
     ) -> List[str]:
         """Return a list of dataset reference values that are not found in the input_data map"""
-
-        # get the list of param_value references
-        required_param_value_references = [
-            param_value.name
-            for param_value in param_values or []
-            if param_value.references
-        ]
-
-        # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
-        provided_input_keys = (
-            list(input_data.get("fidesops_grouped_inputs")[0].keys())  # type: ignore
-            if input_data.get("fidesops_grouped_inputs")
-            else []
-        ) + list(input_data.keys())
-
-        # find the missing values
-        missing_dataset_reference_values = list(
-            set(required_param_value_references) - set(provided_input_keys)
+        missing_dataset_reference_values = check_dataset_missing_reference_values(
+            input_data, param_values
         )
-
+        logger.info(
+            f"Missing dataset reference values: {missing_dataset_reference_values}"
+        )
         if missing_dataset_reference_values:
             logger.info(
                 "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
@@ -545,7 +533,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     query_config=query_config,
                     rows=rows,
                 )
-
         masking_request = query_config.get_masking_request()
         rows_updated = 0
 
