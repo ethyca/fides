@@ -122,8 +122,8 @@ export const PrivacyRequestFiltersModal = ({
         <Form.Item label="Date range" name="dateRange">
           <DatePicker.RangePicker
             format="YYYY-MM-DD"
-            style={{ width: "100%" }}
             data-testid="date-range-picker"
+            className="w-full"
           />
         </Form.Item>
 
