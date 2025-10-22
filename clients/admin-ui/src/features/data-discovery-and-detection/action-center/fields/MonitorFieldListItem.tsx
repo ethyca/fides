@@ -4,15 +4,15 @@ import {
   AntFlex as Flex,
   AntList as List,
   AntListProps as ListProps,
-  AntProgress as Progress,
   AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
   Icons,
   SparkleIcon,
 } from "fidesui";
+import styles from "fidesui/src/hoc/CustomTypography.module.scss";
 
-import { capitalize } from "~/features/common/utils";
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
@@ -28,7 +28,7 @@ type TagRender = (
   },
 ) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
 
-const tagRender: TagRender = (props) => {
+export const tagRender: TagRender = (props) => {
   const { label, closable, onClose, isFromClassifier } = props;
 
   const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -64,6 +64,7 @@ type MonitorFieldListItemRenderParams = Parameters<
   selected?: boolean;
   onSelect?: (key: string, selected?: boolean) => void;
   onSetDataCategories: (dataCategories: string[], urn: string) => void;
+  onNavigate?: (key: string) => void;
   onIgnore: (urn: string) => void;
 };
 
@@ -79,6 +80,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   selected,
   onSelect,
   onSetDataCategories,
+  onNavigate,
   user_assigned_data_categories,
   onIgnore,
 }) => {
@@ -102,52 +104,16 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
       key={urn}
       actions={[
         classifications && classifications.length > 0 && (
-          <Flex
-            gap="small"
-            align="center"
-            className="pr-[var(--ant-padding-xl)]"
-            key="progress"
-          >
-            <Progress
-              percent={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? 100
-                  : 25
-              }
-              percentPosition={{
-                align: "start",
-                type: "outer",
-              }}
-              strokeColor={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? "var(--ant-color-success-text)"
-                  : "var(--ant-color-warning-text)"
-              }
-              steps={2}
-              showInfo={false}
-              strokeLinecap="round"
-              size={[24, 8]}
-            />
-            <Text size="sm" type="secondary" className="font-normal">
-              {capitalize(
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? ConfidenceScoreRange.HIGH
-                  : ConfidenceScoreRange.LOW,
-              )}
-            </Text>
-          </Flex>
+          <ClassifierProgress
+            percent={
+              classifications.find(
+                (classification) =>
+                  classification.confidence_score === ConfidenceScoreRange.HIGH,
+              )
+                ? 100
+                : 25
+            }
+          />
         ),
         classifications && classifications.length > 0 && (
           <Button
@@ -184,7 +150,13 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         title={
           <Flex justify="space-between">
             <Flex gap="small" align="center" className="w-full">
-              {name}
+              <Button
+                type="link"
+                className={`h-auto p-0 ${styles.primaryColorLink}`}
+                onClick={() => onNavigate && onNavigate(urn)}
+              >
+                {name}
+              </Button>
               {diff_status && diff_status !== DiffStatus.ADDITION && (
                 <Tag
                   bordered={false}
