@@ -10,6 +10,7 @@ import {
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 const MonitorResultAssets: NextPage = () => {
@@ -40,7 +41,10 @@ const MonitorResultAssets: NextPage = () => {
         heading="Action center"
         breadcrumbItems={[
           { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId, href: `${ACTION_CENTER_ROUTE}/${monitorId}` },
+          {
+            title: monitorId,
+            href: `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}`,
+          },
           {
             title:
               systemId === UNCATEGORIZED_SEGMENT
