@@ -11,6 +11,7 @@ import { Form as FormikForm, Formik, useField } from "formik";
 import { lazy } from "yup";
 import * as Yup from "yup";
 
+import { FormikTextInput } from "~/features/common/form/FormikTextInput";
 import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
@@ -139,12 +140,11 @@ const CustomFields = ({
             required={Boolean(fieldInfo.required)}
           />
         ) : (
-          <CustomTextInput
+          <FormikTextInput
             name={`custom_privacy_request_fields.${fieldName}.value`}
             key={fieldName}
             label={fieldInfo.label}
-            isRequired={Boolean(fieldInfo.required)}
-            variant="stacked"
+            required={Boolean(fieldInfo.required)}
           />
         );
       })}
