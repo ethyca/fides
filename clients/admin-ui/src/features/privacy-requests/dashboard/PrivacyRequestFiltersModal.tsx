@@ -78,7 +78,12 @@ export const PrivacyRequestFiltersModal = ({
   };
 
   const handleClearAll = () => {
-    form.resetFields();
+    form.setFieldsValue({
+      dateRange: undefined,
+      status: [],
+      action_type: [],
+    });
+
     setModalFilters({
       from: "",
       to: "",
