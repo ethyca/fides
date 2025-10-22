@@ -4,6 +4,7 @@ import {
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
+  ConnectionType,
   ConsentStatus,
   Database,
   DatastoreStagedResource,
@@ -26,13 +27,18 @@ import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/Data
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
+  PaginatedResponse,
   PaginationQueryParams,
   SearchQueryParams,
   SortQueryParams,
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
-import { MonitorSummaryPaginatedResponse } from "./types";
+import {
+  MonitorAggregatedResults,
+  MonitorSummaryPaginatedResponse,
+} from "./types";
+import { getMonitorType } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -55,6 +61,18 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ page = 1, size = 20, search }) => ({
         url: `/plus/discovery-monitor/aggregate-results`,
         params: { page, size, search, diff_status: "addition" },
+      }),
+      transformResponse: (
+        response: PaginatedResponse<MonitorAggregatedResults>,
+      ) => ({
+        ...response,
+        items: response.items.map((monitor) => ({
+          ...monitor,
+          monitorType: getMonitorType(monitor.connection_type),
+          isTestMonitor:
+            monitor.connection_type === ConnectionType.TEST_WEBSITE ||
+            monitor.connection_type === ConnectionType.FIDES,
+        })),
       }),
       providesTags: ["Discovery Monitor Results"],
     }),
