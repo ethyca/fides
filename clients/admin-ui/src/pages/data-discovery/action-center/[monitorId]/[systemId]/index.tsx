@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 import Layout from "~/features/common/Layout";
 import {
@@ -26,6 +27,13 @@ const MonitorResultAssets: NextPage = () => {
   });
   const system = systemResults?.items[0];
 
+  // if there are no results, redirect to the monitor page
+  useEffect(() => {
+    if (!!systemResults && systemResults.items.length === 0) {
+      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+    }
+  }, [systemResults, router, monitorId]);
+
   return (
     <Layout title="Action center - Discovered assets">
       <PageHeader
@@ -37,7 +45,7 @@ const MonitorResultAssets: NextPage = () => {
             title:
               systemId === UNCATEGORIZED_SEGMENT
                 ? "Uncategorized assets"
-                : (system?.name ?? systemId),
+                : system?.name,
           },
         ]}
         isSticky={false}
