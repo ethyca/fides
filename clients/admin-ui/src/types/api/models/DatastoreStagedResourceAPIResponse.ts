@@ -15,6 +15,9 @@ export type DatastoreStagedResourceAPIResponse = {
   description?: string | null;
   updated_at?: string | null;
   classifications?: Array<ClassificationWithConfidence>;
+  /** An array of the "preferred" data categories for the resource; this encapsulates backend logic
+   * that will use either user_assigned_data_categories or classifications, depending on their values.
+   */
   preferred_data_categories?: Array<string> | null;
   data_type?: string | null;
   /**
