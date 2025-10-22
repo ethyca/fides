@@ -155,6 +155,16 @@ class ConsentSettingsProxy(ConfigProxyBase):
     override_vendor_purposes: bool
 
 
+class DuplicateDetectionSettingsProxy(ConfigProxyBase):
+    prefix = "duplicate_detection"
+
+    enabled: bool
+    time_window_days: int
+    auto_detect_on_creation: bool
+    exclude_duplicates_by_default: bool
+
+
+# pylint: disable=too-many-instance-attributes
 class ConfigProxy:
     """
     ConfigProxy instances allow access to "resolved" config properties
@@ -183,6 +193,7 @@ class ConfigProxy:
         self.storage = StorageSettingsProxy(db)
         self.security = SecuritySettingsProxy(db)
         self.consent = ConsentSettingsProxy(db)
+        self.duplicate_detection = DuplicateDetectionSettingsProxy(db)
         self.privacy_center = PrivacyCenterSettingsProxy(db)
 
     def load_current_cors_domains_into_middleware(self, app: FastAPI) -> None:

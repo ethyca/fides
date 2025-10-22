@@ -24,6 +24,7 @@ from .cli_settings import CLISettings
 from .consent_settings import ConsentSettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
+from .duplicate_detection_settings import DuplicateDetectionSettings
 from .execution_settings import ExecutionSettings
 from .fides_settings import FidesSettings
 from .helpers import handle_deprecated_env_variables, handle_deprecated_fields
@@ -79,6 +80,7 @@ class FidesConfig(FidesSettings):
         description="This is a special section that is used to store arbitrary key/value pairs to be used as credentials."
     )
     database: DatabaseSettings
+    duplicate_detection: DuplicateDetectionSettings
     execution: ExecutionSettings
     logging: LoggingSettings
     notifications: NotificationSettings
@@ -161,6 +163,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "consent": ConsentSettings,
         "cli": CLISettings,
         "database": DatabaseSettings,
+        "duplicate_detection": DuplicateDetectionSettings,
         "execution": ExecutionSettings,
         "logging": LoggingSettings,
         "notifications": NotificationSettings,

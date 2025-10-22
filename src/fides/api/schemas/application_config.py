@@ -101,6 +101,36 @@ class ConsentConfig(FidesSchema):
     model_config = ConfigDict(extra="forbid")
 
 
+class DuplicateDetectionApplicationConfig(FidesSchema):
+    """
+    API model - configuration settings for duplicate privacy request detection.
+    """
+
+    enabled: Optional[bool] = Field(
+        default=False,
+        description="Whether duplicate detection is enabled. Disabled by default.",
+    )
+
+    time_window_days: Optional[int] = Field(
+        default=365,
+        description="Time window in days for duplicate detection. Default is 1 year.",
+        ge=1,
+        le=3650,  # Max 10 years
+    )
+
+    auto_detect_on_creation: Optional[bool] = Field(
+        default=True,
+        description="Whether to automatically detect duplicates when a request is created.",
+    )
+
+    exclude_duplicates_by_default: Optional[bool] = Field(
+        default=True,
+        description="Whether to hide duplicates by default in list views.",
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class SecurityApplicationConfig(FidesSchema):
     # only valid URLs should be set as cors_origins
     # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
@@ -129,6 +159,7 @@ class ApplicationConfig(FidesSchema):
     consent: Optional[ConsentConfig] = None
     admin_ui: Optional[AdminUIConfig] = None
     privacy_center: Optional[PrivacyCenterConfig] = None
+    duplicate_detection: Optional[DuplicateDetectionApplicationConfig] = None
 
     @model_validator(mode="before")
     @classmethod
