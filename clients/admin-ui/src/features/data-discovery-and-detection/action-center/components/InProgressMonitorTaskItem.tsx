@@ -53,7 +53,7 @@ export const InProgressMonitorTaskItem = ({
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
     useDismissMonitorTaskMutation();
-  const isDismissed = Boolean(task.dismissed_in_activity_view);
+  const isDismissed = Boolean(task.dismissed);
   const canRetry =
     task.status === "error" && task.action_type !== MonitorTaskType.DETECTION;
 

@@ -2,6 +2,8 @@ name: Backend Static Code Checks
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -15,10 +17,39 @@ env:
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
 
 jobs:
+  Check-Backend-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_backend_changes: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for backend file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            backend:
+              - '**/*.py'
+              - '**/*.pxl'
+              - '**/*requirements.txt'
+              - 'pyproject.toml'
+              - 'setup.cfg'
+              - 'noxfile.py'
+              - '.github/workflows/static_checks.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.backend == 'true'
+        run: echo "${{ steps.filter.outputs.backend_files }}"
+
   ###################
   ## Static Checks ##
   ###################
   Static-Checks:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         session_name:
@@ -51,3 +82,27 @@ jobs:
 
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
+
+  # Summary job for branch protection
+  Static-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Static-Checks
+    steps:
+      - name: Check job results
+        run: |
+          echo "Static-Checks: ${{ needs.Static-Checks.result }}"
+
+          # Static checks can fail without blocking (continue-on-error: true)
+          if [ "${{ needs.Static-Checks.result }}" == "cancelled" ]; then
+            echo "❌ Static checks were cancelled"
+            exit 1
+          fi
+
+          # Static checks can fail without blocking (continue-on-error: true)
+          if [ "${{ needs.Static-Checks.result }}" == "failure" ]; then
+            echo "⚠️ Some static checks failed but not blocking (continue-on-error: true)"
+          fi
+
+          echo "✅ Static checks completed"
