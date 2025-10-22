@@ -185,7 +185,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
           <Flex justify="space-between">
             <Flex gap="small" align="center" className="w-full">
               {name}
-              {diff_status && (
+              {diff_status && diff_status !== DiffStatus.ADDITION && (
                 <Tag
                   bordered={false}
                   color={

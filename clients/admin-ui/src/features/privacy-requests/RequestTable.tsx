@@ -10,6 +10,7 @@ import {
   Box,
   BoxProps,
   HStack,
+  Icons,
   Portal,
   useDisclosure,
   useToast,
@@ -19,7 +20,6 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { DownloadLightIcon } from "~/features/common/Icon";
 import {
   FidesTableV2,
   GlobalFilterV2,
@@ -137,7 +137,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <Button
             aria-label="Export report"
             data-testid="export-btn"
-            icon={<DownloadLightIcon ml="1.5px" />}
+            icon={<Icons.Download />}
             onClick={handleExport}
           />
         </HStack>

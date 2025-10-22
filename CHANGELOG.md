@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
 - Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
 - Added confirmation modals for bulk actions on the new privacy requests page [#6784](https://github.com/ethyca/fides/pull/6784)
+- Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
@@ -39,11 +40,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
 - Adds a reusable form modal hook for confirmation modals [#6789](https://github.com/ethyca/fides/pull/6789)
 - Added fullHeight prop to FixedLayout component for full viewport usage [#6787](https://github.com/ethyca/fides/pull/6787)
+- Replaced custom tag color strings with new CUSTOM_TAG_COLOR enum for type safety [#6801](https://github.com/ethyca/fides/pull/6801)
 
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
 - Fixed action center routing to prevent empty page when reloading data explorer [#6791](https://github.com/ethyca/fides/pull/6791)
+- Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
 
 ### Changed
 - Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)
