@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
   AntFlex as Flex,
+  AntFlexProps as FlexProps,
   AntMessage as message,
   AntTypography as Typography,
   Icons,
@@ -225,7 +226,7 @@ const useSystemsTable = () => {
           <LinkCell
             href={`/systems/configure/${record.fides_key}`}
             data-testid={`system-link-${record.fides_key}`}
-            containerProps={{ className: "max-w-96" }}
+            containerProps={{ className: "max-w-96" } as FlexProps}
           >
             {name || record.fides_key}
           </LinkCell>
