@@ -157,7 +157,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
               >
                 {name}
               </Button>
-              {diff_status && (
+              {diff_status && diff_status !== DiffStatus.ADDITION && (
                 <Tag
                   bordered={false}
                   color={

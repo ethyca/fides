@@ -1,5 +1,9 @@
 import dayjs from "dayjs";
-import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
+import {
+  AntTag as Tag,
+  AntTooltip as Tooltip,
+  CUSTOM_TAG_COLOR,
+} from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
@@ -26,13 +30,13 @@ export const DaysLeft = ({
 
   if (showBadge) {
     const percentage = (100 * daysLeft) / timeframe;
-    let color = "error";
+    let color = CUSTOM_TAG_COLOR.ERROR;
     if (percentage < 25) {
-      color = "error";
+      color = CUSTOM_TAG_COLOR.ERROR;
     } else if (percentage >= 75) {
-      color = "success";
+      color = CUSTOM_TAG_COLOR.SUCCESS;
     } else {
-      color = "warning";
+      color = CUSTOM_TAG_COLOR.WARNING;
     }
     return (
       <div>
