@@ -406,8 +406,8 @@ class TestDeleteCollection:
             data,
         )
 
-        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
-        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
+        # Dataset reference validation now only runs once (checkpoint added to prevent duplicate validation)
+        expected_log_count = 25
 
         # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
         if dsr_version == "use_dsr_3_0":
@@ -758,8 +758,8 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             data,
         )
 
-        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
-        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
+        # Dataset reference validation now only runs once (checkpoint added to prevent duplicate validation)
+        expected_log_count = 25
 
         # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
         if dsr_version == "use_dsr_3_0":

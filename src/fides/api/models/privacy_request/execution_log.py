@@ -15,6 +15,7 @@ from fides.api.schemas.policy import ActionType, CurrentStep
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
+    CurrentStep.dataset_validation,
     CurrentStep.pre_webhooks,
     CurrentStep.access,
     CurrentStep.upload_access,
