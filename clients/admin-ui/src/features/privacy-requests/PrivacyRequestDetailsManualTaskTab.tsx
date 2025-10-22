@@ -56,7 +56,7 @@ const PrivacyRequestDetailsManualTaskTab = ({
   const { data: tasksData } = useGetTasksQuery({
     page: 1,
     size: 100,
-    privacyRequestId: subjectRequest.id,
+    privacy_request_id: subjectRequest.id,
   });
 
   const tasks = tasksData?.items || [];

@@ -16,9 +16,3 @@ export interface CustomTreeDataNode extends TreeDataNode {
 export type FieldActionTypeValue = `${FieldActionType}`;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-export type ResourceStatusLabelColor =
-  | "nectar"
-  | "red"
-  | "orange"
-  | "blue"
-  | "green";
