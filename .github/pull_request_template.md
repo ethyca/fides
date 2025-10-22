@@ -20,6 +20,9 @@ Ticket [<issue>] <!-- simply paste the ticket number between the brackets and it
   * [ ] Add a https://github.com/ethyca/fides/labels/db-migration label to the entry if your change includes a DB migration
   * [ ] Add a https://github.com/ethyca/fides/labels/high-risk label to the entry if your change includes a high-risk change (i.e. potential for performance impact or unexpected regression) that should be flagged
   * [ ] Updates unreleased work already in Changelog, no new entry necessary
+* UX feedback:
+  * [ ] All UX related changes have been reviewed by a designer
+  * [ ] No UX review needed
 * Followup issues:
   * [ ] Followup issues created
   * [ ] No followup issues

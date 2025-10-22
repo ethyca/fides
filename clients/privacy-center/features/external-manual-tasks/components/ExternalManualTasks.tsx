@@ -12,10 +12,13 @@
  */
 
 import {
+  AntButton as Button,
   AntColumnsType as ColumnsType,
+  AntFlex as Flex,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
+  Icons,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -27,6 +30,7 @@ import {
   useGetExternalTasksQuery,
 } from "../external-manual-tasks.slice";
 import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";
+import useDownloadExternalTasksReport from "./hooks/useDownloadExternalTasksReport";
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
 const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
@@ -171,9 +175,20 @@ export const ExternalManualTasks = () => {
     size: pageSize,
     // Pass filter parameters to API
     status: filters.status as ManualFieldStatus,
-    systemName: filters.systemName,
-    requestType: filters.requestType as ManualFieldRequestType,
+    system_name: filters.systemName,
+    request_type: filters.requestType as ManualFieldRequestType,
   });
+
+  const { downloadReport, isDownloadingReport } =
+    useDownloadExternalTasksReport();
+
+  const handleExport = async () => {
+    await downloadReport({
+      status: filters.status as ManualFieldStatus,
+      system_name: filters.systemName,
+      request_type: filters.requestType as ManualFieldRequestType,
+    });
+  };
 
   const {
     items: tasks,
@@ -255,7 +270,20 @@ export const ExternalManualTasks = () => {
   const showSpinner = isLoading || isFetching;
 
   return (
-    <div className="space-y-4" data-testid="external-manual-tasks">
+    <div data-testid="external-manual-tasks">
+      {/* Export Button */}
+      <Flex justify="flex-end" style={{ marginBottom: "16px" }}>
+        <Button
+          aria-label="Export external tasks as CSV"
+          data-testid="export-external-tasks-btn"
+          icon={<Icons.Download />}
+          loading={isDownloadingReport}
+          onClick={handleExport}
+        >
+          Download tasks
+        </Button>
+      </Flex>
+
       {/* Tasks Table */}
       <Table
         columns={columns}

@@ -30,17 +30,21 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
 - Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
 - Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
+- Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
 - Added new CustomList component to fidesui with selection support [#6759](https://github.com/ethyca/fides/pull/6759)
 - Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
+- Adds a reusable form modal hook for confirmation modals [#6789](https://github.com/ethyca/fides/pull/6789)
+- Added fullHeight prop to FixedLayout component for full viewport usage [#6787](https://github.com/ethyca/fides/pull/6787)
 
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
 - Fixed action center routing to prevent empty page when reloading data explorer [#6791](https://github.com/ethyca/fides/pull/6791)
+- Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
 - Fixed an issue where the check for missing reference values on the saas_request was only being executed on access requests[#6782](https://github.com/ethyca/fides/pull/6782)
 
 ### Changed
@@ -60,6 +64,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Added `has_table` checks for BigQuery erasures [#6760](https://github.com/ethyca/fides/pull/6760)
 - Using correct data select types in alpha fields [#6758](https://github.com/ethyca/fides/pull/6758)
+- Redirected users from invalid system detail pages in Action Center [#6795](https://github.com/ethyca/fides/pull/6795)
 
 ## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
 
