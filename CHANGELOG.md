@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
 - Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
 - Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
+- Added confirmation modals for bulk actions on the new privacy requests page [#6784](https://github.com/ethyca/fides/pull/6784)
 - Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
 - Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
 
