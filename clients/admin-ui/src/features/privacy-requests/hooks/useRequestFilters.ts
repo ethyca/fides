@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
@@ -40,12 +41,22 @@ export const useRequestFilters = (onFilterChange: () => void) => {
     onFilterChange();
   };
 
+  const anyFiltersApplied = useMemo(() => {
+    return (
+      filters.action_type?.length ||
+      filters.from !== "" ||
+      filters.to !== "" ||
+      filters.status?.length
+    );
+  }, [filters]);
+
   return {
     handleStatusChange,
     handleActionTypeChange,
     handleFromChange,
     handleToChange,
     handleClearAllFilters,
+    anyFiltersApplied,
     ...filters,
   };
 };
