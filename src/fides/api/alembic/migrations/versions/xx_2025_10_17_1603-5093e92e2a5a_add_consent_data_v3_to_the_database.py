@@ -24,7 +24,7 @@ def upgrade():
         # Use a big integer for the primary key to ensure we have enough space for all the records
         # and also force the ID to be generated, never allowing it to be overridden without expressly using `OVERRIDING SYSTEM VALUE`
         sa.Column("id", BigInteger, Identity(start=1, increment=1, always=True), primary_key=True),
-        sa.Column("search_data", postgresql.json.JSONB),
+        sa.Column("search_data", postgresql.JSONB),
         sa.Column("record_data", postgresql.TEXT),
         # If we have a primary key we need to use a composite key because the primary key must be unique across _all_
         # partitions, so we can't just use `id`, we have to use `is_latest` as well as part of the primary key. This
