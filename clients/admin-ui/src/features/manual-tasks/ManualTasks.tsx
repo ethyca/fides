@@ -1,9 +1,11 @@
 import {
+  AntButton as Button,
   AntFilterValue as FilterValue,
   AntTable as Table,
   AntTablePaginationConfig as TablePaginationConfig,
   AntTypography as Typography,
   Flex,
+  Icons,
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useRouter } from "next/router";
@@ -26,6 +28,7 @@ import {
 
 import { DEFAULT_PAGE_SIZES } from "../common/table/constants";
 import { useManualTaskColumns } from "./hooks";
+import useDownloadManualTasksReport from "./hooks/useDownloadManualTasksReport";
 import { useGetTasksQuery } from "./manual-tasks.slice";
 
 interface ManualTaskFilters {
@@ -89,11 +92,24 @@ export const ManualTasks = () => {
     page: pageIndex,
     size: pageSize,
     status: filters.status as ManualFieldStatus,
-    systemName: filters.systemName,
-    requestType: filters.requestType as ManualFieldRequestType,
-    assignedUserId: filters.assignedUsers,
-    privacyRequestId: filters.privacyRequestId,
+    system_name: filters.systemName,
+    request_type: filters.requestType as ManualFieldRequestType,
+    assigned_user_id: filters.assignedUsers,
+    privacy_request_id: filters.privacyRequestId,
   });
+
+  const { downloadReport, isDownloadingReport } =
+    useDownloadManualTasksReport();
+
+  const handleExport = async () => {
+    await downloadReport({
+      status: filters.status as ManualFieldStatus,
+      system_name: filters.systemName,
+      request_type: filters.requestType as ManualFieldRequestType,
+      assigned_user_id: filters.assignedUsers,
+      privacy_request_id: filters.privacyRequestId,
+    });
+  };
 
   // Separate query for filter options without any filters applied
   const { data: filterOptionsData } = useGetTasksQuery({
@@ -233,12 +249,19 @@ export const ManualTasks = () => {
 
   return (
     <div className="mt-2 space-y-4">
-      <Flex gap={3} align="center" className="mb-4">
+      <Flex gap={3} align="center" justify="space-between" className="mb-4">
         <GlobalFilterV2
           globalFilter={filters.privacyRequestId || ""}
           setGlobalFilter={handlePrivacyRequestIdChange}
           placeholder="Search by privacy request ID"
           testid="privacy-request-id-filter"
+        />
+        <Button
+          aria-label="Export manual tasks as CSV"
+          data-testid="export-manual-tasks-btn"
+          icon={<Icons.Download />}
+          loading={isDownloadingReport}
+          onClick={handleExport}
         />
       </Flex>
 

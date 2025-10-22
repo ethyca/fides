@@ -157,6 +157,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             logger.info(
                 f"Creating initial polling sub-requests for task {request_task.id}"
             )
+
             self._handle_polling_initial_request(
                 request_task,
                 query_config,

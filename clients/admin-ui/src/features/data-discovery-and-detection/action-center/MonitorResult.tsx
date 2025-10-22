@@ -16,13 +16,12 @@ import { formatDate, nFormatter } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
-import { ConnectionType } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
 import { MonitorAggregatedResults } from "./types";
-import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
+import { MONITOR_TYPES } from "./utils/getMonitorType";
 
 const { Text } = Typography;
 
@@ -54,9 +53,9 @@ export const MonitorResult = ({
     key,
     connection_type: connectionType,
     saas_config: saasConfig,
+    monitorType,
+    isTestMonitor,
   } = monitorSummary;
-
-  const monitorType = getMonitorType(connectionType);
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -104,9 +103,7 @@ export const MonitorResult = ({
                   {consentStatus && (
                     <DiscoveryStatusIcon consentStatus={consentStatus} />
                   )}
-                  {connectionType === ConnectionType.TEST_WEBSITE && (
-                    <Tag color="nectar">test monitor</Tag>
-                  )}
+                  {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
                 </Flex>
               }
               description={

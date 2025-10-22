@@ -227,7 +227,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         ],
       }),
 
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
   }),
 });

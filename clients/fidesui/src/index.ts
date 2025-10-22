@@ -20,6 +20,7 @@ export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
+  DrawerProps as AntDrawerProps,
   DropdownProps as AntDropdownProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
@@ -27,6 +28,7 @@ export type {
   InputProps as AntInputProps,
   MenuProps as AntMenuProps,
   ModalProps as AntModalProps,
+  ProgressProps as AntProgressProps,
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
@@ -53,7 +55,9 @@ export {
   Col as AntCol,
   Collapse as AntCollapse,
   DatePicker as AntDatePicker,
+  Descriptions as AntDescriptions,
   Divider as AntDivider,
+  Drawer as AntDrawer,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
   Flex as AntFlex,
@@ -111,6 +115,7 @@ export type {
 } from "./hoc/CustomList";
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
+export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 
 // Export utils
 export * from "./components/data-display/location.utils";
