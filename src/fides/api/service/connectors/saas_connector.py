@@ -389,8 +389,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
         if missing_dataset_reference_values:
             logger.info(
-                "The  action type {} for the '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
-                self.current_privacy_request.policy.get_action_type(),  # type: ignore
+                "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
@@ -522,19 +521,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.set_privacy_request_state(privacy_request, node, request_task)
 
         query_config = self.query_config(node)
-
-        # Delegate async requests
-        with get_db() as db:
-            if async_dsr_strategy := _get_async_dsr_strategy(
-                db, request_task, query_config, ActionType.erasure
-            ):
-                return async_dsr_strategy.async_mask_data(
-                    client=self.create_client(),
-                    request_task_id=request_task.id,
-                    query_config=query_config,
-                    rows=rows,
-                )
-
         masking_request = query_config.get_masking_request()
         rows_updated = 0
 
@@ -551,6 +537,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 input_data, masking_request.param_values
             ):
                 return rows_updated
+
+        # Delegate async requests
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.erasure
+            ):
+                return async_dsr_strategy.async_mask_data(
+                    client=self.create_client(),
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    rows=rows,
+                )
 
         self.set_saas_request_state(masking_request)
 
