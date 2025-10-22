@@ -40,7 +40,7 @@ const mapResponseToTreeData = (
         case "Table":
           return <Icons.Table className="h-full" />;
         case "Field":
-          return <Icons.ShowDataCards className="h-full" />;
+          return <Icons.Column className="h-full" />;
         default:
           return null;
       }
