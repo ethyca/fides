@@ -77,7 +77,7 @@ describe("Action center", () => {
               .should(
                 "have.attr",
                 "href",
-                `${ACTION_CENTER_ROUTE}/${monitorKey}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}`,
+                `${ACTION_CENTER_ROUTE}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}/${monitorKey}`,
               );
             cy.get("[data-testid='monitor-date']").should("contain", " ago");
           });
@@ -112,7 +112,7 @@ describe("Action center", () => {
       cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/${integrationMonitorKey}/data-explorer`,
+        `${ACTION_CENTER_ROUTE}/data-explorer/${integrationMonitorKey}`,
       );
     });
     it.skip("Should paginate results", () => {
