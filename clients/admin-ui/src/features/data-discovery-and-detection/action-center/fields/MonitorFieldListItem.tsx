@@ -12,9 +12,9 @@ import {
   SparkleIcon,
 } from "fidesui";
 
-// import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
-// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import { parseResourceBreadcrumbs } from "../utils/urnParsingV2";
@@ -105,8 +105,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     <List.Item
       key={urn}
       actions={[
-        /* TODO: Uncomment this when we have a proper confidence score from the backend */
-        /* classifications && classifications.length > 0 && (
+        classifications && classifications.length > 0 && (
           <ClassifierProgress
             percent={
               classifications.find(
@@ -117,7 +116,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                 : 25
             }
           />
-        ), */
+        ),
         classifications && classifications.length > 0 && (
           <Button
             aria-label="Approve"
