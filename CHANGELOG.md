@@ -38,6 +38,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Added sticky headers and action bars to some tables [#6813](https://github.com/ethyca/fides/pull/6813)
 
+### Changed
+
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
