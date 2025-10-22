@@ -48,6 +48,9 @@ const monitorFieldApi = baseApi.injectEndpoints({
         path: MonitorFieldParameters["path"] & {
           action_type: FieldActionTypeValue;
         };
+        body: {
+          excluded_resource_urns: string[];
+        };
       }
     >({
       query: ({

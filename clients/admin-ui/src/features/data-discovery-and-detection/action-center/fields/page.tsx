@@ -58,6 +58,7 @@ import MonitorTree from "./MonitorTree";
 import { useBulkActions } from "./useBulkActions";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
+import { useMultiSelect } from "./useMultiSelect";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
@@ -85,11 +86,6 @@ const ActionCenterFields: NextPage = () => {
     monitor_config_id: monitorId,
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
-  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
-  const [selectedFields, setSelectedFields] = useState<
-    DatastoreStagedResourceAPIResponse[]
-  >([]);
-  const [selectAll, setSelectAll] = useState<boolean>(false);
   const { data: fieldsDataResponse, isFetching } = useGetMonitorFieldsQuery({
     path: {
       monitor_config_id: monitorId,
@@ -112,53 +108,49 @@ const ActionCenterFields: NextPage = () => {
   const resource = stagedResourceDetailsResult.data;
   const bulkActions = useBulkActions(monitorId);
   const fieldActions = useFieldActions(monitorId);
+  const {
+    reset: resetMultiSelect,
+    mode,
+    updateListItems,
+    selectedItems,
+    selected,
+    excluded,
+    updateMode,
+    updateSelected,
+    allSelected,
+    indeterminate,
+    selectAll,
+  } = useMultiSelect<
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);
   };
 
   const availableActions = getAvailableActions(
-    selectedFields.flatMap((field) =>
+    selectedItems.flatMap((field) =>
       field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
     ),
   );
-
-  const handleOnSelectAll = (nextSelectAll: boolean) => {
-    setSelectAll(nextSelectAll);
-    setSelectedFields(
-      nextSelectAll && fieldsDataResponse ? fieldsDataResponse.items : [],
-    );
-
-    setSelectedFieldIds(
-      nextSelectAll && fieldsDataResponse
-        ? fieldsDataResponse.items.map((item) => item.urn)
-        : [],
-    );
-  };
-
-  const handleOnSelect = (key: string, selected?: boolean) => {
-    setSelectAll(false);
-    const targetField = fieldsDataResponse?.items.find(
-      (item) => item.urn === key,
-    );
-
-    if (selected && targetField) {
-      setSelectedFields([...selectedFields, targetField]);
-    } else {
-      setSelectedFields(selectedFields.filter((val) => val.urn !== key));
-    }
-
-    setSelectedFieldIds(
-      selected
-        ? [...selectedFieldIds, key]
-        : selectedFieldIds.filter((val) => val !== key),
-    );
-  };
-
+  const responseCount = fieldsDataResponse?.total ?? 0;
   const selectedFieldCount =
-    selectAll && fieldsDataResponse?.total
-      ? fieldsDataResponse?.total
-      : selectedFieldIds.length;
+    mode === "exclusive" && fieldsDataResponse?.total
+      ? responseCount - excluded.length
+      : selectedItems.length;
+
+  useEffect(() => {
+    if (fieldsDataResponse) {
+      updateListItems(
+        fieldsDataResponse.items.map(({ urn, ...rest }) => ({
+          itemKey: urn,
+          urn,
+          ...rest,
+        })),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldsDataResponse?.items]);
 
   useEffect(() => {
     if (detailsUrn) {
@@ -171,6 +163,7 @@ const ActionCenterFields: NextPage = () => {
    */
   useEffect(() => {
     resetPagination();
+    resetMultiSelect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resourceStatus,
@@ -257,43 +250,46 @@ const ActionCenterFields: NextPage = () => {
                       ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
                         label: FIELD_ACTION_LABEL[actionType],
-                        disabled: selectAll
+                        disabled: allSelected
                           ? false
                           : !availableActions?.includes(actionType),
                         onClick: () => {
-                          if (selectAll) {
+                          if (allSelected) {
                             const callback = bulkActions[actionType];
 
                             if (callback) {
-                              callback({
-                                path: {
-                                  monitor_config_id: monitorId,
+                              callback(
+                                {
+                                  path: {
+                                    monitor_config_id: monitorId,
+                                  },
+                                  query: {
+                                    staged_resource_urn: selectedNodeKeys.map(
+                                      (key) => key.toString(),
+                                    ),
+                                    search: search.searchProps.value,
+                                    diff_status: resourceStatus
+                                      ? resourceStatus.flatMap(intoDiffStatus)
+                                      : undefined,
+                                    confidence_score:
+                                      confidenceScore || undefined,
+                                    data_category: dataCategory || undefined,
+                                  },
                                 },
-                                query: {
-                                  staged_resource_urn: selectedNodeKeys.map(
-                                    (key) => key.toString(),
-                                  ),
-                                  search: search.searchProps.value,
-                                  diff_status: resourceStatus
-                                    ? resourceStatus.flatMap(intoDiffStatus)
-                                    : undefined,
-                                  confidence_score:
-                                    confidenceScore || undefined,
-                                  data_category: dataCategory || undefined,
-                                },
-                              });
+                                excluded.map((k) => k.urn),
+                              );
                             }
                           } else {
                             const callback = fieldActions[actionType];
                             if (callback) {
-                              callback(selectedFieldIds);
+                              callback(selected.map((rkey) => rkey.toString()));
                             }
                           }
                         },
                       })),
                     ],
                   }}
-                  disabled={selectedFieldIds.length <= 0}
+                  disabled={selected.length <= 0}
                 >
                   <Button
                     type="primary"
@@ -305,16 +301,22 @@ const ActionCenterFields: NextPage = () => {
                 </Dropdown>
               </Flex>
             </Flex>
-            <Flex gap="middle">
+            <Flex gap="middle" align="center">
               <Checkbox
-                checked={selectAll}
-                onChange={(e) => handleOnSelectAll(e.target.checked)}
+                checked={allSelected}
+                indeterminate={indeterminate}
+                onChange={(e) => selectAll(e.target.checked)}
               />
               <Text>Select all</Text>
               {!!selectedFieldCount && (
-                <Text strong>
-                  {selectedFieldCount.toLocaleString()} selected
-                </Text>
+                <>
+                  <Text strong>
+                    {selectedFieldCount.toLocaleString()} selected
+                  </Text>
+                  <Button type="link" onClick={() => updateMode("exclusive")}>
+                    Select All {fieldsDataResponse?.total?.toLocaleString()}
+                  </Button>
+                </>
               )}
             </Flex>
             <List
@@ -324,8 +326,8 @@ const ActionCenterFields: NextPage = () => {
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
-                  selected: selectedFieldIds.includes(props.urn),
-                  onSelect: handleOnSelect,
+                  selected: selected.includes(props.urn),
+                  onSelect: updateSelected,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
                     fieldActions["assign-categories"]([urn], {
