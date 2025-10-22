@@ -12,7 +12,6 @@ import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 export interface FilterQueryParams {
   fuzzy_search_str?: string;
-  id?: string;
   from?: string;
   to?: string;
   status?: PrivacyRequestStatus[];
@@ -41,7 +40,6 @@ const usePrivacyRequestsFilters = ({
 
   const [modalFilters, setModalFilters] = useQueryStates(
     {
-      id: parseAsString.withDefault(""),
       from: parseAsString.withDefault(""),
       to: parseAsString.withDefault(""),
       status: parseAsArrayOf(
@@ -69,7 +67,6 @@ const usePrivacyRequestsFilters = ({
   const filterQueryParams: FilterQueryParams = useMemo(() => {
     return {
       fuzzy_search_str: fuzzySearchTerm,
-      id: modalFilters.id,
       from: modalFilters.from,
       to: modalFilters.to,
       status: modalFilters.status,

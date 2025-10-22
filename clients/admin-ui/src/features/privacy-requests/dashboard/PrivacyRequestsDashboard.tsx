@@ -21,7 +21,6 @@ import {
   selectPrivacyRequestFilters,
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
@@ -29,13 +28,19 @@ import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestR
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
+import { PrivacyRequestFiltersModal } from "./PrivacyRequestFiltersModal";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const { filterQueryParams, fuzzySearchTerm, setFuzzySearchTerm } =
-    usePrivacyRequestsFilters({
-      pagination,
-    });
+  const {
+    filterQueryParams,
+    fuzzySearchTerm,
+    setFuzzySearchTerm,
+    modalFilters,
+    setModalFilters,
+  } = usePrivacyRequestsFilters({
+    pagination,
+  });
 
   const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
@@ -112,10 +117,11 @@ export const PrivacyRequestsDashboard = () => {
           />
         </div>
         <Portal>
-          <RequestTableFilterModal
-            isOpen={isOpen}
+          <PrivacyRequestFiltersModal
+            open={isOpen}
             onClose={onClose}
-            onFilterChange={pagination.resetPagination}
+            modalFilters={modalFilters}
+            setModalFilters={setModalFilters}
           />
         </Portal>
       </TableActionBar>

@@ -49,7 +49,7 @@ export const RequestTableFilterModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader borderBottomWidth={1} borderBottomColor="gray.200">
-          All Filters
+          All filters
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody py={4} sx={{ "& label": { mb: 0 } }}>
@@ -114,7 +114,7 @@ export const RequestTableFilterModal = ({
             </Stack>
             <Stack>
               <FormLabel size="md" htmlFor="request-action-type">
-                Request Type
+                Request type
               </FormLabel>
               <FilterSelect
                 id="request-action-type"
