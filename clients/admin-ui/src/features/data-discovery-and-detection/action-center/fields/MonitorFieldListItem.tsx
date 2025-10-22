@@ -12,9 +12,9 @@ import {
 } from "fidesui";
 import styles from "fidesui/src/hoc/CustomTypography.module.scss";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
+// import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import ClassificationSelect from "./ClassificationSelect";
@@ -103,7 +103,8 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     <List.Item
       key={urn}
       actions={[
-        classifications && classifications.length > 0 && (
+        /* TODO: Uncomment this when we have a proper confidence score from the backend */
+        /* classifications && classifications.length > 0 && (
           <ClassifierProgress
             percent={
               classifications.find(
@@ -114,7 +115,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                 : 25
             }
           />
-        ),
+        ), */
         classifications && classifications.length > 0 && (
           <Button
             aria-label="Approve"
