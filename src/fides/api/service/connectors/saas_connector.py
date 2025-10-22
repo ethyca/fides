@@ -521,22 +521,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.set_privacy_request_state(privacy_request, node, request_task)
 
         query_config = self.query_config(node)
-        masking_request = query_config.get_masking_request()
-        rows_updated = 0
 
-        if not masking_request:
-            logger.info(
-                "No masking request found for the '{}' collection in {}",
-                self.current_collection_name,
-                self.saas_config.fides_key,  # type: ignore
-            )
-            return rows_updated
-        if input_data:
-            # Check that the input data contains all the dataset reference values required for the masking request
-            if self._missing_dataset_reference_values(
-                input_data, masking_request.param_values
-            ):
-                return rows_updated
 
         # Delegate async requests
         with get_db() as db:
@@ -549,6 +534,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     query_config=query_config,
                     rows=rows,
                 )
+        masking_request = query_config.get_masking_request()
+        rows_updated = 0
+
+        if not masking_request:
+            logger.info(
+                "No masking request found for the '{}' collection in {}",
+                self.current_collection_name,
+                self.saas_config.fides_key,  # type: ignore
+            )
+            return rows_updated
 
         self.set_saas_request_state(masking_request)
 
