@@ -226,7 +226,9 @@ describe("usePrivacyRequestBulkActions", () => {
         await denyMenuItem?.onClick?.({} as any);
       });
 
-      expect(mockOpenDenyPrivacyRequestModal).toHaveBeenCalled();
+      expect(mockOpenDenyPrivacyRequestModal).toHaveBeenCalledWith(
+        "You are about to deny 2 privacy requests. Are you sure you want to continue?",
+      );
       expect(mockBulkDenyRequest).toHaveBeenCalledWith({
         request_ids: ["1", "2"],
         reason: "User requested withdrawal",
@@ -329,6 +331,45 @@ describe("usePrivacyRequestBulkActions", () => {
 
       expect(mockOpenDenyPrivacyRequestModal).toHaveBeenCalled();
       expect(mockBulkDenyRequest).not.toHaveBeenCalled();
+    });
+
+    it("deny: passes warning message when only partial requests support the action", async () => {
+      mockOpenDenyPrivacyRequestModal.mockResolvedValue(
+        "User requested withdrawal",
+      );
+      mockBulkDenyRequest.mockResolvedValue({
+        data: {
+          succeeded: [{ id: "1" }],
+          failed: [],
+        },
+      });
+
+      const { result } = renderHook(() =>
+        usePrivacyRequestBulkActions({
+          requests: [pendingRequest1, completeRequest],
+          selectedIds: ["1", "3"],
+          clearSelectedIds: mockClearSelectedIds,
+          messageApi: mockMessageApi,
+          modalApi: mockModalApi,
+        }),
+      );
+
+      const denyMenuItem = result.current.bulkActionMenuItems[1] as Extract<
+        MenuProps["items"],
+        Array<any>
+      >[number] & { onClick?: (e: any) => void };
+
+      await act(async () => {
+        await denyMenuItem?.onClick?.({} as any);
+      });
+
+      expect(mockOpenDenyPrivacyRequestModal).toHaveBeenCalledWith(
+        "You have selected 2 requests, but only 1 request can perform this action. If you continue, the bulk action will only be applied to 1 request.",
+      );
+      expect(mockBulkDenyRequest).toHaveBeenCalledWith({
+        request_ids: ["1"],
+        reason: "User requested withdrawal",
+      });
     });
   });
 });
