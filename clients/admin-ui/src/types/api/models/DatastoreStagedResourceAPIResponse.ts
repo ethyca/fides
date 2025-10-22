@@ -15,10 +15,7 @@ export type DatastoreStagedResourceAPIResponse = {
   description?: string | null;
   updated_at?: string | null;
   classifications?: Array<ClassificationWithConfidence>;
-  /**
-   * User assigned data categories overriding auto assigned classifications
-   */
-  user_assigned_data_categories?: Array<string> | null;
+  preferred_data_categories?: Array<string> | null;
   data_type?: string | null;
   /**
    * The monitor config that detected this resource

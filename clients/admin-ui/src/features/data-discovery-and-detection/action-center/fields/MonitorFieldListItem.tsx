@@ -101,21 +101,12 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   onSelect,
   onSetDataCategories,
   onNavigate,
-  user_assigned_data_categories,
+  preferred_data_categories,
   actions,
 }) => {
   const onSelectDataCategory = (value: string) => {
-    if (
-      classifications?.find((classification) => classification.label === value)
-    ) {
-      return;
-    }
-
-    if (!user_assigned_data_categories?.includes(value)) {
-      onSetDataCategories(urn, [
-        ...(user_assigned_data_categories ?? []),
-        value,
-      ]);
+    if (!preferred_data_categories?.includes(value)) {
+      onSetDataCategories(urn, [...(preferred_data_categories ?? []), value]);
     }
   };
 
@@ -181,34 +172,24 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
           <ClassificationSelect
             mode="tags"
             value={[
-              ...(classifications?.map(({ label }) => label) ?? []),
-              ...(user_assigned_data_categories?.map((value) => value) ?? []),
+              ...(preferred_data_categories?.map((value) => value) ?? []),
             ]}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(
                 (item) => item.label === props.value,
               );
 
-              // TODO: This is temporary, it will be fixed in https://ethyca.atlassian.net/browse/ENG-1687
-              const closable =
-                !isFromClassifier &&
-                !!user_assigned_data_categories &&
-                user_assigned_data_categories.includes(props.value);
-
               const handleClose = () => {
-                if (closable) {
-                  const newDataCategories =
-                    user_assigned_data_categories?.filter(
-                      (category) => category !== props.value,
-                    ) ?? [];
-                  onSetDataCategories(urn, newDataCategories);
-                }
+                const newDataCategories =
+                  preferred_data_categories?.filter(
+                    (category) => category !== props.value,
+                  ) ?? [];
+                onSetDataCategories(urn, newDataCategories);
               };
 
               return tagRender({
                 ...props,
                 isFromClassifier,
-                closable,
                 onClose: handleClose,
               });
             }}
