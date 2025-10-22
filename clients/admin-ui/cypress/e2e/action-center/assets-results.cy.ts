@@ -7,6 +7,9 @@ import {
 } from "cypress/support/stubs";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+
+const WEB_MONITOR_ROUTE = `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}`;
 
 describe("Action center Asset Results", () => {
   beforeEach(() => {
@@ -22,7 +25,7 @@ describe("Action center Asset Results", () => {
     const firstRowUrn =
       "my_web_monitor_1.forms.hubspot.com.https://forms.hubspot.com/submissions-validation/v1/validate/7252764/0d22c925-3a81-4f10-bfdc-69a5d67e93bc";
     beforeEach(() => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetsUncategorized");
       cy.getByTestId("page-breadcrumb").should("contain", "Uncategorized");
     });
@@ -79,7 +82,7 @@ describe("Action center Asset Results", () => {
     ];
 
     beforeEach(() => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
       cy.wait("@getSystemDetails");
       cy.getByTestId("page-breadcrumb").should("contain", systemName); // little hack to make sure the systemName is available before proceeding
@@ -340,7 +343,7 @@ describe("Action center Asset Results", () => {
     describe("tab navigation", () => {
       it("updates URL hash when switching tabs", () => {
         cy.visit(
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
+          `${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
         );
         cy.location("hash").should("eq", "#attention-required");
 
@@ -388,7 +391,7 @@ describe("Action center Asset Results", () => {
 
     describe("URL sync and table reset behavior", () => {
       beforeEach(() => {
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
         cy.wait("@getSystemAssetResults");
         cy.wait("@getSystemDetails");
         cy.getByTestId("page-breadcrumb").should("contain", systemName);
@@ -550,7 +553,7 @@ describe("Action center Asset Results", () => {
 
     describe("Compliance column in assets table", () => {
       beforeEach(() => {
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
         cy.wait("@getSystemAssetResultsWithConsent");
       });
 
@@ -692,7 +695,7 @@ describe("Action center Asset Results", () => {
 
     describe("System aggregate view consent status", () => {
       beforeEach(() => {
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}`);
         cy.wait("@getSystemAggregateResults");
       });
 
@@ -730,7 +733,7 @@ describe("Action center Asset Results", () => {
         response: 200,
       }).as("patchAssets");
 
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResultsWithConsent");
     });
 
