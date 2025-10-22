@@ -33,10 +33,6 @@ describe("configureNavGroups", () => {
       title: "Privacy requests",
       children: [
         { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
-        {
-          title: "Connection manager",
-          path: routes.DATASTORE_CONNECTION_ROUTE,
-        },
       ],
     });
   });
@@ -336,13 +332,6 @@ describe("findActiveNav", () => {
       },
     },
     // Inexact match is the default.
-    {
-      path: `${routes.DATASTORE_CONNECTION_ROUTE}/new`,
-      expected: {
-        title: "Privacy requests",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-      },
-    },
     {
       path: routes.PRIVACY_EXPERIENCE_ROUTE,
       expected: {

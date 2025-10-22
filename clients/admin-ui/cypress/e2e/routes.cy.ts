@@ -45,9 +45,6 @@ describe("Routes", () => {
       cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");
       cy.getByTestId("privacy-requests");
-      cy.visit("/datastore-connection");
-      cy.wait("@getConnectors");
-      cy.getByTestId("connection-grid");
       cy.visit("/privacy-requests/configure");
       cy.getByTestId("privacy-requests-configure");
       cy.visit(LOCATIONS_ROUTE);
@@ -72,10 +69,6 @@ describe("Routes", () => {
         // cannot access /add-systems
         cy.visit(ADD_SYSTEMS_ROUTE);
         cy.getByTestId("add-systems").should("not.exist");
-        cy.getByTestId("home-content");
-        // cannot access /datastore-connection
-        cy.visit("/datastore-connection");
-        cy.getByTestId("connection-grid").should("not.exist");
         cy.getByTestId("home-content");
         // can access /privacy-requests
         cy.visit("/privacy-requests");

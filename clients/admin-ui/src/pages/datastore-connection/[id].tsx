@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useAlert } from "~/features/common/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import {
   connectionTypeApi,
   selectConnectionTypes,
@@ -45,7 +45,7 @@ const EditDatastoreConnection: NextPage = () => {
   useEffect(() => {
     const handleError = () => {
       errorAlert(`An error occurred while loading ${router.query.id}`);
-      router.push(DATASTORE_CONNECTION_ROUTE, undefined, { shallow: true });
+      router.push(SYSTEM_ROUTE, undefined, { shallow: true });
     };
 
     const fetchConnectionData = async (key: string) => {

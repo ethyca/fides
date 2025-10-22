@@ -107,27 +107,6 @@ export const datastoreConnectionSlice = createSlice({
       page: initialState.page,
       connection_type: action.payload,
     }),
-    setTestingStatus: (
-      state,
-      action: PayloadAction<TestingStatus | string>,
-    ) => ({
-      ...state,
-      page: initialState.page,
-      test_status: action.payload as TestingStatus,
-    }),
-    setSystemType: (state, action: PayloadAction<SystemType | string>) => ({
-      ...state,
-      page: initialState.page,
-      system_type: action.payload as SystemType,
-    }),
-    setDisabledStatus: (
-      state,
-      action: PayloadAction<DisabledStatus | string>,
-    ) => ({
-      ...state,
-      page: initialState.page,
-      disabled_status: action.payload as DisabledStatus,
-    }),
     setPage: (state, action: PayloadAction<number>) => ({
       ...state,
       page: action.payload,
@@ -137,11 +116,6 @@ export const datastoreConnectionSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
-    setOrphanedFromSystem: (state, action: PayloadAction<boolean>) => ({
-      ...state,
-      page: initialState.page,
-      orphaned_from_system: action.payload,
-    }),
   },
 });
 
@@ -150,10 +124,6 @@ export const {
   setSize,
   setPage,
   setConnectionType,
-  setSystemType,
-  setTestingStatus,
-  setDisabledStatus,
-  setOrphanedFromSystem,
 } = datastoreConnectionSlice.actions;
 
 export const selectDatastoreConnectionFilters = (state: RootState) =>
