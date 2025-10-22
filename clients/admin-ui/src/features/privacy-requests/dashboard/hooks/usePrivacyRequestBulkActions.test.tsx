@@ -232,7 +232,7 @@ describe("usePrivacyRequestBulkActions", () => {
         reason: "User requested withdrawal",
       });
       expect(mockMessageApi.success).toHaveBeenCalledWith(
-        "Successfully denyd 2 privacy requests",
+        "Successfully denied 2 privacy requests",
         5,
       );
     });

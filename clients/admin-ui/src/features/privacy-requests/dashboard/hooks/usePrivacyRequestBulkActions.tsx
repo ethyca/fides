@@ -32,15 +32,24 @@ interface UsePrivacyRequestBulkActionsProps {
   modalApi: ModalInstance;
 }
 
+const ACTION_PAST_TENSE: Record<BulkActionType, string> = {
+  [BulkActionType.APPROVE]: "approved",
+  [BulkActionType.DENY]: "denied",
+  [BulkActionType.DELETE]: "deleted",
+};
+
 const formatResultMessage = (
-  actionLabel: string,
+  action: BulkActionType,
   successCount: number,
   failedCount: number,
 ): { type: "success" | "warning" | "error"; message: string } => {
+  const actionLabel = action;
+  const actionPastTense = ACTION_PAST_TENSE[action];
+
   if (failedCount > 0 && successCount > 0) {
     return {
       type: "warning",
-      message: `Successfully ${actionLabel}d ${successCount} ${pluralize(successCount, "request", "requests")}. ${failedCount} ${pluralize(failedCount, "request", "requests")} failed.`,
+      message: `Successfully ${actionPastTense} ${successCount} ${pluralize(successCount, "request", "requests")}. ${failedCount} ${pluralize(failedCount, "request", "requests")} failed.`,
     };
   }
   if (failedCount > 0) {
@@ -51,7 +60,7 @@ const formatResultMessage = (
   }
   return {
     type: "success",
-    message: `Successfully ${actionLabel}d ${successCount} privacy ${pluralize(successCount, "request", "requests")}`,
+    message: `Successfully ${actionPastTense} ${successCount} privacy ${pluralize(successCount, "request", "requests")}`,
   };
 };
 
@@ -128,7 +137,7 @@ export const usePrivacyRequestBulkActions = ({
           const successCount = result.data.succeeded?.length || 0;
           const failedCount = result.data.failed?.length || 0;
           const { type, message: msg } = formatResultMessage(
-            "approve",
+            BulkActionType.APPROVE,
             successCount,
             failedCount,
           );
@@ -181,7 +190,7 @@ export const usePrivacyRequestBulkActions = ({
           const successCount = result.data.succeeded?.length || 0;
           const failedCount = result.data.failed?.length || 0;
           const { type, message: msg } = formatResultMessage(
-            "delete",
+            BulkActionType.DELETE,
             successCount,
             failedCount,
           );
@@ -214,7 +223,7 @@ export const usePrivacyRequestBulkActions = ({
       const successCount = result.data.succeeded?.length || 0;
       const failedCount = result.data.failed?.length || 0;
       const { type, message: msg } = formatResultMessage(
-        "deny",
+        BulkActionType.DENY,
         successCount,
         failedCount,
       );
