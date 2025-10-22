@@ -1,6 +1,6 @@
-import { CUSTOM_TAG_COLOR } from "fidesui";
+import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
 
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 import { ResourceStatusLabel } from "./types";
 
@@ -45,4 +45,14 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   promoting: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
   monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
   approved: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
+} as const;
+
+// Map resource type to icon
+export const MAP_DATASTORE_RESOURCE_TYPE_TO_ICON: Partial<
+  Record<StagedResourceTypeValue, Icons.CarbonIconType>
+> = {
+  [StagedResourceTypeValue.DATABASE]: Icons.Layers,
+  [StagedResourceTypeValue.SCHEMA]: Icons.Db2Database,
+  [StagedResourceTypeValue.TABLE]: Icons.Table,
+  [StagedResourceTypeValue.FIELD]: Icons.Column,
 } as const;

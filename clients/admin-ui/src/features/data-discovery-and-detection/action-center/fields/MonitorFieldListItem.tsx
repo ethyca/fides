@@ -1,4 +1,5 @@
 import {
+  AntBreadcrumb as Breadcrumb,
   AntButton as Button,
   AntCheckbox as Checkbox,
   AntFlex as Flex,
@@ -10,14 +11,15 @@ import {
   Icons,
   SparkleIcon,
 } from "fidesui";
-import styles from "fidesui/src/hoc/CustomTypography.module.scss";
 
 // import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
 // import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
+import { parseResourceBreadcrumbs } from "../utils/urnParsingV2";
 import ClassificationSelect from "./ClassificationSelect";
+import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
@@ -135,7 +137,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         ),
         <Button
           aria-label="Reclassify"
-          icon={<SparkleIcon />}
+          icon={<SparkleIcon size={12} />}
           size="small"
           key="reclassify"
         />,
@@ -149,35 +151,45 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
           />
         }
         title={
-          <Flex justify="space-between">
-            <Flex gap="small" align="center" className="w-full">
-              <Button
-                type="link"
-                className={`h-auto p-0 ${styles.primaryColorLink}`}
-                onClick={() => onNavigate && onNavigate(urn)}
+          <Flex
+            gap={12}
+            align="center"
+            className={styles["monitor-field__title"]}
+          >
+            <Button
+              type="text"
+              size="small"
+              className="-mx-2"
+              onClick={() => onNavigate && onNavigate(urn)}
+            >
+              {name}
+            </Button>
+            {diff_status && diff_status !== DiffStatus.ADDITION && (
+              <Tag
+                bordered={false}
+                color={
+                  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
+                }
               >
-                {name}
-              </Button>
-              {diff_status && diff_status !== DiffStatus.ADDITION && (
-                <Tag
-                  bordered={false}
-                  color={
-                    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
-                  }
-                  className="font-normal text-[var(--ant-font-size-sm)]"
-                >
-                  {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
-                </Tag>
-              )}
-              <Text
-                size="sm"
-                type="secondary"
-                className="overflow-hidden font-normal"
-                ellipsis={{ tooltip: urn }}
-              >
-                {urn}
-              </Text>
-            </Flex>
+                {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
+              </Tag>
+            )}
+            <Breadcrumb
+              className={styles["monitor-field__breadcrumb"]}
+              items={parseResourceBreadcrumbs(urn).map((breadcrumb) => {
+                const { title, IconComponent } = breadcrumb;
+                return {
+                  title: IconComponent ? (
+                    <Flex gap={3} align="center">
+                      <IconComponent />
+                      <span>{title}</span>
+                    </Flex>
+                  ) : (
+                    title
+                  ),
+                };
+              })}
+            />
           </Flex>
         }
         description={
