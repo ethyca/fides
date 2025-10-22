@@ -11,16 +11,12 @@ import {
   useDisclosure,
 } from "fidesui";
 import React, { useMemo } from "react";
-import { useSelector } from "react-redux";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
-import {
-  selectPrivacyRequestFilters,
-  useGetAllPrivacyRequestsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
+import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
@@ -42,7 +38,6 @@ export const PrivacyRequestsDashboard = () => {
     pagination,
   });
 
-  const filters = useSelector(selectPrivacyRequestFilters);
   const [messageApi, messageContext] = message.useMessage();
   const [modalApi, modalContext] = modal.useModal();
 
@@ -51,7 +46,6 @@ export const PrivacyRequestsDashboard = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
-    ...filters,
     ...filterQueryParams,
     page: pagination.pageIndex,
     size: pagination.pageSize,
@@ -72,7 +66,7 @@ export const PrivacyRequestsDashboard = () => {
   const handleExport = async () => {
     let messageStr;
     try {
-      await downloadReport(filters);
+      await downloadReport(filterQueryParams);
     } catch (error) {
       if (error instanceof Error) {
         messageStr = error.message;
