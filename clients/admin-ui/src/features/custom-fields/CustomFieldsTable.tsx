@@ -12,7 +12,7 @@ const CustomFieldsTable = () => {
     useCustomFieldsTable();
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="middle" data-testid="custom-fields-management">
       <Flex
         justify="space-between"
         className="sticky -top-6 z-10 bg-white py-4"
