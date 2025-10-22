@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
 - Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
 - Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
+- Added confirmation modals for bulk actions on the new privacy requests page [#6784](https://github.com/ethyca/fides/pull/6784)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
