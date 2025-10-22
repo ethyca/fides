@@ -385,6 +385,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
             param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
 
+        # Add secrets to enable placeholder resolution for query params, headers, path, and body
+        # This ensures that placeholders coming from the connectors secrets are resolved
+        if self.secrets:
+            param_values.update(self.secrets)
+
     @staticmethod
     def _generate_product_list(*args: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
