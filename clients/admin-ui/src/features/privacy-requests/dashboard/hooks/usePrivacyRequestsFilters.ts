@@ -77,9 +77,10 @@ const usePrivacyRequestsFilters = ({
   }, [fuzzySearchTerm, modalFilters, sortState]);
 
   // Reset pagination whenever filters change
+  const { resetPagination } = pagination;
   useEffect(() => {
-    pagination.resetPagination();
-  }, [filterQueryParams, pagination]);
+    resetPagination();
+  }, [filterQueryParams, resetPagination]);
 
   return {
     fuzzySearchTerm,

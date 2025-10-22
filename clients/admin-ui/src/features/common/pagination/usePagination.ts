@@ -1,5 +1,5 @@
 import { parseAsNumberLiteral, useQueryStates } from "nuqs";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { parseAsPositiveInteger } from "../hooks/nuqs-parsers";
 import type { PaginationConfig, PaginationState } from "../pagination";
@@ -180,7 +180,7 @@ export const usePagination = (config: PaginationConfig = {}) => {
     }
   };
 
-  const resetPagination = () => {
+  const resetPagination = useCallback(() => {
     if (disableUrlState) {
       // Reset local state
       setLocalState({
@@ -194,7 +194,14 @@ export const usePagination = (config: PaginationConfig = {}) => {
         [sizeQueryKey]: defaultPageSize,
       });
     }
-  };
+  }, [
+    disableUrlState,
+    defaultPageSize,
+    pageQueryKey,
+    sizeQueryKey,
+    setQueryState,
+    setLocalState,
+  ]);
 
   return {
     // Current state
