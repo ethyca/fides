@@ -17,7 +17,10 @@ import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
-import { parseResourceBreadcrumbs } from "../utils/parseResourceBreadcrumbs";
+import {
+  parseResourceBreadcrumbs,
+  UrnBreadcrumbItem,
+} from "../utils/parseResourceBreadcrumbs";
 import ClassificationSelect from "./ClassificationSelect";
 import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
@@ -73,6 +76,20 @@ type MonitorFieldListItemRenderParams = Parameters<
 type RenderMonitorFieldListItem = (
   props: MonitorFieldListItemRenderParams,
 ) => ReturnType<NonNullable<ListRenderItem>>;
+
+const renderBreadcrumbItem = (breadcrumb: UrnBreadcrumbItem) => {
+  const { title, IconComponent } = breadcrumb;
+  return {
+    title: IconComponent ? (
+      <Flex gap={3} align="center">
+        <IconComponent />
+        <span>{title}</span>
+      </Flex>
+    ) : (
+      title
+    ),
+  };
+};
 
 const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   urn,
@@ -175,19 +192,9 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             )}
             <Breadcrumb
               className={styles["monitor-field__breadcrumb"]}
-              items={parseResourceBreadcrumbs(urn).map((breadcrumb) => {
-                const { title, IconComponent } = breadcrumb;
-                return {
-                  title: IconComponent ? (
-                    <Flex gap={3} align="center">
-                      <IconComponent />
-                      <span>{title}</span>
-                    </Flex>
-                  ) : (
-                    title
-                  ),
-                };
-              })}
+              items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
+              // @ts-expect-error - role works here, but Ant's type system doesn't know that
+              role="presentation"
             />
           </Flex>
         }
