@@ -1,4 +1,8 @@
-import { AntTypography as Typography } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntFlexProps as FlexProps,
+  AntTypography as Typography,
+} from "fidesui";
 import NextLink from "next/link";
 import { ComponentProps } from "react";
 
@@ -10,10 +14,10 @@ export const LinkCell = ({
   containerProps,
   ...props
 }: ComponentProps<typeof LinkText> & {
-  containerProps?: ComponentProps<"div">;
+  containerProps?: FlexProps;
 }) => {
   return (
-    <div {...containerProps}>
+    <Flex {...containerProps}>
       {href ? (
         <NextLink href={href} passHref legacyBehavior>
           <LinkText
@@ -33,6 +37,6 @@ export const LinkCell = ({
           {children}
         </Text>
       )}
-    </div>
+    </Flex>
   );
 };

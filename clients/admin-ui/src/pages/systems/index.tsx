@@ -23,7 +23,6 @@ const Systems: NextPage = () => {
           heading="System inventory"
           breadcrumbItems={[{ title: "All systems" }]}
           isSticky={false}
-          style={{ position: "relative" }}
         >
           {isCompassEnabled && (
             <AntDropdown

@@ -11,11 +11,7 @@ const CUSTOM_FIELDS_COPY =
 
 const CustomFields: NextPage = () => (
   <Layout title="Custom fields">
-    <PageHeader
-      heading="Custom fields"
-      isSticky={false}
-      style={{ paddingBottom: 0 }}
-    >
+    <PageHeader heading="Custom fields" isSticky={false} className="pb-0">
       <AntTypography.Paragraph className="max-w-screen-md">
         {CUSTOM_FIELDS_COPY}
       </AntTypography.Paragraph>
