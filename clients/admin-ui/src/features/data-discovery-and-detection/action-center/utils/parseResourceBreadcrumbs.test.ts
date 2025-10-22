@@ -1,9 +1,12 @@
 import { StagedResourceTypeValue } from "~/types/api";
 
 import { MAP_DATASTORE_RESOURCE_TYPE_TO_ICON } from "../fields/MonitorFields.const";
-import { parseResourceBreadcrumbs, UrnBreadcrumbItem } from "./urnParsingV2";
+import {
+  parseResourceBreadcrumbs,
+  UrnBreadcrumbItem,
+} from "./parseResourceBreadcrumbs";
 
-describe("parseResourceBreadcrumbs", () => {
+describe(parseResourceBreadcrumbs.name, () => {
   describe("valid URNs", () => {
     it("should parse a simple URN with database and schema", () => {
       const urn = "monitor.database.schema.table";

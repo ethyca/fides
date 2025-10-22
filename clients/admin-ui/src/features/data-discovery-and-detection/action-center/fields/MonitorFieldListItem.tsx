@@ -17,7 +17,7 @@ import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
-import { parseResourceBreadcrumbs } from "../utils/urnParsingV2";
+import { parseResourceBreadcrumbs } from "../utils/parseResourceBreadcrumbs";
 import ClassificationSelect from "./ClassificationSelect";
 import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
