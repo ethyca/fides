@@ -103,6 +103,9 @@ export const useDiscoveredSystemAggregateTable = ({
             />
           ),
         },
+        sticky: {
+          offsetHeader: 40,
+        },
       },
     }),
     [getRecordKey, isLoading, isFetching, data?.items, data?.total],
