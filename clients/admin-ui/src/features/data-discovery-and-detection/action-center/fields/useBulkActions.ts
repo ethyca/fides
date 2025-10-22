@@ -21,7 +21,10 @@ export const useBulkActions = (
 
   const handleBulkAction =
     (actionType: FieldActionType) =>
-    async (filterParams: MonitorFieldParameters) => {
+    async (
+      filterParams: MonitorFieldParameters,
+      excluded_resource_urns: string[],
+    ) => {
       const mutationResult = await bulkAction({
         query: {
           ...filterParams.query,
@@ -29,6 +32,9 @@ export const useBulkActions = (
         path: {
           monitor_config_id: monitorId,
           action_type: actionType,
+        },
+        body: {
+          excluded_resource_urns,
         },
       });
 
@@ -67,6 +73,10 @@ export const useBulkActions = (
     promote: handleBulkAction(FieldActionType.PROMOTE),
   } satisfies Record<
     FieldActionType,
-    null | ((filterParams: MonitorFieldParameters) => Promise<void> | void)
+    | null
+    | ((
+        filterParams: MonitorFieldParameters,
+        excluded_resource_urns: string[],
+      ) => Promise<void> | void)
   >;
 };

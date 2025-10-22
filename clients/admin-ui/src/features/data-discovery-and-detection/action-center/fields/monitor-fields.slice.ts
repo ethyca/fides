@@ -1,5 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
+import { AllowedActionsResponse } from "~/types/api/models/AllowedActionsResponse";
+import { FilteredFieldActionRequest } from "~/types/api/models/FilteredFieldActionRequest";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 import { PaginationQueryParams } from "~/types/query-params";
@@ -48,6 +50,9 @@ const monitorFieldApi = baseApi.injectEndpoints({
         path: MonitorFieldParameters["path"] & {
           action_type: FieldActionTypeValue;
         };
+        body: {
+          excluded_resource_urns: string[];
+        };
       }
     >({
       query: ({
@@ -70,8 +75,37 @@ const monitorFieldApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
+    getAllowedActions: build.query<
+      AllowedActionsResponse,
+      MonitorFieldParameters & {
+        body: FilteredFieldActionRequest;
+      }
+    >({
+      query: ({
+        path: { monitor_config_id },
+        query: { search, diff_status, confidence_score, ...arrayQueryParams },
+        ...body
+      }) => {
+        const queryParams = buildArrayQueryParams({
+          ...arrayQueryParams,
+          ...(search ? { search: [search] } : {}),
+          ...(diff_status ? { diff_status } : {}),
+          ...(confidence_score ? { confidence_score } : {}),
+        });
+
+        return {
+          url: `/plus/discovery-monitor/${monitor_config_id}/fields/allowed-actions?${queryParams.toString()}`,
+          method: "POST",
+          body,
+        };
+      },
+      providesTags: ["Allowed Monitor Field Actions"],
+    }),
   }),
 });
 
-export const { useFieldActionsMutation, useGetMonitorFieldsQuery } =
-  monitorFieldApi;
+export const {
+  useFieldActionsMutation,
+  useGetMonitorFieldsQuery,
+  useLazyGetAllowedActionsQuery,
+} = monitorFieldApi;
