@@ -116,7 +116,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -161,7 +161,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -210,7 +210,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -263,7 +263,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -314,7 +314,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -375,7 +375,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -482,7 +482,7 @@ jobs:
         python_version: ["3.9.21", "3.10.16"]
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
