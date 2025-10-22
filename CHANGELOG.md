@@ -39,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
 - Adds a reusable form modal hook for confirmation modals [#6789](https://github.com/ethyca/fides/pull/6789)
 - Added fullHeight prop to FixedLayout component for full viewport usage [#6787](https://github.com/ethyca/fides/pull/6787)
+- Replaced custom tag color strings with new CUSTOM_TAG_COLOR enum for type safety [#6801](https://github.com/ethyca/fides/pull/6801)
 
 ### Fixed
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)

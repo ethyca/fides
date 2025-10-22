@@ -18,6 +18,7 @@ import {
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
+  CUSTOM_TAG_COLOR,
   Icons,
 } from "fidesui";
 import { useMemo, useState } from "react";
@@ -33,10 +34,19 @@ import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";
 import useDownloadExternalTasksReport from "./hooks/useDownloadExternalTasksReport";
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
-const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
-  [ManualFieldStatus.NEW]: { color: "info", label: "New" },
-  [ManualFieldStatus.COMPLETED]: { color: "success", label: "Completed" },
-  [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
+const statusMap: Record<
+  ManualFieldStatus,
+  { color: CUSTOM_TAG_COLOR; label: string }
+> = {
+  [ManualFieldStatus.NEW]: { color: CUSTOM_TAG_COLOR.INFO, label: "New" },
+  [ManualFieldStatus.COMPLETED]: {
+    color: CUSTOM_TAG_COLOR.SUCCESS,
+    label: "Completed",
+  },
+  [ManualFieldStatus.SKIPPED]: {
+    color: CUSTOM_TAG_COLOR.MARBLE,
+    label: "Skipped",
+  },
 };
 
 // Extract column definitions for external users
@@ -121,11 +131,11 @@ const getExternalColumns = (
       }
 
       // Simple days left display for external users
-      let color = "green";
+      let color = CUSTOM_TAG_COLOR.SUCCESS;
       if (daysLeft <= 5) {
-        color = "red";
+        color = CUSTOM_TAG_COLOR.ERROR;
       } else if (daysLeft <= 10) {
-        color = "orange";
+        color = CUSTOM_TAG_COLOR.WARNING;
       }
       return <Tag color={color}>{daysLeft} days</Tag>;
     },
