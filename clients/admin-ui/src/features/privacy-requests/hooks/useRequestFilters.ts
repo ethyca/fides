@@ -41,12 +41,16 @@ export const useRequestFilters = (onFilterChange: () => void) => {
     onFilterChange();
   };
 
+  console.log("filters", filters);
+
   const anyFiltersApplied = useMemo(() => {
     return (
       filters.action_type?.length ||
       filters.from !== "" ||
       filters.to !== "" ||
-      filters.status?.length
+      filters.status?.length ||
+      filters.sort_field !== undefined ||
+      filters.sort_direction !== undefined
     );
   }, [filters]);
 
