@@ -522,7 +522,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         query_config = self.query_config(node)
 
-
         # Delegate async requests
         with get_db() as db:
             if async_dsr_strategy := _get_async_dsr_strategy(
