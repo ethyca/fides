@@ -41,8 +41,6 @@ export const useRequestFilters = (onFilterChange: () => void) => {
     onFilterChange();
   };
 
-  console.log("filters", filters);
-
   const anyFiltersApplied = useMemo(() => {
     return (
       filters.action_type?.length ||
