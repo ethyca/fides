@@ -7,16 +7,14 @@ import {
   AntRow as Row,
   AntSpace as Space,
 } from "fidesui";
-import { capitalize } from "lodash";
 
+import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 
-import {
-  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
-  ResourceStatusLabel,
-} from "./MonitorFields.const";
+import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
+import { ResourceStatusLabel } from "./types";
 import { useMonitorFieldsFilters } from "./useFilters";
 
 const ConfidenceScoreRangeValues = Object.values(ConfidenceScoreRange);

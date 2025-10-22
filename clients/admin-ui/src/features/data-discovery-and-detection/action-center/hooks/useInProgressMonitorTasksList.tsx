@@ -77,19 +77,26 @@ export const useInProgressMonitorTasksList = () => {
     ExecutionLogStatus.SKIPPED,
   ];
 
-  const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery({
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-    statuses:
-      appliedStatusFilters.length > 0 ? appliedStatusFilters : undefined,
-    return_dismissed: appliedShowDismissed,
-  });
+  const { data, isLoading, isFetching } = useGetInProgressMonitorTasksQuery(
+    {
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+      statuses:
+        appliedStatusFilters.length > 0 ? appliedStatusFilters : undefined,
+      return_dismissed: appliedShowDismissed,
+    },
+    {
+      pollingInterval: 3000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
 
   const listProps = useMemo(
     () => ({
       dataSource: data?.items || [],
-      loading: isLoading || isFetching,
+      loading: isLoading,
       locale: {
         emptyText: (
           <Empty
