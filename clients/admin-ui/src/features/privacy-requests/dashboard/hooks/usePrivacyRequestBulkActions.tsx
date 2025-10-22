@@ -196,12 +196,9 @@ export const usePrivacyRequestBulkActions = ({
       getAvailableActionsForRequest(request).includes(BulkActionType.DENY),
     );
 
-    if (supportedRequests.length === 0) {
-      return;
-    }
-
     const reason = await openDenyPrivacyRequestModal();
     if (!reason) {
+      // User cancelled the modal, return early
       return;
     }
 
