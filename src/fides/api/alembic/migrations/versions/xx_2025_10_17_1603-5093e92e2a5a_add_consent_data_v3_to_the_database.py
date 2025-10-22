@@ -26,7 +26,11 @@ def upgrade():
         sa.Column("id", BigInteger, Identity(start=1, increment=1, always=True), primary_key=True),
         sa.Column("search_data", postgresql.json.JSONB),
         sa.Column("record_data", postgresql.TEXT),
-        sa.Column("is_latest", postgresql.BOOLEAN, nullable=False, server_default="f"),
+        # If we have a primary key we need to use a composite key because the primary key must be unique across _all_
+        # partitions, so we can't just use `id`, we have to use `is_latest` as well as part of the primary key. This
+        # should not be problematic as we will not allow for manually providing the ID so (unless someone deliberately does it)
+        # we should not end up with duplicate IDs having different `is_latest` values.
+        sa.Column("is_latest", postgresql.BOOLEAN, nullable=False, server_default="f", primary_key=True),
         sa.Column(
             "created_at",
             postgresql.TIMESTAMP(timezone=True),

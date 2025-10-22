@@ -3211,3 +3211,78 @@ dataset:
       - name: updated_at
         description: 'Fides Generated Description for Column: updated_at'
         data_categories: [ system.operations ]
+  - name: privacy_preferences
+    description: 'Privacy preferences for an identity'
+    data_categories: []
+    fields:
+    - name: collected_at
+      description: 'Timestamp when the preferences were collected'
+      data_categories: [ system.operations ]
+    - name: created_at
+      description: 'Timestamp when the preferences were created'
+      data_categories: [ system.operations ]
+    - name: id
+      description: 'Auto-generated unique identifier for the preferences'
+      data_categories: [ system.operations ]
+    - name: is_latest
+      description: 'Is this the latest set of preferences for the identity?'
+      data_categories: [ system.operations ]
+    - name: record_data
+      description: '*Encrypted* JSON data for the preferences'
+      data_categories: [ user.privacy_preferences ]
+    - name: search_data
+      description: 'Indexed, searchable data extracted from the preferences, hashed to prevent PII leaks but remain searchable'
+      data_categories: [ system.operations ]
+    - name: updated_at
+      description: 'Timestamp when the preferences were last updated'
+      data_categories: [ system.operations ]
+  - name: privacy_preferences_current
+    description: 'Partition table for privacy preferences where is_latest is true'
+    data_categories: [ system.operations ]
+    fields:
+    - name: collected_at
+      description: 'Timestamp when the preferences were collected'
+      data_categories: [ system.operations ]
+    - name: created_at
+      description: 'Timestamp when the preferences were created'
+      data_categories: [ system.operations ]
+    - name: id
+      description: 'Auto-generated unique identifier for the preferences'
+      data_categories: [ system.operations ]
+    - name: is_latest
+      description: 'Is this the latest set of preferences for the identity?'
+      data_categories: [ system.operations ]
+    - name: record_data
+      description: '*Encrypted* JSON data for the preferences'
+      data_categories: [ user.privacy_preferences ]
+    - name: search_data
+      description: 'Indexed, searchable data extracted from the preferences, hashed to prevent PII leaks but remain searchable'
+      data_categories: [ system.operations ]
+    - name: updated_at
+      description: 'Timestamp when the preferences were last updated'
+      data_categories: [ system.operations ]
+  - name: privacy_preferences_historic
+    description: 'Partition table for privacy preferences where is_latest is false'
+    data_categories: [ system.operations ]
+    fields:
+    - name: collected_at
+      description: 'Timestamp when the preferences were collected'
+      data_categories: [ system.operations ]
+    - name: created_at
+      description: 'Timestamp when the preferences were created'
+      data_categories: [ system.operations ]
+    - name: id
+      description: 'Auto-generated unique identifier for the preferences'
+      data_categories: [ system.operations ]
+    - name: is_latest
+      description: 'Is this the latest set of preferences for the identity?'
+      data_categories: [ system.operations ]
+    - name: record_data
+      description: '*Encrypted* JSON data for the preferences'
+      data_categories: [ user.privacy_preferences ]
+    - name: search_data
+      description: 'Indexed, searchable data extracted from the preferences, hashed to prevent PII leaks but remain searchable'
+      data_categories: [ system.operations ]
+    - name: updated_at
+      description: 'Timestamp when the preferences were last updated'
+      data_categories: [ system.operations ]
