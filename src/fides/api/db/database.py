@@ -20,6 +20,20 @@ from fides.api.util.errors import get_full_exception_name
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
+# Tables to exclude from migration autogeneration (e.g., tables without SQLAlchemy models)
+EXCLUDED_TABLES = {
+    "privacy_preferences",
+    "privacy_preferences_current",
+    "privacy_preferences_historic",
+}
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    """Filter out excluded tables from migration comparison and autogeneration."""
+    if type_ == "table" and name in EXCLUDED_TABLES:
+        return False
+    return True
+
 
 def get_alembic_config(database_url: str) -> Config:
     """
@@ -151,13 +165,18 @@ def check_missing_migrations(database_url: str) -> None:
     Tries to autogenerate migrations, returns True if a migration
     was generated.
     """
-
     engine = get_db_engine(database_uri=database_url)
     connection = engine.connect()
 
-    migration_context = migration.MigrationContext.configure(connection)
+    migration_context = migration.MigrationContext.configure(
+        connection, opts={"include_object": include_object}
+    )
     result = command.autogen.compare_metadata(migration_context, Base.metadata)  # type: ignore[attr-defined]
 
     if result:
+        log.error("Migration needs to be generated!")
+        log.error("Detected the following schema differences:")
+        for item in result:
+            log.error(f"  - {item}")
         raise SystemExit("Migration needs to be generated!")
     print("No migrations need to be generated.")
