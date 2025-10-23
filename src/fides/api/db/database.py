@@ -10,6 +10,7 @@ from alembic.config import Config
 from alembic.runtime import migration
 from loguru import logger as log
 from sqlalchemy.orm import Session
+from sqlalchemy.schema import SchemaItem
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
@@ -20,7 +21,7 @@ from fides.api.util.errors import get_full_exception_name
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
-# Tables to exclude from migration autogeneration (e.g., tables without SQLAlchemy models)
+# Tables to exclude from migration auto-generation (e.g., tables without SQLAlchemy models)
 EXCLUDED_TABLES = {
     "privacy_preferences",
     "privacy_preferences_current",
@@ -28,8 +29,14 @@ EXCLUDED_TABLES = {
 }
 
 
-def include_object(object, name, type_, reflected, compare_to):
-    """Filter out excluded tables from migration comparison and autogeneration."""
+def include_object(
+    object: SchemaItem,  # pylint: disable=redefined-builtin
+    name: str,
+    type_: str,
+    reflected: bool,
+    compare_to: SchemaItem,
+) -> bool:
+    """Filter out excluded tables from migration comparison and auto-generation."""
     if type_ == "table" and name in EXCLUDED_TABLES:
         return False
     return True
