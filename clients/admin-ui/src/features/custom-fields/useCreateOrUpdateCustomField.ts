@@ -30,6 +30,22 @@ const useCreateOrUpdateCustomField = () => {
     initialField: CustomFieldDefinitionWithId | undefined,
     initialAllowList: AllowList | undefined,
   ) => {
+    // Normalize resource_type from key-form selection
+    // taxonomy:data_category -> data_category (custom metadata endpoint will map as needed)
+    // system:information -> system
+    // system:data_use -> privacy_declaration
+    const normalizeResourceType = (rt: string): string => {
+      if (rt.startsWith("taxonomy:")) {
+        return rt.split(":", 2)[1];
+      }
+      if (rt === "system:information") return "system";
+      if (rt === "system:data_use") return "privacy_declaration";
+      return rt;
+    };
+
+    values.resource_type = normalizeResourceType(
+      values.resource_type as unknown as string,
+    ) as any;
     if (values.field_type === FieldTypes.OPEN_TEXT) {
       const payload = {
         ...values,
