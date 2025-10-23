@@ -1,6 +1,10 @@
 import { AntTreeDataNode as TreeDataNode } from "fidesui";
 
-import { TreeResourceChangeIndicator } from "~/types/api";
+import {
+  ConfidenceScoreRange,
+  DiffStatus,
+  TreeResourceChangeIndicator,
+} from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 /**
@@ -29,10 +33,3 @@ export interface MonitorFieldParameters {
   };
   query: MonitorFieldQueryParameters;
 }
-
-export type ResourceStatusLabelColor =
-  | "nectar"
-  | "red"
-  | "orange"
-  | "blue"
-  | "green";
