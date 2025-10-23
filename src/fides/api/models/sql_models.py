@@ -921,7 +921,7 @@ class CustomFieldDefinition(Base):
         nullable=False,
     )
     allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
-    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    resource_type = Column(String, nullable=False)
     field_definition = Column(String)
     custom_field = relationship(
         "CustomField",
@@ -985,7 +985,7 @@ class CustomField(Base):
 
     __tablename__ = "plus_custom_field"
 
-    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    resource_type = Column(String, nullable=False)
     resource_id = Column(String, index=True, nullable=False)
     custom_field_definition_id = Column(
         String, ForeignKey(CustomFieldDefinition.id), nullable=False

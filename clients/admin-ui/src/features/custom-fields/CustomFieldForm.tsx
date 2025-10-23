@@ -20,7 +20,6 @@ import { useHasPermission } from "~/features/common/Restrict";
 import {
   FIELD_TYPE_OPTIONS,
   FieldTypes,
-  RESOURCE_TYPE_OPTIONS,
 } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
@@ -28,6 +27,7 @@ import { getCustomFieldType } from "~/features/custom-fields/utils";
 import {
   useDeleteCustomFieldDefinitionMutation,
   useGetAllowListQuery,
+  useGetCustomFieldLocationsQuery,
 } from "~/features/plus/plus.slice";
 import {
   CustomFieldDefinition,
@@ -69,6 +69,8 @@ const CustomFieldForm = ({
 
   const [deleteCustomField, { isLoading: deleteIsLoading }] =
     useDeleteCustomFieldDefinitionMutation();
+  const { data: locationOptions, isLoading: isLocationsLoading } =
+    useGetCustomFieldLocationsQuery();
 
   const showDeleteButton =
     useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
@@ -118,7 +120,7 @@ const CustomFieldForm = ({
 
   const initialValues = parseFieldToFormValues(initialField);
 
-  if (isLoading || isAllowListLoading) {
+  if (isLoading || isAllowListLoading || isLocationsLoading) {
     return <SkeletonCustomFieldForm />;
   }
 
@@ -146,9 +148,13 @@ const CustomFieldForm = ({
         label="Location"
         name="resource_type"
         rules={[{ required: true, message: "Please select a resource type" }]}
+        tooltip="Choose where this field applies, including custom taxonomies."
       >
         <Select
-          options={RESOURCE_TYPE_OPTIONS}
+          options={(locationOptions || []).map((loc: string) => {
+            // Display the key-form label as-is; convert to resource_type value on submit
+            return { label: loc, value: loc };
+          })}
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }
