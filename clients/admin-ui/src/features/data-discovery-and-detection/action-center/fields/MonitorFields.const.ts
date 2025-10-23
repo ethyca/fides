@@ -2,8 +2,6 @@ import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
 
 import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
-import { ResourceStatusLabel } from "./types";
-
 export const TREE_PAGE_SIZE = 100;
 export const TREE_NODE_LOAD_MORE_TEXT = "Load more...";
 export const TREE_NODE_LOAD_MORE_KEY_PREFIX = "load_more";
@@ -20,6 +18,23 @@ export const RESOURCE_STATUS = [
   "Confirmed",
   "Removed",
 ] as const;
+
+export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
+
+export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
+  {
+    classifying: "Classifying",
+    classification_queued: "Classifying",
+    classification_update: "In Review",
+    classification_addition: "In Review",
+    addition: "Unlabeled",
+    muted: "Ignored",
+    removal: "Removed",
+    removing: "In Review",
+    promoting: "In Review",
+    monitored: "Confirmed",
+    approved: "Approved",
+  } as const;
 
 export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   DiffStatus,

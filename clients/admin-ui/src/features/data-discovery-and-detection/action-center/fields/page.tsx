@@ -11,9 +11,9 @@ import {
   AntSplitter as Splitter,
   AntText as Text,
   AntTitle as Title,
+  AntTooltip as Tooltip,
   Icons,
   SparkleIcon,
-  useToast,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
@@ -24,36 +24,36 @@ import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import FixedLayout from "~/features/common/FixedLayout";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert, useSearch } from "~/features/common/hooks";
+import { useSearch } from "~/features/common/hooks";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  useClassifyStagedResourcesMutation,
   useGetMonitorConfigQuery,
-  useIgnoreMonitorResultAssetsMutation,
   useLazyGetStagedResourceDetailsQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { DiffStatus } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
+import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import { DetailsDrawer } from "./DetailsDrawer";
-import { DROPDOWN_OPTIONS, FIELD_ACTION_LABEL } from "./FieldActions.const";
 import {
-  useFieldActionsMutation,
-  useGetMonitorFieldsQuery,
-} from "./monitor-fields.slice";
+  AVAILABLE_ACTIONS,
+  FIELD_ACTION_ICON,
+  FIELD_ACTION_LABEL,
+} from "./FieldActions.const";
+import { useGetMonitorFieldsQuery } from "./monitor-fields.slice";
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  DIFF_TO_RESOURCE_STATUS,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
+  ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree from "./MonitorTree";
-import { FieldActionTypeValue, ResourceStatusLabel } from "./types";
+import { useBulkActions } from "./useBulkActions";
+import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
@@ -82,7 +82,10 @@ const ActionCenterFields: NextPage = () => {
     monitor_config_id: monitorId,
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<
+    DatastoreStagedResourceAPIResponse[]
+  >([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
     path: {
@@ -100,97 +103,30 @@ const ActionCenterFields: NextPage = () => {
       data_category: dataCategory || undefined,
     },
   });
-  const toast = useToast();
-  const [classifyStagedResourcesMutation] =
-    useClassifyStagedResourcesMutation();
-  const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
-  const [ignoreMonitorResultAssetsMutation] =
-    useIgnoreMonitorResultAssetsMutation();
-  const { errorAlert } = useAlert();
-  const [bulkAction] = useFieldActionsMutation();
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
   const resource = stagedResourceDetailsResult.data;
-
-  const handleSetDataCategories = async (
-    dataCategories: string[],
-    urn: string,
-  ) => {
-    const mutationResult = await updateResourceCategoryMutation({
-      monitor_config_id: monitorId,
-      staged_resource_urn: urn,
-      user_assigned_data_categories: dataCategories,
-    });
-
-    if (isErrorResult(mutationResult)) {
-      errorAlert(getErrorMessage(mutationResult.error));
-    }
-  };
+  const bulkActions = useBulkActions(monitorId);
+  const fieldActions = useFieldActions(monitorId);
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);
   };
 
-  const handleIgnore = async (urn: string) => {
-    const mutationResult = await ignoreMonitorResultAssetsMutation({
-      urnList: [urn],
-    });
-
-    if (isErrorResult(mutationResult)) {
-      errorAlert(getErrorMessage(mutationResult.error));
-    }
-  };
-
-  const handleBulkAction = async (actionType: FieldActionTypeValue) => {
-    const mutationResult = await bulkAction({
-      query: {
-        staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-        search: search.searchProps.value,
-        diff_status: resourceStatus
-          ? resourceStatus.flatMap(intoDiffStatus)
-          : undefined,
-        confidence_score: confidenceScore || undefined,
-        data_category: dataCategory || undefined,
-      },
-      path: {
-        monitor_config_id: monitorId,
-        action_type: actionType,
-      },
-    });
-
-    if (isErrorResult(mutationResult)) {
-      errorAlert(getErrorMessage(mutationResult.error));
-      return;
-    }
-
-    const actionItemCount = mutationResult.data.task_ids?.length ?? 0;
-    toast(
-      successToastParams(
-        `Successful ${FIELD_ACTION_LABEL[actionType]} action for ${actionItemCount} item${actionItemCount !== 1 ? "s" : ""}`,
-      ),
-    );
-  };
-
-  const handleClassifyStagedResources = async () => {
-    const result = await classifyStagedResourcesMutation({
-      monitor_config_key: monitorId,
-      staged_resource_urns: selectedNodeKeys.flatMap((key) =>
-        typeof key !== "bigint" ? [key.toString()] : [],
-      ),
-    });
-
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
-
-    toast(successToastParams(`Classifying initiated`));
-  };
+  const availableActions = getAvailableActions(
+    selectedFields.flatMap((field) =>
+      field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
+    ),
+  );
 
   const handleOnSelectAll = (nextSelectAll: boolean) => {
     setSelectAll(nextSelectAll);
     setSelectedFields(
+      nextSelectAll && fieldsDataResponse ? fieldsDataResponse.items : [],
+    );
+
+    setSelectedFieldIds(
       nextSelectAll && fieldsDataResponse
         ? fieldsDataResponse.items.map((item) => item.urn)
         : [],
@@ -199,24 +135,34 @@ const ActionCenterFields: NextPage = () => {
 
   const handleOnSelect = (key: string, selected?: boolean) => {
     setSelectAll(false);
-    setSelectedFields(
+    const targetField = fieldsDataResponse?.items.find(
+      (item) => item.urn === key,
+    );
+
+    if (selected && targetField) {
+      setSelectedFields([...selectedFields, targetField]);
+    } else {
+      setSelectedFields(selectedFields.filter((val) => val.urn !== key));
+    }
+
+    setSelectedFieldIds(
       selected
-        ? [...selectedFields, key]
-        : selectedFields.filter((val) => val !== key),
+        ? [...selectedFieldIds, key]
+        : selectedFieldIds.filter((val) => val !== key),
     );
   };
 
   const selectedFieldCount =
     selectAll && fieldsDataResponse?.total
       ? fieldsDataResponse?.total
-      : selectedFields.length;
+      : selectedFieldIds.length;
+
   useEffect(() => {
     if (detailsUrn) {
       stagedResourceDetailsTrigger({ stagedResourceUrn: detailsUrn });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailsUrn]);
-
   /**
    * @todo: this should be handled on a form/state action level
    */
@@ -254,7 +200,11 @@ const ActionCenterFields: NextPage = () => {
           <MonitorTree
             selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={handleClassifyStagedResources}
+            onClickClassifyButton={() => {
+              fieldActions.classify(
+                selectedNodeKeys.map((key) => key.toString()),
+              );
+            }}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
@@ -301,14 +251,46 @@ const ActionCenterFields: NextPage = () => {
                 <Dropdown
                   menu={{
                     items: [
-                      ...DROPDOWN_OPTIONS.map((actionType) => ({
+                      ...Object.values(FieldActionType).map((actionType) => ({
                         key: actionType,
                         label: FIELD_ACTION_LABEL[actionType],
-                        onClick: () => handleBulkAction(actionType),
+                        disabled: selectAll
+                          ? false
+                          : !availableActions?.includes(actionType),
+                        onClick: () => {
+                          if (selectAll) {
+                            const callback = bulkActions[actionType];
+
+                            if (callback) {
+                              callback({
+                                path: {
+                                  monitor_config_id: monitorId,
+                                },
+                                query: {
+                                  staged_resource_urn: selectedNodeKeys.map(
+                                    (key) => key.toString(),
+                                  ),
+                                  search: search.searchProps.value,
+                                  diff_status: resourceStatus
+                                    ? resourceStatus.flatMap(intoDiffStatus)
+                                    : undefined,
+                                  confidence_score:
+                                    confidenceScore || undefined,
+                                  data_category: dataCategory || undefined,
+                                },
+                              });
+                            }
+                          } else {
+                            const callback = fieldActions[actionType];
+                            if (callback) {
+                              callback(selectedFieldIds);
+                            }
+                          }
+                        },
                       })),
                     ],
                   }}
-                  disabled={selectedFields.length <= 0}
+                  disabled={selectedFieldIds.length <= 0}
                 >
                   <Button
                     type="primary"
@@ -338,11 +320,35 @@ const ActionCenterFields: NextPage = () => {
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
-                  selected: selectedFields.includes(props.urn),
+                  selected: selectedFieldIds.includes(props.urn),
                   onSelect: handleOnSelect,
-                  onSetDataCategories: handleSetDataCategories,
                   onNavigate: handleNavigate,
-                  onIgnore: handleIgnore,
+                  onSetDataCategories: (urn, values) =>
+                    fieldActions["assign-categories"]([urn], {
+                      user_assigned_data_categories: values,
+                    }),
+                  actions: props?.diff_status
+                    ? AVAILABLE_ACTIONS[
+                        DIFF_TO_RESOURCE_STATUS[props.diff_status]
+                      ].flatMap((action) =>
+                        action !== FieldActionType.ASSIGN_CATEGORIES
+                          ? [
+                              <Tooltip
+                                key={action}
+                                title={FIELD_ACTION_LABEL[action]}
+                              >
+                                <Button
+                                  aria-label={FIELD_ACTION_LABEL[action]}
+                                  icon={FIELD_ACTION_ICON[action]}
+                                  onClick={() =>
+                                    fieldActions[action]([props.urn])
+                                  }
+                                />
+                              </Tooltip>,
+                            ]
+                          : [],
+                      )
+                    : [],
                 })
               }
             />
@@ -355,7 +361,7 @@ const ActionCenterFields: NextPage = () => {
         </Splitter.Panel>
       </Splitter>
       <DetailsDrawer
-        itemKey={resource?.urn ?? 0}
+        itemKey={resource?.urn ?? ""}
         title={resource ? resource.name : null}
         titleIcon={<Icons.Column />}
         titleTag={{
@@ -370,20 +376,22 @@ const ActionCenterFields: NextPage = () => {
                 .label
             : null,
         }}
-        actions={{
-          reject: {
-            label: "Reject",
-            callback: () => {},
-          },
-          approve: {
-            label: "Approve",
-            callback: () => {},
-          },
-          confirm: {
-            label: "Confirm",
-            callback: () => {},
-          },
-        }}
+        actions={
+          resource?.diff_status
+            ? AVAILABLE_ACTIONS[
+                DIFF_TO_RESOURCE_STATUS[resource.diff_status]
+              ].flatMap((action) =>
+                action !== FieldActionType.ASSIGN_CATEGORIES
+                  ? [
+                      {
+                        label: FIELD_ACTION_LABEL[action],
+                        callback: (value) => fieldActions[action]([value]),
+                      },
+                    ]
+                  : [],
+              )
+            : []
+        }
         open={!!detailsUrn}
         onClose={() => setDetailsUrn(undefined)}
       >
@@ -431,8 +439,19 @@ const ActionCenterFields: NextPage = () => {
                     ) ?? []),
                   ]}
                   autoFocus={false}
-                  onChange={(value) =>
-                    handleSetDataCategories(value, resource.urn)
+                  disabled={
+                    resource?.diff_status
+                      ? ![
+                          ...AVAILABLE_ACTIONS[
+                            DIFF_TO_RESOURCE_STATUS[resource.diff_status]
+                          ],
+                        ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                      : true
+                  }
+                  onChange={(values) =>
+                    fieldActions["assign-categories"]([resource.urn], {
+                      user_assigned_data_categories: values,
+                    })
                   }
                 />
               </Form.Item>
@@ -471,5 +490,4 @@ const ActionCenterFields: NextPage = () => {
     </FixedLayout>
   );
 };
-
 export default ActionCenterFields;
