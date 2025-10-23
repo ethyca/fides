@@ -82,48 +82,6 @@ class TestPrivacyRequestService:
         except ObjectDeletedError:
             pass
 
-    @pytest.fixture
-    def deleted_privacy_request(
-        self,
-        db: Session,
-        policy: Policy,
-    ):
-        """Create a deleted privacy request"""
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "ext-test-deleted",
-                "started_processing_at": datetime.now(timezone.utc),
-                "requested_at": datetime.now(timezone.utc),
-                "status": PrivacyRequestStatus.complete,
-                "origin": "https://example.com",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-        privacy_request.update(db=db, data={"deleted_at": datetime.now(timezone.utc)})
-        return privacy_request
-
-    @pytest.fixture
-    def privacy_request_requires_manual_finalization(
-        self,
-        db: Session,
-        policy: Policy,
-    ):
-        """Create a privacy request in requires_manual_finalization status"""
-        return PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "ext-test-finalize",
-                "started_processing_at": datetime.now(timezone.utc),
-                "requested_at": datetime.now(timezone.utc),
-                "status": PrivacyRequestStatus.requires_manual_finalization,
-                "origin": "https://example.com",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures(
@@ -1304,12 +1262,20 @@ class TestPrivacyRequestService:
 
     def test_finalize_privacy_requests_deleted(
         self,
+        db: Session,
         privacy_request_service: PrivacyRequestService,
-        deleted_privacy_request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
     ):
         """Test finalize_privacy_requests handles deleted privacy requests"""
+        privacy_request.update(
+            db=db,
+            data={
+                "deleted_at": datetime.now(timezone.utc),
+                "status": PrivacyRequestStatus.complete,
+            },
+        )
         result = privacy_request_service.finalize_privacy_requests(
-            [deleted_privacy_request.id], user_id="user_123"
+            [privacy_request.id], user_id="user_123"
         )
 
         assert len(result.succeeded) == 0
@@ -1317,7 +1283,7 @@ class TestPrivacyRequestService:
         assert (
             result.failed[0].message == "Cannot transition status for a deleted request"
         )
-        assert result.failed[0].data["id"] == deleted_privacy_request.id
+        assert result.failed[0].data["id"] == privacy_request.id
 
     def test_finalize_privacy_requests_wrong_status(
         self,
@@ -1351,11 +1317,14 @@ class TestPrivacyRequestService:
         self,
         db: Session,
         privacy_request_service: PrivacyRequestService,
-        privacy_request_requires_manual_finalization,
+        privacy_request: PrivacyRequest,
         reviewing_user: FidesUser,
     ):
         """Test successful finalization of privacy requests"""
-        request_id = privacy_request_requires_manual_finalization.id
+        privacy_request.update(
+            db=db, data={"status": PrivacyRequestStatus.requires_manual_finalization}
+        )
+        request_id = privacy_request.id
         user_id = reviewing_user.id
 
         result = privacy_request_service.finalize_privacy_requests(
@@ -1367,23 +1336,34 @@ class TestPrivacyRequestService:
         assert result.succeeded[0].id == request_id
 
         # Verify the privacy request was updated
-        db.refresh(privacy_request_requires_manual_finalization)
-        assert privacy_request_requires_manual_finalization.finalized_at is not None
-        assert privacy_request_requires_manual_finalization.finalized_by == user_id
+        db.refresh(privacy_request)
+        assert privacy_request.finalized_at is not None
+        assert privacy_request.finalized_by == user_id
 
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     def test_finalize_privacy_requests_mixed(
         self,
         db: Session,
+        policy: Policy,
         privacy_request_service: PrivacyRequestService,
-        privacy_request_requires_manual_finalization,
         privacy_request: PrivacyRequest,
         reviewing_user: FidesUser,
     ):
         """Test finalize_privacy_requests with a mix of valid and invalid requests"""
         # Create a second privacy request in wrong status
-
+        privacy_request_requires_manual_finalization = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "ext-test-finalize",
+                "started_processing_at": datetime.now(timezone.utc),
+                "requested_at": datetime.now(timezone.utc),
+                "status": PrivacyRequestStatus.requires_manual_finalization,
+                "origin": "https://example.com",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
         user_id = reviewing_user.id
         result = privacy_request_service.finalize_privacy_requests(
             [privacy_request_requires_manual_finalization.id, privacy_request.id],
@@ -1406,11 +1386,15 @@ class TestPrivacyRequestService:
 
     def test_finalize_privacy_requests_exception_handling(
         self,
+        db: Session,
         privacy_request_service: PrivacyRequestService,
-        privacy_request_requires_manual_finalization,
+        privacy_request: PrivacyRequest,
         reviewing_user: FidesUser,
     ):
         """Test finalize_privacy_requests handles exceptions during finalization"""
+        privacy_request.update(
+            db=db, data={"status": PrivacyRequestStatus.requires_manual_finalization}
+        )
         user_id = reviewing_user.id
 
         # Mock queue_privacy_request to raise an exception
@@ -1420,14 +1404,11 @@ class TestPrivacyRequestService:
             mock_queue.side_effect = Exception("Queue error")
 
             result = privacy_request_service.finalize_privacy_requests(
-                [privacy_request_requires_manual_finalization.id],
+                [privacy_request.id],
                 user_id=user_id,
             )
 
             assert len(result.succeeded) == 0
             assert len(result.failed) == 1
             assert result.failed[0].message == "Privacy request could not be finalized"
-            assert (
-                result.failed[0].data["id"]
-                == privacy_request_requires_manual_finalization.id
-            )
+            assert result.failed[0].data["id"] == privacy_request.id

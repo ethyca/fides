@@ -84,7 +84,9 @@ class PrivacyRequestService:
     ) -> PrivacyRequest:
         """
         Common validation logic for bulk operations.
-        Returns either a valid PrivacyRequest or a BulkUpdateFailed object.
+        Raises a PrivacyRequestError if the request is not found or deleted.
+
+        Returns the validated privacy request.
         """
         privacy_request = self.get_privacy_request(request_id)
         if not privacy_request:
